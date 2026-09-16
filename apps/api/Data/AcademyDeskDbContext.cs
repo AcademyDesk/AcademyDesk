@@ -16,6 +16,7 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
     public DbSet<Batch> Batches => Set<Batch>();
     public DbSet<Enrollment> Enrollments => Set<Enrollment>();
     public DbSet<ClassSession> ClassSessions => Set<ClassSession>();
+    public DbSet<AttendanceRecord> AttendanceRecords => Set<AttendanceRecord>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -106,6 +107,13 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
             entity.Property(x => x.RoomName).HasMaxLength(120);
             entity.Property(x => x.Status).HasMaxLength(30).IsRequired();
             entity.HasIndex(x => new { x.AcademyId, x.StartUtc });
+        });
+
+        modelBuilder.Entity<AttendanceRecord>(entity =>
+        {
+            entity.Property(x => x.Status).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.Notes).HasMaxLength(500);
+            entity.HasIndex(x => new { x.AcademyId, x.ClassSessionId, x.StudentId }).IsUnique();
         });
     }
 }
