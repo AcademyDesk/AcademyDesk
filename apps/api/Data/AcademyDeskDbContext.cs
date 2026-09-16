@@ -12,6 +12,7 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
     public DbSet<Guardian> Guardians => Set<Guardian>();
     public DbSet<StudentGuardian> StudentGuardians => Set<StudentGuardian>();
     public DbSet<Teacher> Teachers => Set<Teacher>();
+    public DbSet<ProgramCourse> Courses => Set<ProgramCourse>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -73,6 +74,15 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
             entity.Property(x => x.Phone).HasMaxLength(30);
             entity.Property(x => x.Specialties).HasMaxLength(500);
             entity.HasIndex(x => new { x.AcademyId, x.LastName, x.FirstName });
+        });
+
+        modelBuilder.Entity<ProgramCourse>(entity =>
+        {
+            entity.Property(x => x.Name).HasMaxLength(200).IsRequired();
+            entity.Property(x => x.AcademyType).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.Level).HasMaxLength(100);
+            entity.Property(x => x.Description).HasMaxLength(1000);
+            entity.HasIndex(x => new { x.AcademyId, x.Name }).IsUnique();
         });
     }
 }
