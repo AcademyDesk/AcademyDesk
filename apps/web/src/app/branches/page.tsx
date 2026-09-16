@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
+import { academyApi, apiHeaders } from "@/lib/api";
 
 type Academy = { id: string; name: string };
 type Branch = { id: string; name: string; city?: string | null; state?: string | null; postalCode?: string | null; isActive: boolean };
-const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5092";
 
 export default function BranchesPage() {
   const [academies, setAcademies] = useState<Academy[]>([]);
@@ -17,7 +17,7 @@ export default function BranchesPage() {
   const [message, setMessage] = useState("");
 
   async function loadAcademies() {
-    const response = await fetch(`${apiUrl}/api/academies`, { cache: "no-store" });
+    const response = await academyApi("/api/academies", { cache: "no-store" });
     if (!response.ok) throw new Error();
     const data: Academy[] = await response.json();
     setAcademies(data);
@@ -26,7 +26,7 @@ export default function BranchesPage() {
 
   async function loadBranches(id: string) {
     if (!id) return setBranches([]);
-    const response = await fetch(`${apiUrl}/api/academies/${id}/branches`, { cache: "no-store" });
+    const response = await academyApi(`/api/academies/${id}/branches`, { cache: "no-store" });
     if (!response.ok) throw new Error();
     setBranches(await response.json());
   }
@@ -37,7 +37,7 @@ export default function BranchesPage() {
   async function createBranch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!academyId || !name.trim()) return;
-    const response = await fetch(`${apiUrl}/api/academies/${academyId}/branches`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, city, state }) });
+    const response = await academyApi(`/api/academies/${academyId}/branches`, { method: "POST", headers: apiHeaders(true), body: JSON.stringify({ name, city, state }) });
     if (!response.ok) return setMessage("The branch could not be saved.");
     setName(""); setCity(""); setState(""); setMessage(""); await loadBranches(academyId);
   }

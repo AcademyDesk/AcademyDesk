@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
+import { academyApi, apiHeaders } from "@/lib/api";
 
 type Academy = { id: string; name: string };
 type Student = { id: string; firstName: string; lastName: string; email?: string | null; phone?: string | null };
-const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5092";
 
 export default function StudentsPage() {
   const [academies, setAcademies] = useState<Academy[]>([]);
@@ -18,21 +18,21 @@ export default function StudentsPage() {
   const [message, setMessage] = useState("");
 
   async function loadAcademies() {
-    const response = await fetch(`${apiUrl}/api/academies`, { cache: "no-store" });
+    const response = await academyApi("/api/academies", { cache: "no-store" });
     if (!response.ok) throw new Error();
     const data: Academy[] = await response.json(); setAcademies(data);
     if (!academyId && data.length) setAcademyId(data[0].id);
   }
   async function loadStudents(id: string) {
     if (!id) return setStudents([]);
-    const response = await fetch(`${apiUrl}/api/academies/${id}/students`, { cache: "no-store" });
+    const response = await academyApi(`/api/academies/${id}/students`, { cache: "no-store" });
     if (!response.ok) throw new Error(); setStudents(await response.json());
   }
   useEffect(() => { void loadAcademies().catch(() => setMessage("The AcademyDesk API is not reachable.")); }, []);
   useEffect(() => { void loadStudents(academyId).catch(() => setMessage("Students could not be loaded.")); }, [academyId]);
   async function createStudent(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); if (!academyId) return;
-    const response = await fetch(`${apiUrl}/api/academies/${academyId}/students`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ firstName, lastName, email, phone }) });
+    const response = await academyApi(`/api/academies/${academyId}/students`, { method: "POST", headers: apiHeaders(true), body: JSON.stringify({ firstName, lastName, email, phone }) });
     if (!response.ok) return setMessage("The student could not be saved.");
     setFirstName(""); setLastName(""); setEmail(""); setPhone(""); setMessage(""); await loadStudents(academyId);
   }

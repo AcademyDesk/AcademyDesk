@@ -1,9 +1,9 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import { academyApi, apiHeaders } from "@/lib/api";
 
 type Academy = { id: string; name: string; legalName?: string | null; timeZone: string };
-const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5092";
 
 export default function Home() {
   const [academies, setAcademies] = useState<Academy[]>([]);
@@ -13,15 +13,10 @@ export default function Home() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
 
-  function authorizationHeader() {
-    const token = localStorage.getItem("academydesk.accessToken");
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  }
-
   async function loadAcademies() {
     setLoading(true);
     try {
-      const response = await fetch(`${apiUrl}/api/academies`, { cache: "no-store", headers: authorizationHeader() });
+      const response = await academyApi("/api/academies", { cache: "no-store" });
       if (!response.ok) throw new Error();
       setAcademies(await response.json());
       setMessage("");
@@ -36,7 +31,7 @@ export default function Home() {
     if (!name.trim()) return;
     setSaving(true); setMessage("");
     try {
-      const response = await fetch(`${apiUrl}/api/academies`, { method: "POST", headers: { "Content-Type": "application/json", ...authorizationHeader() }, body: JSON.stringify({ name, legalName, countryCode: "IN", timeZone: "Asia/Kolkata" }) });
+      const response = await academyApi("/api/academies", { method: "POST", headers: apiHeaders(true), body: JSON.stringify({ name, legalName, countryCode: "IN", timeZone: "Asia/Kolkata" }) });
       if (!response.ok) throw new Error();
       setName(""); setLegalName(""); await loadAcademies();
     } catch { setMessage("We could not save the academy. Check that the API and database are running."); }

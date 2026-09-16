@@ -1,12 +1,14 @@
 using AcademyDesk.Api.Data;
 using AcademyDesk.Api.Domain.Identity;
+using AcademyDesk.Api.Security;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Services.AddScoped<AcademyAccessFilter>();
+builder.Services.AddControllers(options => options.Filters.AddService<AcademyAccessFilter>());
 builder.Services.AddCors(options => options.AddPolicy("LocalWeb", policy =>
     policy.WithOrigins("http://localhost:3000").AllowAnyHeader().AllowAnyMethod()));
 builder.Services.AddDbContext<AcademyDeskDbContext>(options =>
