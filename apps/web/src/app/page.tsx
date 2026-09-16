@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import Link from "next/link";
 import { academyApi, apiHeaders } from "@/lib/api";
 
 type Academy = { id: string; name: string; legalName?: string | null; timeZone: string };
@@ -39,7 +40,7 @@ export default function Home() {
   }
 
   return <main className="min-h-screen bg-slate-950 px-6 py-12 text-slate-100"><div className="mx-auto max-w-5xl">
-    <p className="text-sm font-semibold uppercase tracking-[0.25em] text-cyan-300">AcademyDesk</p>
+    <div className="flex items-center justify-between gap-4"><p className="text-sm font-semibold uppercase tracking-[0.25em] text-cyan-300">AcademyDesk</p><Link href="/dashboard" className="text-sm text-cyan-300 hover:text-cyan-200">Open dashboard →</Link></div>
     <h1 className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">Academy setup</h1>
     <p className="mt-4 max-w-2xl text-slate-300">Create the academies that will use your music, tuition, and coaching operations platform.</p>
     <section className="mt-10 grid gap-6 lg:grid-cols-[1fr_1.2fr]">
