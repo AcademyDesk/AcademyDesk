@@ -1,0 +1,11 @@
+namespace AcademyDesk.Api.Domain.Entities;
+
+public sealed class Assignment : AcademyEntity
+{
+    public Guid BatchId { get; set; }
+    public required string Title { get; set; }
+    public string? Description { get; set; }
+    public DateTime? DueAtUtc { get; set; }
+    public string Type { get; set; } = "Homework";
+    public bool IsPublished { get; set; }
+}
