@@ -24,6 +24,7 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
     public DbSet<Invoice> Invoices => Set<Invoice>();
     public DbSet<Payment> Payments => Set<Payment>();
     public DbSet<Expense> Expenses => Set<Expense>();
+    public DbSet<Notification> Notifications => Set<Notification>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -181,6 +182,16 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
             entity.Property(x => x.Category).HasMaxLength(80).IsRequired();
             entity.Property(x => x.Status).HasMaxLength(30).IsRequired();
             entity.HasIndex(x => new { x.AcademyId, x.ExpenseDate });
+        });
+
+        modelBuilder.Entity<Notification>(entity =>
+        {
+            entity.Property(x => x.RecipientType).HasMaxLength(40).IsRequired();
+            entity.Property(x => x.Title).HasMaxLength(250).IsRequired();
+            entity.Property(x => x.Message).HasMaxLength(4000).IsRequired();
+            entity.Property(x => x.Channel).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.Status).HasMaxLength(30).IsRequired();
+            entity.HasIndex(x => new { x.AcademyId, x.RecipientId, x.CreatedAtUtc });
         });
     }
 }
