@@ -11,6 +11,7 @@ const links = [
   ["Teachers", "/teachers"],
   ["Courses", "/courses"],
   ["Batches", "/batches"],
+  ["Schedule", "/schedule"],
 ] as const;
 
 export function WorkspaceNav() {

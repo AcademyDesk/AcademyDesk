@@ -1,0 +1,80 @@
+"use client";
+
+import { FormEvent, useEffect, useState } from "react";
+import { WorkspaceNav } from "@/components/workspace-nav";
+import { academyApi, apiHeaders } from "@/lib/api";
+
+type Academy = { id: string; name: string };
+type Batch = { id: string; name: string; teacherId?: string | null; branchId?: string | null };
+type Teacher = { id: string; firstName: string; lastName: string };
+type Branch = { id: string; name: string };
+type Session = { id: string; batchId: string; teacherId?: string | null; branchId?: string | null; startUtc: string; endUtc: string; deliveryMode: string; roomName?: string | null; status: string };
+
+function formatLocal(value: string) {
+  return new Intl.DateTimeFormat("en-IN", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
+}
+
+export default function SchedulePage() {
+  const [academy, setAcademy] = useState<Academy>();
+  const [batches, setBatches] = useState<Batch[]>([]);
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
+  const [branches, setBranches] = useState<Branch[]>([]);
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [batchId, setBatchId] = useState("");
+  const [teacherId, setTeacherId] = useState("");
+  const [branchId, setBranchId] = useState("");
+  const [startLocal, setStartLocal] = useState("");
+  const [endLocal, setEndLocal] = useState("");
+  const [deliveryMode, setDeliveryMode] = useState("InPerson");
+  const [roomName, setRoomName] = useState("");
+  const [message, setMessage] = useState("Loading schedule…");
+
+  async function load(academyId?: string) {
+    const id = academyId ?? academy?.id;
+    if (!id) return;
+    const [batchResponse, teacherResponse, branchResponse, sessionResponse] = await Promise.all([
+      academyApi(`/api/academies/${id}/batches`, { cache: "no-store" }), academyApi(`/api/academies/${id}/teachers`, { cache: "no-store" }), academyApi(`/api/academies/${id}/branches`, { cache: "no-store" }), academyApi(`/api/academies/${id}/sessions`, { cache: "no-store" }),
+    ]);
+    if (![batchResponse, teacherResponse, branchResponse, sessionResponse].every((response) => response.ok)) throw new Error();
+    const batchData: Batch[] = await batchResponse.json();
+    setBatches(batchData); setTeachers(await teacherResponse.json()); setBranches(await branchResponse.json()); setSessions(await sessionResponse.json());
+    if (!batchId && batchData.length) setBatchId(batchData[0].id);
+    setMessage("");
+  }
+
+  useEffect(() => { async function initialise() { try { const response = await academyApi("/api/academies", { cache: "no-store" }); if (response.status === 401) return setMessage("Please sign in before opening the schedule."); if (!response.ok) throw new Error(); const academies: Academy[] = await response.json(); if (!academies[0]) return setMessage("Create an academy, course, and batch before scheduling a class."); setAcademy(academies[0]); await load(academies[0].id); } catch { setMessage("The schedule could not be loaded. Confirm the API is running on port 5092."); } } void initialise(); }, []);
+
+  function applyBatchDefaults(id: string) {
+    setBatchId(id);
+    const batch = batches.find((item) => item.id === id);
+    if (batch?.teacherId) setTeacherId(batch.teacherId);
+    if (batch?.branchId) setBranchId(batch.branchId);
+  }
+
+  async function createSession(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!academy || !batchId || !startLocal || !endLocal) return;
+    const response = await academyApi(`/api/academies/${academy.id}/sessions`, { method: "POST", headers: apiHeaders(true), body: JSON.stringify({ batchId, teacherId: teacherId || null, branchId: branchId || null, startUtc: new Date(startLocal).toISOString(), endUtc: new Date(endLocal).toISOString(), deliveryMode, roomName: roomName || null }) });
+    if (!response.ok) return setMessage("The session could not be saved. Ensure the end time is after the start time.");
+    setStartLocal(""); setEndLocal(""); setRoomName(""); setMessage(""); await load();
+  }
+
+  const batchName = (id: string) => batches.find((batch) => batch.id === id)?.name ?? "Unknown batch";
+  const teacherName = (id?: string | null) => { const teacher = teachers.find((item) => item.id === id); return teacher ? `${teacher.firstName} ${teacher.lastName}` : "Unassigned"; };
+  const branchName = (id?: string | null) => branches.find((branch) => branch.id === id)?.name ?? "No branch";
+
+  return <main className="min-h-screen bg-slate-950 text-slate-100"><WorkspaceNav /><div className="mx-auto max-w-6xl px-6 py-10">
+    <p className="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-300">Timetable</p><h1 className="mt-3 text-4xl font-semibold tracking-tight">Class schedule</h1><p className="mt-3 text-slate-300">Schedule individual classes for your batches. Times entered below use your computer’s local time and are stored safely in UTC.</p>
+    {message && <p className="mt-6 rounded-lg border border-amber-700/50 bg-amber-950/40 p-4 text-sm text-amber-100">{message}</p>}
+    <section className="mt-8 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]"><form onSubmit={createSession} className="rounded-2xl border border-slate-800 bg-slate-900 p-6"><h2 className="text-xl font-semibold">Schedule a class</h2>
+      <select value={batchId} onChange={(event) => applyBatchDefaults(event.target.value)} className="mt-5 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" required><option value="">Select batch</option>{batches.map((batch) => <option key={batch.id} value={batch.id}>{batch.name}</option>)}</select>
+      <select value={teacherId} onChange={(event) => setTeacherId(event.target.value)} className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"><option value="">No teacher assigned</option>{teachers.map((teacher) => <option key={teacher.id} value={teacher.id}>{teacher.firstName} {teacher.lastName}</option>)}</select>
+      <select value={branchId} onChange={(event) => setBranchId(event.target.value)} className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"><option value="">No branch assigned</option>{branches.map((branch) => <option key={branch.id} value={branch.id}>{branch.name}</option>)}</select>
+      <div className="mt-3 grid gap-3 sm:grid-cols-2"><input type="datetime-local" value={startLocal} onChange={(event) => setStartLocal(event.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" required /><input type="datetime-local" value={endLocal} onChange={(event) => setEndLocal(event.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" required /></div>
+      <select value={deliveryMode} onChange={(event) => setDeliveryMode(event.target.value)} className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"><option value="InPerson">In person</option><option value="Online">Online</option><option value="Hybrid">Hybrid</option></select>
+      <input value={roomName} onChange={(event) => setRoomName(event.target.value)} placeholder="Room or meeting link (optional)" className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" /><button disabled={!academy || batches.length === 0} className="mt-5 w-full rounded-lg bg-cyan-400 px-4 py-2.5 font-semibold text-slate-950 hover:bg-cyan-300 disabled:opacity-60">Schedule class</button>
+    </form>
+    <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6"><h2 className="text-xl font-semibold">Scheduled classes</h2>{sessions.length === 0 ? <p className="mt-6 text-slate-400">No classes scheduled yet.</p> : <ul className="mt-5 space-y-3">{sessions.map((session) => <li key={session.id} className="rounded-lg border border-slate-700 bg-slate-950 p-4"><div className="font-medium">{batchName(session.batchId)}</div><div className="mt-1 text-sm text-cyan-200">{formatLocal(session.startUtc)} – {new Intl.DateTimeFormat("en-IN", { timeStyle: "short" }).format(new Date(session.endUtc))}</div><div className="mt-2 text-sm text-slate-300">{teacherName(session.teacherId)} · {branchName(session.branchId)} · {session.deliveryMode}</div>{session.roomName && <div className="mt-1 text-sm text-slate-400">{session.roomName}</div>}</li>)}</ul>}</section>
+    </section>
+  </div></main>;
+}
