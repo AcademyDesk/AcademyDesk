@@ -18,6 +18,8 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
     public DbSet<ClassSession> ClassSessions => Set<ClassSession>();
     public DbSet<AttendanceRecord> AttendanceRecords => Set<AttendanceRecord>();
     public DbSet<Assignment> Assignments => Set<Assignment>();
+    public DbSet<Assessment> Assessments => Set<Assessment>();
+    public DbSet<AssessmentResult> AssessmentResults => Set<AssessmentResult>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -123,6 +125,20 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
             entity.Property(x => x.Description).HasMaxLength(4000);
             entity.Property(x => x.Type).HasMaxLength(40).IsRequired();
             entity.HasIndex(x => new { x.AcademyId, x.BatchId, x.DueAtUtc });
+        });
+
+        modelBuilder.Entity<Assessment>(entity =>
+        {
+            entity.Property(x => x.Title).HasMaxLength(250).IsRequired();
+            entity.Property(x => x.Type).HasMaxLength(40).IsRequired();
+            entity.HasIndex(x => new { x.AcademyId, x.BatchId, x.ScheduledAtUtc });
+        });
+
+        modelBuilder.Entity<AssessmentResult>(entity =>
+        {
+            entity.Property(x => x.Grade).HasMaxLength(30);
+            entity.Property(x => x.Remarks).HasMaxLength(1000);
+            entity.HasIndex(x => new { x.AcademyId, x.AssessmentId, x.StudentId }).IsUnique();
         });
     }
 }
