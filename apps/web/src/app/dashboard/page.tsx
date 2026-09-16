@@ -10,18 +10,20 @@ type Academy = { id: string; name: string };
 type DashboardData = {
   academy?: Academy;
   students: number;
+  teachers: number;
   courses: number;
   batches: number;
 };
 
 const cards = [
   ["Students", "students", "/students", "Add learners and maintain the roster."],
+  ["Teachers", "teachers", "/teachers", "Maintain the instructors who deliver classes."],
   ["Courses", "courses", "/courses", "Create music, tuition, and coaching programs."],
   ["Batches", "batches", "/batches", "Organize classes, capacity, and enrolment."],
 ] as const;
 
 export default function DashboardPage() {
-  const [data, setData] = useState<DashboardData>({ students: 0, courses: 0, batches: 0 });
+  const [data, setData] = useState<DashboardData>({ students: 0, teachers: 0, courses: 0, batches: 0 });
   const [message, setMessage] = useState("Loading your workspace…");
 
   useEffect(() => {
@@ -37,21 +39,23 @@ export default function DashboardPage() {
         const academies: Academy[] = await academyResponse.json();
         const academy = academies[0];
         if (!academy) {
-          setData({ students: 0, courses: 0, batches: 0 });
+          setData({ students: 0, teachers: 0, courses: 0, batches: 0 });
           setMessage("Create your academy first to unlock the workspace.");
           return;
         }
 
-        const [students, courses, batches] = await Promise.all([
+        const [students, teachers, courses, batches] = await Promise.all([
           academyApi(`/api/academies/${academy.id}/students`, { cache: "no-store" }),
+          academyApi(`/api/academies/${academy.id}/teachers`, { cache: "no-store" }),
           academyApi(`/api/academies/${academy.id}/courses`, { cache: "no-store" }),
           academyApi(`/api/academies/${academy.id}/batches`, { cache: "no-store" }),
         ]);
-        if (![students, courses, batches].every((response) => response.ok)) throw new Error();
+        if (![students, teachers, courses, batches].every((response) => response.ok)) throw new Error();
 
         setData({
           academy,
           students: (await students.json()).length,
+          teachers: (await teachers.json()).length,
           courses: (await courses.json()).length,
           batches: (await batches.json()).length,
         });
@@ -72,7 +76,7 @@ export default function DashboardPage() {
       <p className="mt-3 max-w-2xl text-slate-300">Your starting point for a music academy today, with the same structure ready for tuition and coaching operations.</p>
       {message && <p className="mt-7 rounded-lg border border-amber-700/50 bg-amber-950/40 p-4 text-sm text-amber-100">{message}</p>}
 
-      <section className="mt-8 grid gap-5 sm:grid-cols-3">
+      <section className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {cards.map(([title, key, href, description]) => <Link key={key} href={href} className="rounded-2xl border border-slate-800 bg-slate-900 p-6 transition hover:border-cyan-500/70">
           <p className="text-sm text-slate-400">{title}</p><p className="mt-2 text-4xl font-semibold">{data[key]}</p><p className="mt-4 text-sm text-slate-300">{description}</p>
         </Link>)}

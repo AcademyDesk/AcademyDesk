@@ -1,0 +1,89 @@
+"use client";
+
+import { FormEvent, useEffect, useState } from "react";
+import { WorkspaceNav } from "@/components/workspace-nav";
+import { academyApi, apiHeaders } from "@/lib/api";
+
+type Academy = { id: string; name: string };
+type Branch = { id: string; name: string };
+type Teacher = { id: string; firstName: string; lastName: string; email?: string | null; phone?: string | null; specialties?: string | null; branchId?: string | null };
+
+export default function TeachersPage() {
+  const [academy, setAcademy] = useState<Academy>();
+  const [branches, setBranches] = useState<Branch[]>([]);
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [specialties, setSpecialties] = useState("");
+  const [branchId, setBranchId] = useState("");
+  const [message, setMessage] = useState("Loading teachers…");
+  const [saving, setSaving] = useState(false);
+
+  async function load(academyId?: string) {
+    const id = academyId ?? academy?.id;
+    if (!id) return;
+    const [teacherResponse, branchResponse] = await Promise.all([
+      academyApi(`/api/academies/${id}/teachers`, { cache: "no-store" }),
+      academyApi(`/api/academies/${id}/branches`, { cache: "no-store" }),
+    ]);
+    if (!teacherResponse.ok || !branchResponse.ok) throw new Error();
+    setTeachers(await teacherResponse.json());
+    setBranches(await branchResponse.json());
+    setMessage("");
+  }
+
+  useEffect(() => {
+    async function initialise() {
+      try {
+        const response = await academyApi("/api/academies", { cache: "no-store" });
+        if (response.status === 401) return setMessage("Please sign in before managing teachers.");
+        if (!response.ok) throw new Error();
+        const academies: Academy[] = await response.json();
+        if (!academies[0]) return setMessage("Create your academy first, then add teachers.");
+        setAcademy(academies[0]);
+        await load(academies[0].id);
+      } catch { setMessage("Teachers could not be loaded. Confirm that the API is running on port 5092."); }
+    }
+    void initialise();
+  }, []);
+
+  async function createTeacher(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!academy) return;
+    setSaving(true); setMessage("");
+    try {
+      const response = await academyApi(`/api/academies/${academy.id}/teachers`, {
+        method: "POST", headers: apiHeaders(true),
+        body: JSON.stringify({ firstName, lastName, email: email || null, phone: phone || null, specialties: specialties || null, branchId: branchId || null }),
+      });
+      if (!response.ok) throw new Error();
+      setFirstName(""); setLastName(""); setEmail(""); setPhone(""); setSpecialties(""); setBranchId("");
+      await load();
+    } catch { setMessage("The teacher could not be saved. Check the required details and try again."); }
+    finally { setSaving(false); }
+  }
+
+  return <main className="min-h-screen bg-slate-950 text-slate-100">
+    <WorkspaceNav />
+    <div className="mx-auto max-w-6xl px-6 py-10">
+      <p className="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-300">People</p>
+      <h1 className="mt-3 text-4xl font-semibold tracking-tight">Teachers and instructors</h1>
+      <p className="mt-3 text-slate-300">Add the people who teach your music, tuition, or coaching programs.</p>
+      {message && <p className="mt-6 rounded-lg border border-amber-700/50 bg-amber-950/40 p-4 text-sm text-amber-100">{message}</p>}
+      <section className="mt-8 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+        <form onSubmit={createTeacher} className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+          <h2 className="text-xl font-semibold">Add teacher</h2>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2"><input value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="First name" className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" required /><input value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Last name" className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" required /></div>
+          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email (optional)" className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" />
+          <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Phone (optional)" className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" />
+          <input value={specialties} onChange={(e) => setSpecialties(e.target.value)} placeholder="Specialties, e.g. Piano, vocals" className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" />
+          <select value={branchId} onChange={(e) => setBranchId(e.target.value)} className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"><option value="">No branch assigned</option>{branches.map((branch) => <option key={branch.id} value={branch.id}>{branch.name}</option>)}</select>
+          <button disabled={!academy || saving} className="mt-5 w-full rounded-lg bg-cyan-400 px-4 py-2.5 font-semibold text-slate-950 hover:bg-cyan-300 disabled:opacity-60">{saving ? "Saving…" : "Add teacher"}</button>
+        </form>
+        <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6"><h2 className="text-xl font-semibold">Teaching team</h2>{teachers.length === 0 ? <p className="mt-6 text-slate-400">No teachers yet. Add the first instructor above.</p> : <ul className="mt-5 space-y-3">{teachers.map((teacher) => <li key={teacher.id} className="rounded-lg border border-slate-700 bg-slate-950 p-4"><div className="font-medium">{teacher.firstName} {teacher.lastName}</div><div className="mt-1 text-sm text-slate-400">{teacher.specialties || "No specialties set"}</div><div className="mt-2 text-sm text-slate-300">{teacher.email || teacher.phone || "No contact details"}</div></li>)}</ul>}</section>
+      </section>
+    </div>
+  </main>;
+}
