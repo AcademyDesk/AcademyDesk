@@ -20,6 +20,7 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
     public DbSet<Assignment> Assignments => Set<Assignment>();
     public DbSet<Assessment> Assessments => Set<Assessment>();
     public DbSet<AssessmentResult> AssessmentResults => Set<AssessmentResult>();
+    public DbSet<FeePlan> FeePlans => Set<FeePlan>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -139,6 +140,14 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
             entity.Property(x => x.Grade).HasMaxLength(30);
             entity.Property(x => x.Remarks).HasMaxLength(1000);
             entity.HasIndex(x => new { x.AcademyId, x.AssessmentId, x.StudentId }).IsUnique();
+        });
+
+        modelBuilder.Entity<FeePlan>(entity =>
+        {
+            entity.Property(x => x.Name).HasMaxLength(200).IsRequired();
+            entity.Property(x => x.Currency).HasMaxLength(3).IsRequired();
+            entity.Property(x => x.Frequency).HasMaxLength(30).IsRequired();
+            entity.HasIndex(x => new { x.AcademyId, x.Name }).IsUnique();
         });
     }
 }
