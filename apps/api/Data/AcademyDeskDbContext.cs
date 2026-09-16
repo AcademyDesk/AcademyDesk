@@ -15,6 +15,7 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
     public DbSet<ProgramCourse> Courses => Set<ProgramCourse>();
     public DbSet<Batch> Batches => Set<Batch>();
     public DbSet<Enrollment> Enrollments => Set<Enrollment>();
+    public DbSet<ClassSession> ClassSessions => Set<ClassSession>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -97,6 +98,14 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
         {
             entity.Property(x => x.Status).HasMaxLength(30).IsRequired();
             entity.HasIndex(x => new { x.AcademyId, x.StudentId, x.BatchId, x.Status });
+        });
+
+        modelBuilder.Entity<ClassSession>(entity =>
+        {
+            entity.Property(x => x.DeliveryMode).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.RoomName).HasMaxLength(120);
+            entity.Property(x => x.Status).HasMaxLength(30).IsRequired();
+            entity.HasIndex(x => new { x.AcademyId, x.StartUtc });
         });
     }
 }
