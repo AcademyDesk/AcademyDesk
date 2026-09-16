@@ -22,6 +22,7 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
     public DbSet<AssessmentResult> AssessmentResults => Set<AssessmentResult>();
     public DbSet<FeePlan> FeePlans => Set<FeePlan>();
     public DbSet<Invoice> Invoices => Set<Invoice>();
+    public DbSet<Payment> Payments => Set<Payment>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -159,6 +160,16 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
             entity.Property(x => x.Status).HasMaxLength(30).IsRequired();
             entity.HasIndex(x => new { x.AcademyId, x.InvoiceNumber }).IsUnique();
             entity.HasIndex(x => new { x.AcademyId, x.StudentId, x.Status });
+        });
+
+        modelBuilder.Entity<Payment>(entity =>
+        {
+            entity.Property(x => x.Amount).HasPrecision(18, 2);
+            entity.Property(x => x.Currency).HasMaxLength(3).IsRequired();
+            entity.Property(x => x.Method).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.Status).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.Reference).HasMaxLength(150);
+            entity.HasIndex(x => new { x.AcademyId, x.InvoiceId, x.PaidAtUtc });
         });
     }
 }
