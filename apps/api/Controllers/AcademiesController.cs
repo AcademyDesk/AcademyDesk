@@ -1,5 +1,8 @@
 using AcademyDesk.Api.Data;
 using AcademyDesk.Api.Domain.Entities;
+using AcademyDesk.Api.Domain.Identity;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,13 +10,21 @@ namespace AcademyDesk.Api.Controllers;
 
 [ApiController]
 [Route("api/academies")]
-public sealed class AcademiesController(AcademyDeskDbContext dbContext) : ControllerBase
+[Authorize]
+public sealed class AcademiesController(
+    AcademyDeskDbContext dbContext,
+    UserManager<ApplicationUser> userManager,
+    RoleManager<ApplicationRole> roleManager) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<AcademySummary>>> List(CancellationToken cancellationToken)
     {
+        var user = await userManager.GetUserAsync(User);
+        if (user?.AcademyId is null) return Ok(Array.Empty<AcademySummary>());
+
         var academies = await dbContext.Academies
             .AsNoTracking()
+            .Where(x => x.Id == user.AcademyId)
             .OrderBy(x => x.Name)
             .Select(x => new AcademySummary(x.Id, x.Name, x.LegalName, x.CountryCode, x.TimeZone, x.IsActive))
             .ToListAsync(cancellationToken);
@@ -26,6 +37,11 @@ public sealed class AcademiesController(AcademyDeskDbContext dbContext) : Contro
         CreateAcademyRequest request,
         CancellationToken cancellationToken)
     {
+        var user = await userManager.GetUserAsync(User);
+        if (user is null) return Unauthorized();
+        if (user.AcademyId is not null)
+            return Conflict(new { message = "This user is already assigned to an academy." });
+
         if (string.IsNullOrWhiteSpace(request.Name))
         {
             return BadRequest(new { message = "Academy name is required." });
@@ -41,6 +57,18 @@ public sealed class AcademiesController(AcademyDeskDbContext dbContext) : Contro
 
         dbContext.Academies.Add(academy);
         await dbContext.SaveChangesAsync(cancellationToken);
+
+        const string ownerRole = "Owner";
+        if (!await roleManager.RoleExistsAsync(ownerRole))
+        {
+            var roleResult = await roleManager.CreateAsync(new ApplicationRole { Name = ownerRole });
+            if (!roleResult.Succeeded) return Problem("The Owner role could not be created.");
+        }
+
+        user.AcademyId = academy.Id;
+        user.DisplayName = academy.Name;
+        await userManager.UpdateAsync(user);
+        await userManager.AddToRoleAsync(user, ownerRole);
 
         var response = new AcademySummary(
             academy.Id,

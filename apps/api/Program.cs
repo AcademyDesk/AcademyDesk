@@ -13,7 +13,7 @@ builder.Services.AddDbContext<AcademyDeskDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddDbContext<IdentityDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-builder.Services.AddIdentityCore<ApplicationUser>()
+builder.Services.AddIdentityApiEndpoints<ApplicationUser>()
     .AddRoles<ApplicationRole>()
     .AddEntityFrameworkStores<IdentityDbContext>();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -29,9 +29,11 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseCors("LocalWeb");
+app.UseAuthentication();
 
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapGroup("/api/auth").MapIdentityApi<ApplicationUser>();
 
 app.Run();
