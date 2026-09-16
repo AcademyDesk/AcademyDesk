@@ -10,6 +10,7 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
     public DbSet<Branch> Branches => Set<Branch>();
     public DbSet<Student> Students => Set<Student>();
     public DbSet<Guardian> Guardians => Set<Guardian>();
+    public DbSet<StudentGuardian> StudentGuardians => Set<StudentGuardian>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -53,6 +54,14 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
             entity.Property(x => x.Email).HasMaxLength(320);
             entity.Property(x => x.Phone).HasMaxLength(30);
             entity.HasIndex(x => new { x.AcademyId, x.LastName, x.FirstName });
+        });
+
+        modelBuilder.Entity<StudentGuardian>(entity =>
+        {
+            entity.Property(x => x.Relationship).HasMaxLength(50);
+            entity.HasIndex(x => new { x.AcademyId, x.StudentId, x.GuardianId }).IsUnique();
+            entity.HasOne(x => x.Student).WithMany().HasForeignKey(x => x.StudentId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(x => x.Guardian).WithMany().HasForeignKey(x => x.GuardianId).OnDelete(DeleteBehavior.Cascade);
         });
     }
 }
