@@ -14,6 +14,7 @@ const links = [
   ["Enrolments", "/enrollments"],
   ["Schedule", "/schedule"],
   ["Attendance", "/attendance"],
+  ["Fees", "/fee-plans"],
 ] as const;
 
 export function WorkspaceNav() {
