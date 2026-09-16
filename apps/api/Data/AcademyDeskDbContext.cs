@@ -25,6 +25,7 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
     public DbSet<Payment> Payments => Set<Payment>();
     public DbSet<Expense> Expenses => Set<Expense>();
     public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -192,6 +193,16 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
             entity.Property(x => x.Channel).HasMaxLength(30).IsRequired();
             entity.Property(x => x.Status).HasMaxLength(30).IsRequired();
             entity.HasIndex(x => new { x.AcademyId, x.RecipientId, x.CreatedAtUtc });
+        });
+
+        modelBuilder.Entity<AuditLog>(entity =>
+        {
+            entity.Property(x => x.Action).HasMaxLength(80).IsRequired();
+            entity.Property(x => x.EntityType).HasMaxLength(80).IsRequired();
+            entity.Property(x => x.MetadataJson).HasMaxLength(8000);
+            entity.Property(x => x.IpAddress).HasMaxLength(64);
+            entity.HasIndex(x => new { x.AcademyId, x.OccurredAtUtc });
+            entity.HasIndex(x => new { x.AcademyId, x.EntityType, x.EntityId });
         });
     }
 }
