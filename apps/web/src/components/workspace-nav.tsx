@@ -7,6 +7,8 @@ const links = [
   ["Dashboard", "/dashboard"],
   ["Academy", "/"],
   ["Leads", "/leads"],
+  ["Music", "/music"],
+  ["Events", "/events"],
   ["Branches", "/branches"],
   ["Students", "/students"],
   ["Guardians", "/guardians"],

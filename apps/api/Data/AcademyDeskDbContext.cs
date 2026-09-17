@@ -27,6 +27,9 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
     public DbSet<Expense> Expenses => Set<Expense>();
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<MusicPiece> MusicPieces => Set<MusicPiece>();
+    public DbSet<StudentMusicProgress> StudentMusicProgress => Set<StudentMusicProgress>();
+    public DbSet<AcademyEvent> AcademyEvents => Set<AcademyEvent>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -217,6 +220,34 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
             entity.Property(x => x.IpAddress).HasMaxLength(64);
             entity.HasIndex(x => new { x.AcademyId, x.OccurredAtUtc });
             entity.HasIndex(x => new { x.AcademyId, x.EntityType, x.EntityId });
+        });
+
+        modelBuilder.Entity<MusicPiece>(entity =>
+        {
+            entity.Property(x => x.Title).HasMaxLength(250).IsRequired();
+            entity.Property(x => x.Composer).HasMaxLength(200);
+            entity.Property(x => x.Instrument).HasMaxLength(100);
+            entity.Property(x => x.Genre).HasMaxLength(100);
+            entity.Property(x => x.Difficulty).HasMaxLength(40).IsRequired();
+            entity.HasIndex(x => new { x.AcademyId, x.Title });
+        });
+
+        modelBuilder.Entity<StudentMusicProgress>(entity =>
+        {
+            entity.Property(x => x.Status).HasMaxLength(40).IsRequired();
+            entity.Property(x => x.Notes).HasMaxLength(2000);
+            entity.Property(x => x.Score).HasPrecision(5, 2);
+            entity.HasIndex(x => new { x.AcademyId, x.StudentId, x.MusicPieceId }).IsUnique();
+        });
+
+        modelBuilder.Entity<AcademyEvent>(entity =>
+        {
+            entity.Property(x => x.Title).HasMaxLength(250).IsRequired();
+            entity.Property(x => x.Type).HasMaxLength(50).IsRequired();
+            entity.Property(x => x.Venue).HasMaxLength(250);
+            entity.Property(x => x.Status).HasMaxLength(40).IsRequired();
+            entity.Property(x => x.Notes).HasMaxLength(4000);
+            entity.HasIndex(x => new { x.AcademyId, x.StartUtc });
         });
     }
 }
