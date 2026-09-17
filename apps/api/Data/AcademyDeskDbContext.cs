@@ -8,6 +8,7 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
 {
     public DbSet<Academy> Academies => Set<Academy>();
     public DbSet<Branch> Branches => Set<Branch>();
+    public DbSet<Lead> Leads => Set<Lead>();
     public DbSet<Student> Students => Set<Student>();
     public DbSet<Guardian> Guardians => Set<Guardian>();
     public DbSet<StudentGuardian> StudentGuardians => Set<StudentGuardian>();
@@ -50,6 +51,19 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
                 .WithMany(x => x.Branches)
                 .HasForeignKey(x => x.AcademyId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<Lead>(entity =>
+        {
+            entity.Property(x => x.FullName).HasMaxLength(240).IsRequired();
+            entity.Property(x => x.Email).HasMaxLength(320);
+            entity.Property(x => x.Phone).HasMaxLength(30);
+            entity.Property(x => x.ProgramInterest).HasMaxLength(200);
+            entity.Property(x => x.Source).HasMaxLength(50).IsRequired();
+            entity.Property(x => x.Stage).HasMaxLength(50).IsRequired();
+            entity.Property(x => x.Notes).HasMaxLength(4000);
+            entity.HasIndex(x => new { x.AcademyId, x.Stage, x.FollowUpAtUtc });
+            entity.HasIndex(x => new { x.AcademyId, x.Email });
         });
 
         modelBuilder.Entity<Student>(entity =>
