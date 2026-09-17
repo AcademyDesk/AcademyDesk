@@ -34,7 +34,10 @@ public sealed class TeachersController(AcademyDeskDbContext dbContext) : Control
         await dbContext.SaveChangesAsync(cancellationToken);
         return Created($"/api/academies/{academyId}/teachers/{teacher.Id}", new TeacherSummary(teacher.Id, teacher.FirstName, teacher.LastName, teacher.Email, teacher.Phone, teacher.Specialties, teacher.BranchId, teacher.IsActive));
     }
+    [HttpPut("{teacherId:guid}")]
+    public async Task<ActionResult<TeacherSummary>> Update(Guid academyId,Guid teacherId,UpdateTeacherRequest request,CancellationToken token){var x=await dbContext.Teachers.SingleOrDefaultAsync(t=>t.Id==teacherId&&t.AcademyId==academyId,token);if(x is null)return NotFound();if(string.IsNullOrWhiteSpace(request.FirstName)||string.IsNullOrWhiteSpace(request.LastName))return BadRequest();x.FirstName=request.FirstName.Trim();x.LastName=request.LastName.Trim();x.Email=request.Email?.Trim();x.Phone=request.Phone?.Trim();x.Specialties=request.Specialties?.Trim();x.BranchId=request.BranchId;x.IsActive=request.IsActive;await dbContext.SaveChangesAsync(token);return Ok(new TeacherSummary(x.Id,x.FirstName,x.LastName,x.Email,x.Phone,x.Specialties,x.BranchId,x.IsActive));}
 }
 
 public sealed record CreateTeacherRequest(string FirstName, string LastName, string? Email, string? Phone, string? Specialties, Guid? BranchId);
 public sealed record TeacherSummary(Guid Id, string FirstName, string LastName, string? Email, string? Phone, string? Specialties, Guid? BranchId, bool IsActive);
+public sealed record UpdateTeacherRequest(string FirstName,string LastName,string? Email,string? Phone,string? Specialties,Guid? BranchId,bool IsActive);
