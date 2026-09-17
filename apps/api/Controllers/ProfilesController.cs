@@ -8,6 +8,20 @@ namespace AcademyDesk.Api.Controllers;
 [Route("api/academies/{academyId:guid}")]
 public sealed class ProfilesController(AcademyDeskDbContext dbContext) : ControllerBase
 {
+    [HttpGet("guardians/{guardianId:guid}/profile")]
+    public async Task<ActionResult<GuardianProfileSummary>> Guardian(Guid academyId, Guid guardianId, CancellationToken token)
+    {
+        var guardian = await dbContext.Guardians.AsNoTracking().SingleOrDefaultAsync(x => x.AcademyId == academyId && x.Id == guardianId, token);
+        if (guardian is null) return NotFound();
+        var students = await (from link in dbContext.StudentGuardians.AsNoTracking()
+                              join student in dbContext.Students.AsNoTracking() on link.StudentId equals student.Id
+                              where link.AcademyId == academyId && link.GuardianId == guardianId
+                              select new GuardianStudentSummary(student.Id, student.FirstName + " " + student.LastName, link.Relationship)).ToListAsync(token);
+        var ids = students.Select(x => x.Id).ToArray();
+        var invoices = await dbContext.Invoices.AsNoTracking().Where(x => x.AcademyId == academyId && ids.Contains(x.StudentId)).OrderByDescending(x => x.DueDate).Take(15).Select(x => new GuardianInvoiceSummary(x.StudentId, x.InvoiceNumber, x.TotalAmount, x.Currency, x.DueDate, x.Status)).ToListAsync(token);
+        var communications = await dbContext.Notifications.AsNoTracking().Where(x => x.AcademyId == academyId && x.RecipientId == guardianId).OrderByDescending(x => x.CreatedAtUtc).Take(12).Select(x => new CommunicationProfileSummary(x.Title, x.Channel, x.Status, x.CreatedAtUtc)).ToListAsync(token);
+        return Ok(new GuardianProfileSummary(guardian.Id, guardian.FirstName + " " + guardian.LastName, guardian.Email, guardian.Phone, students, invoices, communications));
+    }
     [HttpGet("students/{studentId:guid}/profile")]
     public async Task<ActionResult<StudentProfileSummary>> Student(Guid academyId, Guid studentId, CancellationToken token)
     {
@@ -28,8 +42,9 @@ public sealed class ProfilesController(AcademyDeskDbContext dbContext) : Control
                               join piece in dbContext.MusicPieces.AsNoTracking() on item.MusicPieceId equals piece.Id
                               where item.AcademyId == academyId && item.StudentId == studentId
                               select new MusicProgressProfileSummary(piece.Title, piece.Instrument, item.Status, item.Score)).ToListAsync(token);
+        var practice = await dbContext.PracticeLogs.AsNoTracking().Where(x => x.AcademyId == academyId && x.StudentId == studentId).OrderByDescending(x => x.PracticeDate).Take(10).Select(x => new PracticeProfileSummary(x.PracticeDate, x.MinutesPracticed, x.FocusArea, x.Notes, x.Status)).ToListAsync(token);
         var communications = await dbContext.Notifications.AsNoTracking().Where(x => x.AcademyId == academyId && x.RecipientId == studentId).OrderByDescending(x => x.CreatedAtUtc).Take(8).Select(x => new CommunicationProfileSummary(x.Title, x.Channel, x.Status, x.CreatedAtUtc)).ToListAsync(token);
-        return Ok(new StudentProfileSummary(student.Id, student.FirstName + " " + student.LastName, student.Email, student.Phone, guardians, enrolments, attendance, invoices, progress, communications));
+        return Ok(new StudentProfileSummary(student.Id, student.FirstName + " " + student.LastName, student.Email, student.Phone, guardians, enrolments, attendance, invoices, progress, practice, communications));
     }
 
     [HttpGet("teachers/{teacherId:guid}/profile")]
@@ -52,8 +67,12 @@ public sealed record EnrollmentProfileSummary(string BatchName, string CourseNam
 public sealed record StatusCount(string Status, int Count);
 public sealed record InvoiceProfileSummary(string InvoiceNumber, decimal TotalAmount, string Currency, DateOnly DueDate, string Status);
 public sealed record MusicProgressProfileSummary(string Title, string? Instrument, string Status, decimal? Score);
+public sealed record PracticeProfileSummary(DateOnly PracticeDate, int MinutesPracticed, string? FocusArea, string? Notes, string Status);
 public sealed record CommunicationProfileSummary(string Title, string Channel, string Status, DateTime CreatedAtUtc);
-public sealed record StudentProfileSummary(Guid Id, string Name, string? Email, string? Phone, IReadOnlyList<ContactSummary> Guardians, IReadOnlyList<EnrollmentProfileSummary> Enrollments, IReadOnlyList<StatusCount> Attendance, IReadOnlyList<InvoiceProfileSummary> Invoices, IReadOnlyList<MusicProgressProfileSummary> MusicProgress, IReadOnlyList<CommunicationProfileSummary> Communications);
+public sealed record StudentProfileSummary(Guid Id, string Name, string? Email, string? Phone, IReadOnlyList<ContactSummary> Guardians, IReadOnlyList<EnrollmentProfileSummary> Enrollments, IReadOnlyList<StatusCount> Attendance, IReadOnlyList<InvoiceProfileSummary> Invoices, IReadOnlyList<MusicProgressProfileSummary> MusicProgress, IReadOnlyList<PracticeProfileSummary> PracticeLogs, IReadOnlyList<CommunicationProfileSummary> Communications);
+public sealed record GuardianStudentSummary(Guid Id, string Name, string? Relationship);
+public sealed record GuardianInvoiceSummary(Guid StudentId, string InvoiceNumber, decimal TotalAmount, string Currency, DateOnly DueDate, string Status);
+public sealed record GuardianProfileSummary(Guid Id, string Name, string? Email, string? Phone, IReadOnlyList<GuardianStudentSummary> Students, IReadOnlyList<GuardianInvoiceSummary> Invoices, IReadOnlyList<CommunicationProfileSummary> Communications);
 public sealed record TeacherAssignedBatchSummary(string BatchName, string CourseName, bool IsActive);
 public sealed record TeacherClassSummary(DateTime StartUtc, DateTime EndUtc, string DeliveryMode, string? RoomName, string Status);
 public sealed record LeaveProfileSummary(DateOnly StartDate, DateOnly EndDate, string Status, string Reason);

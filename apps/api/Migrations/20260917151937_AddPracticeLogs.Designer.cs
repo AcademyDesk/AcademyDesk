@@ -4,6 +4,7 @@ using AcademyDesk.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AcademyDesk.Api.Migrations
 {
     [DbContext(typeof(AcademyDeskDbContext))]
-    partial class AcademyDeskDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260917151937_AddPracticeLogs")]
+    partial class AddPracticeLogs
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1466,9 +1469,6 @@ namespace AcademyDesk.Api.Migrations
                     b.Property<DateOnly>("PracticeDate")
                         .HasColumnType("date");
 
-                    b.Property<DateTime?>("ReviewedAtUtc")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(30)
@@ -1476,10 +1476,6 @@ namespace AcademyDesk.Api.Migrations
 
                     b.Property<Guid>("StudentId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("TeacherFeedback")
-                        .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
 
                     b.Property<DateTime?>("UpdatedAtUtc")
                         .HasColumnType("datetime2");

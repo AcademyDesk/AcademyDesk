@@ -1,0 +1,2 @@
+namespace AcademyDesk.Api.Domain.Entities;
+public sealed class PracticeLog : AcademyEntity { public Guid StudentId { get; set; } public DateOnly PracticeDate { get; set; } = DateOnly.FromDateTime(DateTime.UtcNow); public int MinutesPracticed { get; set; } public string? FocusArea { get; set; } public string? Notes { get; set; } public string? TeacherFeedback { get; set; } public DateTime? ReviewedAtUtc { get; set; } public string Status { get; set; } = "Logged"; }

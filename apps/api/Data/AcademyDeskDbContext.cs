@@ -39,6 +39,7 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
     public DbSet<CommunicationChannel> CommunicationChannels => Set<CommunicationChannel>();
     public DbSet<CommunicationTemplate> CommunicationTemplates => Set<CommunicationTemplate>();
     public DbSet<CommunicationPreference> CommunicationPreferences => Set<CommunicationPreference>();
+    public DbSet<PracticeLog> PracticeLogs => Set<PracticeLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -328,5 +329,6 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
             entity.Property(x => x.Notes).HasMaxLength(1000);
             entity.HasIndex(x => new { x.AcademyId, x.RecipientType, x.RecipientId }).IsUnique();
         });
+        modelBuilder.Entity<PracticeLog>(entity => { entity.Property(x => x.FocusArea).HasMaxLength(250); entity.Property(x => x.Notes).HasMaxLength(2000); entity.Property(x => x.TeacherFeedback).HasMaxLength(2000); entity.Property(x => x.Status).HasMaxLength(30).IsRequired(); entity.HasIndex(x => new { x.AcademyId, x.StudentId, x.PracticeDate }); });
     }
 }
