@@ -22,7 +22,11 @@ public sealed class ExpensesController(AcademyDeskDbContext dbContext) : Control
         dbContext.Expenses.Add(expense); await dbContext.SaveChangesAsync(cancellationToken);
         return Created($"/api/academies/{academyId}/expenses/{expense.Id}", new ExpenseSummary(expense.Id, expense.Description, expense.Amount, expense.Currency, expense.Category, expense.BranchId, expense.ExpenseDate, expense.Status));
     }
+    [HttpPut("{expenseId:guid}")]
+    public async Task<ActionResult> Update(Guid academyId, Guid expenseId, UpdateExpenseRequest request, CancellationToken token)
+    { var x=await dbContext.Expenses.SingleOrDefaultAsync(v=>v.Id==expenseId&&v.AcademyId==academyId,token); if(x is null)return NotFound(); if(string.IsNullOrWhiteSpace(request.Description)||request.Amount<=0)return BadRequest(); x.Description=request.Description.Trim();x.Amount=request.Amount;x.Category=request.Category?.Trim()??"General";x.BranchId=request.BranchId;x.ExpenseDate=request.ExpenseDate;x.Status=request.Status?.Trim()??x.Status;await dbContext.SaveChangesAsync(token);return Ok(); }
 }
 
 public sealed record CreateExpenseRequest(string Description, decimal Amount, string? Currency, string? Category, Guid? BranchId, DateOnly? ExpenseDate);
 public sealed record ExpenseSummary(Guid Id, string Description, decimal Amount, string Currency, string Category, Guid? BranchId, DateOnly ExpenseDate, string Status);
+public sealed record UpdateExpenseRequest(string Description, decimal Amount, string? Category, Guid? BranchId, DateOnly ExpenseDate, string? Status);
