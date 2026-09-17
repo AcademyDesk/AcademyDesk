@@ -28,6 +28,7 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
     public DbSet<Payment> Payments => Set<Payment>();
     public DbSet<Expense> Expenses => Set<Expense>();
     public DbSet<FinanceAdjustment> FinanceAdjustments => Set<FinanceAdjustment>();
+    public DbSet<AcademyFinanceSettings> AcademyFinanceSettings => Set<AcademyFinanceSettings>();
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
     public DbSet<MusicPiece> MusicPieces => Set<MusicPiece>();
@@ -215,6 +216,13 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
             entity.Property(x => x.Status).HasMaxLength(30).IsRequired();
             entity.Property(x => x.ApprovalNotes).HasMaxLength(2000);
             entity.HasIndex(x => new { x.AcademyId, x.InvoiceId, x.Status });
+        });
+        modelBuilder.Entity<AcademyFinanceSettings>(entity =>
+        {
+            entity.Property(x => x.TaxRegistrationNumber).HasMaxLength(50).IsRequired();
+            entity.Property(x => x.TaxLabel).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.TaxRatePercent).HasPrecision(6, 3);
+            entity.HasIndex(x => x.AcademyId).IsUnique();
         });
 
         modelBuilder.Entity<ClassSession>(entity =>
