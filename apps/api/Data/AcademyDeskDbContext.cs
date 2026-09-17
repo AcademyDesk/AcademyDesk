@@ -30,6 +30,7 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
     public DbSet<MusicPiece> MusicPieces => Set<MusicPiece>();
     public DbSet<StudentMusicProgress> StudentMusicProgress => Set<StudentMusicProgress>();
     public DbSet<AcademyEvent> AcademyEvents => Set<AcademyEvent>();
+    public DbSet<Certificate> Certificates => Set<Certificate>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -248,6 +249,16 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
             entity.Property(x => x.Status).HasMaxLength(40).IsRequired();
             entity.Property(x => x.Notes).HasMaxLength(4000);
             entity.HasIndex(x => new { x.AcademyId, x.StartUtc });
+        });
+
+        modelBuilder.Entity<Certificate>(entity =>
+        {
+            entity.Property(x => x.CertificateNumber).HasMaxLength(60).IsRequired();
+            entity.Property(x => x.Title).HasMaxLength(250).IsRequired();
+            entity.Property(x => x.Status).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.Notes).HasMaxLength(2000);
+            entity.HasIndex(x => new { x.AcademyId, x.CertificateNumber }).IsUnique();
+            entity.HasIndex(x => new { x.AcademyId, x.StudentId, x.IssuedDate });
         });
     }
 }
