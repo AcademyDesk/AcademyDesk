@@ -13,6 +13,7 @@ const links = [
   ["Branches", "/branches"],
   ["Students", "/students"],
   ["Guardians", "/guardians"],
+  ["Portal accounts", "/portal-accounts"],
   ["Teachers", "/teachers"],
   ["Staff", "/staff"],
   ["Teacher portal", "/teacher"],
