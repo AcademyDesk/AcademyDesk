@@ -15,6 +15,8 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
     public DbSet<Teacher> Teachers => Set<Teacher>();
     public DbSet<ProgramCourse> Courses => Set<ProgramCourse>();
     public DbSet<Batch> Batches => Set<Batch>();
+    public DbSet<AcademicYear> AcademicYears => Set<AcademicYear>();
+    public DbSet<AcademicTerm> AcademicTerms => Set<AcademicTerm>();
     public DbSet<Enrollment> Enrollments => Set<Enrollment>();
     public DbSet<ClassSession> ClassSessions => Set<ClassSession>();
     public DbSet<AttendanceRecord> AttendanceRecords => Set<AttendanceRecord>();
@@ -183,6 +185,18 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
             entity.Property(x => x.AdminNotes).HasMaxLength(4000);
             entity.HasIndex(x => new { x.AcademyId, x.Name }).IsUnique();
             entity.HasIndex(x => new { x.AcademyId, x.BatchCode }).IsUnique().HasFilter("[BatchCode] IS NOT NULL");
+        });
+
+        modelBuilder.Entity<AcademicYear>(entity =>
+        {
+            entity.Property(x => x.Name).HasMaxLength(100).IsRequired();
+            entity.HasIndex(x => new { x.AcademyId, x.Name }).IsUnique();
+        });
+        modelBuilder.Entity<AcademicTerm>(entity =>
+        {
+            entity.Property(x => x.Name).HasMaxLength(100).IsRequired();
+            entity.HasIndex(x => new { x.AcademyId, x.AcademicYearId, x.Name }).IsUnique();
+            entity.HasOne<AcademicYear>().WithMany().HasForeignKey(x => x.AcademicYearId).OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Enrollment>(entity =>
