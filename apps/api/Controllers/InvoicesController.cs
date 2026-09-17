@@ -26,7 +26,11 @@ public sealed class InvoicesController(AcademyDeskDbContext dbContext) : Control
         dbContext.Invoices.Add(invoice); await dbContext.SaveChangesAsync(cancellationToken);
         return Created($"/api/academies/{academyId}/invoices/{invoice.Id}", new InvoiceSummary(invoice.Id, invoice.InvoiceNumber, invoice.StudentId, invoice.FeePlanId, invoice.TotalAmount, invoice.Currency, invoice.IssuedDate, invoice.DueDate, invoice.Status));
     }
+    [HttpPatch("{invoiceId:guid}/status")]
+    public async Task<ActionResult> UpdateStatus(Guid academyId, Guid invoiceId, UpdateInvoiceStatusRequest request, CancellationToken token)
+    { var x=await dbContext.Invoices.SingleOrDefaultAsync(v=>v.Id==invoiceId&&v.AcademyId==academyId,token); if(x is null)return NotFound(); if(!new[]{"Issued","PartiallyPaid","Paid","Overdue","Cancelled"}.Contains(request.Status,StringComparer.OrdinalIgnoreCase))return BadRequest(); x.Status=request.Status.Trim(); await dbContext.SaveChangesAsync(token); return Ok(); }
 }
 
 public sealed record CreateInvoiceRequest(Guid StudentId, Guid? FeePlanId, decimal? Amount, DateOnly? DueDate);
 public sealed record InvoiceSummary(Guid Id, string InvoiceNumber, Guid StudentId, Guid? FeePlanId, decimal TotalAmount, string Currency, DateOnly IssuedDate, DateOnly DueDate, string Status);
+public sealed record UpdateInvoiceStatusRequest(string Status);

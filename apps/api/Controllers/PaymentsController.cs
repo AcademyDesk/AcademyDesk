@@ -30,7 +30,11 @@ public sealed class PaymentsController(AcademyDeskDbContext dbContext) : Control
         dbContext.Payments.Add(payment); await dbContext.SaveChangesAsync(cancellationToken);
         return Created($"/api/academies/{academyId}/payments/{payment.Id}", new PaymentSummary(payment.Id, payment.InvoiceId, payment.Amount, payment.Currency, payment.Method, payment.Status, payment.Reference, payment.PaidAtUtc));
     }
+    [HttpPatch("{paymentId:guid}/status")]
+    public async Task<ActionResult> UpdateStatus(Guid academyId, Guid paymentId, UpdatePaymentStatusRequest request, CancellationToken token)
+    { var x=await dbContext.Payments.SingleOrDefaultAsync(v=>v.Id==paymentId&&v.AcademyId==academyId,token); if(x is null)return NotFound(); if(request.Status is not("Completed" or "Voided"))return BadRequest(); x.Status=request.Status; await dbContext.SaveChangesAsync(token); return Ok(); }
 }
 
 public sealed record RecordPaymentRequest(Guid InvoiceId, decimal Amount, string? Method, string? Reference);
 public sealed record PaymentSummary(Guid Id, Guid InvoiceId, decimal Amount, string Currency, string Method, string Status, string? Reference, DateTime PaidAtUtc);
+public sealed record UpdatePaymentStatusRequest(string Status);
