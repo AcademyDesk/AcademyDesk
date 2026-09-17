@@ -19,6 +19,10 @@ public sealed class EventsController(AcademyDeskDbContext dbContext) : Controlle
         var item = new AcademyEvent { AcademyId = academyId, Title = request.Title.Trim(), Type = string.IsNullOrWhiteSpace(request.Type) ? "Recital" : request.Type.Trim(), BranchId = request.BranchId, StartUtc = request.StartUtc, EndUtc = request.EndUtc, Venue = request.Venue?.Trim(), Capacity = request.Capacity, Notes = request.Notes?.Trim() };
         dbContext.AcademyEvents.Add(item); await dbContext.SaveChangesAsync(token); return Created($"/api/academies/{academyId}/events/{item.Id}", new EventSummary(item.Id, item.Title, item.Type, item.BranchId, item.StartUtc, item.EndUtc, item.Venue, item.Capacity, item.Status, item.Notes));
     }
+    [HttpPatch("{eventId:guid}/status")]
+    public async Task<ActionResult> UpdateStatus(Guid academyId, Guid eventId, UpdateEventStatusRequest request, CancellationToken token)
+    { var x=await dbContext.AcademyEvents.SingleOrDefaultAsync(v=>v.Id==eventId&&v.AcademyId==academyId,token); if(x is null)return NotFound(); if(!new[]{"Planned","Published","Completed","Cancelled"}.Contains(request.Status,StringComparer.OrdinalIgnoreCase))return BadRequest(); x.Status=request.Status.Trim(); await dbContext.SaveChangesAsync(token); return Ok(); }
 }
 public sealed record CreateEventRequest(string Title, string? Type, Guid? BranchId, DateTime StartUtc, DateTime EndUtc, string? Venue, int? Capacity, string? Notes);
 public sealed record EventSummary(Guid Id, string Title, string Type, Guid? BranchId, DateTime StartUtc, DateTime EndUtc, string? Venue, int? Capacity, string Status, string? Notes);
+public sealed record UpdateEventStatusRequest(string Status);
