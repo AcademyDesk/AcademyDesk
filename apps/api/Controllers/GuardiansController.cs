@@ -13,7 +13,7 @@ public sealed class GuardiansController(AcademyDeskDbContext dbContext) : Contro
     public async Task<ActionResult<IReadOnlyList<GuardianSummary>>> List(Guid academyId, CancellationToken cancellationToken)
     {
         var guardians = await dbContext.Guardians.AsNoTracking()
-            .Where(x => x.AcademyId == academyId && x.IsActive)
+            .Where(x => x.AcademyId == academyId)
             .OrderBy(x => x.LastName).ThenBy(x => x.FirstName)
             .Select(x => new GuardianSummary(x.Id, x.FirstName, x.LastName, x.Email, x.Phone, x.IsActive))
             .ToListAsync(cancellationToken);
