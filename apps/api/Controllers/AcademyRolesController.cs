@@ -33,6 +33,21 @@ public sealed class AcademyRolesController(UserManager<ApplicationUser> users, R
         return result.Succeeded ? Ok(new { role.Id, role.Name, role.PermissionsJson }) : BadRequest(result.Errors);
     }
 
+    [HttpPut("staff/{staffId:guid}/assignment")]
+    public async Task<ActionResult> Assign(Guid academyId, Guid staffId, RoleAssignmentRequest request)
+    {
+        if (!await IsAdmin(academyId)) return Forbid();
+        var staff = await users.FindByIdAsync(staffId.ToString());
+        var role = await roles.FindByIdAsync(request.RoleId.ToString());
+        if (staff?.AcademyId != academyId || role is null || (role.AcademyId is not null && role.AcademyId != academyId)) return NotFound();
+        if (role.Name is null) return BadRequest();
+        var current = await users.GetRolesAsync(staff);
+        var mutable = current.Where(name => !new[] { "Owner", "AcademyAdmin", "Student", "Guardian" }.Contains(name)).ToArray();
+        if (mutable.Length > 0) await users.RemoveFromRolesAsync(staff, mutable);
+        var result = await users.AddToRoleAsync(staff, role.Name);
+        return result.Succeeded ? Ok(new { staff.Id, role = role.Name }) : BadRequest(result.Errors);
+    }
+
     private async Task<bool> IsAdmin(Guid academyId)
     {
         var user = await users.GetUserAsync(User);
@@ -40,3 +55,4 @@ public sealed class AcademyRolesController(UserManager<ApplicationUser> users, R
     }
 }
 public sealed record CreateAcademyRoleRequest(string Name, IReadOnlyList<string>? Permissions);
+public sealed record RoleAssignmentRequest(Guid RoleId);
