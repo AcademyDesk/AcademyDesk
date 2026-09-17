@@ -30,7 +30,10 @@ public sealed class BatchesController(AcademyDeskDbContext dbContext) : Controll
         dbContext.Batches.Add(batch); await dbContext.SaveChangesAsync(cancellationToken);
         return Created($"/api/academies/{academyId}/batches/{batch.Id}", new BatchSummary(batch.Id, batch.Name, batch.CourseId, batch.TeacherId, batch.BranchId, batch.Capacity, batch.StartDate, batch.EndDate, batch.IsActive));
     }
+    [HttpPut("{batchId:guid}")]
+    public async Task<ActionResult<BatchSummary>> Update(Guid academyId,Guid batchId,UpdateBatchRequest r,CancellationToken token){var x=await dbContext.Batches.SingleOrDefaultAsync(b=>b.Id==batchId&&b.AcademyId==academyId,token);if(x is null)return NotFound();if(string.IsNullOrWhiteSpace(r.Name)||r.Capacity<1||r.Capacity>1000)return BadRequest();x.Name=r.Name.Trim();x.CourseId=r.CourseId;x.TeacherId=r.TeacherId;x.BranchId=r.BranchId;x.Capacity=r.Capacity;x.StartDate=r.StartDate;x.EndDate=r.EndDate;x.IsActive=r.IsActive;await dbContext.SaveChangesAsync(token);return Ok(new BatchSummary(x.Id,x.Name,x.CourseId,x.TeacherId,x.BranchId,x.Capacity,x.StartDate,x.EndDate,x.IsActive));}
 }
 
 public sealed record CreateBatchRequest(string Name, Guid CourseId, Guid? TeacherId, Guid? BranchId, int Capacity, DateOnly? StartDate, DateOnly? EndDate);
 public sealed record BatchSummary(Guid Id, string Name, Guid CourseId, Guid? TeacherId, Guid? BranchId, int Capacity, DateOnly? StartDate, DateOnly? EndDate, bool IsActive);
+public sealed record UpdateBatchRequest(string Name,Guid CourseId,Guid? TeacherId,Guid? BranchId,int Capacity,DateOnly? StartDate,DateOnly? EndDate,bool IsActive);

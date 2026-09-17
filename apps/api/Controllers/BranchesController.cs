@@ -69,6 +69,8 @@ public sealed class BranchesController(AcademyDeskDbContext dbContext) : Control
 
         return CreatedAtAction(nameof(List), new { academyId }, response);
     }
+    [HttpPut("{branchId:guid}")]
+    public async Task<ActionResult<BranchSummary>> Update(Guid academyId,Guid branchId,UpdateBranchRequest request,CancellationToken token){var x=await dbContext.Branches.SingleOrDefaultAsync(b=>b.Id==branchId&&b.AcademyId==academyId,token);if(x is null)return NotFound();if(string.IsNullOrWhiteSpace(request.Name))return BadRequest();x.Name=request.Name.Trim();x.AddressLine1=request.AddressLine1?.Trim();x.City=request.City?.Trim();x.State=request.State?.Trim();x.PostalCode=request.PostalCode?.Trim();x.IsActive=request.IsActive;await dbContext.SaveChangesAsync(token);return Ok(new BranchSummary(x.Id,x.Name,x.City,x.State,x.PostalCode,x.IsActive));}
 }
 
 public sealed record CreateBranchRequest(
@@ -85,3 +87,4 @@ public sealed record BranchSummary(
     string? State,
     string? PostalCode,
     bool IsActive);
+public sealed record UpdateBranchRequest(string Name,string? AddressLine1,string? City,string? State,string? PostalCode,bool IsActive);
