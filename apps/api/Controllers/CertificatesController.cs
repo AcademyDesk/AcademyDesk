@@ -25,6 +25,10 @@ public sealed class CertificatesController(AcademyDeskDbContext dbContext) : Con
         await dbContext.SaveChangesAsync(token);
         return Created($"/api/academies/{academyId}/certificates/{certificate.Id}", new CertificateSummary(certificate.Id, certificate.CertificateNumber, certificate.StudentId, certificate.BatchId, certificate.Title, certificate.IssuedDate, certificate.Status, certificate.Notes));
     }
+    [HttpPatch("{certificateId:guid}/status")]
+    public async Task<ActionResult> UpdateStatus(Guid academyId, Guid certificateId, UpdateCertificateStatusRequest request, CancellationToken token)
+    { var x=await dbContext.Certificates.SingleOrDefaultAsync(v=>v.Id==certificateId&&v.AcademyId==academyId,token); if(x is null)return NotFound(); if(!new[]{"Issued","Revoked","Replaced"}.Contains(request.Status,StringComparer.OrdinalIgnoreCase))return BadRequest(); x.Status=request.Status.Trim(); dbContext.AuditLogs.Add(new AuditLog{AcademyId=academyId,Action="CertificateStatusChanged",EntityType="Certificate",EntityId=x.Id}); await dbContext.SaveChangesAsync(token); return Ok(); }
 }
 public sealed record IssueCertificateRequest(Guid StudentId, Guid? BatchId, string Title, DateOnly? IssuedDate, string? Notes);
 public sealed record CertificateSummary(Guid Id, string CertificateNumber, Guid StudentId, Guid? BatchId, string Title, DateOnly IssuedDate, string Status, string? Notes);
+public sealed record UpdateCertificateStatusRequest(string Status);
