@@ -14,6 +14,16 @@ public sealed class ComplianceController(AcademyDeskDbContext db) : ControllerBa
         Ok(await db.PersonDocuments.AsNoTracking().Where(document => document.AcademyId == academyId)
             .OrderBy(document => document.ExpiryDate).ThenBy(document => document.DocumentType).ToListAsync(cancellationToken));
 
+    [HttpPost("documents/{documentId:guid}/review-task")]
+    public async Task<ActionResult> CreateReviewTask(Guid academyId, Guid documentId, CancellationToken cancellationToken)
+    {
+        var document = await db.PersonDocuments.SingleOrDefaultAsync(item => item.Id == documentId && item.AcademyId == academyId, cancellationToken);
+        if (document is null) return NotFound();
+        db.AdminWorkItems.Add(new AdminWorkItem { AcademyId = academyId, Type = "Compliance", Title = $"Review {document.DocumentType}", Description = $"Document {document.FileName} requires review or renewal.", Priority = document.ExpiryDate <= DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30)) ? "High" : "Normal", EntityType = "PersonDocument", EntityId = document.Id, DueAtUtc = document.ExpiryDate?.ToDateTime(TimeOnly.MinValue) });
+        await db.SaveChangesAsync(cancellationToken);
+        return Ok();
+    }
+
     [HttpPost("documents")]
     public async Task<ActionResult> AddDocument(Guid academyId, DocumentRequest request, CancellationToken cancellationToken)
     {
