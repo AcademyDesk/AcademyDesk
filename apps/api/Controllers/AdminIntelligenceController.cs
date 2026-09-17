@@ -16,6 +16,8 @@ public sealed class AdminIntelligenceController(AcademyDeskDbContext db) : Contr
         var invoices = await db.Invoices.Where(x => x.AcademyId == academyId && x.Status != "Paid" && x.DueDate < DateOnly.FromDateTime(DateTime.UtcNow)).Select(x => new { x.InvoiceNumber, x.TotalAmount, x.DueDate }).ToListAsync(token);
         var sessions = await db.ClassSessions.Where(x => x.AcademyId == academyId && x.Status == "Scheduled").ToListAsync(token);
         var workload = sessions.Where(x => x.TeacherId != null).GroupBy(x => x.TeacherId).Select(group => new { TeacherId = group.Key, ScheduledHours = Math.Round(group.Sum(x => (decimal)(x.EndUtc - x.StartUtc).TotalHours), 1), Sessions = group.Count() });
-        return Ok(new { occupancy, collections = invoices.Select(x => new { x.InvoiceNumber, x.TotalAmount, x.DueDate, DaysOverdue = DateOnly.FromDateTime(DateTime.UtcNow).DayNumber - x.DueDate.DayNumber }), workload, activeEnrolments = active.Count });
+        var risks = await db.AttendanceRecords.Where(x => x.AcademyId == academyId).GroupBy(x => x.StudentId).Select(group => new { StudentId = group.Key, Records = group.Count(), Present = group.Count(x => x.Status == "Present" || x.Status == "Late" || x.Status == "Online") }).ToListAsync(token);
+        var attendanceRisk = risks.Where(x => x.Records >= 3 && x.Present * 100m / x.Records < 75m).Select(x => new { x.StudentId, x.Records, AttendanceRate = Math.Round(x.Present * 100m / x.Records, 1) });
+        return Ok(new { occupancy, collections = invoices.Select(x => new { x.InvoiceNumber, x.TotalAmount, x.DueDate, DaysOverdue = DateOnly.FromDateTime(DateTime.UtcNow).DayNumber - x.DueDate.DayNumber }), workload, attendanceRisk, activeEnrolments = active.Count });
     }
 }
