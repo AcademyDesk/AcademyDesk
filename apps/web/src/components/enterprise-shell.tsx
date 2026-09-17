@@ -20,7 +20,7 @@ const navigationGroups: readonly NavigationGroup[] = [
   { label: "Engagement", icon: "✦", links: [["Messages", "/communications"], ["Templates", "/message-templates"], ["Contact preferences", "/communication-preferences"], ["Channel settings", "/communication-settings"], ["Portal accounts", "/portal-accounts"]] },
 ] as const;
 
-const administrationNavigation: readonly NavigationItem[] = [["Academy control", "/admin/control"], ["Work queue", "/work-queue"], ["Compliance centre", "/compliance"], ["Settings", "/settings"], ["Academy profile", "/admin/control"], ["Branches", "/branches"], ["Activity log", "/activity"]];
+const administrationNavigation: readonly NavigationItem[] = [["Academy control", "/admin/control"], ["Access review", "/access-review"], ["Work queue", "/work-queue"], ["Compliance centre", "/compliance"], ["Settings", "/settings"], ["Academy profile", "/admin/control"], ["Branches", "/branches"], ["Activity log", "/activity"]];
 const searchItems: readonly NavigationItem[] = [...navigationGroups.flatMap((group) => group.links), ...administrationNavigation];
 
 type EnterpriseShellProps = {
