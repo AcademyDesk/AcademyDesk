@@ -1,0 +1,2 @@
+namespace AcademyDesk.Api.Domain.Entities;
+public sealed class AdminWorkItem : AcademyEntity { public required string Type { get; set; } public required string Title { get; set; } public string? Description { get; set; } public string Status { get; set; } = "Open"; public string Priority { get; set; } = "Normal"; public string? EntityType { get; set; } public Guid? EntityId { get; set; } public Guid? AssignedUserId { get; set; } public DateTime? DueAtUtc { get; set; } public DateTime? CompletedAtUtc { get; set; } }

@@ -31,6 +31,7 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
     public DbSet<AcademyFinanceSettings> AcademyFinanceSettings => Set<AcademyFinanceSettings>();
     public DbSet<PersonDocument> PersonDocuments => Set<PersonDocument>();
     public DbSet<ConsentRecord> ConsentRecords => Set<ConsentRecord>();
+    public DbSet<AdminWorkItem> AdminWorkItems => Set<AdminWorkItem>();
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
     public DbSet<MusicPiece> MusicPieces => Set<MusicPiece>();
@@ -228,6 +229,7 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
         });
         modelBuilder.Entity<PersonDocument>(entity => { entity.Property(x => x.DocumentType).HasMaxLength(80).IsRequired(); entity.Property(x => x.FileName).HasMaxLength(260).IsRequired(); entity.Property(x => x.SecureReference).HasMaxLength(1000); entity.Property(x => x.Status).HasMaxLength(30).IsRequired(); entity.Property(x => x.Visibility).HasMaxLength(30).IsRequired(); entity.HasIndex(x => new { x.AcademyId, x.StudentId, x.Status }); });
         modelBuilder.Entity<ConsentRecord>(entity => { entity.Property(x => x.ConsentType).HasMaxLength(100).IsRequired(); entity.Property(x => x.EvidenceReference).HasMaxLength(1000); entity.HasIndex(x => new { x.AcademyId, x.StudentId, x.ConsentType }); });
+        modelBuilder.Entity<AdminWorkItem>(entity => { entity.Property(x => x.Type).HasMaxLength(60).IsRequired(); entity.Property(x => x.Title).HasMaxLength(240).IsRequired(); entity.Property(x => x.Description).HasMaxLength(4000); entity.Property(x => x.Status).HasMaxLength(30).IsRequired(); entity.Property(x => x.Priority).HasMaxLength(20).IsRequired(); entity.Property(x => x.EntityType).HasMaxLength(80); entity.HasIndex(x => new { x.AcademyId, x.Status, x.DueAtUtc }); });
 
         modelBuilder.Entity<ClassSession>(entity =>
         {
