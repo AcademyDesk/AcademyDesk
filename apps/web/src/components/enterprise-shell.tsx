@@ -6,25 +6,20 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { academyApi } from "@/lib/api";
 
-const primaryNavigation = [
-  ["Overview", "/dashboard", "▦"],
-  ["Students", "/students", "♙"],
-  ["Academics", "/courses", "♫"],
-  ["Schedule", "/schedule", "◷"],
-  ["Finance", "/finance", "₹"],
+type NavigationItem = readonly [label: string, href: string];
+type NavigationGroup = { label: string; icon: string; links: readonly NavigationItem[] };
+
+const navigationGroups: readonly NavigationGroup[] = [
+  { label: "Workspace", icon: "▦", links: [["Overview", "/dashboard"], ["Calendar", "/calendar"], ["Activity log", "/activity"], ["Reports", "/reports"]] },
+  { label: "People", icon: "♙", links: [["Students", "/students"], ["Student 360", "/student-profile"], ["Guardians", "/guardians"], ["Family 360", "/guardian-profile"], ["Teachers", "/teachers"], ["Teacher 360", "/teacher-profile"], ["Staff", "/staff"], ["Leads", "/leads"], ["Portal accounts", "/portal-accounts"]] },
+  { label: "Academics", icon: "♫", links: [["Courses", "/courses"], ["Curriculum", "/curriculum"], ["Batches", "/batches"], ["Enrolments", "/enrollments"], ["Lesson plans", "/lesson-plans"], ["Assignments", "/assignments"], ["Submission review", "/submission-review"], ["Assessments", "/assessments"], ["Music progress", "/music"], ["Practice logs", "/practice-logs"]] },
+  { label: "Operations", icon: "◷", links: [["Schedule", "/schedule"], ["Attendance", "/attendance"], ["Leave", "/leave"], ["Make-up classes", "/makeup"], ["Holidays", "/holidays"], ["Events", "/events"], ["Certificates", "/certificates"], ["Resources", "/resources"]] },
+  { label: "Finance", icon: "₹", links: [["Finance overview", "/finance"], ["Fee plans", "/fee-plans"], ["Invoices", "/invoices"], ["Payments", "/payments"], ["Fee reminders", "/fee-reminders"], ["Expenses", "/expenses"]] },
+  { label: "Engagement", icon: "✦", links: [["Messages", "/communications"], ["Templates", "/message-templates"], ["Contact preferences", "/communication-preferences"], ["Channel settings", "/communication-settings"], ["Teacher workspace", "/teacher"], ["Family portal", "/portal"]] },
 ] as const;
 
-const administrationNavigation = [
-  ["Settings", "/", "⚙"],
-  ["Activity log", "/activity", "◌"],
-] as const;
-
-const searchItems = [
-  ...primaryNavigation,
-  ...administrationNavigation,
-  ["Teachers", "/teachers", ""], ["Batches", "/batches", ""], ["Attendance", "/attendance", ""],
-  ["Communications", "/communications", ""], ["Reports", "/reports", ""], ["Holidays", "/holidays", ""],
-] as const;
+const administrationNavigation: readonly NavigationItem[] = [["Academy profile", "/"], ["Branches", "/branches"], ["Settings", "/communication-settings"]];
+const searchItems: readonly NavigationItem[] = [...navigationGroups.flatMap((group) => group.links), ...administrationNavigation];
 
 type EnterpriseShellProps = {
   academyName?: string;
@@ -65,8 +60,8 @@ export function EnterpriseShell({ academyName, userName, userRole, children }: E
   return <EnterpriseShellContext.Provider value><div className="enterprise-app-shell">
     <aside className="enterprise-sidebar">
       <Link href="/dashboard" className="enterprise-brand"><span>A</span><strong>AcademyDesk</strong></Link>
-      <div className="enterprise-nav-section"><p>Workspace</p>{primaryNavigation.map(([label, href, icon]) => <Link key={href} href={href} data-active={pathname === href}><i aria-hidden="true">{icon}</i>{label}</Link>)}</div>
-      <div className="enterprise-nav-section enterprise-nav-section-bottom"><p>Administration</p>{administrationNavigation.map(([label, href, icon]) => <Link key={href} href={href} data-active={pathname === href}><i aria-hidden="true">{icon}</i>{label}</Link>)}</div>
+      <nav className="enterprise-nav-section" aria-label="AcademyDesk modules"><p>Workspace</p>{navigationGroups.map((group) => <details key={group.label} className="enterprise-module-group" open={group.links.some(([, href]) => href === pathname)}><summary><i aria-hidden="true">{group.icon}</i><span>{group.label}</span><b aria-hidden="true">⌄</b></summary><div>{group.links.map(([label, href]) => <Link key={href} href={href} data-active={pathname === href}>{label}</Link>)}</div></details>)}</nav>
+      <nav className="enterprise-nav-section enterprise-nav-section-bottom" aria-label="Administration"><p>Administration</p>{administrationNavigation.map(([label, href]) => <Link key={href} href={href} data-active={pathname === href}><i aria-hidden="true">⚙</i>{label}</Link>)}</nav>
     </aside>
     <section className="enterprise-workspace">
       <header className="enterprise-topbar">

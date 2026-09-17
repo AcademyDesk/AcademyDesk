@@ -189,7 +189,7 @@ html[data-theme="light"] [class~="text-red-300"] { color: var(--ad-danger) !impo
 
 /* Framed enterprise workspace shell: this is the reference treatment for the owner dashboard. */
 .enterprise-app-shell { --shell-gutter: clamp(0px, 1.18vw, 24px); --sidebar-width: clamp(260px, 22vw, 444px); --topbar-height: clamp(108px, 8vw, 164px); display: grid; height: calc(100dvh - (var(--shell-gutter) * 2)); grid-template-columns: var(--sidebar-width) minmax(0, 1fr); margin: var(--shell-gutter); overflow: hidden; border: 1px solid var(--ad-border); border-radius: clamp(0px, 1.3vw, 26px); background: var(--ad-canvas); box-shadow: var(--ad-shadow); }
-.enterprise-sidebar { display: flex; min-height: 0; flex-direction: column; padding: clamp(28px, 2.35vw, 48px) clamp(20px, 1.47vw, 30px) clamp(22px, 1.7vw, 34px); border-right: 1px solid var(--ad-border); background: color-mix(in srgb, var(--ad-surface) 82%, var(--ad-canvas)); overflow: hidden; }
+.enterprise-sidebar { display: flex; min-height: 0; flex-direction: column; padding: clamp(28px, 2.35vw, 48px) clamp(20px, 1.47vw, 30px) clamp(22px, 1.7vw, 34px); border-right: 1px solid var(--ad-border); background: color-mix(in srgb, var(--ad-surface) 82%, var(--ad-canvas)); overflow-y: auto; }
 .enterprise-brand { display: inline-flex; align-items: center; gap: clamp(12px, 0.9vw, 18px); padding-left: clamp(8px, 1vw, 20px); color: var(--ad-text); font-size: clamp(1.08rem, 1.18vw, 1.5rem); letter-spacing: -0.035em; }
 .enterprise-brand > span { display: grid; width: clamp(44px, 2.94vw, 60px); height: clamp(44px, 2.94vw, 60px); place-items: center; border-radius: clamp(12px, 0.78vw, 16px); background: #28c9e6; color: #04131d; font-size: clamp(1.22rem, 1.25vw, 1.6rem); font-weight: 800; }
 .enterprise-nav-section { display: grid; gap: clamp(3px, 0.44vw, 9px); margin-top: clamp(42px, 4.7vw, 96px); }
@@ -199,6 +199,15 @@ html[data-theme="light"] [class~="text-red-300"] { color: var(--ad-danger) !impo
 .enterprise-nav-section > a:hover { color: var(--ad-text); background: var(--ad-surface-subtle); }
 .enterprise-nav-section > a[data-active="true"] { color: var(--ad-text); background: color-mix(in srgb, var(--ad-accent) 22%, var(--ad-surface)); }
 .enterprise-nav-section > a > i { width: 16px; color: var(--ad-accent); font-size: 1.15rem; font-style: normal; text-align: center; }
+.enterprise-module-group > summary { display: flex; align-items: center; gap: clamp(12px, 0.93vw, 19px); padding: clamp(12px, 1.18vw, 24px) clamp(12px, 1.08vw, 22px); border-radius: clamp(11px, 0.78vw, 16px); color: var(--ad-text-muted); cursor: pointer; font-size: clamp(0.9rem, 0.96vw, 1.22rem); font-weight: 530; list-style: none; }
+.enterprise-module-group > summary::-webkit-details-marker { display: none; }
+.enterprise-module-group > summary:hover, .enterprise-module-group[open] > summary { color: var(--ad-text); background: color-mix(in srgb, var(--ad-accent) 16%, var(--ad-surface)); }
+.enterprise-module-group > summary i { width: 16px; color: var(--ad-accent); font-size: 1.15rem; font-style: normal; text-align: center; }
+.enterprise-module-group > summary b { margin-left: auto; color: var(--ad-text-subtle); font-size: 0.8rem; font-weight: 700; transition: transform 160ms ease; }
+.enterprise-module-group[open] > summary b { transform: rotate(180deg); }
+.enterprise-module-group > div { display: grid; gap: 2px; margin: 3px 0 7px clamp(24px, 2vw, 42px); padding: 4px 0 4px 12px; border-left: 1px solid var(--ad-border); }
+.enterprise-module-group > div a { padding: 7px 9px; border-radius: 7px; color: var(--ad-text-muted); font-size: clamp(0.74rem, 0.77vw, 0.9rem); }
+.enterprise-module-group > div a:hover, .enterprise-module-group > div a[data-active="true"] { color: var(--ad-accent); background: var(--ad-accent-soft); }
 .enterprise-workspace { position: relative; display: flex; min-width: 0; min-height: 0; flex-direction: column; background: var(--ad-canvas); overflow: auto; }
 .enterprise-workspace:has(.enterprise-dashboard) { overflow: hidden; }
 .enterprise-topbar { position: relative; display: flex; flex: 0 0 var(--topbar-height); min-height: 0; align-items: center; justify-content: space-between; gap: 24px; padding: clamp(22px, 1.76vw, 36px) clamp(25px, 2.45vw, 50px); border-bottom: 1px solid var(--ad-border); background: color-mix(in srgb, var(--ad-surface) 46%, transparent); }
