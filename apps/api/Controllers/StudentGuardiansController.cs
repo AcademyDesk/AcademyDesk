@@ -43,6 +43,9 @@ public sealed class StudentGuardiansController(AcademyDeskDbContext dbContext) :
         var guardian = await dbContext.Guardians.AsNoTracking().SingleAsync(x => x.Id == request.GuardianId, cancellationToken);
         return Created($"/api/academies/{academyId}/students/{studentId}/guardians/{guardian.Id}", new StudentGuardianSummary(guardian.Id, guardian.FirstName, guardian.LastName, guardian.Email, guardian.Phone, studentGuardian.Relationship, studentGuardian.IsPrimary));
     }
+    [HttpDelete("{guardianId:guid}")]
+    public async Task<ActionResult> Unlink(Guid academyId, Guid studentId, Guid guardianId, CancellationToken token)
+    { var link=await dbContext.StudentGuardians.SingleOrDefaultAsync(x=>x.AcademyId==academyId&&x.StudentId==studentId&&x.GuardianId==guardianId,token); if(link is null)return NotFound(); dbContext.StudentGuardians.Remove(link); await dbContext.SaveChangesAsync(token); return NoContent(); }
 }
 
 public sealed record LinkGuardianRequest(Guid GuardianId, string? Relationship, bool IsPrimary);
