@@ -14,6 +14,7 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
         {
             entity.Property(x => x.DisplayName).HasMaxLength(200).IsRequired();
             entity.HasIndex(x => new { x.AcademyId, x.Email });
+            entity.HasIndex(x => new { x.AcademyId, x.TeacherId });
         });
     }
 }
