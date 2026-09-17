@@ -121,6 +121,27 @@ html[data-theme="light"] [class~="text-red-300"] { color: var(--ad-danger) !impo
   box-shadow: var(--ad-shadow);
 }
 
+.enterprise-metric-card { min-height: 180px; }
+.enterprise-metric-marker { display: grid; width: 32px; height: 32px; place-items: center; border: 1px solid var(--ad-border); border-radius: 9px; background: var(--ad-accent-soft); color: var(--ad-accent); font-size: 0.66rem; font-weight: 750; letter-spacing: 0.06em; }
+.enterprise-workspace-status { min-width: 180px; padding: 14px 16px; border: 1px solid var(--ad-border); border-radius: 12px; background: color-mix(in srgb, var(--ad-surface) 78%, transparent); }
+.enterprise-workspace-status span, .enterprise-workspace-status strong { display: block; }
+.enterprise-workspace-status span { color: var(--ad-text-muted); font-size: 0.75rem; font-weight: 650; text-transform: uppercase; letter-spacing: 0.1em; }
+.enterprise-workspace-status strong { margin-top: 5px; color: var(--ad-success); font-size: 0.95rem; }
+.enterprise-inline-link { color: var(--ad-accent); font-size: 0.875rem; font-weight: 650; white-space: nowrap; }
+.enterprise-signal-card { display: block; min-height: 132px; padding: 16px; border: 1px solid var(--ad-border); border-radius: 12px; background: var(--ad-surface-subtle); }
+.enterprise-signal-card:hover { border-color: var(--ad-accent); background: var(--ad-accent-soft); }
+.enterprise-signal-card span, .enterprise-signal-card strong, .enterprise-signal-card small { display: block; }
+.enterprise-signal-card span { color: var(--ad-text-muted); font-size: 0.78rem; }
+.enterprise-signal-card strong { margin-top: 9px; color: var(--ad-text); font-size: 1.45rem; line-height: 1.1; }
+.enterprise-signal-card small { margin-top: 9px; color: var(--ad-text-muted); font-size: 0.72rem; }
+.enterprise-quick-action { display: grid; grid-template-columns: 30px 1fr auto; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--ad-border); }
+.enterprise-quick-action:last-child { border-bottom: 0; }
+.enterprise-quick-action > span { color: var(--ad-accent); font-size: 0.72rem; font-weight: 750; }
+.enterprise-quick-action strong, .enterprise-quick-action small { display: block; }
+.enterprise-quick-action strong { color: var(--ad-text); font-size: 0.875rem; }
+.enterprise-quick-action small { margin-top: 2px; color: var(--ad-text-muted); font-size: 0.75rem; }
+.enterprise-quick-action > b { color: var(--ad-accent); font-size: 1.05rem; }
+
 .surface-panel {
   border: 1px solid var(--ad-border);
   background: var(--ad-surface);
