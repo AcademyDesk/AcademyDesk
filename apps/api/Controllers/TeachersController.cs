@@ -13,7 +13,7 @@ public sealed class TeachersController(AcademyDeskDbContext dbContext) : Control
     public async Task<ActionResult<IReadOnlyList<TeacherSummary>>> List(Guid academyId, CancellationToken cancellationToken)
     {
         var teachers = await dbContext.Teachers.AsNoTracking()
-            .Where(x => x.AcademyId == academyId && x.IsActive)
+            .Where(x => x.AcademyId == academyId)
             .OrderBy(x => x.LastName).ThenBy(x => x.FirstName)
             .Select(x => new TeacherSummary(x.Id, x.FirstName, x.LastName, x.Email, x.Phone, x.Specialties, x.BranchId, x.IsActive))
             .ToListAsync(cancellationToken);
