@@ -13,6 +13,10 @@ type DashboardData = {
   teachers: number;
   courses: number;
   batches: number;
+  openLeads: number;
+  attendanceLast30Days: number;
+  presentAttendanceLast30Days: number;
+  outstandingBalance: number;
 };
 
 const cards = [
@@ -23,7 +27,7 @@ const cards = [
 ] as const;
 
 export default function DashboardPage() {
-  const [data, setData] = useState<DashboardData>({ students: 0, teachers: 0, courses: 0, batches: 0 });
+  const [data, setData] = useState<DashboardData>({ students: 0, teachers: 0, courses: 0, batches: 0, openLeads: 0, attendanceLast30Days: 0, presentAttendanceLast30Days: 0, outstandingBalance: 0 });
   const [message, setMessage] = useState("Loading your workspace…");
 
   useEffect(() => {
@@ -39,25 +43,25 @@ export default function DashboardPage() {
         const academies: Academy[] = await academyResponse.json();
         const academy = academies[0];
         if (!academy) {
-          setData({ students: 0, teachers: 0, courses: 0, batches: 0 });
+          setData({ students: 0, teachers: 0, courses: 0, batches: 0, openLeads: 0, attendanceLast30Days: 0, presentAttendanceLast30Days: 0, outstandingBalance: 0 });
           setMessage("Create your academy first to unlock the workspace.");
           return;
         }
 
-        const [students, teachers, courses, batches] = await Promise.all([
-          academyApi(`/api/academies/${academy.id}/students`, { cache: "no-store" }),
-          academyApi(`/api/academies/${academy.id}/teachers`, { cache: "no-store" }),
-          academyApi(`/api/academies/${academy.id}/courses`, { cache: "no-store" }),
-          academyApi(`/api/academies/${academy.id}/batches`, { cache: "no-store" }),
-        ]);
-        if (![students, teachers, courses, batches].every((response) => response.ok)) throw new Error();
+        const dashboard = await academyApi(`/api/academies/${academy.id}/dashboard`, { cache: "no-store" });
+        if (!dashboard.ok) throw new Error();
+        const summary = await dashboard.json();
 
         setData({
           academy,
-          students: (await students.json()).length,
-          teachers: (await teachers.json()).length,
-          courses: (await courses.json()).length,
-          batches: (await batches.json()).length,
+          students: summary.activeStudents,
+          teachers: summary.activeTeachers,
+          courses: summary.activeCourses,
+          batches: summary.activeBatches,
+          openLeads: summary.openLeads,
+          attendanceLast30Days: summary.attendanceRecordsLast30Days,
+          presentAttendanceLast30Days: summary.presentAttendanceLast30Days,
+          outstandingBalance: summary.outstandingBalance,
         });
         setMessage("");
       } catch {
@@ -80,6 +84,13 @@ export default function DashboardPage() {
         {cards.map(([title, key, href, description]) => <Link key={key} href={href} className="rounded-2xl border border-slate-800 bg-slate-900 p-6 transition hover:border-cyan-500/70">
           <p className="text-sm text-slate-400">{title}</p><p className="mt-2 text-4xl font-semibold">{data[key]}</p><p className="mt-4 text-sm text-slate-300">{description}</p>
         </Link>)}
+      </section>
+
+      <section className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <Link href="/leads" className="rounded-2xl border border-slate-800 bg-slate-900 p-6 transition hover:border-cyan-500/70"><p className="text-sm text-slate-400">Open leads</p><p className="mt-2 text-3xl font-semibold">{data.openLeads}</p><p className="mt-3 text-sm text-slate-300">Follow up with prospective learners.</p></Link>
+        <Link href="/attendance" className="rounded-2xl border border-slate-800 bg-slate-900 p-6 transition hover:border-cyan-500/70"><p className="text-sm text-slate-400">Attendance, last 30 days</p><p className="mt-2 text-3xl font-semibold">{data.presentAttendanceLast30Days} / {data.attendanceLast30Days}</p><p className="mt-3 text-sm text-slate-300">Present or online records.</p></Link>
+        <Link href="/finance" className="rounded-2xl border border-slate-800 bg-slate-900 p-6 transition hover:border-cyan-500/70"><p className="text-sm text-slate-400">Outstanding balance</p><p className="mt-2 text-3xl font-semibold">₹{data.outstandingBalance.toLocaleString("en-IN")}</p><p className="mt-3 text-sm text-slate-300">Invoices not yet covered by payments.</p></Link>
+        <Link href="/reports" className="rounded-2xl border border-slate-800 bg-slate-900 p-6 transition hover:border-cyan-500/70"><p className="text-sm text-slate-400">Collection health</p><p className="mt-2 text-3xl font-semibold">{data.attendanceLast30Days ? Math.round((data.presentAttendanceLast30Days / data.attendanceLast30Days) * 100) : 0}%</p><p className="mt-3 text-sm text-slate-300">Recent attendance rate.</p></Link>
       </section>
 
       <section className="mt-8 rounded-2xl border border-slate-800 bg-slate-900 p-6">
