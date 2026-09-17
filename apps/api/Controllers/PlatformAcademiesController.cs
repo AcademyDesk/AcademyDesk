@@ -17,7 +17,7 @@ public sealed class PlatformAcademiesController(AcademyDeskDbContext db, UserMan
     public async Task<ActionResult> List(CancellationToken token)
     {
         if (!await IsPlatformOwner()) return Forbid();
-        return Ok(await db.Academies.AsNoTracking().OrderBy(x => x.Name).Select(x => new { x.Id, x.Name, x.LegalName, x.CountryCode, x.TimeZone, x.IsActive, x.CreatedAtUtc, Branches = db.Branches.Count(b => b.AcademyId == x.Id), Students = db.Students.Count(s => s.AcademyId == x.Id && s.IsActive) }).ToListAsync(token));
+        return Ok(await db.Academies.AsNoTracking().OrderBy(x => x.Name).Select(x => new { x.Id, x.Name, x.LegalName, x.CountryCode, x.TimeZone, x.IsActive, x.CreatedAtUtc, x.SubscriptionPlan, x.SubscriptionStatus, x.SubscriptionEndsAtUtc, x.StudentLimit, x.StaffLimit, x.EnabledModulesJson, Branches = db.Branches.Count(b => b.AcademyId == x.Id), Students = db.Students.Count(s => s.AcademyId == x.Id && s.IsActive), Staff = db.Teachers.Count(t => t.AcademyId == x.Id && t.IsActive) }).ToListAsync(token));
     }
 
     [HttpPost]
@@ -29,7 +29,7 @@ public sealed class PlatformAcademiesController(AcademyDeskDbContext db, UserMan
         var requestedEmail = requestedLogin.Contains('@') ? requestedLogin : $"{requestedLogin}@academydesk.local";
         if (await users.FindByEmailAsync(requestedEmail) is not null) return Conflict(new { message = "That academy admin user name already exists." });
         if (!await roles.RoleExistsAsync("AcademyAdmin")) await roles.CreateAsync(new ApplicationRole { Name = "AcademyAdmin" });
-        var academy = new Academy { Name = request.AcademyName.Trim(), LegalName = request.LegalName?.Trim(), CountryCode = string.IsNullOrWhiteSpace(request.CountryCode) ? "IN" : request.CountryCode.Trim().ToUpperInvariant(), TimeZone = string.IsNullOrWhiteSpace(request.TimeZone) ? "Asia/Kolkata" : request.TimeZone.Trim() };
+        var academy = new Academy { Name = request.AcademyName.Trim(), LegalName = request.LegalName?.Trim(), CountryCode = string.IsNullOrWhiteSpace(request.CountryCode) ? "IN" : request.CountryCode.Trim().ToUpperInvariant(), TimeZone = string.IsNullOrWhiteSpace(request.TimeZone) ? "Asia/Kolkata" : request.TimeZone.Trim(), SubscriptionPlan = "Trial", SubscriptionStatus = "Trial", SubscriptionEndsAtUtc = DateTime.UtcNow.AddDays(30) };
         db.Academies.Add(academy); await db.SaveChangesAsync(token);
         var userName = request.AdminUserName.Trim(); var email = userName.Contains('@') ? userName : $"{userName}@academydesk.local";
         var admin = new ApplicationUser { UserName = email, Email = email, EmailConfirmed = true, DisplayName = string.IsNullOrWhiteSpace(request.AdminDisplayName) ? userName : request.AdminDisplayName.Trim(), AcademyId = academy.Id };
@@ -50,8 +50,27 @@ public sealed class PlatformAcademiesController(AcademyDeskDbContext db, UserMan
         return Ok(new { academy.Id, academy.IsActive });
     }
 
+    [HttpPut("{academyId:guid}/configuration")]
+    public async Task<ActionResult> Configure(Guid academyId, TenantConfigurationRequest request, CancellationToken token)
+    {
+        if (!await IsPlatformOwner()) return Forbid();
+        var academy = await db.Academies.SingleOrDefaultAsync(x => x.Id == academyId, token);
+        if (academy is null) return NotFound();
+        if (string.IsNullOrWhiteSpace(request.SubscriptionPlan) || string.IsNullOrWhiteSpace(request.SubscriptionStatus)) return BadRequest(new { message = "Subscription plan and status are required." });
+        if (request.StudentLimit < 1 || request.StaffLimit < 1) return BadRequest(new { message = "Capacity limits must be at least one." });
+        academy.SubscriptionPlan = request.SubscriptionPlan.Trim();
+        academy.SubscriptionStatus = request.SubscriptionStatus.Trim();
+        academy.SubscriptionEndsAtUtc = request.SubscriptionEndsAtUtc;
+        academy.StudentLimit = request.StudentLimit;
+        academy.StaffLimit = request.StaffLimit;
+        academy.EnabledModulesJson = System.Text.Json.JsonSerializer.Serialize((request.EnabledModules ?? []).Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).Distinct(StringComparer.OrdinalIgnoreCase));
+        await db.SaveChangesAsync(token);
+        return Ok(new { academy.Id, academy.SubscriptionPlan, academy.SubscriptionStatus, academy.SubscriptionEndsAtUtc, academy.StudentLimit, academy.StaffLimit, academy.EnabledModulesJson });
+    }
+
     private async Task<bool> IsPlatformOwner() { var user = await users.GetUserAsync(User); return user?.IsPlatformOwner == true; }
 }
 
 public sealed record OnboardAcademyRequest(string AcademyName, string? LegalName, string? CountryCode, string? TimeZone, string AdminUserName, string? AdminDisplayName, string Password);
 public sealed record SetPlatformAcademyStatusRequest(bool IsActive);
+public sealed record TenantConfigurationRequest(string SubscriptionPlan, string SubscriptionStatus, DateTime? SubscriptionEndsAtUtc, int StudentLimit, int StaffLimit, IReadOnlyList<string>? EnabledModules);

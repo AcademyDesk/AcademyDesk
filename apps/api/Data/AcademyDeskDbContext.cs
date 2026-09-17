@@ -53,6 +53,11 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
             entity.Property(x => x.LegalName).HasMaxLength(250);
             entity.Property(x => x.CountryCode).HasMaxLength(2).IsRequired();
             entity.Property(x => x.TimeZone).HasMaxLength(100).IsRequired();
+            entity.Property(x => x.SubscriptionPlan).HasMaxLength(50).HasDefaultValue("Trial").IsRequired();
+            entity.Property(x => x.SubscriptionStatus).HasMaxLength(50).HasDefaultValue("Trial").IsRequired();
+            entity.Property(x => x.StudentLimit).HasDefaultValue(100);
+            entity.Property(x => x.StaffLimit).HasDefaultValue(10);
+            entity.Property(x => x.EnabledModulesJson).HasMaxLength(2000).HasDefaultValue("[\"Core\"]").IsRequired();
         });
 
         modelBuilder.Entity<Branch>(entity =>

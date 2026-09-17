@@ -7,6 +7,12 @@ public sealed class Academy : EntityBase
     public string CountryCode { get; set; } = "IN";
     public string TimeZone { get; set; } = "Asia/Kolkata";
     public bool IsActive { get; set; } = true;
+    public string SubscriptionPlan { get; set; } = "Trial";
+    public string SubscriptionStatus { get; set; } = "Trial";
+    public DateTime? SubscriptionEndsAtUtc { get; set; }
+    public int StudentLimit { get; set; } = 100;
+    public int StaffLimit { get; set; } = 10;
+    public string EnabledModulesJson { get; set; } = "[\"Core\"]";
 
     public List<Branch> Branches { get; set; } = [];
 }

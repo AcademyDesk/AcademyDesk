@@ -4,6 +4,7 @@ using AcademyDesk.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AcademyDesk.Api.Migrations
 {
     [DbContext(typeof(AcademyDeskDbContext))]
-    partial class AcademyDeskDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260917202338_AddTenantSubscriptionControls")]
+    partial class AddTenantSubscriptionControls
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -38,10 +41,8 @@ namespace AcademyDesk.Api.Migrations
 
                     b.Property<string>("EnabledModulesJson")
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
                         .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)")
-                        .HasDefaultValue("[\"Core\"]");
+                        .HasColumnType("nvarchar(2000)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -56,31 +57,23 @@ namespace AcademyDesk.Api.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<int>("StaffLimit")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(10);
+                        .HasColumnType("int");
 
                     b.Property<int>("StudentLimit")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(100);
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("SubscriptionEndsAtUtc")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("SubscriptionPlan")
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasDefaultValue("Trial");
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("SubscriptionStatus")
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasDefaultValue("Trial");
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("TimeZone")
                         .IsRequired()
