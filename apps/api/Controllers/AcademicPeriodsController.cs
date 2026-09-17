@@ -34,6 +34,23 @@ public sealed class AcademicPeriodsController(AcademyDeskDbContext db) : Control
         if (string.IsNullOrWhiteSpace(request.Name) || request.EndDate < request.StartDate || request.StartDate < year.StartDate || request.EndDate > year.EndDate) return BadRequest(new { message = "Term dates must be within the academic year." });
         var term = new AcademicTerm { AcademyId = academyId, AcademicYearId = year.Id, Name = request.Name.Trim(), StartDate = request.StartDate, EndDate = request.EndDate }; db.AcademicTerms.Add(term); await db.SaveChangesAsync(token); return Ok(new AcademicTermSummary(term.Id, term.AcademicYearId, term.Name, term.StartDate, term.EndDate, term.IsClosed));
     }
+
+    [HttpPatch("years/{yearId:guid}/close")]
+    public async Task<ActionResult> CloseYear(Guid academyId, Guid yearId, CancellationToken token)
+    {
+        var year = await db.AcademicYears.SingleOrDefaultAsync(item => item.Id == yearId && item.AcademyId == academyId, token);
+        if (year is null) return NotFound();
+        if (await db.AcademicTerms.AnyAsync(item => item.AcademicYearId == yearId && !item.IsClosed, token)) return Conflict(new { message = "Close all terms before closing the academic year." });
+        year.IsClosed = true; year.IsCurrent = false; await db.SaveChangesAsync(token); return Ok();
+    }
+
+    [HttpPatch("terms/{termId:guid}/close")]
+    public async Task<ActionResult> CloseTerm(Guid academyId, Guid termId, CancellationToken token)
+    {
+        var term = await db.AcademicTerms.SingleOrDefaultAsync(item => item.Id == termId && item.AcademyId == academyId, token);
+        if (term is null) return NotFound();
+        term.IsClosed = true; await db.SaveChangesAsync(token); return Ok();
+    }
 }
 
 public sealed record AcademicYearRequest(string Name, DateOnly StartDate, DateOnly EndDate, bool IsCurrent);
