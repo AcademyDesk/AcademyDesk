@@ -125,6 +125,56 @@ public sealed class TeacherPortalController(
         return Ok(new { log.Id, log.Status, log.TeacherFeedback, log.ReviewedAtUtc });
     }
 
+    [HttpGet("assignments")]
+    public async Task<ActionResult<IReadOnlyList<TeacherAssignmentSummary>>> Assignments(CancellationToken cancellationToken)
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user?.AcademyId is null || user.TeacherId is null) return Forbid();
+        var items = await dbContext.Assignments.AsNoTracking()
+            .Where(x => x.AcademyId == user.AcademyId && dbContext.Batches.Any(b => b.Id == x.BatchId && b.TeacherId == user.TeacherId))
+            .OrderByDescending(x => x.DueAtUtc)
+            .Select(x => new TeacherAssignmentSummary(x.Id, x.BatchId, x.Title, x.Description, x.DueAtUtc, x.Type, x.IsPublished))
+            .ToListAsync(cancellationToken);
+        return Ok(items);
+    }
+
+    [HttpPost("assignments")]
+    public async Task<ActionResult<TeacherAssignmentSummary>> CreateAssignment(TeacherCreateAssignmentRequest request, CancellationToken cancellationToken)
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user?.AcademyId is null || user.TeacherId is null) return Forbid();
+        if (string.IsNullOrWhiteSpace(request.Title) || !await OwnsBatch(user, request.BatchId, cancellationToken))
+            return BadRequest(new { message = "Select a batch you teach and provide an assignment title." });
+        var assignment = new Assignment
+        {
+            AcademyId = user.AcademyId.Value,
+            BatchId = request.BatchId,
+            Title = request.Title.Trim(),
+            Description = request.Description?.Trim(),
+            DueAtUtc = request.DueAtUtc,
+            Type = string.IsNullOrWhiteSpace(request.Type) ? "Homework" : request.Type.Trim(),
+            IsPublished = request.IsPublished
+        };
+        dbContext.Assignments.Add(assignment);
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return Ok(new TeacherAssignmentSummary(assignment.Id, assignment.BatchId, assignment.Title, assignment.Description, assignment.DueAtUtc, assignment.Type, assignment.IsPublished));
+    }
+
+    [HttpPatch("assignments/{assignmentId:guid}/publish")]
+    public async Task<ActionResult> PublishAssignment(Guid assignmentId, TeacherPublishAssignmentRequest request, CancellationToken cancellationToken)
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user?.AcademyId is null || user.TeacherId is null) return Forbid();
+        var assignment = await dbContext.Assignments.SingleOrDefaultAsync(x => x.Id == assignmentId && x.AcademyId == user.AcademyId, cancellationToken);
+        if (assignment is null || !await OwnsBatch(user, assignment.BatchId, cancellationToken)) return Forbid();
+        assignment.IsPublished = request.IsPublished;
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return Ok(new { assignment.Id, assignment.IsPublished });
+    }
+
+    private async Task<bool> OwnsBatch(ApplicationUser user, Guid batchId, CancellationToken token) =>
+        await dbContext.Batches.AnyAsync(x => x.Id == batchId && x.AcademyId == user.AcademyId && x.TeacherId == user.TeacherId, token);
+
     [HttpGet("sessions/{sessionId:guid}/roster")]
     public async Task<ActionResult<IReadOnlyList<TeacherRosterStudent>>> Roster(Guid sessionId, CancellationToken cancellationToken)
     {
@@ -211,3 +261,6 @@ public sealed record TeacherLeaveRequest(DateOnly StartDate, DateOnly EndDate, s
 public sealed record TeacherLeaveSummary(Guid Id, DateOnly StartDate, DateOnly EndDate, string Reason, string Status, string? DecisionNotes);
 public sealed record TeacherPracticeLogSummary(Guid Id, Guid StudentId, string StudentName, DateOnly PracticeDate, int MinutesPracticed, string? FocusArea, string? Notes, string? TeacherFeedback, string Status);
 public sealed record TeacherPracticeReviewRequest(string? TeacherFeedback);
+public sealed record TeacherAssignmentSummary(Guid Id, Guid BatchId, string Title, string? Description, DateTime? DueAtUtc, string Type, bool IsPublished);
+public sealed record TeacherCreateAssignmentRequest(Guid BatchId, string Title, string? Description, DateTime? DueAtUtc, string? Type, bool IsPublished);
+public sealed record TeacherPublishAssignmentRequest(bool IsPublished);
