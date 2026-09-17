@@ -85,6 +85,44 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
         if (item is null) { item = new AcademyDesk.Api.Domain.Entities.AssignmentSubmission { AcademyId = user.AcademyId.Value, AssignmentId = assignmentId, StudentId = studentId }; db.AssignmentSubmissions.Add(item); }
         item.ResponseText = request.ResponseText?.Trim(); item.Status = "Submitted"; item.SubmittedAtUtc = DateTime.UtcNow; item.TeacherFeedback = null; await db.SaveChangesAsync(token); return Ok(item);
     }
+
+    [HttpGet("students/{studentId:guid}/leave-requests")]
+    public async Task<ActionResult<IReadOnlyList<PortalLeaveSummary>>> StudentLeaveRequests(Guid studentId, CancellationToken token)
+    {
+        var user = await users.GetUserAsync(User);
+        if (user?.AcademyId is null || !await CanAccessStudent(user, studentId, token)) return Forbid();
+        var requests = await db.LeaveRequests.AsNoTracking()
+            .Where(x => x.AcademyId == user.AcademyId && x.StudentId == studentId && x.RequesterType == "Student")
+            .OrderByDescending(x => x.CreatedAtUtc)
+            .Select(x => new PortalLeaveSummary(x.Id, x.StartDate, x.EndDate, x.Reason, x.Status, x.DecisionNotes))
+            .ToListAsync(token);
+        return Ok(requests);
+    }
+
+    [HttpPost("students/{studentId:guid}/leave-requests")]
+    public async Task<ActionResult<PortalLeaveSummary>> RequestStudentLeave(Guid studentId, PortalLeaveRequest request, CancellationToken token)
+    {
+        var user = await users.GetUserAsync(User);
+        if (user?.AcademyId is null || !await CanAccessStudent(user, studentId, token)) return Forbid();
+        if (request.EndDate < request.StartDate || string.IsNullOrWhiteSpace(request.Reason))
+            return BadRequest(new { message = "Reason and valid dates are required." });
+        var leave = new AcademyDesk.Api.Domain.Entities.LeaveRequest
+        {
+            AcademyId = user.AcademyId.Value,
+            RequesterType = "Student",
+            StudentId = studentId,
+            StartDate = request.StartDate,
+            EndDate = request.EndDate,
+            Reason = request.Reason.Trim()
+        };
+        db.LeaveRequests.Add(leave);
+        await db.SaveChangesAsync(token);
+        return Ok(new PortalLeaveSummary(leave.Id, leave.StartDate, leave.EndDate, leave.Reason, leave.Status, leave.DecisionNotes));
+    }
+
+    private async Task<bool> CanAccessStudent(ApplicationUser user, Guid studentId, CancellationToken token) =>
+        user.StudentId == studentId || (user.GuardianId.HasValue && await db.StudentGuardians.AnyAsync(x =>
+            x.AcademyId == user.AcademyId && x.GuardianId == user.GuardianId && x.StudentId == studentId, token));
     [HttpPut("students/{studentId:guid}/profile")]
     public async Task<ActionResult> UpdateProfile(Guid studentId, PortalStudentProfileRequest request, CancellationToken token)
     { var user=await users.GetUserAsync(User); if(user?.AcademyId is null||user.StudentId!=studentId)return Forbid(); var student=await db.Students.SingleOrDefaultAsync(x=>x.Id==studentId&&x.AcademyId==user.AcademyId,token); if(student is null)return NotFound(); student.Email=request.Email?.Trim(); student.Phone=request.Phone?.Trim(); await db.SaveChangesAsync(token); return Ok(); }
@@ -115,3 +153,5 @@ public sealed record PortalSubmissionRequest(string? ResponseText);
 public sealed record PortalStudentProfileRequest(string? Email,string? Phone);
 public sealed record PortalGuardianProfileRequest(string? Email, string? Phone);
 public sealed record PortalChangePasswordRequest(string CurrentPassword, string NewPassword);
+public sealed record PortalLeaveRequest(DateOnly StartDate, DateOnly EndDate, string Reason);
+public sealed record PortalLeaveSummary(Guid Id, DateOnly StartDate, DateOnly EndDate, string Reason, string Status, string? DecisionNotes);
