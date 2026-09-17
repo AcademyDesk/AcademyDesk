@@ -2,52 +2,16 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { ThemeToggle } from "@/components/theme-toggle";
 
-const links = [
-  ["Dashboard", "/dashboard"],
-  ["Academy", "/"],
-  ["Leads", "/leads"],
-  ["Music", "/music"],
-  ["Practice logs", "/practice-logs"],
-  ["Events", "/events"],
-  ["Certificates", "/certificates"],
-  ["Branches", "/branches"],
-  ["Students", "/students"],
-  ["Student 360", "/student-profile"],
-  ["Guardians", "/guardians"],
-  ["Family 360", "/guardian-profile"],
-  ["Portal accounts", "/portal-accounts"],
-  ["Teachers", "/teachers"],
-  ["Teacher 360", "/teacher-profile"],
-  ["Staff", "/staff"],
-  ["Teacher portal", "/teacher"],
-  ["Courses", "/courses"],
-  ["Curriculum", "/curriculum"],
-  ["Lesson plans", "/lesson-plans"],
-  ["Batches", "/batches"],
-  ["Enrolments", "/enrollments"],
-  ["Schedule", "/schedule"],
-  ["Calendar", "/calendar"],
-  ["Holidays", "/holidays"],
-  ["Attendance", "/attendance"],
-  ["Leave", "/leave"],
-  ["Make-up", "/makeup"],
-  ["Assignments", "/assignments"],
-  ["Submission review", "/submission-review"],
-  ["Resources", "/resources"],
-  ["Assessments", "/assessments"],
-  ["Messages", "/communications"],
-  ["Communication settings", "/communication-settings"],
-  ["Message templates", "/message-templates"],
-  ["Contact preferences", "/communication-preferences"],
-  ["Fees", "/fee-plans"],
-  ["Invoices", "/invoices"],
-  ["Payments", "/payments"],
-  ["Reminders", "/fee-reminders"],
-  ["Expenses", "/expenses"],
-  ["Finance", "/finance"],
-  ["Activity", "/activity"],
-  ["Reports", "/reports"],
+const navigationGroups = [
+  { label: "Overview", links: [["Dashboard", "/dashboard"], ["Academy profile", "/"], ["Branches", "/branches"], ["Activity", "/activity"], ["Reports", "/reports"]] },
+  { label: "People", links: [["Leads", "/leads"], ["Students", "/students"], ["Student 360", "/student-profile"], ["Guardians", "/guardians"], ["Family 360", "/guardian-profile"], ["Teachers", "/teachers"], ["Teacher 360", "/teacher-profile"], ["Staff", "/staff"], ["Portal accounts", "/portal-accounts"]] },
+  { label: "Academic delivery", links: [["Courses", "/courses"], ["Curriculum", "/curriculum"], ["Lesson plans", "/lesson-plans"], ["Batches", "/batches"], ["Enrolments", "/enrollments"], ["Assignments", "/assignments"], ["Submission review", "/submission-review"], ["Assessments", "/assessments"], ["Resources", "/resources"], ["Music", "/music"], ["Practice logs", "/practice-logs"]] },
+  { label: "Operations", links: [["Schedule", "/schedule"], ["Calendar", "/calendar"], ["Attendance", "/attendance"], ["Leave", "/leave"], ["Make-up classes", "/makeup"], ["Holidays", "/holidays"], ["Events", "/events"], ["Certificates", "/certificates"]] },
+  { label: "Finance", links: [["Fee plans", "/fee-plans"], ["Invoices", "/invoices"], ["Payments", "/payments"], ["Fee reminders", "/fee-reminders"], ["Expenses", "/expenses"], ["Finance overview", "/finance"]] },
+  { label: "Communication", links: [["Messages", "/communications"], ["Templates", "/message-templates"], ["Contact preferences", "/communication-preferences"], ["Channel settings", "/communication-settings"]] },
+  { label: "Role workspaces", links: [["Teacher portal", "/teacher"], ["Family portal", "/portal"]] },
 ] as const;
 
 export function WorkspaceNav() {
@@ -61,15 +25,30 @@ export function WorkspaceNav() {
   }
 
   return (
-    <header className="border-b border-slate-800 bg-slate-950/90 px-6 py-4 text-slate-100 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-7 gap-y-3">
-        <Link href="/dashboard" className="font-semibold tracking-tight text-cyan-300">AcademyDesk</Link>
-        <nav className="flex flex-1 flex-wrap gap-x-4 gap-y-2 text-sm text-slate-300">
-          {links.map(([label, href]) => (
-            <Link key={href} href={href} className={pathname === href ? "font-medium text-white" : "hover:text-white"}>{label}</Link>
+    <header className="enterprise-nav sticky top-0 z-40 px-4 py-3 sm:px-6">
+      <div className="mx-auto flex max-w-[1600px] flex-wrap items-center gap-3">
+        <Link href="/dashboard" className="mr-2 flex items-center gap-2 font-semibold tracking-tight" data-active={pathname === "/dashboard"}>
+          <span className="grid h-8 w-8 place-items-center rounded-lg bg-blue-600 text-sm font-bold text-white">A</span>
+          <span>AcademyDesk</span>
+          <span className="hidden rounded border px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider sm:inline">ERP</span>
+        </Link>
+
+        <nav className="flex flex-1 flex-wrap items-center gap-x-4 gap-y-2" aria-label="Workspace navigation">
+          {navigationGroups.map((group) => (
+            <details key={group.label} className="enterprise-nav-group">
+              <summary className="text-sm font-medium" data-active={group.links.some(([, href]) => pathname === href)}>{group.label} <span aria-hidden="true">⌄</span></summary>
+              <div className="enterprise-nav-menu">
+                {group.links.map(([label, href]) => <Link key={href} href={href} data-active={pathname === href} aria-current={pathname === href ? "page" : undefined}>{label}</Link>)}
+              </div>
+            </details>
           ))}
         </nav>
-        <button onClick={signOut} className="text-sm text-slate-300 hover:text-white">Sign out</button>
+
+        <div className="ml-auto flex items-center gap-3">
+          <ThemeToggle />
+          <Link href="/activity" className="hidden text-sm font-medium md:inline">Activity</Link>
+          <button type="button" onClick={signOut} className="enterprise-signout text-sm font-medium">Sign out</button>
+        </div>
       </div>
     </header>
   );

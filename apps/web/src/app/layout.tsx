@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { ThemeProvider } from "@/components/theme-provider";
+import { StandaloneThemeControl } from "@/components/standalone-theme-control";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -21,9 +23,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
+      data-theme="dark"
+      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <head>
+        <meta name="theme-color" content="#07111f" />
+        <script dangerouslySetInnerHTML={{ __html: "try { const saved = localStorage.getItem('academydesk.theme'); const theme = saved === 'light' || saved === 'dark' ? saved : matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; document.documentElement.dataset.theme = theme; } catch {}" }} />
+      </head>
+      <body className="min-h-full flex flex-col"><ThemeProvider><StandaloneThemeControl />{children}</ThemeProvider></body>
     </html>
   );
 }

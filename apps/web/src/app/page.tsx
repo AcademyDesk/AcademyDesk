@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { academyApi, apiHeaders } from "@/lib/api";
+import { WorkspaceNav } from "@/components/workspace-nav";
 
 type Academy = { id: string; name: string; legalName?: string | null; timeZone: string };
 
@@ -39,7 +40,7 @@ export default function Home() {
     finally { setSaving(false); }
   }
 
-  return <main className="min-h-screen bg-slate-950 px-6 py-12 text-slate-100"><div className="mx-auto max-w-5xl">
+  return <><WorkspaceNav /><main className="min-h-screen bg-slate-950 px-6 py-12 text-slate-100"><div className="mx-auto max-w-5xl">
     <div className="flex items-center justify-between gap-4"><p className="text-sm font-semibold uppercase tracking-[0.25em] text-cyan-300">AcademyDesk</p><Link href="/dashboard" className="text-sm text-cyan-300 hover:text-cyan-200">Open dashboard →</Link></div>
     <h1 className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">Academy setup</h1>
     <p className="mt-4 max-w-2xl text-slate-300">Create the academies that will use your music, tuition, and coaching operations platform.</p>
@@ -54,5 +55,5 @@ export default function Home() {
         {loading ? <p className="mt-8 text-slate-400">Loading…</p> : academies.length === 0 ? <p className="mt-8 rounded-lg border border-dashed border-slate-700 p-8 text-center text-slate-400">No academies yet. Create the first one to begin setup.</p> : <ul className="mt-5 space-y-3">{academies.map((academy) => <li key={academy.id} className="rounded-lg border border-slate-700 p-4"><div className="font-medium">{academy.name}</div><div className="mt-1 text-sm text-slate-400">{academy.legalName || "No legal name"} · {academy.timeZone}</div></li>)}</ul>}
       </section>
     </section>
-  </div></main>;
+  </div></main></>;
 }
