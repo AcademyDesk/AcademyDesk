@@ -101,6 +101,23 @@ public sealed class StaffController(
         return Ok(new { message = "Staff password reset successfully." });
     }
 
+    [HttpPost("{staffId:guid}/offboard")]
+    public async Task<ActionResult> Offboard(Guid academyId, Guid staffId)
+    {
+        if (!await IsOwner(academyId)) return Forbid();
+        var current = await userManager.GetUserAsync(User);
+        if (current?.Id == staffId) return BadRequest(new { message = "The signed-in administrator cannot offboard their own account." });
+        var staff = await userManager.FindByIdAsync(staffId.ToString());
+        if (staff?.AcademyId != academyId) return NotFound();
+        staff.IsActive = false;
+        staff.LockoutEnabled = true;
+        staff.LockoutEnd = DateTimeOffset.MaxValue;
+        await userManager.UpdateSecurityStampAsync(staff);
+        var result = await userManager.UpdateAsync(staff);
+        if (!result.Succeeded) return Problem("Staff offboarding could not be completed.");
+        return Ok(new { message = "Staff access revoked and active sessions invalidated." });
+    }
+
     private async Task<bool> IsOwner(Guid academyId)
     {
         var currentUser = await userManager.GetUserAsync(User);
