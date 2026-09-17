@@ -41,6 +41,7 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
     public DbSet<CommunicationPreference> CommunicationPreferences => Set<CommunicationPreference>();
     public DbSet<PracticeLog> PracticeLogs => Set<PracticeLog>();
     public DbSet<AssignmentSubmission> AssignmentSubmissions => Set<AssignmentSubmission>();
+    public DbSet<AcademyHoliday> AcademyHolidays => Set<AcademyHoliday>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -332,5 +333,6 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
         });
         modelBuilder.Entity<PracticeLog>(entity => { entity.Property(x => x.FocusArea).HasMaxLength(250); entity.Property(x => x.Notes).HasMaxLength(2000); entity.Property(x => x.TeacherFeedback).HasMaxLength(2000); entity.Property(x => x.Status).HasMaxLength(30).IsRequired(); entity.HasIndex(x => new { x.AcademyId, x.StudentId, x.PracticeDate }); });
         modelBuilder.Entity<AssignmentSubmission>(entity => { entity.Property(x => x.ResponseText).HasMaxLength(4000); entity.Property(x => x.TeacherFeedback).HasMaxLength(2000); entity.Property(x => x.Status).HasMaxLength(30).IsRequired(); entity.HasIndex(x => new { x.AcademyId, x.AssignmentId, x.StudentId }).IsUnique(); });
+        modelBuilder.Entity<AcademyHoliday>(entity => { entity.Property(x => x.Name).HasMaxLength(200).IsRequired(); entity.Property(x => x.Notes).HasMaxLength(1000); entity.HasIndex(x => new { x.AcademyId, x.HolidayDate }).IsUnique(); });
     }
 }
