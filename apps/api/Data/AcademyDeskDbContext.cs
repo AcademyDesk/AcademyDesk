@@ -36,6 +36,7 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
     public DbSet<LearningResource> LearningResources => Set<LearningResource>();
     public DbSet<CourseModule> CourseModules => Set<CourseModule>();
     public DbSet<LessonPlan> LessonPlans => Set<LessonPlan>();
+    public DbSet<CommunicationChannel> CommunicationChannels => Set<CommunicationChannel>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -291,5 +292,17 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
         });
         modelBuilder.Entity<CourseModule>(entity=>{entity.Property(x=>x.Title).HasMaxLength(250).IsRequired();entity.Property(x=>x.Description).HasMaxLength(2000);entity.HasIndex(x=>new{x.AcademyId,x.CourseId,x.Sequence}).IsUnique();});
         modelBuilder.Entity<LessonPlan>(entity=>{entity.Property(x=>x.Title).HasMaxLength(250).IsRequired();entity.Property(x=>x.Objectives).HasMaxLength(2000);entity.Property(x=>x.Status).HasMaxLength(30).IsRequired();entity.HasIndex(x=>new{x.AcademyId,x.BatchId,x.ClassSessionId});});
+        modelBuilder.Entity<CommunicationChannel>(entity =>
+        {
+            entity.Property(x => x.Channel).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.Provider).HasMaxLength(60).IsRequired();
+            entity.Property(x => x.Status).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.SenderName).HasMaxLength(200);
+            entity.Property(x => x.SenderAddress).HasMaxLength(320);
+            entity.Property(x => x.ReplyToAddress).HasMaxLength(320);
+            entity.Property(x => x.PhoneNumber).HasMaxLength(30);
+            entity.Property(x => x.ExternalAccountReference).HasMaxLength(300);
+            entity.HasIndex(x => new { x.AcademyId, x.Channel }).IsUnique();
+        });
     }
 }
