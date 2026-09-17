@@ -8,6 +8,7 @@ const links = [
   ["Academy", "/"],
   ["Branches", "/branches"],
   ["Students", "/students"],
+  ["Guardians", "/guardians"],
   ["Teachers", "/teachers"],
   ["Courses", "/courses"],
   ["Batches", "/batches"],
@@ -16,11 +17,13 @@ const links = [
   ["Attendance", "/attendance"],
   ["Assignments", "/assignments"],
   ["Assessments", "/assessments"],
+  ["Messages", "/communications"],
   ["Fees", "/fee-plans"],
   ["Invoices", "/invoices"],
   ["Payments", "/payments"],
   ["Expenses", "/expenses"],
   ["Finance", "/finance"],
+  ["Activity", "/activity"],
 ] as const;
 
 export function WorkspaceNav() {

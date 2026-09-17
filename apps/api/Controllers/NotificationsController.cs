@@ -2,6 +2,7 @@ using AcademyDesk.Api.Data;
 using AcademyDesk.Api.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace AcademyDesk.Api.Controllers;
 
@@ -23,7 +24,16 @@ public sealed class NotificationsController(AcademyDeskDbContext dbContext) : Co
         if (!await dbContext.Academies.AnyAsync(x => x.Id == academyId, cancellationToken)) return NotFound();
         if (string.IsNullOrWhiteSpace(request.Title) || string.IsNullOrWhiteSpace(request.Message)) return BadRequest(new { message = "Title and message are required." });
         var notification = new Notification { AcademyId = academyId, RecipientId = request.RecipientId, RecipientType = string.IsNullOrWhiteSpace(request.RecipientType) ? "Academy" : request.RecipientType.Trim(), Title = request.Title.Trim(), Message = request.Message.Trim(), Channel = string.IsNullOrWhiteSpace(request.Channel) ? "InApp" : request.Channel.Trim(), ScheduledAtUtc = request.ScheduledAtUtc };
-        dbContext.Notifications.Add(notification); await dbContext.SaveChangesAsync(cancellationToken);
+        dbContext.Notifications.Add(notification);
+        dbContext.AuditLogs.Add(new AuditLog
+        {
+            AcademyId = academyId,
+            Action = "NotificationQueued",
+            EntityType = "Notification",
+            EntityId = notification.Id,
+            MetadataJson = JsonSerializer.Serialize(new { notification.Title, notification.Channel, notification.RecipientType })
+        });
+        await dbContext.SaveChangesAsync(cancellationToken);
         return Created($"/api/academies/{academyId}/notifications/{notification.Id}", new NotificationSummary(notification.Id, notification.RecipientId, notification.RecipientType, notification.Title, notification.Message, notification.Channel, notification.Status, notification.ScheduledAtUtc, notification.SentAtUtc));
     }
 }
