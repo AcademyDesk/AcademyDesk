@@ -202,6 +202,53 @@ public sealed class TeacherPortalController(
         return Ok(new { submission.Id, submission.Status, submission.TeacherFeedback });
     }
 
+    [HttpGet("assessments")]
+    public async Task<ActionResult<IReadOnlyList<TeacherAssessmentSummary>>> Assessments(CancellationToken cancellationToken)
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user?.AcademyId is null || user.TeacherId is null) return Forbid();
+        var items = await dbContext.Assessments.AsNoTracking()
+            .Where(x => x.AcademyId == user.AcademyId && dbContext.Batches.Any(b => b.Id == x.BatchId && b.TeacherId == user.TeacherId))
+            .OrderByDescending(x => x.ScheduledAtUtc)
+            .Select(x => new TeacherAssessmentSummary(x.Id, x.BatchId, x.Title, x.Type, x.MaxScore, x.ScheduledAtUtc, x.IsPublished))
+            .ToListAsync(cancellationToken);
+        return Ok(items);
+    }
+
+    [HttpPost("assessments")]
+    public async Task<ActionResult<TeacherAssessmentSummary>> CreateAssessment(TeacherCreateAssessmentRequest request, CancellationToken cancellationToken)
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user?.AcademyId is null || user.TeacherId is null) return Forbid();
+        if (string.IsNullOrWhiteSpace(request.Title) || request.MaxScore <= 0 || !await OwnsBatch(user, request.BatchId, cancellationToken))
+            return BadRequest(new { message = "Select a batch you teach, provide a title, and use a positive maximum score." });
+        var assessment = new Assessment
+        {
+            AcademyId = user.AcademyId.Value,
+            BatchId = request.BatchId,
+            Title = request.Title.Trim(),
+            Type = string.IsNullOrWhiteSpace(request.Type) ? "Assessment" : request.Type.Trim(),
+            MaxScore = request.MaxScore,
+            ScheduledAtUtc = request.ScheduledAtUtc,
+            IsPublished = request.IsPublished
+        };
+        dbContext.Assessments.Add(assessment);
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return Ok(new TeacherAssessmentSummary(assessment.Id, assessment.BatchId, assessment.Title, assessment.Type, assessment.MaxScore, assessment.ScheduledAtUtc, assessment.IsPublished));
+    }
+
+    [HttpPatch("assessments/{assessmentId:guid}/publish")]
+    public async Task<ActionResult> PublishAssessment(Guid assessmentId, TeacherPublishAssessmentRequest request, CancellationToken cancellationToken)
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user?.AcademyId is null || user.TeacherId is null) return Forbid();
+        var assessment = await dbContext.Assessments.SingleOrDefaultAsync(x => x.Id == assessmentId && x.AcademyId == user.AcademyId, cancellationToken);
+        if (assessment is null || !await OwnsBatch(user, assessment.BatchId, cancellationToken)) return Forbid();
+        assessment.IsPublished = request.IsPublished;
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return Ok(new { assessment.Id, assessment.IsPublished });
+    }
+
     private async Task<bool> OwnsBatch(ApplicationUser user, Guid batchId, CancellationToken token) =>
         await dbContext.Batches.AnyAsync(x => x.Id == batchId && x.AcademyId == user.AcademyId && x.TeacherId == user.TeacherId, token);
 
@@ -296,3 +343,6 @@ public sealed record TeacherCreateAssignmentRequest(Guid BatchId, string Title, 
 public sealed record TeacherPublishAssignmentRequest(bool IsPublished);
 public sealed record TeacherSubmissionSummary(Guid Id, Guid StudentId, string StudentName, string? ResponseText, string Status, DateTime SubmittedAtUtc, string? TeacherFeedback);
 public sealed record TeacherSubmissionReviewRequest(string? Feedback);
+public sealed record TeacherAssessmentSummary(Guid Id, Guid BatchId, string Title, string Type, decimal MaxScore, DateTime? ScheduledAtUtc, bool IsPublished);
+public sealed record TeacherCreateAssessmentRequest(Guid BatchId, string Title, string? Type, decimal MaxScore, DateTime? ScheduledAtUtc, bool IsPublished);
+public sealed record TeacherPublishAssessmentRequest(bool IsPublished);
