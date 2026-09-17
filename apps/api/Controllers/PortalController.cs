@@ -49,16 +49,18 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
         var assignments = await db.Assignments.AsNoTracking().Where(x => x.AcademyId == user.AcademyId && batchIds.Contains(x.BatchId) && x.IsPublished).OrderBy(x => x.DueAtUtc).Take(30).Select(x => new PortalAssignment(x.Title, x.Type, x.DueAtUtc)).ToListAsync(token);
         var attendance = await db.AttendanceRecords.AsNoTracking().Where(x => x.AcademyId == user.AcademyId && x.StudentId == studentId).Join(db.ClassSessions.AsNoTracking(), a => a.ClassSessionId, s => s.Id, (a, s) => new PortalAttendance(s.StartUtc, a.Status)).OrderByDescending(x => x.StartUtc).Take(30).ToListAsync(token);
         var music = await db.StudentMusicProgress.AsNoTracking().Where(x => x.AcademyId == user.AcademyId && x.StudentId == studentId).Join(db.MusicPieces.AsNoTracking(), p => p.MusicPieceId, piece => piece.Id, (p, piece) => new PortalMusicProgress(piece.Title, p.Status, p.TargetDate)).OrderBy(x => x.TargetDate).ToListAsync(token);
+        var resources = await db.LearningResources.AsNoTracking().Where(x => x.AcademyId == user.AcademyId && x.IsPublished && (!x.BatchId.HasValue || batchIds.Contains(x.BatchId.Value))).OrderByDescending(x => x.CreatedAtUtc).Take(30).Select(x => new PortalResource(x.Title, x.Type, x.Url)).ToListAsync(token);
         var invoices = await db.Invoices.AsNoTracking().Where(x => x.AcademyId == user.AcademyId && x.StudentId == studentId).OrderByDescending(x => x.IssuedDate).ToListAsync(token);
         var invoiceIds = invoices.Select(x => x.Id).ToArray();
         var paid = await db.Payments.AsNoTracking().Where(x => invoiceIds.Contains(x.InvoiceId) && x.Status == "Completed").GroupBy(x => x.InvoiceId).Select(x => new { x.Key, Total = x.Sum(p => p.Amount) }).ToDictionaryAsync(x => x.Key, x => x.Total, token);
-        return Ok(new PortalStudentDetails($"{student.FirstName} {student.LastName}", batches, assignments, attendance, music, invoices.Select(x => new PortalInvoice(x.InvoiceNumber, x.TotalAmount, x.TotalAmount - paid.GetValueOrDefault(x.Id), x.Currency, x.DueDate, x.Status)).ToList()));
+        return Ok(new PortalStudentDetails($"{student.FirstName} {student.LastName}", batches, assignments, attendance, music, resources, invoices.Select(x => new PortalInvoice(x.InvoiceNumber, x.TotalAmount, x.TotalAmount - paid.GetValueOrDefault(x.Id), x.Currency, x.DueDate, x.Status)).ToList()));
     }
 }
 
-public sealed record PortalStudentDetails(string Name, IReadOnlyList<PortalBatch> Batches, IReadOnlyList<PortalAssignment> Assignments, IReadOnlyList<PortalAttendance> Attendance, IReadOnlyList<PortalMusicProgress> Music, IReadOnlyList<PortalInvoice> Invoices);
+public sealed record PortalStudentDetails(string Name, IReadOnlyList<PortalBatch> Batches, IReadOnlyList<PortalAssignment> Assignments, IReadOnlyList<PortalAttendance> Attendance, IReadOnlyList<PortalMusicProgress> Music, IReadOnlyList<PortalResource> Resources, IReadOnlyList<PortalInvoice> Invoices);
 public sealed record PortalBatch(Guid Id, string Name);
 public sealed record PortalAssignment(string Title, string Type, DateTime? DueAtUtc);
 public sealed record PortalAttendance(DateTime StartUtc, string Status);
 public sealed record PortalMusicProgress(string Title, string Status, DateOnly? TargetDate);
+public sealed record PortalResource(string Title, string Type, string Url);
 public sealed record PortalInvoice(string InvoiceNumber, decimal TotalAmount, decimal Balance, string Currency, DateOnly DueDate, string Status);
