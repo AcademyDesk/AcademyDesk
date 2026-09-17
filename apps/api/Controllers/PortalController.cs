@@ -51,6 +51,36 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
         return Ok(new { message = "Password changed successfully." });
     }
 
+    [HttpGet("notifications")]
+    public async Task<ActionResult> Notifications(CancellationToken token)
+    {
+        var user = await users.GetUserAsync(User);
+        if (user?.AcademyId is null) return Forbid();
+        var recipientId = user.StudentId ?? user.GuardianId;
+        if (!recipientId.HasValue) return Forbid();
+        var recipientType = user.StudentId.HasValue ? "Student" : "Guardian";
+        var notifications = await db.Notifications.AsNoTracking()
+            .Where(x => x.AcademyId == user.AcademyId && x.RecipientId == recipientId && x.RecipientType == recipientType)
+            .OrderByDescending(x => x.CreatedAtUtc).Take(100)
+            .Select(x => new PortalNotificationSummary(x.Id, x.Title, x.Message, x.Channel, x.Status, x.CreatedAtUtc, x.SentAtUtc))
+            .ToListAsync(token);
+        return Ok(notifications);
+    }
+
+    [HttpGet("guardians/{guardianId:guid}/children")]
+    public async Task<ActionResult> GuardianChildren(Guid guardianId, CancellationToken token)
+    {
+        var user = await users.GetUserAsync(User);
+        if (user?.AcademyId is null || user.GuardianId != guardianId) return Forbid();
+        var children = await db.StudentGuardians.AsNoTracking()
+            .Where(x => x.AcademyId == user.AcademyId && x.GuardianId == guardianId)
+            .Join(db.Students.AsNoTracking(), x => x.StudentId, s => s.Id, (x, s) => new { s.Id, s.FirstName, s.LastName, s.Email, s.Phone, s.IsActive })
+            .Select(x => new PortalChildSummary(x.Id, x.FirstName + " " + x.LastName, x.Email, x.Phone, x.IsActive,
+                db.Enrollments.Count(e => e.AcademyId == user.AcademyId && e.StudentId == x.Id && e.Status == "Active")))
+            .OrderBy(x => x.Name).ToListAsync(token);
+        return Ok(children);
+    }
+
     [HttpGet("students/{studentId:guid}")]
     public async Task<ActionResult<PortalStudentDetails>> Student(Guid studentId, CancellationToken token)
     {
@@ -185,3 +215,5 @@ public sealed record PortalChangePasswordRequest(string CurrentPassword, string 
 public sealed record PortalLeaveRequest(DateOnly StartDate, DateOnly EndDate, string Reason);
 public sealed record PortalLeaveSummary(Guid Id, DateOnly StartDate, DateOnly EndDate, string Reason, string Status, string? DecisionNotes);
 public sealed record PortalPracticeLogRequest(DateOnly PracticeDate, int MinutesPracticed, string? FocusArea, string? Notes);
+public sealed record PortalNotificationSummary(Guid Id, string Title, string Message, string Channel, string Status, DateTime CreatedAtUtc, DateTime? SentAtUtc);
+public sealed record PortalChildSummary(Guid Id, string Name, string? Email, string? Phone, bool IsActive, int ActiveEnrollmentCount);
