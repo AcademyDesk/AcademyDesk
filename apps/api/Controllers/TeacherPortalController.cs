@@ -172,6 +172,36 @@ public sealed class TeacherPortalController(
         return Ok(new { assignment.Id, assignment.IsPublished });
     }
 
+    [HttpGet("assignments/{assignmentId:guid}/submissions")]
+    public async Task<ActionResult<IReadOnlyList<TeacherSubmissionSummary>>> Submissions(Guid assignmentId, CancellationToken cancellationToken)
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user?.AcademyId is null || user.TeacherId is null) return Forbid();
+        var assignment = await dbContext.Assignments.AsNoTracking().SingleOrDefaultAsync(x => x.Id == assignmentId && x.AcademyId == user.AcademyId, cancellationToken);
+        if (assignment is null || !await OwnsBatch(user, assignment.BatchId, cancellationToken)) return Forbid();
+        var submissions = await dbContext.AssignmentSubmissions.AsNoTracking()
+            .Where(x => x.AcademyId == user.AcademyId && x.AssignmentId == assignmentId)
+            .Join(dbContext.Students.AsNoTracking(), x => x.StudentId, s => s.Id,
+                (x, s) => new TeacherSubmissionSummary(x.Id, x.StudentId, s.FirstName + " " + s.LastName, x.ResponseText, x.Status, x.SubmittedAtUtc, x.TeacherFeedback))
+            .OrderByDescending(x => x.SubmittedAtUtc).ToListAsync(cancellationToken);
+        return Ok(submissions);
+    }
+
+    [HttpPatch("submissions/{submissionId:guid}/review")]
+    public async Task<ActionResult> ReviewSubmission(Guid submissionId, TeacherSubmissionReviewRequest request, CancellationToken cancellationToken)
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user?.AcademyId is null || user.TeacherId is null) return Forbid();
+        var submission = await dbContext.AssignmentSubmissions.SingleOrDefaultAsync(x => x.Id == submissionId && x.AcademyId == user.AcademyId, cancellationToken);
+        if (submission is null) return NotFound();
+        var assignment = await dbContext.Assignments.AsNoTracking().SingleOrDefaultAsync(x => x.Id == submission.AssignmentId && x.AcademyId == user.AcademyId, cancellationToken);
+        if (assignment is null || !await OwnsBatch(user, assignment.BatchId, cancellationToken)) return Forbid();
+        submission.TeacherFeedback = request.Feedback?.Trim();
+        submission.Status = "Reviewed";
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return Ok(new { submission.Id, submission.Status, submission.TeacherFeedback });
+    }
+
     private async Task<bool> OwnsBatch(ApplicationUser user, Guid batchId, CancellationToken token) =>
         await dbContext.Batches.AnyAsync(x => x.Id == batchId && x.AcademyId == user.AcademyId && x.TeacherId == user.TeacherId, token);
 
@@ -264,3 +294,5 @@ public sealed record TeacherPracticeReviewRequest(string? TeacherFeedback);
 public sealed record TeacherAssignmentSummary(Guid Id, Guid BatchId, string Title, string? Description, DateTime? DueAtUtc, string Type, bool IsPublished);
 public sealed record TeacherCreateAssignmentRequest(Guid BatchId, string Title, string? Description, DateTime? DueAtUtc, string? Type, bool IsPublished);
 public sealed record TeacherPublishAssignmentRequest(bool IsPublished);
+public sealed record TeacherSubmissionSummary(Guid Id, Guid StudentId, string StudentName, string? ResponseText, string Status, DateTime SubmittedAtUtc, string? TeacherFeedback);
+public sealed record TeacherSubmissionReviewRequest(string? Feedback);
