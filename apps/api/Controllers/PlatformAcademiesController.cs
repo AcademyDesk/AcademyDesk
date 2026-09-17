@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace AcademyDesk.Api.Controllers;
 
@@ -36,6 +37,8 @@ public sealed class PlatformAcademiesController(AcademyDeskDbContext db, UserMan
         var result = await users.CreateAsync(admin, request.Password);
         if (!result.Succeeded) { db.Academies.Remove(academy); await db.SaveChangesAsync(token); return BadRequest(new { message = string.Join(" ", result.Errors.Select(x => x.Description)) }); }
         await users.AddToRoleAsync(admin, "AcademyAdmin");
+        await Audit("Academy onboarded", "Academy", academy.Id, new { academy.Name, admin.DisplayName }, token);
+        await db.SaveChangesAsync(token);
         return Created($"/api/platform/academies/{academy.Id}", new { academy.Id, academy.Name, admin.UserName, admin.DisplayName });
     }
 
@@ -46,6 +49,7 @@ public sealed class PlatformAcademiesController(AcademyDeskDbContext db, UserMan
         var academy = await db.Academies.SingleOrDefaultAsync(x => x.Id == academyId, token);
         if (academy is null) return NotFound();
         academy.IsActive = request.IsActive;
+        await Audit(request.IsActive ? "Academy activated" : "Academy suspended", "Academy", academy.Id, new { academy.Name }, token);
         await db.SaveChangesAsync(token);
         return Ok(new { academy.Id, academy.IsActive });
     }
@@ -64,11 +68,13 @@ public sealed class PlatformAcademiesController(AcademyDeskDbContext db, UserMan
         academy.StudentLimit = request.StudentLimit;
         academy.StaffLimit = request.StaffLimit;
         academy.EnabledModulesJson = System.Text.Json.JsonSerializer.Serialize((request.EnabledModules ?? []).Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).Distinct(StringComparer.OrdinalIgnoreCase));
+        await Audit("Tenant configuration updated", "Academy", academy.Id, new { academy.SubscriptionPlan, academy.SubscriptionStatus, academy.StudentLimit, academy.StaffLimit }, token);
         await db.SaveChangesAsync(token);
         return Ok(new { academy.Id, academy.SubscriptionPlan, academy.SubscriptionStatus, academy.SubscriptionEndsAtUtc, academy.StudentLimit, academy.StaffLimit, academy.EnabledModulesJson });
     }
 
     private async Task<bool> IsPlatformOwner() { var user = await users.GetUserAsync(User); return user?.IsPlatformOwner == true; }
+    private async Task Audit(string action, string entityType, Guid entityId, object metadata, CancellationToken token) { var user = await users.GetUserAsync(User); db.PlatformAuditEntries.Add(new PlatformAuditEntry { ActorUserId = user?.Id, ActorName = user?.DisplayName ?? "System", Action = action, EntityType = entityType, EntityId = entityId, MetadataJson = JsonSerializer.Serialize(metadata) }); await Task.CompletedTask; }
 }
 
 public sealed record OnboardAcademyRequest(string AcademyName, string? LegalName, string? CountryCode, string? TimeZone, string AdminUserName, string? AdminDisplayName, string Password);

@@ -34,6 +34,18 @@ app.UseHttpsRedirection();
 app.UseCors("LocalWeb");
 app.UseAuthentication();
 
+// A deactivated administrator must not retain access through a previously issued token.
+app.Use(async (context, next) =>
+{
+    if (context.User.Identity?.IsAuthenticated == true)
+    {
+        var userManager = context.RequestServices.GetRequiredService<Microsoft.AspNetCore.Identity.UserManager<ApplicationUser>>();
+        var user = await userManager.GetUserAsync(context.User);
+        if (user?.IsActive == false) { context.Response.StatusCode = StatusCodes.Status403Forbidden; return; }
+    }
+    await next();
+});
+
 app.UseAuthorization();
 
 app.MapControllers();
