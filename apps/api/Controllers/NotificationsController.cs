@@ -55,7 +55,11 @@ public sealed class NotificationsController(AcademyDeskDbContext dbContext) : Co
         await dbContext.SaveChangesAsync(cancellationToken);
         return Created($"/api/academies/{academyId}/notifications/{notification.Id}", new NotificationSummary(notification.Id, notification.RecipientId, notification.RecipientType, notification.Title, notification.Message, notification.Channel, notification.Status, notification.TemplateId, notification.VariablesJson, notification.FailureReason, notification.ScheduledAtUtc, notification.SentAtUtc));
     }
+    [HttpPatch("{notificationId:guid}/status")]
+    public async Task<ActionResult> UpdateStatus(Guid academyId, Guid notificationId, UpdateNotificationStatusRequest request, CancellationToken token)
+    { var x=await dbContext.Notifications.SingleOrDefaultAsync(v=>v.Id==notificationId&&v.AcademyId==academyId,token); if(x is null)return NotFound(); if(!new[]{"Queued","Cancelled","RetryRequested"}.Contains(request.Status,StringComparer.OrdinalIgnoreCase))return BadRequest(); x.Status=request.Status.Trim(); x.FailureReason=request.Status=="RetryRequested"?null:x.FailureReason; await dbContext.SaveChangesAsync(token); return Ok(); }
 }
 
 public sealed record CreateNotificationRequest(Guid? RecipientId, string? RecipientType, string? Title, string? Message, string? Channel, DateTime? ScheduledAtUtc, Guid? TemplateId, Dictionary<string, string>? Variables);
 public sealed record NotificationSummary(Guid Id, Guid? RecipientId, string RecipientType, string Title, string Message, string Channel, string Status, Guid? TemplateId, string? VariablesJson, string? FailureReason, DateTime? ScheduledAtUtc, DateTime? SentAtUtc);
+public sealed record UpdateNotificationStatusRequest(string Status);
