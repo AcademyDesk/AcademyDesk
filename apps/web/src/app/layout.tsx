@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { StandaloneThemeControl } from "@/components/standalone-theme-control";
+import { WorkspaceFrame } from "@/components/workspace-frame";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -31,7 +32,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <meta name="theme-color" content="#07111f" />
         <script dangerouslySetInnerHTML={{ __html: "try { const saved = localStorage.getItem('academydesk.theme'); const theme = saved === 'light' || saved === 'dark' ? saved : matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; document.documentElement.dataset.theme = theme; } catch {}" }} />
       </head>
-      <body className="min-h-full flex flex-col"><ThemeProvider><StandaloneThemeControl />{children}</ThemeProvider></body>
+      <body className="min-h-full flex flex-col"><ThemeProvider><StandaloneThemeControl /><WorkspaceFrame>{children}</WorkspaceFrame></ThemeProvider></body>
     </html>
   );
 }

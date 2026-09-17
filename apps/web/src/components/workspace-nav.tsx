@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { useEnterpriseShell } from "@/components/enterprise-shell";
 
 const navigationGroups = [
   { label: "Overview", links: [["Dashboard", "/dashboard"], ["Academy profile", "/"], ["Branches", "/branches"], ["Activity", "/activity"], ["Reports", "/reports"]] },
@@ -15,8 +16,10 @@ const navigationGroups = [
 ] as const;
 
 export function WorkspaceNav() {
+  const isInsideEnterpriseShell = useEnterpriseShell();
   const pathname = usePathname();
   const router = useRouter();
+  if (isInsideEnterpriseShell) return null;
 
   function signOut() {
     window.localStorage.removeItem("academydesk.accessToken");
