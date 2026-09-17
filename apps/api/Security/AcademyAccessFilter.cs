@@ -34,6 +34,15 @@ public sealed class AcademyAccessFilter(UserManager<ApplicationUser> userManager
             return;
         }
 
+        // Broad academy endpoints are administration endpoints. Teachers and front-desk
+        // users must use role-scoped endpoints rather than receiving tenant-wide data.
+        if (!await userManager.IsInRoleAsync(user, "Owner") &&
+            !await userManager.IsInRoleAsync(user, "Manager"))
+        {
+            context.Result = new ForbidResult();
+            return;
+        }
+
         await next();
     }
 }
