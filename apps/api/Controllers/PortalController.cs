@@ -120,6 +120,29 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
         return Ok(new PortalLeaveSummary(leave.Id, leave.StartDate, leave.EndDate, leave.Reason, leave.Status, leave.DecisionNotes));
     }
 
+    [HttpPost("students/{studentId:guid}/practice-logs")]
+    public async Task<ActionResult> LogPractice(Guid studentId, PortalPracticeLogRequest request, CancellationToken token)
+    {
+        var user = await users.GetUserAsync(User);
+        if (user?.AcademyId is null || !await CanAccessStudent(user, studentId, token)) return Forbid();
+        if (request.MinutesPracticed is < 1 or > 1440)
+            return BadRequest(new { message = "Practice time must be between 1 and 1440 minutes." });
+        if (request.PracticeDate > DateOnly.FromDateTime(DateTime.UtcNow))
+            return BadRequest(new { message = "Practice date cannot be in the future." });
+        var log = new AcademyDesk.Api.Domain.Entities.PracticeLog
+        {
+            AcademyId = user.AcademyId.Value,
+            StudentId = studentId,
+            PracticeDate = request.PracticeDate,
+            MinutesPracticed = request.MinutesPracticed,
+            FocusArea = request.FocusArea?.Trim(),
+            Notes = request.Notes?.Trim()
+        };
+        db.PracticeLogs.Add(log);
+        await db.SaveChangesAsync(token);
+        return Ok(new { log.Id, log.PracticeDate, log.MinutesPracticed, log.FocusArea, log.Notes, log.Status });
+    }
+
     private async Task<bool> CanAccessStudent(ApplicationUser user, Guid studentId, CancellationToken token) =>
         user.StudentId == studentId || (user.GuardianId.HasValue && await db.StudentGuardians.AnyAsync(x =>
             x.AcademyId == user.AcademyId && x.GuardianId == user.GuardianId && x.StudentId == studentId, token));
@@ -155,3 +178,4 @@ public sealed record PortalGuardianProfileRequest(string? Email, string? Phone);
 public sealed record PortalChangePasswordRequest(string CurrentPassword, string NewPassword);
 public sealed record PortalLeaveRequest(DateOnly StartDate, DateOnly EndDate, string Reason);
 public sealed record PortalLeaveSummary(Guid Id, DateOnly StartDate, DateOnly EndDate, string Reason, string Status, string? DecisionNotes);
+public sealed record PortalPracticeLogRequest(DateOnly PracticeDate, int MinutesPracticed, string? FocusArea, string? Notes);
