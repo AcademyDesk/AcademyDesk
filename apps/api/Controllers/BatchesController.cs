@@ -12,9 +12,9 @@ public sealed class BatchesController(AcademyDeskDbContext dbContext) : Controll
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<BatchSummary>>> List(Guid academyId, CancellationToken token)
     {
-        var rows = await (from batch in dbContext.Batches.AsNoTracking()
-                          where batch.AcademyId == academyId
-                          select new BatchSummary(batch.Id, batch.Name, batch.BatchCode, batch.CourseId, batch.TeacherId, batch.BranchId, batch.Capacity, batch.WaitlistCapacity, batch.DeliveryMode, batch.MeetingPattern, batch.RoomName, batch.EnrollmentStatus, batch.AdminNotes, batch.StartDate, batch.EndDate, batch.IsActive, dbContext.Enrollments.Count(x => x.AcademyId == academyId && x.BatchId == batch.Id && x.Status == "Active"))).OrderBy(x => x.Name).ToListAsync(token);
+        var batches = await dbContext.Batches.AsNoTracking().Where(x => x.AcademyId == academyId).OrderBy(x => x.Name).ToListAsync(token);
+        var counts = await dbContext.Enrollments.AsNoTracking().Where(x => x.AcademyId == academyId && x.Status == "Active").GroupBy(x => x.BatchId).Select(x => new { BatchId = x.Key, Count = x.Count() }).ToDictionaryAsync(x => x.BatchId, x => x.Count, token);
+        var rows = batches.Select(x => Summary(x, counts.GetValueOrDefault(x.Id))).ToArray();
         return Ok(rows);
     }
 
