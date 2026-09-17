@@ -32,6 +32,7 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
     public DbSet<PersonDocument> PersonDocuments => Set<PersonDocument>();
     public DbSet<ConsentRecord> ConsentRecords => Set<ConsentRecord>();
     public DbSet<AdminWorkItem> AdminWorkItems => Set<AdminWorkItem>();
+    public DbSet<AccessReview> AccessReviews => Set<AccessReview>();
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
     public DbSet<MusicPiece> MusicPieces => Set<MusicPiece>();
