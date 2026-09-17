@@ -14,6 +14,7 @@ const links = [
   ["Enrolments", "/enrollments"],
   ["Schedule", "/schedule"],
   ["Attendance", "/attendance"],
+  ["Assignments", "/assignments"],
   ["Fees", "/fee-plans"],
   ["Invoices", "/invoices"],
   ["Payments", "/payments"],
