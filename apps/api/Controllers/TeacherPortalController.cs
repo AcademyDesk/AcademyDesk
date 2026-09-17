@@ -202,6 +202,45 @@ public sealed class TeacherPortalController(
         return Ok(new { submission.Id, submission.Status, submission.TeacherFeedback });
     }
 
+    [HttpGet("lesson-plans")]
+    public async Task<ActionResult<IReadOnlyList<TeacherLessonPlanSummary>>> LessonPlans(CancellationToken cancellationToken)
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user?.AcademyId is null || user.TeacherId is null) return Forbid();
+        var plans = await dbContext.LessonPlans.AsNoTracking()
+            .Where(x => x.AcademyId == user.AcademyId && dbContext.Batches.Any(b => b.Id == x.BatchId && b.TeacherId == user.TeacherId))
+            .OrderByDescending(x => x.CreatedAtUtc)
+            .Select(x => new TeacherLessonPlanSummary(x.Id, x.BatchId, x.CourseModuleId, x.ClassSessionId, x.Title, x.Objectives, x.Status))
+            .ToListAsync(cancellationToken);
+        return Ok(plans);
+    }
+
+    [HttpPost("lesson-plans")]
+    public async Task<ActionResult<TeacherLessonPlanSummary>> CreateLessonPlan(TeacherCreateLessonPlanRequest request, CancellationToken cancellationToken)
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user?.AcademyId is null || user.TeacherId is null) return Forbid();
+        if (string.IsNullOrWhiteSpace(request.Title) || !await OwnsBatch(user, request.BatchId, cancellationToken))
+            return BadRequest(new { message = "Select a batch you teach and provide a lesson title." });
+        var plan = new LessonPlan { AcademyId = user.AcademyId.Value, BatchId = request.BatchId, CourseModuleId = request.CourseModuleId, ClassSessionId = request.ClassSessionId, Title = request.Title.Trim(), Objectives = request.Objectives?.Trim() };
+        dbContext.LessonPlans.Add(plan);
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return Ok(new TeacherLessonPlanSummary(plan.Id, plan.BatchId, plan.CourseModuleId, plan.ClassSessionId, plan.Title, plan.Objectives, plan.Status));
+    }
+
+    [HttpPatch("lesson-plans/{lessonPlanId:guid}/status")]
+    public async Task<ActionResult> UpdateLessonPlanStatus(Guid lessonPlanId, TeacherLessonPlanStatusRequest request, CancellationToken cancellationToken)
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user?.AcademyId is null || user.TeacherId is null) return Forbid();
+        if (request.Status is not ("Planned" or "Delivered" or "Skipped" or "MakeupNeeded")) return BadRequest(new { message = "Invalid lesson-plan status." });
+        var plan = await dbContext.LessonPlans.SingleOrDefaultAsync(x => x.Id == lessonPlanId && x.AcademyId == user.AcademyId, cancellationToken);
+        if (plan is null || !await OwnsBatch(user, plan.BatchId, cancellationToken)) return Forbid();
+        plan.Status = request.Status;
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return Ok(new { plan.Id, plan.Status });
+    }
+
     [HttpGet("assessments")]
     public async Task<ActionResult<IReadOnlyList<TeacherAssessmentSummary>>> Assessments(CancellationToken cancellationToken)
     {
@@ -418,6 +457,9 @@ public sealed record TeacherCreateAssignmentRequest(Guid BatchId, string Title, 
 public sealed record TeacherPublishAssignmentRequest(bool IsPublished);
 public sealed record TeacherSubmissionSummary(Guid Id, Guid StudentId, string StudentName, string? ResponseText, string Status, DateTime SubmittedAtUtc, string? TeacherFeedback);
 public sealed record TeacherSubmissionReviewRequest(string? Feedback);
+public sealed record TeacherLessonPlanSummary(Guid Id, Guid BatchId, Guid? CourseModuleId, Guid? ClassSessionId, string Title, string? Objectives, string Status);
+public sealed record TeacherCreateLessonPlanRequest(Guid BatchId, Guid? CourseModuleId, Guid? ClassSessionId, string Title, string? Objectives);
+public sealed record TeacherLessonPlanStatusRequest(string Status);
 public sealed record TeacherAssessmentSummary(Guid Id, Guid BatchId, string Title, string Type, decimal MaxScore, DateTime? ScheduledAtUtc, bool IsPublished);
 public sealed record TeacherCreateAssessmentRequest(Guid BatchId, string Title, string? Type, decimal MaxScore, DateTime? ScheduledAtUtc, bool IsPublished);
 public sealed record TeacherPublishAssessmentRequest(bool IsPublished);
