@@ -32,7 +32,10 @@ public sealed class GuardiansController(AcademyDeskDbContext dbContext) : Contro
         await dbContext.SaveChangesAsync(cancellationToken);
         return Created($"/api/academies/{academyId}/guardians/{guardian.Id}", new GuardianSummary(guardian.Id, guardian.FirstName, guardian.LastName, guardian.Email, guardian.Phone, guardian.IsActive));
     }
+    [HttpPut("{guardianId:guid}")]
+    public async Task<ActionResult<GuardianSummary>> Update(Guid academyId,Guid guardianId,UpdateGuardianRequest request,CancellationToken token){var x=await dbContext.Guardians.SingleOrDefaultAsync(g=>g.Id==guardianId&&g.AcademyId==academyId,token);if(x is null)return NotFound();if(string.IsNullOrWhiteSpace(request.FirstName)||string.IsNullOrWhiteSpace(request.LastName))return BadRequest(new{message="First and last name are required."});x.FirstName=request.FirstName.Trim();x.LastName=request.LastName.Trim();x.Email=request.Email?.Trim();x.Phone=request.Phone?.Trim();x.IsActive=request.IsActive;await dbContext.SaveChangesAsync(token);return Ok(new GuardianSummary(x.Id,x.FirstName,x.LastName,x.Email,x.Phone,x.IsActive));}
 }
 
 public sealed record CreateGuardianRequest(string FirstName, string LastName, string? Email, string? Phone);
 public sealed record GuardianSummary(Guid Id, string FirstName, string LastName, string? Email, string? Phone, bool IsActive);
+public sealed record UpdateGuardianRequest(string FirstName,string LastName,string? Email,string? Phone,bool IsActive);
