@@ -17,6 +17,7 @@ export default function EnrollmentsPage() {
   const [studentId, setStudentId] = useState("");
   const [batchId, setBatchId] = useState("");
   const [startDate, setStartDate] = useState("");
+  const [initialStatus, setInitialStatus] = useState("Active");
   const [message, setMessage] = useState("Loading enrolments…");
   const [savingId, setSavingId] = useState<string | null>(null);
   const requestedStudentId = typeof window === "undefined" ? "" : new URLSearchParams(window.location.search).get("studentId") ?? "";
@@ -41,7 +42,7 @@ export default function EnrollmentsPage() {
   async function createEnrollment(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!academy || !studentId || !batchId) return;
-    const response = await academyApi(`/api/academies/${academy.id}/enrollments`, { method: "POST", headers: apiHeaders(true), body: JSON.stringify({ studentId, batchId, startDate: startDate || null }) });
+    const response = await academyApi(`/api/academies/${academy.id}/enrollments`, { method: "POST", headers: apiHeaders(true), body: JSON.stringify({ studentId, batchId, startDate: startDate || null, status: initialStatus }) });
     if (response.status === 409) return setMessage("This student is already actively enrolled in that batch.");
     if (!response.ok) return setMessage("The enrolment could not be saved.");
     setStartDate(""); setMessage(""); await load();
@@ -57,10 +58,10 @@ export default function EnrollmentsPage() {
     <section className="mt-8 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]"><form onSubmit={createEnrollment} className="rounded-2xl border border-slate-800 bg-slate-900 p-6"><h2 className="text-xl font-semibold">Enrol a student</h2>
       <select value={studentId} onChange={(event) => setStudentId(event.target.value)} className="mt-5 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" required><option value="">Select student</option>{students.map((student) => <option key={student.id} value={student.id}>{student.firstName} {student.lastName}</option>)}</select>
       <select value={batchId} onChange={(event) => setBatchId(event.target.value)} className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" required><option value="">Select batch</option>{batches.map((batch) => <option key={batch.id} value={batch.id}>{batch.name}</option>)}</select>
-      <label className="mt-4 block text-sm text-slate-300">Start date</label><input type="date" value={startDate} onChange={(event) => setStartDate(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" />
+      <label className="mt-4 block text-sm text-slate-300">Start date</label><input type="date" value={startDate} onChange={(event) => setStartDate(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" /><select value={initialStatus} onChange={(event) => setInitialStatus(event.target.value)} className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"><option>Active</option><option>Waitlisted</option></select>
       <button disabled={!academy || !students.length || !batches.length} className="mt-5 w-full rounded-lg bg-cyan-400 px-4 py-2.5 font-semibold text-slate-950 hover:bg-cyan-300 disabled:opacity-60">Enrol student</button>
     </form>
-    <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6"><h2 className="text-xl font-semibold">Current enrolments</h2>{enrollments.length === 0 ? <p className="mt-6 text-slate-400">No students enrolled yet.</p> : <ul className="mt-5 space-y-3">{enrollments.map((enrollment) => <li key={enrollment.id} className="rounded-lg border border-slate-700 bg-slate-950 p-4"><div className="font-medium">{studentName(enrollment.studentId)}</div><div className="mt-1 text-sm text-cyan-200">{batchName(enrollment.batchId)}</div><div className="mt-2 text-sm text-slate-400">Started {enrollment.startDate}{enrollment.endDate ? ` · Ended ${enrollment.endDate}` : ""}</div><div className="mt-3 flex items-center gap-2"><select value={enrollment.status} onChange={(event) => void updateStatus(enrollment, event.target.value)} disabled={savingId === enrollment.id} className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 text-sm"><option>Active</option><option>Paused</option><option>Completed</option><option>Cancelled</option></select><span className="text-xs text-slate-500">Change status</span></div></li>)}</ul>}</section>
+    <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6"><h2 className="text-xl font-semibold">Current enrolments</h2>{enrollments.length === 0 ? <p className="mt-6 text-slate-400">No students enrolled yet.</p> : <ul className="mt-5 space-y-3">{enrollments.map((enrollment) => <li key={enrollment.id} className="rounded-lg border border-slate-700 bg-slate-950 p-4"><div className="font-medium">{studentName(enrollment.studentId)}</div><div className="mt-1 text-sm text-cyan-200">{batchName(enrollment.batchId)}</div><div className="mt-2 text-sm text-slate-400">Started {enrollment.startDate}{enrollment.endDate ? ` · Ended ${enrollment.endDate}` : ""}</div><div className="mt-3 flex items-center gap-2"><select value={enrollment.status} onChange={(event) => void updateStatus(enrollment, event.target.value)} disabled={savingId === enrollment.id} className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 text-sm"><option>Active</option><option>Waitlisted</option><option>Paused</option><option>Completed</option><option>Withdrawn</option><option>Cancelled</option></select><span className="text-xs text-slate-500">Lifecycle status</span></div></li>)}</ul>}</section>
     </section>
   </div></main>;
 }
