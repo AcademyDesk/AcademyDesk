@@ -1,0 +1,2 @@
+namespace AcademyDesk.Api.Domain.Entities;
+public sealed class ConsentRecord : AcademyEntity { public Guid? StudentId { get; set; } public Guid? GuardianId { get; set; } public required string ConsentType { get; set; } public bool Granted { get; set; } public DateTime RecordedAtUtc { get; set; } = DateTime.UtcNow; public DateTime? WithdrawnAtUtc { get; set; } public string? EvidenceReference { get; set; } }

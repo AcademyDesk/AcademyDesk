@@ -1,0 +1,2 @@
+namespace AcademyDesk.Api.Domain.Entities;
+public sealed class PersonDocument : AcademyEntity { public Guid? StudentId { get; set; } public Guid? GuardianId { get; set; } public required string DocumentType { get; set; } public required string FileName { get; set; } public string? SecureReference { get; set; } public DateOnly? ExpiryDate { get; set; } public DateOnly? ReviewedDate { get; set; } public string Status { get; set; } = "PendingReview"; public string Visibility { get; set; } = "AdminOnly"; }
