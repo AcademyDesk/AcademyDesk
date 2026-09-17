@@ -21,6 +21,9 @@ public sealed class AssessmentsController(AcademyDeskDbContext dbContext) : Cont
         dbContext.Assessments.Add(assessment); await dbContext.SaveChangesAsync(cancellationToken);
         return Created($"/api/academies/{academyId}/assessments/{assessment.Id}", new AssessmentSummary(assessment.Id, assessment.BatchId, assessment.Title, assessment.Type, assessment.MaxScore, assessment.ScheduledAtUtc, assessment.IsPublished));
     }
+    [HttpPatch("{assessmentId:guid}/publish")]
+    public async Task<ActionResult> Publish(Guid academyId, Guid assessmentId, PublishAssessmentRequest request, CancellationToken token)
+    { var x=await dbContext.Assessments.SingleOrDefaultAsync(v=>v.Id==assessmentId&&v.AcademyId==academyId,token); if(x is null)return NotFound(); x.IsPublished=request.IsPublished; await dbContext.SaveChangesAsync(token); return Ok(); }
 }
 
 [ApiController]
@@ -48,5 +51,6 @@ public sealed class AssessmentResultsController(AcademyDeskDbContext dbContext) 
 
 public sealed record CreateAssessmentRequest(Guid BatchId, string Title, string? Type, decimal MaxScore, DateTime? ScheduledAtUtc, bool IsPublished);
 public sealed record AssessmentSummary(Guid Id, Guid BatchId, string Title, string Type, decimal MaxScore, DateTime? ScheduledAtUtc, bool IsPublished);
+public sealed record PublishAssessmentRequest(bool IsPublished);
 public sealed record RecordAssessmentResultRequest(Guid StudentId, decimal Score, string? Grade, string? Remarks, bool IsPublished);
 public sealed record AssessmentResultSummary(Guid Id, Guid StudentId, decimal Score, string? Grade, string? Remarks, bool IsPublished);

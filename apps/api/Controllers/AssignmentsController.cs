@@ -27,7 +27,11 @@ public sealed class AssignmentsController(AcademyDeskDbContext dbContext) : Cont
         dbContext.Assignments.Add(assignment); await dbContext.SaveChangesAsync(cancellationToken);
         return Created($"/api/academies/{academyId}/assignments/{assignment.Id}", new AssignmentSummary(assignment.Id, assignment.BatchId, assignment.Title, assignment.Description, assignment.DueAtUtc, assignment.Type, assignment.IsPublished));
     }
+    [HttpPatch("{assignmentId:guid}/publish")]
+    public async Task<ActionResult> Publish(Guid academyId, Guid assignmentId, PublishAssignmentRequest request, CancellationToken token)
+    { var x=await dbContext.Assignments.SingleOrDefaultAsync(v=>v.Id==assignmentId&&v.AcademyId==academyId,token); if(x is null)return NotFound(); x.IsPublished=request.IsPublished; await dbContext.SaveChangesAsync(token); return Ok(); }
 }
 
 public sealed record CreateAssignmentRequest(Guid BatchId, string Title, string? Description, DateTime? DueAtUtc, string? Type, bool IsPublished);
 public sealed record AssignmentSummary(Guid Id, Guid BatchId, string Title, string? Description, DateTime? DueAtUtc, string Type, bool IsPublished);
+public sealed record PublishAssignmentRequest(bool IsPublished);
