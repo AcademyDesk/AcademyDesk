@@ -31,7 +31,19 @@ public sealed class ClassSessionsController(AcademyDeskDbContext dbContext) : Co
         dbContext.ClassSessions.Add(session); await dbContext.SaveChangesAsync(cancellationToken);
         return Created($"/api/academies/{academyId}/sessions/{session.Id}", new ClassSessionSummary(session.Id, session.BatchId, session.TeacherId, session.BranchId, session.StartUtc, session.EndUtc, session.DeliveryMode, session.RoomName, session.Status));
     }
+    [HttpPut("{sessionId:guid}")]
+    public async Task<ActionResult<ClassSessionSummary>> Update(Guid academyId, Guid sessionId, UpdateClassSessionRequest request, CancellationToken token)
+    {
+        var session = await dbContext.ClassSessions.SingleOrDefaultAsync(x => x.Id == sessionId && x.AcademyId == academyId, token);
+        if (session is null) return NotFound();
+        if (request.EndUtc <= request.StartUtc) return BadRequest(new { message = "End time must be after the start time." });
+        if (!new[] { "Scheduled", "Completed", "Cancelled", "NoShow" }.Contains(request.Status, StringComparer.OrdinalIgnoreCase)) return BadRequest(new { message = "Invalid session status." });
+        session.StartUtc = request.StartUtc; session.EndUtc = request.EndUtc; session.DeliveryMode = request.DeliveryMode?.Trim() ?? "InPerson"; session.RoomName = request.RoomName?.Trim(); session.Status = request.Status.Trim();
+        await dbContext.SaveChangesAsync(token);
+        return Ok(new ClassSessionSummary(session.Id, session.BatchId, session.TeacherId, session.BranchId, session.StartUtc, session.EndUtc, session.DeliveryMode, session.RoomName, session.Status));
+    }
 }
 
 public sealed record CreateClassSessionRequest(Guid BatchId, Guid? TeacherId, Guid? BranchId, DateTime StartUtc, DateTime EndUtc, string? DeliveryMode, string? RoomName);
 public sealed record ClassSessionSummary(Guid Id, Guid BatchId, Guid? TeacherId, Guid? BranchId, DateTime StartUtc, DateTime EndUtc, string DeliveryMode, string? RoomName, string Status);
+public sealed record UpdateClassSessionRequest(DateTime StartUtc, DateTime EndUtc, string? DeliveryMode, string? RoomName, string Status);

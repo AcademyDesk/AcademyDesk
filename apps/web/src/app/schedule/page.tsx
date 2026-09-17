@@ -28,6 +28,7 @@ export default function SchedulePage() {
   const [deliveryMode, setDeliveryMode] = useState("InPerson");
   const [roomName, setRoomName] = useState("");
   const [message, setMessage] = useState("Loading schedule…");
+  const [savingId, setSavingId] = useState<string | null>(null);
 
   async function load(academyId?: string) {
     const id = academyId ?? academy?.id;
@@ -58,6 +59,7 @@ export default function SchedulePage() {
     if (!response.ok) return setMessage("The session could not be saved. Ensure the end time is after the start time.");
     setStartLocal(""); setEndLocal(""); setRoomName(""); setMessage(""); await load();
   }
+  async function updateStatus(session: Session, status: string) { if (!academy) return; setSavingId(session.id); const response = await academyApi(`/api/academies/${academy.id}/sessions/${session.id}`, { method: "PUT", headers: apiHeaders(true), body: JSON.stringify({ startUtc: session.startUtc, endUtc: session.endUtc, deliveryMode: session.deliveryMode, roomName: session.roomName, status }) }); setSavingId(null); if (!response.ok) return setMessage("The session status could not be updated."); setMessage("Session updated."); await load(); }
 
   const batchName = (id: string) => batches.find((batch) => batch.id === id)?.name ?? "Unknown batch";
   const teacherName = (id?: string | null) => { const teacher = teachers.find((item) => item.id === id); return teacher ? `${teacher.firstName} ${teacher.lastName}` : "Unassigned"; };
@@ -74,7 +76,7 @@ export default function SchedulePage() {
       <select value={deliveryMode} onChange={(event) => setDeliveryMode(event.target.value)} className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"><option value="InPerson">In person</option><option value="Online">Online</option><option value="Hybrid">Hybrid</option></select>
       <input value={roomName} onChange={(event) => setRoomName(event.target.value)} placeholder="Room or meeting link (optional)" className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" /><button disabled={!academy || batches.length === 0} className="mt-5 w-full rounded-lg bg-cyan-400 px-4 py-2.5 font-semibold text-slate-950 hover:bg-cyan-300 disabled:opacity-60">Schedule class</button>
     </form>
-    <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6"><h2 className="text-xl font-semibold">Scheduled classes</h2>{sessions.length === 0 ? <p className="mt-6 text-slate-400">No classes scheduled yet.</p> : <ul className="mt-5 space-y-3">{sessions.map((session) => <li key={session.id} className="rounded-lg border border-slate-700 bg-slate-950 p-4"><div className="font-medium">{batchName(session.batchId)}</div><div className="mt-1 text-sm text-cyan-200">{formatLocal(session.startUtc)} – {new Intl.DateTimeFormat("en-IN", { timeStyle: "short" }).format(new Date(session.endUtc))}</div><div className="mt-2 text-sm text-slate-300">{teacherName(session.teacherId)} · {branchName(session.branchId)} · {session.deliveryMode}</div>{session.roomName && <div className="mt-1 text-sm text-slate-400">{session.roomName}</div>}</li>)}</ul>}</section>
+    <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6"><h2 className="text-xl font-semibold">Scheduled classes</h2>{sessions.length === 0 ? <p className="mt-6 text-slate-400">No classes scheduled yet.</p> : <ul className="mt-5 space-y-3">{sessions.map((session) => <li key={session.id} className="rounded-lg border border-slate-700 bg-slate-950 p-4"><div className="flex items-start justify-between gap-3"><div><div className="font-medium">{batchName(session.batchId)}</div><div className="mt-1 text-sm text-cyan-200">{formatLocal(session.startUtc)} – {new Intl.DateTimeFormat("en-IN", { timeStyle: "short" }).format(new Date(session.endUtc))}</div><div className="mt-2 text-sm text-slate-300">{teacherName(session.teacherId)} · {branchName(session.branchId)} · {session.deliveryMode}</div>{session.roomName && <div className="mt-1 text-sm text-slate-400">{session.roomName}</div>}</div><span className="rounded-full bg-slate-800 px-2 py-1 text-xs text-slate-300">{session.status}</span></div><div className="mt-3 flex items-center gap-2"><select value={session.status} onChange={(event) => void updateStatus(session, event.target.value)} disabled={savingId === session.id} className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 text-sm"><option>Scheduled</option><option>Completed</option><option>Cancelled</option><option>NoShow</option></select><span className="text-xs text-slate-500">Update status</span></div></li>)}</ul>}</section>
     </section>
   </div></main>;
 }
