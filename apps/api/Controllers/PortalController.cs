@@ -131,6 +131,7 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
         var lessonPlans = await db.LessonPlans.AsNoTracking().Where(x => x.AcademyId == user.AcademyId && batchIds.Contains(x.BatchId)).OrderByDescending(x => x.CreatedAtUtc).Take(50).Select(x => new PortalLessonPlan(x.BatchId, x.Title, x.Objectives, x.Status)).ToListAsync(token);
         var courseIds = await db.Batches.AsNoTracking().Where(x => batchIds.Contains(x.Id)).Select(x => x.CourseId).Distinct().ToArrayAsync(token);
         var modules = await db.CourseModules.AsNoTracking().Where(x => x.AcademyId == user.AcademyId && courseIds.Contains(x.CourseId) && x.IsPublished).OrderBy(x => x.Sequence).Select(x => new PortalCourseModule(x.CourseId, x.Title, x.Description, x.Sequence)).ToListAsync(token);
+        var certificates = await db.Certificates.AsNoTracking().Where(x => x.AcademyId == user.AcademyId && x.StudentId == studentId && x.Status == "Issued").OrderByDescending(x => x.IssuedDate).Select(x => new PortalCertificate(x.CertificateNumber, x.Title, x.IssuedDate, x.Notes)).ToListAsync(token);
         var invoices = await db.Invoices.AsNoTracking().Where(x => x.AcademyId == user.AcademyId && x.StudentId == studentId).OrderByDescending(x => x.IssuedDate).ToListAsync(token);
         var invoiceIds = invoices.Select(x => x.Id).ToArray();
         var paid = await db.Payments.AsNoTracking().Where(x => invoiceIds.Contains(x.InvoiceId) && x.Status == "Completed").GroupBy(x => x.InvoiceId).Select(x => new { x.Key, Total = x.Sum(p => p.Amount) }).ToDictionaryAsync(x => x.Key, x => x.Total, token);
@@ -139,7 +140,7 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
             .Join(db.Assessments.AsNoTracking().Where(x => batchIds.Contains(x.BatchId)), x => x.AssessmentId, a => a.Id,
                 (x, a) => new PortalAssessmentResult(a.Title, a.Type, a.MaxScore, x.Score, x.Grade, x.Remarks))
             .OrderByDescending(x => x.Title).ToListAsync(token);
-        return Ok(new PortalStudentDetails($"{student.FirstName} {student.LastName}", batches, assignments, attendance, music, resources, practice, lessonPlans, modules, invoices.Select(x => new PortalInvoice(x.InvoiceNumber, x.TotalAmount, x.TotalAmount - paid.GetValueOrDefault(x.Id), x.Currency, x.DueDate, x.Status)).ToList(), results));
+        return Ok(new PortalStudentDetails($"{student.FirstName} {student.LastName}", batches, assignments, attendance, music, resources, practice, lessonPlans, modules, certificates, invoices.Select(x => new PortalInvoice(x.InvoiceNumber, x.TotalAmount, x.TotalAmount - paid.GetValueOrDefault(x.Id), x.Currency, x.DueDate, x.Status)).ToList(), results));
     }
 
     [HttpPost("students/{studentId:guid}/assignments/{assignmentId:guid}/submit")]
@@ -231,7 +232,7 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
     }
 }
 
-public sealed record PortalStudentDetails(string Name, IReadOnlyList<PortalBatch> Batches, IReadOnlyList<PortalAssignment> Assignments, IReadOnlyList<PortalAttendance> Attendance, IReadOnlyList<PortalMusicProgress> Music, IReadOnlyList<PortalResource> Resources, IReadOnlyList<PortalPracticeLog> PracticeLogs, IReadOnlyList<PortalLessonPlan> LessonPlans, IReadOnlyList<PortalCourseModule> Modules, IReadOnlyList<PortalInvoice> Invoices, IReadOnlyList<PortalAssessmentResult> AssessmentResults);
+public sealed record PortalStudentDetails(string Name, IReadOnlyList<PortalBatch> Batches, IReadOnlyList<PortalAssignment> Assignments, IReadOnlyList<PortalAttendance> Attendance, IReadOnlyList<PortalMusicProgress> Music, IReadOnlyList<PortalResource> Resources, IReadOnlyList<PortalPracticeLog> PracticeLogs, IReadOnlyList<PortalLessonPlan> LessonPlans, IReadOnlyList<PortalCourseModule> Modules, IReadOnlyList<PortalCertificate> Certificates, IReadOnlyList<PortalInvoice> Invoices, IReadOnlyList<PortalAssessmentResult> AssessmentResults);
 public sealed record PortalBatch(Guid Id, string Name);
 public sealed record PortalAssignment(Guid Id, string Title, string Type, DateTime? DueAtUtc);
 public sealed record PortalAttendance(DateTime StartUtc, string Status);
@@ -242,6 +243,7 @@ public sealed record PortalInvoice(string InvoiceNumber, decimal TotalAmount, de
 public sealed record PortalAssessmentResult(string Title, string Type, decimal MaxScore, decimal Score, string? Grade, string? Remarks);
 public sealed record PortalLessonPlan(Guid BatchId, string Title, string? Objectives, string Status);
 public sealed record PortalCourseModule(Guid CourseId, string Title, string? Description, int Sequence);
+public sealed record PortalCertificate(string CertificateNumber, string Title, DateOnly IssuedDate, string? Notes);
 public sealed record PortalSubmissionRequest(string? ResponseText);
 public sealed record PortalStudentProfileRequest(string? Email,string? Phone);
 public sealed record PortalGuardianProfileRequest(string? Email, string? Phone);
