@@ -83,6 +83,9 @@ public sealed class AcademiesController(
     [HttpPut("{academyId:guid}")]
     public async Task<ActionResult<AcademySummary>> Update(Guid academyId, UpdateAcademyRequest request, CancellationToken token)
     { var user=await userManager.GetUserAsync(User); if(user?.AcademyId!=academyId)return Forbid(); var x=await dbContext.Academies.SingleOrDefaultAsync(v=>v.Id==academyId,token); if(x is null)return NotFound(); if(string.IsNullOrWhiteSpace(request.Name))return BadRequest(new{message="Academy name is required."}); x.Name=request.Name.Trim();x.LegalName=string.IsNullOrWhiteSpace(request.LegalName)?null:request.LegalName.Trim();x.CountryCode=string.IsNullOrWhiteSpace(request.CountryCode)?x.CountryCode:request.CountryCode.Trim().ToUpperInvariant();x.TimeZone=string.IsNullOrWhiteSpace(request.TimeZone)?x.TimeZone:request.TimeZone.Trim(); await dbContext.SaveChangesAsync(token); user.DisplayName=x.Name; await userManager.UpdateAsync(user); return Ok(new AcademySummary(x.Id,x.Name,x.LegalName,x.CountryCode,x.TimeZone,x.IsActive)); }
+    [HttpPatch("{academyId:guid}/active")]
+    public async Task<ActionResult> SetActive(Guid academyId, SetAcademyActiveRequest request, CancellationToken token)
+    { var user=await userManager.GetUserAsync(User); if(user?.AcademyId!=academyId)return Forbid(); var x=await dbContext.Academies.SingleOrDefaultAsync(v=>v.Id==academyId,token); if(x is null)return NotFound(); x.IsActive=request.IsActive; await dbContext.SaveChangesAsync(token); return Ok(); }
 }
 
 public sealed record CreateAcademyRequest(
@@ -91,6 +94,7 @@ public sealed record CreateAcademyRequest(
     string? CountryCode,
     string? TimeZone);
 public sealed record UpdateAcademyRequest(string Name,string? LegalName,string? CountryCode,string? TimeZone);
+public sealed record SetAcademyActiveRequest(bool IsActive);
 
 public sealed record AcademySummary(
     Guid Id,
