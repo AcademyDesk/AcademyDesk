@@ -249,6 +249,41 @@ public sealed class TeacherPortalController(
         return Ok(new { assessment.Id, assessment.IsPublished });
     }
 
+    [HttpGet("assessments/{assessmentId:guid}/results")]
+    public async Task<ActionResult<IReadOnlyList<TeacherAssessmentResultSummary>>> AssessmentResults(Guid assessmentId, CancellationToken cancellationToken)
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user?.AcademyId is null || user.TeacherId is null) return Forbid();
+        var assessment = await dbContext.Assessments.AsNoTracking().SingleOrDefaultAsync(x => x.Id == assessmentId && x.AcademyId == user.AcademyId, cancellationToken);
+        if (assessment is null || !await OwnsBatch(user, assessment.BatchId, cancellationToken)) return Forbid();
+        var results = await dbContext.AssessmentResults.AsNoTracking()
+            .Where(x => x.AcademyId == user.AcademyId && x.AssessmentId == assessmentId)
+            .Join(dbContext.Students.AsNoTracking(), x => x.StudentId, s => s.Id,
+                (x, s) => new TeacherAssessmentResultSummary(x.Id, x.StudentId, s.FirstName + " " + s.LastName, x.Score, x.Grade, x.Remarks, x.IsPublished))
+            .ToListAsync(cancellationToken);
+        return Ok(results);
+    }
+
+    [HttpPost("assessments/{assessmentId:guid}/results")]
+    public async Task<ActionResult<TeacherAssessmentResultSummary>> RecordAssessmentResult(Guid assessmentId, TeacherRecordAssessmentResultRequest request, CancellationToken cancellationToken)
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user?.AcademyId is null || user.TeacherId is null) return Forbid();
+        var assessment = await dbContext.Assessments.SingleOrDefaultAsync(x => x.Id == assessmentId && x.AcademyId == user.AcademyId, cancellationToken);
+        if (assessment is null || !await OwnsBatch(user, assessment.BatchId, cancellationToken)) return Forbid();
+        if (request.Score < 0 || request.Score > assessment.MaxScore || !await dbContext.Enrollments.AnyAsync(x =>
+            x.AcademyId == user.AcademyId && x.BatchId == assessment.BatchId && x.StudentId == request.StudentId && x.Status == "Active", cancellationToken))
+            return BadRequest(new { message = "Student must be actively enrolled and score must be within the assessment range." });
+        var result = await dbContext.AssessmentResults.SingleOrDefaultAsync(x => x.AcademyId == user.AcademyId && x.AssessmentId == assessmentId && x.StudentId == request.StudentId, cancellationToken);
+        var isNew = result is null;
+        result ??= new AssessmentResult { AcademyId = user.AcademyId.Value, AssessmentId = assessmentId, StudentId = request.StudentId };
+        result.Score = request.Score; result.Grade = request.Grade?.Trim(); result.Remarks = request.Remarks?.Trim(); result.IsPublished = request.IsPublished;
+        if (isNew) dbContext.AssessmentResults.Add(result);
+        await dbContext.SaveChangesAsync(cancellationToken);
+        var student = await dbContext.Students.AsNoTracking().SingleAsync(x => x.Id == result.StudentId, cancellationToken);
+        return Ok(new TeacherAssessmentResultSummary(result.Id, result.StudentId, student.FirstName + " " + student.LastName, result.Score, result.Grade, result.Remarks, result.IsPublished));
+    }
+
     private async Task<bool> OwnsBatch(ApplicationUser user, Guid batchId, CancellationToken token) =>
         await dbContext.Batches.AnyAsync(x => x.Id == batchId && x.AcademyId == user.AcademyId && x.TeacherId == user.TeacherId, token);
 
@@ -346,3 +381,5 @@ public sealed record TeacherSubmissionReviewRequest(string? Feedback);
 public sealed record TeacherAssessmentSummary(Guid Id, Guid BatchId, string Title, string Type, decimal MaxScore, DateTime? ScheduledAtUtc, bool IsPublished);
 public sealed record TeacherCreateAssessmentRequest(Guid BatchId, string Title, string? Type, decimal MaxScore, DateTime? ScheduledAtUtc, bool IsPublished);
 public sealed record TeacherPublishAssessmentRequest(bool IsPublished);
+public sealed record TeacherAssessmentResultSummary(Guid Id, Guid StudentId, string StudentName, decimal Score, string? Grade, string? Remarks, bool IsPublished);
+public sealed record TeacherRecordAssessmentResultRequest(Guid StudentId, decimal Score, string? Grade, string? Remarks, bool IsPublished);
