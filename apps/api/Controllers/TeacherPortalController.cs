@@ -350,11 +350,48 @@ public sealed class TeacherPortalController(
         return Ok(records);
     }
 
+    [HttpPatch("sessions/{sessionId:guid}/status")]
+    public async Task<ActionResult> UpdateSessionStatus(Guid sessionId, TeacherSessionStatusRequest request, CancellationToken cancellationToken)
+    {
+        var context = await GetTeacherContext(sessionId, cancellationToken);
+        if (context is null) return Forbid();
+        if (!new[] { "Scheduled", "InProgress", "Completed", "Cancelled", "Rescheduled" }.Contains(request.Status, StringComparer.OrdinalIgnoreCase))
+            return BadRequest(new { message = "Invalid session status." });
+        context.Session.Status = request.Status.Trim();
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return Ok(new { context.Session.Id, context.Session.Status });
+    }
+
+    [HttpPost("sessions/{sessionId:guid}/attendance/bulk")]
+    public async Task<ActionResult> MarkAttendanceBulk(Guid sessionId, TeacherBulkAttendanceRequest request, CancellationToken cancellationToken)
+    {
+        var context = await GetTeacherContext(sessionId, cancellationToken);
+        if (context is null) return Forbid();
+        if (request.Records.Count == 0) return BadRequest(new { message = "At least one attendance record is required." });
+        if (request.Records.Any(x => !AttendanceStatuses.Contains(x.Status, StringComparer.OrdinalIgnoreCase)))
+            return BadRequest(new { message = "One or more attendance statuses are invalid." });
+        var studentIds = request.Records.Select(x => x.StudentId).Distinct().ToArray();
+        var enrolled = await dbContext.Enrollments.Where(x => x.AcademyId == context.AcademyId && x.BatchId == context.Session.BatchId && x.Status == "Active" && studentIds.Contains(x.StudentId)).Select(x => x.StudentId).ToListAsync(cancellationToken);
+        if (enrolled.Count != studentIds.Length) return BadRequest(new { message = "Every student must be actively enrolled in this batch." });
+        var existing = await dbContext.AttendanceRecords.Where(x => x.AcademyId == context.AcademyId && x.ClassSessionId == sessionId && studentIds.Contains(x.StudentId)).ToDictionaryAsync(x => x.StudentId, cancellationToken);
+        foreach (var item in request.Records)
+        {
+            if (!existing.TryGetValue(item.StudentId, out var record))
+            {
+                record = new AttendanceRecord { AcademyId = context.AcademyId, ClassSessionId = sessionId, StudentId = item.StudentId };
+                dbContext.AttendanceRecords.Add(record);
+            }
+            record.Status = item.Status.Trim(); record.Notes = item.Notes?.Trim(); record.MarkedAtUtc = DateTime.UtcNow;
+        }
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return Ok(new { updated = request.Records.Count });
+    }
+
     private async Task<TeacherContext?> GetTeacherContext(Guid sessionId, CancellationToken cancellationToken)
     {
         var user = await userManager.GetUserAsync(User);
         if (user?.AcademyId is null || user.TeacherId is null) return null;
-        var session = await dbContext.ClassSessions.AsNoTracking().SingleOrDefaultAsync(x =>
+        var session = await dbContext.ClassSessions.SingleOrDefaultAsync(x =>
             x.Id == sessionId && x.AcademyId == user.AcademyId && x.TeacherId == user.TeacherId, cancellationToken);
         return session is null ? null : new TeacherContext(user.AcademyId.Value, session);
     }
@@ -368,6 +405,9 @@ public sealed record TeacherSessionSummary(Guid Id, Guid BatchId, DateTime Start
 public sealed record TeacherRosterStudent(Guid Id, string FirstName, string LastName);
 public sealed record TeacherMarkAttendanceRequest(Guid StudentId, string Status, string? Notes);
 public sealed record TeacherAttendanceSummary(Guid StudentId, string Status, string? Notes);
+public sealed record TeacherSessionStatusRequest(string Status);
+public sealed record TeacherBulkAttendanceRequest(IReadOnlyList<TeacherBulkAttendanceItem> Records);
+public sealed record TeacherBulkAttendanceItem(Guid StudentId, string Status, string? Notes);
 public sealed record TeacherPortalProfileRequest(string? Email, string? Phone);
 public sealed record TeacherLeaveRequest(DateOnly StartDate, DateOnly EndDate, string Reason);
 public sealed record TeacherLeaveSummary(Guid Id, DateOnly StartDate, DateOnly EndDate, string Reason, string Status, string? DecisionNotes);
