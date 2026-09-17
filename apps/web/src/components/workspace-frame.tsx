@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import { EnterpriseShell } from "@/components/enterprise-shell";
 
-const publicRoutes = new Set(["/login", "/register", "/portal", "/platform"]);
+const publicRoutes = new Set(["/login", "/register", "/portal", "/platform", "/teacher"]);
 
 export function WorkspaceFrame({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
