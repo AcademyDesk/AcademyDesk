@@ -17,10 +17,10 @@ const navigationGroups: readonly NavigationGroup[] = [
   { label: "Academics", icon: "♫", links: [["Courses", "/courses"], ["Curriculum", "/curriculum"], ["Batches", "/batches"], ["Lesson plans", "/lesson-plans"], ["Assignments", "/assignments"], ["Submission review", "/submission-review"], ["Assessments", "/assessments"], ["Music progress", "/music"], ["Practice logs", "/practice-logs"]] },
   { label: "Operations", icon: "◷", links: [["Schedule", "/schedule"], ["Attendance", "/attendance"], ["Leave", "/leave"], ["Make-up classes", "/makeup"], ["Holidays", "/holidays"], ["Events", "/events"], ["Certificates", "/certificates"], ["Resources", "/resources"]] },
   { label: "Finance", icon: "₹", links: [["Finance overview", "/finance"], ["Fee plans", "/fee-plans"], ["Invoices", "/invoices"], ["Payments", "/payments"], ["Fee reminders", "/fee-reminders"], ["Expenses", "/expenses"]] },
-  { label: "Engagement", icon: "✦", links: [["Messages", "/communications"], ["Templates", "/message-templates"], ["Contact preferences", "/communication-preferences"], ["Channel settings", "/communication-settings"], ["Teacher workspace", "/teacher"], ["Family portal", "/portal"]] },
+  { label: "Engagement", icon: "✦", links: [["Messages", "/communications"], ["Templates", "/message-templates"], ["Contact preferences", "/communication-preferences"], ["Channel settings", "/communication-settings"], ["Portal accounts", "/portal-accounts"]] },
 ] as const;
 
-const administrationNavigation: readonly NavigationItem[] = [["Settings", "/settings"], ["Academy profile", "/"], ["Branches", "/branches"], ["Activity log", "/activity"]];
+const administrationNavigation: readonly NavigationItem[] = [["Settings", "/settings"], ["Academy profile", "/settings"], ["Branches", "/branches"], ["Activity log", "/activity"]];
 const searchItems: readonly NavigationItem[] = [...navigationGroups.flatMap((group) => group.links), ...administrationNavigation];
 
 type EnterpriseShellProps = {
