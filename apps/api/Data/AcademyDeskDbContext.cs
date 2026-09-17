@@ -166,11 +166,13 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
         {
             entity.Property(x => x.Title).HasMaxLength(250).IsRequired();
             entity.Property(x => x.Type).HasMaxLength(40).IsRequired();
+            entity.Property(x => x.MaxScore).HasPrecision(10, 2);
             entity.HasIndex(x => new { x.AcademyId, x.BatchId, x.ScheduledAtUtc });
         });
 
         modelBuilder.Entity<AssessmentResult>(entity =>
         {
+            entity.Property(x => x.Score).HasPrecision(10, 2);
             entity.Property(x => x.Grade).HasMaxLength(30);
             entity.Property(x => x.Remarks).HasMaxLength(1000);
             entity.HasIndex(x => new { x.AcademyId, x.AssessmentId, x.StudentId }).IsUnique();
@@ -179,6 +181,7 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
         modelBuilder.Entity<FeePlan>(entity =>
         {
             entity.Property(x => x.Name).HasMaxLength(200).IsRequired();
+            entity.Property(x => x.Amount).HasPrecision(18, 2);
             entity.Property(x => x.Currency).HasMaxLength(3).IsRequired();
             entity.Property(x => x.Frequency).HasMaxLength(30).IsRequired();
             entity.HasIndex(x => new { x.AcademyId, x.Name }).IsUnique();
