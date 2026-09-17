@@ -67,6 +67,35 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
         return Ok(notifications);
     }
 
+    [HttpPatch("notifications/{notificationId:guid}/read")]
+    public async Task<ActionResult> MarkNotificationRead(Guid notificationId, CancellationToken token)
+    {
+        var user = await users.GetUserAsync(User);
+        if (user?.AcademyId is null) return Forbid();
+        var recipientId = user.StudentId ?? user.GuardianId;
+        var recipientType = user.StudentId.HasValue ? "Student" : "Guardian";
+        if (!recipientId.HasValue) return Forbid();
+        var notification = await db.Notifications.SingleOrDefaultAsync(x => x.Id == notificationId && x.AcademyId == user.AcademyId && x.RecipientId == recipientId && x.RecipientType == recipientType, token);
+        if (notification is null) return NotFound();
+        notification.Status = "Read";
+        await db.SaveChangesAsync(token);
+        return Ok(new { notification.Id, notification.Status });
+    }
+
+    [HttpGet("events")]
+    public async Task<ActionResult> UpcomingEvents(CancellationToken token)
+    {
+        var user = await users.GetUserAsync(User);
+        if (user?.AcademyId is null || (!user.StudentId.HasValue && !user.GuardianId.HasValue)) return Forbid();
+        var now = DateTime.UtcNow;
+        var events = await db.AcademyEvents.AsNoTracking()
+            .Where(x => x.AcademyId == user.AcademyId && x.Status == "Published" && x.StartUtc >= now)
+            .OrderBy(x => x.StartUtc).Take(50)
+            .Select(x => new PortalEventSummary(x.Id, x.Title, x.Type, x.StartUtc, x.EndUtc, x.Venue, x.Notes))
+            .ToListAsync(token);
+        return Ok(events);
+    }
+
     [HttpGet("guardians/{guardianId:guid}/children")]
     public async Task<ActionResult> GuardianChildren(Guid guardianId, CancellationToken token)
     {
@@ -217,3 +246,4 @@ public sealed record PortalLeaveSummary(Guid Id, DateOnly StartDate, DateOnly En
 public sealed record PortalPracticeLogRequest(DateOnly PracticeDate, int MinutesPracticed, string? FocusArea, string? Notes);
 public sealed record PortalNotificationSummary(Guid Id, string Title, string Message, string Channel, string Status, DateTime CreatedAtUtc, DateTime? SentAtUtc);
 public sealed record PortalChildSummary(Guid Id, string Name, string? Email, string? Phone, bool IsActive, int ActiveEnrollmentCount);
+public sealed record PortalEventSummary(Guid Id, string Title, string Type, DateTime StartUtc, DateTime EndUtc, string? Venue, string? Notes);
