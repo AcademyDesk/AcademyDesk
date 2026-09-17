@@ -31,6 +31,7 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
     public DbSet<StudentMusicProgress> StudentMusicProgress => Set<StudentMusicProgress>();
     public DbSet<AcademyEvent> AcademyEvents => Set<AcademyEvent>();
     public DbSet<Certificate> Certificates => Set<Certificate>();
+    public DbSet<LeaveRequest> LeaveRequests => Set<LeaveRequest>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -259,6 +260,15 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
             entity.Property(x => x.Notes).HasMaxLength(2000);
             entity.HasIndex(x => new { x.AcademyId, x.CertificateNumber }).IsUnique();
             entity.HasIndex(x => new { x.AcademyId, x.StudentId, x.IssuedDate });
+        });
+
+        modelBuilder.Entity<LeaveRequest>(entity =>
+        {
+            entity.Property(x => x.RequesterType).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.Reason).HasMaxLength(2000).IsRequired();
+            entity.Property(x => x.Status).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.DecisionNotes).HasMaxLength(1000);
+            entity.HasIndex(x => new { x.AcademyId, x.Status, x.StartDate });
         });
     }
 }
