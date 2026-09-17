@@ -70,6 +70,19 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
     [HttpPut("students/{studentId:guid}/profile")]
     public async Task<ActionResult> UpdateProfile(Guid studentId, PortalStudentProfileRequest request, CancellationToken token)
     { var user=await users.GetUserAsync(User); if(user?.AcademyId is null||user.StudentId!=studentId)return Forbid(); var student=await db.Students.SingleOrDefaultAsync(x=>x.Id==studentId&&x.AcademyId==user.AcademyId,token); if(student is null)return NotFound(); student.Email=request.Email?.Trim(); student.Phone=request.Phone?.Trim(); await db.SaveChangesAsync(token); return Ok(); }
+
+    [HttpPut("guardians/{guardianId:guid}/profile")]
+    public async Task<ActionResult> UpdateGuardianProfile(Guid guardianId, PortalGuardianProfileRequest request, CancellationToken token)
+    {
+        var user = await users.GetUserAsync(User);
+        if (user?.AcademyId is null || user.GuardianId != guardianId) return Forbid();
+        var guardian = await db.Guardians.SingleOrDefaultAsync(x => x.Id == guardianId && x.AcademyId == user.AcademyId, token);
+        if (guardian is null) return NotFound();
+        guardian.Email = request.Email?.Trim();
+        guardian.Phone = request.Phone?.Trim();
+        await db.SaveChangesAsync(token);
+        return Ok(new { guardian.Id, guardian.Email, guardian.Phone });
+    }
 }
 
 public sealed record PortalStudentDetails(string Name, IReadOnlyList<PortalBatch> Batches, IReadOnlyList<PortalAssignment> Assignments, IReadOnlyList<PortalAttendance> Attendance, IReadOnlyList<PortalMusicProgress> Music, IReadOnlyList<PortalResource> Resources, IReadOnlyList<PortalPracticeLog> PracticeLogs, IReadOnlyList<PortalInvoice> Invoices);
@@ -82,3 +95,4 @@ public sealed record PortalPracticeLog(DateOnly PracticeDate, int MinutesPractic
 public sealed record PortalInvoice(string InvoiceNumber, decimal TotalAmount, decimal Balance, string Currency, DateOnly DueDate, string Status);
 public sealed record PortalSubmissionRequest(string? ResponseText);
 public sealed record PortalStudentProfileRequest(string? Email,string? Phone);
+public sealed record PortalGuardianProfileRequest(string? Email, string? Phone);
