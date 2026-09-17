@@ -45,6 +45,9 @@ public sealed class LeadsController(AcademyDeskDbContext dbContext) : Controller
         await dbContext.SaveChangesAsync(cancellationToken);
         return Ok(ToSummary(lead));
     }
+    [HttpPatch("{leadId:guid}/notes")]
+    public async Task<ActionResult<LeadSummary>> UpdateNotes(Guid academyId, Guid leadId, UpdateLeadNotesRequest request, CancellationToken token)
+    { var lead=await dbContext.Leads.SingleOrDefaultAsync(x=>x.Id==leadId&&x.AcademyId==academyId,token); if(lead is null)return NotFound(); lead.Notes=string.IsNullOrWhiteSpace(request.Notes)?null:request.Notes.Trim(); await dbContext.SaveChangesAsync(token); return Ok(ToSummary(lead)); }
 
     [HttpPost("{leadId:guid}/convert")]
     public async Task<ActionResult<LeadConversionSummary>> Convert(Guid academyId, Guid leadId, ConvertLeadRequest request, CancellationToken cancellationToken)
@@ -70,6 +73,7 @@ public sealed class LeadsController(AcademyDeskDbContext dbContext) : Controller
 
 public sealed record CreateLeadRequest(string FullName, string? Email, string? Phone, string? ProgramInterest, string? Source, Guid? BranchId, Guid? AssignedTeacherId, DateTime? FollowUpAtUtc, string? Notes);
 public sealed record UpdateLeadStageRequest(string Stage, DateTime? FollowUpAtUtc);
+public sealed record UpdateLeadNotesRequest(string? Notes);
 public sealed record ConvertLeadRequest(string? FirstName, string? LastName);
 public sealed record LeadSummary(Guid Id, string FullName, string? Email, string? Phone, string? ProgramInterest, string Source, string Stage, Guid? BranchId, Guid? AssignedTeacherId, DateTime? FollowUpAtUtc, string? Notes, Guid? ConvertedStudentId);
 public sealed record LeadConversionSummary(Guid LeadId, Guid StudentId, string FirstName, string LastName);
