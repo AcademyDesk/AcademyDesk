@@ -32,6 +32,8 @@ const links = [
   ["Assessments", "/assessments"],
   ["Messages", "/communications"],
   ["Communication settings", "/communication-settings"],
+  ["Message templates", "/message-templates"],
+  ["Contact preferences", "/communication-preferences"],
   ["Fees", "/fee-plans"],
   ["Invoices", "/invoices"],
   ["Payments", "/payments"],

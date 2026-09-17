@@ -4,6 +4,7 @@ using AcademyDesk.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AcademyDesk.Api.Migrations
 {
     [DbContext(typeof(AcademyDeskDbContext))]
-    partial class AcademyDeskDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260917105058_AddCommunicationTemplatesAndPreferences")]
+    partial class AddCommunicationTemplatesAndPreferences
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -711,11 +714,6 @@ namespace AcademyDesk.Api.Migrations
                         .HasMaxLength(250)
                         .HasColumnType("nvarchar(250)");
 
-                    b.Property<string>("TemplateGroup")
-                        .IsRequired()
-                        .HasMaxLength(60)
-                        .HasColumnType("nvarchar(60)");
-
                     b.Property<string>("TemplateKey")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -1328,9 +1326,6 @@ namespace AcademyDesk.Api.Migrations
                     b.Property<Guid>("AcademyId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("AttemptCount")
-                        .HasColumnType("int");
-
                     b.Property<string>("Channel")
                         .IsRequired()
                         .HasMaxLength(30)
@@ -1338,10 +1333,6 @@ namespace AcademyDesk.Api.Migrations
 
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("FailureReason")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
 
                     b.Property<string>("Message")
                         .IsRequired()
@@ -1367,9 +1358,6 @@ namespace AcademyDesk.Api.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
 
-                    b.Property<Guid?>("TemplateId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(250)
@@ -1377,10 +1365,6 @@ namespace AcademyDesk.Api.Migrations
 
                     b.Property<DateTime?>("UpdatedAtUtc")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("VariablesJson")
-                        .HasMaxLength(8000)
-                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 

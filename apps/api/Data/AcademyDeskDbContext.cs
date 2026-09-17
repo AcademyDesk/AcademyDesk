@@ -37,6 +37,8 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
     public DbSet<CourseModule> CourseModules => Set<CourseModule>();
     public DbSet<LessonPlan> LessonPlans => Set<LessonPlan>();
     public DbSet<CommunicationChannel> CommunicationChannels => Set<CommunicationChannel>();
+    public DbSet<CommunicationTemplate> CommunicationTemplates => Set<CommunicationTemplate>();
+    public DbSet<CommunicationPreference> CommunicationPreferences => Set<CommunicationPreference>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -216,6 +218,8 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
             entity.Property(x => x.Message).HasMaxLength(4000).IsRequired();
             entity.Property(x => x.Channel).HasMaxLength(30).IsRequired();
             entity.Property(x => x.Status).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.VariablesJson).HasMaxLength(8000);
+            entity.Property(x => x.FailureReason).HasMaxLength(1000);
             entity.HasIndex(x => new { x.AcademyId, x.RecipientId, x.CreatedAtUtc });
         });
 
@@ -303,6 +307,26 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
             entity.Property(x => x.PhoneNumber).HasMaxLength(30);
             entity.Property(x => x.ExternalAccountReference).HasMaxLength(300);
             entity.HasIndex(x => new { x.AcademyId, x.Channel }).IsUnique();
+        });
+        modelBuilder.Entity<CommunicationTemplate>(entity =>
+        {
+            entity.Property(x => x.Channel).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.Name).HasMaxLength(200).IsRequired();
+            entity.Property(x => x.TemplateKey).HasMaxLength(100).IsRequired();
+            entity.Property(x => x.Category).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.TemplateGroup).HasMaxLength(60).IsRequired();
+            entity.Property(x => x.Status).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.Language).HasMaxLength(20).IsRequired();
+            entity.Property(x => x.ProviderTemplateName).HasMaxLength(200);
+            entity.Property(x => x.Subject).HasMaxLength(250);
+            entity.Property(x => x.Body).HasMaxLength(4000).IsRequired();
+            entity.HasIndex(x => new { x.AcademyId, x.Channel, x.TemplateKey }).IsUnique();
+        });
+        modelBuilder.Entity<CommunicationPreference>(entity =>
+        {
+            entity.Property(x => x.RecipientType).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.Notes).HasMaxLength(1000);
+            entity.HasIndex(x => new { x.AcademyId, x.RecipientType, x.RecipientId }).IsUnique();
         });
     }
 }
