@@ -26,7 +26,19 @@ public sealed class EnrollmentsController(AcademyDeskDbContext dbContext) : Cont
         dbContext.Enrollments.Add(enrollment); await dbContext.SaveChangesAsync(cancellationToken);
         return Created($"/api/academies/{academyId}/enrollments/{enrollment.Id}", new EnrollmentSummary(enrollment.Id, enrollment.StudentId, enrollment.BatchId, enrollment.StartDate, enrollment.EndDate, enrollment.Status));
     }
+    [HttpPut("{enrollmentId:guid}")]
+    public async Task<ActionResult<EnrollmentSummary>> Update(Guid academyId, Guid enrollmentId, UpdateEnrollmentRequest request, CancellationToken token)
+    {
+        var enrollment = await dbContext.Enrollments.SingleOrDefaultAsync(x => x.Id == enrollmentId && x.AcademyId == academyId, token);
+        if (enrollment is null) return NotFound();
+        var status = string.IsNullOrWhiteSpace(request.Status) ? enrollment.Status : request.Status.Trim();
+        if (!new[] { "Active", "Completed", "Cancelled", "Paused" }.Contains(status, StringComparer.OrdinalIgnoreCase)) return BadRequest(new { message = "Status must be Active, Completed, Cancelled, or Paused." });
+        enrollment.Status = status; enrollment.EndDate = request.EndDate;
+        await dbContext.SaveChangesAsync(token);
+        return Ok(new EnrollmentSummary(enrollment.Id, enrollment.StudentId, enrollment.BatchId, enrollment.StartDate, enrollment.EndDate, enrollment.Status));
+    }
 }
 
 public sealed record CreateEnrollmentRequest(Guid StudentId, Guid BatchId, DateOnly? StartDate);
 public sealed record EnrollmentSummary(Guid Id, Guid StudentId, Guid BatchId, DateOnly StartDate, DateOnly? EndDate, string Status);
+public sealed record UpdateEnrollmentRequest(string Status, DateOnly? EndDate);

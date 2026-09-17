@@ -12,7 +12,7 @@ public sealed class BatchesController(AcademyDeskDbContext dbContext) : Controll
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<BatchSummary>>> List(Guid academyId, CancellationToken cancellationToken)
     {
-        var batches = await dbContext.Batches.AsNoTracking().Where(x => x.AcademyId == academyId && x.IsActive).OrderBy(x => x.Name).Select(x => new BatchSummary(x.Id, x.Name, x.CourseId, x.TeacherId, x.BranchId, x.Capacity, x.StartDate, x.EndDate, x.IsActive)).ToListAsync(cancellationToken);
+        var batches = await dbContext.Batches.AsNoTracking().Where(x => x.AcademyId == academyId).OrderBy(x => x.Name).Select(x => new BatchSummary(x.Id, x.Name, x.CourseId, x.TeacherId, x.BranchId, x.Capacity, x.StartDate, x.EndDate, x.IsActive)).ToListAsync(cancellationToken);
         return Ok(batches);
     }
 
