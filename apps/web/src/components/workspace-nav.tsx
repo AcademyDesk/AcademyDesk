@@ -18,6 +18,7 @@ const links = [
   ["Staff", "/staff"],
   ["Teacher portal", "/teacher"],
   ["Courses", "/courses"],
+  ["Curriculum", "/curriculum"],
   ["Batches", "/batches"],
   ["Enrolments", "/enrollments"],
   ["Schedule", "/schedule"],
