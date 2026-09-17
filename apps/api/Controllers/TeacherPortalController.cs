@@ -57,6 +57,40 @@ public sealed class TeacherPortalController(
         return Ok(new { teacher.Id, teacher.Email, teacher.Phone });
     }
 
+    [HttpGet("leave-requests")]
+    public async Task<ActionResult<IReadOnlyList<TeacherLeaveSummary>>> LeaveRequests(CancellationToken cancellationToken)
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user?.AcademyId is null || user.TeacherId is null) return Forbid();
+        var requests = await dbContext.LeaveRequests.AsNoTracking()
+            .Where(x => x.AcademyId == user.AcademyId && x.TeacherId == user.TeacherId && x.RequesterType == "Teacher")
+            .OrderByDescending(x => x.CreatedAtUtc)
+            .Select(x => new TeacherLeaveSummary(x.Id, x.StartDate, x.EndDate, x.Reason, x.Status, x.DecisionNotes))
+            .ToListAsync(cancellationToken);
+        return Ok(requests);
+    }
+
+    [HttpPost("leave-requests")]
+    public async Task<ActionResult<TeacherLeaveSummary>> RequestLeave(TeacherLeaveRequest request, CancellationToken cancellationToken)
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user?.AcademyId is null || user.TeacherId is null) return Forbid();
+        if (request.EndDate < request.StartDate || string.IsNullOrWhiteSpace(request.Reason))
+            return BadRequest(new { message = "Reason and valid dates are required." });
+        var leave = new LeaveRequest
+        {
+            AcademyId = user.AcademyId.Value,
+            RequesterType = "Teacher",
+            TeacherId = user.TeacherId.Value,
+            StartDate = request.StartDate,
+            EndDate = request.EndDate,
+            Reason = request.Reason.Trim()
+        };
+        dbContext.LeaveRequests.Add(leave);
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return Ok(new TeacherLeaveSummary(leave.Id, leave.StartDate, leave.EndDate, leave.Reason, leave.Status, leave.DecisionNotes));
+    }
+
     [HttpGet("sessions/{sessionId:guid}/roster")]
     public async Task<ActionResult<IReadOnlyList<TeacherRosterStudent>>> Roster(Guid sessionId, CancellationToken cancellationToken)
     {
@@ -139,3 +173,5 @@ public sealed record TeacherRosterStudent(Guid Id, string FirstName, string Last
 public sealed record TeacherMarkAttendanceRequest(Guid StudentId, string Status, string? Notes);
 public sealed record TeacherAttendanceSummary(Guid StudentId, string Status, string? Notes);
 public sealed record TeacherPortalProfileRequest(string? Email, string? Phone);
+public sealed record TeacherLeaveRequest(DateOnly StartDate, DateOnly EndDate, string Reason);
+public sealed record TeacherLeaveSummary(Guid Id, DateOnly StartDate, DateOnly EndDate, string Reason, string Status, string? DecisionNotes);
