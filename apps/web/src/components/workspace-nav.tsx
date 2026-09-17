@@ -17,6 +17,7 @@ const links = [
   ["Fees", "/fee-plans"],
   ["Invoices", "/invoices"],
   ["Payments", "/payments"],
+  ["Expenses", "/expenses"],
 ] as const;
 
 export function WorkspaceNav() {
