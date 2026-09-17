@@ -1,6 +1,7 @@
 using AcademyDesk.Api.Data;
 using AcademyDesk.Api.Domain.Identity;
 using AcademyDesk.Api.Security;
+using AcademyDesk.Api.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -37,5 +38,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapGroup("/api/auth").MapIdentityApi<ApplicationUser>();
+
+if (app.Environment.IsDevelopment()) await DevelopmentIdentitySeeder.SeedAsync(app.Services);
 
 app.Run();

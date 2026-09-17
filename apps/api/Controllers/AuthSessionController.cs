@@ -17,8 +17,9 @@ public sealed class AuthSessionController(UserManager<ApplicationUser> users) : 
         if (user is null) return Unauthorized();
 
         var roles = await users.GetRolesAsync(user);
-        return Ok(new SessionSummary(user.DisplayName, roles.ToArray(), user.AcademyId));
+        var workspace = user.IsPlatformOwner ? "Platform" : roles.Contains("Teacher") ? "Teacher" : roles.Contains("Student") || roles.Contains("Guardian") ? "Portal" : "AcademyAdmin";
+        return Ok(new SessionSummary(user.DisplayName, roles.ToArray(), user.AcademyId, user.IsPlatformOwner, workspace));
     }
 }
 
-public sealed record SessionSummary(string DisplayName, IReadOnlyList<string> Roles, Guid? AcademyId);
+public sealed record SessionSummary(string DisplayName, IReadOnlyList<string> Roles, Guid? AcademyId, bool IsPlatformOwner, string Workspace);
