@@ -18,5 +18,10 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
             entity.HasIndex(x => new { x.AcademyId, x.StudentId });
             entity.HasIndex(x => new { x.AcademyId, x.GuardianId });
         });
+        builder.Entity<ApplicationRole>(entity =>
+        {
+            entity.Property(x => x.PermissionsJson).HasMaxLength(4000).IsRequired();
+            entity.HasIndex(x => new { x.AcademyId, x.Name }).IsUnique().HasFilter("[AcademyId] IS NOT NULL");
+        });
     }
 }

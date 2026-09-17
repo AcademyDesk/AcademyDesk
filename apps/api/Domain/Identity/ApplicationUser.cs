@@ -15,4 +15,7 @@ public sealed class ApplicationUser : IdentityUser<Guid>
 
 public sealed class ApplicationRole : IdentityRole<Guid>
 {
+    public Guid? AcademyId { get; set; }
+    public bool IsSystemRole { get; set; }
+    public string PermissionsJson { get; set; } = "[]";
 }
