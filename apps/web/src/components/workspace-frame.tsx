@@ -7,6 +7,6 @@ const publicRoutes = new Set(["/login", "/register", "/portal", "/platform", "/t
 
 export function WorkspaceFrame({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  if (publicRoutes.has(pathname)) return <>{children}</>;
+  if (publicRoutes.has(pathname) || pathname.startsWith("/platform/")) return <>{children}</>;
   return <EnterpriseShell>{children}</EnterpriseShell>;
 }
