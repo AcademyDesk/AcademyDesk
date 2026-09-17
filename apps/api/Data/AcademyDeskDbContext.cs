@@ -333,6 +333,6 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
         });
         modelBuilder.Entity<PracticeLog>(entity => { entity.Property(x => x.FocusArea).HasMaxLength(250); entity.Property(x => x.Notes).HasMaxLength(2000); entity.Property(x => x.TeacherFeedback).HasMaxLength(2000); entity.Property(x => x.Status).HasMaxLength(30).IsRequired(); entity.HasIndex(x => new { x.AcademyId, x.StudentId, x.PracticeDate }); });
         modelBuilder.Entity<AssignmentSubmission>(entity => { entity.Property(x => x.ResponseText).HasMaxLength(4000); entity.Property(x => x.TeacherFeedback).HasMaxLength(2000); entity.Property(x => x.Status).HasMaxLength(30).IsRequired(); entity.HasIndex(x => new { x.AcademyId, x.AssignmentId, x.StudentId }).IsUnique(); });
-        modelBuilder.Entity<AcademyHoliday>(entity => { entity.Property(x => x.Name).HasMaxLength(200).IsRequired(); entity.Property(x => x.Notes).HasMaxLength(1000); entity.HasIndex(x => new { x.AcademyId, x.HolidayDate }).IsUnique(); });
+        modelBuilder.Entity<AcademyHoliday>(entity => { entity.Property(x => x.Name).HasMaxLength(200).IsRequired(); entity.Property(x => x.Notes).HasMaxLength(1000); entity.Property(x => x.Scope).HasMaxLength(30).IsRequired(); entity.Property(x => x.StateOrUt).HasMaxLength(80); entity.HasIndex(x => new { x.AcademyId, x.HolidayDate }).IsUnique(); });
     }
 }
