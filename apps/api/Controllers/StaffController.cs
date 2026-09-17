@@ -74,6 +74,33 @@ public sealed class StaffController(
             new StaffAccountSummary(user.Id, user.DisplayName, user.Email ?? string.Empty, user.TeacherId, [role], user.IsActive));
     }
 
+    [HttpPatch("{staffId:guid}/status")]
+    public async Task<ActionResult> UpdateStatus(Guid academyId, Guid staffId, StaffStatusRequest request)
+    {
+        if (!await IsOwner(academyId)) return Forbid();
+        var current = await userManager.GetUserAsync(User);
+        if (current?.Id == staffId) return BadRequest(new { message = "The owner account cannot be deactivated here." });
+        var staff = await userManager.FindByIdAsync(staffId.ToString());
+        if (staff?.AcademyId != academyId) return NotFound();
+        staff.IsActive = request.IsActive;
+        await userManager.UpdateAsync(staff);
+        return Ok(new { staff.Id, staff.IsActive });
+    }
+
+    [HttpPatch("{staffId:guid}/password")]
+    public async Task<ActionResult> ResetPassword(Guid academyId, Guid staffId, StaffPasswordRequest request)
+    {
+        if (!await IsOwner(academyId)) return Forbid();
+        if (string.IsNullOrWhiteSpace(request.NewPassword) || request.NewPassword.Length < 8)
+            return BadRequest(new { message = "The new password must be at least 8 characters." });
+        var staff = await userManager.FindByIdAsync(staffId.ToString());
+        if (staff?.AcademyId != academyId) return NotFound();
+        var token = await userManager.GeneratePasswordResetTokenAsync(staff);
+        var result = await userManager.ResetPasswordAsync(staff, token, request.NewPassword);
+        if (!result.Succeeded) return BadRequest(new { message = string.Join(" ", result.Errors.Select(x => x.Description)) });
+        return Ok(new { message = "Staff password reset successfully." });
+    }
+
     private async Task<bool> IsOwner(Guid academyId)
     {
         var currentUser = await userManager.GetUserAsync(User);
@@ -83,3 +110,5 @@ public sealed class StaffController(
 
 public sealed record CreateStaffAccountRequest(string Email, string DisplayName, string Password, string Role, Guid? TeacherId);
 public sealed record StaffAccountSummary(Guid Id, string DisplayName, string Email, Guid? TeacherId, IReadOnlyList<string> Roles, bool IsActive);
+public sealed record StaffStatusRequest(bool IsActive);
+public sealed record StaffPasswordRequest(string NewPassword);
