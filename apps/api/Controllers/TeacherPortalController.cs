@@ -43,6 +43,20 @@ public sealed class TeacherPortalController(
         return Ok(new TeacherPortalSummary(teacher.FirstName, teacher.LastName, batches, sessions));
     }
 
+    [HttpPut("profile")]
+    public async Task<ActionResult> UpdateProfile(TeacherPortalProfileRequest request, CancellationToken cancellationToken)
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user?.AcademyId is null || user.TeacherId is null) return Forbid();
+        var teacher = await dbContext.Teachers.SingleOrDefaultAsync(x =>
+            x.Id == user.TeacherId && x.AcademyId == user.AcademyId && x.IsActive, cancellationToken);
+        if (teacher is null) return Forbid();
+        teacher.Email = request.Email?.Trim();
+        teacher.Phone = request.Phone?.Trim();
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return Ok(new { teacher.Id, teacher.Email, teacher.Phone });
+    }
+
     [HttpGet("sessions/{sessionId:guid}/roster")]
     public async Task<ActionResult<IReadOnlyList<TeacherRosterStudent>>> Roster(Guid sessionId, CancellationToken cancellationToken)
     {
@@ -124,3 +138,4 @@ public sealed record TeacherSessionSummary(Guid Id, Guid BatchId, DateTime Start
 public sealed record TeacherRosterStudent(Guid Id, string FirstName, string LastName);
 public sealed record TeacherMarkAttendanceRequest(Guid StudentId, string Status, string? Notes);
 public sealed record TeacherAttendanceSummary(Guid StudentId, string Status, string? Notes);
+public sealed record TeacherPortalProfileRequest(string? Email, string? Phone);
