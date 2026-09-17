@@ -43,6 +43,8 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
     public DbSet<MakeupClass> MakeupClasses => Set<MakeupClass>();
     public DbSet<LearningResource> LearningResources => Set<LearningResource>();
     public DbSet<CourseModule> CourseModules => Set<CourseModule>();
+    public DbSet<CoursePrerequisite> CoursePrerequisites => Set<CoursePrerequisite>();
+    public DbSet<GradingScheme> GradingSchemes => Set<GradingScheme>();
     public DbSet<LessonPlan> LessonPlans => Set<LessonPlan>();
     public DbSet<CommunicationChannel> CommunicationChannels => Set<CommunicationChannel>();
     public DbSet<CommunicationTemplate> CommunicationTemplates => Set<CommunicationTemplate>();
