@@ -40,7 +40,7 @@ public sealed class CommunicationPreferencesController(
         return Ok(ToSummary(preference));
     }
 
-    private async Task<bool> CanManage(Guid academyId) { var user = await userManager.GetUserAsync(User); return user?.AcademyId == academyId && (await userManager.IsInRoleAsync(user, "Owner") || await userManager.IsInRoleAsync(user, "Manager")); }
+    private async Task<bool> CanManage(Guid academyId) { var user = await userManager.GetUserAsync(User); return user?.AcademyId == academyId && (await userManager.IsInRoleAsync(user, "Owner") || await userManager.IsInRoleAsync(user, "AcademyAdmin") || await userManager.IsInRoleAsync(user, "Manager")); }
     private static CommunicationPreferenceSummary ToSummary(CommunicationPreference x) => new(x.Id, x.RecipientId, x.RecipientType, x.EmailAllowed, x.WhatsAppAllowed, x.MarketingAllowed, x.EmailOptedInAtUtc, x.WhatsAppOptedInAtUtc, x.OptedOutAtUtc, x.Notes);
 }
 

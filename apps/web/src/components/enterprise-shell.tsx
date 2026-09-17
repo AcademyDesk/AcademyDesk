@@ -11,8 +11,10 @@ type NavigationGroup = { label: string; icon: string; links: readonly Navigation
 
 const navigationGroups: readonly NavigationGroup[] = [
   { label: "Workspace", icon: "▦", links: [["Overview", "/dashboard"], ["Calendar", "/calendar"], ["Activity log", "/activity"], ["Reports", "/reports"]] },
-  { label: "People", icon: "♙", links: [["Students", "/students"], ["Student 360", "/student-profile"], ["Guardians", "/guardians"], ["Family 360", "/guardian-profile"], ["Teachers", "/teachers"], ["Teacher 360", "/teacher-profile"], ["Staff", "/staff"], ["Leads", "/leads"], ["Portal accounts", "/portal-accounts"]] },
-  { label: "Academics", icon: "♫", links: [["Courses", "/courses"], ["Curriculum", "/curriculum"], ["Batches", "/batches"], ["Enrolments", "/enrollments"], ["Lesson plans", "/lesson-plans"], ["Assignments", "/assignments"], ["Submission review", "/submission-review"], ["Assessments", "/assessments"], ["Music progress", "/music"], ["Practice logs", "/practice-logs"]] },
+  { label: "Learners & families", icon: "♙", links: [["Students", "/students"], ["Student 360", "/student-profile"], ["Guardians", "/guardians"], ["Family 360", "/guardian-profile"], ["Enrolments", "/enrollments"], ["Portal accounts", "/portal-accounts"]] },
+  { label: "Team & access", icon: "♜", links: [["Teachers", "/teachers"], ["Teacher 360", "/teacher-profile"], ["Staff", "/staff"], ["Leave", "/leave"]] },
+  { label: "Admissions", icon: "◌", links: [["Leads", "/leads"], ["Enrolment pipeline", "/enrollments"]] },
+  { label: "Academics", icon: "♫", links: [["Courses", "/courses"], ["Curriculum", "/curriculum"], ["Batches", "/batches"], ["Lesson plans", "/lesson-plans"], ["Assignments", "/assignments"], ["Submission review", "/submission-review"], ["Assessments", "/assessments"], ["Music progress", "/music"], ["Practice logs", "/practice-logs"]] },
   { label: "Operations", icon: "◷", links: [["Schedule", "/schedule"], ["Attendance", "/attendance"], ["Leave", "/leave"], ["Make-up classes", "/makeup"], ["Holidays", "/holidays"], ["Events", "/events"], ["Certificates", "/certificates"], ["Resources", "/resources"]] },
   { label: "Finance", icon: "₹", links: [["Finance overview", "/finance"], ["Fee plans", "/fee-plans"], ["Invoices", "/invoices"], ["Payments", "/payments"], ["Fee reminders", "/fee-reminders"], ["Expenses", "/expenses"]] },
   { label: "Engagement", icon: "✦", links: [["Messages", "/communications"], ["Templates", "/message-templates"], ["Contact preferences", "/communication-preferences"], ["Channel settings", "/communication-settings"], ["Teacher workspace", "/teacher"], ["Family portal", "/portal"]] },
@@ -40,8 +42,8 @@ export function EnterpriseShell({ academyName, userName, userRole, children }: E
   const [account, setAccount] = useState<{ displayName: string; roles: string[] }>();
   const results = useMemo(() => searchItems.filter(([label]) => label.toLowerCase().includes(query.trim().toLowerCase())).slice(0, 7), [query]);
   const resolvedAcademyName = academyName || workspaceName || "Academy workspace";
-  const resolvedUserName = userName || account?.displayName || "Academy owner";
-  const resolvedUserRole = userRole || account?.roles?.[0] || "Owner";
+  const resolvedUserName = userName || account?.displayName || "Academy administrator";
+  const resolvedUserRole = userRole || account?.roles?.[0] || "Academy Admin";
   const initials = (resolvedUserName || "A").split(" ").map((name) => name[0]).join("").slice(0, 2).toUpperCase();
 
   useEffect(() => {

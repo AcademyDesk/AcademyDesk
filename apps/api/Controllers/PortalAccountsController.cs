@@ -16,7 +16,7 @@ public sealed class PortalAccountsController(UserManager<ApplicationUser> users,
     public async Task<ActionResult> Create(Guid academyId, CreatePortalAccountRequest request, CancellationToken token)
     {
         var owner = await users.GetUserAsync(User);
-        if (owner?.AcademyId != academyId || !await users.IsInRoleAsync(owner, "Owner")) return Forbid();
+        if (owner?.AcademyId != academyId || (!await users.IsInRoleAsync(owner, "Owner") && !await users.IsInRoleAsync(owner, "AcademyAdmin"))) return Forbid();
         var role = request.Role is "Student" or "Guardian" ? request.Role : null;
         if (role is null || string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password)) return BadRequest(new { message = "Student or Guardian role, email, and temporary password are required." });
         if (role == "Student" && (!request.StudentId.HasValue || !await db.Students.AnyAsync(x => x.Id == request.StudentId && x.AcademyId == academyId, token))) return BadRequest(new { message = "Select a valid student." });

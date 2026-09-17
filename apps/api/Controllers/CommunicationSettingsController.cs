@@ -82,7 +82,7 @@ public sealed class CommunicationSettingsController(
     private async Task<bool> IsOwner(Guid academyId)
     {
         var user = await userManager.GetUserAsync(User);
-        return user?.AcademyId == academyId && await userManager.IsInRoleAsync(user, "Owner");
+        return user?.AcademyId == academyId && (await userManager.IsInRoleAsync(user, "Owner") || await userManager.IsInRoleAsync(user, "AcademyAdmin"));
     }
 
     private static string? Clean(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();

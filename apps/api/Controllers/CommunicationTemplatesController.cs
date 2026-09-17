@@ -108,7 +108,7 @@ public sealed class CommunicationTemplatesController(
         if (string.IsNullOrWhiteSpace(request.Name) || string.IsNullOrWhiteSpace(request.TemplateKey) || string.IsNullOrWhiteSpace(request.Body)) { error = "Name, template key, and message body are required."; return false; }
         error = string.Empty; return true;
     }
-    private async Task<bool> IsOwner(Guid academyId) { var user = await userManager.GetUserAsync(User); return user?.AcademyId == academyId && await userManager.IsInRoleAsync(user, "Owner"); }
+    private async Task<bool> IsOwner(Guid academyId) { var user = await userManager.GetUserAsync(User); return user?.AcademyId == academyId && (await userManager.IsInRoleAsync(user, "Owner") || await userManager.IsInRoleAsync(user, "AcademyAdmin")); }
     private static string? Canonical(IEnumerable<string> values, string? value) => values.SingleOrDefault(x => x.Equals(value, StringComparison.OrdinalIgnoreCase));
     private static string? Clean(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
     private static CommunicationTemplateSummary ToSummary(CommunicationTemplate x) => new(x.Id, x.Channel, x.Name, x.TemplateKey, x.Category, x.TemplateGroup, x.Status, x.Language, x.ProviderTemplateName, x.Subject, x.Body, x.IsActive);

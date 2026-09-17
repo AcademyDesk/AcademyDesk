@@ -104,7 +104,7 @@ public sealed class StaffController(
     private async Task<bool> IsOwner(Guid academyId)
     {
         var currentUser = await userManager.GetUserAsync(User);
-        return currentUser?.AcademyId == academyId && await userManager.IsInRoleAsync(currentUser, "Owner");
+        return currentUser?.AcademyId == academyId && (await userManager.IsInRoleAsync(currentUser, "Owner") || await userManager.IsInRoleAsync(currentUser, "AcademyAdmin"));
     }
 }
 
