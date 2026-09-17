@@ -21,7 +21,11 @@ public sealed class FeePlansController(AcademyDeskDbContext dbContext) : Control
         dbContext.FeePlans.Add(plan); await dbContext.SaveChangesAsync(cancellationToken);
         return Created($"/api/academies/{academyId}/fee-plans/{plan.Id}", new FeePlanSummary(plan.Id, plan.Name, plan.Amount, plan.Currency, plan.Frequency, plan.IsActive));
     }
+    [HttpPut("{feePlanId:guid}")]
+    public async Task<ActionResult> Update(Guid academyId, Guid feePlanId, UpdateFeePlanRequest request, CancellationToken token)
+    { var x=await dbContext.FeePlans.SingleOrDefaultAsync(v=>v.Id==feePlanId&&v.AcademyId==academyId,token); if(x is null)return NotFound(); if(string.IsNullOrWhiteSpace(request.Name)||request.Amount<=0)return BadRequest(); x.Name=request.Name.Trim();x.Amount=request.Amount;x.Frequency=request.Frequency?.Trim()??"Monthly";x.IsActive=request.IsActive;await dbContext.SaveChangesAsync(token);return Ok(); }
 }
 
 public sealed record CreateFeePlanRequest(string Name, decimal Amount, string? Currency, string? Frequency);
 public sealed record FeePlanSummary(Guid Id, string Name, decimal Amount, string Currency, string Frequency, bool IsActive);
+public sealed record UpdateFeePlanRequest(string Name, decimal Amount, string? Frequency, bool IsActive);
