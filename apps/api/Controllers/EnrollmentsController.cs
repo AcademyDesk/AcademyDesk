@@ -23,10 +23,13 @@ public sealed class EnrollmentsController(AcademyDeskDbContext dbContext) : Cont
         var batch = await dbContext.Batches.SingleOrDefaultAsync(x => x.Id == request.BatchId && x.AcademyId == academyId, cancellationToken);
         if (batch is null) return BadRequest(new { message = "The selected batch does not belong to this academy." });
         if (!batch.IsActive || !string.Equals(batch.EnrollmentStatus, "Open", StringComparison.OrdinalIgnoreCase)) return BadRequest(new { message = "This batch is not open for enrolment." });
+        var requestedStatus = string.Equals(request.Status, "Waitlisted", StringComparison.OrdinalIgnoreCase) ? "Waitlisted" : "Active";
         var activeCount = await dbContext.Enrollments.CountAsync(x => x.AcademyId == academyId && x.BatchId == request.BatchId && x.Status == "Active", cancellationToken);
-        if (activeCount >= batch.Capacity) return Conflict(new { message = "This batch has reached its active enrolment capacity. Move the learner to a waitlist or select another batch." });
+        var waitlistCount = await dbContext.Enrollments.CountAsync(x => x.AcademyId == academyId && x.BatchId == request.BatchId && x.Status == "Waitlisted", cancellationToken);
+        if (requestedStatus == "Active" && activeCount >= batch.Capacity) return Conflict(new { message = "This batch has reached its active enrolment capacity. Add the learner to the waitlist or select another batch." });
+        if (requestedStatus == "Waitlisted" && (batch.WaitlistCapacity <= 0 || waitlistCount >= batch.WaitlistCapacity)) return Conflict(new { message = "This batch waitlist is full or not enabled." });
         if (await dbContext.Enrollments.AnyAsync(x => x.AcademyId == academyId && x.StudentId == request.StudentId && x.BatchId == request.BatchId && x.Status == "Active", cancellationToken)) return Conflict(new { message = "The student is already enrolled in this batch." });
-        var enrollment = new Enrollment { AcademyId = academyId, StudentId = request.StudentId, BatchId = request.BatchId, StartDate = request.StartDate ?? DateOnly.FromDateTime(DateTime.UtcNow) };
+        var enrollment = new Enrollment { AcademyId = academyId, StudentId = request.StudentId, BatchId = request.BatchId, StartDate = request.StartDate ?? DateOnly.FromDateTime(DateTime.UtcNow), Status = requestedStatus };
         dbContext.Enrollments.Add(enrollment); await dbContext.SaveChangesAsync(cancellationToken);
         return Created($"/api/academies/{academyId}/enrollments/{enrollment.Id}", new EnrollmentSummary(enrollment.Id, enrollment.StudentId, enrollment.BatchId, enrollment.StartDate, enrollment.EndDate, enrollment.Status));
     }
@@ -36,13 +39,28 @@ public sealed class EnrollmentsController(AcademyDeskDbContext dbContext) : Cont
         var enrollment = await dbContext.Enrollments.SingleOrDefaultAsync(x => x.Id == enrollmentId && x.AcademyId == academyId, token);
         if (enrollment is null) return NotFound();
         var status = string.IsNullOrWhiteSpace(request.Status) ? enrollment.Status : request.Status.Trim();
-        if (!new[] { "Active", "Completed", "Cancelled", "Paused" }.Contains(status, StringComparer.OrdinalIgnoreCase)) return BadRequest(new { message = "Status must be Active, Completed, Cancelled, or Paused." });
+        if (!new[] { "Active", "Waitlisted", "Completed", "Withdrawn", "Cancelled", "Paused" }.Contains(status, StringComparer.OrdinalIgnoreCase)) return BadRequest(new { message = "Status must be Active, Waitlisted, Completed, Withdrawn, Cancelled, or Paused." });
         enrollment.Status = status; enrollment.EndDate = request.EndDate;
         await dbContext.SaveChangesAsync(token);
         return Ok(new EnrollmentSummary(enrollment.Id, enrollment.StudentId, enrollment.BatchId, enrollment.StartDate, enrollment.EndDate, enrollment.Status));
     }
+
+    [HttpPost("{enrollmentId:guid}/transfer")]
+    public async Task<ActionResult<EnrollmentSummary>> Transfer(Guid academyId, Guid enrollmentId, TransferEnrollmentRequest request, CancellationToken token)
+    {
+        var source = await dbContext.Enrollments.SingleOrDefaultAsync(x => x.Id == enrollmentId && x.AcademyId == academyId, token);
+        var target = await dbContext.Batches.SingleOrDefaultAsync(x => x.Id == request.TargetBatchId && x.AcademyId == academyId, token);
+        if (source is null || target is null) return NotFound();
+        if (source.Status != "Active" || !target.IsActive || !string.Equals(target.EnrollmentStatus, "Open", StringComparison.OrdinalIgnoreCase)) return Conflict(new { message = "Only active enrolments can transfer to an open batch." });
+        if (await dbContext.Enrollments.CountAsync(x => x.AcademyId == academyId && x.BatchId == target.Id && x.Status == "Active", token) >= target.Capacity) return Conflict(new { message = "Target batch is at capacity." });
+        source.Status = "Transferred"; source.EndDate = request.TransferDate ?? DateOnly.FromDateTime(DateTime.UtcNow);
+        var replacement = new Enrollment { AcademyId = academyId, StudentId = source.StudentId, BatchId = target.Id, StartDate = source.EndDate.Value, Status = "Active" };
+        dbContext.Enrollments.Add(replacement); await dbContext.SaveChangesAsync(token);
+        return Ok(new EnrollmentSummary(replacement.Id, replacement.StudentId, replacement.BatchId, replacement.StartDate, replacement.EndDate, replacement.Status));
+    }
 }
 
-public sealed record CreateEnrollmentRequest(Guid StudentId, Guid BatchId, DateOnly? StartDate);
+public sealed record CreateEnrollmentRequest(Guid StudentId, Guid BatchId, DateOnly? StartDate, string? Status);
 public sealed record EnrollmentSummary(Guid Id, Guid StudentId, Guid BatchId, DateOnly StartDate, DateOnly? EndDate, string Status);
 public sealed record UpdateEnrollmentRequest(string Status, DateOnly? EndDate);
+public sealed record TransferEnrollmentRequest(Guid TargetBatchId, DateOnly? TransferDate);
