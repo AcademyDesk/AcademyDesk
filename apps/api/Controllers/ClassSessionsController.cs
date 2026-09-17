@@ -26,6 +26,9 @@ public sealed class ClassSessionsController(AcademyDeskDbContext dbContext) : Co
         if (request.EndUtc <= request.StartUtc) return BadRequest(new { message = "End time must be after start time." });
         if (request.TeacherId.HasValue && !await dbContext.Teachers.AnyAsync(x => x.Id == request.TeacherId && x.AcademyId == academyId, cancellationToken)) return BadRequest(new { message = "The selected teacher does not belong to this academy." });
         if (request.BranchId.HasValue && !await dbContext.Branches.AnyAsync(x => x.Id == request.BranchId && x.AcademyId == academyId, cancellationToken)) return BadRequest(new { message = "The selected branch does not belong to this academy." });
+        var overlaps = dbContext.ClassSessions.Where(x => x.AcademyId == academyId && x.Status != "Cancelled" && x.StartUtc < request.EndUtc && x.EndUtc > request.StartUtc);
+        if (request.TeacherId.HasValue && await overlaps.AnyAsync(x => x.TeacherId == request.TeacherId, cancellationToken)) return Conflict(new { message = "Teacher clash: this teacher already has a session during the selected time." });
+        if (!string.IsNullOrWhiteSpace(request.RoomName) && await overlaps.AnyAsync(x => x.BranchId == request.BranchId && x.RoomName == request.RoomName.Trim(), cancellationToken)) return Conflict(new { message = "Room clash: this room is already scheduled during the selected time." });
 
         var session = new ClassSession { AcademyId = academyId, BatchId = request.BatchId, TeacherId = request.TeacherId, BranchId = request.BranchId, StartUtc = request.StartUtc, EndUtc = request.EndUtc, DeliveryMode = string.IsNullOrWhiteSpace(request.DeliveryMode) ? "InPerson" : request.DeliveryMode.Trim(), RoomName = request.RoomName?.Trim() };
         dbContext.ClassSessions.Add(session); await dbContext.SaveChangesAsync(cancellationToken);
