@@ -91,6 +91,40 @@ public sealed class TeacherPortalController(
         return Ok(new TeacherLeaveSummary(leave.Id, leave.StartDate, leave.EndDate, leave.Reason, leave.Status, leave.DecisionNotes));
     }
 
+    [HttpGet("practice-logs")]
+    public async Task<ActionResult<IReadOnlyList<TeacherPracticeLogSummary>>> PracticeLogs(CancellationToken cancellationToken)
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user?.AcademyId is null || user.TeacherId is null) return Forbid();
+        var studentIds = await dbContext.Enrollments.AsNoTracking()
+            .Where(e => e.AcademyId == user.AcademyId && e.Status == "Active")
+            .Join(dbContext.Batches.AsNoTracking().Where(b => b.TeacherId == user.TeacherId), e => e.BatchId, b => b.Id, (e, _) => e.StudentId)
+            .Distinct().ToListAsync(cancellationToken);
+        var logs = await dbContext.PracticeLogs.AsNoTracking()
+            .Where(x => x.AcademyId == user.AcademyId && studentIds.Contains(x.StudentId))
+            .Join(dbContext.Students.AsNoTracking(), x => x.StudentId, s => s.Id,
+                (x, s) => new TeacherPracticeLogSummary(x.Id, x.StudentId, s.FirstName + " " + s.LastName, x.PracticeDate, x.MinutesPracticed, x.FocusArea, x.Notes, x.TeacherFeedback, x.Status))
+            .OrderByDescending(x => x.PracticeDate).Take(100).ToListAsync(cancellationToken);
+        return Ok(logs);
+    }
+
+    [HttpPatch("practice-logs/{practiceLogId:guid}/review")]
+    public async Task<ActionResult> ReviewPracticeLog(Guid practiceLogId, TeacherPracticeReviewRequest request, CancellationToken cancellationToken)
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user?.AcademyId is null || user.TeacherId is null) return Forbid();
+        var permitted = await dbContext.PracticeLogs.AnyAsync(x => x.Id == practiceLogId && x.AcademyId == user.AcademyId &&
+            dbContext.Enrollments.Any(e => e.AcademyId == user.AcademyId && e.StudentId == x.StudentId && e.Status == "Active" &&
+                dbContext.Batches.Any(b => b.Id == e.BatchId && b.TeacherId == user.TeacherId)), cancellationToken);
+        if (!permitted) return Forbid();
+        var log = await dbContext.PracticeLogs.SingleAsync(x => x.Id == practiceLogId, cancellationToken);
+        log.TeacherFeedback = request.TeacherFeedback?.Trim();
+        log.Status = "Reviewed";
+        log.ReviewedAtUtc = DateTime.UtcNow;
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return Ok(new { log.Id, log.Status, log.TeacherFeedback, log.ReviewedAtUtc });
+    }
+
     [HttpGet("sessions/{sessionId:guid}/roster")]
     public async Task<ActionResult<IReadOnlyList<TeacherRosterStudent>>> Roster(Guid sessionId, CancellationToken cancellationToken)
     {
@@ -175,3 +209,5 @@ public sealed record TeacherAttendanceSummary(Guid StudentId, string Status, str
 public sealed record TeacherPortalProfileRequest(string? Email, string? Phone);
 public sealed record TeacherLeaveRequest(DateOnly StartDate, DateOnly EndDate, string Reason);
 public sealed record TeacherLeaveSummary(Guid Id, DateOnly StartDate, DateOnly EndDate, string Reason, string Status, string? DecisionNotes);
+public sealed record TeacherPracticeLogSummary(Guid Id, Guid StudentId, string StudentName, DateOnly PracticeDate, int MinutesPracticed, string? FocusArea, string? Notes, string? TeacherFeedback, string Status);
+public sealed record TeacherPracticeReviewRequest(string? TeacherFeedback);
