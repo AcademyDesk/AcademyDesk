@@ -33,6 +33,24 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
         return Forbid();
     }
 
+    [HttpPost("change-password")]
+    public async Task<ActionResult> ChangePassword(PortalChangePasswordRequest request, CancellationToken token)
+    {
+        var user = await users.GetUserAsync(User);
+        if (user?.AcademyId is null || (!user.StudentId.HasValue && !user.GuardianId.HasValue)) return Forbid();
+        if (string.IsNullOrWhiteSpace(request.CurrentPassword) || string.IsNullOrWhiteSpace(request.NewPassword))
+            return BadRequest(new { message = "Current and new passwords are required." });
+        if (request.NewPassword.Length < 8)
+            return BadRequest(new { message = "The new password must be at least 8 characters." });
+        if (request.CurrentPassword == request.NewPassword)
+            return BadRequest(new { message = "The new password must be different from the current password." });
+
+        var result = await users.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword);
+        if (!result.Succeeded)
+            return BadRequest(new { message = string.Join(" ", result.Errors.Select(x => x.Description)) });
+        return Ok(new { message = "Password changed successfully." });
+    }
+
     [HttpGet("students/{studentId:guid}")]
     public async Task<ActionResult<PortalStudentDetails>> Student(Guid studentId, CancellationToken token)
     {
@@ -96,3 +114,4 @@ public sealed record PortalInvoice(string InvoiceNumber, decimal TotalAmount, de
 public sealed record PortalSubmissionRequest(string? ResponseText);
 public sealed record PortalStudentProfileRequest(string? Email,string? Phone);
 public sealed record PortalGuardianProfileRequest(string? Email, string? Phone);
+public sealed record PortalChangePasswordRequest(string CurrentPassword, string NewPassword);
