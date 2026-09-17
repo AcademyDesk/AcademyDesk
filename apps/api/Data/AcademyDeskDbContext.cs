@@ -96,8 +96,20 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
             entity.Property(x => x.LastName).HasMaxLength(120).IsRequired();
             entity.Property(x => x.Email).HasMaxLength(320);
             entity.Property(x => x.Phone).HasMaxLength(30);
+            entity.Property(x => x.StudentNumber).HasMaxLength(50);
+            entity.Property(x => x.PreferredName).HasMaxLength(120);
+            entity.Property(x => x.Gender).HasMaxLength(50);
+            entity.Property(x => x.AddressLine1).HasMaxLength(240);
+            entity.Property(x => x.City).HasMaxLength(100);
+            entity.Property(x => x.State).HasMaxLength(100);
+            entity.Property(x => x.PostalCode).HasMaxLength(30);
+            entity.Property(x => x.EmergencyContactName).HasMaxLength(160);
+            entity.Property(x => x.EmergencyContactPhone).HasMaxLength(30);
+            entity.Property(x => x.MedicalOrAccessibilityNotes).HasMaxLength(4000);
+            entity.Property(x => x.AdminNotes).HasMaxLength(4000);
             entity.HasIndex(x => new { x.AcademyId, x.LastName, x.FirstName });
             entity.HasIndex(x => new { x.AcademyId, x.Email });
+            entity.HasIndex(x => new { x.AcademyId, x.StudentNumber }).IsUnique().HasFilter("[StudentNumber] IS NOT NULL");
         });
 
         modelBuilder.Entity<Guardian>(entity =>
@@ -106,6 +118,12 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
             entity.Property(x => x.LastName).HasMaxLength(120).IsRequired();
             entity.Property(x => x.Email).HasMaxLength(320);
             entity.Property(x => x.Phone).HasMaxLength(30);
+            entity.Property(x => x.PreferredName).HasMaxLength(120);
+            entity.Property(x => x.AddressLine1).HasMaxLength(240);
+            entity.Property(x => x.City).HasMaxLength(100);
+            entity.Property(x => x.State).HasMaxLength(100);
+            entity.Property(x => x.PostalCode).HasMaxLength(30);
+            entity.Property(x => x.PreferredLanguage).HasMaxLength(80);
             entity.HasIndex(x => new { x.AcademyId, x.LastName, x.FirstName });
         });
 
@@ -124,7 +142,19 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
             entity.Property(x => x.Email).HasMaxLength(320);
             entity.Property(x => x.Phone).HasMaxLength(30);
             entity.Property(x => x.Specialties).HasMaxLength(500);
+            entity.Property(x => x.EmployeeCode).HasMaxLength(50);
+            entity.Property(x => x.PreferredName).HasMaxLength(120);
+            entity.Property(x => x.EmploymentType).HasMaxLength(50);
+            entity.Property(x => x.Qualifications).HasMaxLength(1000);
+            entity.Property(x => x.AddressLine1).HasMaxLength(240);
+            entity.Property(x => x.City).HasMaxLength(100);
+            entity.Property(x => x.State).HasMaxLength(100);
+            entity.Property(x => x.PostalCode).HasMaxLength(30);
+            entity.Property(x => x.EmergencyContactName).HasMaxLength(160);
+            entity.Property(x => x.EmergencyContactPhone).HasMaxLength(30);
+            entity.Property(x => x.AdminNotes).HasMaxLength(4000);
             entity.HasIndex(x => new { x.AcademyId, x.LastName, x.FirstName });
+            entity.HasIndex(x => new { x.AcademyId, x.EmployeeCode }).IsUnique().HasFilter("[EmployeeCode] IS NOT NULL");
         });
 
         modelBuilder.Entity<ProgramCourse>(entity =>
