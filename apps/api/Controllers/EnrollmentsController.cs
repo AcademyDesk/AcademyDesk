@@ -20,7 +20,11 @@ public sealed class EnrollmentsController(AcademyDeskDbContext dbContext) : Cont
     public async Task<ActionResult<EnrollmentSummary>> Create(Guid academyId, CreateEnrollmentRequest request, CancellationToken cancellationToken)
     {
         if (!await dbContext.Students.AnyAsync(x => x.Id == request.StudentId && x.AcademyId == academyId, cancellationToken)) return BadRequest(new { message = "The selected student does not belong to this academy." });
-        if (!await dbContext.Batches.AnyAsync(x => x.Id == request.BatchId && x.AcademyId == academyId, cancellationToken)) return BadRequest(new { message = "The selected batch does not belong to this academy." });
+        var batch = await dbContext.Batches.SingleOrDefaultAsync(x => x.Id == request.BatchId && x.AcademyId == academyId, cancellationToken);
+        if (batch is null) return BadRequest(new { message = "The selected batch does not belong to this academy." });
+        if (!batch.IsActive || !string.Equals(batch.EnrollmentStatus, "Open", StringComparison.OrdinalIgnoreCase)) return BadRequest(new { message = "This batch is not open for enrolment." });
+        var activeCount = await dbContext.Enrollments.CountAsync(x => x.AcademyId == academyId && x.BatchId == request.BatchId && x.Status == "Active", cancellationToken);
+        if (activeCount >= batch.Capacity) return Conflict(new { message = "This batch has reached its active enrolment capacity. Move the learner to a waitlist or select another batch." });
         if (await dbContext.Enrollments.AnyAsync(x => x.AcademyId == academyId && x.StudentId == request.StudentId && x.BatchId == request.BatchId && x.Status == "Active", cancellationToken)) return Conflict(new { message = "The student is already enrolled in this batch." });
         var enrollment = new Enrollment { AcademyId = academyId, StudentId = request.StudentId, BatchId = request.BatchId, StartDate = request.StartDate ?? DateOnly.FromDateTime(DateTime.UtcNow) };
         dbContext.Enrollments.Add(enrollment); await dbContext.SaveChangesAsync(cancellationToken);

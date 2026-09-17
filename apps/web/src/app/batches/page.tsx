@@ -8,7 +8,7 @@ type Academy = { id: string; name: string };
 type Course = { id: string; name: string; academyType: string };
 type Teacher = { id: string; firstName: string; lastName: string };
 type Branch = { id: string; name: string };
-type Batch = { id: string; name: string; courseId: string; teacherId?: string | null; branchId?: string | null; capacity: number; startDate?: string | null; endDate?: string | null; isActive: boolean };
+type Batch = { id: string; name: string; batchCode?: string | null; courseId: string; teacherId?: string | null; branchId?: string | null; capacity: number; waitlistCapacity?: number; deliveryMode?: string; meetingPattern?: string | null; roomName?: string | null; enrollmentStatus?: string; activeEnrolments?: number; startDate?: string | null; endDate?: string | null; isActive: boolean };
 
 export default function BatchesPage() {
   const [academies, setAcademies] = useState<Academy[]>([]);
@@ -22,6 +22,12 @@ export default function BatchesPage() {
   const [branchId, setBranchId] = useState("");
   const [name, setName] = useState("");
   const [capacity, setCapacity] = useState("10");
+  const [batchCode, setBatchCode] = useState("");
+  const [waitlistCapacity, setWaitlistCapacity] = useState("0");
+  const [deliveryMode, setDeliveryMode] = useState("InPerson");
+  const [meetingPattern, setMeetingPattern] = useState("");
+  const [roomName, setRoomName] = useState("");
+  const [enrollmentStatus, setEnrollmentStatus] = useState("Open");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [message, setMessage] = useState("");
@@ -60,10 +66,10 @@ export default function BatchesPage() {
     if (!academyId || !courseId) return;
     const response = await academyApi(`/api/academies/${academyId}/batches`, {
       method: "POST", headers: apiHeaders(true),
-      body: JSON.stringify({ name, courseId, teacherId: teacherId || null, branchId: branchId || null, capacity: Number(capacity), startDate: startDate || null, endDate: endDate || null }),
+      body: JSON.stringify({ name, batchCode: batchCode || null, courseId, teacherId: teacherId || null, branchId: branchId || null, capacity: Number(capacity), waitlistCapacity: Number(waitlistCapacity), deliveryMode, meetingPattern: meetingPattern || null, roomName: roomName || null, enrollmentStatus, adminNotes: null, startDate: startDate || null, endDate: endDate || null }),
     });
     if (!response.ok) return setMessage("The batch could not be saved. Check the course, teacher, and date fields.");
-    setName(""); setTeacherId(""); setBranchId(""); setStartDate(""); setEndDate(""); setMessage("");
+    setName(""); setBatchCode(""); setTeacherId(""); setBranchId(""); setWaitlistCapacity("0"); setDeliveryMode("InPerson"); setMeetingPattern(""); setRoomName(""); setEnrollmentStatus("Open"); setStartDate(""); setEndDate(""); setMessage("");
     await loadWorkspace(academyId);
   }
   function beginEdit(batch: Batch) { setEditingId(batch.id); setEditName(batch.name); setEditCourseId(batch.courseId); setEditTeacherId(batch.teacherId ?? ""); setEditBranchId(batch.branchId ?? ""); setEditCapacity(String(batch.capacity)); setEditStartDate(batch.startDate ?? ""); setEditEndDate(batch.endDate ?? ""); }
@@ -89,9 +95,13 @@ export default function BatchesPage() {
           <form onSubmit={createBatch} className="rounded-2xl border border-slate-800 bg-slate-900 p-6"><h2 className="text-xl font-semibold">Create batch</h2>
             <select value={courseId} onChange={(event) => setCourseId(event.target.value)} className="mt-5 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" required><option value="">Select course</option>{courses.map((course) => <option key={course.id} value={course.id}>{course.name} · {course.academyType}</option>)}</select>
             <input value={name} onChange={(event) => setName(event.target.value)} placeholder="Batch name, e.g. Piano Level 1 – Evening" className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" required />
+            <input value={batchCode} onChange={(event) => setBatchCode(event.target.value)} placeholder="Batch code, e.g. PNO-L1-EVE" className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" />
             <select value={teacherId} onChange={(event) => setTeacherId(event.target.value)} className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"><option value="">No teacher assigned yet</option>{teachers.map((teacher) => <option key={teacher.id} value={teacher.id}>{teacher.firstName} {teacher.lastName}</option>)}</select>
             <select value={branchId} onChange={(event) => setBranchId(event.target.value)} className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"><option value="">No branch assigned</option>{branches.map((branch) => <option key={branch.id} value={branch.id}>{branch.name}</option>)}</select>
             <input type="number" min="1" max="1000" value={capacity} onChange={(event) => setCapacity(event.target.value)} placeholder="Capacity" className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" required />
+            <div className="mt-3 grid gap-3 sm:grid-cols-2"><select value={deliveryMode} onChange={(event) => setDeliveryMode(event.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"><option value="InPerson">In person</option><option value="Online">Online</option><option value="Hybrid">Hybrid</option></select><select value={enrollmentStatus} onChange={(event) => setEnrollmentStatus(event.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"><option value="Open">Open for enrolment</option><option value="Waitlist">Waitlist only</option><option value="Closed">Closed</option></select></div>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2"><input value={meetingPattern} onChange={(event) => setMeetingPattern(event.target.value)} placeholder="Meeting pattern, e.g. Tue/Thu 17:00" className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" /><input value={roomName} onChange={(event) => setRoomName(event.target.value)} placeholder="Room / online location" className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" /></div>
+            <input type="number" min="0" max="1000" value={waitlistCapacity} onChange={(event) => setWaitlistCapacity(event.target.value)} placeholder="Waitlist capacity" className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" />
             <div className="mt-3 grid gap-3 sm:grid-cols-2"><input type="date" value={startDate} onChange={(event) => setStartDate(event.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" /><input type="date" value={endDate} onChange={(event) => setEndDate(event.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" /></div>
             <button className="mt-5 w-full rounded-lg bg-cyan-400 px-4 py-2.5 font-semibold text-slate-950 hover:bg-cyan-300">Create batch</button>
           </form>

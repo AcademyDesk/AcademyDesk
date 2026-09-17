@@ -160,16 +160,29 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
         modelBuilder.Entity<ProgramCourse>(entity =>
         {
             entity.Property(x => x.Name).HasMaxLength(200).IsRequired();
+            entity.Property(x => x.CourseCode).HasMaxLength(50);
             entity.Property(x => x.AcademyType).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.SubjectArea).HasMaxLength(120);
             entity.Property(x => x.Level).HasMaxLength(100);
             entity.Property(x => x.Description).HasMaxLength(1000);
+            entity.Property(x => x.DeliveryMode).HasMaxLength(30);
+            entity.Property(x => x.Prerequisites).HasMaxLength(2000);
+            entity.Property(x => x.LearningOutcomes).HasMaxLength(4000);
             entity.HasIndex(x => new { x.AcademyId, x.Name }).IsUnique();
+            entity.HasIndex(x => new { x.AcademyId, x.CourseCode }).IsUnique().HasFilter("[CourseCode] IS NOT NULL");
         });
 
         modelBuilder.Entity<Batch>(entity =>
         {
             entity.Property(x => x.Name).HasMaxLength(200).IsRequired();
+            entity.Property(x => x.BatchCode).HasMaxLength(50);
+            entity.Property(x => x.DeliveryMode).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.MeetingPattern).HasMaxLength(240);
+            entity.Property(x => x.RoomName).HasMaxLength(120);
+            entity.Property(x => x.EnrollmentStatus).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.AdminNotes).HasMaxLength(4000);
             entity.HasIndex(x => new { x.AcademyId, x.Name }).IsUnique();
+            entity.HasIndex(x => new { x.AcademyId, x.BatchCode }).IsUnique().HasFilter("[BatchCode] IS NOT NULL");
         });
 
         modelBuilder.Entity<Enrollment>(entity =>

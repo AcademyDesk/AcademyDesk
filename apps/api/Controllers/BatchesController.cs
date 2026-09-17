@@ -10,30 +10,49 @@ namespace AcademyDesk.Api.Controllers;
 public sealed class BatchesController(AcademyDeskDbContext dbContext) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<BatchSummary>>> List(Guid academyId, CancellationToken cancellationToken)
+    public async Task<ActionResult<IReadOnlyList<BatchSummary>>> List(Guid academyId, CancellationToken token)
     {
-        var batches = await dbContext.Batches.AsNoTracking().Where(x => x.AcademyId == academyId).OrderBy(x => x.Name).Select(x => new BatchSummary(x.Id, x.Name, x.CourseId, x.TeacherId, x.BranchId, x.Capacity, x.StartDate, x.EndDate, x.IsActive)).ToListAsync(cancellationToken);
-        return Ok(batches);
+        var rows = await (from batch in dbContext.Batches.AsNoTracking()
+                          where batch.AcademyId == academyId
+                          select new BatchSummary(batch.Id, batch.Name, batch.BatchCode, batch.CourseId, batch.TeacherId, batch.BranchId, batch.Capacity, batch.WaitlistCapacity, batch.DeliveryMode, batch.MeetingPattern, batch.RoomName, batch.EnrollmentStatus, batch.AdminNotes, batch.StartDate, batch.EndDate, batch.IsActive, dbContext.Enrollments.Count(x => x.AcademyId == academyId && x.BatchId == batch.Id && x.Status == "Active"))).OrderBy(x => x.Name).ToListAsync(token);
+        return Ok(rows);
     }
 
     [HttpPost]
-    public async Task<ActionResult<BatchSummary>> Create(Guid academyId, CreateBatchRequest request, CancellationToken cancellationToken)
+    public async Task<ActionResult<BatchSummary>> Create(Guid academyId, CreateBatchRequest request, CancellationToken token)
     {
-        if (!await dbContext.Academies.AnyAsync(x => x.Id == academyId, cancellationToken)) return NotFound();
-        if (string.IsNullOrWhiteSpace(request.Name)) return BadRequest(new { message = "Batch name is required." });
-        if (!await dbContext.Courses.AnyAsync(x => x.Id == request.CourseId && x.AcademyId == academyId, cancellationToken)) return BadRequest(new { message = "The selected course does not belong to this academy." });
-        if (request.BranchId.HasValue && !await dbContext.Branches.AnyAsync(x => x.Id == request.BranchId && x.AcademyId == academyId, cancellationToken)) return BadRequest(new { message = "The selected branch does not belong to this academy." });
-        if (request.TeacherId.HasValue && !await dbContext.Teachers.AnyAsync(x => x.Id == request.TeacherId && x.AcademyId == academyId, cancellationToken)) return BadRequest(new { message = "The selected teacher does not belong to this academy." });
-        if (request.Capacity is < 1 or > 1000) return BadRequest(new { message = "Capacity must be between 1 and 1000." });
-
-        var batch = new Batch { AcademyId = academyId, Name = request.Name.Trim(), CourseId = request.CourseId, TeacherId = request.TeacherId, BranchId = request.BranchId, Capacity = request.Capacity, StartDate = request.StartDate, EndDate = request.EndDate };
-        dbContext.Batches.Add(batch); await dbContext.SaveChangesAsync(cancellationToken);
-        return Created($"/api/academies/{academyId}/batches/{batch.Id}", new BatchSummary(batch.Id, batch.Name, batch.CourseId, batch.TeacherId, batch.BranchId, batch.Capacity, batch.StartDate, batch.EndDate, batch.IsActive));
+        if (!await dbContext.Academies.AnyAsync(x => x.Id == academyId, token)) return NotFound();
+        var problem = await Validate(academyId, request, token); if (problem is not null) return BadRequest(new { message = problem });
+        var batch = new Batch { AcademyId = academyId, Name = request.Name.Trim() }; Apply(batch, request); dbContext.Batches.Add(batch); await dbContext.SaveChangesAsync(token); return Created($"/api/academies/{academyId}/batches/{batch.Id}", Summary(batch, 0));
     }
+
     [HttpPut("{batchId:guid}")]
-    public async Task<ActionResult<BatchSummary>> Update(Guid academyId,Guid batchId,UpdateBatchRequest r,CancellationToken token){var x=await dbContext.Batches.SingleOrDefaultAsync(b=>b.Id==batchId&&b.AcademyId==academyId,token);if(x is null)return NotFound();if(string.IsNullOrWhiteSpace(r.Name)||r.Capacity<1||r.Capacity>1000)return BadRequest();x.Name=r.Name.Trim();x.CourseId=r.CourseId;x.TeacherId=r.TeacherId;x.BranchId=r.BranchId;x.Capacity=r.Capacity;x.StartDate=r.StartDate;x.EndDate=r.EndDate;x.IsActive=r.IsActive;await dbContext.SaveChangesAsync(token);return Ok(new BatchSummary(x.Id,x.Name,x.CourseId,x.TeacherId,x.BranchId,x.Capacity,x.StartDate,x.EndDate,x.IsActive));}
+    public async Task<ActionResult<BatchSummary>> Update(Guid academyId, Guid batchId, UpdateBatchRequest request, CancellationToken token)
+    {
+        var batch = await dbContext.Batches.SingleOrDefaultAsync(x => x.AcademyId == academyId && x.Id == batchId, token); if (batch is null) return NotFound();
+        var problem = await Validate(academyId, request, token, batchId); if (problem is not null) return BadRequest(new { message = problem });
+        var active = await dbContext.Enrollments.CountAsync(x => x.AcademyId == academyId && x.BatchId == batchId && x.Status == "Active", token); if (request.Capacity < active) return BadRequest(new { message = $"Capacity cannot be lower than the {active} active enrolments." });
+        Apply(batch, request); batch.IsActive = request.IsActive; await dbContext.SaveChangesAsync(token); return Ok(Summary(batch, active));
+    }
+
+    private async Task<string?> Validate(Guid academyId, BatchRequest r, CancellationToken token, Guid? ignore = null)
+    {
+        if (string.IsNullOrWhiteSpace(r.Name) || r.Capacity is < 1 or > 1000 || r.WaitlistCapacity is < 0 or > 1000) return "Enter a batch name, capacity between 1 and 1000, and a valid waitlist capacity.";
+        if (r.EndDate.HasValue && r.StartDate.HasValue && r.EndDate < r.StartDate) return "End date cannot be earlier than the start date.";
+        if (!new[] { "InPerson", "Online", "Hybrid" }.Contains((r.DeliveryMode ?? "InPerson").Replace(" ", ""), StringComparer.OrdinalIgnoreCase)) return "Delivery mode must be InPerson, Online, or Hybrid.";
+        if (!new[] { "Open", "Waitlist", "Closed" }.Contains((r.EnrollmentStatus ?? "Open").Trim(), StringComparer.OrdinalIgnoreCase)) return "Enrolment status must be Open, Waitlist, or Closed.";
+        if (!await dbContext.Courses.AnyAsync(x => x.Id == r.CourseId && x.AcademyId == academyId, token)) return "The selected course does not belong to this academy.";
+        if (r.BranchId.HasValue && !await dbContext.Branches.AnyAsync(x => x.Id == r.BranchId && x.AcademyId == academyId, token)) return "The selected branch does not belong to this academy.";
+        if (r.TeacherId.HasValue && !await dbContext.Teachers.AnyAsync(x => x.Id == r.TeacherId && x.AcademyId == academyId, token)) return "The selected teacher does not belong to this academy.";
+        var code = Clean(r.BatchCode); if (code is not null && await dbContext.Batches.AnyAsync(x => x.AcademyId == academyId && x.Id != ignore && x.BatchCode == code, token)) return "That batch code is already in use.";
+        return null;
+    }
+    private static void Apply(Batch x, BatchRequest r) { x.Name = r.Name.Trim(); x.BatchCode = Clean(r.BatchCode); x.CourseId = r.CourseId; x.TeacherId = r.TeacherId; x.BranchId = r.BranchId; x.Capacity = r.Capacity; x.WaitlistCapacity = r.WaitlistCapacity; x.DeliveryMode = string.IsNullOrWhiteSpace(r.DeliveryMode) ? "InPerson" : r.DeliveryMode.Replace(" ", "").Trim(); x.MeetingPattern = Clean(r.MeetingPattern); x.RoomName = Clean(r.RoomName); x.EnrollmentStatus = string.IsNullOrWhiteSpace(r.EnrollmentStatus) ? "Open" : r.EnrollmentStatus.Trim(); x.AdminNotes = Clean(r.AdminNotes); x.StartDate = r.StartDate; x.EndDate = r.EndDate; }
+    private static string? Clean(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+    private static BatchSummary Summary(Batch x, int active) => new(x.Id, x.Name, x.BatchCode, x.CourseId, x.TeacherId, x.BranchId, x.Capacity, x.WaitlistCapacity, x.DeliveryMode, x.MeetingPattern, x.RoomName, x.EnrollmentStatus, x.AdminNotes, x.StartDate, x.EndDate, x.IsActive, active);
 }
 
-public sealed record CreateBatchRequest(string Name, Guid CourseId, Guid? TeacherId, Guid? BranchId, int Capacity, DateOnly? StartDate, DateOnly? EndDate);
-public sealed record BatchSummary(Guid Id, string Name, Guid CourseId, Guid? TeacherId, Guid? BranchId, int Capacity, DateOnly? StartDate, DateOnly? EndDate, bool IsActive);
-public sealed record UpdateBatchRequest(string Name,Guid CourseId,Guid? TeacherId,Guid? BranchId,int Capacity,DateOnly? StartDate,DateOnly? EndDate,bool IsActive);
+public abstract record BatchRequest(string Name, string? BatchCode, Guid CourseId, Guid? TeacherId, Guid? BranchId, int Capacity, int WaitlistCapacity, string? DeliveryMode, string? MeetingPattern, string? RoomName, string? EnrollmentStatus, string? AdminNotes, DateOnly? StartDate, DateOnly? EndDate);
+public sealed record CreateBatchRequest(string Name, string? BatchCode, Guid CourseId, Guid? TeacherId, Guid? BranchId, int Capacity, int WaitlistCapacity, string? DeliveryMode, string? MeetingPattern, string? RoomName, string? EnrollmentStatus, string? AdminNotes, DateOnly? StartDate, DateOnly? EndDate) : BatchRequest(Name, BatchCode, CourseId, TeacherId, BranchId, Capacity, WaitlistCapacity, DeliveryMode, MeetingPattern, RoomName, EnrollmentStatus, AdminNotes, StartDate, EndDate);
+public sealed record UpdateBatchRequest(string Name, string? BatchCode, Guid CourseId, Guid? TeacherId, Guid? BranchId, int Capacity, int WaitlistCapacity, string? DeliveryMode, string? MeetingPattern, string? RoomName, string? EnrollmentStatus, string? AdminNotes, DateOnly? StartDate, DateOnly? EndDate, bool IsActive) : BatchRequest(Name, BatchCode, CourseId, TeacherId, BranchId, Capacity, WaitlistCapacity, DeliveryMode, MeetingPattern, RoomName, EnrollmentStatus, AdminNotes, StartDate, EndDate);
+public sealed record BatchSummary(Guid Id, string Name, string? BatchCode, Guid CourseId, Guid? TeacherId, Guid? BranchId, int Capacity, int WaitlistCapacity, string DeliveryMode, string? MeetingPattern, string? RoomName, string EnrollmentStatus, string? AdminNotes, DateOnly? StartDate, DateOnly? EndDate, bool IsActive, int ActiveEnrolments);
