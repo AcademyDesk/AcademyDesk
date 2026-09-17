@@ -32,6 +32,7 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
     public DbSet<AcademyEvent> AcademyEvents => Set<AcademyEvent>();
     public DbSet<Certificate> Certificates => Set<Certificate>();
     public DbSet<LeaveRequest> LeaveRequests => Set<LeaveRequest>();
+    public DbSet<MakeupClass> MakeupClasses => Set<MakeupClass>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -269,6 +270,13 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
             entity.Property(x => x.Status).HasMaxLength(30).IsRequired();
             entity.Property(x => x.DecisionNotes).HasMaxLength(1000);
             entity.HasIndex(x => new { x.AcademyId, x.Status, x.StartDate });
+        });
+        modelBuilder.Entity<MakeupClass>(entity =>
+        {
+            entity.Property(x => x.Venue).HasMaxLength(250);
+            entity.Property(x => x.Status).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.Notes).HasMaxLength(2000);
+            entity.HasIndex(x => new { x.AcademyId, x.StartUtc });
         });
     }
 }

@@ -23,6 +23,7 @@ const links = [
   ["Schedule", "/schedule"],
   ["Attendance", "/attendance"],
   ["Leave", "/leave"],
+  ["Make-up", "/makeup"],
   ["Assignments", "/assignments"],
   ["Assessments", "/assessments"],
   ["Messages", "/communications"],
