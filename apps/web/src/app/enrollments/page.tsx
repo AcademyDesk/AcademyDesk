@@ -19,6 +19,7 @@ export default function EnrollmentsPage() {
   const [startDate, setStartDate] = useState("");
   const [message, setMessage] = useState("Loading enrolments…");
   const [savingId, setSavingId] = useState<string | null>(null);
+  const requestedStudentId = typeof window === "undefined" ? "" : new URLSearchParams(window.location.search).get("studentId") ?? "";
 
   async function load(academyId?: string) {
     const id = academyId ?? academy?.id;
@@ -30,7 +31,7 @@ export default function EnrollmentsPage() {
     const studentData: Student[] = await studentResponse.json();
     const batchData: Batch[] = await batchResponse.json();
     setStudents(studentData); setBatches(batchData); setEnrollments(await enrollmentResponse.json());
-    if (!studentId && studentData.length) setStudentId(studentData[0].id);
+    if (!studentId && studentData.length) setStudentId(studentData.some((student) => student.id === requestedStudentId) ? requestedStudentId : studentData[0].id);
     if (!batchId && batchData.length) setBatchId(batchData[0].id);
     setMessage("");
   }
