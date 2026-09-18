@@ -189,6 +189,9 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
             entity.Property(x => x.Name).HasMaxLength(200).IsRequired();
             entity.Property(x => x.BatchCode).HasMaxLength(50);
             entity.Property(x => x.DeliveryMode).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.ClassType).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.MeetingDaysJson).HasMaxLength(500);
+            entity.Property(x => x.MeetingLink).HasMaxLength(1000);
             entity.Property(x => x.MeetingPattern).HasMaxLength(240);
             entity.Property(x => x.RoomName).HasMaxLength(120);
             entity.Property(x => x.EnrollmentStatus).HasMaxLength(30).IsRequired();

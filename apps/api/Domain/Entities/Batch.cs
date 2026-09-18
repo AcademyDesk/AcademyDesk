@@ -9,6 +9,11 @@ public sealed class Batch : AcademyEntity
     public Guid? BranchId { get; set; }
     public int Capacity { get; set; } = 10;
     public int WaitlistCapacity { get; set; }
+    public string ClassType { get; set; } = "Group";
+    public int SessionMinutes { get; set; } = 60;
+    public int SessionsPerWeek { get; set; } = 1;
+    public string? MeetingDaysJson { get; set; }
+    public string? MeetingLink { get; set; }
     public string DeliveryMode { get; set; } = "InPerson";
     public string? MeetingPattern { get; set; }
     public string? RoomName { get; set; }
