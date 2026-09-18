@@ -813,10 +813,10 @@ html[data-theme="light"] [class~="text-red-300"] {
 }
 .enterprise-dashboard-heading h2 {
   color: var(--ad-text);
-  font-size: clamp(2.35rem, 3.1vw, 4.1rem);
-  font-weight: 430;
-  letter-spacing: -0.07em;
-  line-height: 0.98;
+  font-size: clamp(1.85rem, 2.2vw, 2.65rem);
+  font-weight: 520;
+  letter-spacing: -0.05em;
+  line-height: 1.05;
 }
 .enterprise-dashboard-heading p {
   display: none;
@@ -1343,6 +1343,44 @@ html[data-theme="light"] .field-label { color: #475569; }
 .enterprise-settings :is(.overflow-auto, .overflow-x-auto) {
   scrollbar-color: var(--ad-border-strong) transparent;
 }
+.workspace-calendar { width: min(100%, 1280px); }
+.workspace-calendar-toolbar h2 { margin: 0; color: var(--ad-text); font-size: 1.05rem; font-weight: 700; }
+.workspace-calendar .calendar-grid {
+  width: min(100%, 1120px);
+  margin-inline: auto;
+  border-color: var(--ad-border);
+  background: var(--ad-surface);
+}
+.workspace-calendar .calendar-weekday {
+  padding: 8px 10px;
+  background: color-mix(in srgb, var(--ad-accent-soft) 55%, var(--ad-surface));
+  color: var(--ad-text-muted);
+  font-size: .68rem;
+}
+.workspace-calendar .calendar-day {
+  min-height: 102px;
+  padding: 8px;
+  border-color: var(--ad-border);
+  background: color-mix(in srgb, var(--ad-surface) 92%, var(--ad-control-surface));
+}
+.workspace-calendar .calendar-day.today { background: color-mix(in srgb, var(--ad-accent-soft) 42%, var(--ad-surface)); }
+.workspace-calendar .calendar-day.today .calendar-date { background: var(--ad-accent); color: var(--ad-surface); }
+.workspace-calendar .calendar-date { width: 22px; height: 22px; color: var(--ad-text-muted); font-size: .7rem; }
+.workspace-calendar .calendar-events { margin-top: 5px; gap: 3px; }
+.workspace-calendar .calendar-event {
+  border-left-color: var(--ad-accent);
+  background: color-mix(in srgb, var(--ad-accent-soft) 70%, var(--ad-surface));
+  color: var(--ad-text);
+  font-size: .66rem;
+}
+.workspace-calendar .calendar-event time { color: var(--ad-text-muted); }
+.workspace-calendar .calendar-event.makeup { border-left-color: var(--ad-warning); background: color-mix(in srgb, var(--ad-warning) 12%, var(--ad-surface)); }
+.workspace-calendar .calendar-event.event { border-left-color: #8b7bd8; background: color-mix(in srgb, #8b7bd8 12%, var(--ad-surface)); }
+.workspace-calendar .calendar-filter,
+.workspace-calendar .calendar-today,
+.workspace-calendar .calendar-nav { border-color: var(--ad-border-strong); background: var(--ad-surface); color: var(--ad-text-muted); font-size: .78rem; }
+.workspace-calendar .calendar-today,
+.workspace-calendar .calendar-filter.active { border-color: var(--ad-accent); background: var(--ad-accent-soft); color: var(--ad-accent); }
 .enterprise-page-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .enterprise-action-button {
   display: inline-flex;

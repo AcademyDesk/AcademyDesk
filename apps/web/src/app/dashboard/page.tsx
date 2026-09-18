@@ -155,7 +155,6 @@ export default function DashboardPage() {
           <h2>
             {greeting()}, {session?.displayName || "there"}
           </h2>
-          <p>Here is the operating picture for your academy today.</p>
         </div>
         <Link href="/students" className="enterprise-primary-action">
           <span aria-hidden="true">+</span> Add student

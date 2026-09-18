@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { WorkspaceNav } from "@/components/workspace-nav";
 import { academyApi } from "@/lib/api";
 
 type Academy = { id: string };
@@ -135,11 +134,9 @@ export default function CalendarPage() {
     )
     .sort((a, b) => +a.start - +b.start);
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100">
-      <WorkspaceNav />
-      <div className="mx-auto max-w-7xl px-6 py-8">
-        <header className="flex flex-wrap items-end justify-between gap-5">
-          <h1 className="text-3xl font-semibold tracking-tight">Calendar</h1>
+    <main className="enterprise-settings workspace-calendar">
+        <header className="enterprise-page-header flex flex-wrap items-end justify-between gap-5">
+          <div><p>Workspace / calendar</p><h2>Calendar</h2></div>
           <div className="flex items-center gap-2">
             <button
               onClick={() =>
@@ -169,7 +166,7 @@ export default function CalendarPage() {
             </button>
           </div>
         </header>
-        <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+        <div className="workspace-calendar-toolbar mt-5 flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-xl font-semibold">{monthName(month)}</h2>
           <div className="flex gap-2">
             {(["All", "Class", "Make-up", "Event"] as const).map((value) => (
@@ -263,7 +260,6 @@ export default function CalendarPage() {
             </p>
           )}
         </section>
-      </div>
     </main>
   );
 }
