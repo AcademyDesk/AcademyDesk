@@ -6,6 +6,9 @@ type Me = {
   role: "Student" | "Parent";
   displayName: string;
   studentId?: string;
+  parentId?: string;
+  parentEmail?: string;
+  parentPhone?: string;
   children?: {
     id: string;
     name: string;
@@ -174,6 +177,9 @@ export default function Portal() {
                 l={l}
                 tab={t}
                 refresh={load}
+                parentId={me?.role === "Parent" ? me.parentId : undefined}
+                parentEmail={me?.role === "Parent" ? me.parentEmail : undefined}
+                parentPhone={me?.role === "Parent" ? me.parentPhone : undefined}
                 parentAccess={
                   me?.role === "Parent"
                     ? me.children?.find((child) => child.id === id)
@@ -202,6 +208,9 @@ function View({
   l,
   tab,
   refresh,
+  parentId,
+  parentEmail,
+  parentPhone,
   parentAccess,
 }: {
   d: D;
@@ -210,6 +219,9 @@ function View({
   l: Leave[];
   tab: Tab;
   refresh: () => Promise<void>;
+  parentId?: string;
+  parentEmail?: string;
+  parentPhone?: string;
   parentAccess?: NonNullable<Me["children"]>[number];
 }) {
   const rate = d.attendanceSummary.total
@@ -361,7 +373,11 @@ function View({
               />
             ))}
           </P>
-          {!parentAccess && <Profile id={id} d={d} />}
+          {parentAccess ? (
+            <ParentProfile parentId={parentId} email={parentEmail} phone={parentPhone} />
+          ) : (
+            <Profile id={id} d={d} />
+          )}
           <P title="Notifications">
             {n.map((x) => (
               <R key={x.id} a={x.title} b={x.message} />
@@ -512,6 +528,22 @@ function Profile({ id, d }: { id: string; d: D }) {
             defaultValue={d.phone || ""}
             placeholder="Phone number"
           />
+        </>
+      }
+    />
+  );
+}
+function ParentProfile({ parentId, email, phone }: { parentId?: string; email?: string; phone?: string }) {
+  if (!parentId) return null;
+  return (
+    <Action
+      title="My Parent contact details"
+      url={`/api/portal/guardians/${parentId}/profile`}
+      method="PUT"
+      fields={
+        <>
+          <input name="email" type="email" defaultValue={email || ""} placeholder="Email address" />
+          <input name="phone" defaultValue={phone || ""} placeholder="Phone number" />
         </>
       }
     />

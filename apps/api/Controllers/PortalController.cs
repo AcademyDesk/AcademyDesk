@@ -28,8 +28,10 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
         }
         if (user.GuardianId.HasValue)
         {
+            var parent = await db.Guardians.AsNoTracking().SingleOrDefaultAsync(x => x.Id == user.GuardianId && x.AcademyId == user.AcademyId, token);
+            if (parent is null) return Forbid();
             var children = await db.StudentGuardians.AsNoTracking().Where(x => x.AcademyId == user.AcademyId && x.GuardianId == user.GuardianId && x.CanAccessPortal && x.AccessRevokedAtUtc == null).Join(db.Students.AsNoTracking(), x => x.StudentId, s => s.Id, (x, s) => new { s.Id, name = s.FirstName + " " + s.LastName, x.CanViewAcademicProgress, x.CanViewFinance, x.CanViewDocuments, x.CanManageLeave }).ToListAsync(token);
-            return Ok(new { role = "Parent", displayName = user.DisplayName, children });
+            return Ok(new { role = "Parent", displayName = user.DisplayName, parentId = user.GuardianId, parentEmail = parent.Email, parentPhone = parent.Phone, children });
         }
         return Forbid();
     }
