@@ -38,6 +38,12 @@ export default function TeachersPage() {
   const [editSpecialties, setEditSpecialties] = useState("");
   const [editBranchId, setEditBranchId] = useState("");
   const [savingId, setSavingId] = useState<string | null>(null);
+  const activeTeachers = teachers.filter((teacher) => teacher.isActive);
+  const nextPayCycle = new Date(
+    new Date().getFullYear(),
+    new Date().getMonth() + 1,
+    1,
+  );
 
   async function load(academyId?: string) {
     const id = academyId ?? academy?.id;
@@ -188,18 +194,32 @@ export default function TeachersPage() {
             {message}
           </p>
         )}
-        <section className="mt-8 grid gap-4 sm:grid-cols-3">
+        <section className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <article className="surface-panel rounded-xl p-5">
             <p className="text-sm text-slate-400">Active teachers</p>
             <p className="mt-2 text-3xl font-semibold">
-              {teachers.filter((teacher) => teacher.isActive).length}
+              {activeTeachers.length}
             </p>
           </article>
           <article className="surface-panel rounded-xl p-5">
-            <p className="text-sm text-slate-400">Payment cycle</p>
-            <p className="mt-2 font-semibold">Monthly</p>
+            <p className="text-sm text-slate-400">Due this cycle</p>
+            <p className="mt-2 text-3xl font-semibold">
+              {activeTeachers.length}
+            </p>
             <p className="mt-1 text-sm text-slate-400">
-              Compensation due at month end
+              Active teachers pending payroll review
+            </p>
+          </article>
+          <article className="surface-panel rounded-xl p-5">
+            <p className="text-sm text-slate-400">Next payment cycle</p>
+            <p className="mt-2 font-semibold">
+              {new Intl.DateTimeFormat("en-IN", {
+                day: "2-digit",
+                month: "short",
+              }).format(nextPayCycle)}
+            </p>
+            <p className="mt-1 text-sm text-slate-400">
+              Monthly settlement date
             </p>
           </article>
           <Link
