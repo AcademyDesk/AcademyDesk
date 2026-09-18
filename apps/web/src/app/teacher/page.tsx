@@ -17,12 +17,22 @@ type P = {
 };
 type S = { id: string; firstName: string; lastName: string };
 type A = { studentId: string; status: string };
+type PracticeLog = {
+  id: string;
+  studentName: string;
+  practiceDate: string;
+  minutesPracticed: number;
+  focusArea?: string;
+  notes?: string;
+  teacherFeedback?: string;
+  status: string;
+};
 type T = "today" | "classes" | "learners" | "tasks" | "more";
 const tabs: [T, string, string][] = [
   ["today", "Today", "⌂"],
   ["classes", "Classes", "◷"],
   ["learners", "Learners", "♙"],
-  ["tasks", "Tasks", "✓"],
+  ["tasks", "Teaching", "✓"],
   ["more", "More", "•••"],
 ];
 const statuses = ["Present", "Absent", "Late", "Excused", "Online"];
@@ -247,6 +257,17 @@ function TeacherTasks({
   batches: { id: string; name: string }[];
 }) {
   const [m, setM] = useState("");
+  const [practiceLogs, setPracticeLogs] = useState<PracticeLog[]>([]);
+  const [feedback, setFeedback] = useState<Record<string, string>>({});
+  const [reviewing, setReviewing] = useState("");
+  useEffect(() => {
+    void academyApi("/api/teacher/practice-logs")
+      .then(async (response) => {
+        if (!response.ok) throw new Error();
+        setPracticeLogs(await response.json());
+      })
+      .catch(() => setM("Practice feedback could not be loaded."));
+  }, []);
   async function create(e: React.FormEvent<HTMLFormElement>, path: string) {
     e.preventDefault();
     const f = new FormData(e.currentTarget);
@@ -276,6 +297,22 @@ function TeacherTasks({
       ))}
     </select>
   );
+  async function reviewPractice(log: PracticeLog) {
+    setReviewing(log.id);
+    const response = await academyApi(`/api/teacher/practice-logs/${log.id}/review`, {
+      method: "PATCH",
+      headers: apiHeaders(true),
+      body: JSON.stringify({ teacherFeedback: feedback[log.id] ?? log.teacherFeedback ?? null }),
+    });
+    if (!response.ok) {
+      setM("Practice feedback could not be saved.");
+    } else {
+      const result = await response.json();
+      setPracticeLogs((current) => current.map((item) => item.id === log.id ? { ...item, status: result.status, teacherFeedback: result.teacherFeedback } : item));
+      setM("Practice feedback saved.");
+    }
+    setReviewing("");
+  }
   return (
     <>
       <section className="learner-panel">
@@ -329,6 +366,19 @@ function TeacherTasks({
         </form>
         <small>{m}</small>
       </section>
+      <section className="learner-panel">
+        <h3>Practice feedback</h3>
+        <div className="learner-list">
+          {practiceLogs.length === 0 ? <p className="learner-empty">No practice logs from your assigned students.</p> : practiceLogs.map((log) => (
+            <article className="learner-row" key={log.id}>
+              <b>{log.studentName} · {log.minutesPracticed} min</b>
+              <small>{log.practiceDate}{log.focusArea ? ` · ${log.focusArea}` : ""}{log.notes ? ` · ${log.notes}` : ""}</small>
+              <input value={feedback[log.id] ?? log.teacherFeedback ?? ""} onChange={(event) => setFeedback((current) => ({ ...current, [log.id]: event.target.value }))} placeholder="Feedback for student" />
+              <button disabled={reviewing === log.id} onClick={() => void reviewPractice(log)}>{reviewing === log.id ? "Saving…" : log.status === "Reviewed" ? "Update feedback" : "Save feedback"}</button>
+            </article>
+          ))}
+        </div>
+      </section>
     </>
   );
 }
@@ -377,10 +427,6 @@ function TeacherSelfService() {
         <R
           a="Submission review"
           b="Open a published assignment to review learner work and return feedback."
-        />
-        <R
-          a="Practice feedback"
-          b="Review practice logs from your assigned learners only."
         />
         <R
           a="Assessment results"

@@ -41,8 +41,6 @@ const navigationGroups: readonly NavigationGroup[] = [
     links: [
       ["Overview", "/teachers"],
       ["Teacher onboarding", "/teacher-onboarding"],
-      ["Lesson plans", "/lesson-plans"],
-      ["Assignments", "/assignments"],
       ["Leave", "/leave"],
     ],
   },
@@ -87,7 +85,6 @@ const navigationGroups: readonly NavigationGroup[] = [
       ["Assessments", "/assessments"],
       ["Assessment policy", "/assessment-governance"],
       ["Music progress", "/music"],
-      ["Practice logs", "/practice-logs"],
     ],
   },
   {
