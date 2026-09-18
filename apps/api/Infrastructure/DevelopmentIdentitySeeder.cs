@@ -26,6 +26,7 @@ public static class DevelopmentIdentitySeeder
         await db.SaveChangesAsync();
         await EnsureUser(users, "Shashank", "Shashank@academydesk.local", "Shashank", null, true, "PlatformOwner");
         await EnsureUser(users, "Kavya", "Kavya@academydesk.local", "Kavya", academy.Id, false, "AcademyAdmin");
+        await EnsureUser(users, "Finance", "finance@academydesk.local", "Finance user", academy.Id, false, "FinanceUser");
         await EnsureUser(users, "Haynsh", "Haynsh@academydesk.local", "Haynsh", academy.Id, false, "Student", student.Id, null);
         await EnsureUser(users, "Hayansh1", "Hayansh1@academydesk.local", "Hayansh1", academy.Id, false, "Teacher", null, teacher.Id);
     }
