@@ -33,8 +33,12 @@ public sealed class PaymentsController(AcademyDeskDbContext dbContext) : Control
     [HttpPatch("{paymentId:guid}/status")]
     public async Task<ActionResult> UpdateStatus(Guid academyId, Guid paymentId, UpdatePaymentStatusRequest request, CancellationToken token)
     { var x=await dbContext.Payments.SingleOrDefaultAsync(v=>v.Id==paymentId&&v.AcademyId==academyId,token); if(x is null)return NotFound(); if(request.Status is not("Completed" or "Reconciled" or "Voided"))return BadRequest(new { message = "Status must be Completed, Reconciled, or Voided." }); x.Status=request.Status; await dbContext.SaveChangesAsync(token); return Ok(); }
+    [HttpPatch("{paymentId:guid}/reconcile")]
+    public async Task<ActionResult> Reconcile(Guid academyId, Guid paymentId, ReconcilePaymentRequest request, CancellationToken token)
+    { var payment=await dbContext.Payments.SingleOrDefaultAsync(x=>x.Id==paymentId&&x.AcademyId==academyId,token);if(payment is null)return NotFound();if(string.IsNullOrWhiteSpace(request.Reference))return BadRequest(new{message="A bank/cash reconciliation reference is required."});payment.Status="Reconciled";payment.ReconciledAtUtc=DateTime.UtcNow;payment.ReconciliationReference=request.Reference.Trim();await dbContext.SaveChangesAsync(token);return Ok(); }
 }
 
 public sealed record RecordPaymentRequest(Guid InvoiceId, decimal Amount, string? Method, string? Reference);
 public sealed record PaymentSummary(Guid Id, Guid InvoiceId, decimal Amount, string Currency, string Method, string Status, string? Reference, DateTime PaidAtUtc);
 public sealed record UpdatePaymentStatusRequest(string Status);
+public sealed record ReconcilePaymentRequest(string Reference);
