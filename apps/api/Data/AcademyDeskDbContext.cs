@@ -25,6 +25,7 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
     public DbSet<Assessment> Assessments => Set<Assessment>();
     public DbSet<AssessmentResult> AssessmentResults => Set<AssessmentResult>();
     public DbSet<FeePlan> FeePlans => Set<FeePlan>();
+    public DbSet<StudentFeeArrangement> StudentFeeArrangements => Set<StudentFeeArrangement>();
     public DbSet<Invoice> Invoices => Set<Invoice>();
     public DbSet<Payment> Payments => Set<Payment>();
     public DbSet<Expense> Expenses => Set<Expense>();
@@ -281,6 +282,13 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
             entity.Property(x => x.Currency).HasMaxLength(3).IsRequired();
             entity.Property(x => x.Frequency).HasMaxLength(30).IsRequired();
             entity.HasIndex(x => new { x.AcademyId, x.Name }).IsUnique();
+        });
+        modelBuilder.Entity<StudentFeeArrangement>(entity =>
+        {
+            entity.Property(x => x.SubjectName).HasMaxLength(200).IsRequired();
+            entity.Property(x => x.Amount).HasPrecision(18, 2);
+            entity.Property(x => x.Frequency).HasMaxLength(30).IsRequired();
+            entity.HasIndex(x => new { x.AcademyId, x.StudentId, x.IsActive });
         });
 
         modelBuilder.Entity<Invoice>(entity =>
