@@ -5,16 +5,217 @@ import { useEffect, useState } from "react";
 import { academyApi } from "@/lib/api";
 import { StudentAdminProfile } from "@/components/student-admin-profile";
 
-type Student = { id: string; firstName: string; lastName: string; email?: string; phone?: string; isActive: boolean };
-type Profile = { studentNumber?: string; preferredName?: string; gender?: string; dateOfBirth?: string; admissionDate?: string; addressLine1?: string; city?: string; state?: string; postalCode?: string; emergencyContactName?: string; emergencyContactPhone?: string; medicalOrAccessibilityNotes?: string; adminNotes?: string; guardians?: unknown[]; enrollments?: unknown[]; attendance?: unknown[]; invoices?: { totalAmount?: number; status?: string }[]; musicProgress?: unknown[]; practiceLogs?: unknown[]; communications?: unknown[] };
+type Student = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email?: string;
+  phone?: string;
+  isActive: boolean;
+};
+type Profile = {
+  studentNumber?: string;
+  preferredName?: string;
+  gender?: string;
+  dateOfBirth?: string;
+  admissionDate?: string;
+  addressLine1?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  emergencyContactName?: string;
+  emergencyContactPhone?: string;
+  medicalOrAccessibilityNotes?: string;
+  adminNotes?: string;
+  guardians?: unknown[];
+  enrollments?: unknown[];
+  attendance?: unknown[];
+  invoices?: { totalAmount?: number; status?: string }[];
+  musicProgress?: unknown[];
+  practiceLogs?: unknown[];
+  communications?: unknown[];
+};
 
 const count = (items?: unknown[]) => items?.length ?? 0;
-function DetailPanel({ title, children, href }: { title: string; children: React.ReactNode; href?: string }) { return <section className="surface-panel rounded-xl p-5"><header className="flex items-center justify-between"><h3 className="font-semibold">{title}</h3>{href && <Link href={href} className="text-sm text-cyan-300">Open →</Link>}</header><div className="mt-4 text-sm text-slate-300">{children}</div></section>; }
+function DetailPanel({
+  title,
+  children,
+  href,
+}: {
+  title: string;
+  children: React.ReactNode;
+  href?: string;
+}) {
+  return (
+    <section className="surface-panel rounded-xl p-5">
+      <header className="flex items-center justify-between">
+        <h3 className="font-semibold">{title}</h3>
+        {href && (
+          <Link href={href} className="text-sm text-cyan-300">
+            Open →
+          </Link>
+        )}
+      </header>
+      <div className="mt-4 text-sm text-slate-300">{children}</div>
+    </section>
+  );
+}
 
 export default function StudentProfilePage() {
-  const requested = typeof window === "undefined" ? "" : new URLSearchParams(window.location.search).get("studentId") ?? ""; const [academyId, setAcademyId] = useState(""); const [students, setStudents] = useState<Student[]>([]); const [studentId, setStudentId] = useState(requested); const [profile, setProfile] = useState<Profile>(); const [message, setMessage] = useState("Loading learner records…");
-  useEffect(() => { void (async () => { try { const academies = await academyApi("/api/academies"); const academy = (await academies.json())[0]; if (!academy) return setMessage("Create an academy before opening learner records."); setAcademyId(academy.id); const response = await academyApi(`/api/academies/${academy.id}/students`); const rows: Student[] = await response.json(); setStudents(rows); const selected = requested || rows[0]?.id || ""; setStudentId(selected); if (selected) { const detail = await academyApi(`/api/academies/${academy.id}/students/${selected}/profile`); if (detail.ok) setProfile(await detail.json()); } setMessage(""); } catch { setMessage("Learner records could not be loaded."); } })(); }, [requested]);
-  async function select(id: string) { setStudentId(id); if (!academyId || !id) return; const response = await academyApi(`/api/academies/${academyId}/students/${id}/profile`); if (response.ok) setProfile(await response.json()); }
-  const student = students.find((item) => item.id === studentId); const outstanding = (profile?.invoices ?? []).filter((item) => item.status !== "Paid").reduce((sum, item) => sum + (item.totalAmount ?? 0), 0);
-  return <main className="enterprise-settings"><header className="enterprise-page-header"><p>Learners & families / record</p><h2>{student ? `${student.firstName} ${student.lastName}` : "Student 360"}</h2><span>A connected learner record for family, enrolment, attendance, finance, learning progress, and communication.</span></header><section className="enterprise-settings-toolbar"><select value={studentId} onChange={(event) => void select(event.target.value)} className="rounded border border-slate-700 bg-slate-950 p-2"><option value="">Select learner</option>{students.map((item) => <option key={item.id} value={item.id}>{item.firstName} {item.lastName}</option>)}</select><div className="flex gap-3"><Link href={`/enrollments?studentId=${studentId}`} className="text-sm text-cyan-300">Enrol learner →</Link><Link href="/students" className="text-sm text-cyan-300">Learner register →</Link></div></section>{message && <p className="mt-5 text-amber-200">{message}</p>}{student && profile && <><section className="mt-5 grid gap-4 md:grid-cols-4"><DetailPanel title="Enrolments" href={`/enrollments?studentId=${studentId}`}><strong className="text-3xl">{count(profile.enrollments)}</strong><p className="mt-2 text-slate-400">Active learning placements</p></DetailPanel><DetailPanel title="Attendance" href="/attendance"><strong className="text-3xl">{count(profile.attendance)}</strong><p className="mt-2 text-slate-400">Recorded class attendance</p></DetailPanel><DetailPanel title="Fees" href="/invoices"><strong className="text-3xl">₹{outstanding.toLocaleString("en-IN")}</strong><p className="mt-2 text-slate-400">Outstanding invoices</p></DetailPanel><DetailPanel title="Family" href="/guardians"><strong className="text-3xl">{count(profile.guardians)}</strong><p className="mt-2 text-slate-400">Linked guardian records</p></DetailPanel></section><section className="mt-5 grid gap-5 xl:grid-cols-[1.35fr_0.65fr]"><StudentAdminProfile academyId={academyId} studentId={studentId} profile={profile} onSaved={(value) => setProfile((current) => ({ ...current, ...value }))} /><div className="space-y-5"><DetailPanel title="Learning progress" href="/music"><p>{count(profile.musicProgress)} music progress records</p><p className="mt-2">{count(profile.practiceLogs)} practice or study logs</p><Link href="/assignments" className="mt-4 inline-block text-cyan-300">Review assignments and submissions →</Link></DetailPanel><DetailPanel title="Engagement" href="/communications"><p>{count(profile.communications)} communication records</p><p className="mt-2 text-slate-400">Use contact preferences before sending reminders or announcements.</p><Link href="/communication-preferences" className="mt-4 inline-block text-cyan-300">Open preferences →</Link></DetailPanel></div></section></>}</main>;
+  const requested =
+    typeof window === "undefined"
+      ? ""
+      : (new URLSearchParams(window.location.search).get("studentId") ?? "");
+  const [academyId, setAcademyId] = useState("");
+  const [students, setStudents] = useState<Student[]>([]);
+  const [studentId, setStudentId] = useState(requested);
+  const [profile, setProfile] = useState<Profile>();
+  const [message, setMessage] = useState("Loading learner records…");
+  useEffect(() => {
+    void (async () => {
+      try {
+        const academies = await academyApi("/api/academies");
+        const academy = (await academies.json())[0];
+        if (!academy)
+          return setMessage(
+            "Create an academy before opening learner records.",
+          );
+        setAcademyId(academy.id);
+        const response = await academyApi(
+          `/api/academies/${academy.id}/students`,
+        );
+        const rows: Student[] = await response.json();
+        setStudents(rows);
+        const selected = requested || rows[0]?.id || "";
+        setStudentId(selected);
+        if (selected) {
+          const detail = await academyApi(
+            `/api/academies/${academy.id}/students/${selected}/profile`,
+          );
+          if (detail.ok) setProfile(await detail.json());
+        }
+        setMessage("");
+      } catch {
+        setMessage("Learner records could not be loaded.");
+      }
+    })();
+  }, [requested]);
+  async function select(id: string) {
+    setStudentId(id);
+    if (!academyId || !id) return;
+    const response = await academyApi(
+      `/api/academies/${academyId}/students/${id}/profile`,
+    );
+    if (response.ok) setProfile(await response.json());
+  }
+  const student = students.find((item) => item.id === studentId);
+  const outstanding = (profile?.invoices ?? [])
+    .filter((item) => item.status !== "Paid")
+    .reduce((sum, item) => sum + (item.totalAmount ?? 0), 0);
+  return (
+    <main className="enterprise-settings">
+      <header className="enterprise-page-header">
+        <p>Learners & families / record</p>
+        <h2>
+          {student
+            ? `${student.firstName} ${student.lastName}`
+            : "Student record"}
+        </h2>
+        <span>
+          A connected learner record for family, enrolment, attendance, finance,
+          learning progress, and communication.
+        </span>
+      </header>
+      <section className="enterprise-settings-toolbar">
+        <select
+          value={studentId}
+          onChange={(event) => void select(event.target.value)}
+          className="rounded border border-slate-700 bg-slate-950 p-2"
+        >
+          <option value="">Select learner</option>
+          {students.map((item) => (
+            <option key={item.id} value={item.id}>
+              {item.firstName} {item.lastName}
+            </option>
+          ))}
+        </select>
+        <div className="flex gap-3">
+          <Link
+            href={`/enrollments?studentId=${studentId}`}
+            className="text-sm text-cyan-300"
+          >
+            Enrol learner →
+          </Link>
+          <Link href="/students" className="text-sm text-cyan-300">
+            Learner register →
+          </Link>
+        </div>
+      </section>
+      {message && <p className="mt-5 text-amber-200">{message}</p>}
+      {student && profile && (
+        <>
+          <section className="mt-5 grid gap-4 md:grid-cols-4">
+            <DetailPanel
+              title="Enrolments"
+              href={`/enrollments?studentId=${studentId}`}
+            >
+              <strong className="text-3xl">{count(profile.enrollments)}</strong>
+              <p className="mt-2 text-slate-400">Active learning placements</p>
+            </DetailPanel>
+            <DetailPanel title="Attendance" href="/attendance">
+              <strong className="text-3xl">{count(profile.attendance)}</strong>
+              <p className="mt-2 text-slate-400">Recorded class attendance</p>
+            </DetailPanel>
+            <DetailPanel title="Fees" href="/invoices">
+              <strong className="text-3xl">
+                ₹{outstanding.toLocaleString("en-IN")}
+              </strong>
+              <p className="mt-2 text-slate-400">Outstanding invoices</p>
+            </DetailPanel>
+            <DetailPanel title="Family" href="/guardians">
+              <strong className="text-3xl">{count(profile.guardians)}</strong>
+              <p className="mt-2 text-slate-400">Linked guardian records</p>
+            </DetailPanel>
+          </section>
+          <section className="mt-5 grid gap-5 xl:grid-cols-[1.35fr_0.65fr]">
+            <StudentAdminProfile
+              academyId={academyId}
+              studentId={studentId}
+              profile={profile}
+              onSaved={(value) =>
+                setProfile((current) => ({ ...current, ...value }))
+              }
+            />
+            <div className="space-y-5">
+              <DetailPanel title="Learning progress" href="/music">
+                <p>{count(profile.musicProgress)} music progress records</p>
+                <p className="mt-2">
+                  {count(profile.practiceLogs)} practice or study logs
+                </p>
+                <Link
+                  href="/assignments"
+                  className="mt-4 inline-block text-cyan-300"
+                >
+                  Review assignments and submissions →
+                </Link>
+              </DetailPanel>
+              <DetailPanel title="Engagement" href="/communications">
+                <p>{count(profile.communications)} communication records</p>
+                <p className="mt-2 text-slate-400">
+                  Use contact preferences before sending reminders or
+                  announcements.
+                </p>
+                <Link
+                  href="/communication-preferences"
+                  className="mt-4 inline-block text-cyan-300"
+                >
+                  Open preferences →
+                </Link>
+              </DetailPanel>
+            </div>
+          </section>
+        </>
+      )}
+    </main>
+  );
 }

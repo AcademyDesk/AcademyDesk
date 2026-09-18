@@ -87,6 +87,29 @@ public sealed class StaffController(
         return Ok(new { staff.Id, staff.IsActive });
     }
 
+    [HttpPatch("{staffId:guid}/role")]
+    public async Task<ActionResult> UpdateRole(Guid academyId, Guid staffId, StaffRoleRequest request)
+    {
+        if (!await IsOwner(academyId)) return Forbid();
+        if (!AllowedRoles.Contains(request.Role, StringComparer.OrdinalIgnoreCase))
+            return BadRequest(new { message = "Role must be Manager, FinanceUser, Teacher, or FrontDesk." });
+
+        var staff = await userManager.FindByIdAsync(staffId.ToString());
+        if (staff?.AcademyId != academyId) return NotFound();
+        var requestedRole = AllowedRoles.Single(role => role.Equals(request.Role, StringComparison.OrdinalIgnoreCase));
+        var currentRoles = await userManager.GetRolesAsync(staff);
+        var removableRoles = currentRoles.Where(role => AllowedRoles.Contains(role, StringComparer.OrdinalIgnoreCase)).ToArray();
+        if (removableRoles.Length > 0)
+        {
+            var removeResult = await userManager.RemoveFromRolesAsync(staff, removableRoles);
+            if (!removeResult.Succeeded) return Problem("The existing staff role could not be updated.");
+        }
+        var addResult = await userManager.AddToRoleAsync(staff, requestedRole);
+        if (!addResult.Succeeded) return Problem("The new staff role could not be assigned.");
+        await userManager.UpdateSecurityStampAsync(staff);
+        return Ok(new { staff.Id, Roles = new[] { requestedRole } });
+    }
+
     [HttpPatch("{staffId:guid}/password")]
     public async Task<ActionResult> ResetPassword(Guid academyId, Guid staffId, StaffPasswordRequest request)
     {
@@ -128,4 +151,5 @@ public sealed class StaffController(
 public sealed record CreateStaffAccountRequest(string Email, string DisplayName, string Password, string Role, Guid? TeacherId);
 public sealed record StaffAccountSummary(Guid Id, string DisplayName, string Email, Guid? TeacherId, IReadOnlyList<string> Roles, bool IsActive);
 public sealed record StaffStatusRequest(bool IsActive);
+public sealed record StaffRoleRequest(string Role);
 public sealed record StaffPasswordRequest(string NewPassword);

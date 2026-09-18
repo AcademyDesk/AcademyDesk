@@ -30,9 +30,7 @@ const navigationGroups: readonly NavigationGroup[] = [
     links: [
       ["Students", "/students"],
       ["Student onboarding", "/student-onboarding"],
-      ["Student 360", "/student-profile"],
       ["Parents", "/guardians"],
-      ["Parent 360", "/guardian-profile"],
       ["Enrolments", "/enrollments"],
       ["Portal accounts", "/portal-accounts"],
     ],
@@ -42,7 +40,6 @@ const navigationGroups: readonly NavigationGroup[] = [
     icon: "♜",
     links: [
       ["Teachers", "/teachers"],
-      ["Teacher 360", "/teacher-profile"],
       ["Staff", "/staff"],
       ["Leave", "/leave"],
     ],
