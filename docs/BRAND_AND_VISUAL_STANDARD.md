@@ -9,6 +9,7 @@ This document is the implementation reference for AcademyDesk branding and visua
 - The logo wordmark uses the same family at a heavier weight with tighter letter spacing; it is not a separate font.
 - Do not introduce Inter, system-only fonts, serif fonts, or display fonts in product screens.
 - Use the mono font only for genuine technical values such as code snippets or identifiers where a monospace treatment is useful.
+- **Primary page headline:** `clamp(1.85rem, 2.2vw, 2.65rem)`, 520 weight, -0.05em tracking, 1.05 line-height. This is the approved “Good morning, Kavya” scale for all Admin page titles.
 
 ## Colour system
 
