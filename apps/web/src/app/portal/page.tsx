@@ -140,27 +140,47 @@ export default function Portal() {
         </aside>
         <section className="learner-content">
           {me?.role === "Parent" && (
-            <label className="learner-switcher">
-              Viewing
-              <select
-                value={id}
-                onChange={(e) => {
-                  setId(e.target.value);
-                  void load(e.target.value);
-                }}
-              >
-                {me.children?.map((x) => (
-                  <option key={x.id} value={x.id}>
-                    {x.name}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <div className="learner-switcher">
+              <label>
+                Viewing
+                <select
+                  value={id}
+                  onChange={(e) => {
+                    setId(e.target.value);
+                    void load(e.target.value);
+                  }}
+                >
+                  {me.children?.map((x) => (
+                    <option key={x.id} value={x.id}>
+                      {x.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <small>
+                {me.children?.length || 0} permitted student
+                {me.children?.length === 1 ? "" : "s"}
+              </small>
+            </div>
           )}
           {m ? (
             <p className="learner-state">{m}</p>
           ) : (
-            d && <View d={d} id={id} n={n} l={l} tab={t} refresh={load} />
+            d && (
+              <View
+                d={d}
+                id={id}
+                n={n}
+                l={l}
+                tab={t}
+                refresh={load}
+                parentAccess={
+                  me?.role === "Parent"
+                    ? me.children?.find((child) => child.id === id)
+                    : undefined
+                }
+              />
+            )
           )}
         </section>
       </div>
@@ -182,6 +202,7 @@ function View({
   l,
   tab,
   refresh,
+  parentAccess,
 }: {
   d: D;
   id: string;
@@ -189,6 +210,7 @@ function View({
   l: Leave[];
   tab: Tab;
   refresh: () => Promise<void>;
+  parentAccess?: NonNullable<Me["children"]>[number];
 }) {
   const rate = d.attendanceSummary.total
     ? Math.round(
@@ -200,13 +222,21 @@ function View({
   return (
     <>
       <header className="learner-heading">
-        <p>Student workspace</p>
+        <p>
+          {parentAccess
+            ? "Parent workspace / permitted student"
+            : "Student workspace"}
+        </p>
         <h1>
           {tab === "home"
             ? `Good day, ${d.name.split(" ")[0]}`
             : tab[0].toUpperCase() + tab.slice(1)}
         </h1>
-        <span>Your private academy records and daily learning actions.</span>
+        <span>
+          {parentAccess
+            ? "You are viewing only the information this student has permitted for your Parent account."
+            : "Your private academy records and daily learning actions."}
+        </span>
       </header>
       {tab === "home" && (
         <>
@@ -272,12 +302,18 @@ function View({
       {tab === "tasks" && (
         <>
           <P title="Assignments">
-            {d.assignments.map((x) => (
-              <Assignment key={x.id} id={id} x={x} refresh={refresh} />
-            ))}
+            {d.assignments.map((x) =>
+              parentAccess ? (
+                <R key={x.id} a={x.title} b={`${x.type} · Parent view`} />
+              ) : (
+                <Assignment key={x.id} id={id} x={x} refresh={refresh} />
+              ),
+            )}
           </P>
-          <Practice id={id} refresh={refresh} />
-          <Leave id={id} items={l} />
+          {!parentAccess && <Practice id={id} refresh={refresh} />}
+          {(!parentAccess || parentAccess.canManageLeave) && (
+            <Leave id={id} items={l} />
+          )}
         </>
       )}
       {tab === "progress" && (
@@ -325,7 +361,7 @@ function View({
               />
             ))}
           </P>
-          <Profile id={id} d={d} />
+          {!parentAccess && <Profile id={id} d={d} />}
           <P title="Notifications">
             {n.map((x) => (
               <R key={x.id} a={x.title} b={x.message} />
