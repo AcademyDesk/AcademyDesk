@@ -46,7 +46,8 @@ public sealed class EnrollmentsController(AcademyDeskDbContext dbContext) : Cont
         if (enrollment is null) return NotFound();
         var status = string.IsNullOrWhiteSpace(request.Status) ? enrollment.Status : request.Status.Trim();
         if (!new[] { "Active", "Waitlisted", "Completed", "Withdrawn", "Cancelled", "Paused" }.Contains(status, StringComparer.OrdinalIgnoreCase)) return BadRequest(new { message = "Status must be Active, Waitlisted, Completed, Withdrawn, Cancelled, or Paused." });
-        enrollment.Status = status; enrollment.EndDate = request.EndDate;
+        if (!string.Equals(status, "Active", StringComparison.OrdinalIgnoreCase) && string.IsNullOrWhiteSpace(request.LifecycleReason)) return BadRequest(new { message = "A lifecycle reason is required when changing an enrolment from Active." });
+        enrollment.Status = status; enrollment.EndDate = request.EndDate; enrollment.LifecycleReason = string.IsNullOrWhiteSpace(request.LifecycleReason) ? null : request.LifecycleReason.Trim();
         await dbContext.SaveChangesAsync(token);
         return Ok(new EnrollmentSummary(enrollment.Id, enrollment.StudentId, enrollment.BatchId, enrollment.StartDate, enrollment.EndDate, enrollment.Status));
     }
@@ -68,5 +69,5 @@ public sealed class EnrollmentsController(AcademyDeskDbContext dbContext) : Cont
 
 public sealed record CreateEnrollmentRequest(Guid StudentId, Guid BatchId, DateOnly? StartDate, string? Status);
 public sealed record EnrollmentSummary(Guid Id, Guid StudentId, Guid BatchId, DateOnly StartDate, DateOnly? EndDate, string Status);
-public sealed record UpdateEnrollmentRequest(string Status, DateOnly? EndDate);
+public sealed record UpdateEnrollmentRequest(string Status, DateOnly? EndDate, string? LifecycleReason);
 public sealed record TransferEnrollmentRequest(Guid TargetBatchId, DateOnly? TransferDate);
