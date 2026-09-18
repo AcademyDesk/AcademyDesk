@@ -61,3 +61,7 @@ The live tokens and shared Admin control rules are in:
 - `apps/web/src/app/globals.css`
 
 Before adding a local visual rule, first check whether a shared token or component rule can satisfy the requirement. This preserves a consistent enterprise interface as new modules are built.
+
+## Admin rollout rule
+
+All Admin navigation groups—Workspace, Students, Teachers, Class & Batch, Ops Team, Admissions, Academics, Operations, Finance, Engagement, and Administration—inherit the same shared shell and compatibility contract. A new or legacy module is not visually complete unless it uses the approved typography, themed controls, action buttons, and clickable-tile behavior.
