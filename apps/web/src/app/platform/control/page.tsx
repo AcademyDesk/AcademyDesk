@@ -320,6 +320,9 @@ export default function PlatformControlPage() {
               href={item.href}
               key={item.label}
               data-active={"tab" in item && item.tab === tab}
+              onClick={() => {
+                if ("tab" in item) setTab(item.tab);
+              }}
             >
               <i>{item.icon}</i>
               {item.label}
