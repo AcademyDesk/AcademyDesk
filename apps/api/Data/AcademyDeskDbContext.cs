@@ -18,6 +18,7 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
     public DbSet<AcademicYear> AcademicYears => Set<AcademicYear>();
     public DbSet<AcademicTerm> AcademicTerms => Set<AcademicTerm>();
     public DbSet<Enrollment> Enrollments => Set<Enrollment>();
+    public DbSet<BatchPromotion> BatchPromotions => Set<BatchPromotion>();
     public DbSet<ClassSession> ClassSessions => Set<ClassSession>();
     public DbSet<AttendanceRecord> AttendanceRecords => Set<AttendanceRecord>();
     public DbSet<Assignment> Assignments => Set<Assignment>();

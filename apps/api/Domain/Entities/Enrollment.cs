@@ -7,4 +7,5 @@ public sealed class Enrollment : AcademyEntity
     public DateOnly StartDate { get; set; } = DateOnly.FromDateTime(DateTime.UtcNow);
     public DateOnly? EndDate { get; set; }
     public string Status { get; set; } = "Active";
+    public string? LifecycleReason { get; set; }
 }
