@@ -41,7 +41,7 @@ public sealed class TeacherCompensationController(AcademyDeskDbContext dbContext
         {
             using var document = JsonDocument.Parse(compensationJson);
             var root = document.RootElement;
-            return new TeacherCompensationSummary(teacherId, Text(root, "model"), Number(root, "baseMonthlySalary"), Number(root, "baseHourlyRate"), Number(root, "beginnerHourlyRate"), Number(root, "intermediateHourlyRate"), Number(root, "advancedHourlyRate"), Date(root, "effectiveFrom"));
+            return new TeacherCompensationSummary(teacherId, Text(root, "model"), Number(root, "baseMonthlySalary", "monthlySalary"), Number(root, "baseHourlyRate", "standardHourlyRate"), Number(root, "beginnerHourlyRate"), Number(root, "intermediateHourlyRate"), Number(root, "advancedHourlyRate"), Date(root, "effectiveFrom"));
         }
         catch (JsonException)
         {
@@ -49,14 +49,14 @@ public sealed class TeacherCompensationController(AcademyDeskDbContext dbContext
         }
     }
 
-    private static JsonElement? Property(JsonElement root, string name)
+    private static JsonElement? Property(JsonElement root, params string[] names)
     {
         foreach (var property in root.EnumerateObject())
-            if (string.Equals(property.Name, name, StringComparison.OrdinalIgnoreCase)) return property.Value;
+            if (names.Any(name => string.Equals(property.Name, name, StringComparison.OrdinalIgnoreCase))) return property.Value;
         return null;
     }
     private static string Text(JsonElement root, string name) => Property(root, name)?.ToString() ?? "";
-    private static decimal? Number(JsonElement root, string name) { var value = Property(root, name); return value is null ? null : value.Value.ValueKind == JsonValueKind.Number && value.Value.TryGetDecimal(out var number) ? number : decimal.TryParse(value.Value.ToString(), out var parsed) ? parsed : null; }
+    private static decimal? Number(JsonElement root, params string[] names) { var value = Property(root, names); return value is null ? null : value.Value.ValueKind == JsonValueKind.Number && value.Value.TryGetDecimal(out var number) ? number : decimal.TryParse(value.Value.ToString(), out var parsed) ? parsed : null; }
     private static DateOnly? Date(JsonElement root, string name) { var value = Property(root, name); return value is null ? null : DateOnly.TryParse(value.Value.ToString(), out var parsed) ? parsed : null; }
 }
 
