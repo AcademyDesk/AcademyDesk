@@ -15,6 +15,9 @@
   --ad-accent: #0f6cbd;
   --ad-accent-strong: #075a9e;
   --ad-accent-soft: #e5f1fb;
+  --ad-action: #55c8ef;
+  --ad-action-hover: #78d5f4;
+  --ad-action-text: #07111f;
   --ad-success: #16835d;
   --ad-warning: #ad6a00;
   --ad-danger: #b42318;
@@ -37,6 +40,9 @@
   --ad-accent: #48b7ef;
   --ad-accent-strong: #7bd3ff;
   --ad-accent-soft: #10354f;
+  --ad-action: #0783bb;
+  --ad-action-hover: #1498d2;
+  --ad-action-text: #ffffff;
   --ad-success: #57c99b;
   --ad-warning: #f2b84c;
   --ad-danger: #fb8e83;
@@ -151,10 +157,11 @@ html[data-theme="light"] [class*="border-slate-"] {
 /* Exact utility matches keep tinted/hover variants intact while normalizing the base palette. */
 html [class~="bg-cyan-400"],
 html [class~="bg-cyan-500"] {
-  background-color: var(--ad-accent) !important;
+  background-color: var(--ad-action) !important;
+  color: var(--ad-action-text) !important;
 }
 html [class~="hover:bg-cyan-300"]:hover {
-  background-color: var(--ad-accent-strong) !important;
+  background-color: var(--ad-action-hover) !important;
 }
 html [class~="text-cyan-100"],
 html [class~="text-cyan-200"],
@@ -810,13 +817,13 @@ html[data-theme="light"] [class~="text-red-300"] {
   gap: 9px;
   padding: clamp(11px, 0.88vw, 18px) clamp(15px, 1.13vw, 23px);
   border-radius: 13px;
-  background: #28c9e6;
-  color: #04131d;
+  background: var(--ad-action);
+  color: var(--ad-action-text);
   font-size: clamp(0.82rem, 0.88vw, 1rem);
   font-weight: 750;
 }
 .enterprise-primary-action:hover {
-  background: #56d8ee;
+  background: var(--ad-action-hover);
   transform: translateY(-1px);
 }
 .enterprise-kpi-grid {
@@ -1863,8 +1870,8 @@ html[data-theme="light"] .field-label { color: #475569; }
   padding: 10px 12px;
   border: 0;
   border-radius: 9px;
-  background: #28c9e6;
-  color: #04131d;
+  background: var(--ad-action);
+  color: var(--ad-action-text);
   cursor: pointer;
   font-size: 0.8rem;
   font-weight: 750;
@@ -2103,8 +2110,8 @@ html[data-theme="light"] .field-label { color: #475569; }
   padding: 9px 13px;
   border: 0;
   border-radius: 8px;
-  background: #28c9e6;
-  color: #04131d;
+  background: var(--ad-action);
+  color: var(--ad-action-text);
   font-weight: 700;
   cursor: pointer;
 }
