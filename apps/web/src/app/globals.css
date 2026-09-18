@@ -263,6 +263,9 @@ html[data-theme="light"] [class~="text-red-300"] { color: var(--ad-danger) !impo
 .enterprise-activity-item small { margin-top: 5px; color: var(--ad-text-muted); font-size: 0.8rem; }
 
 .enterprise-settings { flex: 1; min-height: 0; padding: clamp(26px, 3vw, 54px); overflow: auto; }
+.enterprise-workspace > main.min-h-screen { min-height: 0 !important; background: transparent !important; }
+.enterprise-workspace > main.min-h-screen > .mx-auto { max-width: none !important; padding: clamp(26px, 3vw, 54px) !important; }
+.enterprise-workspace > main.min-h-screen > header.enterprise-nav { display: none; }
 .enterprise-page-header p, .enterprise-page-header h2, .enterprise-page-header span { display: block; margin: 0; }
 .enterprise-page-header p { color: var(--ad-text-subtle); font-size: 0.82rem; font-weight: 650; letter-spacing: 0.08em; text-transform: uppercase; }
 .enterprise-page-header h2 { margin-top: 10px; color: var(--ad-text); font-size: clamp(2rem, 2.6vw, 3.1rem); letter-spacing: -0.05em; }
@@ -283,6 +286,10 @@ html[data-theme="light"] [class~="text-red-300"] { color: var(--ad-danger) !impo
 .enterprise-setting-card small { color: var(--ad-text-subtle); font-size: 0.72rem; }
 .enterprise-setting-card b { color: var(--ad-accent); }
 .enterprise-settings-empty { padding: 32px; border: 1px dashed var(--ad-border-strong); border-radius: 14px; color: var(--ad-text-muted); }
+.enterprise-page-state { margin: 20px 0 0; padding: 11px 13px; border: 1px solid var(--ad-border); border-radius: 10px; background: var(--ad-surface-subtle); color: var(--ad-text-muted); font-size: 0.84rem; line-height: 1.4; }
+.enterprise-page-state-success { border-color: color-mix(in srgb, var(--ad-success) 42%, var(--ad-border)); background: color-mix(in srgb, var(--ad-success) 10%, var(--ad-surface)); color: var(--ad-success); }
+.enterprise-page-state-warning { border-color: color-mix(in srgb, #eab308 42%, var(--ad-border)); background: color-mix(in srgb, #eab308 8%, var(--ad-surface)); color: color-mix(in srgb, #eab308 78%, var(--ad-text)); }
+.enterprise-page-state-error { border-color: color-mix(in srgb, #fb7185 42%, var(--ad-border)); background: color-mix(in srgb, #fb7185 9%, var(--ad-surface)); color: color-mix(in srgb, #fb7185 80%, var(--ad-text)); }
 
 /* Platform Owner is a separate SaaS control plane: it never inherits academy operations. */
 .platform-shell { --platform-gutter: clamp(0px, 1.18vw, 24px); --platform-sidebar: clamp(238px, 19vw, 340px); display: grid; height: calc(100dvh - (var(--platform-gutter) * 2)); grid-template-columns: var(--platform-sidebar) minmax(0, 1fr); margin: var(--platform-gutter); overflow: hidden; border: 1px solid var(--ad-border); border-radius: clamp(0px, 1.3vw, 26px); background: var(--ad-canvas); box-shadow: var(--ad-shadow); }

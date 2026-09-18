@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { academyApi, apiHeaders } from "@/lib/api";
+import { EnterprisePageState } from "@/components/enterprise-page-state";
 
 type Academy = { id: string };
 type Person = { id: string; firstName: string; lastName: string };
@@ -66,7 +67,7 @@ export default function ComplianceCentre() {
 
   return <main className="enterprise-settings">
     <header className="enterprise-page-header"><p>Administration / compliance</p><h2>Compliance control centre</h2><span>Evidence-led document, consent, expiry and safeguarding controls for this academy.</span></header>
-    {message && <p className="mt-5 text-amber-200">{message}</p>}
+    {message && <EnterprisePageState tone={message.includes("could not") ? "error" : message.includes("registered") || message.includes("recorded") || message.includes("marked") || message.includes("withdrawn") ? "success" : "loading"}>{message}</EnterprisePageState>}
     <section className="mt-5 grid gap-5 xl:grid-cols-2">
       <form onSubmit={addDocument} className="surface-panel rounded-xl p-5"><h3 className="font-semibold">Register document</h3><p className="mt-1 text-sm text-slate-400">Record the secure document reference; file storage stays with your approved storage provider.</p><PersonPicker people={people} /><input required name="documentType" className="field mt-3" placeholder="Document type — e.g. ID proof"/><input required name="fileName" className="field mt-3" placeholder="File name"/><input name="secureReference" className="field mt-3" placeholder="Secure storage reference"/><div className="mt-3 grid gap-3 md:grid-cols-2"><input name="expiryDate" type="date" className="field"/><select name="visibility" className="field"><option>AdminOnly</option><option>StaffRestricted</option></select></div><button className="mt-4 rounded bg-cyan-400 px-4 py-2 font-semibold text-slate-950">Register for review</button></form>
       <form onSubmit={addConsent} className="surface-panel rounded-xl p-5"><h3 className="font-semibold">Record consent</h3><p className="mt-1 text-sm text-slate-400">Use a traceable consent type and retain the signed/electronic evidence reference.</p><PersonPicker people={people} /><input required name="consentType" className="field mt-3" placeholder="Consent type — e.g. photo and media"/><input name="evidenceReference" className="field mt-3" placeholder="Evidence reference / signed form ID"/><button className="mt-4 rounded bg-cyan-400 px-4 py-2 font-semibold text-slate-950">Record consent</button></form>
