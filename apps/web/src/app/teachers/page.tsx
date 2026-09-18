@@ -228,7 +228,7 @@ export default function TeachersPage() {
           >
             <p className="text-sm text-slate-400">New teacher</p>
             <p className="mt-2 font-semibold text-cyan-300">
-              Open onboarding →
+              Teacher onboarding
             </p>
           </Link>
         </section>
