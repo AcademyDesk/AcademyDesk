@@ -1319,6 +1319,56 @@ html[data-theme="light"] [class~="text-red-300"] {
   font-size: 1.1rem;
   font-weight: 600;
 }
+.platform-profile {
+  position: relative;
+}
+.platform-profile summary {
+  display: block;
+  cursor: pointer;
+  list-style: none;
+}
+.platform-profile summary::-webkit-details-marker {
+  display: none;
+}
+.platform-profile-menu {
+  position: absolute;
+  z-index: 70;
+  top: calc(100% + 10px);
+  right: 0;
+  display: grid;
+  min-width: 190px;
+  gap: 4px;
+  padding: 14px;
+  border: 1px solid var(--ad-border-strong);
+  border-radius: 12px;
+  background: var(--ad-surface);
+  box-shadow: var(--ad-shadow);
+}
+.platform-profile-menu strong {
+  color: var(--ad-text);
+  font-size: 0.88rem;
+}
+.platform-profile-menu small {
+  color: var(--ad-text-muted);
+  font-size: 0.74rem;
+}
+.platform-profile-menu button {
+  margin-top: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--ad-border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ad-text-muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.78rem;
+  text-align: left;
+}
+.platform-profile-menu button:hover {
+  border-color: var(--ad-border-strong);
+  background: var(--ad-surface-subtle);
+  color: var(--ad-text);
+}
 .platform-content {
   display: grid;
   min-height: 0;

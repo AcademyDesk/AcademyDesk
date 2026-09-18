@@ -1,13 +1,105 @@
 "use client";
 
-import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5092";
 
 export default function LoginPage() {
-  const router = useRouter(); const [userName, setUserName] = useState(""); const [password, setPassword] = useState(""); const [message, setMessage] = useState(""); const [busy, setBusy] = useState(false);
-  async function login(event: FormEvent<HTMLFormElement>) { event.preventDefault(); setBusy(true); setMessage(""); try { const email = userName.includes("@") ? userName : `${userName.trim()}@academydesk.local`; const response = await fetch(`${apiUrl}/api/auth/login?useCookies=false`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, password }) }); if (!response.ok) throw new Error(); const tokens = await response.json(); localStorage.setItem("academydesk.accessToken", tokens.accessToken); localStorage.setItem("academydesk.refreshToken", tokens.refreshToken); const profile = await fetch(`${apiUrl}/api/auth/session`, { headers: { Authorization: `Bearer ${tokens.accessToken}` } }); const session = profile.ok ? await profile.json() : null; router.push(session?.workspace === "Platform" ? "/platform" : session?.workspace === "Teacher" ? "/teacher" : session?.workspace === "Portal" ? "/portal" : "/dashboard"); } catch { setMessage("Login failed. Check the user name and password, then try again."); } finally { setBusy(false); } }
-  return <main className="flex min-h-screen items-center justify-center bg-slate-950 px-6 text-slate-100"><form onSubmit={login} className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900 p-7 shadow-xl"><Link href="/" className="text-sm text-cyan-300">← AcademyDesk</Link><h1 className="mt-6 text-3xl font-semibold">Sign in</h1><p className="mt-2 text-slate-400">Access your AcademyDesk workspace.</p><label className="mt-7 block text-sm text-slate-300" htmlFor="username">User name</label><input id="username" value={userName} onChange={(e) => setUserName(e.target.value)} className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" required autoComplete="username" /><label className="mt-4 block text-sm text-slate-300" htmlFor="password">Password</label><input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" required autoComplete="current-password" /><button disabled={busy} className="mt-6 w-full rounded-lg bg-cyan-400 px-4 py-2.5 font-semibold text-slate-950 hover:bg-cyan-300 disabled:opacity-60">{busy ? "Signing in…" : "Sign in"}</button>{message && <p className="mt-4 rounded-lg border border-slate-700 p-3 text-sm text-slate-300">{message}</p>}</form></main>;
+  const router = useRouter();
+  const [userName, setUserName] = useState("");
+  const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
+  const [busy, setBusy] = useState(false);
+  async function login(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setBusy(true);
+    setMessage("");
+    try {
+      const email = userName.includes("@")
+        ? userName
+        : `${userName.trim()}@academydesk.local`;
+      const response = await fetch(
+        `${apiUrl}/api/auth/login?useCookies=false`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        },
+      );
+      if (!response.ok) throw new Error();
+      const tokens = await response.json();
+      localStorage.setItem("academydesk.accessToken", tokens.accessToken);
+      localStorage.setItem("academydesk.refreshToken", tokens.refreshToken);
+      const profile = await fetch(`${apiUrl}/api/auth/session`, {
+        headers: { Authorization: `Bearer ${tokens.accessToken}` },
+      });
+      const session = profile.ok ? await profile.json() : null;
+      router.push(
+        session?.workspace === "Platform"
+          ? "/platform"
+          : session?.workspace === "Teacher"
+            ? "/teacher"
+            : session?.workspace === "Portal"
+              ? "/portal"
+              : "/dashboard",
+      );
+    } catch {
+      setMessage(
+        "Login failed. Check the user name and password, then try again.",
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <main className="flex min-h-screen items-center justify-center bg-slate-950 px-6 text-slate-100">
+      <form
+        onSubmit={login}
+        className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900 p-7 shadow-xl"
+      >
+        <p className="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-300">
+          AcademyDesk
+        </p>
+        <h1 className="mt-5 text-3xl font-semibold">Sign in</h1>
+        <p className="mt-2 text-slate-400">
+          Access your AcademyDesk workspace.
+        </p>
+        <label className="mt-7 block text-sm text-slate-300" htmlFor="username">
+          User name
+        </label>
+        <input
+          id="username"
+          value={userName}
+          onChange={(e) => setUserName(e.target.value)}
+          className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
+          required
+          autoComplete="username"
+        />
+        <label className="mt-4 block text-sm text-slate-300" htmlFor="password">
+          Password
+        </label>
+        <input
+          id="password"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
+          required
+          autoComplete="current-password"
+        />
+        <button
+          disabled={busy}
+          className="mt-6 w-full rounded-lg bg-cyan-400 px-4 py-2.5 font-semibold text-slate-950 hover:bg-cyan-300 disabled:opacity-60"
+        >
+          {busy ? "Signing in…" : "Sign in"}
+        </button>
+        {message && (
+          <p className="mt-4 rounded-lg border border-slate-700 p-3 text-sm text-slate-300">
+            {message}
+          </p>
+        )}
+      </form>
+    </main>
+  );
 }

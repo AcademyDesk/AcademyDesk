@@ -24,6 +24,48 @@ public static class DevelopmentIdentitySeeder
         var student = await db.Students.FirstOrDefaultAsync(x => x.AcademyId == academy.Id && x.Email == "hayansh@academydesk.local");
         if (student is null) { student = new Student { AcademyId = academy.Id, FirstName = "Haynsh", LastName = "Student", Email = "hayansh@academydesk.local" }; db.Students.Add(student); }
         await db.SaveChangesAsync();
+
+        // Development-only sample records make the Platform Owner workspace useful
+        // immediately after a local install. They are inserted only when absent and
+        // can be removed from the Platform Control Centre during testing.
+        if (!await db.PlatformSupportCases.AnyAsync(x => x.AcademyId == academy.Id))
+        {
+            db.PlatformSupportCases.Add(new PlatformSupportCase
+            {
+                AcademyId = academy.Id,
+                Subject = "Review demo academy onboarding",
+                Priority = "Normal",
+                Description = "Development sample for validating the Platform Owner support workflow."
+            });
+        }
+        if (!await db.PlatformBillingInvoices.AnyAsync(x => x.InvoiceNumber == "AD-DEMO-0001"))
+        {
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            db.PlatformBillingInvoices.Add(new PlatformBillingInvoice
+            {
+                AcademyId = academy.Id,
+                InvoiceNumber = "AD-DEMO-0001",
+                Amount = 2999m,
+                Currency = "INR",
+                Status = "Issued",
+                PeriodStart = today.AddDays(-30),
+                PeriodEnd = today,
+                DueDate = today.AddDays(7)
+            });
+        }
+        if (!await db.PlatformAuditEntries.AnyAsync(x => x.Action == "Development platform data initialized"))
+        {
+            db.PlatformAuditEntries.Add(new PlatformAuditEntry
+            {
+                ActorName = "Development seed",
+                Action = "Development platform data initialized",
+                EntityType = "Platform",
+                EntityId = academy.Id,
+                MetadataJson = "{\"purpose\":\"local workflow validation\"}"
+            });
+        }
+        await db.SaveChangesAsync();
+
         await EnsureUser(users, "Shashank", "Shashank@academydesk.local", "Shashank", null, true, "PlatformOwner");
         await EnsureUser(users, "Kavya", "Kavya@academydesk.local", "Kavya", academy.Id, false, "AcademyAdmin");
         await EnsureUser(users, "Finance", "finance@academydesk.local", "Finance user", academy.Id, false, "FinanceUser");
