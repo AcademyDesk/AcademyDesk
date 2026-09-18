@@ -44,11 +44,11 @@ const groups: { title: string; cards: ControlCard[] }[] = [
         action: "Open portal accounts →",
       },
       {
-        title: "Learner records",
+        title: "Student records",
         description:
-          "Manage learner records and connected academic information.",
+          "Manage student records and connected academic information.",
         href: "/students",
-        action: "Open learner register →",
+        action: "Open student management →",
       },
     ],
   },
@@ -65,7 +65,7 @@ const groups: { title: string; cards: ControlCard[] }[] = [
       {
         title: "Batches and enrolments",
         description:
-          "Place learners, control batch capacity and keep academic participation current.",
+          "Place students, control batch capacity and keep academic participation current.",
         href: "/enrollments",
         action: "Open enrolments →",
       },
@@ -242,7 +242,7 @@ export default function AcademyControlPage() {
               staff, finance, communication and operational changes.
             </p>
             <p className="rounded border border-slate-700 bg-slate-950 p-3">
-              <b>Operating order:</b> create learner → enrol to batch → schedule
+              <b>Operating order:</b> create student → enrol to batch → schedule
               class → mark attendance → invoice and communicate.
             </p>
             <Link href="/activity" className="text-cyan-300">

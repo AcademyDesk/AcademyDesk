@@ -9,6 +9,24 @@ namespace AcademyDesk.Api.Controllers;
 [Route("api/academies/{academyId:guid}/students")]
 public sealed class StudentsController(AcademyDeskDbContext dbContext) : ControllerBase
 {
+    [HttpGet("overview")]
+    public async Task<ActionResult<StudentOverviewSummary>> Overview(Guid academyId, CancellationToken cancellationToken)
+    {
+        var students = dbContext.Students.AsNoTracking().Where(x => x.AcademyId == academyId);
+        var invoices = dbContext.Invoices.AsNoTracking().Where(x => x.AcademyId == academyId);
+        var subjectFees = dbContext.StudentFeeArrangements.AsNoTracking().Where(x => x.AcademyId == academyId && x.IsActive);
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        return Ok(new StudentOverviewSummary(
+            await students.CountAsync(cancellationToken),
+            await students.CountAsync(x => x.IsActive, cancellationToken),
+            await students.CountAsync(x => !x.IsActive, cancellationToken),
+            await students.SumAsync(x => x.AdmissionFeeAmount ?? 0m, cancellationToken),
+            await subjectFees.SumAsync(x => x.Amount, cancellationToken),
+            await invoices.Where(x => x.Status != "Paid").SumAsync(x => x.TotalAmount, cancellationToken),
+            await invoices.Where(x => x.Status != "Paid" && x.DueDate < today).SumAsync(x => x.TotalAmount, cancellationToken),
+            await subjectFees.CountAsync(cancellationToken)));
+    }
+
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<StudentSummary>>> List(Guid academyId, CancellationToken cancellationToken)
     {
@@ -52,3 +70,4 @@ public sealed class StudentsController(AcademyDeskDbContext dbContext) : Control
 public sealed record CreateStudentRequest(string FirstName, string LastName, DateOnly? DateOfBirth, string? Email, string? Phone, Guid? BranchId);
 public sealed record StudentSummary(Guid Id, string FirstName, string LastName, string? Email, string? Phone, Guid? BranchId, bool IsActive);
 public sealed record UpdateStudentRequest(string FirstName,string LastName,string? Email,string? Phone,Guid? BranchId,bool IsActive);
+public sealed record StudentOverviewSummary(int TotalStudents, int ActiveStudents, int InactiveStudents, decimal TotalAdmissionFees, decimal TotalSubjectFees, decimal OutstandingFees, decimal OverdueFees, int ActiveSubjectFeeArrangements);

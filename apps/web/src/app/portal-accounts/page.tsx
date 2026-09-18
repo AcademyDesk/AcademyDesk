@@ -54,7 +54,7 @@ export default function PortalAccounts() {
     const q = await r.json().catch(() => null);
     setM(
       r.ok
-        ? `Created ${role.toLowerCase()} portal account for ${email}.`
+        ? `Created ${(role === "Guardian" ? "parent" : "student")} portal account for ${email}.`
         : (q?.message ?? "Account could not be created."),
     );
     if (r.ok) {
@@ -90,7 +90,7 @@ export default function PortalAccounts() {
             className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
           >
             <option>Student</option>
-            <option>Guardian</option>
+            <option value="Guardian">Parent</option>
           </select>
           <select
             value={id}
@@ -98,7 +98,7 @@ export default function PortalAccounts() {
             className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
             required
           >
-            <option value="">Select {role.toLowerCase()}</option>
+            <option value="">Select {role === "Guardian" ? "parent" : "student"}</option>
             {choices.map((x) => (
               <option key={x.id} value={x.id}>
                 {x.firstName} {x.lastName}

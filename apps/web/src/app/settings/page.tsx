@@ -9,7 +9,7 @@ const settingItems: SettingItem[] = [
   { group: "Organisation", title: "Academy profile", description: "Name, legal identity, time zone, and academy-wide defaults.", href: "/", state: "Configured in Academy profile" },
   { group: "Organisation", title: "Branches", description: "Teaching locations, branch status, and local operations.", href: "/branches", state: "Open branch settings" },
   { group: "Access", title: "Staff and roles", description: "Invite staff, create teacher accounts, and manage access lifecycle.", href: "/staff", state: "Open staff directory" },
-  { group: "Access", title: "Portal accounts", description: "Student, guardian, and teacher portal access links.", href: "/portal-accounts", state: "Open portal accounts" },
+  { group: "Access", title: "Portal accounts", description: "Student, parent, and teacher portal access links.", href: "/portal-accounts", state: "Open portal accounts" },
   { group: "Communications", title: "Channel settings", description: "Configure the academy’s email and WhatsApp delivery channels.", href: "/communication-settings", state: "Open channel settings" },
   { group: "Communications", title: "Message templates", description: "Create approved templates for fees, holidays, attendance, and operations.", href: "/message-templates", state: "Open templates" },
   { group: "Communications", title: "Contact preferences", description: "Respect recipient consent and channel preferences.", href: "/communication-preferences", state: "Open preferences" },

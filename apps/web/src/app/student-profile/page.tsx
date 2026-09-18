@@ -71,7 +71,7 @@ export default function StudentProfilePage() {
   const [students, setStudents] = useState<Student[]>([]);
   const [studentId, setStudentId] = useState(requested);
   const [profile, setProfile] = useState<Profile>();
-  const [message, setMessage] = useState("Loading learner records…");
+  const [message, setMessage] = useState("Loading student records…");
   useEffect(() => {
     void (async () => {
       try {
@@ -79,7 +79,7 @@ export default function StudentProfilePage() {
         const academy = (await academies.json())[0];
         if (!academy)
           return setMessage(
-            "Create an academy before opening learner records.",
+            "Create an academy before opening student records.",
           );
         setAcademyId(academy.id);
         const response = await academyApi(
@@ -97,7 +97,7 @@ export default function StudentProfilePage() {
         }
         setMessage("");
       } catch {
-        setMessage("Learner records could not be loaded.");
+        setMessage("Student records could not be loaded.");
       }
     })();
   }, [requested]);
@@ -123,14 +123,14 @@ export default function StudentProfilePage() {
   return (
     <main className="enterprise-settings">
       <header className="enterprise-page-header">
-        <p>Learners & families / record</p>
+        <p>Students / Student 360</p>
         <h2>
           {student
             ? `${student.firstName} ${student.lastName}`
             : "Student record"}
         </h2>
         <span>
-          A connected learner record for family, enrolment, attendance, finance,
+          A connected student record for parent, enrolment, attendance, finance,
           learning progress, and communication.
         </span>
       </header>
@@ -140,7 +140,7 @@ export default function StudentProfilePage() {
           onChange={(event) => void select(event.target.value)}
           className="rounded border border-slate-700 bg-slate-950 p-2"
         >
-          <option value="">Select learner</option>
+          <option value="">Select student</option>
           {students.map((item) => (
             <option key={item.id} value={item.id}>
               {item.firstName} {item.lastName}
@@ -152,10 +152,10 @@ export default function StudentProfilePage() {
             href={`/enrollments?studentId=${studentId}`}
             className="text-sm text-cyan-300"
           >
-            Enrol learner →
+            Enrol student →
           </Link>
           <Link href="/students" className="text-sm text-cyan-300">
-            Learner register →
+            Student management →
           </Link>
         </div>
       </section>
@@ -185,7 +185,7 @@ export default function StudentProfilePage() {
             </DetailPanel>
             <DetailPanel title="Family" href="/guardians">
               <strong className="text-3xl">{count(profile.guardians)}</strong>
-              <p className="mt-2 text-slate-400">Linked guardian records</p>
+              <p className="mt-2 text-slate-400">Linked parent records</p>
             </DetailPanel>
           </section>
           <section className="mt-5 grid gap-5 xl:grid-cols-[1.35fr_0.65fr]">

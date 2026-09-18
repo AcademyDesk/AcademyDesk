@@ -118,7 +118,7 @@ export default function GuardianProfilePage() {
   return (
     <main className="enterprise-settings">
       <header className="enterprise-page-header">
-        <p>Learners & families / record</p>
+        <p>Parents / record</p>
         <h2>Parent record</h2>
         <span>
           A reusable family contact record with controlled relationship,
@@ -131,7 +131,7 @@ export default function GuardianProfilePage() {
           onChange={(e) => void select(e.target.value)}
           className="field max-w-md"
         >
-          <option value="">Select guardian</option>
+          <option value="">Select parent</option>
           {guardians.map((guardian) => (
             <option key={guardian.id} value={guardian.id}>
               {guardian.firstName} {guardian.lastName}
@@ -148,7 +148,7 @@ export default function GuardianProfilePage() {
         <>
           <section className="mt-5 grid gap-4 md:grid-cols-3">
             <div className="surface-panel rounded-xl p-5">
-              <p className="text-sm text-slate-400">Linked learners</p>
+              <p className="text-sm text-slate-400">Linked students</p>
               <strong className="mt-2 block text-3xl">
                 {count(profile.students)}
               </strong>
@@ -170,11 +170,11 @@ export default function GuardianProfilePage() {
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="font-semibold">
-                  Administrative guardian profile
+                  Administrative parent profile
                 </h3>
                 <p className="mt-1 text-sm text-slate-400">
                   Contact preferences and address details shared safely across
-                  linked learners.
+                  linked students.
                 </p>
               </div>
               <button

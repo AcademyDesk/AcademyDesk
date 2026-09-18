@@ -65,10 +65,10 @@ export default function StudentOnboardingPage() {
   return (
     <main className="enterprise-settings">
       <header className="enterprise-page-header">
-        <p>Learners & families / onboarding</p>
+        <p>Students / onboarding</p>
         <h2>Student onboarding</h2>
         <span>
-          One governed intake for learner, Parent, safeguarding contact, and
+          One governed intake for student, Parent, safeguarding contact, and
           portal access.
         </span>
       </header>

@@ -38,7 +38,7 @@ export default function GuardiansPage() {
   const [guardianId, setGuardianId] = useState("");
   const [relationship, setRelationship] = useState("Parent");
   const [isPrimary, setIsPrimary] = useState(true);
-  const [message, setMessage] = useState("Loading guardian contacts…");
+  const [message, setMessage] = useState("Loading parent contacts…");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editFirstName, setEditFirstName] = useState("");
   const [editLastName, setEditLastName] = useState("");
@@ -78,7 +78,7 @@ export default function GuardiansPage() {
         });
         if (response.status === 401)
           return setMessage(
-            "Please sign in before managing guardian contacts.",
+            "Please sign in before managing parent contacts.",
           );
         if (!response.ok) throw new Error();
         const academies: Academy[] = await response.json();
@@ -88,7 +88,7 @@ export default function GuardiansPage() {
         await load(academies[0].id);
       } catch {
         setMessage(
-          "Guardian contacts could not be loaded. Confirm the API is running on port 5092.",
+          "Parent contacts could not be loaded. Confirm the API is running on port 5092.",
         );
       }
     }
@@ -96,7 +96,7 @@ export default function GuardiansPage() {
   }, []);
   useEffect(() => {
     void loadLinks(studentId).catch(() =>
-      setMessage("Student guardian links could not be loaded."),
+      setMessage("Student-parent links could not be loaded."),
     );
   }, [academy, studentId]);
   async function createGuardian(event: FormEvent<HTMLFormElement>) {
@@ -135,9 +135,9 @@ export default function GuardiansPage() {
       },
     );
     if (response.status === 409)
-      return setMessage("This guardian is already linked to this student.");
+      return setMessage("This parent is already linked to this student.");
     if (!response.ok)
-      return setMessage("The guardian link could not be saved.");
+      return setMessage("The parent link could not be saved.");
     setGuardianId("");
     setMessage("");
     await loadLinks(studentId);
@@ -194,7 +194,7 @@ export default function GuardiansPage() {
     if (!response.ok)
       return setMessage("The guardian status could not be updated.");
     setMessage(
-      guardian.isActive ? "Guardian marked inactive." : "Guardian reactivated.",
+      guardian.isActive ? "Parent marked inactive." : "Parent reactivated.",
     );
     await load();
   }
@@ -206,7 +206,7 @@ export default function GuardiansPage() {
           Contacts
         </p>
         <h1 className="mt-3 text-4xl font-semibold tracking-tight">
-          Parents and guardians
+          Parents
         </h1>
         {message && (
           <p className="mt-6 rounded-lg border border-amber-700/50 bg-amber-950/40 p-4 text-sm text-amber-100">
@@ -218,7 +218,7 @@ export default function GuardiansPage() {
             onSubmit={createGuardian}
             className="rounded-2xl border border-slate-800 bg-slate-900 p-6"
           >
-            <h2 className="text-xl font-semibold">Add guardian contact</h2>
+            <h2 className="text-xl font-semibold">Add parent contact</h2>
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               <input
                 value={firstName}
@@ -252,14 +252,14 @@ export default function GuardiansPage() {
               disabled={!academy}
               className="mt-5 w-full rounded-lg bg-cyan-400 px-4 py-2.5 font-semibold text-slate-950 disabled:opacity-60"
             >
-              Add guardian
+              Add parent
             </button>
           </form>
           <form
             onSubmit={linkGuardian}
             className="rounded-2xl border border-slate-800 bg-slate-900 p-6"
           >
-            <h2 className="text-xl font-semibold">Link guardian to student</h2>
+            <h2 className="text-xl font-semibold">Link parent to student</h2>
             <select
               value={studentId}
               onChange={(event) => setStudentId(event.target.value)}
@@ -277,7 +277,7 @@ export default function GuardiansPage() {
               onChange={(event) => setGuardianId(event.target.value)}
               className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
             >
-              <option value="">Select guardian</option>
+              <option value="">Select parent</option>
               {guardians.map((guardian) => (
                 <option key={guardian.id} value={guardian.id}>
                   {guardian.firstName} {guardian.lastName}
@@ -302,14 +302,14 @@ export default function GuardiansPage() {
               disabled={!academy || !studentId || !guardianId}
               className="mt-5 w-full rounded-lg border border-cyan-400 px-4 py-2.5 font-semibold text-cyan-200 disabled:opacity-60"
             >
-              Link guardian
+              Link parent
             </button>
           </form>
         </section>
         <section className="mt-6 rounded-2xl border border-slate-800 bg-slate-900 p-6">
-          <h2 className="text-xl font-semibold">Guardian directory</h2>
+          <h2 className="text-xl font-semibold">Parent directory</h2>
           {guardians.length === 0 ? (
-            <p className="mt-5 text-slate-400">No guardian contacts yet.</p>
+            <p className="mt-5 text-slate-400">No parent contacts yet.</p>
           ) : (
             <ul className="mt-4 grid gap-3 md:grid-cols-2">
               {guardians.map((guardian) =>
@@ -418,7 +418,7 @@ export default function GuardiansPage() {
           </h2>
           {links.length === 0 ? (
             <p className="mt-5 text-slate-400">
-              No guardian linked to this student.
+              No parent linked to this student.
             </p>
           ) : (
             <ul className="mt-4 space-y-3">

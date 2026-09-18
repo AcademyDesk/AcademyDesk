@@ -19,7 +19,7 @@ export default function StudentsPage() {
   const [students, setStudents] = useState<Student[]>([]);
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("Active");
-  const [message, setMessage] = useState("Loading learner register…");
+  const [message, setMessage] = useState("Loading student register…");
   const [saving, setSaving] = useState(false);
   const filtered = useMemo(
     () =>
@@ -38,7 +38,7 @@ export default function StudentsPage() {
     const academies: Academy[] = await response.json();
     const current = academies[0];
     if (!current) {
-      setMessage("Create an academy before managing learners.");
+      setMessage("Create an academy before managing students.");
       return;
     }
     setAcademy(current);
@@ -51,7 +51,7 @@ export default function StudentsPage() {
   }
   useEffect(() => {
     void load().catch(() =>
-      setMessage("The learner register could not be loaded."),
+      setMessage("The student register could not be loaded."),
     );
   }, []);
   async function toggle(student: Student) {
@@ -79,7 +79,7 @@ export default function StudentsPage() {
         `${student.firstName} ${student.lastName} ${student.isActive ? "made inactive" : "reactivated"}.`,
       );
     } catch {
-      setMessage("The learner status could not be changed.");
+      setMessage("The student status could not be changed.");
     } finally {
       setSaving(false);
     }
@@ -87,10 +87,10 @@ export default function StudentsPage() {
   return (
     <main className="enterprise-settings">
       <header className="enterprise-page-header">
-        <p>Learners & families / register</p>
+        <p>Students / management</p>
         <h2>Student management</h2>
         <span>
-          Search, review and act on every learner. Use the 360 record to connect
+          Search, review and act on every student. Use Student 360 to connect
           family, enrolment, attendance, fees, learning, and communications.
         </span>
       </header>
@@ -144,7 +144,7 @@ export default function StudentsPage() {
             <table className="w-full min-w-[720px] text-left text-sm">
               <thead className="bg-slate-900 text-slate-400">
                 <tr>
-                  <th className="p-4 font-medium">Learner</th>
+                  <th className="p-4 font-medium">Student</th>
                   <th className="p-4 font-medium">Contact</th>
                   <th className="p-4 font-medium">Status</th>
                   <th className="p-4 font-medium">Next action</th>
@@ -162,7 +162,7 @@ export default function StudentsPage() {
                           {student.firstName} {student.lastName}
                         </b>
                         <small className="mt-1 block text-slate-400">
-                          Learner record
+                          Student record
                         </small>
                       </td>
                       <td className="p-4 text-slate-300">
@@ -207,7 +207,7 @@ export default function StudentsPage() {
                 ) : (
                   <tr>
                     <td colSpan={4} className="p-10 text-center text-slate-400">
-                      No learners match this view.
+                      No students match this view.
                     </td>
                   </tr>
                 )}
