@@ -238,7 +238,7 @@ export default function PlatformPage() {
         </header>
         <div className="platform-content">
           <section id="overview" className="platform-heading">
-            <h2>Academies</h2>
+            <h2 className="platform-workspace-title">Academies</h2>
             <button
               type="button"
               className="enterprise-primary-action"

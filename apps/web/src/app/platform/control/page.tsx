@@ -377,7 +377,7 @@ export default function PlatformControlPage() {
         </header>
         <div className="platform-content platform-control-content">
           <div className="flex flex-wrap items-end justify-between gap-4">
-            <h1 className="text-3xl font-semibold">{tab}</h1>
+            <h1 className="platform-workspace-title">{tab}</h1>
             <Link href="/platform" className="text-sm text-cyan-300">
               ← Academies
             </Link>
