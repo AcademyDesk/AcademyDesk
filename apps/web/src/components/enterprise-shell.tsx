@@ -290,10 +290,7 @@ export function EnterpriseShell({
         </aside>
         <section className="enterprise-workspace">
           <header className="enterprise-topbar">
-            <div>
-              <p>Workspace / Overview</p>
-              <h1>{resolvedAcademyName}</h1>
-            </div>
+            <div />
             <div className="enterprise-utilities">
               <button
                 type="button"
