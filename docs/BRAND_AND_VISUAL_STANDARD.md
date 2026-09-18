@@ -47,6 +47,13 @@ The theme toggle must swap the complete token set. No page should hard-code a bl
 - Keep page titles prominent, but keep field labels, supporting text, tables, and controls compact.
 - Empty, loading, success, and error states must use the same surface, border, typography, and spacing system.
 
+## Actions and clickable tiles
+
+- Use a labelled primary or secondary action button for a workflow action. Do not present workflow actions as unstyled text links.
+- Do not use `Open →`, `Manage →`, or arrow-only calls to action on clickable cards. The entire card is the affordance.
+- A navigation tile must be a single keyboard-accessible link with hover and focus states across its full surface. Do not place a second redundant link inside it.
+- Keep an explicit button inside a tile only when it performs a different action from opening the tile.
+
 ## Implementation source of truth
 
 The live tokens and shared Admin control rules are in:

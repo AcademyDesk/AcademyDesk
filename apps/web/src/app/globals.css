@@ -1132,6 +1132,10 @@ html[data-theme="light"] .field-label { color: #475569; }
   border: 1px solid var(--ad-border);
   border-radius: 16px;
   background: var(--ad-surface);
+  color: var(--ad-text);
+  cursor: pointer;
+  text-decoration: none;
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
 }
 .enterprise-setting-card:hover {
   border-color: var(--ad-accent);
@@ -1157,11 +1161,7 @@ html[data-theme="light"] .field-label { color: #475569; }
   line-height: 1.5;
 }
 .enterprise-setting-card footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-top: 20px;
+  display: none;
 }
 .enterprise-setting-card small {
   color: var(--ad-text-subtle);
@@ -1169,6 +1169,23 @@ html[data-theme="light"] .field-label { color: #475569; }
 }
 .enterprise-setting-card b {
   color: var(--ad-accent);
+}
+.enterprise-settings a.text-cyan-300:not(.enterprise-setting-card):not(.enterprise-action-button) {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 6px 10px;
+  border: 1px solid var(--ad-border-strong);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ad-accent) !important;
+  font-size: .8rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+.enterprise-settings a.text-cyan-300:not(.enterprise-setting-card):not(.enterprise-action-button):hover {
+  border-color: var(--ad-accent);
+  background: var(--ad-accent-soft);
 }
 .enterprise-settings-empty {
   padding: 32px;
