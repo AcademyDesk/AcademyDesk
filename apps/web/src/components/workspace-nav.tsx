@@ -7,7 +7,7 @@ import { useEnterpriseShell } from "@/components/enterprise-shell";
 
 const navigationGroups = [
   { label: "Overview", links: [["Dashboard", "/dashboard"], ["Academy profile", "/"], ["Branches", "/branches"], ["Activity", "/activity"], ["Reports", "/reports"]] },
-  { label: "People", links: [["Leads", "/leads"], ["Students", "/students"], ["Student 360", "/student-profile"], ["Guardians", "/guardians"], ["Family 360", "/guardian-profile"], ["Teachers", "/teachers"], ["Teacher 360", "/teacher-profile"], ["Staff", "/staff"], ["Portal accounts", "/portal-accounts"]] },
+  { label: "People", links: [["Leads", "/leads"], ["Students", "/students"], ["Student 360", "/student-profile"], ["Parents", "/guardians"], ["Parent 360", "/guardian-profile"], ["Teachers", "/teachers"], ["Teacher 360", "/teacher-profile"], ["Staff", "/staff"], ["Portal accounts", "/portal-accounts"]] },
   { label: "Academic delivery", links: [["Courses", "/courses"], ["Curriculum", "/curriculum"], ["Lesson plans", "/lesson-plans"], ["Batches", "/batches"], ["Enrolments", "/enrollments"], ["Assignments", "/assignments"], ["Submission review", "/submission-review"], ["Assessments", "/assessments"], ["Resources", "/resources"], ["Music", "/music"], ["Practice logs", "/practice-logs"]] },
   { label: "Operations", links: [["Schedule", "/schedule"], ["Calendar", "/calendar"], ["Attendance", "/attendance"], ["Leave", "/leave"], ["Make-up classes", "/makeup"], ["Holidays", "/holidays"], ["Events", "/events"], ["Certificates", "/certificates"]] },
   { label: "Finance", links: [["Fee plans", "/fee-plans"], ["Invoices", "/invoices"], ["Payments", "/payments"], ["Fee reminders", "/fee-reminders"], ["Expenses", "/expenses"], ["Finance overview", "/finance"]] },
