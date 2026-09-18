@@ -500,8 +500,10 @@ html[data-theme="light"] [class~="text-red-300"] {
   gap: clamp(2px, 0.28vw, 6px);
   margin-top: clamp(34px, 3.35vw, 68px);
 }
-.enterprise-nav-section-bottom {
-  margin-top: auto;
+.enterprise-administration-section {
+  margin-top: clamp(24px, 2vw, 38px);
+  padding-top: clamp(18px, 1.35vw, 26px);
+  border-top: 1px solid var(--ad-border);
 }
 .enterprise-nav-section > p {
   margin: 0 0 clamp(7px, 0.7vw, 14px) clamp(10px, 1vw, 20px);
@@ -564,7 +566,7 @@ html[data-theme="light"] [class~="text-red-300"] {
   text-align: center;
 }
 .enterprise-module-group > summary b {
-  margin-left: auto;
+  margin-left: 2px;
   color: var(--ad-text-subtle);
   font-size: 0.8rem;
   font-weight: 700;
@@ -590,6 +592,16 @@ html[data-theme="light"] [class~="text-red-300"] {
 .enterprise-module-group > div a[data-active="true"] {
   color: var(--ad-accent);
   background: var(--ad-accent-soft);
+}
+.enterprise-administration-group > summary {
+  color: var(--ad-text);
+  background: var(--ad-surface-subtle);
+}
+.enterprise-administration-group > summary i {
+  color: var(--ad-accent);
+}
+.enterprise-administration-group > div {
+  margin-bottom: 0;
 }
 .enterprise-workspace {
   position: relative;
