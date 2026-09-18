@@ -1,6 +1,8 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { WorkspaceNav } from "@/components/workspace-nav";
 import { academyApi, apiHeaders } from "@/lib/api";
 
@@ -27,7 +29,28 @@ type Batch = {
   isActive: boolean;
 };
 
+function Metric({
+  label,
+  value,
+  note,
+}: {
+  label: string;
+  value: number;
+  note?: string;
+}) {
+  return (
+    <article className="enterprise-metric-card rounded-xl border border-slate-800 bg-slate-900 p-5">
+      <p className="text-sm text-slate-400">{label}</p>
+      <strong className="mt-3 block text-3xl font-semibold tracking-tight">
+        {value}
+      </strong>
+      {note ? <small className="mt-2 block text-sm text-amber-200">{note}</small> : null}
+    </article>
+  );
+}
+
 export default function BatchesPage() {
+  const pathname = usePathname();
   const [academies, setAcademies] = useState<Academy[]>([]);
   const [academyId, setAcademyId] = useState("");
   const [courses, setCourses] = useState<Course[]>([]);
@@ -224,6 +247,13 @@ export default function BatchesPage() {
   };
   const branchName = (id?: string | null) =>
     branches.find((branch) => branch.id === id)?.name ?? "No branch";
+
+  if (pathname === "/batches") {
+    const active = batches.filter((batch) => batch.isActive);
+    const unassigned = active.filter((batch) => !batch.teacherId);
+    const atCapacity = active.filter((batch) => (batch.activeEnrolments ?? 0) >= batch.capacity);
+    return <main className="min-h-screen bg-slate-950 text-slate-100"><WorkspaceNav /><div className="mx-auto max-w-6xl px-6 py-10"><header className="flex flex-wrap items-center justify-between gap-4"><h1 className="text-4xl font-semibold tracking-tight">Class &amp; Batch</h1><Link href="/batch-setup" className="rounded-lg bg-cyan-400 px-4 py-2.5 font-semibold text-slate-950">Create class or batch</Link></header>{message && <p className="mt-6 rounded-lg border border-amber-700/50 bg-amber-950/40 p-4 text-sm text-amber-100">{message}</p>}<section className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4"><Metric label="Active classes" value={active.length}/><Metric label="1:1 classes" value={active.filter((batch) => batch.capacity === 1).length}/><Metric label="Teacher assignment" value={unassigned.length} note="Need assignment"/><Metric label="Capacity alerts" value={atCapacity.length} note="Full classes"/></section><section className="mt-6 surface-panel rounded-xl p-5"><header className="flex items-center justify-between"><h2 className="font-semibold">Active class and batch delivery</h2><Link href="/schedule" className="text-sm text-cyan-300">Class scheduling →</Link></header>{active.length ? <ul className="mt-4 divide-y divide-slate-800">{active.map((batch) => <li key={batch.id} className="flex flex-wrap items-center justify-between gap-3 py-4"><div><b>{batch.name}</b><p className="mt-1 text-sm text-slate-400">{teacherName(batch.teacherId)} · {batch.activeEnrolments ?? 0}/{batch.capacity} enrolled · {batch.deliveryMode ?? "Offline"}</p></div><Link href="/batch-setup" className="text-sm text-cyan-300">Manage →</Link></li>)}</ul> : <p className="py-8 text-center text-sm text-slate-400">No active classes or batches. Create the first one to begin scheduling.</p>}</section></div></main>;
+  }
 
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100">

@@ -1249,6 +1249,125 @@ html[data-theme="light"] .field-label { color: #475569; }
   opacity: 0.55;
 }
 
+/* Legacy Admin modules use the same visual contract while they are progressively
+   migrated to EnterpriseShell. These selectors deliberately target the repeated
+   page primitives, so every existing module gets the same spacing and states. */
+.enterprise-nav + .mx-auto:is(.max-w-5xl, .max-w-6xl),
+.enterprise-nav ~ .mx-auto:is(.max-w-5xl, .max-w-6xl) {
+  width: min(100%, 1440px);
+  max-width: none;
+  padding: clamp(24px, 2.4vw, 38px) clamp(18px, 3vw, 48px) 48px;
+}
+.enterprise-nav + .mx-auto > h1,
+.enterprise-nav ~ .mx-auto > h1 {
+  color: var(--ad-text);
+  font-size: clamp(1.7rem, 2.2vw, 2.25rem);
+  letter-spacing: -0.035em;
+  line-height: 1.15;
+}
+.enterprise-nav + .mx-auto > :is(p.text-slate-300, p.text-slate-400),
+.enterprise-nav ~ .mx-auto > :is(p.text-slate-300, p.text-slate-400) {
+  max-width: 760px;
+  color: var(--ad-text-muted) !important;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+.enterprise-nav ~ .mx-auto :is(form, section, article, li).rounded-2xl,
+.enterprise-nav ~ .mx-auto :is(form, section, article, li).rounded-xl,
+.enterprise-nav ~ .mx-auto :is(form, section, article, li).rounded-lg {
+  min-width: 0;
+}
+.enterprise-nav ~ .mx-auto :is(input, select, textarea) {
+  min-height: 40px;
+  border-color: var(--ad-border) !important;
+  border-radius: 8px !important;
+  background: var(--ad-surface-subtle) !important;
+  color: var(--ad-text) !important;
+}
+.enterprise-nav ~ .mx-auto textarea {
+  min-height: 96px;
+  line-height: 1.45;
+}
+.enterprise-nav ~ .mx-auto :is(input, select, textarea)::placeholder {
+  color: var(--ad-text-subtle);
+  opacity: 1;
+}
+.enterprise-nav ~ .mx-auto :is(input, select, textarea):focus {
+  border-color: var(--ad-accent) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ad-accent) 15%, transparent);
+  outline: 0;
+}
+.enterprise-nav ~ .mx-auto :is(button, a).bg-cyan-400 {
+  border-radius: 8px;
+  box-shadow: none;
+}
+.enterprise-nav ~ .mx-auto :is(.rounded-2xl, .rounded-xl).bg-slate-900 {
+  border: 1px solid var(--ad-border);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--ad-text) 4%, transparent);
+}
+.enterprise-nav ~ .mx-auto :is(.rounded-lg, .rounded-xl).bg-slate-950 {
+  border-color: var(--ad-border) !important;
+  background: var(--ad-surface-subtle) !important;
+}
+.enterprise-nav ~ .mx-auto :is(.text-slate-400, .text-slate-300) {
+  color: var(--ad-text-muted) !important;
+}
+.enterprise-nav ~ .mx-auto :is(.text-slate-100, .font-semibold, .font-medium) {
+  color: var(--ad-text);
+}
+.enterprise-nav ~ .mx-auto :is(.rounded-lg, .rounded-xl, .rounded-2xl).border-dashed {
+  display: grid;
+  min-height: 132px;
+  place-content: center;
+  border-color: var(--ad-border-strong) !important;
+  color: var(--ad-text-muted) !important;
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .enterprise-nav {
+    position: sticky;
+  }
+  .enterprise-nav > div {
+    align-items: center;
+  }
+  .enterprise-nav nav {
+    order: 3;
+    flex-basis: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap !important;
+    padding-bottom: 2px;
+  }
+  .enterprise-nav-group {
+    flex: 0 0 auto;
+  }
+  .enterprise-nav-menu {
+    position: fixed;
+    top: 66px;
+    left: 12px;
+    right: 12px;
+    max-height: min(60dvh, 420px);
+    overflow-y: auto;
+  }
+  .enterprise-nav + .mx-auto:is(.max-w-5xl, .max-w-6xl),
+  .enterprise-nav ~ .mx-auto:is(.max-w-5xl, .max-w-6xl) {
+    padding: 22px 16px 34px;
+  }
+  .enterprise-nav ~ .mx-auto > h1 {
+    font-size: 1.65rem;
+  }
+  .enterprise-nav ~ .mx-auto .grid[class*="lg:grid-cols"] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .enterprise-nav ~ .mx-auto table {
+    min-width: 620px;
+  }
+  .enterprise-nav ~ .mx-auto :is(.overflow-auto, .overflow-x-auto) {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
 /* Platform Owner is a separate SaaS control plane: it never inherits academy operations. */
 .platform-shell {
   --platform-gutter: clamp(0px, 0.55vw, 12px);
