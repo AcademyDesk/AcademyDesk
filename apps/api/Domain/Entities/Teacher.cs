@@ -7,6 +7,7 @@ public sealed class Teacher : AcademyEntity
     public string? EmployeeCode { get; set; }
     public string? PreferredName { get; set; }
     public string? EmploymentType { get; set; }
+    public DateOnly? DateOfBirth { get; set; }
     public DateOnly? JoiningDate { get; set; }
     public string? Email { get; set; }
     public string? Phone { get; set; }

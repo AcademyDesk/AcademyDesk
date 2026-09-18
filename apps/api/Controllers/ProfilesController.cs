@@ -58,7 +58,7 @@ public sealed class ProfilesController(AcademyDeskDbContext dbContext) : Control
                              select new TeacherAssignedBatchSummary(batch.Name, course.Name, batch.IsActive)).ToListAsync(token);
         var classes = await dbContext.ClassSessions.AsNoTracking().Where(x => x.AcademyId == academyId && x.TeacherId == teacherId).OrderByDescending(x => x.StartUtc).Take(12).Select(x => new TeacherClassSummary(x.StartUtc, x.EndUtc, x.DeliveryMode, x.RoomName, x.Status)).ToListAsync(token);
         var leave = await dbContext.LeaveRequests.AsNoTracking().Where(x => x.AcademyId == academyId && x.TeacherId == teacherId).OrderByDescending(x => x.StartDate).Take(8).Select(x => new LeaveProfileSummary(x.StartDate, x.EndDate, x.Status, x.Reason)).ToListAsync(token);
-        return Ok(new TeacherProfileSummary(teacher.Id, teacher.FirstName + " " + teacher.LastName, teacher.Email, teacher.Phone, teacher.Specialties, teacher.EmployeeCode, teacher.PreferredName, teacher.EmploymentType, teacher.JoiningDate, teacher.Qualifications, teacher.AddressLine1, teacher.City, teacher.State, teacher.PostalCode, teacher.EmergencyContactName, teacher.EmergencyContactPhone, teacher.AdminNotes, batches, classes, leave));
+        return Ok(new TeacherProfileSummary(teacher.Id, teacher.FirstName + " " + teacher.LastName, teacher.Email, teacher.Phone, teacher.Specialties, teacher.EmployeeCode, teacher.PreferredName, teacher.EmploymentType, teacher.DateOfBirth, teacher.JoiningDate, teacher.Qualifications, teacher.AddressLine1, teacher.City, teacher.State, teacher.PostalCode, teacher.EmergencyContactName, teacher.EmergencyContactPhone, teacher.AdminNotes, batches, classes, leave));
     }
 
     [HttpPut("students/{studentId:guid}/profile")]
@@ -97,6 +97,7 @@ public sealed class ProfilesController(AcademyDeskDbContext dbContext) : Control
         teacher.EmployeeCode = employeeCode;
         teacher.PreferredName = Clean(request.PreferredName);
         teacher.EmploymentType = Clean(request.EmploymentType);
+        teacher.DateOfBirth = request.DateOfBirth;
         teacher.JoiningDate = request.JoiningDate;
         teacher.Qualifications = Clean(request.Qualifications);
         teacher.AddressLine1 = Clean(request.AddressLine1);
@@ -142,7 +143,7 @@ public sealed record GuardianProfileSummary(Guid Id, string Name, string? Email,
 public sealed record TeacherAssignedBatchSummary(string BatchName, string CourseName, bool IsActive);
 public sealed record TeacherClassSummary(DateTime StartUtc, DateTime EndUtc, string DeliveryMode, string? RoomName, string Status);
 public sealed record LeaveProfileSummary(DateOnly StartDate, DateOnly EndDate, string Status, string Reason);
-public sealed record TeacherProfileSummary(Guid Id, string Name, string? Email, string? Phone, string? Specialties, string? EmployeeCode, string? PreferredName, string? EmploymentType, DateOnly? JoiningDate, string? Qualifications, string? AddressLine1, string? City, string? State, string? PostalCode, string? EmergencyContactName, string? EmergencyContactPhone, string? AdminNotes, IReadOnlyList<TeacherAssignedBatchSummary> Batches, IReadOnlyList<TeacherClassSummary> Classes, IReadOnlyList<LeaveProfileSummary> LeaveRequests);
+public sealed record TeacherProfileSummary(Guid Id, string Name, string? Email, string? Phone, string? Specialties, string? EmployeeCode, string? PreferredName, string? EmploymentType, DateOnly? DateOfBirth, DateOnly? JoiningDate, string? Qualifications, string? AddressLine1, string? City, string? State, string? PostalCode, string? EmergencyContactName, string? EmergencyContactPhone, string? AdminNotes, IReadOnlyList<TeacherAssignedBatchSummary> Batches, IReadOnlyList<TeacherClassSummary> Classes, IReadOnlyList<LeaveProfileSummary> LeaveRequests);
 public sealed record UpdateStudentAdminProfileRequest(string? StudentNumber, string? PreferredName, string? Gender, DateOnly? DateOfBirth, DateOnly? AdmissionDate, string? AddressLine1, string? City, string? State, string? PostalCode, string? EmergencyContactName, string? EmergencyContactPhone, string? MedicalOrAccessibilityNotes, string? AdminNotes);
-public sealed record UpdateTeacherAdminProfileRequest(string? EmployeeCode, string? PreferredName, string? EmploymentType, DateOnly? JoiningDate, string? Qualifications, string? AddressLine1, string? City, string? State, string? PostalCode, string? EmergencyContactName, string? EmergencyContactPhone, string? AdminNotes);
+public sealed record UpdateTeacherAdminProfileRequest(string? EmployeeCode, string? PreferredName, string? EmploymentType, DateOnly? DateOfBirth, DateOnly? JoiningDate, string? Qualifications, string? AddressLine1, string? City, string? State, string? PostalCode, string? EmergencyContactName, string? EmergencyContactPhone, string? AdminNotes);
 public sealed record UpdateGuardianAdminProfileRequest(string? PreferredName, string? AddressLine1, string? City, string? State, string? PostalCode, string? PreferredLanguage);

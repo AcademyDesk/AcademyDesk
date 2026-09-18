@@ -9,6 +9,7 @@ type Profile = {
   employeeCode?: string;
   preferredName?: string;
   employmentType?: string;
+  dateOfBirth?: string;
   joiningDate?: string;
   qualifications?: string;
   addressLine1?: string;
@@ -38,6 +39,7 @@ export default function TeacherProfilePage() {
       employeeCode: value.employeeCode ?? "",
       preferredName: value.preferredName ?? "",
       employmentType: value.employmentType ?? "",
+      dateOfBirth: day(value.dateOfBirth),
       joiningDate: day(value.joiningDate),
       qualifications: value.qualifications ?? "",
       addressLine1: value.addressLine1 ?? "",
@@ -109,6 +111,7 @@ export default function TeacherProfilePage() {
           headers: apiHeaders(true),
           body: JSON.stringify({
             ...form,
+            dateOfBirth: form.dateOfBirth || null,
             joiningDate: form.joiningDate || null,
           }),
         },
@@ -225,6 +228,15 @@ export default function TeacherProfilePage() {
                 <option>Contract</option>
                 <option>Visiting faculty</option>
               </select>
+              <label className="text-sm text-slate-400">
+                Date of birth (DOB)
+                <input
+                  type="date"
+                  value={form.dateOfBirth ?? ""}
+                  onChange={(e) => set("dateOfBirth", e.target.value)}
+                  className="field mt-1"
+                />
+              </label>
               <label className="text-sm text-slate-400">
                 Joining date
                 <input

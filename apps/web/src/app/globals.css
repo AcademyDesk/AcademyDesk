@@ -2309,6 +2309,30 @@ html[data-theme="light"] .field-label { color: #475569; }
   gap: 16px;
   margin-top: 20px;
 }
+.teacher-onboarding-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.teacher-onboarding-form .onboarding-section:nth-child(3),
+.teacher-onboarding-form .onboarding-section:nth-child(4) { grid-column: span 1; }
+.teacher-subjects { display: grid; gap: 8px; }
+.teacher-subjects-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--ad-text); font-size: .8rem; font-weight: 750; }
+.teacher-subject-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; gap: 8px; align-items: center; }
+.teacher-inline-button, .teacher-remove-button {
+  min-height: 32px;
+  border: 1px solid var(--ad-border);
+  border-radius: 7px;
+  background: var(--ad-surface);
+  color: var(--ad-accent);
+  cursor: pointer;
+  font-size: .78rem;
+  font-weight: 700;
+  padding: 6px 9px;
+}
+.teacher-remove-button { color: var(--ad-text-muted); }
+.teacher-rate-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.teacher-onboarding-submit { width: 100%; margin-top: 16px; padding: 11px 16px; }
 .onboarding-section { padding: 20px; }
 .onboarding-section-header {
   display: flex;
@@ -2340,7 +2364,9 @@ html[data-theme="light"] .field-label { color: #475569; }
 .onboarding-permissions > p { margin: 0 0 2px; color: var(--ad-text-muted); font-size: .75rem; font-weight: 750; letter-spacing: .04em; text-transform: uppercase; }
 .onboarding-submit { grid-column: 1 / -1; padding: 14px 20px; }
 @media (max-width: 1024px) { .student-onboarding-form { grid-template-columns: 1fr; } }
+@media (max-width: 1024px) { .teacher-onboarding-form { grid-template-columns: 1fr; } }
 @media (max-width: 640px) { .onboarding-fields-2,.onboarding-parent-layout { grid-template-columns: 1fr; }.onboarding-span-all { grid-column: auto; }.onboarding-permissions { padding-left: 0; padding-top: 16px; border-top: 1px solid var(--ad-border); border-left: 0; } }
+@media (max-width: 640px) { .teacher-subject-row,.teacher-rate-grid { grid-template-columns: 1fr; }.teacher-subject-row .teacher-remove-button { justify-self: start; } }
 .learner-state {
   padding: 18px;
   border: 1px solid var(--ad-border);

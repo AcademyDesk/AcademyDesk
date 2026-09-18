@@ -2,22 +2,19 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { academyApi, apiHeaders } from "@/lib/api";
+
 type Academy = { id: string };
-const days = [
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-  "Sunday",
-];
+type SubjectEntry = { subject: string; certification: string };
+const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
 export default function TeacherOnboardingPage() {
   const [academy, setAcademy] = useState<Academy>();
   const [employmentType, setEmploymentType] = useState("Full-time");
+  const [payModel, setPayModel] = useState<"Monthly" | "Hourly">("Monthly");
+  const [subjects, setSubjects] = useState<SubjectEntry[]>([{ subject: "", certification: "" }]);
   const [message, setMessage] = useState("Loading teacher onboarding…");
   const [saving, setSaving] = useState(false);
+
   useEffect(() => {
     void academyApi("/api/academies")
       .then(async (response) => {
@@ -27,9 +24,22 @@ export default function TeacherOnboardingPage() {
       })
       .catch(() => setMessage("Teacher onboarding could not be loaded."));
   }, []);
+
+  function updateSubject(index: number, key: keyof SubjectEntry, value: string) {
+    setSubjects((current) => current.map((entry, entryIndex) => entryIndex === index ? { ...entry, [key]: value } : entry));
+  }
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!academy) return;
+    const subjectEntries = subjects
+      .map(({ subject, certification }) => ({ subject: subject.trim(), certification: certification.trim() || null }))
+      .filter(({ subject }) => Boolean(subject));
+    if (!subjectEntries.length) {
+      setMessage("Add at least one subject taught.");
+      return;
+    }
+
     setSaving(true);
     const form = new FormData(event.currentTarget);
     const availability = days
@@ -41,174 +51,97 @@ export default function TeacherOnboardingPage() {
       }))
       .filter((row) => row.available);
     const compensation = {
-      model: form.get("payModel"),
-      baseMonthlySalary: form.get("baseMonthlySalary"),
-      baseHourlyRate: form.get("baseHourlyRate"),
-      beginnerHourlyRate: form.get("beginnerHourlyRate"),
-      intermediateHourlyRate: form.get("intermediateHourlyRate"),
-      advancedHourlyRate: form.get("advancedHourlyRate"),
+      model: payModel,
+      baseMonthlySalary: payModel === "Monthly" ? form.get("baseMonthlySalary") : null,
+      baseHourlyRate: payModel === "Hourly" ? form.get("baseHourlyRate") : null,
+      beginnerHourlyRate: payModel === "Hourly" ? form.get("beginnerHourlyRate") : null,
+      intermediateHourlyRate: payModel === "Hourly" ? form.get("intermediateHourlyRate") : null,
+      advancedHourlyRate: payModel === "Hourly" ? form.get("advancedHourlyRate") : null,
       effectiveFrom: form.get("effectiveFrom"),
     };
-    const body = Object.fromEntries(form);
+    const body = Object.fromEntries(form) as Record<string, FormDataEntryValue>;
+    body.specialties = subjectEntries.map(({ subject }) => subject).join(", ");
     body.availabilityJson = JSON.stringify(availability);
     body.compensationJson = JSON.stringify(compensation);
-    body.certificationsJson = JSON.stringify([
-      {
-        specialty: form.get("certificationSpecialty"),
-        highestCertification: form.get("highestCertification"),
-      },
-    ]);
+    body.certificationsJson = JSON.stringify(subjectEntries);
+
     try {
-      const response = await academyApi(
-        `/api/academies/${academy.id}/teachers`,
-        {
-          method: "POST",
-          headers: apiHeaders(true),
-          body: JSON.stringify(body),
-        },
-      );
+      const response = await academyApi(`/api/academies/${academy.id}/teachers`, {
+        method: "POST",
+        headers: apiHeaders(true),
+        body: JSON.stringify(body),
+      });
       const result = await response.json().catch(() => null);
-      if (!response.ok)
-        throw new Error(result?.message ?? "Teacher could not be created.");
+      if (!response.ok) throw new Error(result?.message ?? "Teacher could not be created.");
       event.currentTarget.reset();
       setEmploymentType("Full-time");
-      setMessage(
-        "Teacher onboarded. Availability and compensation history are now recorded.",
-      );
+      setPayModel("Monthly");
+      setSubjects([{ subject: "", certification: "" }]);
+      setMessage("Teacher onboarded. Subjects, credentials, availability, and compensation are recorded.");
     } catch (error) {
-      setMessage(
-        error instanceof Error
-          ? error.message
-          : "Teacher could not be created.",
-      );
+      setMessage(error instanceof Error ? error.message : "Teacher could not be created.");
     } finally {
       setSaving(false);
     }
   }
+
   return (
     <main className="enterprise-settings">
-      <header className="enterprise-page-header">
-        <h2>Teacher onboarding</h2>
-      </header>
-      {message && (
-        <p className="enterprise-page-state enterprise-page-state-loading">
-          {message}
-        </p>
-      )}
-      <form onSubmit={submit} className="mt-5 grid gap-5 xl:grid-cols-2">
-        <section className="surface-panel rounded-xl p-5">
-          <h3 className="font-semibold">1. Personal details</h3>
-          <div className="learner-form">
+      <header className="enterprise-page-header"><h2>Teacher onboarding</h2></header>
+      {message && <p className="enterprise-page-state enterprise-page-state-loading">{message}</p>}
+      <form onSubmit={submit} className="teacher-onboarding-form mt-5">
+        <section className="surface-panel onboarding-section">
+          <div className="onboarding-section-header"><span>01</span><div><h3>Personal details</h3><p>Teacher contact and identity record</p></div></div>
+          <div className="onboarding-fields onboarding-fields-2">
             <input required name="firstName" placeholder="First name" />
             <input required name="lastName" placeholder="Last name" />
             <input required type="email" name="email" placeholder="Email" />
             <input name="phone" placeholder="Phone" />
-            <input name="addressLine1" placeholder="Address" />
+            <input className="onboarding-span-all" name="addressLine1" placeholder="Address" />
             <input name="city" placeholder="City" />
             <input name="state" placeholder="State" />
-            <input name="postalCode" placeholder="PIN code" />
+            <input name="postalCode" placeholder="Postal / PIN code" />
           </div>
         </section>
-        <section className="surface-panel rounded-xl p-5">
-          <h3 className="font-semibold">2. Professional details</h3>
-          <div className="learner-form">
-            <input
-              name="specialties"
-              placeholder="Specialties, e.g. Piano, Vocal"
-            />
-            <input name="qualifications" placeholder="Highest qualification" />
-            <input
-              name="certificationSpecialty"
-              placeholder="Certification specialty"
-            />
-            <input
-              name="highestCertification"
-              placeholder="Highest certification"
-            />
-            <select
-              name="employmentType"
-              value={employmentType}
-              onChange={(event) => setEmploymentType(event.target.value)}
-            >
-              <option>Full-time</option>
-              <option>Part-time</option>
-              <option>Contract</option>
+
+        <section className="surface-panel onboarding-section">
+          <div className="onboarding-section-header"><span>02</span><div><h3>Professional details</h3><p>Subjects, credentials and employment</p></div></div>
+          <div className="onboarding-fields">
+            <input name="qualifications" placeholder="Highest degree / qualification" />
+            <div className="teacher-subjects onboarding-span-all">
+              <div className="teacher-subjects-header"><label>Subjects taught</label><button type="button" className="teacher-inline-button" onClick={() => setSubjects((current) => [...current, { subject: "", certification: "" }])}>Add subject</button></div>
+              {subjects.map((entry, index) => <div className="teacher-subject-row" key={`subject-${index}`}>
+                <input required value={entry.subject} onChange={(event) => updateSubject(index, "subject", event.target.value)} placeholder="Subject, e.g. Piano" aria-label={`Subject ${index + 1}`} />
+                <input value={entry.certification} onChange={(event) => updateSubject(index, "certification", event.target.value)} placeholder="Certification (optional)" aria-label={`Certification for subject ${index + 1}`} />
+                {subjects.length > 1 && <button type="button" className="teacher-remove-button" onClick={() => setSubjects((current) => current.filter((_, subjectIndex) => subjectIndex !== index))}>Remove</button>}
+              </div>)}
+            </div>
+            <select name="employmentType" value={employmentType} onChange={(event) => setEmploymentType(event.target.value)}>
+              <option>Full-time</option><option>Part-time</option><option>Contract</option>
             </select>
-            <input type="date" name="joiningDate" aria-label="Joining date" />
+            <label className="field-label">Date of birth (DOB)<input type="date" name="dateOfBirth" /></label>
+            <label className="field-label">Joining date<input type="date" name="joiningDate" /></label>
           </div>
         </section>
-        <section className="surface-panel rounded-xl p-5">
-          <h3 className="font-semibold">3. Availability</h3>
-          <p className="mt-1 text-sm text-slate-400">
-            Set working hours for each available day.
-          </p>
-          <div className="mt-4 space-y-2">
-            {days.map((day) => (
-              <div key={day} className="availability-row">
-                <label className="consent-check">
-                  <input type="checkbox" name={`available-${day}`} />
-                  {day}
-                </label>
-                <input
-                  type="time"
-                  name={`from-${day}`}
-                  aria-label={`${day} start time`}
-                />
-                <input
-                  type="time"
-                  name={`to-${day}`}
-                  aria-label={`${day} end time`}
-                />
-              </div>
-            ))}
+
+        <section className="surface-panel onboarding-section">
+          <div className="onboarding-section-header"><span>03</span><div><h3>Availability</h3><p>Working hours for each available day</p></div></div>
+          <div className="availability-list">
+            {days.map((day) => <div key={day} className="availability-row"><label className="consent-check"><input type="checkbox" name={`available-${day}`} />{day}</label><input type="time" name={`from-${day}`} aria-label={`${day} start time`} /><input type="time" name={`to-${day}`} aria-label={`${day} end time`} /></div>)}
           </div>
         </section>
-        <section className="surface-panel rounded-xl p-5">
-          <h3 className="font-semibold">4. Compensation</h3>
-          <div className="learner-form">
-            <select name="payModel">
-              <option value="Monthly">Monthly salary</option>
-              <option value="Hourly">Single hourly rate</option>
-              <option value="LevelHourly">Hourly rate by teaching level</option>
-            </select>
-            <input
-              name="baseMonthlySalary"
-              type="number"
-              min="0"
-              placeholder="Monthly salary"
-            />
-            <input
-              name="baseHourlyRate"
-              type="number"
-              min="0"
-              placeholder="Single hourly rate"
-            />
-            <input
-              name="beginnerHourlyRate"
-              type="number"
-              min="0"
-              placeholder="Beginner hourly rate"
-            />
-            <input
-              name="intermediateHourlyRate"
-              type="number"
-              min="0"
-              placeholder="Intermediate hourly rate"
-            />
-            <input
-              name="advancedHourlyRate"
-              type="number"
-              min="0"
-              placeholder="Advanced hourly rate"
-            />
-            <label className="field-label">
-              Effective from
-              <input type="date" name="effectiveFrom" />
-            </label>
-            <button disabled={saving || !academy}>
-              {saving ? "Saving…" : "Complete teacher onboarding"}
-            </button>
+
+        <section className="surface-panel onboarding-section">
+          <div className="onboarding-section-header"><span>04</span><div><h3>Compensation</h3><p>One pay model per teacher, effective from the selected date</p></div></div>
+          <div className="onboarding-fields">
+            <select name="payModel" value={payModel} onChange={(event) => setPayModel(event.target.value as "Monthly" | "Hourly")}><option value="Monthly">Monthly salary</option><option value="Hourly">Hourly rates</option></select>
+            {payModel === "Monthly" ? <input required name="baseMonthlySalary" type="number" min="0" step="0.01" placeholder="Monthly salary" /> : <>
+              <input required name="baseHourlyRate" type="number" min="0" step="0.01" placeholder="Standard hourly rate" />
+              <div className="teacher-rate-grid onboarding-span-all"><input name="beginnerHourlyRate" type="number" min="0" step="0.01" placeholder="Beginner rate (optional)" /><input name="intermediateHourlyRate" type="number" min="0" step="0.01" placeholder="Intermediate rate (optional)" /><input name="advancedHourlyRate" type="number" min="0" step="0.01" placeholder="Advanced rate (optional)" /></div>
+            </>}
+            <label className="field-label">Effective from<input type="date" name="effectiveFrom" required /></label>
           </div>
+          <button className="teacher-onboarding-submit" disabled={saving || !academy}>{saving ? "Saving…" : "Complete teacher onboarding"}</button>
         </section>
       </form>
     </main>
