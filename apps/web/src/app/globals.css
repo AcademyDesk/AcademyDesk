@@ -1256,6 +1256,42 @@ html[data-theme="light"] .field-label { color: #475569; }
 .enterprise-settings :is(.overflow-auto, .overflow-x-auto) {
   scrollbar-color: var(--ad-border-strong) transparent;
 }
+.enterprise-page-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.enterprise-action-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 8px 13px;
+  border: 1px solid color-mix(in srgb, var(--ad-action) 72%, var(--ad-border));
+  border-radius: 8px;
+  background: var(--ad-action);
+  color: var(--ad-action-text);
+  font-size: .82rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+.enterprise-action-button:hover { background: var(--ad-action-hover); transform: translateY(-1px); }
+.enterprise-action-button-secondary { background: transparent; color: var(--ad-accent); border-color: var(--ad-border-strong); }
+.enterprise-action-button-secondary:hover { background: var(--ad-accent-soft); border-color: var(--ad-accent); }
+.student-summary-tile {
+  display: block;
+  min-height: 154px;
+  padding: 20px;
+  border: 1px solid var(--ad-border);
+  border-radius: 12px;
+  background: var(--ad-surface);
+  color: var(--ad-text);
+  text-decoration: none;
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--ad-text) 5%, transparent);
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+.student-summary-tile:hover { border-color: var(--ad-accent); box-shadow: 0 12px 28px color-mix(in srgb, var(--ad-accent) 15%, transparent); transform: translateY(-2px); }
+.student-summary-tile:focus-visible { outline: 3px solid color-mix(in srgb, var(--ad-accent) 45%, transparent); outline-offset: 3px; }
+.student-summary-tile h3 { margin: 0; font-size: .93rem; font-weight: 750; }
+.student-summary-tile strong { display: block; margin-top: 24px; color: var(--ad-text); }
+.student-summary-tile p { color: var(--ad-text-muted) !important; font-size: .84rem; }
 .enterprise-workspace [role="status"],
 .enterprise-workspace [role="alert"] {
   border: 1px solid var(--ad-border);

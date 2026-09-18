@@ -41,24 +41,32 @@ const count = (items?: unknown[]) => items?.length ?? 0;
 function DetailPanel({
   title,
   children,
-  href,
 }: {
   title: string;
   children: React.ReactNode;
-  href?: string;
 }) {
   return (
     <section className="surface-panel rounded-xl p-5">
-      <header className="flex items-center justify-between">
-        <h3 className="font-semibold">{title}</h3>
-        {href && (
-          <Link href={href} className="text-sm text-cyan-300">
-            Open →
-          </Link>
-        )}
-      </header>
+      <header><h3 className="font-semibold">{title}</h3></header>
       <div className="mt-4 text-sm text-slate-300">{children}</div>
     </section>
+  );
+}
+
+function StudentSummaryTile({
+  title,
+  href,
+  children,
+}: {
+  title: string;
+  href: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link href={href} className="student-summary-tile" aria-label={`Open ${title}`}>
+      <h3>{title}</h3>
+      <div>{children}</div>
+    </Link>
   );
 }
 
@@ -147,15 +155,15 @@ export default function StudentProfilePage() {
             </option>
           ))}
         </select>
-        <div className="flex gap-3">
+        <div className="enterprise-page-actions">
           <Link
             href={`/enrollments?studentId=${studentId}`}
-            className="text-sm text-cyan-300"
+            className="enterprise-action-button"
           >
-            Enrol student →
+            Enrol student
           </Link>
-          <Link href="/students" className="text-sm text-cyan-300">
-            Student management →
+          <Link href="/students" className="enterprise-action-button enterprise-action-button-secondary">
+            Student management
           </Link>
         </div>
       </section>
@@ -163,18 +171,18 @@ export default function StudentProfilePage() {
       {student && profile && (
         <>
           <section className="mt-5 grid gap-4 md:grid-cols-4">
-            <DetailPanel
+            <StudentSummaryTile
               title="Enrolments"
               href={`/enrollments?studentId=${studentId}`}
             >
               <strong className="text-3xl">{count(profile.enrollments)}</strong>
               <p className="mt-2 text-slate-400">Active learning placements</p>
-            </DetailPanel>
-            <DetailPanel title="Attendance" href="/attendance">
+            </StudentSummaryTile>
+            <StudentSummaryTile title="Attendance" href="/attendance">
               <strong className="text-3xl">{count(profile.attendance)}</strong>
               <p className="mt-2 text-slate-400">Recorded class attendance</p>
-            </DetailPanel>
-            <DetailPanel title="Fees" href="/invoices">
+            </StudentSummaryTile>
+            <StudentSummaryTile title="Fees" href="/invoices">
               <strong className="text-3xl">
                 ₹{outstanding.toLocaleString("en-IN")}
               </strong>
@@ -182,11 +190,11 @@ export default function StudentProfilePage() {
                 ₹{upcoming.toLocaleString("en-IN")} upcoming · ₹
                 {overdue.toLocaleString("en-IN")} overdue
               </p>
-            </DetailPanel>
-            <DetailPanel title="Family" href="/guardians">
+            </StudentSummaryTile>
+            <StudentSummaryTile title="Family" href="/guardians">
               <strong className="text-3xl">{count(profile.guardians)}</strong>
               <p className="mt-2 text-slate-400">Linked parent records</p>
-            </DetailPanel>
+            </StudentSummaryTile>
           </section>
           <section className="mt-5 grid gap-5 xl:grid-cols-[1.35fr_0.65fr]">
             <StudentAdminProfile
@@ -202,19 +210,19 @@ export default function StudentProfilePage() {
                 academyId={academyId}
                 studentId={studentId}
               />
-              <DetailPanel title="Learning progress" href="/music">
+              <DetailPanel title="Learning progress">
                 <p>{count(profile.musicProgress)} music progress records</p>
                 <p className="mt-2">
                   {count(profile.practiceLogs)} practice or study logs
                 </p>
                 <Link
                   href="/assignments"
-                  className="mt-4 inline-block text-cyan-300"
+                  className="enterprise-action-button enterprise-action-button-secondary mt-4"
                 >
-                  Review assignments and submissions →
+                  Review assignments and submissions
                 </Link>
               </DetailPanel>
-              <DetailPanel title="Engagement" href="/communications">
+              <DetailPanel title="Engagement">
                 <p>{count(profile.communications)} communication records</p>
                 <p className="mt-2 text-slate-400">
                   Use contact preferences before sending reminders or
@@ -222,9 +230,9 @@ export default function StudentProfilePage() {
                 </p>
                 <Link
                   href="/communication-preferences"
-                  className="mt-4 inline-block text-cyan-300"
+                  className="enterprise-action-button enterprise-action-button-secondary mt-4"
                 >
-                  Open preferences →
+                  Contact preferences
                 </Link>
               </DetailPanel>
             </div>
