@@ -24,9 +24,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     function applyStoredTheme() {
       const saved = window.localStorage.getItem(storageKey);
-      const nextTheme: ThemeName = saved === "light" || saved === "dark"
-        ? saved
-        : window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      const nextTheme: ThemeName =
+        saved === "light" || saved === "dark"
+          ? saved
+          : window.matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light";
       setThemeState(nextTheme);
       document.documentElement.dataset.theme = nextTheme;
     }
@@ -50,10 +53,15 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setThemeState(nextTheme);
     window.localStorage.setItem(storageKey, nextTheme);
     document.documentElement.dataset.theme = nextTheme;
+    document
+      .querySelector('meta[name="theme-color"]')
+      ?.setAttribute("content", nextTheme === "dark" ? "#07111f" : "#f4f7fb");
   }
 
   const value = useMemo(() => ({ theme, setTheme }), [theme]);
-  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+  return (
+    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
+  );
 }
 
 export function useTheme() {
