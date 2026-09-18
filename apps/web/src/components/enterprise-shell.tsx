@@ -11,7 +11,7 @@ type NavigationGroup = { label: string; icon: string; links: readonly Navigation
 
 const navigationGroups: readonly NavigationGroup[] = [
   { label: "Workspace", icon: "▦", links: [["Overview", "/dashboard"], ["Calendar", "/calendar"], ["Activity log", "/activity"], ["Reports", "/reports"]] },
-  { label: "Learners & families", icon: "♙", links: [["Students", "/students"], ["Student 360", "/student-profile"], ["Parents", "/guardians"], ["Parent 360", "/guardian-profile"], ["Enrolments", "/enrollments"], ["Portal accounts", "/portal-accounts"]] },
+  { label: "Learners & families", icon: "♙", links: [["Students", "/students"], ["Student onboarding", "/student-onboarding"], ["Student 360", "/student-profile"], ["Parents", "/guardians"], ["Parent 360", "/guardian-profile"], ["Enrolments", "/enrollments"], ["Portal accounts", "/portal-accounts"]] },
   { label: "Team & access", icon: "♜", links: [["Teachers", "/teachers"], ["Teacher 360", "/teacher-profile"], ["Staff", "/staff"], ["Leave", "/leave"]] },
   { label: "Admissions", icon: "◌", links: [["Leads", "/leads"], ["Enrolment pipeline", "/enrollments"]] },
   { label: "Academics", icon: "♫", links: [["Academic governance", "/academic-governance"], ["Academic periods", "/academic-periods"], ["Courses", "/courses"], ["Curriculum", "/curriculum"], ["Batches", "/batches"], ["Batch promotions", "/batch-promotions"], ["Lesson plans", "/lesson-plans"], ["Assignments", "/assignments"], ["Submission review", "/submission-review"], ["Assessments", "/assessments"], ["Assessment policy", "/assessment-governance"], ["Music progress", "/music"], ["Practice logs", "/practice-logs"]] },
