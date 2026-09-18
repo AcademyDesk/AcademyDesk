@@ -58,8 +58,7 @@ const navigationGroups: readonly NavigationGroup[] = [
     label: "Ops team",
     icon: "♞",
     links: [
-      ["Overview", "/staff"],
-      ["Staff onboarding", "/staff"],
+      ["Staff directory & onboarding", "/staff"],
       ["Portal access", "/portal-accounts"],
       ["Access review", "/access-review"],
     ],
@@ -135,14 +134,16 @@ const administrationNavigation: readonly NavigationItem[] = [
   ["Work queue", "/work-queue"],
   ["Compliance centre", "/compliance"],
   ["Settings", "/settings"],
-  ["Academy profile", "/admin/control"],
   ["Branches", "/branches"],
   ["Activity log", "/activity"],
 ];
-const searchItems: readonly NavigationItem[] = [
-  ...navigationGroups.flatMap((group) => group.links),
-  ...administrationNavigation,
-];
+const searchItems: readonly NavigationItem[] = Array.from(
+  new Map(
+    [...navigationGroups.flatMap((group) => group.links), ...administrationNavigation].map(
+      ([label, href]) => [href, [label, href] as NavigationItem],
+    ),
+  ).values(),
+);
 
 type EnterpriseShellProps = {
   academyName?: string;

@@ -12,14 +12,10 @@ type ThemeContextValue = {
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 const storageKey = "academydesk.theme";
 
-function initialTheme(): ThemeName {
-  if (typeof document === "undefined") return "dark";
-  return document.documentElement.dataset.theme === "light" ? "light" : "dark";
-}
-
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  // Read the pre-hydration value so the selected theme never briefly changes after mount.
-  const [theme, setThemeState] = useState<ThemeName>(initialTheme);
+  // This deliberately matches the server output. The saved browser preference is
+  // applied after hydration, avoiding React attribute-mismatch warnings.
+  const [theme, setThemeState] = useState<ThemeName>("dark");
 
   useEffect(() => {
     function applyStoredTheme() {
