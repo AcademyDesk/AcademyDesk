@@ -10,7 +10,7 @@ namespace AcademyDesk.Api.Controllers;
 public sealed class InvoicesController(AcademyDeskDbContext dbContext) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<InvoiceSummary>>> List(Guid academyId, CancellationToken cancellationToken) => Ok(await dbContext.Invoices.AsNoTracking().Where(x => x.AcademyId == academyId).OrderByDescending(x => x.IssuedDate).Select(x => new InvoiceSummary(x.Id, x.InvoiceNumber, x.StudentId, x.FeePlanId, x.TotalAmount, x.Currency, x.IssuedDate, x.DueDate, x.Status)).ToListAsync(cancellationToken));
+    public async Task<ActionResult<IReadOnlyList<InvoiceSummary>>> List(Guid academyId, CancellationToken cancellationToken) => Ok(await dbContext.Invoices.AsNoTracking().Where(x => x.AcademyId == academyId).OrderByDescending(x => x.IssuedDate).Select(x => new InvoiceSummary(x.Id, x.InvoiceNumber, x.StudentId, x.FeePlanId, x.TotalAmount, x.AdjustedAmount, dbContext.Payments.Where(payment => payment.InvoiceId == x.Id && payment.Status != "Voided").Sum(payment => (decimal?)payment.Amount) ?? 0, x.Currency, x.IssuedDate, x.DueDate, x.Status)).ToListAsync(cancellationToken));
 
     [HttpPost]
     public async Task<ActionResult<InvoiceSummary>> Create(Guid academyId, CreateInvoiceRequest request, CancellationToken cancellationToken)
@@ -24,7 +24,7 @@ public sealed class InvoicesController(AcademyDeskDbContext dbContext) : Control
         var number = $"INV-{DateTime.UtcNow:yyyyMMddHHmmss}-{Random.Shared.Next(100, 999)}";
         var invoice = new Invoice { AcademyId = academyId, InvoiceNumber = number, StudentId = request.StudentId, FeePlanId = request.FeePlanId, TotalAmount = amount, Currency = plan?.Currency ?? "INR", DueDate = request.DueDate ?? DateOnly.FromDateTime(DateTime.UtcNow.AddDays(7)) };
         dbContext.Invoices.Add(invoice); await dbContext.SaveChangesAsync(cancellationToken);
-        return Created($"/api/academies/{academyId}/invoices/{invoice.Id}", new InvoiceSummary(invoice.Id, invoice.InvoiceNumber, invoice.StudentId, invoice.FeePlanId, invoice.TotalAmount, invoice.Currency, invoice.IssuedDate, invoice.DueDate, invoice.Status));
+        return Created($"/api/academies/{academyId}/invoices/{invoice.Id}", new InvoiceSummary(invoice.Id, invoice.InvoiceNumber, invoice.StudentId, invoice.FeePlanId, invoice.TotalAmount, invoice.AdjustedAmount, 0, invoice.Currency, invoice.IssuedDate, invoice.DueDate, invoice.Status));
     }
     [HttpPatch("{invoiceId:guid}/status")]
     public async Task<ActionResult> UpdateStatus(Guid academyId, Guid invoiceId, UpdateInvoiceStatusRequest request, CancellationToken token)
@@ -32,5 +32,5 @@ public sealed class InvoicesController(AcademyDeskDbContext dbContext) : Control
 }
 
 public sealed record CreateInvoiceRequest(Guid StudentId, Guid? FeePlanId, decimal? Amount, DateOnly? DueDate);
-public sealed record InvoiceSummary(Guid Id, string InvoiceNumber, Guid StudentId, Guid? FeePlanId, decimal TotalAmount, string Currency, DateOnly IssuedDate, DateOnly DueDate, string Status);
+public sealed record InvoiceSummary(Guid Id, string InvoiceNumber, Guid StudentId, Guid? FeePlanId, decimal TotalAmount, decimal AdjustedAmount, decimal PaidAmount, string Currency, DateOnly IssuedDate, DateOnly DueDate, string Status){public decimal Balance => Math.Max(0, TotalAmount-AdjustedAmount-PaidAmount);}
 public sealed record UpdateInvoiceStatusRequest(string Status);
