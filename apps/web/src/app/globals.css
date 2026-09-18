@@ -1214,6 +1214,9 @@ html[data-theme="light"] .field-label { color: #475569; }
   border-radius: 8px !important;
   background: var(--ad-control-surface) !important;
   color: var(--ad-text) !important;
+  box-sizing: border-box;
+  min-height: 42px;
+  padding: 10px 12px !important;
   font-size: 0.875rem !important;
   line-height: 1.35;
 }
@@ -1291,6 +1294,8 @@ html[data-theme="light"] .field-label { color: #475569; }
 }
 .enterprise-nav ~ .mx-auto :is(input, select, textarea) {
   min-height: 40px;
+  box-sizing: border-box;
+  padding: 9px 12px !important;
   border-color: var(--ad-border) !important;
   border-radius: 8px !important;
   background: var(--ad-control-surface) !important;
