@@ -17,7 +17,8 @@ public sealed class AssessmentsController(AcademyDeskDbContext dbContext) : Cont
     {
         if (!await dbContext.Batches.AnyAsync(x => x.Id == request.BatchId && x.AcademyId == academyId, cancellationToken)) return BadRequest(new { message = "The selected batch does not belong to this academy." });
         if (string.IsNullOrWhiteSpace(request.Title) || request.MaxScore <= 0) return BadRequest(new { message = "Title and a positive maximum score are required." });
-        var assessment = new Assessment { AcademyId = academyId, BatchId = request.BatchId, Title = request.Title.Trim(), Type = string.IsNullOrWhiteSpace(request.Type) ? "Assessment" : request.Type.Trim(), MaxScore = request.MaxScore, ScheduledAtUtc = request.ScheduledAtUtc, IsPublished = request.IsPublished };
+        if (request.GradingSchemeId.HasValue && !await dbContext.GradingSchemes.AnyAsync(x => x.Id == request.GradingSchemeId && x.AcademyId == academyId && x.IsActive, cancellationToken)) return BadRequest(new { message = "The grading scheme does not belong to this academy." });
+        var assessment = new Assessment { AcademyId = academyId, BatchId = request.BatchId, Title = request.Title.Trim(), Type = string.IsNullOrWhiteSpace(request.Type) ? "Assessment" : request.Type.Trim(), MaxScore = request.MaxScore, GradingSchemeId = request.GradingSchemeId, ScheduledAtUtc = request.ScheduledAtUtc, IsPublished = request.IsPublished };
         dbContext.Assessments.Add(assessment); await dbContext.SaveChangesAsync(cancellationToken);
         return Created($"/api/academies/{academyId}/assessments/{assessment.Id}", new AssessmentSummary(assessment.Id, assessment.BatchId, assessment.Title, assessment.Type, assessment.MaxScore, assessment.ScheduledAtUtc, assessment.IsPublished));
     }
@@ -44,12 +45,13 @@ public sealed class AssessmentResultsController(AcademyDeskDbContext dbContext) 
         var isNew = result is null;
         result ??= new AssessmentResult { AcademyId = academyId, AssessmentId = assessmentId, StudentId = request.StudentId };
         result.Score = request.Score; result.Grade = request.Grade?.Trim(); result.Remarks = request.Remarks?.Trim(); result.IsPublished = request.IsPublished;
+        if (assessment.GradingSchemeId.HasValue) { var scheme = await dbContext.GradingSchemes.AsNoTracking().SingleAsync(x => x.Id == assessment.GradingSchemeId && x.AcademyId == academyId, cancellationToken); result.Grade = request.Grade?.Trim() ?? (request.Score * 100m / assessment.MaxScore >= scheme.PassingPercent ? "Pass" : "Fail"); }
         if (isNew) dbContext.AssessmentResults.Add(result); await dbContext.SaveChangesAsync(cancellationToken);
         return Ok(new AssessmentResultSummary(result.Id, result.StudentId, result.Score, result.Grade, result.Remarks, result.IsPublished));
     }
 }
 
-public sealed record CreateAssessmentRequest(Guid BatchId, string Title, string? Type, decimal MaxScore, DateTime? ScheduledAtUtc, bool IsPublished);
+public sealed record CreateAssessmentRequest(Guid BatchId, string Title, string? Type, decimal MaxScore, Guid? GradingSchemeId, DateTime? ScheduledAtUtc, bool IsPublished);
 public sealed record AssessmentSummary(Guid Id, Guid BatchId, string Title, string Type, decimal MaxScore, DateTime? ScheduledAtUtc, bool IsPublished);
 public sealed record PublishAssessmentRequest(bool IsPublished);
 public sealed record RecordAssessmentResultRequest(Guid StudentId, decimal Score, string? Grade, string? Remarks, bool IsPublished);
