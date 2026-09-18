@@ -68,6 +68,46 @@ type Health = {
   statusMessage?: string;
 };
 
+const platformLinks = [
+  { label: "Overview", icon: "▦", href: "/platform" },
+  {
+    label: "Tenant management",
+    icon: "◫",
+    href: "/platform/control?tab=Tenants",
+    tab: "Tenants",
+  },
+  {
+    label: "Academy admins",
+    icon: "♙",
+    href: "/platform/control?tab=Admins",
+    tab: "Admins",
+  },
+  {
+    label: "Billing",
+    icon: "₹",
+    href: "/platform/control?tab=Billing",
+    tab: "Billing",
+  },
+  {
+    label: "Support",
+    icon: "?",
+    href: "/platform/control?tab=Support",
+    tab: "Support",
+  },
+  {
+    label: "Settings",
+    icon: "⚙",
+    href: "/platform/control?tab=Settings",
+    tab: "Settings",
+  },
+  {
+    label: "Audit & health",
+    icon: "✓",
+    href: "/platform/control?tab=Audit%20%26%20health",
+    tab: "Audit & health",
+  },
+] as const;
+
 const platformControlTabs = [
   "Tenants",
   "Admins",
@@ -267,427 +307,450 @@ export default function PlatformControlPage() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100">
-      <header className="enterprise-nav sticky top-0 z-40 px-5 py-3">
-        <div className="mx-auto flex max-w-7xl items-center gap-4">
-          <Link
-            href="/platform"
-            className="flex items-center gap-2 font-semibold"
-          >
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-cyan-400 text-sm font-bold text-slate-950">
-              A
-            </span>
-            AcademyDesk <small className="text-slate-400">Platform</small>
-          </Link>
-          <div className="ml-auto flex items-center gap-3">
+    <main className="platform-shell">
+      <aside className="platform-sidebar">
+        <div className="enterprise-brand">
+          <span>A</span>
+          <strong>AcademyDesk</strong>
+        </div>
+        <nav className="platform-nav" aria-label="Platform navigation">
+          <p>Platform</p>
+          {platformLinks.map((item) => (
+            <Link
+              href={item.href}
+              key={item.label}
+              data-active={"tab" in item && item.tab === tab}
+            >
+              <i>{item.icon}</i>
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+      </aside>
+      <section className="platform-workspace">
+        <header className="platform-topbar">
+          <div />
+          <div className="enterprise-utilities">
+            <button
+              type="button"
+              className="enterprise-icon-button"
+              aria-label="Search academy portfolio"
+            >
+              ⌕
+            </button>
+            <button
+              type="button"
+              className="enterprise-icon-button"
+              aria-label="Platform notifications"
+            >
+              ♧
+            </button>
             <ThemeToggle />
-            <details className="relative">
-              <summary
-                className="grid h-9 w-9 cursor-pointer list-none place-items-center rounded-full bg-violet-600 font-medium text-white [&::-webkit-details-marker]:hidden"
-                aria-label="Open Platform Owner profile menu"
-              >
-                S
+            <details className="platform-profile">
+              <summary aria-label="Open Platform Owner profile menu">
+                <span className="platform-avatar">S</span>
               </summary>
-              <div className="absolute right-0 z-50 mt-2 grid min-w-44 gap-1 rounded-lg border border-slate-700 bg-slate-900 p-3 shadow-xl">
-                <strong className="text-sm">Shashank</strong>
-                <small className="text-slate-400">Platform Owner</small>
-                <button
-                  className="mt-2 rounded border border-slate-700 px-2 py-1.5 text-left text-sm text-slate-300 hover:bg-slate-800"
-                  onClick={signOut}
-                >
+              <div className="platform-profile-menu">
+                <strong>Shashank</strong>
+                <small>Platform Owner</small>
+                <button type="button" onClick={signOut}>
                   Sign out
                 </button>
               </div>
             </details>
           </div>
-        </div>
-      </header>
-      <div className="mx-auto max-w-7xl px-5 py-8">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <h1 className="text-3xl font-semibold">{tab}</h1>
-          <Link href="/platform" className="text-sm text-cyan-300">
-            ← Academies
-          </Link>
-        </div>
-        {message && (
-          <p className="mt-4 rounded-lg border border-slate-700 bg-slate-900 p-3 text-sm text-slate-300">
-            {message}
-          </p>
-        )}
-        {tab === "Tenants" && (
-          <section className="mt-6 grid gap-5 lg:grid-cols-[1fr_.9fr]">
-            <section className="rounded-xl border border-slate-800 bg-slate-900 p-5">
-              <h2 className="font-semibold">Tenant configuration</h2>
-              <select
-                className="mt-4 w-full rounded border border-slate-700 bg-slate-950 p-2"
-                value={selectedAcademy}
-                onChange={(event) => setSelectedAcademy(event.target.value)}
-              >
-                {academies.map((academy) => (
-                  <option value={academy.id} key={academy.id}>
-                    {academy.name}
-                  </option>
-                ))}
-              </select>
-              {selected && (
-                <form
-                  onSubmit={saveTenant}
-                  className="mt-4 grid gap-3 sm:grid-cols-2"
+        </header>
+        <div className="platform-content platform-control-content">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <h1 className="text-3xl font-semibold">{tab}</h1>
+            <Link href="/platform" className="text-sm text-cyan-300">
+              ← Academies
+            </Link>
+          </div>
+          {message && (
+            <p className="mt-4 rounded-lg border border-slate-700 bg-slate-900 p-3 text-sm text-slate-300">
+              {message}
+            </p>
+          )}
+          {tab === "Tenants" && (
+            <section className="mt-6 grid gap-5 lg:grid-cols-[1fr_.9fr]">
+              <section className="rounded-xl border border-slate-800 bg-slate-900 p-5">
+                <h2 className="font-semibold">Tenant configuration</h2>
+                <select
+                  className="mt-4 w-full rounded border border-slate-700 bg-slate-950 p-2"
+                  value={selectedAcademy}
+                  onChange={(event) => setSelectedAcademy(event.target.value)}
                 >
-                  <label>
-                    Plan
-                    <select
-                      name="plan"
-                      defaultValue={selected.subscriptionPlan}
-                      className="mt-1 w-full rounded border border-slate-700 bg-slate-950 p-2"
-                    >
-                      <option>Trial</option>
-                      <option>Starter</option>
-                      <option>Professional</option>
-                      <option>Enterprise</option>
-                    </select>
-                  </label>
-                  <label>
-                    Status
-                    <select
-                      name="status"
-                      defaultValue={selected.subscriptionStatus}
-                      className="mt-1 w-full rounded border border-slate-700 bg-slate-950 p-2"
-                    >
-                      <option>Trial</option>
-                      <option>Active</option>
-                      <option>Past due</option>
-                      <option>Cancelled</option>
-                    </select>
-                  </label>
-                  <label>
-                    Student limit
-                    <input
-                      name="studentLimit"
-                      type="number"
-                      min="1"
-                      defaultValue={selected.studentLimit}
-                      className="mt-1 w-full rounded border border-slate-700 bg-slate-950 p-2"
-                    />
-                  </label>
-                  <label>
-                    Staff limit
-                    <input
-                      name="staffLimit"
-                      type="number"
-                      min="1"
-                      defaultValue={selected.staffLimit}
-                      className="mt-1 w-full rounded border border-slate-700 bg-slate-950 p-2"
-                    />
-                  </label>
-                  <label className="sm:col-span-2">
-                    Enabled modules
-                    <input
-                      name="modules"
-                      defaultValue={JSON.parse(
-                        selected.enabledModulesJson || "[]",
-                      ).join(", ")}
-                      className="mt-1 w-full rounded border border-slate-700 bg-slate-950 p-2"
-                    />
-                  </label>
-                  <button
-                    disabled={busy}
-                    className="rounded bg-cyan-400 px-4 py-2 font-semibold text-slate-950 sm:col-span-2"
+                  {academies.map((academy) => (
+                    <option value={academy.id} key={academy.id}>
+                      {academy.name}
+                    </option>
+                  ))}
+                </select>
+                {selected && (
+                  <form
+                    onSubmit={saveTenant}
+                    className="mt-4 grid gap-3 sm:grid-cols-2"
                   >
-                    Save tenant configuration
-                  </button>
-                </form>
-              )}
+                    <label>
+                      Plan
+                      <select
+                        name="plan"
+                        defaultValue={selected.subscriptionPlan}
+                        className="mt-1 w-full rounded border border-slate-700 bg-slate-950 p-2"
+                      >
+                        <option>Trial</option>
+                        <option>Starter</option>
+                        <option>Professional</option>
+                        <option>Enterprise</option>
+                      </select>
+                    </label>
+                    <label>
+                      Status
+                      <select
+                        name="status"
+                        defaultValue={selected.subscriptionStatus}
+                        className="mt-1 w-full rounded border border-slate-700 bg-slate-950 p-2"
+                      >
+                        <option>Trial</option>
+                        <option>Active</option>
+                        <option>Past due</option>
+                        <option>Cancelled</option>
+                      </select>
+                    </label>
+                    <label>
+                      Student limit
+                      <input
+                        name="studentLimit"
+                        type="number"
+                        min="1"
+                        defaultValue={selected.studentLimit}
+                        className="mt-1 w-full rounded border border-slate-700 bg-slate-950 p-2"
+                      />
+                    </label>
+                    <label>
+                      Staff limit
+                      <input
+                        name="staffLimit"
+                        type="number"
+                        min="1"
+                        defaultValue={selected.staffLimit}
+                        className="mt-1 w-full rounded border border-slate-700 bg-slate-950 p-2"
+                      />
+                    </label>
+                    <label className="sm:col-span-2">
+                      Enabled modules
+                      <input
+                        name="modules"
+                        defaultValue={JSON.parse(
+                          selected.enabledModulesJson || "[]",
+                        ).join(", ")}
+                        className="mt-1 w-full rounded border border-slate-700 bg-slate-950 p-2"
+                      />
+                    </label>
+                    <button
+                      disabled={busy}
+                      className="rounded bg-cyan-400 px-4 py-2 font-semibold text-slate-950 sm:col-span-2"
+                    >
+                      Save tenant configuration
+                    </button>
+                  </form>
+                )}
+              </section>
+              <section className="rounded-xl border border-slate-800 bg-slate-900 p-5">
+                <h2 className="font-semibold">Subscription controls</h2>
+                <ul className="mt-4 space-y-3 text-sm text-slate-300">
+                  {academies.map((academy) => (
+                    <li
+                      key={academy.id}
+                      className="rounded border border-slate-700 bg-slate-950 p-3"
+                    >
+                      <b>{academy.name}</b>
+                      <span className="ml-2 text-cyan-300">
+                        {academy.subscriptionPlan} ·{" "}
+                        {academy.subscriptionStatus}
+                      </span>
+                      <p className="mt-1 text-slate-400">
+                        {academy.studentLimit} learners · {academy.staffLimit}{" "}
+                        staff
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              </section>
             </section>
-            <section className="rounded-xl border border-slate-800 bg-slate-900 p-5">
-              <h2 className="font-semibold">Subscription controls</h2>
-              <ul className="mt-4 space-y-3 text-sm text-slate-300">
-                {academies.map((academy) => (
-                  <li
-                    key={academy.id}
+          )}
+          {tab === "Admins" && (
+            <section className="mt-6 rounded-xl border border-slate-800 bg-slate-900 p-5">
+              <h2 className="font-semibold">Academy administrators</h2>
+              <div className="mt-4 overflow-auto">
+                <table className="w-full text-left text-sm">
+                  <thead className="text-slate-400">
+                    <tr>
+                      <th className="p-2">Administrator</th>
+                      <th className="p-2">Academy</th>
+                      <th className="p-2">Status</th>
+                      <th className="p-2"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {admins.map((admin) => (
+                      <tr key={admin.id} className="border-t border-slate-800">
+                        <td className="p-2">
+                          <b>{admin.displayName}</b>
+                          <small className="block text-slate-400">
+                            {admin.email}
+                          </small>
+                        </td>
+                        <td className="p-2">{admin.academyName}</td>
+                        <td className="p-2">
+                          {admin.isActive ? "Active" : "Deactivated"}
+                        </td>
+                        <td className="p-2">
+                          <button
+                            onClick={() => void adminActive(admin)}
+                            className="mr-2 text-cyan-300"
+                          >
+                            {admin.isActive ? "Deactivate" : "Activate"}
+                          </button>
+                          <button
+                            onClick={() => void adminPassword(admin)}
+                            className="text-cyan-300"
+                          >
+                            Reset password
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          )}
+          {tab === "Billing" && (
+            <section className="mt-6 grid gap-5 lg:grid-cols-[.8fr_1.2fr]">
+              <form
+                onSubmit={createInvoice}
+                className="rounded-xl border border-slate-800 bg-slate-900 p-5"
+              >
+                <h2 className="font-semibold">Create platform invoice</h2>
+                <FieldSelect
+                  name="academyId"
+                  label="Academy"
+                  items={academies.map((a) => [a.id, a.name])}
+                />
+                <Field name="invoiceNumber" label="Invoice number" />
+                <Field name="amount" label="Amount" type="number" />
+                <Field name="currency" label="Currency" value="INR" />
+                <Field name="periodStart" label="Period start" type="date" />
+                <Field name="periodEnd" label="Period end" type="date" />
+                <Field name="dueDate" label="Due date" type="date" />
+                <button
+                  disabled={busy}
+                  className="mt-4 w-full rounded bg-cyan-400 p-2 font-semibold text-slate-950"
+                >
+                  Create invoice
+                </button>
+              </form>
+              <RecordList
+                title="Platform invoices"
+                records={invoices.map((item) => (
+                  <div
+                    key={item.id}
                     className="rounded border border-slate-700 bg-slate-950 p-3"
                   >
-                    <b>{academy.name}</b>
-                    <span className="ml-2 text-cyan-300">
-                      {academy.subscriptionPlan} · {academy.subscriptionStatus}
+                    <b>{item.invoiceNumber}</b> · {item.academyName}
+                    <span className="float-right">
+                      {item.currency} {item.amount}
                     </span>
-                    <p className="mt-1 text-slate-400">
-                      {academy.studentLimit} learners · {academy.staffLimit}{" "}
-                      staff
-                    </p>
-                  </li>
+                    <div className="mt-2">
+                      <select
+                        value={item.status}
+                        onChange={(e) =>
+                          void updateInvoice(item, e.target.value)
+                        }
+                        className="rounded border border-slate-700 bg-slate-900 p-1 text-xs"
+                      >
+                        <option>Draft</option>
+                        <option>Issued</option>
+                        <option>Overdue</option>
+                        <option>Paid</option>
+                        <option>Void</option>
+                      </select>
+                    </div>
+                  </div>
                 ))}
-              </ul>
-            </section>
-          </section>
-        )}
-        {tab === "Admins" && (
-          <section className="mt-6 rounded-xl border border-slate-800 bg-slate-900 p-5">
-            <h2 className="font-semibold">Academy administrators</h2>
-            <div className="mt-4 overflow-auto">
-              <table className="w-full text-left text-sm">
-                <thead className="text-slate-400">
-                  <tr>
-                    <th className="p-2">Administrator</th>
-                    <th className="p-2">Academy</th>
-                    <th className="p-2">Status</th>
-                    <th className="p-2"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {admins.map((admin) => (
-                    <tr key={admin.id} className="border-t border-slate-800">
-                      <td className="p-2">
-                        <b>{admin.displayName}</b>
-                        <small className="block text-slate-400">
-                          {admin.email}
-                        </small>
-                      </td>
-                      <td className="p-2">{admin.academyName}</td>
-                      <td className="p-2">
-                        {admin.isActive ? "Active" : "Deactivated"}
-                      </td>
-                      <td className="p-2">
-                        <button
-                          onClick={() => void adminActive(admin)}
-                          className="mr-2 text-cyan-300"
-                        >
-                          {admin.isActive ? "Deactivate" : "Activate"}
-                        </button>
-                        <button
-                          onClick={() => void adminPassword(admin)}
-                          className="text-cyan-300"
-                        >
-                          Reset password
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
-        )}
-        {tab === "Billing" && (
-          <section className="mt-6 grid gap-5 lg:grid-cols-[.8fr_1.2fr]">
-            <form
-              onSubmit={createInvoice}
-              className="rounded-xl border border-slate-800 bg-slate-900 p-5"
-            >
-              <h2 className="font-semibold">Create platform invoice</h2>
-              <FieldSelect
-                name="academyId"
-                label="Academy"
-                items={academies.map((a) => [a.id, a.name])}
               />
-              <Field name="invoiceNumber" label="Invoice number" />
-              <Field name="amount" label="Amount" type="number" />
-              <Field name="currency" label="Currency" value="INR" />
-              <Field name="periodStart" label="Period start" type="date" />
-              <Field name="periodEnd" label="Period end" type="date" />
-              <Field name="dueDate" label="Due date" type="date" />
-              <button
-                disabled={busy}
-                className="mt-4 w-full rounded bg-cyan-400 p-2 font-semibold text-slate-950"
+            </section>
+          )}
+          {tab === "Support" && (
+            <section className="mt-6 grid gap-5 lg:grid-cols-[.8fr_1.2fr]">
+              <form
+                onSubmit={createCase}
+                className="rounded-xl border border-slate-800 bg-slate-900 p-5"
               >
-                Create invoice
-              </button>
-            </form>
-            <RecordList
-              title="Platform invoices"
-              records={invoices.map((item) => (
-                <div
-                  key={item.id}
-                  className="rounded border border-slate-700 bg-slate-950 p-3"
+                <h2 className="font-semibold">Open support case</h2>
+                <FieldSelect
+                  name="academyId"
+                  label="Academy"
+                  items={academies.map((a) => [a.id, a.name])}
+                />
+                <Field name="subject" label="Subject" />
+                <FieldSelect
+                  name="priority"
+                  label="Priority"
+                  items={[
+                    ["Low", "Low"],
+                    ["Normal", "Normal"],
+                    ["High", "High"],
+                    ["Urgent", "Urgent"],
+                  ]}
+                />
+                <label className="mt-3 block text-sm text-slate-300">
+                  Description
+                  <textarea
+                    name="description"
+                    className="mt-1 w-full rounded border border-slate-700 bg-slate-950 p-2"
+                    rows={4}
+                  />
+                </label>
+                <button
+                  disabled={busy}
+                  className="mt-4 w-full rounded bg-cyan-400 p-2 font-semibold text-slate-950"
                 >
-                  <b>{item.invoiceNumber}</b> · {item.academyName}
-                  <span className="float-right">
-                    {item.currency} {item.amount}
-                  </span>
-                  <div className="mt-2">
+                  Create case
+                </button>
+              </form>
+              <RecordList
+                title="Support cases"
+                records={cases.map((item) => (
+                  <div
+                    key={item.id}
+                    className="rounded border border-slate-700 bg-slate-950 p-3"
+                  >
+                    <b>{item.subject}</b>
+                    <span className="float-right text-cyan-300">
+                      {item.priority}
+                    </span>
+                    <p className="mt-1 text-sm text-slate-400">
+                      {item.academyName} ·{" "}
+                      {item.description || "No description"}
+                    </p>
                     <select
                       value={item.status}
-                      onChange={(e) => void updateInvoice(item, e.target.value)}
-                      className="rounded border border-slate-700 bg-slate-900 p-1 text-xs"
+                      onChange={(e) => void updateCase(item, e.target.value)}
+                      className="mt-2 rounded border border-slate-700 bg-slate-900 p-1 text-xs"
                     >
-                      <option>Draft</option>
-                      <option>Issued</option>
-                      <option>Overdue</option>
-                      <option>Paid</option>
-                      <option>Void</option>
+                      <option>Open</option>
+                      <option>In progress</option>
+                      <option>Resolved</option>
+                      <option>Closed</option>
                     </select>
                   </div>
-                </div>
-              ))}
-            />
-          </section>
-        )}
-        {tab === "Support" && (
-          <section className="mt-6 grid gap-5 lg:grid-cols-[.8fr_1.2fr]">
+                ))}
+              />
+            </section>
+          )}
+          {tab === "Settings" && settings && (
             <form
-              onSubmit={createCase}
-              className="rounded-xl border border-slate-800 bg-slate-900 p-5"
+              onSubmit={saveSettings}
+              className="mt-6 max-w-2xl rounded-xl border border-slate-800 bg-slate-900 p-5"
             >
-              <h2 className="font-semibold">Open support case</h2>
-              <FieldSelect
-                name="academyId"
-                label="Academy"
-                items={academies.map((a) => [a.id, a.name])}
+              <h2 className="font-semibold">Platform settings and retention</h2>
+              <Field
+                name="platformName"
+                label="Platform name"
+                value={settings.platformName}
               />
-              <Field name="subject" label="Subject" />
-              <FieldSelect
-                name="priority"
-                label="Priority"
-                items={[
-                  ["Low", "Low"],
-                  ["Normal", "Normal"],
-                  ["High", "High"],
-                  ["Urgent", "Urgent"],
-                ]}
+              <Field
+                name="supportEmail"
+                label="Support email"
+                value={settings.supportEmail || ""}
               />
+              <Field
+                name="currency"
+                label="Default currency"
+                value={settings.defaultCurrency}
+              />
+              <Field
+                name="trialDays"
+                label="Default trial days"
+                type="number"
+                value={settings.defaultTrialDays}
+              />
+              <Field
+                name="retentionDays"
+                label="Data retention days"
+                type="number"
+                value={settings.dataRetentionDays}
+              />
+              <label className="mt-3 flex gap-2 text-sm">
+                <input
+                  name="maintenanceMode"
+                  type="checkbox"
+                  defaultChecked={settings.maintenanceMode}
+                />{" "}
+                Maintenance mode
+              </label>
               <label className="mt-3 block text-sm text-slate-300">
-                Description
+                Status message
                 <textarea
-                  name="description"
+                  name="statusMessage"
+                  defaultValue={settings.statusMessage || ""}
                   className="mt-1 w-full rounded border border-slate-700 bg-slate-950 p-2"
-                  rows={4}
+                  rows={3}
                 />
               </label>
               <button
                 disabled={busy}
-                className="mt-4 w-full rounded bg-cyan-400 p-2 font-semibold text-slate-950"
+                className="mt-4 rounded bg-cyan-400 px-4 py-2 font-semibold text-slate-950"
               >
-                Create case
+                Save platform settings
               </button>
             </form>
-            <RecordList
-              title="Support cases"
-              records={cases.map((item) => (
-                <div
-                  key={item.id}
-                  className="rounded border border-slate-700 bg-slate-950 p-3"
-                >
-                  <b>{item.subject}</b>
-                  <span className="float-right text-cyan-300">
-                    {item.priority}
-                  </span>
-                  <p className="mt-1 text-sm text-slate-400">
-                    {item.academyName} · {item.description || "No description"}
-                  </p>
-                  <select
-                    value={item.status}
-                    onChange={(e) => void updateCase(item, e.target.value)}
-                    className="mt-2 rounded border border-slate-700 bg-slate-900 p-1 text-xs"
+          )}
+          {tab === "Audit & health" && (
+            <section className="mt-6 grid gap-5 lg:grid-cols-2">
+              <section className="rounded-xl border border-slate-800 bg-slate-900 p-5">
+                <h2 className="font-semibold">Operational health</h2>
+                <dl className="mt-4 space-y-3 text-sm">
+                  <div>
+                    <dt className="text-slate-400">API</dt>
+                    <dd>{health?.api ?? "Checking"}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-slate-400">Database</dt>
+                    <dd>{health?.database ?? "Checking"}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-slate-400">Background jobs</dt>
+                    <dd>{health?.backgroundJobs ?? "Checking"}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-slate-400">Communication providers</dt>
+                    <dd>{health?.communicationProviders ?? "Checking"}</dd>
+                  </div>
+                </dl>
+              </section>
+              <RecordList
+                title="Platform audit history"
+                records={audit.map((item) => (
+                  <div
+                    key={item.id}
+                    className="border-b border-slate-800 py-3 text-sm"
                   >
-                    <option>Open</option>
-                    <option>In progress</option>
-                    <option>Resolved</option>
-                    <option>Closed</option>
-                  </select>
-                </div>
-              ))}
-            />
-          </section>
-        )}
-        {tab === "Settings" && settings && (
-          <form
-            onSubmit={saveSettings}
-            className="mt-6 max-w-2xl rounded-xl border border-slate-800 bg-slate-900 p-5"
-          >
-            <h2 className="font-semibold">Platform settings and retention</h2>
-            <Field
-              name="platformName"
-              label="Platform name"
-              value={settings.platformName}
-            />
-            <Field
-              name="supportEmail"
-              label="Support email"
-              value={settings.supportEmail || ""}
-            />
-            <Field
-              name="currency"
-              label="Default currency"
-              value={settings.defaultCurrency}
-            />
-            <Field
-              name="trialDays"
-              label="Default trial days"
-              type="number"
-              value={settings.defaultTrialDays}
-            />
-            <Field
-              name="retentionDays"
-              label="Data retention days"
-              type="number"
-              value={settings.dataRetentionDays}
-            />
-            <label className="mt-3 flex gap-2 text-sm">
-              <input
-                name="maintenanceMode"
-                type="checkbox"
-                defaultChecked={settings.maintenanceMode}
-              />{" "}
-              Maintenance mode
-            </label>
-            <label className="mt-3 block text-sm text-slate-300">
-              Status message
-              <textarea
-                name="statusMessage"
-                defaultValue={settings.statusMessage || ""}
-                className="mt-1 w-full rounded border border-slate-700 bg-slate-950 p-2"
-                rows={3}
+                    <b>{item.action}</b>
+                    <p className="mt-1 text-slate-400">
+                      {item.actorName} · {item.entityType} ·{" "}
+                      {new Date(item.occurredAtUtc).toLocaleString()}
+                    </p>
+                  </div>
+                ))}
               />
-            </label>
-            <button
-              disabled={busy}
-              className="mt-4 rounded bg-cyan-400 px-4 py-2 font-semibold text-slate-950"
-            >
-              Save platform settings
-            </button>
-          </form>
-        )}
-        {tab === "Audit & health" && (
-          <section className="mt-6 grid gap-5 lg:grid-cols-2">
-            <section className="rounded-xl border border-slate-800 bg-slate-900 p-5">
-              <h2 className="font-semibold">Operational health</h2>
-              <dl className="mt-4 space-y-3 text-sm">
-                <div>
-                  <dt className="text-slate-400">API</dt>
-                  <dd>{health?.api ?? "Checking"}</dd>
-                </div>
-                <div>
-                  <dt className="text-slate-400">Database</dt>
-                  <dd>{health?.database ?? "Checking"}</dd>
-                </div>
-                <div>
-                  <dt className="text-slate-400">Background jobs</dt>
-                  <dd>{health?.backgroundJobs ?? "Checking"}</dd>
-                </div>
-                <div>
-                  <dt className="text-slate-400">Communication providers</dt>
-                  <dd>{health?.communicationProviders ?? "Checking"}</dd>
-                </div>
-              </dl>
             </section>
-            <RecordList
-              title="Platform audit history"
-              records={audit.map((item) => (
-                <div
-                  key={item.id}
-                  className="border-b border-slate-800 py-3 text-sm"
-                >
-                  <b>{item.action}</b>
-                  <p className="mt-1 text-slate-400">
-                    {item.actorName} · {item.entityType} ·{" "}
-                    {new Date(item.occurredAtUtc).toLocaleString()}
-                  </p>
-                </div>
-              ))}
-            />
-          </section>
-        )}
-      </div>
+          )}
+        </div>
+      </section>
     </main>
   );
 }

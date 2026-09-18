@@ -201,17 +201,10 @@ export default function PlatformPage() {
             </Link>
           ))}
         </nav>
-        <div className="platform-sidebar-note">
-          <span>Platform Owner</span>
-          <strong>Shashank</strong>
-          <small>SaaS portfolio control</small>
-        </div>
       </aside>
       <section className="platform-workspace">
         <header className="platform-topbar">
-          <div>
-            <h1>Platform Owner</h1>
-          </div>
+          <div />
           <div className="enterprise-utilities">
             <button
               type="button"

@@ -1214,21 +1214,29 @@ html[data-theme="light"] [class~="text-red-300"] {
   letter-spacing: 0.15em;
   text-transform: uppercase;
 }
-.platform-nav a {
+.platform-nav a,
+.platform-nav button {
   display: flex;
   align-items: center;
   gap: 14px;
   padding: 13px 14px;
   border-radius: 12px;
   color: var(--ad-text-muted);
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
   font-size: 0.95rem;
   font-weight: 570;
+  text-align: left;
 }
-.platform-nav a:hover {
+.platform-nav a:hover,
+.platform-nav button:hover {
   color: var(--ad-text);
   background: var(--ad-surface-subtle);
 }
-.platform-nav a[data-active="true"] {
+.platform-nav a[data-active="true"],
+.platform-nav button[data-active="true"] {
   color: var(--ad-text);
   background: color-mix(in srgb, var(--ad-accent) 22%, var(--ad-surface));
 }
@@ -1416,6 +1424,10 @@ html[data-theme="light"] [class~="text-red-300"] {
   gap: clamp(12px, 1vw, 20px);
   padding: clamp(18px, 1.7vw, 34px) clamp(22px, 2vw, 40px);
   overflow: auto;
+}
+.platform-control-content {
+  display: block;
+  color: var(--ad-text);
 }
 .platform-heading {
   display: flex;
