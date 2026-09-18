@@ -77,10 +77,13 @@ export default function StudentOnboardingPage() {
           {message}
         </p>
       )}
-      <form onSubmit={submit} className="mt-5 grid gap-5 xl:grid-cols-2">
-        <section className="surface-panel rounded-xl p-5">
-          <h3 className="font-semibold">1. Student identity</h3>
-          <div className="learner-form">
+      <form onSubmit={submit} className="student-onboarding-form">
+        <section className="surface-panel onboarding-section">
+          <header className="onboarding-section-header">
+            <span>01</span>
+            <div><h3>Student identity</h3><p>Required admission record</p></div>
+          </header>
+          <div className="onboarding-fields onboarding-fields-2">
             <input
               required
               name="studentFirstName"
@@ -116,9 +119,12 @@ export default function StudentOnboardingPage() {
             </label>
           </div>
         </section>
-        <section className="surface-panel rounded-xl p-5">
-          <h3 className="font-semibold">2. Student contact & wellbeing</h3>
-          <div className="learner-form">
+        <section className="surface-panel onboarding-section">
+          <header className="onboarding-section-header">
+            <span>02</span>
+            <div><h3>Student contact</h3><p>Contact and address details</p></div>
+          </header>
+          <div className="onboarding-fields onboarding-fields-2">
             <input
               name="studentEmail"
               type="email"
@@ -132,19 +138,31 @@ export default function StudentOnboardingPage() {
             <input name="studentCity" placeholder="City" />
             <input name="studentState" placeholder="State" />
             <input name="studentPostalCode" placeholder="Postal / PIN code" />
+          </div>
+        </section>
+        <section className="surface-panel onboarding-section">
+          <header className="onboarding-section-header">
+            <span>03</span>
+            <div><h3>Care & wellbeing</h3><p>Visible only to authorised staff</p></div>
+          </header>
+          <div className="onboarding-fields onboarding-fields-2">
             <input name="emergencyContactName" placeholder="Emergency contact name" />
             <input name="emergencyContactPhone" placeholder="Emergency contact phone" />
-            <textarea name="medicalOrAccessibilityNotes" placeholder="Medical or accessibility notes — authorised staff only" />
-            <p className="text-sm text-slate-400">
+            <textarea className="onboarding-span-all" name="medicalOrAccessibilityNotes" placeholder="Medical or accessibility notes" />
+            <p className="onboarding-helper onboarding-span-all">
               {minor
                 ? "Minor student: Parent details and a primary Parent link are required."
                 : "Adult student: Parent details are optional."}
             </p>
           </div>
         </section>
-        <section className="surface-panel rounded-xl p-5 xl:col-span-2">
-          <h3 className="font-semibold">3. Primary Parent</h3>
-          <div className="learner-form">
+        <section className="surface-panel onboarding-section xl:col-span-2">
+          <header className="onboarding-section-header">
+            <span>04</span>
+            <div><h3>Primary Parent</h3><p>Required for a minor; optional for an adult student</p></div>
+          </header>
+          <div className="onboarding-parent-layout">
+            <div className="onboarding-fields onboarding-fields-2">
             <input
               required={minor}
               name="parentFirstName"
@@ -165,6 +183,9 @@ export default function StudentOnboardingPage() {
             <input name="parentAddressLine1" placeholder="Parent address" />
             <input name="parentCity" placeholder="City" />
             <input name="relationship" defaultValue="Parent" />
+            </div>
+            <div className="onboarding-permissions">
+              <p>Parent portal permissions</p>
             <label className="consent-check">
               <input
                 name="allowParentPortalAccess"
@@ -197,9 +218,10 @@ export default function StudentOnboardingPage() {
               <input name="allowLeave" type="checkbox" defaultChecked /> Leave
               requests
             </label>
+            </div>
           </div>
         </section>
-        <section className="surface-panel rounded-xl p-5 xl:col-span-2">
+        <section className="surface-panel onboarding-submit xl:col-span-2">
           <button
             disabled={saving || !academy}
             className="inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-cyan-400 px-5 py-3 font-semibold text-slate-950 hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-50"

@@ -2108,6 +2108,44 @@ html[data-theme="light"] .field-label { color: #475569; }
   font-weight: 700;
   cursor: pointer;
 }
+.student-onboarding-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+.onboarding-section { padding: 20px; }
+.onboarding-section-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.onboarding-section-header > span {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  place-items: center;
+  border-radius: 9px;
+  background: color-mix(in srgb, #22d3ee 18%, var(--ad-surface));
+  color: #22d3ee;
+  font-size: .75rem;
+  font-weight: 800;
+}
+.onboarding-section-header h3 { margin: 0; color: var(--ad-text); font-size: 1rem; font-weight: 750; }
+.onboarding-section-header p, .onboarding-helper { margin: 3px 0 0; color: var(--ad-text-muted); font-size: .8rem; line-height: 1.45; }
+.onboarding-fields { display: grid; gap: 10px; }
+.onboarding-fields-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.onboarding-fields > :is(input, select, textarea) { min-width: 0; }
+.onboarding-fields textarea { min-height: 82px; resize: vertical; }
+.onboarding-span-all { grid-column: 1 / -1; }
+.onboarding-parent-layout { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(250px, .65fr); gap: 18px; }
+.onboarding-permissions { display: grid; align-content: start; gap: 8px; padding-left: 18px; border-left: 1px solid var(--ad-border); }
+.onboarding-permissions > p { margin: 0 0 2px; color: var(--ad-text-muted); font-size: .75rem; font-weight: 750; letter-spacing: .04em; text-transform: uppercase; }
+.onboarding-submit { grid-column: 1 / -1; padding: 14px 20px; }
+@media (max-width: 1024px) { .student-onboarding-form { grid-template-columns: 1fr; } }
+@media (max-width: 640px) { .onboarding-fields-2,.onboarding-parent-layout { grid-template-columns: 1fr; }.onboarding-span-all { grid-column: auto; }.onboarding-permissions { padding-left: 0; padding-top: 16px; border-top: 1px solid var(--ad-border); border-left: 0; } }
 .learner-state {
   padding: 18px;
   border: 1px solid var(--ad-border);
