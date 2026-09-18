@@ -119,6 +119,7 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
             entity.Property(x => x.EmergencyContactPhone).HasMaxLength(30);
             entity.Property(x => x.MedicalOrAccessibilityNotes).HasMaxLength(4000);
             entity.Property(x => x.AdminNotes).HasMaxLength(4000);
+            entity.Property(x => x.AdmissionFeeAmount).HasPrecision(18, 2);
             entity.HasIndex(x => new { x.AcademyId, x.LastName, x.FirstName });
             entity.HasIndex(x => new { x.AcademyId, x.Email });
             entity.HasIndex(x => new { x.AcademyId, x.StudentNumber }).IsUnique().HasFilter("[StudentNumber] IS NOT NULL");

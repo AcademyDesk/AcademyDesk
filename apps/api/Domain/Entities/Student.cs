@@ -9,6 +9,8 @@ public sealed class Student : AcademyEntity
     public string? Gender { get; set; }
     public DateOnly? DateOfBirth { get; set; }
     public DateOnly? AdmissionDate { get; set; }
+    public decimal? AdmissionFeeAmount { get; set; }
+    public DateOnly? AdmissionFeeDueDate { get; set; }
     public string? Email { get; set; }
     public string? Phone { get; set; }
     public string? AddressLine1 { get; set; }

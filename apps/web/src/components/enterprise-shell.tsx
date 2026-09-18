@@ -30,6 +30,8 @@ const navigationGroups: readonly NavigationGroup[] = [
     links: [
       ["Overview", "/students"],
       ["Student onboarding", "/student-onboarding"],
+      ["Student management", "/student-management"],
+      ["Student fee details", "/student-fees"],
     ],
   },
   {
