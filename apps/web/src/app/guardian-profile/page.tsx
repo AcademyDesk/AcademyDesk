@@ -61,9 +61,14 @@ export default function GuardianProfilePage() {
           await academyApi(`/api/academies/${academies[0].id}/guardians`)
         ).json();
         setGuardians(rows);
-        if (rows[0]) {
-          setGuardianId(rows[0].id);
-          await load(rows[0].id, academies[0].id);
+        const requestedId = new URLSearchParams(window.location.search).get(
+          "guardianId",
+        );
+        const selected =
+          rows.find((guardian) => guardian.id === requestedId) ?? rows[0];
+        if (selected) {
+          setGuardianId(selected.id);
+          await load(selected.id, academies[0].id);
         }
         setMessage("");
       } catch {

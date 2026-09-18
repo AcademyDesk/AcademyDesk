@@ -74,9 +74,14 @@ export default function TeacherProfilePage() {
           await academyApi(`/api/academies/${academies[0].id}/teachers`)
         ).json();
         setTeachers(rows);
-        if (rows[0]) {
-          setTeacherId(rows[0].id);
-          await load(rows[0].id, academies[0].id);
+        const requestedId = new URLSearchParams(window.location.search).get(
+          "teacherId",
+        );
+        const selected =
+          rows.find((teacher) => teacher.id === requestedId) ?? rows[0];
+        if (selected) {
+          setTeacherId(selected.id);
+          await load(selected.id, academies[0].id);
         }
         setMessage("");
       } catch {

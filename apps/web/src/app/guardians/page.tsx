@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { WorkspaceNav } from "@/components/workspace-nav";
 import { academyApi, apiHeaders } from "@/lib/api";
@@ -347,6 +348,12 @@ export default function GuardiansPage() {
                       />
                     </div>
                     <div className="mt-3 flex gap-2">
+                      <Link
+                        href={`/guardian-profile?guardianId=${guardian.id}`}
+                        className="rounded-lg border border-slate-700 px-3 py-1.5 text-sm text-cyan-300 hover:border-cyan-400"
+                      >
+                        Open record
+                      </Link>
                       <button
                         onClick={() => void saveGuardian(guardian)}
                         disabled={savingId === guardian.id}
