@@ -11,6 +11,12 @@ namespace AcademyDesk.Api.Security;
 /// </summary>
 public sealed class AcademyAccessFilter(UserManager<ApplicationUser> userManager) : IAsyncActionFilter
 {
+    private static readonly HashSet<string> FinanceControllers = new(StringComparer.Ordinal)
+    {
+        "FeePlansController", "InvoicesController", "PaymentsController", "ExpensesController",
+        "FinanceAdjustmentsController", "FinanceGovernanceController", "FeeRemindersController", "AcademyExportsController"
+    };
+
     public async Task OnActionExecutionAsync(
         ActionExecutingContext context,
         ActionExecutionDelegate next)
@@ -34,16 +40,25 @@ public sealed class AcademyAccessFilter(UserManager<ApplicationUser> userManager
             return;
         }
 
-        // Broad academy endpoints are administration endpoints. Teachers and front-desk
-        // users must use role-scoped endpoints rather than receiving tenant-wide data.
-        if (!await userManager.IsInRoleAsync(user, "Owner") &&
-            !await userManager.IsInRoleAsync(user, "AcademyAdmin") &&
-            !await userManager.IsInRoleAsync(user, "Manager"))
+        var isAdministrator = await userManager.IsInRoleAsync(user, "Owner") ||
+            await userManager.IsInRoleAsync(user, "AcademyAdmin") ||
+            await userManager.IsInRoleAsync(user, "Manager");
+        if (isAdministrator)
         {
-            context.Result = new ForbidResult();
+            await next();
             return;
         }
 
-        await next();
+        var controller = context.Controller.GetType().Name;
+        var collectionTaskRequest = controller == "AdminWorkItemsController" &&
+            (string.Equals(context.HttpContext.Request.Query["type"], "Collections", StringComparison.OrdinalIgnoreCase) ||
+             context.HttpContext.Request.Path.Value?.EndsWith("/collections", StringComparison.OrdinalIgnoreCase) == true);
+        if (await userManager.IsInRoleAsync(user, "FinanceUser") && (FinanceControllers.Contains(controller) || collectionTaskRequest))
+        {
+            await next();
+            return;
+        }
+
+        context.Result = new ForbidResult();
     }
 }

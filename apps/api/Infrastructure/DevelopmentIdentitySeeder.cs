@@ -14,7 +14,7 @@ public static class DevelopmentIdentitySeeder
         var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
         var users = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
         var roles = scope.ServiceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
-        foreach (var role in new[] { "PlatformOwner", "AcademyAdmin", "Teacher", "Student" })
+        foreach (var role in new[] { "PlatformOwner", "AcademyAdmin", "Manager", "FinanceUser", "Teacher", "Student" })
             if (!await roles.RoleExistsAsync(role)) await roles.CreateAsync(new ApplicationRole { Name = role });
 
         var academy = await db.Academies.FirstOrDefaultAsync();

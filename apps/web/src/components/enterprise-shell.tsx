@@ -40,7 +40,11 @@ export function EnterpriseShell({ academyName, userName, userRole, children }: E
   const [query, setQuery] = useState("");
   const [workspaceName, setWorkspaceName] = useState<string>();
   const [account, setAccount] = useState<{ displayName: string; roles: string[] }>();
-  const results = useMemo(() => searchItems.filter(([label]) => label.toLowerCase().includes(query.trim().toLowerCase())).slice(0, 7), [query]);
+  const financeOnly = account?.roles.includes("FinanceUser") && !account.roles.some((role) => ["Owner", "AcademyAdmin", "Manager"].includes(role));
+  const activeNavigationGroups = financeOnly ? navigationGroups.filter((group) => group.label === "Finance") : navigationGroups;
+  const activeAdministrationNavigation = financeOnly ? [] : administrationNavigation;
+  const activeSearchItems = financeOnly ? activeNavigationGroups.flatMap((group) => group.links) : searchItems;
+  const results = useMemo(() => activeSearchItems.filter(([label]) => label.toLowerCase().includes(query.trim().toLowerCase())).slice(0, 7), [query, financeOnly]);
   const resolvedAcademyName = academyName || workspaceName || "Academy workspace";
   const resolvedUserName = userName || account?.displayName || "Academy administrator";
   const resolvedUserRole = userRole || account?.roles?.[0] || "Academy Admin";
@@ -62,8 +66,8 @@ export function EnterpriseShell({ academyName, userName, userRole, children }: E
   return <EnterpriseShellContext.Provider value><div className="enterprise-app-shell">
     <aside className="enterprise-sidebar">
       <Link href="/dashboard" className="enterprise-brand"><span>A</span><strong>AcademyDesk</strong></Link>
-      <nav className="enterprise-nav-section" aria-label="AcademyDesk modules"><p>Workspace</p>{navigationGroups.map((group) => <details key={group.label} className="enterprise-module-group" open={group.links.some(([, href]) => href === pathname)}><summary><i aria-hidden="true">{group.icon}</i><span>{group.label}</span><b aria-hidden="true">⌄</b></summary><div>{group.links.map(([label, href]) => <Link key={href} href={href} data-active={pathname === href}>{label}</Link>)}</div></details>)}</nav>
-      <nav className="enterprise-nav-section enterprise-nav-section-bottom" aria-label="Administration"><p>Administration</p>{administrationNavigation.map(([label, href]) => <Link key={href} href={href} data-active={pathname === href}><i aria-hidden="true">⚙</i>{label}</Link>)}</nav>
+      <nav className="enterprise-nav-section" aria-label="AcademyDesk modules"><p>{financeOnly ? "Finance workspace" : "Workspace"}</p>{activeNavigationGroups.map((group) => <details key={group.label} className="enterprise-module-group" open={group.links.some(([, href]) => href === pathname)}><summary><i aria-hidden="true">{group.icon}</i><span>{group.label}</span><b aria-hidden="true">⌄</b></summary><div>{group.links.map(([label, href]) => <Link key={href} href={href} data-active={pathname === href}>{label}</Link>)}</div></details>)}</nav>
+      {!financeOnly && <nav className="enterprise-nav-section enterprise-nav-section-bottom" aria-label="Administration"><p>Administration</p>{activeAdministrationNavigation.map(([label, href]) => <Link key={href} href={href} data-active={pathname === href}><i aria-hidden="true">⚙</i>{label}</Link>)}</nav>}
     </aside>
     <section className="enterprise-workspace">
       <header className="enterprise-topbar">

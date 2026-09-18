@@ -26,7 +26,7 @@ export default function FinanceGovernancePage() {
       const [adjustmentResponse, collectionsResponse, workResponse] = await Promise.all([
         academyApi(`/api/academies/${id}/finance-adjustments`, { cache: "no-store" }),
         academyApi(`/api/academies/${id}/finance-governance/collections`, { cache: "no-store" }),
-        academyApi(`/api/academies/${id}/admin-work-items`, { cache: "no-store" }),
+        academyApi(`/api/academies/${id}/admin-work-items?type=Collections`, { cache: "no-store" }),
       ]);
       if (!adjustmentResponse.ok || !collectionsResponse.ok || !workResponse.ok) throw new Error();
       setAdjustments(await adjustmentResponse.json()); setCollections(await collectionsResponse.json()); setWorkItems(await workResponse.json()); setNotice("");
