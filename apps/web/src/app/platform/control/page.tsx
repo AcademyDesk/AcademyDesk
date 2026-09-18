@@ -301,25 +301,16 @@ export default function PlatformControlPage() {
   }
 
   useEffect(() => {
-    const syncTabFromAddress = () => {
-      const requestedTab = new URLSearchParams(window.location.search).get(
-        "tab",
-      );
-      if (requestedTab && platformControlTabs.includes(requestedTab))
-        setTab(requestedTab);
-    };
-    syncTabFromAddress();
-    window.addEventListener("popstate", syncTabFromAddress);
-    return () => window.removeEventListener("popstate", syncTabFromAddress);
+    const requestedTab = new URLSearchParams(window.location.search).get("tab");
+    if (requestedTab && platformControlTabs.includes(requestedTab))
+      setTab(requestedTab);
   }, []);
 
   function selectWorkspace(nextTab: (typeof platformControlTabs)[number]) {
     setTab(nextTab);
-    window.history.replaceState(
-      null,
-      "",
-      `/platform/control?tab=${encodeURIComponent(nextTab)}`,
-    );
+    document
+      .querySelector<HTMLElement>(".platform-control-content")
+      ?.scrollTo({ top: 0 });
   }
 
   return (
