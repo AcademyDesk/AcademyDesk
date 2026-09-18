@@ -175,8 +175,8 @@ export default function DashboardPage() {
           <strong>{data.students}</strong>
           <small>
             {data.openLeads
-              ? `${data.openLeads} open leads · Open learner register →`
-              : "Open learner register →"}
+              ? `${data.openLeads} open leads`
+              : "View student records"}
           </small>
         </Link>
         <Link href="/schedule" className="enterprise-kpi">
@@ -187,28 +187,27 @@ export default function DashboardPage() {
               data.todaySchedule.filter((item) => item.status === "Scheduled")
                 .length
             }{" "}
-            scheduled or in progress · Open schedule →
+            scheduled or in progress
           </small>
         </Link>
         <Link href="/attendance" className="enterprise-kpi">
           <span>Attendance rate</span>
           <strong>{attendanceRate}%</strong>
           <small>
-            {data.presentAttendanceLast30Days} present in the last 30 days ·
-            Take attendance →
+            {data.presentAttendanceLast30Days} present in the last 30 days
           </small>
         </Link>
         <Link href="/invoices" className="enterprise-kpi">
           <span>Outstanding fees</span>
           <strong>{formatRupees(data.outstandingBalance)}</strong>
-          <small>Review invoices and payment follow-up →</small>
+          <small>Review invoices and payment follow-up</small>
         </Link>
       </section>
       <section className="enterprise-dashboard-panels">
         <section className="enterprise-data-panel">
           <header className="enterprise-panel-header">
             <h3>Today&apos;s schedule</h3>
-            <Link href="/calendar">View calendar →</Link>
+            <Link href="/calendar">Calendar</Link>
           </header>
           {data.todaySchedule.length === 0 ? (
             <p className="enterprise-empty-row">
@@ -253,7 +252,7 @@ export default function DashboardPage() {
         <section className="enterprise-data-panel">
           <header className="enterprise-panel-header">
             <h3>Recent activity</h3>
-            <Link href="/activity">See all →</Link>
+            <Link href="/activity">Activity log</Link>
           </header>
           <div className="enterprise-activity-list">
             <Link href="/leads" className="enterprise-activity-item">

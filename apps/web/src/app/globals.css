@@ -848,6 +848,18 @@ html[data-theme="light"] [class~="text-red-300"] {
   border: 1px solid var(--ad-border);
   border-radius: clamp(12px, 0.78vw, 16px);
   background: var(--ad-surface);
+  color: var(--ad-text);
+  text-decoration: none;
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+.enterprise-kpi:hover {
+  border-color: var(--ad-accent);
+  box-shadow: 0 12px 28px color-mix(in srgb, var(--ad-accent) 14%, transparent);
+  transform: translateY(-2px);
+}
+.enterprise-kpi:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--ad-accent) 45%, transparent);
+  outline-offset: 3px;
 }
 .enterprise-kpi > span,
 .enterprise-kpi > strong,
@@ -900,9 +912,20 @@ html[data-theme="light"] [class~="text-red-300"] {
   letter-spacing: -0.025em;
 }
 .enterprise-panel-header a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 6px 10px;
+  border: 1px solid var(--ad-border-strong);
+  border-radius: 8px;
   color: var(--ad-accent);
-  font-size: 0.9rem;
-  font-weight: 650;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+.enterprise-panel-header a:hover {
+  border-color: var(--ad-accent);
+  background: var(--ad-accent-soft);
 }
 .enterprise-schedule-table {
   width: 100%;
@@ -1070,6 +1093,24 @@ html[data-theme="light"] .field-label { color: #475569; }
 .enterprise-workspace main:not(.enterprise-settings) a:is(.rounded-lg, .rounded-xl, .rounded-2xl)[class*="bg-"]:focus-visible {
   outline: 3px solid color-mix(in srgb, var(--ad-accent) 45%, transparent);
   outline-offset: 3px;
+}
+.enterprise-workspace main:not(.enterprise-settings) :is(button, a).text-cyan-300 {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 6px 10px;
+  border: 1px solid var(--ad-border-strong);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ad-accent) !important;
+  font-size: .8rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+.enterprise-workspace main:not(.enterprise-settings) :is(button, a).text-cyan-300:hover {
+  border-color: var(--ad-accent);
+  background: var(--ad-accent-soft);
 }
 .enterprise-page-header p,
 .enterprise-page-header h2,
