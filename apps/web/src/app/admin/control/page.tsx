@@ -16,7 +16,6 @@ type ControlCard = {
   title: string;
   description: string;
   href: string;
-  action: string;
 };
 const groups: { title: string; cards: ControlCard[] }[] = [
   {
@@ -27,28 +26,24 @@ const groups: { title: string; cards: ControlCard[] }[] = [
         description:
           "Create staff accounts, link teacher records, reset access and manage roles.",
         href: "/staff",
-        action: "Open staff →",
       },
       {
         title: "Teachers and teaching profiles",
         description:
           "Manage teachers, specialisms and their teaching assignments.",
         href: "/teachers",
-        action: "Open teachers →",
       },
       {
         title: "Family and portal access",
         description:
           "Link parents and create student or parent portal accounts.",
         href: "/portal-accounts",
-        action: "Open portal accounts →",
       },
       {
         title: "Student records",
         description:
           "Manage student records and connected academic information.",
         href: "/students",
-        action: "Open student management →",
       },
     ],
   },
@@ -60,28 +55,24 @@ const groups: { title: string; cards: ControlCard[] }[] = [
         description:
           "Control courses, curriculum modules, lesson plans and learning resources.",
         href: "/courses",
-        action: "Open academics →",
       },
       {
         title: "Batches and enrolments",
         description:
           "Place students, control batch capacity and keep academic participation current.",
         href: "/enrollments",
-        action: "Open enrolments →",
       },
       {
         title: "Schedule and attendance",
         description:
           "Run the daily timetable, attendance, leave, make-ups and holidays.",
         href: "/schedule",
-        action: "Open schedule →",
       },
       {
         title: "Assessment and certificates",
         description:
           "Manage assessments, results, music progress and achievement records.",
         href: "/assessments",
-        action: "Open assessments →",
       },
     ],
   },
@@ -93,28 +84,24 @@ const groups: { title: string; cards: ControlCard[] }[] = [
         description:
           "Set fee plans, manage invoices, payments, reminders and expenses.",
         href: "/finance",
-        action: "Open finance →",
       },
       {
         title: "Communication controls",
         description:
           "Configure channels, templates, preferences and operational messages.",
         href: "/communication-settings",
-        action: "Open communications →",
       },
       {
         title: "Branches and academy calendar",
         description:
           "Manage branches, regional holidays, events and operating calendar.",
         href: "/branches",
-        action: "Open branches →",
       },
       {
         title: "Audit and reports",
         description:
           "Review changes, exports and academy-wide operating reports.",
         href: "/reports",
-        action: "Open reporting →",
       },
     ],
   },
@@ -266,10 +253,6 @@ export default function AcademyControlPage() {
                   <h3>{card.title}</h3>
                   <p>{card.description}</p>
                 </div>
-                <footer>
-                  <small>Scoped to this academy</small>
-                  <b>{card.action}</b>
-                </footer>
               </Link>
             ))}
           </div>
