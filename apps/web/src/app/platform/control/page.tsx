@@ -301,10 +301,26 @@ export default function PlatformControlPage() {
   }
 
   useEffect(() => {
-    const requestedTab = new URLSearchParams(window.location.search).get("tab");
-    if (requestedTab && platformControlTabs.includes(requestedTab))
-      setTab(requestedTab);
+    const syncTabFromAddress = () => {
+      const requestedTab = new URLSearchParams(window.location.search).get(
+        "tab",
+      );
+      if (requestedTab && platformControlTabs.includes(requestedTab))
+        setTab(requestedTab);
+    };
+    syncTabFromAddress();
+    window.addEventListener("popstate", syncTabFromAddress);
+    return () => window.removeEventListener("popstate", syncTabFromAddress);
   }, []);
+
+  function selectWorkspace(nextTab: (typeof platformControlTabs)[number]) {
+    setTab(nextTab);
+    window.history.replaceState(
+      null,
+      "",
+      `/platform/control?tab=${encodeURIComponent(nextTab)}`,
+    );
+  }
 
   return (
     <main className="platform-shell">
@@ -315,19 +331,24 @@ export default function PlatformControlPage() {
         </div>
         <nav className="platform-nav" aria-label="Platform navigation">
           <p>Platform</p>
-          {platformLinks.map((item) => (
-            <Link
-              href={item.href}
-              key={item.label}
-              data-active={"tab" in item && item.tab === tab}
-              onClick={() => {
-                if ("tab" in item) setTab(item.tab);
-              }}
-            >
-              <i>{item.icon}</i>
-              {item.label}
-            </Link>
-          ))}
+          {platformLinks.map((item) =>
+            "tab" in item ? (
+              <button
+                type="button"
+                key={item.label}
+                data-active={item.tab === tab}
+                onClick={() => selectWorkspace(item.tab)}
+              >
+                <i>{item.icon}</i>
+                {item.label}
+              </button>
+            ) : (
+              <Link href={item.href} key={item.label} data-active={false}>
+                <i>{item.icon}</i>
+                {item.label}
+              </Link>
+            ),
+          )}
         </nav>
       </aside>
       <section className="platform-workspace">
