@@ -28,10 +28,10 @@ const navigationGroups: readonly NavigationGroup[] = [
     label: "Students",
     icon: "♙",
     links: [
-      ["Overview", "/students"],
       ["Student onboarding", "/student-onboarding"],
-      ["Student management", "/student-management"],
+      ["Student management", "/students"],
       ["Student fee details", "/student-fees"],
+      ["Student overview", "/student-management"],
     ],
   },
   {

@@ -9,6 +9,25 @@ namespace AcademyDesk.Api.Controllers;
 [Route("api/academies/{academyId:guid}/students/{studentId:guid}/fee-arrangements")]
 public sealed class StudentFeeArrangementsController(AcademyDeskDbContext db) : ControllerBase
 {
+    [HttpGet("admission-fee")]
+    public async Task<ActionResult> AdmissionFee(Guid academyId, Guid studentId, CancellationToken token)
+    {
+        var student = await db.Students.AsNoTracking().SingleOrDefaultAsync(x => x.AcademyId == academyId && x.Id == studentId, token);
+        return student is null ? NotFound() : Ok(new AdmissionFeeSummary(student.AdmissionFeeAmount, student.AdmissionFeeDueDate));
+    }
+
+    [HttpPut("admission-fee")]
+    public async Task<ActionResult> UpdateAdmissionFee(Guid academyId, Guid studentId, AdmissionFeeRequest request, CancellationToken token)
+    {
+        if (request.Amount is < 0 || (request.DueDate is not null && request.Amount is null)) return BadRequest(new { message = "Enter a non-negative admission fee before setting its due date." });
+        var student = await db.Students.SingleOrDefaultAsync(x => x.AcademyId == academyId && x.Id == studentId, token);
+        if (student is null) return NotFound();
+        student.AdmissionFeeAmount = request.Amount;
+        student.AdmissionFeeDueDate = request.DueDate;
+        await db.SaveChangesAsync(token);
+        return Ok(new AdmissionFeeSummary(student.AdmissionFeeAmount, student.AdmissionFeeDueDate));
+    }
+
     [HttpGet]
     public async Task<ActionResult> List(Guid academyId, Guid studentId, CancellationToken token) => Ok(await db.StudentFeeArrangements.AsNoTracking().Where(x => x.AcademyId == academyId && x.StudentId == studentId).OrderByDescending(x => x.EffectiveFrom).Select(x => new FeeArrangementSummary(x.Id, x.CourseId, x.SubjectName, x.Amount, x.Frequency, x.EffectiveFrom, x.EffectiveTo, x.IsActive)).ToListAsync(token));
 
@@ -25,3 +44,5 @@ public sealed class StudentFeeArrangementsController(AcademyDeskDbContext db) : 
 }
 public sealed record FeeArrangementRequest(Guid? CourseId, string SubjectName, decimal Amount, string Frequency, DateOnly? EffectiveFrom);
 public sealed record FeeArrangementSummary(Guid Id, Guid? CourseId, string SubjectName, decimal Amount, string Frequency, DateOnly EffectiveFrom, DateOnly? EffectiveTo, bool IsActive);
+public sealed record AdmissionFeeRequest(decimal? Amount, DateOnly? DueDate);
+public sealed record AdmissionFeeSummary(decimal? Amount, DateOnly? DueDate);

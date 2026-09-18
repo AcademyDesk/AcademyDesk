@@ -3,19 +3,11 @@ import { FormEvent, useEffect, useState } from "react";
 import { academyApi, apiHeaders } from "@/lib/api";
 
 type Academy = { id: string };
-type FeeDraft = {
-  subjectName: string;
-  amount: string;
-  frequency: string;
-};
 export default function StudentOnboardingPage() {
   const [academy, setAcademy] = useState<Academy>();
   const [dob, setDob] = useState("");
   const [message, setMessage] = useState("Loading onboarding…");
   const [saving, setSaving] = useState(false);
-  const [subjectFees, setSubjectFees] = useState<FeeDraft[]>([
-    { subjectName: "", amount: "", frequency: "Monthly" },
-  ]);
   const minor =
     !!dob &&
     new Date(dob) >
@@ -35,13 +27,6 @@ export default function StudentOnboardingPage() {
     setSaving(true);
     const form = new FormData(event.currentTarget);
     const body = Object.fromEntries(form) as Record<string, unknown>;
-    body.feeArrangements = subjectFees
-      .filter((item) => item.subjectName.trim() || item.amount)
-      .map((item) => ({
-        subjectName: item.subjectName.trim(),
-        amount: Number(item.amount),
-        frequency: item.frequency,
-      }));
     for (const name of [
       "allowParentPortalAccess",
       "allowAcademicProgress",
@@ -64,7 +49,6 @@ export default function StudentOnboardingPage() {
         throw new Error(result?.message || "Onboarding could not be saved.");
       event.currentTarget.reset();
       setDob("");
-      setSubjectFees([{ subjectName: "", amount: "", frequency: "Monthly" }]);
       setMessage(
         `Student onboarded. ${result.parentAccountCreated ? "Parent account created." : ""} ${result.studentAccountCreated ? "Student account created." : ""}`,
       );
@@ -193,88 +177,10 @@ export default function StudentOnboardingPage() {
           </div>
         </section>
         <section className="surface-panel rounded-xl p-5 xl:col-span-2">
-          <header className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h3 className="font-semibold">3. Fees at admission</h3>
-              <p className="mt-1 text-sm text-slate-400">
-                Capture the one-time admission fee and every subject this student
-                will pay for. Subject fees can differ by subject and billing cycle.
-              </p>
-            </div>
-            <button
-              type="button"
-              className="rounded border border-slate-700 px-3 py-2 text-sm"
-              onClick={() =>
-                setSubjectFees((items) => [
-                  ...items,
-                  { subjectName: "", amount: "", frequency: "Monthly" },
-                ])
-              }
-            >
-              Add subject fee
-            </button>
-          </header>
-          <div className="learner-form mt-5">
-            <label className="field-label">
-              One-time admission fee (optional)
-              <input name="admissionFeeAmount" type="number" min="0" step="0.01" placeholder="Amount" />
-            </label>
-            <label className="field-label">
-              Admission fee due date (optional)
-              <input name="admissionFeeDueDate" type="date" />
-            </label>
-          </div>
-          <div className="mt-5 space-y-3">
-            {subjectFees.map((item, index) => (
-              <div key={index} className="grid gap-3 rounded-lg border border-slate-700 p-3 md:grid-cols-[1fr_160px_160px_auto]">
-                <input
-                  value={item.subjectName}
-                  onChange={(event) =>
-                    setSubjectFees((items) => items.map((current, currentIndex) =>
-                      currentIndex === index ? { ...current, subjectName: event.target.value } : current,
-                    ))
-                  }
-                  placeholder="Subject, e.g. Piano"
-                />
-                <input
-                  value={item.amount}
-                  onChange={(event) =>
-                    setSubjectFees((items) => items.map((current, currentIndex) =>
-                      currentIndex === index ? { ...current, amount: event.target.value } : current,
-                    ))
-                  }
-                  type="number"
-                  min="1"
-                  step="0.01"
-                  placeholder="Fee amount"
-                />
-                <select
-                  value={item.frequency}
-                  onChange={(event) =>
-                    setSubjectFees((items) => items.map((current, currentIndex) =>
-                      currentIndex === index ? { ...current, frequency: event.target.value } : current,
-                    ))
-                  }
-                >
-                  <option>Monthly</option>
-                  <option>Quarterly</option>
-                  <option value="HalfYearly">Half-yearly</option>
-                  <option>Annual</option>
-                </select>
-                <button
-                  type="button"
-                  disabled={subjectFees.length === 1}
-                  className="rounded border border-slate-700 px-3 py-2 text-sm disabled:opacity-40"
-                  onClick={() => setSubjectFees((items) => items.filter((_, currentIndex) => currentIndex !== index))}
-                >
-                  Remove
-                </button>
-              </div>
-            ))}
-          </div>
-        </section>
-        <section className="surface-panel rounded-xl p-5 xl:col-span-2">
-          <button disabled={saving || !academy}>
+          <button
+            disabled={saving || !academy}
+            className="inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-cyan-400 px-5 py-3 font-semibold text-slate-950 hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-50"
+          >
             {saving ? "Creating…" : "Complete onboarding"}
           </button>
         </section>

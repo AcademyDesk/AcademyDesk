@@ -88,7 +88,7 @@ export default function StudentsPage() {
     <main className="enterprise-settings">
       <header className="enterprise-page-header">
         <p>Learners & families / register</p>
-        <h2>Student overview</h2>
+        <h2>Student management</h2>
         <span>
           Search, review and act on every learner. Use the 360 record to connect
           family, enrolment, attendance, fees, learning, and communications.
