@@ -87,6 +87,14 @@ textarea {
 .platform-shell table {
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
+.enterprise-app-shell,
+.enterprise-app-shell *,
+.enterprise-nav,
+.enterprise-nav *,
+.enterprise-settings,
+.enterprise-settings * {
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
 button,
 a,
 input,
