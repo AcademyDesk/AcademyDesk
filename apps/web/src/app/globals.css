@@ -70,6 +70,15 @@ select,
 textarea {
   font: inherit;
 }
+.platform-shell,
+.platform-shell *,
+.platform-shell button,
+.platform-shell input,
+.platform-shell select,
+.platform-shell textarea,
+.platform-shell table {
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
 button,
 a,
 input,

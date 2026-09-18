@@ -378,9 +378,6 @@ export default function PlatformControlPage() {
         <div className="platform-content platform-control-content">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <h1 className="platform-workspace-title">{tab}</h1>
-            <Link href="/platform" className="text-sm text-cyan-300">
-              ← Academies
-            </Link>
           </div>
           {message && (
             <p className="mt-4 rounded-lg border border-slate-700 bg-slate-900 p-3 text-sm text-slate-300">
