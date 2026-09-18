@@ -10,4 +10,5 @@ public sealed class FinanceAdjustment : AcademyEntity
     public string Status { get; set; } = "PendingApproval";
     public DateTime? ApprovedAtUtc { get; set; }
     public string? ApprovalNotes { get; set; }
+    public DateTime? AppliedAtUtc { get; set; }
 }
