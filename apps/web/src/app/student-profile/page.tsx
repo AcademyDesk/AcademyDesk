@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { academyApi } from "@/lib/api";
 import { StudentAdminProfile } from "@/components/student-admin-profile";
+import { StudentFeeArrangements } from "@/components/student-fee-arrangements";
 
 type Student = {
   id: string;
@@ -30,7 +31,7 @@ type Profile = {
   guardians?: unknown[];
   enrollments?: unknown[];
   attendance?: unknown[];
-  invoices?: { totalAmount?: number; status?: string }[];
+  invoices?: { totalAmount?: number; status?: string; dueDate?: string }[];
   musicProgress?: unknown[];
   practiceLogs?: unknown[];
   communications?: unknown[];
@@ -112,6 +113,13 @@ export default function StudentProfilePage() {
   const outstanding = (profile?.invoices ?? [])
     .filter((item) => item.status !== "Paid")
     .reduce((sum, item) => sum + (item.totalAmount ?? 0), 0);
+  const today = new Date().toISOString().slice(0, 10);
+  const upcoming = (profile?.invoices ?? [])
+    .filter((item) => item.status !== "Paid" && (item.dueDate ?? "") >= today)
+    .reduce((sum, item) => sum + (item.totalAmount ?? 0), 0);
+  const overdue = (profile?.invoices ?? [])
+    .filter((item) => item.status !== "Paid" && (item.dueDate ?? "") < today)
+    .reduce((sum, item) => sum + (item.totalAmount ?? 0), 0);
   return (
     <main className="enterprise-settings">
       <header className="enterprise-page-header">
@@ -170,7 +178,10 @@ export default function StudentProfilePage() {
               <strong className="text-3xl">
                 ₹{outstanding.toLocaleString("en-IN")}
               </strong>
-              <p className="mt-2 text-slate-400">Outstanding invoices</p>
+              <p className="mt-2 text-slate-400">
+                ₹{upcoming.toLocaleString("en-IN")} upcoming · ₹
+                {overdue.toLocaleString("en-IN")} overdue
+              </p>
             </DetailPanel>
             <DetailPanel title="Family" href="/guardians">
               <strong className="text-3xl">{count(profile.guardians)}</strong>
@@ -187,6 +198,10 @@ export default function StudentProfilePage() {
               }
             />
             <div className="space-y-5">
+              <StudentFeeArrangements
+                academyId={academyId}
+                studentId={studentId}
+              />
               <DetailPanel title="Learning progress" href="/music">
                 <p>{count(profile.musicProgress)} music progress records</p>
                 <p className="mt-2">
