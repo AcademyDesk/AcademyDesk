@@ -182,22 +182,38 @@ export default function TeachersPage() {
         <p className="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-300">
           People
         </p>
-        <h1 className="mt-3 text-4xl font-semibold tracking-tight">
-          Teachers and instructors
-        </h1>
-        <p className="mt-3 text-slate-300">
-          Add the people who teach your music, tuition, or coaching programs.
-        </p>
+        <h1 className="mt-3 text-4xl font-semibold tracking-tight">Teachers</h1>
         {message && (
           <p className="mt-6 rounded-lg border border-amber-700/50 bg-amber-950/40 p-4 text-sm text-amber-100">
             {message}
           </p>
         )}
-        <section className="mt-8 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-          <form
-            onSubmit={createTeacher}
-            className="rounded-2xl border border-slate-800 bg-slate-900 p-6"
+        <section className="mt-8 grid gap-4 sm:grid-cols-3">
+          <article className="surface-panel rounded-xl p-5">
+            <p className="text-sm text-slate-400">Active teachers</p>
+            <p className="mt-2 text-3xl font-semibold">
+              {teachers.filter((teacher) => teacher.isActive).length}
+            </p>
+          </article>
+          <article className="surface-panel rounded-xl p-5">
+            <p className="text-sm text-slate-400">Payment cycle</p>
+            <p className="mt-2 font-semibold">Monthly</p>
+            <p className="mt-1 text-sm text-slate-400">
+              Compensation due at month end
+            </p>
+          </article>
+          <Link
+            href="/teacher-onboarding"
+            className="surface-panel rounded-xl p-5 transition hover:border-cyan-400"
           >
+            <p className="text-sm text-slate-400">New teacher</p>
+            <p className="mt-2 font-semibold text-cyan-300">
+              Open onboarding →
+            </p>
+          </Link>
+        </section>
+        <section className="mt-6 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+          <form onSubmit={createTeacher} className="hidden">
             <h2 className="text-xl font-semibold">Add teacher</h2>
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               <input

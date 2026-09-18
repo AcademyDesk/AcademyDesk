@@ -176,35 +176,10 @@ export default function StudentOnboardingPage() {
             </label>
           </div>
         </section>
-        <section className="surface-panel rounded-xl p-5">
-          <h3 className="font-semibold">3. Student portal access</h3>
-          <div className="learner-form">
-            <input
-              name="studentUserName"
-              placeholder="Unique student username"
-            />
-            <input
-              name="studentTemporaryPassword"
-              type="password"
-              minLength={6}
-              placeholder="Temporary password"
-            />
-          </div>
-        </section>
-        <section className="surface-panel rounded-xl p-5">
-          <h3 className="font-semibold">4. Parent portal access</h3>
-          <div className="learner-form">
-            <input name="parentUserName" placeholder="Unique parent username" />
-            <input
-              name="parentTemporaryPassword"
-              type="password"
-              minLength={6}
-              placeholder="Temporary password"
-            />
-            <button disabled={saving || !academy}>
-              {saving ? "Creating…" : "Complete onboarding"}
-            </button>
-          </div>
+        <section className="surface-panel rounded-xl p-5 xl:col-span-2">
+          <button disabled={saving || !academy}>
+            {saving ? "Creating…" : "Complete onboarding"}
+          </button>
         </section>
       </form>
     </main>

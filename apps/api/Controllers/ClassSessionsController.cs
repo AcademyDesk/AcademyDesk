@@ -22,6 +22,7 @@ public sealed class ClassSessionsController(AcademyDeskDbContext dbContext) : Co
     [HttpPost]
     public async Task<ActionResult<ClassSessionSummary>> Create(Guid academyId, CreateClassSessionRequest request, CancellationToken cancellationToken)
     {
+        if (new[] { "Online", "Hybrid" }.Contains(request.DeliveryMode, StringComparer.OrdinalIgnoreCase) && string.IsNullOrWhiteSpace(request.RoomName)) return BadRequest(new { message = "A meeting link is required for online and hybrid classes." });
         if (!await dbContext.Batches.AnyAsync(x => x.Id == request.BatchId && x.AcademyId == academyId, cancellationToken)) return BadRequest(new { message = "The selected batch does not belong to this academy." });
         if (request.EndUtc <= request.StartUtc) return BadRequest(new { message = "End time must be after start time." });
         if (request.TeacherId.HasValue && !await dbContext.Teachers.AnyAsync(x => x.Id == request.TeacherId && x.AcademyId == academyId, cancellationToken)) return BadRequest(new { message = "The selected teacher does not belong to this academy." });
@@ -37,6 +38,7 @@ public sealed class ClassSessionsController(AcademyDeskDbContext dbContext) : Co
     [HttpPut("{sessionId:guid}")]
     public async Task<ActionResult<ClassSessionSummary>> Update(Guid academyId, Guid sessionId, UpdateClassSessionRequest request, CancellationToken token)
     {
+        if (new[] { "Online", "Hybrid" }.Contains(request.DeliveryMode, StringComparer.OrdinalIgnoreCase) && string.IsNullOrWhiteSpace(request.RoomName)) return BadRequest(new { message = "A meeting link is required for online and hybrid classes." });
         var session = await dbContext.ClassSessions.SingleOrDefaultAsync(x => x.Id == sessionId && x.AcademyId == academyId, token);
         if (session is null) return NotFound();
         if (request.EndUtc <= request.StartUtc) return BadRequest(new { message = "End time must be after the start time." });
