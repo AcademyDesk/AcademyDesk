@@ -2332,6 +2332,7 @@ html[data-theme="light"] .field-label { color: #475569; }
 }
 .teacher-remove-button { color: var(--ad-text-muted); }
 .teacher-rate-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.teacher-onboarding-action { grid-column: 1 / -1; }
 .teacher-onboarding-submit {
   width: 100%;
   min-height: 42px;

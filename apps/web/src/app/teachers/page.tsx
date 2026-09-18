@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
-import { WorkspaceNav } from "@/components/workspace-nav";
 import { academyApi, apiHeaders } from "@/lib/api";
 
 type Academy = { id: string; name: string };
@@ -182,13 +181,13 @@ export default function TeachersPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100">
-      <WorkspaceNav />
-      <div className="mx-auto max-w-6xl px-6 py-10">
-        <p className="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-300">
-          People
-        </p>
-        <h1 className="mt-3 text-4xl font-semibold tracking-tight">Teachers</h1>
+    <main className="enterprise-settings">
+      <div className="mx-auto max-w-6xl py-6">
+        <header className="enterprise-page-header">
+          <p>Teachers / management</p>
+          <h2>Teacher management</h2>
+          <span>Manage core teacher records, active status, and open Teacher 360.</span>
+        </header>
         {message && (
           <p className="mt-6 rounded-lg border border-amber-700/50 bg-amber-950/40 p-4 text-sm text-amber-100">
             {message}

@@ -39,9 +39,11 @@ const navigationGroups: readonly NavigationGroup[] = [
     label: "Teachers",
     icon: "♜",
     links: [
-      ["Overview", "/teachers"],
+      ["Overview", "/teacher-overview"],
       ["Teacher onboarding", "/teacher-onboarding"],
-      ["Leave", "/leave"],
+      ["Teacher management", "/teachers"],
+      ["Teacher payment details", "/teacher-payments"],
+      ["Teacher 360", "/teacher-profile"],
     ],
   },
   {

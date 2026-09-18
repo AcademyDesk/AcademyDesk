@@ -10,7 +10,6 @@ const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
 export default function TeacherOnboardingPage() {
   const [academy, setAcademy] = useState<Academy>();
   const [employmentType, setEmploymentType] = useState("Full-time");
-  const [payModel, setPayModel] = useState<"Monthly" | "Hourly">("Monthly");
   const [subjects, setSubjects] = useState<SubjectEntry[]>([{ subject: "", certification: "" }]);
   const [message, setMessage] = useState("Loading teacher onboarding…");
   const [saving, setSaving] = useState(false);
@@ -50,19 +49,9 @@ export default function TeacherOnboardingPage() {
         to: form.get(`to-${day}`),
       }))
       .filter((row) => row.available);
-    const compensation = {
-      model: payModel,
-      baseMonthlySalary: payModel === "Monthly" ? form.get("baseMonthlySalary") : null,
-      baseHourlyRate: payModel === "Hourly" ? form.get("baseHourlyRate") : null,
-      beginnerHourlyRate: payModel === "Hourly" ? form.get("beginnerHourlyRate") : null,
-      intermediateHourlyRate: payModel === "Hourly" ? form.get("intermediateHourlyRate") : null,
-      advancedHourlyRate: payModel === "Hourly" ? form.get("advancedHourlyRate") : null,
-      effectiveFrom: form.get("effectiveFrom"),
-    };
     const body = Object.fromEntries(form) as Record<string, FormDataEntryValue>;
     body.specialties = subjectEntries.map(({ subject }) => subject).join(", ");
     body.availabilityJson = JSON.stringify(availability);
-    body.compensationJson = JSON.stringify(compensation);
     body.certificationsJson = JSON.stringify(subjectEntries);
 
     try {
@@ -75,9 +64,8 @@ export default function TeacherOnboardingPage() {
       if (!response.ok) throw new Error(result?.message ?? "Teacher could not be created.");
       event.currentTarget.reset();
       setEmploymentType("Full-time");
-      setPayModel("Monthly");
       setSubjects([{ subject: "", certification: "" }]);
-      setMessage("Teacher onboarded. Subjects, credentials, availability, and compensation are recorded.");
+      setMessage("Teacher onboarded. Add payment details from the Teacher payment details section.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Teacher could not be created.");
     } finally {
@@ -131,18 +119,7 @@ export default function TeacherOnboardingPage() {
           </div>
         </section>
 
-        <section className="surface-panel onboarding-section">
-          <div className="onboarding-section-header"><span>04</span><div><h3>Compensation</h3><p>One pay model per teacher, effective from the selected date</p></div></div>
-          <div className="onboarding-fields">
-            <select name="payModel" value={payModel} onChange={(event) => setPayModel(event.target.value as "Monthly" | "Hourly")}><option value="Monthly">Monthly salary</option><option value="Hourly">Hourly rates</option></select>
-            {payModel === "Monthly" ? <input required name="baseMonthlySalary" type="number" min="0" step="0.01" placeholder="Monthly salary" /> : <>
-              <input required name="baseHourlyRate" type="number" min="0" step="0.01" placeholder="Standard hourly rate" />
-              <div className="teacher-rate-grid onboarding-span-all"><input name="beginnerHourlyRate" type="number" min="0" step="0.01" placeholder="Beginner rate (optional)" /><input name="intermediateHourlyRate" type="number" min="0" step="0.01" placeholder="Intermediate rate (optional)" /><input name="advancedHourlyRate" type="number" min="0" step="0.01" placeholder="Advanced rate (optional)" /></div>
-            </>}
-            <label className="field-label">Effective from<input type="date" name="effectiveFrom" required /></label>
-          </div>
-          <button className="teacher-onboarding-submit" disabled={saving || !academy}>{saving ? "Saving…" : "Complete teacher onboarding"}</button>
-        </section>
+        <div className="teacher-onboarding-action"><button className="teacher-onboarding-submit" disabled={saving || !academy}>{saving ? "Saving…" : "Complete teacher onboarding"}</button></div>
       </form>
     </main>
   );
