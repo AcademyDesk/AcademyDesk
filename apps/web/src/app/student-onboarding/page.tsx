@@ -91,6 +91,15 @@ export default function StudentOnboardingPage() {
               name="studentLastName"
               placeholder="Student last name"
             />
+            <input name="studentNumber" placeholder="Student number (optional)" />
+            <input name="preferredName" placeholder="Preferred name (optional)" />
+            <select name="gender" defaultValue="">
+              <option value="">Gender (optional)</option>
+              <option>Female</option>
+              <option>Male</option>
+              <option>Non-binary</option>
+              <option>Prefer not to say</option>
+            </select>
             <label className="field-label">
               Date of birth (DOB)
               <input
@@ -101,26 +110,40 @@ export default function StudentOnboardingPage() {
                 onChange={(event) => setDob(event.target.value)}
               />
             </label>
-            <input name="studentAddressLine1" placeholder="Student address" />
-            <input name="studentCity" placeholder="Student city" />
-            <p className="text-sm text-slate-400">
-              {minor
-                ? "Minor student: Parent details and primary Parent link are required."
-                : "Adult student: Parent details are optional."}
-            </p>
-            <input
-              name="studentEmail"
-              type="email"
-              placeholder="Student email (adult student)"
-            />
-            <input
-              name="studentPhone"
-              placeholder="Student phone (adult student)"
-            />
+            <label className="field-label">
+              Admission date
+              <input name="admissionDate" type="date" />
+            </label>
           </div>
         </section>
         <section className="surface-panel rounded-xl p-5">
-          <h3 className="font-semibold">2. Primary Parent</h3>
+          <h3 className="font-semibold">2. Student contact & wellbeing</h3>
+          <div className="learner-form">
+            <input
+              name="studentEmail"
+              type="email"
+              placeholder="Student email (optional)"
+            />
+            <input
+              name="studentPhone"
+              placeholder="Student phone (optional)"
+            />
+            <input name="studentAddressLine1" placeholder="Student address" />
+            <input name="studentCity" placeholder="City" />
+            <input name="studentState" placeholder="State" />
+            <input name="studentPostalCode" placeholder="Postal / PIN code" />
+            <input name="emergencyContactName" placeholder="Emergency contact name" />
+            <input name="emergencyContactPhone" placeholder="Emergency contact phone" />
+            <textarea name="medicalOrAccessibilityNotes" placeholder="Medical or accessibility notes — authorised staff only" />
+            <p className="text-sm text-slate-400">
+              {minor
+                ? "Minor student: Parent details and a primary Parent link are required."
+                : "Adult student: Parent details are optional."}
+            </p>
+          </div>
+        </section>
+        <section className="surface-panel rounded-xl p-5 xl:col-span-2">
+          <h3 className="font-semibold">3. Primary Parent</h3>
           <div className="learner-form">
             <input
               required={minor}

@@ -23,11 +23,7 @@ public sealed class StudentOnboardingController(AcademyDeskDbContext db, UserMan
         var isMinor = request.DateOfBirth.Value.AddYears(18) > DateOnly.FromDateTime(DateTime.UtcNow);
         if (isMinor && (string.IsNullOrWhiteSpace(request.ParentFirstName) || string.IsNullOrWhiteSpace(request.ParentLastName) || string.IsNullOrWhiteSpace(request.ParentEmail))) return BadRequest(new { message = "A parent name and email are required for a minor student." });
         await using var transaction = await db.Database.BeginTransactionAsync(token);
-        if (request.AdmissionFeeAmount is < 0) return BadRequest(new { message = "Admission fee cannot be negative." });
-        var validFrequencies = new[] { "Monthly", "Quarterly", "HalfYearly", "Annual" };
-        var feeArrangements = request.FeeArrangements?.Where(x => !string.IsNullOrWhiteSpace(x.SubjectName) || x.Amount > 0).ToList() ?? [];
-        if (feeArrangements.Any(x => string.IsNullOrWhiteSpace(x.SubjectName) || x.Amount <= 0 || !validFrequencies.Contains(x.Frequency))) return BadRequest(new { message = "Each subject fee needs a subject, positive amount, and billing frequency." });
-        var student = new Student { AcademyId = academyId, FirstName = request.StudentFirstName.Trim(), LastName = request.StudentLastName.Trim(), DateOfBirth = request.DateOfBirth, Email = isMinor ? null : request.StudentEmail?.Trim(), Phone = isMinor ? null : request.StudentPhone?.Trim(), AddressLine1 = request.StudentAddressLine1?.Trim(), City = request.StudentCity?.Trim(), BranchId = request.BranchId, AdmissionFeeAmount = request.AdmissionFeeAmount, AdmissionFeeDueDate = request.AdmissionFeeDueDate };
+        var student = new Student { AcademyId = academyId, FirstName = request.StudentFirstName.Trim(), LastName = request.StudentLastName.Trim(), StudentNumber = request.StudentNumber?.Trim(), PreferredName = request.PreferredName?.Trim(), Gender = request.Gender?.Trim(), DateOfBirth = request.DateOfBirth, AdmissionDate = request.AdmissionDate ?? DateOnly.FromDateTime(DateTime.UtcNow), Email = request.StudentEmail?.Trim(), Phone = request.StudentPhone?.Trim(), AddressLine1 = request.StudentAddressLine1?.Trim(), City = request.StudentCity?.Trim(), State = request.StudentState?.Trim(), PostalCode = request.StudentPostalCode?.Trim(), EmergencyContactName = request.EmergencyContactName?.Trim(), EmergencyContactPhone = request.EmergencyContactPhone?.Trim(), MedicalOrAccessibilityNotes = request.MedicalOrAccessibilityNotes?.Trim(), BranchId = request.BranchId };
         db.Students.Add(student);
         Guardian? parent = null;
         if (!string.IsNullOrWhiteSpace(request.ParentFirstName))
@@ -36,11 +32,6 @@ public sealed class StudentOnboardingController(AcademyDeskDbContext db, UserMan
             db.Guardians.Add(parent);
         }
         await db.SaveChangesAsync(token);
-        if (feeArrangements.Count > 0)
-        {
-            db.StudentFeeArrangements.AddRange(feeArrangements.Select(x => new StudentFeeArrangement { AcademyId = academyId, StudentId = student.Id, SubjectName = x.SubjectName.Trim(), Amount = x.Amount, Frequency = x.Frequency, EffectiveFrom = x.EffectiveFrom ?? DateOnly.FromDateTime(DateTime.UtcNow) }));
-            await db.SaveChangesAsync(token);
-        }
         if (parent is not null) { var parentAccess = isMinor || request.AllowParentPortalAccess; db.StudentGuardians.Add(new StudentGuardian { AcademyId = academyId, StudentId = student.Id, GuardianId = parent.Id, Relationship = string.IsNullOrWhiteSpace(request.Relationship) ? "Parent" : request.Relationship.Trim(), IsPrimary = true, CanAccessPortal = parentAccess, CanViewAcademicProgress = parentAccess && request.AllowAcademicProgress, CanViewFinance = parentAccess && request.AllowFinance, CanViewDocuments = parentAccess && request.AllowDocuments, CanManageLeave = parentAccess && request.AllowLeave, AccessGrantedAtUtc = parentAccess ? DateTime.UtcNow : null }); }
         await db.SaveChangesAsync(token);
         if (!await roles.RoleExistsAsync("Student")) await roles.CreateAsync(new ApplicationRole { Name = "Student" });
@@ -61,5 +52,4 @@ public sealed class StudentOnboardingController(AcademyDeskDbContext db, UserMan
     }
 }
 
-public sealed record StudentOnboardingRequest(string StudentFirstName, string StudentLastName, DateOnly? DateOfBirth, string? StudentEmail, string? StudentPhone, string? StudentAddressLine1, string? StudentCity, Guid? BranchId, string? ParentFirstName, string? ParentLastName, string? ParentEmail, string? ParentPhone, string? ParentAddressLine1, string? ParentCity, string? Relationship, string? StudentUserName, string? StudentTemporaryPassword, string? ParentUserName, string? ParentTemporaryPassword, decimal? AdmissionFeeAmount = null, DateOnly? AdmissionFeeDueDate = null, IReadOnlyList<OnboardingFeeArrangement>? FeeArrangements = null, bool AllowParentPortalAccess = false, bool AllowAcademicProgress = true, bool AllowFinance = true, bool AllowDocuments = true, bool AllowLeave = true);
-public sealed record OnboardingFeeArrangement(string SubjectName, decimal Amount, string Frequency, DateOnly? EffectiveFrom = null);
+public sealed record StudentOnboardingRequest(string StudentFirstName, string StudentLastName, DateOnly? DateOfBirth, string? StudentEmail, string? StudentPhone, string? StudentAddressLine1, string? StudentCity, Guid? BranchId, string? ParentFirstName, string? ParentLastName, string? ParentEmail, string? ParentPhone, string? ParentAddressLine1, string? ParentCity, string? Relationship, string? StudentUserName, string? StudentTemporaryPassword, string? ParentUserName, string? ParentTemporaryPassword, string? StudentNumber = null, string? PreferredName = null, string? Gender = null, DateOnly? AdmissionDate = null, string? StudentState = null, string? StudentPostalCode = null, string? EmergencyContactName = null, string? EmergencyContactPhone = null, string? MedicalOrAccessibilityNotes = null, bool AllowParentPortalAccess = false, bool AllowAcademicProgress = true, bool AllowFinance = true, bool AllowDocuments = true, bool AllowLeave = true);

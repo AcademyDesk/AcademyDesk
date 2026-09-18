@@ -86,9 +86,9 @@ export function StudentAdminProfile({
   }
   return (
     <section className="surface-panel rounded-xl p-5">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h3 className="font-semibold">Administrative learner profile</h3>
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <h3 className="font-semibold">Student 360 profile</h3>
           <p className="mt-1 text-sm text-slate-400">
             Identity, contact, wellbeing and internal operational details.
           </p>
@@ -96,7 +96,7 @@ export function StudentAdminProfile({
         <button
           onClick={() => void save()}
           disabled={saving}
-          className="rounded-lg bg-cyan-400 px-4 py-2 text-sm font-semibold text-slate-950 disabled:opacity-60"
+          className="shrink-0 whitespace-nowrap rounded-lg bg-cyan-400 px-4 py-2 text-sm font-semibold text-slate-950 disabled:opacity-60"
         >
           {saving ? "Saving…" : "Save profile"}
         </button>
@@ -106,7 +106,7 @@ export function StudentAdminProfile({
         <input
           value={form.studentNumber}
           onChange={(e) => set("studentNumber", e.target.value)}
-          placeholder="Learner number, e.g. HMA-2026-001"
+          placeholder="Student number, e.g. HMA-2026-001"
           className="field"
         />
         <input
