@@ -91,14 +91,16 @@ export default function StudentOnboardingPage() {
               name="studentLastName"
               placeholder="Student last name"
             />
-            <input
-              required
-              name="dateOfBirth"
-              type="date"
-              aria-label="Date of birth"
-              value={dob}
-              onChange={(event) => setDob(event.target.value)}
-            />
+            <label className="field-label">
+              Date of birth (DOB)
+              <input
+                required
+                name="dateOfBirth"
+                type="date"
+                value={dob}
+                onChange={(event) => setDob(event.target.value)}
+              />
+            </label>
             <input name="studentAddressLine1" placeholder="Student address" />
             <input name="studentCity" placeholder="Student city" />
             <p className="text-sm text-slate-400">

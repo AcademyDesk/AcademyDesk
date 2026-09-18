@@ -33,13 +33,34 @@ const navigationGroups: readonly NavigationGroup[] = [
     ],
   },
   {
-    label: "Team & access",
+    label: "Teachers",
     icon: "♜",
     links: [
-      ["Teachers", "/teachers"],
-      ["Staff", "/staff"],
-      ["Portal access", "/portal-accounts"],
+      ["Overview", "/teachers"],
+      ["Teacher onboarding", "/teacher-onboarding"],
+      ["Lesson plans", "/lesson-plans"],
+      ["Assignments", "/assignments"],
       ["Leave", "/leave"],
+    ],
+  },
+  {
+    label: "Classes & batches",
+    icon: "♫",
+    links: [
+      ["Overview", "/batches"],
+      ["Class scheduling", "/schedule"],
+      ["Attendance", "/attendance"],
+      ["Make-up classes", "/makeup"],
+    ],
+  },
+  {
+    label: "Ops team",
+    icon: "♞",
+    links: [
+      ["Overview", "/staff"],
+      ["Staff onboarding", "/staff"],
+      ["Portal access", "/portal-accounts"],
+      ["Access review", "/access-review"],
     ],
   },
   {
@@ -58,10 +79,7 @@ const navigationGroups: readonly NavigationGroup[] = [
       ["Academic periods", "/academic-periods"],
       ["Courses", "/courses"],
       ["Curriculum", "/curriculum"],
-      ["Batches", "/batches"],
       ["Batch promotions", "/batch-promotions"],
-      ["Lesson plans", "/lesson-plans"],
-      ["Assignments", "/assignments"],
       ["Submission review", "/submission-review"],
       ["Assessments", "/assessments"],
       ["Assessment policy", "/assessment-governance"],
@@ -73,10 +91,6 @@ const navigationGroups: readonly NavigationGroup[] = [
     label: "Operations",
     icon: "◷",
     links: [
-      ["Schedule", "/schedule"],
-      ["Attendance", "/attendance"],
-      ["Leave", "/leave"],
-      ["Make-up classes", "/makeup"],
       ["Holidays", "/holidays"],
       ["Events", "/events"],
       ["Certificates", "/certificates"],
@@ -108,7 +122,6 @@ const navigationGroups: readonly NavigationGroup[] = [
       ["Templates", "/message-templates"],
       ["Contact preferences", "/communication-preferences"],
       ["Channel settings", "/communication-settings"],
-      ["Portal accounts", "/portal-accounts"],
     ],
   },
 ] as const;

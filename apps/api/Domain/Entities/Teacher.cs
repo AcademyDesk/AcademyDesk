@@ -12,6 +12,9 @@ public sealed class Teacher : AcademyEntity
     public string? Phone { get; set; }
     public string? Specialties { get; set; }
     public string? Qualifications { get; set; }
+    public string? CertificationsJson { get; set; }
+    public string? AvailabilityJson { get; set; }
+    public string? CompensationJson { get; set; }
     public string? AddressLine1 { get; set; }
     public string? City { get; set; }
     public string? State { get; set; }
