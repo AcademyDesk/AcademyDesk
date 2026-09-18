@@ -2,10 +2,527 @@
 import { FormEvent, useEffect, useState } from "react";
 import { academyApi, apiHeaders } from "@/lib/api";
 import { ThemeToggle } from "@/components/theme-toggle";
-type Me={role:"Student"|"Guardian";displayName:string;studentId?:string;children?:{id:string;name:string}[]};type D={name:string;email?:string;phone?:string;schedule:{id:string;batchName:string;startUtc:string;deliveryMode:string;roomName?:string}[];assignments:{id:string;title:string;type:string;dueAtUtc?:string}[];attendanceSummary:{total:number;present:number;late:number};practiceSummary:{logCount:number;totalMinutes:number};practiceLogs:{practiceDate:string;minutesPracticed:number;teacherFeedback?:string}[];music:{title:string;status:string}[];resources:{title:string;type:string;url:string}[];assessmentResults:{title:string;score:number;maxScore:number;grade?:string}[];certificates:{certificateNumber:string;title:string;issuedDate:string}[];invoices:{invoiceNumber:string;balance:number;currency:string;dueDate:string;status:string}[]};type Notice={id:string;title:string;message:string;status:string};type Leave={id:string;startDate:string;endDate:string;reason:string;status:string};type Tab="home"|"classes"|"tasks"|"progress"|"more";const tabs:[Tab,string,string][]=[["home","Home","⌂"],["classes","Classes","◷"],["tasks","Tasks","✓"],["progress","Progress","↗"],["more","More","•••"]];const dt=(x:string)=>new Intl.DateTimeFormat("en-IN",{dateStyle:"medium",timeStyle:"short"}).format(new Date(x));const cash=(x:number,c="INR")=>new Intl.NumberFormat("en-IN",{style:"currency",currency:c,maximumFractionDigits:0}).format(x);
-export default function Portal(){const[me,setMe]=useState<Me>();const[id,setId]=useState("");const[d,setD]=useState<D>();const[n,setN]=useState<Notice[]>([]);const[l,setL]=useState<Leave[]>([]);const[t,setT]=useState<Tab>("home");const[m,setM]=useState("Loading your learning workspace…");async function load(student=id){if(!student)return;const[a,b,c]=await Promise.all([academyApi(`/api/portal/students/${student}`),academyApi(`/api/portal/students/${student}/leave-requests`),academyApi("/api/portal/notifications")]);if(!a.ok)throw Error("Your student record could not be loaded.");setD(await a.json());if(b.ok)setL(await b.json());if(c.ok)setN(await c.json());setM("")}useEffect(()=>{void academyApi("/api/portal/me").then(async r=>{if(!r.ok)throw Error();const x:Me=await r.json();const student=x.role==="Student"?x.studentId:x.children?.[0]?.id;if(!student)throw Error();setMe(x);setId(student);await load(student)}).catch(()=>setM("This account is not linked to a student or guardian portal."))},[]);return <main className="learner-shell"><header className="learner-topbar"><a href="/portal" className="learner-brand"><span>A</span><b>AcademyDesk</b><small>Student</small></a><ThemeToggle/></header><div className="learner-layout"><aside className="learner-sidebar">{tabs.map(([k,x,i])=><button key={k} data-active={t===k} onClick={()=>setT(k)}><i>{i}</i>{x}</button>)}</aside><section className="learner-content">{me?.role==="Guardian"&&<label className="learner-switcher">Viewing<select value={id} onChange={e=>{setId(e.target.value);void load(e.target.value)}}>{me.children?.map(x=><option key={x.id} value={x.id}>{x.name}</option>)}</select></label>}{m?<p className="learner-state">{m}</p>:d&&<View d={d} id={id} n={n} l={l} tab={t} refresh={load}/>}</section></div><nav className="learner-bottom-nav">{tabs.map(([k,x,i])=><button key={k} data-active={t===k} onClick={()=>setT(k)}><i>{i}</i><span>{x}</span></button>)}</nav></main>}
-function View({d,id,n,l,tab,refresh}:{d:D;id:string;n:Notice[];l:Leave[];tab:Tab;refresh:()=>Promise<void>}){const rate=d.attendanceSummary.total?Math.round((d.attendanceSummary.present+d.attendanceSummary.late)*100/d.attendanceSummary.total):0;const balance=d.invoices.reduce((s,x)=>s+x.balance,0);return <><header className="learner-heading"><p>Student workspace</p><h1>{tab==="home"?`Good day, ${d.name.split(" ")[0]}`:tab[0].toUpperCase()+tab.slice(1)}</h1><span>Your private academy records and daily learning actions.</span></header>{tab==="home"&&<><section className="learner-kpis"><K a="Next class" b={d.schedule[0]?dt(d.schedule[0].startUtc):"—"} c={d.schedule[0]?.batchName||"No upcoming class"}/><K a="Attendance" b={rate+"%"} c={d.attendanceSummary.total+" classes"}/><K a="Practice" b={d.practiceSummary.totalMinutes+" min"} c={d.practiceSummary.logCount+" logs"}/><K a="Fee balance" b={cash(balance)} c={balance?"Review fees":"No outstanding balance"}/></section><P title="Today and next">{d.schedule.slice(0,4).map(x=><R key={x.id} a={x.batchName} b={dt(x.startUtc)+" · "+x.deliveryMode}/>)}</P></>}{tab==="classes"&&<><P title="Upcoming timetable">{d.schedule.map(x=><R key={x.id} a={x.batchName} b={dt(x.startUtc)+" · "+x.deliveryMode+(x.roomName?" · "+x.roomName:"")}/>)}</P><P title="Learning resources">{d.resources.map((x,i)=><a key={i} className="learner-row" href={x.url} target="_blank"><b>{x.title}</b><small>{x.type} · Open resource →</small></a>)}</P></>}{tab==="tasks"&&<><P title="Assignments">{d.assignments.map(x=><Assignment key={x.id} id={id} x={x} refresh={refresh}/>)}</P><Practice id={id} refresh={refresh}/><Leave id={id} items={l}/></>}{tab==="progress"&&<><P title="Music and practice progress">{d.music.map((x,i)=><R key={i} a={x.title} b={x.status}/>)}{d.practiceLogs.map((x,i)=><R key={i} a={x.practiceDate+" · "+x.minutesPracticed+" min"} b={x.teacherFeedback||"Practice logged"}/>)}</P><P title="Assessment results">{d.assessmentResults.map((x,i)=><R key={i} a={x.title+(x.grade?" · "+x.grade:"")} b={x.score+"/"+x.maxScore}/>)}</P><P title="Certificates">{d.certificates.map(x=><R key={x.certificateNumber} a={x.title} b={x.certificateNumber+" · "+x.issuedDate}/>)}</P></>}{tab==="more"&&<><P title="Fees and payments">{d.invoices.map(x=><R key={x.invoiceNumber} a={x.invoiceNumber+" · "+cash(x.balance,x.currency)} b={"Due "+x.dueDate+" · "+x.status}/>)}</P><Profile id={id} d={d}/><P title="Notifications">{n.map(x=><R key={x.id} a={x.title} b={x.message}/>)}</P></>}</>}
-function K({a,b,c}:{a:string;b:string;c:string}){return <article className="learner-kpi"><span>{a}</span><b>{b}</b><small>{c}</small></article>}function P({title,children}:{title:string;children:React.ReactNode}){return <section className="learner-panel"><h3>{title}</h3><div className="learner-list">{children||<p className="learner-empty">Nothing to show yet.</p>}</div></section>}function R({a,b}:{a:string;b:string}){return <article className="learner-row"><b>{a}</b><small>{b}</small></article>}
-function Assignment({id,x,refresh}:{id:string;x:{id:string;title:string;type:string};refresh:()=>Promise<void>}){const[v,setV]=useState("");const[m,setM]=useState("");async function go(e:FormEvent){e.preventDefault();const r=await academyApi(`/api/portal/students/${id}/assignments/${x.id}/submit`,{method:"POST",headers:apiHeaders(true),body:JSON.stringify({responseText:v})});setM(r.ok?"Submitted for review.":"Submission could not be saved.");if(r.ok){setV("");void refresh()}}return <article className="learner-assignment"><b>{x.title}</b><small>{x.type}</small><form onSubmit={go}><textarea required value={v} onChange={e=>setV(e.target.value)} placeholder="Write your submission…"/><button>Submit</button></form><small>{m}</small></article>}
-function Practice({id,refresh}:{id:string;refresh:()=>Promise<void>}){return <Action title="Log practice" url={`/api/portal/students/${id}/practice-logs`} fields={<><input required name="practiceDate" type="date"/><input required name="minutesPracticed" type="number" min="1" placeholder="Minutes practised"/><input name="focusArea" placeholder="Focus area"/></>} refresh={refresh}/>}function Leave({id,items}:{id:string;items:Leave[]}){return <Action title="Request leave" url={`/api/portal/students/${id}/leave-requests`} fields={<><input required name="startDate" type="date"/><input required name="endDate" type="date"/><textarea required name="reason" placeholder="Reason for leave"/></>} extra={items.map(x=><R key={x.id} a={x.startDate+" to "+x.endDate} b={x.status+" · "+x.reason}/>)}/>}function Profile({id,d}:{id:string;d:D}){return <Action title="My contact details" url={`/api/portal/students/${id}/profile`} method="PUT" fields={<><input name="email" type="email" defaultValue={d.email||""} placeholder="Email address"/><input name="phone" defaultValue={d.phone||""} placeholder="Phone number"/></>}/>}
-function Action({title,url,fields,method="POST",refresh,extra}:{title:string;url:string;fields:React.ReactNode;method?:string;refresh?:()=>Promise<void>;extra?:React.ReactNode}){const[m,setM]=useState("");async function go(e:FormEvent<HTMLFormElement>){e.preventDefault();const f=new FormData(e.currentTarget);const body:Record<string,unknown>=Object.fromEntries(f);if("minutesPracticed"in body)body.minutesPracticed=Number(body.minutesPracticed);const r=await academyApi(url,{method,headers:apiHeaders(true),body:JSON.stringify(body)});setM(r.ok?"Saved successfully.":"Could not be saved.");if(r.ok){e.currentTarget.reset();if(refresh)void refresh()}}return <section className="learner-panel"><h3>{title}</h3><form className="learner-form" onSubmit={go}>{fields}<button>Save</button><small>{m}</small></form>{extra}</section>}
+type Me = {
+  role: "Student" | "Parent";
+  displayName: string;
+  studentId?: string;
+  children?: {
+    id: string;
+    name: string;
+    canViewAcademicProgress: boolean;
+    canViewFinance: boolean;
+    canViewDocuments: boolean;
+    canManageLeave: boolean;
+  }[];
+};
+type D = {
+  name: string;
+  email?: string;
+  phone?: string;
+  schedule: {
+    id: string;
+    batchName: string;
+    startUtc: string;
+    deliveryMode: string;
+    roomName?: string;
+  }[];
+  assignments: { id: string; title: string; type: string; dueAtUtc?: string }[];
+  attendanceSummary: { total: number; present: number; late: number };
+  practiceSummary: { logCount: number; totalMinutes: number };
+  practiceLogs: {
+    practiceDate: string;
+    minutesPracticed: number;
+    teacherFeedback?: string;
+  }[];
+  music: { title: string; status: string }[];
+  resources: { title: string; type: string; url: string }[];
+  assessmentResults: {
+    title: string;
+    score: number;
+    maxScore: number;
+    grade?: string;
+  }[];
+  certificates: {
+    certificateNumber: string;
+    title: string;
+    issuedDate: string;
+  }[];
+  invoices: {
+    invoiceNumber: string;
+    balance: number;
+    currency: string;
+    dueDate: string;
+    status: string;
+  }[];
+};
+type Notice = { id: string; title: string; message: string; status: string };
+type Leave = {
+  id: string;
+  startDate: string;
+  endDate: string;
+  reason: string;
+  status: string;
+};
+type Tab = "home" | "classes" | "tasks" | "progress" | "more";
+const tabs: [Tab, string, string][] = [
+  ["home", "Home", "⌂"],
+  ["classes", "Classes", "◷"],
+  ["tasks", "Tasks", "✓"],
+  ["progress", "Progress", "↗"],
+  ["more", "More", "•••"],
+];
+const dt = (x: string) =>
+  new Intl.DateTimeFormat("en-IN", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(x));
+const cash = (x: number, c = "INR") =>
+  new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: c,
+    maximumFractionDigits: 0,
+  }).format(x);
+export default function Portal() {
+  const [me, setMe] = useState<Me>();
+  const [id, setId] = useState("");
+  const [d, setD] = useState<D>();
+  const [n, setN] = useState<Notice[]>([]);
+  const [l, setL] = useState<Leave[]>([]);
+  const [t, setT] = useState<Tab>("home");
+  const [m, setM] = useState("Loading your learning workspace…");
+  async function load(student = id) {
+    if (!student) return;
+    const [a, b, c] = await Promise.all([
+      academyApi(`/api/portal/students/${student}`),
+      academyApi(`/api/portal/students/${student}/leave-requests`),
+      academyApi("/api/portal/notifications"),
+    ]);
+    if (!a.ok) throw Error("Your student record could not be loaded.");
+    setD(await a.json());
+    if (b.ok) setL(await b.json());
+    if (c.ok) setN(await c.json());
+    setM("");
+  }
+  useEffect(() => {
+    void academyApi("/api/portal/me")
+      .then(async (r) => {
+        if (!r.ok) throw Error();
+        const x: Me = await r.json();
+        const student =
+          x.role === "Student" ? x.studentId : x.children?.[0]?.id;
+        if (!student) throw Error();
+        setMe(x);
+        setId(student);
+        await load(student);
+      })
+      .catch(() =>
+        setM("This account is not linked to a student or Parent portal."),
+      );
+  }, []);
+  return (
+    <main className="learner-shell">
+      <header className="learner-topbar">
+        <a href="/portal" className="learner-brand">
+          <span>A</span>
+          <b>AcademyDesk</b>
+          <small>{me?.role === "Parent" ? "Parent" : "Student"}</small>
+        </a>
+        <ThemeToggle />
+      </header>
+      <div className="learner-layout">
+        <aside className="learner-sidebar">
+          {tabs.map(([k, x, i]) => (
+            <button key={k} data-active={t === k} onClick={() => setT(k)}>
+              <i>{i}</i>
+              {x}
+            </button>
+          ))}
+        </aside>
+        <section className="learner-content">
+          {me?.role === "Parent" && (
+            <label className="learner-switcher">
+              Viewing
+              <select
+                value={id}
+                onChange={(e) => {
+                  setId(e.target.value);
+                  void load(e.target.value);
+                }}
+              >
+                {me.children?.map((x) => (
+                  <option key={x.id} value={x.id}>
+                    {x.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+          {m ? (
+            <p className="learner-state">{m}</p>
+          ) : (
+            d && <View d={d} id={id} n={n} l={l} tab={t} refresh={load} />
+          )}
+        </section>
+      </div>
+      <nav className="learner-bottom-nav">
+        {tabs.map(([k, x, i]) => (
+          <button key={k} data-active={t === k} onClick={() => setT(k)}>
+            <i>{i}</i>
+            <span>{x}</span>
+          </button>
+        ))}
+      </nav>
+    </main>
+  );
+}
+function View({
+  d,
+  id,
+  n,
+  l,
+  tab,
+  refresh,
+}: {
+  d: D;
+  id: string;
+  n: Notice[];
+  l: Leave[];
+  tab: Tab;
+  refresh: () => Promise<void>;
+}) {
+  const rate = d.attendanceSummary.total
+    ? Math.round(
+        ((d.attendanceSummary.present + d.attendanceSummary.late) * 100) /
+          d.attendanceSummary.total,
+      )
+    : 0;
+  const balance = d.invoices.reduce((s, x) => s + x.balance, 0);
+  return (
+    <>
+      <header className="learner-heading">
+        <p>Student workspace</p>
+        <h1>
+          {tab === "home"
+            ? `Good day, ${d.name.split(" ")[0]}`
+            : tab[0].toUpperCase() + tab.slice(1)}
+        </h1>
+        <span>Your private academy records and daily learning actions.</span>
+      </header>
+      {tab === "home" && (
+        <>
+          <section className="learner-kpis">
+            <K
+              a="Next class"
+              b={d.schedule[0] ? dt(d.schedule[0].startUtc) : "—"}
+              c={d.schedule[0]?.batchName || "No upcoming class"}
+            />
+            <K
+              a="Attendance"
+              b={rate + "%"}
+              c={d.attendanceSummary.total + " classes"}
+            />
+            <K
+              a="Practice"
+              b={d.practiceSummary.totalMinutes + " min"}
+              c={d.practiceSummary.logCount + " logs"}
+            />
+            <K
+              a="Fee balance"
+              b={cash(balance)}
+              c={balance ? "Review fees" : "No outstanding balance"}
+            />
+          </section>
+          <P title="Today and next">
+            {d.schedule.slice(0, 4).map((x) => (
+              <R
+                key={x.id}
+                a={x.batchName}
+                b={dt(x.startUtc) + " · " + x.deliveryMode}
+              />
+            ))}
+          </P>
+        </>
+      )}
+      {tab === "classes" && (
+        <>
+          <P title="Upcoming timetable">
+            {d.schedule.map((x) => (
+              <R
+                key={x.id}
+                a={x.batchName}
+                b={
+                  dt(x.startUtc) +
+                  " · " +
+                  x.deliveryMode +
+                  (x.roomName ? " · " + x.roomName : "")
+                }
+              />
+            ))}
+          </P>
+          <P title="Learning resources">
+            {d.resources.map((x, i) => (
+              <a key={i} className="learner-row" href={x.url} target="_blank">
+                <b>{x.title}</b>
+                <small>{x.type} · Open resource →</small>
+              </a>
+            ))}
+          </P>
+        </>
+      )}
+      {tab === "tasks" && (
+        <>
+          <P title="Assignments">
+            {d.assignments.map((x) => (
+              <Assignment key={x.id} id={id} x={x} refresh={refresh} />
+            ))}
+          </P>
+          <Practice id={id} refresh={refresh} />
+          <Leave id={id} items={l} />
+        </>
+      )}
+      {tab === "progress" && (
+        <>
+          <P title="Music and practice progress">
+            {d.music.map((x, i) => (
+              <R key={i} a={x.title} b={x.status} />
+            ))}
+            {d.practiceLogs.map((x, i) => (
+              <R
+                key={i}
+                a={x.practiceDate + " · " + x.minutesPracticed + " min"}
+                b={x.teacherFeedback || "Practice logged"}
+              />
+            ))}
+          </P>
+          <P title="Assessment results">
+            {d.assessmentResults.map((x, i) => (
+              <R
+                key={i}
+                a={x.title + (x.grade ? " · " + x.grade : "")}
+                b={x.score + "/" + x.maxScore}
+              />
+            ))}
+          </P>
+          <P title="Certificates">
+            {d.certificates.map((x) => (
+              <R
+                key={x.certificateNumber}
+                a={x.title}
+                b={x.certificateNumber + " · " + x.issuedDate}
+              />
+            ))}
+          </P>
+        </>
+      )}
+      {tab === "more" && (
+        <>
+          <P title="Fees and payments">
+            {d.invoices.map((x) => (
+              <R
+                key={x.invoiceNumber}
+                a={x.invoiceNumber + " · " + cash(x.balance, x.currency)}
+                b={"Due " + x.dueDate + " · " + x.status}
+              />
+            ))}
+          </P>
+          <Profile id={id} d={d} />
+          <P title="Notifications">
+            {n.map((x) => (
+              <R key={x.id} a={x.title} b={x.message} />
+            ))}
+          </P>
+        </>
+      )}
+    </>
+  );
+}
+function K({ a, b, c }: { a: string; b: string; c: string }) {
+  return (
+    <article className="learner-kpi">
+      <span>{a}</span>
+      <b>{b}</b>
+      <small>{c}</small>
+    </article>
+  );
+}
+function P({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section className="learner-panel">
+      <h3>{title}</h3>
+      <div className="learner-list">
+        {children || <p className="learner-empty">Nothing to show yet.</p>}
+      </div>
+    </section>
+  );
+}
+function R({ a, b }: { a: string; b: string }) {
+  return (
+    <article className="learner-row">
+      <b>{a}</b>
+      <small>{b}</small>
+    </article>
+  );
+}
+function Assignment({
+  id,
+  x,
+  refresh,
+}: {
+  id: string;
+  x: { id: string; title: string; type: string };
+  refresh: () => Promise<void>;
+}) {
+  const [v, setV] = useState("");
+  const [m, setM] = useState("");
+  async function go(e: FormEvent) {
+    e.preventDefault();
+    const r = await academyApi(
+      `/api/portal/students/${id}/assignments/${x.id}/submit`,
+      {
+        method: "POST",
+        headers: apiHeaders(true),
+        body: JSON.stringify({ responseText: v }),
+      },
+    );
+    setM(r.ok ? "Submitted for review." : "Submission could not be saved.");
+    if (r.ok) {
+      setV("");
+      void refresh();
+    }
+  }
+  return (
+    <article className="learner-assignment">
+      <b>{x.title}</b>
+      <small>{x.type}</small>
+      <form onSubmit={go}>
+        <textarea
+          required
+          value={v}
+          onChange={(e) => setV(e.target.value)}
+          placeholder="Write your submission…"
+        />
+        <button>Submit</button>
+      </form>
+      <small>{m}</small>
+    </article>
+  );
+}
+function Practice({
+  id,
+  refresh,
+}: {
+  id: string;
+  refresh: () => Promise<void>;
+}) {
+  return (
+    <Action
+      title="Log practice"
+      url={`/api/portal/students/${id}/practice-logs`}
+      fields={
+        <>
+          <input required name="practiceDate" type="date" />
+          <input
+            required
+            name="minutesPracticed"
+            type="number"
+            min="1"
+            placeholder="Minutes practised"
+          />
+          <input name="focusArea" placeholder="Focus area" />
+        </>
+      }
+      refresh={refresh}
+    />
+  );
+}
+function Leave({ id, items }: { id: string; items: Leave[] }) {
+  return (
+    <Action
+      title="Request leave"
+      url={`/api/portal/students/${id}/leave-requests`}
+      fields={
+        <>
+          <input required name="startDate" type="date" />
+          <input required name="endDate" type="date" />
+          <textarea required name="reason" placeholder="Reason for leave" />
+        </>
+      }
+      extra={items.map((x) => (
+        <R
+          key={x.id}
+          a={x.startDate + " to " + x.endDate}
+          b={x.status + " · " + x.reason}
+        />
+      ))}
+    />
+  );
+}
+function Profile({ id, d }: { id: string; d: D }) {
+  return (
+    <Action
+      title="My contact details"
+      url={`/api/portal/students/${id}/profile`}
+      method="PUT"
+      fields={
+        <>
+          <input
+            name="email"
+            type="email"
+            defaultValue={d.email || ""}
+            placeholder="Email address"
+          />
+          <input
+            name="phone"
+            defaultValue={d.phone || ""}
+            placeholder="Phone number"
+          />
+        </>
+      }
+    />
+  );
+}
+function Action({
+  title,
+  url,
+  fields,
+  method = "POST",
+  refresh,
+  extra,
+}: {
+  title: string;
+  url: string;
+  fields: React.ReactNode;
+  method?: string;
+  refresh?: () => Promise<void>;
+  extra?: React.ReactNode;
+}) {
+  const [m, setM] = useState("");
+  async function go(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const f = new FormData(e.currentTarget);
+    const body: Record<string, unknown> = Object.fromEntries(f);
+    if ("minutesPracticed" in body)
+      body.minutesPracticed = Number(body.minutesPracticed);
+    const r = await academyApi(url, {
+      method,
+      headers: apiHeaders(true),
+      body: JSON.stringify(body),
+    });
+    setM(r.ok ? "Saved successfully." : "Could not be saved.");
+    if (r.ok) {
+      e.currentTarget.reset();
+      if (refresh) void refresh();
+    }
+  }
+  return (
+    <section className="learner-panel">
+      <h3>{title}</h3>
+      <form className="learner-form" onSubmit={go}>
+        {fields}
+        <button>Save</button>
+        <small>{m}</small>
+      </form>
+      {extra}
+    </section>
+  );
+}
