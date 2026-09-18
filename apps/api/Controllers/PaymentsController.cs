@@ -14,7 +14,7 @@ public sealed class PaymentsController(AcademyDeskDbContext dbContext) : Control
     {
         var query = dbContext.Payments.AsNoTracking().Where(x => x.AcademyId == academyId);
         if (invoiceId.HasValue) query = query.Where(x => x.InvoiceId == invoiceId.Value);
-        return Ok(await query.OrderByDescending(x => x.PaidAtUtc).Select(x => new PaymentSummary(x.Id, x.InvoiceId, x.Amount, x.Currency, x.Method, x.Status, x.Reference, x.PaidAtUtc)).ToListAsync(cancellationToken));
+        return Ok(await query.OrderByDescending(x => x.PaidAtUtc).Select(x => new PaymentSummary(x.Id, x.InvoiceId, x.Amount, x.Currency, x.Method, x.Status, x.Reference, x.PaidAtUtc, x.ReconciliationReference, x.ReconciledAtUtc)).ToListAsync(cancellationToken));
     }
 
     [HttpPost]
@@ -28,7 +28,7 @@ public sealed class PaymentsController(AcademyDeskDbContext dbContext) : Control
         var payment = new Payment { AcademyId = academyId, InvoiceId = invoice.Id, Amount = request.Amount, Currency = invoice.Currency, Method = string.IsNullOrWhiteSpace(request.Method) ? "Offline" : request.Method.Trim(), Reference = request.Reference?.Trim() };
         invoice.Status = paid + request.Amount == invoice.TotalAmount ? "Paid" : "PartiallyPaid";
         dbContext.Payments.Add(payment); await dbContext.SaveChangesAsync(cancellationToken);
-        return Created($"/api/academies/{academyId}/payments/{payment.Id}", new PaymentSummary(payment.Id, payment.InvoiceId, payment.Amount, payment.Currency, payment.Method, payment.Status, payment.Reference, payment.PaidAtUtc));
+        return Created($"/api/academies/{academyId}/payments/{payment.Id}", new PaymentSummary(payment.Id, payment.InvoiceId, payment.Amount, payment.Currency, payment.Method, payment.Status, payment.Reference, payment.PaidAtUtc, payment.ReconciliationReference, payment.ReconciledAtUtc));
     }
     [HttpPatch("{paymentId:guid}/status")]
     public async Task<ActionResult> UpdateStatus(Guid academyId, Guid paymentId, UpdatePaymentStatusRequest request, CancellationToken token)
@@ -39,6 +39,6 @@ public sealed class PaymentsController(AcademyDeskDbContext dbContext) : Control
 }
 
 public sealed record RecordPaymentRequest(Guid InvoiceId, decimal Amount, string? Method, string? Reference);
-public sealed record PaymentSummary(Guid Id, Guid InvoiceId, decimal Amount, string Currency, string Method, string Status, string? Reference, DateTime PaidAtUtc);
+public sealed record PaymentSummary(Guid Id, Guid InvoiceId, decimal Amount, string Currency, string Method, string Status, string? Reference, DateTime PaidAtUtc, string? ReconciliationReference, DateTime? ReconciledAtUtc);
 public sealed record UpdatePaymentStatusRequest(string Status);
 public sealed record ReconcilePaymentRequest(string Reference);
