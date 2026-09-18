@@ -2332,7 +2332,22 @@ html[data-theme="light"] .field-label { color: #475569; }
 }
 .teacher-remove-button { color: var(--ad-text-muted); }
 .teacher-rate-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-.teacher-onboarding-submit { width: 100%; margin-top: 16px; padding: 11px 16px; }
+.teacher-onboarding-submit {
+  width: 100%;
+  min-height: 42px;
+  margin-top: 16px;
+  padding: 11px 16px;
+  border: 0;
+  border-radius: 9px;
+  background: var(--ad-action);
+  color: var(--ad-action-text);
+  cursor: pointer;
+  font-size: .875rem;
+  font-weight: 750;
+}
+.teacher-onboarding-submit:hover:not(:disabled) { filter: brightness(.97); }
+.teacher-onboarding-submit:focus-visible { outline: 3px solid color-mix(in srgb, var(--ad-accent) 42%, transparent); outline-offset: 2px; }
+.teacher-onboarding-submit:disabled { cursor: not-allowed; opacity: .58; }
 .onboarding-section { padding: 20px; }
 .onboarding-section-header {
   display: flex;
