@@ -101,7 +101,9 @@ export default function Teacher() {
         </aside>
         <section className="learner-content">
           {m ? (
-            <p className="learner-state">{m}</p>
+            <p className="learner-state" role="status" aria-live="polite">
+              {m}
+            </p>
           ) : (
             p && (
               <>
@@ -335,9 +337,56 @@ function TeacherSelfService() {
   const [message, setMessage] = useState("");
   async function save(event: React.FormEvent<HTMLFormElement>, path: string) {
     event.preventDefault();
-    const response = await academyApi(path, { method: path === "/api/teacher/profile" ? "PUT" : "POST", headers: apiHeaders(true), body: JSON.stringify(Object.fromEntries(new FormData(event.currentTarget))) });
-    setMessage(response.ok ? "Saved successfully." : "The request could not be saved.");
+    const response = await academyApi(path, {
+      method: path === "/api/teacher/profile" ? "PUT" : "POST",
+      headers: apiHeaders(true),
+      body: JSON.stringify(
+        Object.fromEntries(new FormData(event.currentTarget)),
+      ),
+    });
+    setMessage(
+      response.ok ? "Saved successfully." : "The request could not be saved.",
+    );
     if (response.ok) event.currentTarget.reset();
   }
-  return <><Panel title="My contact profile"><form className="learner-form" onSubmit={(event) => void save(event, "/api/teacher/profile")}><input name="email" type="email" placeholder="Email address" /><input name="phone" placeholder="Phone number" /><button>Save profile</button></form></Panel><Panel title="Request leave"><form className="learner-form" onSubmit={(event) => void save(event, "/api/teacher/leave-requests")}><input required name="startDate" type="date" /><input required name="endDate" type="date" /><textarea required name="reason" placeholder="Reason for leave" /><button>Send leave request</button><small>{message}</small></form></Panel><Panel title="Teaching review queues"><R a="Submission review" b="Open a published assignment to review learner work and return feedback." /><R a="Practice feedback" b="Review practice logs from your assigned learners only." /><R a="Assessment results" b="Record and publish results for active learners in your assigned batches." /></Panel></>;
+  return (
+    <>
+      <Panel title="My contact profile">
+        <form
+          className="learner-form"
+          onSubmit={(event) => void save(event, "/api/teacher/profile")}
+        >
+          <input name="email" type="email" placeholder="Email address" />
+          <input name="phone" placeholder="Phone number" />
+          <button>Save profile</button>
+        </form>
+      </Panel>
+      <Panel title="Request leave">
+        <form
+          className="learner-form"
+          onSubmit={(event) => void save(event, "/api/teacher/leave-requests")}
+        >
+          <input required name="startDate" type="date" />
+          <input required name="endDate" type="date" />
+          <textarea required name="reason" placeholder="Reason for leave" />
+          <button>Send leave request</button>
+          <small>{message}</small>
+        </form>
+      </Panel>
+      <Panel title="Teaching review queues">
+        <R
+          a="Submission review"
+          b="Open a published assignment to review learner work and return feedback."
+        />
+        <R
+          a="Practice feedback"
+          b="Review practice logs from your assigned learners only."
+        />
+        <R
+          a="Assessment results"
+          b="Record and publish results for active learners in your assigned batches."
+        />
+      </Panel>
+    </>
+  );
 }

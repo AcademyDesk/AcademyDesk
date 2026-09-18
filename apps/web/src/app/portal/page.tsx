@@ -167,7 +167,9 @@ export default function Portal() {
             </div>
           )}
           {m ? (
-            <p className="learner-state">{m}</p>
+            <p className="learner-state" role="status" aria-live="polite">
+              {m}
+            </p>
           ) : (
             d && (
               <View
@@ -374,7 +376,11 @@ function View({
             ))}
           </P>
           {parentAccess ? (
-            <ParentProfile parentId={parentId} email={parentEmail} phone={parentPhone} />
+            <ParentProfile
+              parentId={parentId}
+              email={parentEmail}
+              phone={parentPhone}
+            />
           ) : (
             <Profile id={id} d={d} />
           )}
@@ -533,7 +539,15 @@ function Profile({ id, d }: { id: string; d: D }) {
     />
   );
 }
-function ParentProfile({ parentId, email, phone }: { parentId?: string; email?: string; phone?: string }) {
+function ParentProfile({
+  parentId,
+  email,
+  phone,
+}: {
+  parentId?: string;
+  email?: string;
+  phone?: string;
+}) {
   if (!parentId) return null;
   return (
     <Action
@@ -542,8 +556,17 @@ function ParentProfile({ parentId, email, phone }: { parentId?: string; email?: 
       method="PUT"
       fields={
         <>
-          <input name="email" type="email" defaultValue={email || ""} placeholder="Email address" />
-          <input name="phone" defaultValue={phone || ""} placeholder="Phone number" />
+          <input
+            name="email"
+            type="email"
+            defaultValue={email || ""}
+            placeholder="Email address"
+          />
+          <input
+            name="phone"
+            defaultValue={phone || ""}
+            placeholder="Phone number"
+          />
         </>
       }
     />

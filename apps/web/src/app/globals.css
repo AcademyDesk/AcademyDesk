@@ -1115,10 +1115,74 @@ html[data-theme="light"] [class~="text-red-300"] {
   color: color-mix(in srgb, #fb7185 80%, var(--ad-text));
 }
 
+/* Shared operational-page contract: every Admin page inherits compact forms, quiet tables, and usable states. */
+.enterprise-settings .surface-panel {
+  min-width: 0;
+  border-radius: 12px;
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--ad-text) 5%, transparent);
+}
+.enterprise-settings .surface-panel > h3,
+.enterprise-settings .surface-panel header h3 {
+  color: var(--ad-text);
+  font-size: 0.98rem;
+  letter-spacing: -0.015em;
+}
+.enterprise-settings :is(input, select, textarea).field,
+.enterprise-settings input:not([type="checkbox"]):not([type="radio"]),
+.enterprise-settings select,
+.enterprise-settings textarea {
+  border-color: var(--ad-border) !important;
+  border-radius: 8px !important;
+  background: var(--ad-surface-subtle) !important;
+  color: var(--ad-text) !important;
+}
+.enterprise-settings :is(input, select, textarea):focus {
+  border-color: var(--ad-accent) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ad-accent) 15%, transparent);
+  outline: 0;
+}
+.enterprise-settings table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.enterprise-settings table thead {
+  background: var(--ad-surface-subtle);
+}
+.enterprise-settings table th {
+  color: var(--ad-text-muted);
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+}
+.enterprise-settings table :is(th, td) {
+  border-color: var(--ad-border) !important;
+}
+.enterprise-settings table tbody tr:hover {
+  background: color-mix(in srgb, var(--ad-accent) 5%, transparent);
+}
+.enterprise-settings :is(.overflow-auto, .overflow-x-auto) {
+  scrollbar-color: var(--ad-border-strong) transparent;
+}
+.enterprise-workspace [role="status"],
+.enterprise-workspace [role="alert"] {
+  border: 1px solid var(--ad-border);
+  border-radius: 10px;
+  background: var(--ad-surface-subtle);
+  color: var(--ad-text-muted);
+}
+.enterprise-workspace [role="alert"] {
+  border-color: color-mix(in srgb, var(--ad-danger) 42%, var(--ad-border));
+  color: var(--ad-danger);
+}
+.enterprise-workspace :is(button, a)[disabled] {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
 /* Platform Owner is a separate SaaS control plane: it never inherits academy operations. */
 .platform-shell {
-  --platform-gutter: clamp(0px, 1.18vw, 24px);
-  --platform-sidebar: clamp(238px, 19vw, 340px);
+  --platform-gutter: clamp(0px, 0.55vw, 12px);
+  --platform-sidebar: clamp(236px, 19vw, 340px);
   display: grid;
   height: calc(100dvh - (var(--platform-gutter) * 2));
   grid-template-columns: var(--platform-sidebar) minmax(0, 1fr);
@@ -1133,14 +1197,14 @@ html[data-theme="light"] [class~="text-red-300"] {
   display: flex;
   min-height: 0;
   flex-direction: column;
-  padding: clamp(26px, 2.2vw, 44px) clamp(18px, 1.5vw, 30px);
+  padding: clamp(22px, 1.65vw, 32px) clamp(16px, 1.2vw, 24px);
   border-right: 1px solid var(--ad-border);
   background: color-mix(in srgb, var(--ad-surface) 82%, var(--ad-canvas));
 }
 .platform-nav {
   display: grid;
   gap: 4px;
-  margin-top: clamp(48px, 5.2vw, 100px);
+  margin-top: clamp(34px, 3.35vw, 68px);
 }
 .platform-nav p {
   margin: 0 0 10px clamp(10px, 1vw, 18px);
@@ -1222,11 +1286,11 @@ html[data-theme="light"] [class~="text-red-300"] {
 }
 .platform-topbar {
   display: flex;
-  flex: 0 0 clamp(92px, 7vw, 138px);
+  flex: 0 0 clamp(82px, 5.6vw, 108px);
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-  padding: clamp(18px, 1.76vw, 34px) clamp(24px, 2.45vw, 50px);
+  padding: clamp(16px, 1.3vw, 26px) clamp(22px, 2vw, 40px);
   border-bottom: 1px solid var(--ad-border);
   background: color-mix(in srgb, var(--ad-surface) 46%, transparent);
 }
@@ -1260,8 +1324,8 @@ html[data-theme="light"] [class~="text-red-300"] {
   min-height: 0;
   flex: 1;
   grid-template-rows: auto auto minmax(0, 1fr) auto;
-  gap: clamp(13px, 1.25vw, 24px);
-  padding: clamp(20px, 2vw, 40px) clamp(24px, 2.45vw, 50px);
+  gap: clamp(12px, 1vw, 20px);
+  padding: clamp(18px, 1.7vw, 34px) clamp(22px, 2vw, 40px);
   overflow: auto;
 }
 .platform-heading {
@@ -1276,7 +1340,7 @@ html[data-theme="light"] [class~="text-red-300"] {
 }
 .platform-heading h2 {
   color: var(--ad-text);
-  font-size: clamp(1.65rem, 2.1vw, 2.75rem);
+  font-size: clamp(1.55rem, 1.85vw, 2.35rem);
   letter-spacing: -0.05em;
 }
 .platform-heading p {
@@ -1290,8 +1354,8 @@ html[data-theme="light"] [class~="text-red-300"] {
   gap: clamp(10px, 1.1vw, 20px);
 }
 .platform-kpis article {
-  min-height: 110px;
-  padding: 18px 20px;
+  min-height: 102px;
+  padding: 16px 18px;
   border: 1px solid var(--ad-border);
   border-radius: 14px;
   background: var(--ad-surface);
@@ -1319,7 +1383,7 @@ html[data-theme="light"] [class~="text-red-300"] {
 }
 .platform-main-grid {
   display: grid;
-  min-height: 420px;
+  min-height: 0;
   grid-template-columns: minmax(0, 1.65fr) minmax(290px, 0.8fr);
   gap: clamp(13px, 1.3vw, 25px);
 }
@@ -1595,9 +1659,9 @@ html[data-theme="light"] [class~="text-red-300"] {
   font-style: normal;
 }
 .learner-content {
-  max-width: 1280px;
+  max-width: 1440px;
   width: 100%;
-  padding: 34px;
+  padding: 28px 32px;
   margin: 0 auto;
 }
 .learner-heading p,
@@ -1625,7 +1689,7 @@ html[data-theme="light"] [class~="text-red-300"] {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 14px;
-  margin: 28px 0;
+  margin: 22px 0;
 }
 .learner-kpi,
 .learner-panel {
@@ -1634,7 +1698,8 @@ html[data-theme="light"] [class~="text-red-300"] {
   background: var(--ad-surface);
 }
 .learner-kpi {
-  padding: 18px;
+  min-height: 118px;
+  padding: 16px;
 }
 .learner-kpi span,
 .learner-kpi b,
@@ -1653,8 +1718,8 @@ html[data-theme="light"] [class~="text-red-300"] {
   font-size: 1.7rem;
 }
 .learner-panel {
-  margin-top: 18px;
-  padding: 20px;
+  margin-top: 14px;
+  padding: 18px;
 }
 .learner-panel h3 {
   margin: 0;
@@ -1722,8 +1787,15 @@ html[data-theme="light"] [class~="text-red-300"] {
   display: none;
 }
 .learner-switcher {
-  display: block;
-  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+  padding: 10px 12px;
+  border: 1px solid var(--ad-border);
+  border-radius: 10px;
+  background: var(--ad-surface);
   color: var(--ad-text-muted);
   font-size: 0.8rem;
 }
@@ -1804,12 +1876,24 @@ html[data-theme="light"] [class~="text-red-300"] {
   .enterprise-settings {
     padding: 28px 22px 42px;
   }
+  .enterprise-page-header h2 {
+    font-size: 1.7rem;
+  }
+  .enterprise-page-header span {
+    font-size: 0.92rem;
+  }
   .enterprise-settings-toolbar {
     align-items: stretch;
     flex-direction: column;
   }
   .enterprise-settings-search {
     min-width: 0;
+  }
+  .enterprise-settings .surface-panel:has(table) {
+    overflow-x: auto;
+  }
+  .enterprise-settings .surface-panel table {
+    min-width: 580px;
   }
   .platform-shell {
     display: block;
@@ -1879,6 +1963,14 @@ html[data-theme="light"] [class~="text-red-300"] {
   }
   .learner-content {
     padding: 22px 16px 82px;
+  }
+  .learner-switcher {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .learner-switcher select {
+    width: 100%;
+    margin: 6px 0 0;
   }
   .learner-heading h1 {
     font-size: 1.85rem;
