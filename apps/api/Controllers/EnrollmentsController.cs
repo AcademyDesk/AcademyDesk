@@ -22,6 +22,12 @@ public sealed class EnrollmentsController(AcademyDeskDbContext dbContext) : Cont
         if (!await dbContext.Students.AnyAsync(x => x.Id == request.StudentId && x.AcademyId == academyId, cancellationToken)) return BadRequest(new { message = "The selected student does not belong to this academy." });
         var batch = await dbContext.Batches.SingleOrDefaultAsync(x => x.Id == request.BatchId && x.AcademyId == academyId, cancellationToken);
         if (batch is null) return BadRequest(new { message = "The selected batch does not belong to this academy." });
+        var prerequisites = await dbContext.CoursePrerequisites.Where(x => x.AcademyId == academyId && x.CourseId == batch.CourseId && x.MustBeCompleted).Select(x => x.RequiredCourseId).ToListAsync(cancellationToken);
+        if (prerequisites.Count > 0)
+        {
+            var completedCourseIds = await (from priorEnrollment in dbContext.Enrollments join completedBatch in dbContext.Batches on priorEnrollment.BatchId equals completedBatch.Id where priorEnrollment.AcademyId == academyId && priorEnrollment.StudentId == request.StudentId && priorEnrollment.Status == "Completed" select completedBatch.CourseId).ToListAsync(cancellationToken);
+            if (prerequisites.Any(prerequisite => !completedCourseIds.Contains(prerequisite))) return Conflict(new { message = "The learner has not completed all course prerequisites for this batch." });
+        }
         if (!batch.IsActive || !string.Equals(batch.EnrollmentStatus, "Open", StringComparison.OrdinalIgnoreCase)) return BadRequest(new { message = "This batch is not open for enrolment." });
         var requestedStatus = string.Equals(request.Status, "Waitlisted", StringComparison.OrdinalIgnoreCase) ? "Waitlisted" : "Active";
         var activeCount = await dbContext.Enrollments.CountAsync(x => x.AcademyId == academyId && x.BatchId == request.BatchId && x.Status == "Active", cancellationToken);
