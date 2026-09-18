@@ -25,7 +25,7 @@ export default function StudentsPage() {
     () =>
       students.filter(
         (student) =>
-          (status === "All" || (status === "Active") === student.isActive) &&
+          (status === "Active") === student.isActive &&
           `${student.firstName} ${student.lastName} ${student.email ?? ""} ${student.phone ?? ""}`
             .toLowerCase()
             .includes(query.toLowerCase()),
@@ -96,7 +96,6 @@ export default function StudentsPage() {
       </header>
       <section className="enterprise-settings-toolbar">
         <div className="enterprise-settings-tabs">
-          <button aria-selected>All learners</button>
           <button
             onClick={() => setStatus("Active")}
             aria-selected={status === "Active"}
