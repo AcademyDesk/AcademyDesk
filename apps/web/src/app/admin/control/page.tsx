@@ -246,7 +246,7 @@ export default function AcademyControlPage() {
               class → mark attendance → invoice and communicate.
             </p>
             <Link href="/activity" className="text-cyan-300">
-              Open academy activity log →
+              Academy activity log
             </Link>
           </div>
         </section>

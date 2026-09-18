@@ -79,5 +79,5 @@ function Metric({ label, value, note, emphasis }: { label: string; value: string
   return <article className="surface-panel rounded-xl p-5"><p className="text-sm text-slate-400">{label}</p><strong className={emphasis ? "mt-3 block text-3xl text-amber-300" : "mt-3 block text-3xl"}>{value}</strong><small className="mt-2 block text-sm text-slate-400">{note}</small></article>;
 }
 function Action({ href, title, text }: { href: string; title: string; text: string }) {
-  return <Link href={href} className="enterprise-setting-card"><span>Students</span><h3>{title}</h3><p>{text}</p><footer><small>Open workspace</small><b>→</b></footer></Link>;
+  return <Link href={href} className="enterprise-setting-card"><span>Students</span><h3>{title}</h3><p>{text}</p></Link>;
 }

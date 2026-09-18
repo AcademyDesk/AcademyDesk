@@ -86,7 +86,7 @@ export default function Intelligence() {
                       href={`/student-profile?id=${x.studentId}`}
                       className="text-sm text-cyan-300"
                     >
-                      Open student record →
+                      Student record
                     </Link>
                   </p>
                 ))
