@@ -23,7 +23,7 @@ public sealed class StudentOnboardingController(AcademyDeskDbContext db, UserMan
         var isMinor = request.DateOfBirth.Value.AddYears(18) > DateOnly.FromDateTime(DateTime.UtcNow);
         if (isMinor && (string.IsNullOrWhiteSpace(request.ParentFirstName) || string.IsNullOrWhiteSpace(request.ParentLastName) || string.IsNullOrWhiteSpace(request.ParentEmail))) return BadRequest(new { message = "A parent name and email are required for a minor student." });
         await using var transaction = await db.Database.BeginTransactionAsync(token);
-        var student = new Student { AcademyId = academyId, FirstName = request.StudentFirstName.Trim(), LastName = request.StudentLastName.Trim(), DateOfBirth = request.DateOfBirth, Email = isMinor ? null : request.StudentEmail?.Trim(), Phone = isMinor ? null : request.StudentPhone?.Trim(), BranchId = request.BranchId };
+        var student = new Student { AcademyId = academyId, FirstName = request.StudentFirstName.Trim(), LastName = request.StudentLastName.Trim(), DateOfBirth = request.DateOfBirth, Email = isMinor ? null : request.StudentEmail?.Trim(), Phone = isMinor ? null : request.StudentPhone?.Trim(), AddressLine1 = request.StudentAddressLine1?.Trim(), City = request.StudentCity?.Trim(), BranchId = request.BranchId };
         db.Students.Add(student);
         Guardian? parent = null;
         if (!string.IsNullOrWhiteSpace(request.ParentFirstName))
@@ -52,4 +52,4 @@ public sealed class StudentOnboardingController(AcademyDeskDbContext db, UserMan
     }
 }
 
-public sealed record StudentOnboardingRequest(string StudentFirstName, string StudentLastName, DateOnly? DateOfBirth, string? StudentEmail, string? StudentPhone, Guid? BranchId, string? ParentFirstName, string? ParentLastName, string? ParentEmail, string? ParentPhone, string? ParentAddressLine1, string? ParentCity, string? Relationship, string? StudentUserName, string? StudentTemporaryPassword, string? ParentUserName, string? ParentTemporaryPassword, bool AllowParentPortalAccess = false, bool AllowAcademicProgress = true, bool AllowFinance = true, bool AllowDocuments = true, bool AllowLeave = true);
+public sealed record StudentOnboardingRequest(string StudentFirstName, string StudentLastName, DateOnly? DateOfBirth, string? StudentEmail, string? StudentPhone, string? StudentAddressLine1, string? StudentCity, Guid? BranchId, string? ParentFirstName, string? ParentLastName, string? ParentEmail, string? ParentPhone, string? ParentAddressLine1, string? ParentCity, string? Relationship, string? StudentUserName, string? StudentTemporaryPassword, string? ParentUserName, string? ParentTemporaryPassword, bool AllowParentPortalAccess = false, bool AllowAcademicProgress = true, bool AllowFinance = true, bool AllowDocuments = true, bool AllowLeave = true);

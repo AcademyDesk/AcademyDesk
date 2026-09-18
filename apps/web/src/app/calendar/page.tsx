@@ -1,4 +1,269 @@
 "use client";
-import {useEffect,useMemo,useState}from"react";import{WorkspaceNav}from"@/components/workspace-nav";import{academyApi}from"@/lib/api";
-type A={id:string};type Batch={id:string;name:string};type Session={id:string;batchId:string;startUtc:string;endUtc:string;deliveryMode:string;roomName?:string};type Event={id:string;title:string;type:string;startUtc:string;endUtc:string;venue?:string};type Makeup={id:string;studentId:string;batchId:string;startUtc:string;endUtc:string;venue?:string};type Student={id:string;firstName:string;lastName:string};
-export default function Calendar(){const[b,setB]=useState<Batch[]>([]);const[s,setS]=useState<Session[]>([]);const[e,setE]=useState<Event[]>([]);const[m,setM]=useState<Makeup[]>([]);const[students,setStudents]=useState<Student[]>([]);const[msg,setMsg]=useState("Loading academy calendar…");const[filter,setFilter]=useState("All");useEffect(()=>{void(async()=>{try{const r=await academyApi("/api/academies");if(!r.ok)throw new Error();const a:A[]=await r.json();const id=a[0].id;const rs=await Promise.all(["batches","sessions","events","makeup-classes","students"].map(x=>academyApi(`/api/academies/${id}/${x}`)));if(rs.some(x=>!x.ok))throw new Error();setB(await rs[0].json());setS(await rs[1].json());setE(await rs[2].json());setM(await rs[3].json());setStudents(await rs[4].json());setMsg("")}catch{setMsg("Calendar could not be loaded. Make sure the API is running and migrations are applied.")}})()},[]);const name=(id:string)=>b.find(x=>x.id===id)?.name??"Batch";const student=(id:string)=>{const x=students.find(v=>v.id===id);return x?`${x.firstName} ${x.lastName}`:"Student"};const items=useMemo(()=>[...s.map(x=>({id:x.id,type:"Class",title:name(x.batchId),start:x.startUtc,detail:`${x.deliveryMode}${x.roomName?` · ${x.roomName}`:""}`})),...m.map(x=>({id:x.id,type:"Make-up",title:`${student(x.studentId)} · ${name(x.batchId)}`,start:x.startUtc,detail:x.venue??"Venue not set"})),...e.map(x=>({id:x.id,type:"Event",title:x.title,start:x.startUtc,detail:`${x.type}${x.venue?` · ${x.venue}`:""}`}))].filter(x=>filter==="All"||x.type===filter).sort((x,y)=>x.start.localeCompare(y.start)),[s,m,e,b,students,filter]);return <main className="min-h-screen bg-slate-950 text-slate-100"><WorkspaceNav/><div className="mx-auto max-w-5xl px-6 py-10"><p className="text-sm font-semibold uppercase tracking-[.22em] text-cyan-300">Operations</p><h1 className="mt-3 text-4xl font-semibold">Academy calendar</h1><p className="mt-3 text-slate-300">One timeline for classes, make-up sessions, recitals, workshops, exams, and events.</p>{msg&&<p className="mt-6 rounded-lg bg-amber-950/40 p-4 text-amber-100">{msg}</p>}<div className="mt-6 flex gap-2">{["All","Class","Make-up","Event"].map(x=><button key={x} onClick={()=>setFilter(x)} className={`rounded-lg px-3 py-2 text-sm ${filter===x?"bg-cyan-400 text-slate-950":"bg-slate-900 text-slate-300"}`}>{x}</button>)}</div><section className="mt-6 space-y-3">{items.length===0?<p className="rounded-2xl bg-slate-900 p-6 text-slate-400">No calendar entries.</p>:items.map(x=><article key={`${x.type}-${x.id}`} className="rounded-2xl border border-slate-800 bg-slate-900 p-5"><div className="flex flex-wrap items-start justify-between gap-3"><div><div className="font-semibold">{x.title}</div><div className="mt-1 text-sm text-slate-400">{x.detail}</div></div><span className="rounded-full bg-slate-950 px-3 py-1 text-sm text-cyan-200">{x.type}</span></div><div className="mt-3 text-sm text-slate-300">{new Intl.DateTimeFormat("en-IN",{dateStyle:"full",timeStyle:"short"}).format(new Date(x.start))}</div></article>)}</section></div></main>}
+
+import { useEffect, useMemo, useState } from "react";
+import { WorkspaceNav } from "@/components/workspace-nav";
+import { academyApi } from "@/lib/api";
+
+type Academy = { id: string };
+type Batch = { id: string; name: string };
+type Session = {
+  id: string;
+  batchId: string;
+  startUtc: string;
+  deliveryMode: string;
+  roomName?: string;
+};
+type Event = {
+  id: string;
+  title: string;
+  type: string;
+  startUtc: string;
+  venue?: string;
+};
+type Makeup = {
+  id: string;
+  studentId: string;
+  batchId: string;
+  startUtc: string;
+  venue?: string;
+};
+type Student = { id: string; firstName: string; lastName: string };
+type CalendarItem = {
+  id: string;
+  type: "Class" | "Make-up" | "Event";
+  title: string;
+  detail: string;
+  start: Date;
+};
+const names = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const monthName = (date: Date) =>
+  new Intl.DateTimeFormat("en-IN", { month: "long", year: "numeric" }).format(
+    date,
+  );
+const time = (date: Date) =>
+  new Intl.DateTimeFormat("en-IN", {
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(date);
+
+export default function CalendarPage() {
+  const [batches, setBatches] = useState<Batch[]>([]);
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [makeups, setMakeups] = useState<Makeup[]>([]);
+  const [students, setStudents] = useState<Student[]>([]);
+  const today = new Date();
+  const [month, setMonth] = useState(
+    () => new Date(today.getFullYear(), today.getMonth(), 1),
+  );
+  const [filter, setFilter] = useState<"All" | CalendarItem["type"]>("All");
+  const [message, setMessage] = useState("Loading calendar…");
+  useEffect(() => {
+    void (async () => {
+      try {
+        const academyResponse = await academyApi("/api/academies");
+        const academies: Academy[] = await academyResponse.json();
+        if (!academyResponse.ok || !academies[0]) throw new Error();
+        const id = academies[0].id;
+        const responses = await Promise.all(
+          ["batches", "sessions", "events", "makeup-classes", "students"].map(
+            (path) => academyApi(`/api/academies/${id}/${path}`),
+          ),
+        );
+        if (responses.some((response) => !response.ok)) throw new Error();
+        setBatches(await responses[0].json());
+        setSessions(await responses[1].json());
+        setEvents(await responses[2].json());
+        setMakeups(await responses[3].json());
+        setStudents(await responses[4].json());
+        setMessage("");
+      } catch {
+        setMessage("Calendar could not be loaded.");
+      }
+    })();
+  }, []);
+  const items = useMemo<CalendarItem[]>(() => {
+    const batchName = (id: string) =>
+      batches.find((batch) => batch.id === id)?.name ?? "Class";
+    const studentName = (id: string) => {
+      const student = students.find((row) => row.id === id);
+      return student ? `${student.firstName} ${student.lastName}` : "Student";
+    };
+    return [
+      ...sessions.map((row) => ({
+        id: row.id,
+        type: "Class" as const,
+        title: batchName(row.batchId),
+        detail: `${row.deliveryMode}${row.roomName ? ` · ${row.roomName}` : ""}`,
+        start: new Date(row.startUtc),
+      })),
+      ...makeups.map((row) => ({
+        id: row.id,
+        type: "Make-up" as const,
+        title: `${studentName(row.studentId)} · ${batchName(row.batchId)}`,
+        detail: row.venue ?? "Make-up class",
+        start: new Date(row.startUtc),
+      })),
+      ...events.map((row) => ({
+        id: row.id,
+        type: "Event" as const,
+        title: row.title,
+        detail: `${row.type}${row.venue ? ` · ${row.venue}` : ""}`,
+        start: new Date(row.startUtc),
+      })),
+    ].filter((item) => filter === "All" || item.type === filter);
+  }, [batches, sessions, events, makeups, students, filter]);
+  const days = useMemo(() => {
+    const offset = (month.getDay() + 6) % 7;
+    const start = new Date(month);
+    start.setDate(1 - offset);
+    return Array.from({ length: 42 }, (_, index) => {
+      const date = new Date(start);
+      date.setDate(start.getDate() + index);
+      return date;
+    });
+  }, [month]);
+  const byDay = (date: Date) =>
+    items
+      .filter((item) => item.start.toDateString() === date.toDateString())
+      .sort((a, b) => +a.start - +b.start);
+  const agenda = items
+    .filter(
+      (item) =>
+        item.start.getFullYear() === month.getFullYear() &&
+        item.start.getMonth() === month.getMonth(),
+    )
+    .sort((a, b) => +a.start - +b.start);
+  return (
+    <main className="min-h-screen bg-slate-950 text-slate-100">
+      <WorkspaceNav />
+      <div className="mx-auto max-w-7xl px-6 py-8">
+        <header className="flex flex-wrap items-end justify-between gap-5">
+          <h1 className="text-3xl font-semibold tracking-tight">Calendar</h1>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() =>
+                setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))
+              }
+              className="calendar-nav"
+              aria-label="Previous month"
+            >
+              ‹
+            </button>
+            <button
+              onClick={() =>
+                setMonth(new Date(today.getFullYear(), today.getMonth(), 1))
+              }
+              className="calendar-today"
+            >
+              Today
+            </button>
+            <button
+              onClick={() =>
+                setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))
+              }
+              className="calendar-nav"
+              aria-label="Next month"
+            >
+              ›
+            </button>
+          </div>
+        </header>
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-xl font-semibold">{monthName(month)}</h2>
+          <div className="flex gap-2">
+            {(["All", "Class", "Make-up", "Event"] as const).map((value) => (
+              <button
+                key={value}
+                onClick={() => setFilter(value)}
+                className={
+                  filter === value
+                    ? "calendar-filter active"
+                    : "calendar-filter"
+                }
+              >
+                {value}
+              </button>
+            ))}
+          </div>
+        </div>
+        {message && (
+          <p className="enterprise-page-state enterprise-page-state-loading mt-5">
+            {message}
+          </p>
+        )}
+        <section className="calendar-grid mt-5">
+          {names.map((name) => (
+            <div key={name} className="calendar-weekday">
+              {name}
+            </div>
+          ))}
+          {days.map((date) => {
+            const dayItems = byDay(date);
+            const inMonth = date.getMonth() === month.getMonth();
+            const isToday = date.toDateString() === today.toDateString();
+            return (
+              <div
+                key={date.toISOString()}
+                className={`calendar-day ${inMonth ? "" : "outside"} ${isToday ? "today" : ""}`}
+              >
+                <span className="calendar-date">{date.getDate()}</span>
+                <div className="calendar-events">
+                  {dayItems.slice(0, 3).map((item) => (
+                    <div
+                      key={`${item.type}-${item.id}`}
+                      className={`calendar-event ${item.type.toLowerCase().replace("-", "")}`}
+                      title={`${item.title} · ${item.detail}`}
+                    >
+                      <time>{time(item.start)}</time>
+                      {item.title}
+                    </div>
+                  ))}
+                  {dayItems.length > 3 && (
+                    <span className="calendar-more">
+                      +{dayItems.length - 3} more
+                    </span>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </section>
+        <section className="mt-6 surface-panel rounded-xl p-5">
+          <div className="flex items-center justify-between">
+            <h2 className="font-semibold">Month agenda</h2>
+            <span className="text-sm text-slate-400">
+              {agenda.length} items
+            </span>
+          </div>
+          {agenda.length ? (
+            <ul className="mt-4 divide-y divide-slate-800">
+              {agenda.map((item) => (
+                <li
+                  key={`agenda-${item.type}-${item.id}`}
+                  className="flex flex-wrap items-center gap-x-5 gap-y-1 py-3 text-sm"
+                >
+                  <time className="w-32 text-slate-400">
+                    {new Intl.DateTimeFormat("en-IN", {
+                      day: "2-digit",
+                      month: "short",
+                      hour: "numeric",
+                      minute: "2-digit",
+                    }).format(item.start)}
+                  </time>
+                  <span className="font-medium">{item.title}</span>
+                  <span className="text-slate-400">{item.detail}</span>
+                  <span className="calendar-kind">{item.type}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="py-8 text-center text-sm text-slate-400">
+              No calendar items for this view.
+            </p>
+          )}
+        </section>
+      </div>
+    </main>
+  );
+}

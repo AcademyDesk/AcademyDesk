@@ -259,7 +259,94 @@ export default function ReportsPage() {
             </div>
           </section>
         </section>
+        <section className="mt-6 rounded-2xl border border-slate-800 bg-slate-900 p-6">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-xl font-semibold">Export centre</h2>
+            <span className="text-sm text-slate-400">
+              CSV downloads for operational use
+            </span>
+          </div>
+          <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <ExportCard
+              title="Students"
+              detail="Student contact register"
+              onClick={() =>
+                downloadCsv("academydesk-students.csv", [
+                  ["First name", "Last name"],
+                  ...students.map((student) => [
+                    student.firstName,
+                    student.lastName,
+                  ]),
+                ])
+              }
+            />
+            <ExportCard
+              title="Batches"
+              detail="Capacity and active enrolments"
+              onClick={() =>
+                downloadCsv("academydesk-batches.csv", [
+                  ["Batch", "Active enrolments", "Capacity"],
+                  ...batchRows,
+                ])
+              }
+            />
+            <ExportCard
+              title="Invoices"
+              detail="Issued fees and due dates"
+              onClick={() =>
+                downloadCsv("academydesk-invoices.csv", [
+                  ["Invoice", "Student", "Amount", "Due date"],
+                  ...invoices.map((invoice) => {
+                    const student = students.find(
+                      (item) => item.id === invoice.studentId,
+                    );
+                    return [
+                      invoice.invoiceNumber,
+                      student
+                        ? `${student.firstName} ${student.lastName}`
+                        : "Unknown",
+                      String(invoice.totalAmount),
+                      invoice.dueDate,
+                    ];
+                  }),
+                ])
+              }
+            />
+            <ExportCard
+              title="Expenses"
+              detail="Expense ledger totals"
+              onClick={() =>
+                downloadCsv("academydesk-expenses.csv", [
+                  ["Expense amount"],
+                  ...expenses.map((expense) => [String(expense.amount)]),
+                ])
+              }
+            />
+          </div>
+        </section>
       </div>
     </main>
+  );
+}
+function ExportCard({
+  title,
+  detail,
+  onClick,
+}: {
+  title: string;
+  detail: string;
+  onClick: () => void;
+}) {
+  return (
+    <article className="rounded-xl border border-slate-700 bg-slate-950 p-4">
+      <h3 className="font-semibold">{title}</h3>
+      <p className="mt-1 text-sm text-slate-400">{detail}</p>
+      <button
+        onClick={onClick}
+        className="mt-4 text-sm font-semibold text-cyan-300"
+      >
+        Download CSV →
+      </button>
+    </article>
   );
 }

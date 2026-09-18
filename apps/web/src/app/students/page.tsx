@@ -88,7 +88,7 @@ export default function StudentsPage() {
     <main className="enterprise-settings">
       <header className="enterprise-page-header">
         <p>Learners & families / register</p>
-        <h2>Learner register</h2>
+        <h2>Student overview</h2>
         <span>
           Search, review and act on every learner. Use the 360 record to connect
           family, enrolment, attendance, fees, learning, and communications.
@@ -128,7 +128,7 @@ export default function StudentsPage() {
         <section className="surface-panel overflow-hidden rounded-xl">
           <header className="flex items-center justify-between gap-4 border-b p-5">
             <div>
-              <h3 className="font-semibold">Learners</h3>
+          <h3 className="font-semibold">Students</h3>
               <p className="mt-1 text-sm text-slate-400">
                 {filtered.length} of {students.length} records ·{" "}
                 {academy?.name ?? "Academy"}

@@ -95,9 +95,12 @@ export default function StudentOnboardingPage() {
               required
               name="dateOfBirth"
               type="date"
+              aria-label="Date of birth"
               value={dob}
               onChange={(event) => setDob(event.target.value)}
             />
+            <input name="studentAddressLine1" placeholder="Student address" />
+            <input name="studentCity" placeholder="Student city" />
             <p className="text-sm text-slate-400">
               {minor
                 ? "Minor student: Parent details and primary Parent link are required."
@@ -137,7 +140,7 @@ export default function StudentOnboardingPage() {
             <input name="parentAddressLine1" placeholder="Parent address" />
             <input name="parentCity" placeholder="City" />
             <input name="relationship" defaultValue="Parent" />
-            <label className="text-sm">
+            <label className="consent-check">
               <input
                 name="allowParentPortalAccess"
                 type="checkbox"
@@ -145,9 +148,11 @@ export default function StudentOnboardingPage() {
                 disabled={minor}
               />{" "}
               Allow Parent portal access{" "}
-              {minor ? "(automatically granted for a minor)" : "(adult student consent)"}
+              {minor
+                ? "(automatically granted for a minor)"
+                : "(adult student consent)"}
             </label>
-            <label className="text-sm">
+            <label className="consent-check">
               <input
                 name="allowAcademicProgress"
                 type="checkbox"
@@ -155,15 +160,15 @@ export default function StudentOnboardingPage() {
               />{" "}
               Academic progress
             </label>
-            <label className="text-sm">
+            <label className="consent-check">
               <input name="allowFinance" type="checkbox" defaultChecked /> Fees
               and receipts
             </label>
-            <label className="text-sm">
+            <label className="consent-check">
               <input name="allowDocuments" type="checkbox" defaultChecked />{" "}
               Documents and certificates
             </label>
-            <label className="text-sm">
+            <label className="consent-check">
               <input name="allowLeave" type="checkbox" defaultChecked /> Leave
               requests
             </label>
