@@ -36,12 +36,20 @@ type PlatformHealth = {
 
 const platformLinks = [
   { label: "Overview", icon: "▦", href: "/platform" },
-  { label: "Tenant management", icon: "◫", href: "/platform/control?tab=Tenants" },
+  {
+    label: "Tenant management",
+    icon: "◫",
+    href: "/platform/control?tab=Tenants",
+  },
   { label: "Academy admins", icon: "♙", href: "/platform/control?tab=Admins" },
   { label: "Billing", icon: "₹", href: "/platform/control?tab=Billing" },
   { label: "Support", icon: "?", href: "/platform/control?tab=Support" },
   { label: "Settings", icon: "⚙", href: "/platform/control?tab=Settings" },
-  { label: "Audit & health", icon: "✓", href: "/platform/control?tab=Audit%20%26%20health" },
+  {
+    label: "Audit & health",
+    icon: "✓",
+    href: "/platform/control?tab=Audit%20%26%20health",
+  },
 ] as const;
 
 export default function PlatformPage() {
@@ -53,6 +61,7 @@ export default function PlatformPage() {
   const [adminUserName, setAdminUserName] = useState("");
   const [adminDisplayName, setAdminDisplayName] = useState("");
   const [password, setPassword] = useState("");
+  const [onboardingOpen, setOnboardingOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<Notice>({
     text: "Loading academy portfolio…",
@@ -122,6 +131,7 @@ export default function PlatformPage() {
       setLegalName("");
       setAdminUserName("");
       setAdminDisplayName("");
+      setOnboardingOpen(false);
       await load();
       setNotice({
         text: `${payload.name} is ready. Its Academy Admin can sign in now.`,
@@ -186,7 +196,8 @@ export default function PlatformPage() {
               key={item.label}
               data-active={item.label === "Overview"}
             >
-              <i>{item.icon}</i>{item.label}
+              <i>{item.icon}</i>
+              {item.label}
             </Link>
           ))}
         </nav>
@@ -199,8 +210,7 @@ export default function PlatformPage() {
       <section className="platform-workspace">
         <header className="platform-topbar">
           <div>
-            <p>Platform / Portfolio</p>
-            <h1>AcademyDesk platform</h1>
+            <h1>Platform Owner</h1>
           </div>
           <div className="enterprise-utilities">
             <button
@@ -235,16 +245,14 @@ export default function PlatformPage() {
         </header>
         <div className="platform-content">
           <section id="overview" className="platform-heading">
-            <div>
-              <h2>Academy portfolio</h2>
-              <p>
-                Onboard academies, keep tenant access healthy, and stay focused
-                on the SaaS business.
-              </p>
-            </div>
-            <a className="enterprise-primary-action" href="#onboard">
+            <h2>Academies</h2>
+            <button
+              type="button"
+              className="enterprise-primary-action"
+              onClick={() => setOnboardingOpen(true)}
+            >
               ＋ Onboard academy
-            </a>
+            </button>
           </section>
           <section
             className="platform-kpis"
@@ -253,24 +261,18 @@ export default function PlatformPage() {
             <article>
               <span>Total academies</span>
               <strong>{academies.length}</strong>
-              <small>Customer workspaces</small>
             </article>
             <article>
               <span>Active academies</span>
               <strong>{activeAcademies.length}</strong>
-              <small>
-                {academies.length - activeAcademies.length} inactive
-              </small>
             </article>
             <article>
               <span>Active learners</span>
               <strong>{totalStudents}</strong>
-              <small>Across active tenants</small>
             </article>
             <article>
               <span>Open support</span>
               <strong>{overview?.openSupportCases ?? 0}</strong>
-              <small>Platform-owned cases</small>
             </article>
           </section>
           <section className="platform-main-grid">
@@ -281,7 +283,6 @@ export default function PlatformPage() {
               <header>
                 <div>
                   <h3>Academies</h3>
-                  <p>Tenant portfolio and lifecycle</p>
                 </div>
                 <input
                   id="academy-search"
@@ -348,61 +349,74 @@ export default function PlatformPage() {
                 </table>
               </div>
             </article>
-            <article id="onboard" className="platform-panel platform-onboard">
-              <header>
-                <div>
-                  <h3>Onboard academy</h3>
-                  <p>Create a tenant and its first Academy Admin.</p>
-                </div>
-              </header>
-              <form onSubmit={onboard}>
-                <label>
-                  Academy name
-                  <input
-                    value={academyName}
-                    onChange={(event) => setAcademyName(event.target.value)}
-                    required
-                  />
-                </label>
-                <label>
-                  Legal business name <em>Optional</em>
-                  <input
-                    value={legalName}
-                    onChange={(event) => setLegalName(event.target.value)}
-                  />
-                </label>
-                <label>
-                  Admin user name
-                  <input
-                    value={adminUserName}
-                    onChange={(event) => setAdminUserName(event.target.value)}
-                    required
-                  />
-                </label>
-                <label>
-                  Admin display name <em>Optional</em>
-                  <input
-                    value={adminDisplayName}
-                    onChange={(event) =>
-                      setAdminDisplayName(event.target.value)
-                    }
-                  />
-                </label>
-                <label>
-                  Temporary password
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(event) => setPassword(event.target.value)}
-                    required
-                  />
-                </label>
-                <button className="platform-submit" disabled={busy}>
-                  {busy ? "Working…" : "Create academy and admin"}
-                </button>
-              </form>
-            </article>
           </section>
+          {onboardingOpen && (
+            <div className="platform-modal-backdrop" role="presentation">
+              <article
+                className="platform-modal"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="onboard-title"
+              >
+                <header>
+                  <h3 id="onboard-title">Onboard academy</h3>
+                  <button
+                    type="button"
+                    aria-label="Close onboarding"
+                    onClick={() => setOnboardingOpen(false)}
+                  >
+                    ×
+                  </button>
+                </header>
+                <form onSubmit={onboard}>
+                  <label>
+                    Academy name
+                    <input
+                      value={academyName}
+                      onChange={(event) => setAcademyName(event.target.value)}
+                      required
+                    />
+                  </label>
+                  <label>
+                    Legal business name <em>Optional</em>
+                    <input
+                      value={legalName}
+                      onChange={(event) => setLegalName(event.target.value)}
+                    />
+                  </label>
+                  <label>
+                    Admin user name
+                    <input
+                      value={adminUserName}
+                      onChange={(event) => setAdminUserName(event.target.value)}
+                      required
+                    />
+                  </label>
+                  <label>
+                    Admin display name <em>Optional</em>
+                    <input
+                      value={adminDisplayName}
+                      onChange={(event) =>
+                        setAdminDisplayName(event.target.value)
+                      }
+                    />
+                  </label>
+                  <label>
+                    Temporary password
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={(event) => setPassword(event.target.value)}
+                      required
+                    />
+                  </label>
+                  <button className="platform-submit" disabled={busy}>
+                    {busy ? "Working…" : "Create academy and admin"}
+                  </button>
+                </form>
+              </article>
+            </div>
+          )}
           <section id="governance" className="platform-governance">
             <div>
               <span>Platform health</span>
@@ -413,17 +427,11 @@ export default function PlatformPage() {
             </div>
             <div>
               <span>Communication</span>
-              <strong>
-                {health?.communicationProviders ?? "Checking"}. Connect provider
-                accounts from the platform settings layer.
-              </strong>
+              <strong>{health?.communicationProviders ?? "Checking"}</strong>
             </div>
             <div>
               <span>Billing exposure</span>
-              <strong>
-                ₹{overview?.outstandingBilling ?? 0} outstanding across platform
-                invoices.
-              </strong>
+              <strong>₹{overview?.outstandingBilling ?? 0}</strong>
             </div>
           </section>
           {notice.text && (

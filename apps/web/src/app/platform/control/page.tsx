@@ -68,6 +68,15 @@ type Health = {
   statusMessage?: string;
 };
 
+const platformControlTabs = [
+  "Tenants",
+  "Admins",
+  "Billing",
+  "Support",
+  "Settings",
+  "Audit & health",
+];
+
 export default function PlatformControlPage() {
   const router = useRouter();
   const [tab, setTab] = useState("Tenants");
@@ -251,23 +260,11 @@ export default function PlatformControlPage() {
     router.push("/login");
   }
 
-  const tabs = [
-    "Tenants",
-    "Admins",
-    "Billing",
-    "Support",
-    "Settings",
-    "Audit & health",
-  ];
   useEffect(() => {
     const requestedTab = new URLSearchParams(window.location.search).get("tab");
-    if (requestedTab && tabs.includes(requestedTab)) setTab(requestedTab);
+    if (requestedTab && platformControlTabs.includes(requestedTab))
+      setTab(requestedTab);
   }, []);
-
-  function selectTab(nextTab: string) {
-    setTab(nextTab);
-    router.replace(`/platform/control?tab=${encodeURIComponent(nextTab)}`);
-  }
 
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100">
@@ -284,43 +281,36 @@ export default function PlatformControlPage() {
           </Link>
           <div className="ml-auto flex items-center gap-3">
             <ThemeToggle />
-            <button className="enterprise-signout" onClick={signOut}>
-              Sign out
-            </button>
+            <details className="relative">
+              <summary
+                className="grid h-9 w-9 cursor-pointer list-none place-items-center rounded-full bg-violet-600 font-medium text-white [&::-webkit-details-marker]:hidden"
+                aria-label="Open Platform Owner profile menu"
+              >
+                S
+              </summary>
+              <div className="absolute right-0 z-50 mt-2 grid min-w-44 gap-1 rounded-lg border border-slate-700 bg-slate-900 p-3 shadow-xl">
+                <strong className="text-sm">Shashank</strong>
+                <small className="text-slate-400">Platform Owner</small>
+                <button
+                  className="mt-2 rounded border border-slate-700 px-2 py-1.5 text-left text-sm text-slate-300 hover:bg-slate-800"
+                  onClick={signOut}
+                >
+                  Sign out
+                </button>
+              </div>
+            </details>
           </div>
         </div>
       </header>
       <div className="mx-auto max-w-7xl px-5 py-8">
-        <p className="text-sm font-semibold uppercase tracking-[.18em] text-cyan-300">
-          Platform Control Centre
-        </p>
-        <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-semibold">SaaS administration</h1>
-            <p className="mt-2 text-slate-400">
-              Tenant, commercial, support, security, and operational controls.
-            </p>
-          </div>
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <h1 className="text-3xl font-semibold">{tab}</h1>
           <Link href="/platform" className="text-sm text-cyan-300">
-            ← Portfolio overview
+            ← Academies
           </Link>
         </div>
-        <nav
-          className="mt-7 flex flex-wrap gap-2"
-          aria-label="Platform control sections"
-        >
-          {tabs.map((item) => (
-            <button
-              key={item}
-              onClick={() => selectTab(item)}
-              className={`rounded-lg px-3 py-2 text-sm ${tab === item ? "bg-cyan-400 font-semibold text-slate-950" : "border border-slate-700 bg-slate-900 text-slate-300"}`}
-            >
-              {item}
-            </button>
-          ))}
-        </nav>
         {message && (
-          <p className="mt-5 rounded-lg border border-slate-700 bg-slate-900 p-3 text-sm text-slate-300">
+          <p className="mt-4 rounded-lg border border-slate-700 bg-slate-900 p-3 text-sm text-slate-300">
             {message}
           </p>
         )}
@@ -411,12 +401,7 @@ export default function PlatformControlPage() {
             </section>
             <section className="rounded-xl border border-slate-800 bg-slate-900 p-5">
               <h2 className="font-semibold">Subscription controls</h2>
-              <p className="mt-3 text-sm text-slate-400">
-                Plans, capacity and feature entitlements are enforced as tenant
-                configuration. Billing invoices are kept separately because
-                payment-provider integration is not yet connected.
-              </p>
-              <ul className="mt-5 space-y-3 text-sm text-slate-300">
+              <ul className="mt-4 space-y-3 text-sm text-slate-300">
                 {academies.map((academy) => (
                   <li
                     key={academy.id}

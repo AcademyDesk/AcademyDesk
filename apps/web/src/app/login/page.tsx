@@ -62,9 +62,6 @@ export default function LoginPage() {
           AcademyDesk
         </p>
         <h1 className="mt-5 text-3xl font-semibold">Sign in</h1>
-        <p className="mt-2 text-slate-400">
-          Access your AcademyDesk workspace.
-        </p>
         <label className="mt-7 block text-sm text-slate-300" htmlFor="username">
           User name
         </label>
