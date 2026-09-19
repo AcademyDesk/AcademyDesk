@@ -317,7 +317,7 @@ function TeacherTasks({
   return (
     <>
       <section className="learner-panel">
-        <h3>Publish assignment</h3>
+        <h3>Assign homework</h3>
         <form
           className="learner-form"
           onSubmit={(e) => void create(e, "/api/teacher/assignments")}
@@ -330,7 +330,7 @@ function TeacherTasks({
           />
           <input name="type" defaultValue="Homework" />
           <input name="isPublished" type="hidden" value="true" />
-          <button>Publish assignment</button>
+          <button>Assign homework</button>
         </form>
       </section>
       <section className="learner-panel">
