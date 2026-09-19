@@ -821,7 +821,8 @@ html[data-theme="light"] [class~="text-red-300"] {
 .enterprise-dashboard-heading p {
   display: none;
 }
-.enterprise-primary-action {
+.enterprise-primary-action,
+.primary-action {
   display: inline-flex;
   align-items: center;
   gap: 9px;
@@ -832,9 +833,15 @@ html[data-theme="light"] [class~="text-red-300"] {
   font-size: clamp(0.82rem, 0.88vw, 1rem);
   font-weight: 750;
 }
-.enterprise-primary-action:hover {
+.enterprise-primary-action:hover,
+.primary-action:hover:not(:disabled) {
   background: var(--ad-action-hover);
   transform: translateY(-1px);
+}
+.enterprise-primary-action:disabled,
+.primary-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 .enterprise-kpi-grid {
   display: grid;
