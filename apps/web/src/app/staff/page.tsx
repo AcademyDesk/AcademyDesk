@@ -252,7 +252,7 @@ export default function StaffPage() {
                       {person.isActive ? (
                         <button
                           onClick={() => void offboard(person)}
-                          className="text-sm text-rose-300"
+                          className="inline-flex items-center rounded-lg border border-rose-400/60 bg-rose-500/10 px-3 py-2 text-sm font-semibold text-rose-100 transition hover:bg-rose-500/20 focus:outline-none focus:ring-2 focus:ring-rose-300/70"
                         >
                           Offboard and revoke sessions
                         </button>
