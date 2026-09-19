@@ -69,7 +69,14 @@ const navigationGroups: readonly NavigationGroup[] = [
     label: "Sales & Marketing",
     icon: "◌",
     links: [
+      ["Sales overview", "/sales-marketing"],
       ["Leads", "/leads"],
+      ["Campaigns", "/sales-marketing"],
+      ["Lead sources", "/sales-marketing"],
+      ["Follow-ups", "/sales-marketing"],
+      ["Conversion dashboard", "/sales-marketing"],
+      ["Referral tracking", "/sales-marketing"],
+      ["Trial-class bookings", "/sales-marketing"],
     ],
   },
   {
