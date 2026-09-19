@@ -117,6 +117,7 @@ const navigationGroups: readonly NavigationGroup[] = [
       ["Fee plans", "/fee-plans"],
       ["Invoices", "/invoices"],
       ["Payments", "/payments"],
+      ["Teacher & staff payouts", "/payroll"],
       ["Fee reminders", "/fee-reminders"],
       ["Expenses", "/expenses"],
     ],

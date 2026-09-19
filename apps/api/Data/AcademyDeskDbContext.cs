@@ -31,6 +31,8 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
     public DbSet<Invoice> Invoices => Set<Invoice>();
     public DbSet<Payment> Payments => Set<Payment>();
     public DbSet<Expense> Expenses => Set<Expense>();
+    public DbSet<PayrollProfile> PayrollProfiles => Set<PayrollProfile>();
+    public DbSet<PayrollPayout> PayrollPayouts => Set<PayrollPayout>();
     public DbSet<FinanceAdjustment> FinanceAdjustments => Set<FinanceAdjustment>();
     public DbSet<AcademyFinanceSettings> AcademyFinanceSettings => Set<AcademyFinanceSettings>();
     public DbSet<PersonDocument> PersonDocuments => Set<PersonDocument>();
@@ -255,6 +257,31 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
             entity.Property(x => x.TaxLabel).HasMaxLength(30).IsRequired();
             entity.Property(x => x.TaxRatePercent).HasPrecision(6, 3);
             entity.HasIndex(x => x.AcademyId).IsUnique();
+        });
+        modelBuilder.Entity<PayrollProfile>(entity =>
+        {
+            entity.Property(x => x.WorkerType).HasMaxLength(20).IsRequired();
+            entity.Property(x => x.StaffUserId).HasMaxLength(450);
+            entity.Property(x => x.WorkerName).HasMaxLength(240).IsRequired();
+            entity.Property(x => x.PaymentModel).HasMaxLength(20).IsRequired();
+            entity.Property(x => x.MonthlyAmount).HasPrecision(18, 2);
+            entity.Property(x => x.AmountPerCycle).HasPrecision(18, 2);
+            entity.HasIndex(x => new { x.AcademyId, x.TeacherId });
+            entity.HasIndex(x => new { x.AcademyId, x.StaffUserId });
+        });
+        modelBuilder.Entity<PayrollPayout>(entity =>
+        {
+            entity.Property(x => x.PayslipNumber).HasMaxLength(60).IsRequired();
+            entity.Property(x => x.PeriodLabel).HasMaxLength(120).IsRequired();
+            entity.Property(x => x.GrossAmount).HasPrecision(18, 2);
+            entity.Property(x => x.Deductions).HasPrecision(18, 2);
+            entity.Property(x => x.NetAmount).HasPrecision(18, 2);
+            entity.Property(x => x.Currency).HasMaxLength(3).IsRequired();
+            entity.Property(x => x.Status).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.PaymentMethod).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.Reference).HasMaxLength(150);
+            entity.HasIndex(x => new { x.AcademyId, x.PayslipNumber }).IsUnique();
+            entity.HasIndex(x => new { x.AcademyId, x.PayrollProfileId, x.PaidAtUtc });
         });
         modelBuilder.Entity<PersonDocument>(entity => { entity.Property(x => x.DocumentType).HasMaxLength(80).IsRequired(); entity.Property(x => x.FileName).HasMaxLength(260).IsRequired(); entity.Property(x => x.SecureReference).HasMaxLength(1000); entity.Property(x => x.Status).HasMaxLength(30).IsRequired(); entity.Property(x => x.Visibility).HasMaxLength(30).IsRequired(); entity.HasIndex(x => new { x.AcademyId, x.StudentId, x.Status }); });
         modelBuilder.Entity<ConsentRecord>(entity => { entity.Property(x => x.ConsentType).HasMaxLength(100).IsRequired(); entity.Property(x => x.EvidenceReference).HasMaxLength(1000); entity.HasIndex(x => new { x.AcademyId, x.StudentId, x.ConsentType }); });

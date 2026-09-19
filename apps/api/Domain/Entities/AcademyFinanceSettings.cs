@@ -6,4 +6,9 @@ public sealed class AcademyFinanceSettings : AcademyEntity
     public decimal TaxRatePercent { get; set; }
     public int DefaultPaymentTermsDays { get; set; } = 7;
     public bool TaxInclusivePricing { get; set; }
+    public string? InvoiceLogoUrl { get; set; }
+    public string? InvoiceAuthorityName { get; set; }
+    public string? InvoiceAuthorityTitle { get; set; }
+    public string? InvoiceSignatureUrl { get; set; }
+    public string InvoiceTemplateKey { get; set; } = "Classic";
 }
