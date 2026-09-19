@@ -1,4 +1,7 @@
 using AcademyDesk.Api.Domain.Identity;
+using AcademyDesk.Api.Data;
+using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Identity;
@@ -9,7 +12,7 @@ namespace AcademyDesk.Api.Security;
 /// Prevents an authenticated user from reading or changing another academy's data.
 /// It applies to every controller action that has an academyId route parameter.
 /// </summary>
-public sealed class AcademyAccessFilter(UserManager<ApplicationUser> userManager) : IAsyncActionFilter
+public sealed class AcademyAccessFilter(UserManager<ApplicationUser> userManager, IdentityDbContext identityDb) : IAsyncActionFilter
 {
     private static readonly HashSet<string> FinanceControllers = new(StringComparer.Ordinal)
     {
@@ -41,8 +44,7 @@ public sealed class AcademyAccessFilter(UserManager<ApplicationUser> userManager
         }
 
         var isAdministrator = await userManager.IsInRoleAsync(user, "Owner") ||
-            await userManager.IsInRoleAsync(user, "AcademyAdmin") ||
-            await userManager.IsInRoleAsync(user, "Manager");
+            await userManager.IsInRoleAsync(user, "AcademyAdmin");
         if (isAdministrator)
         {
             await next();
@@ -50,10 +52,21 @@ public sealed class AcademyAccessFilter(UserManager<ApplicationUser> userManager
         }
 
         var controller = context.Controller.GetType().Name;
-        var collectionTaskRequest = controller == "AdminWorkItemsController" &&
-            (string.Equals(context.HttpContext.Request.Query["type"], "Collections", StringComparison.OrdinalIgnoreCase) ||
-             context.HttpContext.Request.Path.Value?.EndsWith("/collections", StringComparison.OrdinalIgnoreCase) == true);
-        if (await userManager.IsInRoleAsync(user, "FinanceUser") && (FinanceControllers.Contains(controller) || collectionTaskRequest))
+        var required = PermissionCatalog.RequiredFor(controller);
+        if (required is null)
+        {
+            context.Result = new ForbidResult();
+            return;
+        }
+        var roles = await userManager.GetRolesAsync(user);
+        var granted = roles.SelectMany(PermissionCatalog.ForSystemRole).ToHashSet(StringComparer.Ordinal);
+        var customPermissions = await identityDb.Roles.Where(role => roles.Contains(role.Name!))
+            .Select(role => role.PermissionsJson).ToListAsync(context.HttpContext.RequestAborted);
+        foreach (var json in customPermissions) foreach (var permission in JsonSerializer.Deserialize<string[]>(json) ?? []) granted.Add(permission);
+        var grants = await identityDb.AccessGrants.Where(grant => grant.AcademyId == academyId && grant.UserId == user.Id && grant.RevokedAtUtc == null && (grant.IsPermanent || grant.ExpiresAtUtc > DateTimeOffset.UtcNow))
+            .Select(grant => grant.PermissionsJson).ToListAsync(context.HttpContext.RequestAborted);
+        foreach (var json in grants) foreach (var permission in JsonSerializer.Deserialize<string[]>(json) ?? []) granted.Add(permission);
+        if (required.All(granted.Contains))
         {
             await next();
             return;

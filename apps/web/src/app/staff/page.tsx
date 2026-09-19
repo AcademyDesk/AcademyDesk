@@ -177,6 +177,9 @@ export default function StaffPage() {
             >
               <option>Teacher</option>
               <option>Manager</option>
+              <option>Operations</option>
+              <option>Sales</option>
+              <option>Marketing</option>
               <option>FinanceUser</option>
               <option>FrontDesk</option>
             </select>
@@ -233,6 +236,9 @@ export default function StaffPage() {
                         >
                           <option>Teacher</option>
                           <option>Manager</option>
+                          <option>Operations</option>
+                          <option>Sales</option>
+                          <option>Marketing</option>
                           <option>FinanceUser</option>
                           <option>FrontDesk</option>
                         </select>

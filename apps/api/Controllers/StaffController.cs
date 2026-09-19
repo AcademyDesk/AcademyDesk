@@ -12,7 +12,7 @@ public sealed class StaffController(
     UserManager<ApplicationUser> userManager,
     RoleManager<ApplicationRole> roleManager) : ControllerBase
 {
-    private static readonly string[] AllowedRoles = ["Manager", "FinanceUser", "Teacher", "FrontDesk"];
+    private static readonly string[] AllowedRoles = ["Manager", "Operations", "Sales", "Marketing", "FinanceUser", "Teacher", "FrontDesk"];
 
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<StaffAccountSummary>>> List(Guid academyId)
@@ -39,7 +39,7 @@ public sealed class StaffController(
     {
         if (!await IsOwner(academyId)) return Forbid();
         if (!AllowedRoles.Contains(request.Role, StringComparer.OrdinalIgnoreCase))
-            return BadRequest(new { message = "Role must be Manager, FinanceUser, Teacher, or FrontDesk." });
+            return BadRequest(new { message = "Choose a supported staff role." });
         if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.DisplayName) || string.IsNullOrWhiteSpace(request.Password))
             return BadRequest(new { message = "Email, display name, and an initial password are required." });
 
@@ -92,7 +92,7 @@ public sealed class StaffController(
     {
         if (!await IsOwner(academyId)) return Forbid();
         if (!AllowedRoles.Contains(request.Role, StringComparer.OrdinalIgnoreCase))
-            return BadRequest(new { message = "Role must be Manager, FinanceUser, Teacher, or FrontDesk." });
+            return BadRequest(new { message = "Choose a supported staff role." });
 
         var staff = await userManager.FindByIdAsync(staffId.ToString());
         if (staff?.AcademyId != academyId) return NotFound();
