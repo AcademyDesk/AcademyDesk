@@ -1391,6 +1391,37 @@ html[data-theme="light"] .field-label { color: #475569; }
   border-color: var(--ad-border) !important;
   background: var(--ad-surface) !important;
 }
+.academic-module form.surface-panel {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-content: start;
+  gap: 14px;
+}
+.academic-module form.surface-panel > h3,
+.academic-module form.surface-panel > :is(textarea, .grid, label) {
+  grid-column: 1 / -1;
+}
+.academic-module form.surface-panel > :is(input, select, textarea),
+.academic-module form.surface-panel > .grid > :is(input, select, textarea),
+.academic-module form.surface-panel > label :is(input, select, textarea) {
+  width: 100% !important;
+  min-width: 0;
+  margin: 0 !important;
+}
+.academic-module form.surface-panel > .grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin: 0 !important;
+}
+.academic-module form.surface-panel > label {
+  margin: 0 !important;
+}
+.academic-module form.surface-panel > button {
+  align-self: end;
+  justify-self: start;
+  margin: 0 !important;
+}
 .academic-module .surface-panel > h3,
 .academic-standard :is(form, section, article) > h2,
 .academic-standard :is(form, section, article) > h3 {
@@ -1416,6 +1447,20 @@ html[data-theme="light"] .field-label { color: #475569; }
   font-size: .8rem;
   font-weight: 700;
 }
+.academic-module .surface-panel .overflow-x-auto {
+  overflow: auto;
+  border: 1px solid var(--ad-border);
+  border-radius: 10px;
+  background: var(--ad-surface);
+}
+.academic-module .surface-panel table :is(th, td) {
+  padding: 13px 16px !important;
+  vertical-align: middle;
+}
+.academic-module .surface-panel table th:first-child,
+.academic-module .surface-panel table td:first-child { padding-left: 18px !important; }
+.academic-module .surface-panel table th:last-child,
+.academic-module .surface-panel table td:last-child { padding-right: 18px !important; }
 .academic-module .enterprise-page-header a,
 .academic-module .enterprise-page-header .text-cyan-300 a {
   display: inline-flex;
@@ -1451,6 +1496,11 @@ html[data-theme="light"] .field-label { color: #475569; }
 .academic-standard button:not(.enterprise-action-button) { min-height: 38px; }
 .academic-standard button[class~="border-cyan-400"],
 .academic-standard button[class~="border-cyan-500"] { padding: 8px 13px !important; }
+@media (max-width: 720px) {
+  .academic-module form.surface-panel,
+  .academic-module form.surface-panel > .grid { grid-template-columns: 1fr; }
+  .academic-module form.surface-panel > :is(input, select) { grid-column: 1 / -1; }
+}
 .enterprise-settings :is(input, select, textarea).field,
 .enterprise-settings input:not([type="checkbox"]):not([type="radio"]),
 .enterprise-settings select,
