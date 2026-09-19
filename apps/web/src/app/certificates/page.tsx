@@ -10,16 +10,9 @@ type Branding = { academyName: string; logoUrl?: string | null; accentColor: str
 type Certificate = { id: string; certificateNumber: string; studentId: string; title: string; templateKey: string; verificationCode: string; issuedDate: string; status: string };
 
 const themes = [
-  ["heritage", "Heritage Crest", "Formal academy certificate"],
-  ["modern-wave", "Modern Wave", "Contemporary clean design"],
-  ["ivory-crest", "Ivory Crest", "Classic refined design"],
-  ["royal-scroll", "Royal Scroll", "Premium ceremonial design"],
-  ["onyx-gold", "Onyx & Gold", "Premium achievement design"],
-  ["laureate", "Laureate", "Honours and excellence design"],
-  ["stage", "Stage Spotlight", "Music and performance design"],
-  ["medal", "Medal of Merit", "Achievement recognition design"],
-  ["tricolour", "Tricolour Celebration", "National celebration design"],
-  ["festive", "Festive Diya", "Festival celebration design"],
+  ["music-recital", "Recital Night", "Music"], ["music-conservatory", "Conservatory", "Music"], ["music-rhythm", "Rhythm & Beats", "Music"], ["music-spotlight", "Stage Spotlight", "Music"], ["music-symphony", "Symphony", "Music"],
+  ["music-acoustic", "Acoustic Session", "Music"], ["music-vocal", "Vocal Excellence", "Music"], ["music-orchestra", "Orchestra", "Music"], ["music-virtuoso", "Virtuoso", "Music"], ["music-practice", "Practice Milestone", "Music"],
+  ["school-honours", "School Honours", "School"], ["school-crest", "School Crest", "School"], ["school-scholar", "Scholar Award", "School"], ["school-merit", "Merit Medal", "School"], ["school-graduation", "Graduation", "School"],
 ] as const;
 
 export default function CertificatesPage() {
@@ -31,7 +24,7 @@ export default function CertificatesPage() {
   const [studentId, setStudentId] = useState("");
   const [batchId, setBatchId] = useState("");
   const [title, setTitle] = useState("Certificate of Achievement");
-  const [themeKey, setThemeKey] = useState("heritage");
+  const [themeKey, setThemeKey] = useState("music-recital");
   const [issuedDate, setIssuedDate] = useState("");
   const [notes, setNotes] = useState("");
   const [status, setStatus] = useState("Loading certificates…");
@@ -86,7 +79,7 @@ export default function CertificatesPage() {
         <select value={studentId} onChange={(event) => setStudentId(event.target.value)} required><option value="">Select student</option>{students.map((student) => <option key={student.id} value={student.id}>{student.firstName} {student.lastName}</option>)}</select>
         <select value={batchId} onChange={(event) => setBatchId(event.target.value)}><option value="">No class or batch</option>{batches.map((batch) => <option key={batch.id} value={batch.id}>{batch.name}</option>)}</select>
         <input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Certificate title" required /><input type="date" value={issuedDate} onChange={(event) => setIssuedDate(event.target.value)} />
-        <div className="certificate-theme-picker"><span>Choose a complete certificate theme</span><div>{themes.map(([key, name, description]) => <button type="button" key={key} data-selected={key === themeKey} className={`certificate-theme-card theme-${key}`} onClick={() => setThemeKey(key)}><b>{name}</b><small>{description}</small></button>)}</div></div>
+        <div className="certificate-theme-picker"><span>Choose a complete certificate theme</span><div>{themes.map(([key, name, category]) => <button type="button" key={key} data-selected={key === themeKey} className={`certificate-theme-card theme-${key}`} onClick={() => setThemeKey(key)}><b>{name}</b><small>{category}</small></button>)}</div></div>
         <textarea value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="Recognition note (optional)" /><button className="enterprise-action-button">Issue certificate</button>
       </form>
       <section className="surface-panel rounded-xl p-5 certificate-preview-panel"><div className="flex items-center justify-between gap-3"><h3>Certificate preview</h3><button type="button" className="enterprise-action-button-secondary" onClick={() => window.print()}>Print / save PDF</button></div>
