@@ -5,6 +5,8 @@ public sealed class Lead : AcademyEntity
     public required string FullName { get; set; }
     public string? Email { get; set; }
     public string? Phone { get; set; }
+    public DateOnly? DateOfBirth { get; set; }
+    public string? ParentName { get; set; }
     public string? ProgramInterest { get; set; }
     public string Source { get; set; } = "WalkIn";
     public string Stage { get; set; } = "New";

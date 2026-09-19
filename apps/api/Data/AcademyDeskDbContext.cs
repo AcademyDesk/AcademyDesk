@@ -96,6 +96,7 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
             entity.Property(x => x.FullName).HasMaxLength(240).IsRequired();
             entity.Property(x => x.Email).HasMaxLength(320);
             entity.Property(x => x.Phone).HasMaxLength(30);
+            entity.Property(x => x.ParentName).HasMaxLength(240);
             entity.Property(x => x.ProgramInterest).HasMaxLength(200);
             entity.Property(x => x.Source).HasMaxLength(50).IsRequired();
             entity.Property(x => x.Stage).HasMaxLength(50).IsRequired();
