@@ -12,6 +12,10 @@ button:disabled,
 }
 
 :root {
+  --ad-page-title-size: clamp(2.75rem, 5vw, 5.6rem);
+  --ad-page-title-weight: 520;
+  --ad-page-title-tracking: -0.05em;
+  --ad-page-title-line-height: 1.05;
   --background: #f4f7fb;
   --foreground: #172033;
   --ad-canvas: #f4f7fb;
@@ -865,10 +869,11 @@ html[data-theme="light"] [class~="text-red-300"] {
 .academic-standard h1 {
   margin: 0;
   color: var(--ad-text);
-  font-size: clamp(2.75rem, 5vw, 5.6rem) !important;
-  font-weight: 520 !important;
-  letter-spacing: -0.055em;
-  line-height: 1.02;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-size: var(--ad-page-title-size) !important;
+  font-weight: var(--ad-page-title-weight) !important;
+  letter-spacing: var(--ad-page-title-tracking) !important;
+  line-height: var(--ad-page-title-line-height) !important;
 }
 .academic-standard h1 + p { display: none; }
 .academic-standard > div > p:first-child,
@@ -1203,10 +1208,11 @@ html[data-theme="light"] .field-label { color: #475569; }
 .enterprise-page-header h2 {
   margin-top: 0;
   color: var(--ad-text);
-  font-size: clamp(2.75rem, 5vw, 5.6rem);
-  font-weight: 520;
-  letter-spacing: -0.05em;
-  line-height: 1.05;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-size: var(--ad-page-title-size) !important;
+  font-weight: var(--ad-page-title-weight) !important;
+  letter-spacing: var(--ad-page-title-tracking) !important;
+  line-height: var(--ad-page-title-line-height) !important;
 }
 .enterprise-page-header p,
 .enterprise-page-header span {
