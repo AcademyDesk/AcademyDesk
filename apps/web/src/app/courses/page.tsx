@@ -122,13 +122,9 @@ export default function CoursesPage() {
   return (
     <>
       <WorkspaceNav />
-      <main className="min-h-screen bg-slate-950 px-6 py-12 text-slate-100">
+      <main className="academic-standard min-h-screen px-6 py-12">
         <div className="mx-auto max-w-5xl">
         <h1 className="text-4xl font-semibold">Course catalogue</h1>
-          <p className="mt-3 text-slate-300">
-            Configure music programs, tuition subjects, and coaching courses in
-            one catalogue.
-          </p>
           {message && (
             <p className="mt-5 rounded-lg border border-amber-700/50 bg-amber-950/40 p-3 text-sm text-amber-200">
               {message}

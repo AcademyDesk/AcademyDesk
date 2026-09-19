@@ -854,6 +854,56 @@ html[data-theme="light"] [class~="text-red-300"] {
   cursor: not-allowed;
   opacity: 0.5;
 }
+
+/* Standard treatment for Academics pages that still use the earlier workspace layout. */
+.academic-standard {
+  min-height: 100%;
+  background: var(--ad-canvas) !important;
+  color: var(--ad-text) !important;
+}
+.academic-standard > div { max-width: min(100%, 1240px) !important; }
+.academic-standard h1 {
+  margin: 0;
+  color: var(--ad-text);
+  font-size: clamp(2.75rem, 5vw, 5.6rem) !important;
+  font-weight: 520 !important;
+  letter-spacing: -0.055em;
+  line-height: 1.02;
+}
+.academic-standard h1 + p { display: none; }
+.academic-standard > div > p:first-child,
+.academic-standard h1 ~ p.text-slate-300 { display: none; }
+.academic-standard button[class~="bg-cyan-400"] {
+  min-height: 38px;
+  padding: 8px 13px;
+  border: 1px solid color-mix(in srgb, var(--ad-action) 72%, var(--ad-border));
+  border-radius: 8px;
+  background: var(--ad-action) !important;
+  color: var(--ad-action-text) !important;
+  font-size: .82rem;
+  font-weight: 700;
+}
+.academic-standard button[class~="border-cyan-400"],
+.academic-standard button[class~="border-cyan-500"],
+.academic-standard button[class~="border-slate-700"] {
+  min-height: 38px;
+  border-radius: 8px;
+  color: var(--ad-accent) !important;
+  border-color: var(--ad-border-strong) !important;
+  background: transparent !important;
+  font-size: .82rem;
+  font-weight: 700;
+}
+.enterprise-settings button[class~="bg-cyan-400"] {
+  min-height: 38px;
+  padding: 8px 13px;
+  border: 1px solid color-mix(in srgb, var(--ad-action) 72%, var(--ad-border));
+  border-radius: 8px;
+  background: var(--ad-action) !important;
+  color: var(--ad-action-text) !important;
+  font-size: .82rem;
+  font-weight: 700;
+}
 .enterprise-kpi-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1153,7 +1203,7 @@ html[data-theme="light"] .field-label { color: #475569; }
 .enterprise-page-header h2 {
   margin-top: 0;
   color: var(--ad-text);
-  font-size: clamp(1.85rem, 2.2vw, 2.65rem);
+  font-size: clamp(2.75rem, 5vw, 5.6rem);
   font-weight: 520;
   letter-spacing: -0.05em;
   line-height: 1.05;
