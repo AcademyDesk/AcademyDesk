@@ -1,7 +1,6 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { WorkspaceNav } from "@/components/workspace-nav";
 import { academyApi, apiHeaders } from "@/lib/api";
 
 type Academy = { id: string };
@@ -54,18 +53,16 @@ export default function PaymentsPage() {
   const studentName = (id: string) => { const student = students.find((item) => item.id === id); return student ? `${student.firstName} ${student.lastName}` : "Unknown student"; };
   const balance = (invoice: Invoice) => invoice.totalAmount - (paidByInvoice[invoice.id] ?? 0);
 
-  return <main className="min-h-screen bg-slate-950 text-slate-100"><WorkspaceNav /><div className="mx-auto max-w-6xl px-6 py-10">
-    <p className="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-300">Finance</p><h1 className="mt-3 text-4xl font-semibold tracking-tight">Payments and balances</h1><p className="mt-3 text-slate-300">Record every payment against an invoice. AcademyDesk keeps the remaining balance and invoice status up to date.</p>
-    {message && <p className="mt-6 rounded-lg border border-amber-700/50 bg-amber-950/40 p-4 text-sm text-amber-100">{message}</p>}
-    <section className="mt-8 grid gap-6 lg:grid-cols-[0.85fr_1.15fr]"><form onSubmit={recordPayment} className="rounded-2xl border border-slate-800 bg-slate-900 p-6"><h2 className="text-xl font-semibold">Record payment</h2>
-      <select value={invoiceId} onChange={(event) => selectInvoice(event.target.value)} className="mt-5 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" required><option value="">Select invoice</option>{invoices.filter((invoice) => balance(invoice) > 0).map((invoice) => <option key={invoice.id} value={invoice.id}>{invoice.invoiceNumber} · {studentName(invoice.studentId)} · Balance {money(balance(invoice), invoice.currency)}</option>)}</select>
-      {selectedInvoice && <p className="mt-3 text-sm text-cyan-200">Remaining balance: {money(selectedBalance, selectedInvoice.currency)}</p>}
-      <input type="number" min="0.01" max={selectedBalance || undefined} step="0.01" value={amount} onChange={(event) => setAmount(event.target.value)} placeholder="Payment amount" className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" required />
-      <select value={method} onChange={(event) => setMethod(event.target.value)} className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"><option>UPI</option><option>Cash</option><option>BankTransfer</option><option>Card</option><option>Cheque</option><option>Offline</option></select>
-      <input value={reference} onChange={(event) => setReference(event.target.value)} placeholder="UPI, cheque, or receipt reference (optional)" className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" />
-      <button disabled={!academy || !invoiceId || !amount} className="mt-5 w-full rounded-lg bg-cyan-400 px-4 py-2.5 font-semibold text-slate-950 hover:bg-cyan-300 disabled:opacity-60">Record payment</button>
-    </form>
-    <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6"><h2 className="text-xl font-semibold">Invoice balances</h2>{invoices.length === 0 ? <p className="mt-6 text-slate-400">No invoices yet.</p> : <ul className="mt-5 space-y-3">{invoices.map((invoice) => <li key={invoice.id} className="rounded-lg border border-slate-700 bg-slate-950 p-4"><div className="flex flex-wrap items-start justify-between gap-3"><div><div className="font-medium">{studentName(invoice.studentId)}</div><div className="mt-1 text-sm text-slate-400">{invoice.invoiceNumber} · Due {invoice.dueDate}</div></div><div className="text-right"><div className="font-semibold text-cyan-200">Balance {money(balance(invoice), invoice.currency)}</div><div className="mt-1 text-sm text-slate-400">of {money(invoice.totalAmount, invoice.currency)} · {invoice.status}</div></div></div></li>)}</ul>}</section>
-    </section>
-  </div></main>;
+  return <main className="enterprise-settings finance-module">
+    <header className="enterprise-page-header"><p>Finance / payments</p><h2>Payments and balances</h2><span>Record payments against invoices while keeping balances and invoice status up to date.</span></header>
+    {message && <p className="enterprise-settings-empty mt-5">{message}</p>}
+    <section className="mt-5 grid gap-5 lg:grid-cols-[minmax(0,.85fr)_minmax(0,1.15fr)]"><form onSubmit={recordPayment} className="surface-panel rounded-xl p-5"><h3>Record payment</h3><div className="mt-4 grid gap-3">
+      <select value={invoiceId} onChange={(event) => selectInvoice(event.target.value)} className="field" required><option value="">Select invoice</option>{invoices.filter((invoice) => balance(invoice) > 0).map((invoice) => <option key={invoice.id} value={invoice.id}>{invoice.invoiceNumber} · {studentName(invoice.studentId)} · Balance {money(balance(invoice), invoice.currency)}</option>)}</select>
+      {selectedInvoice && <p className="text-sm text-cyan-200">Remaining balance: {money(selectedBalance, selectedInvoice.currency)}</p>}
+      <input type="number" min="0.01" max={selectedBalance || undefined} step="0.01" value={amount} onChange={(event) => setAmount(event.target.value)} placeholder="Payment amount" className="field" required />
+      <select value={method} onChange={(event) => setMethod(event.target.value)} className="field"><option>UPI</option><option>Cash</option><option>BankTransfer</option><option>Card</option><option>Cheque</option><option>Offline</option></select>
+      <input value={reference} onChange={(event) => setReference(event.target.value)} placeholder="UPI, cheque, or receipt reference (optional)" className="field" />
+    </div><button disabled={!academy || !invoiceId || !amount} className="enterprise-action-button mt-5 w-full">Record payment</button></form>
+    <section className="surface-panel rounded-xl p-5"><h3>Invoice balances</h3>{invoices.length === 0 ? <p className="enterprise-settings-empty mt-4">No invoices yet. Issue an invoice before recording a payment.</p> : <ul className="mt-4 space-y-3">{invoices.map((invoice) => <li key={invoice.id} className="rounded-lg border border-slate-700 p-4"><div className="flex flex-wrap items-start justify-between gap-3"><div><b>{studentName(invoice.studentId)}</b><p className="mt-1 text-sm text-slate-400">{invoice.invoiceNumber} · Due {invoice.dueDate}</p></div><div className="text-right"><b className="text-cyan-200">Balance {money(balance(invoice), invoice.currency)}</b><p className="mt-1 text-sm text-slate-400">of {money(invoice.totalAmount, invoice.currency)} · {invoice.status}</p></div></div></li>)}</ul>}</section></section>
+  </main>;
 }

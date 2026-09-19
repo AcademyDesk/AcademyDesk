@@ -1383,6 +1383,62 @@ html[data-theme="light"] .field-label { color: #475569; }
   letter-spacing: -0.015em;
 }
 
+/* Finance uses the shared Admin rhythm while retaining dense registers and controls. */
+.finance-module .surface-panel {
+  padding: clamp(20px, 2vw, 28px) !important;
+  border-color: var(--ad-border) !important;
+  background: var(--ad-surface) !important;
+}
+.finance-module .surface-panel > h3 + p {
+  margin-top: 5px;
+  color: var(--ad-text-muted);
+  font-size: .82rem;
+  line-height: 1.5;
+}
+.finance-module button[class~="bg-cyan-400"] {
+  min-height: 40px;
+  border: 1px solid var(--ad-action-border);
+  border-radius: 8px;
+  background: var(--ad-action) !important;
+  color: var(--ad-action-text) !important;
+  font-size: .84rem;
+  font-weight: 750;
+  transition: background 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+.finance-module button[class~="bg-cyan-400"]:hover:not(:disabled) {
+  background: var(--ad-action-hover) !important;
+  border-color: var(--ad-accent);
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--ad-accent) 18%, transparent);
+  transform: translateY(-1px);
+}
+.finance-module :is(button, a).text-cyan-300,
+.finance-module button.text-emerald-300,
+.finance-module button.text-rose-300 {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 6px 10px;
+  border: 1px solid var(--ad-border-strong);
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  font-size: .8rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+}
+.finance-module :is(button, a).text-cyan-300 { color: var(--ad-accent) !important; }
+.finance-module button.text-emerald-300 { color: #059669 !important; }
+.finance-module button.text-rose-300 { color: var(--ad-danger) !important; }
+.finance-module :is(button, a).text-cyan-300:hover,
+.finance-module button.text-emerald-300:hover,
+.finance-module button.text-rose-300:hover {
+  border-color: currentColor;
+  background: var(--ad-accent-soft);
+  transform: translateY(-1px);
+}
+
 /* Academics uses the same calm, task-focused contract across its governance and
    legacy pages: no instructional clutter, predictable breathing room, and
    visible actions instead of text-only controls. */

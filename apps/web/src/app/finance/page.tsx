@@ -184,13 +184,13 @@ export default function FinancePage() {
           <div className="flex flex-wrap gap-2">
             <Link
               href="/invoices"
-              className="rounded bg-cyan-400 px-4 py-2 font-semibold text-slate-950"
+              className="enterprise-action-button"
             >
               Issue invoice
             </Link>
             <Link
               href="/payments"
-              className="rounded border border-cyan-400 px-4 py-2 font-semibold text-cyan-200"
+              className="enterprise-action-button enterprise-action-button-secondary"
             >
               Record payment
             </Link>

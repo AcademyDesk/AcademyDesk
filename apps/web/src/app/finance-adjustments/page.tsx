@@ -132,7 +132,7 @@ export default function AdjustmentsPage() {
   };
 
   return (
-    <main className="enterprise-settings">
+    <main className="enterprise-settings finance-module">
       <header className="enterprise-page-header">
         <p>Finance / adjustments</p>
         <div className="flex flex-wrap items-end justify-between gap-4">
@@ -210,7 +210,7 @@ export default function AdjustmentsPage() {
           </label>
           <button
             disabled={!academy || submitting}
-            className="mt-5 rounded bg-cyan-400 px-4 py-2 font-semibold text-slate-950 disabled:opacity-60"
+            className="enterprise-action-button mt-5 disabled:opacity-60"
           >
             {submitting ? "Submitting…" : "Submit for approval"}
           </button>
