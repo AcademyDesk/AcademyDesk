@@ -1,5 +1,16 @@
 @import "tailwindcss";
 
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]),
+a[href] {
+  cursor: pointer;
+}
+
+button:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
 :root {
   --background: #f4f7fb;
   --foreground: #172033;
