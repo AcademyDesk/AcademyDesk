@@ -261,7 +261,18 @@ export default function TeachersPage() {
             </p>
           </article>
           <article className="surface-panel rounded-xl p-5">
-            <p className="text-sm text-slate-400">Assign Class / Batch</p>
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm text-slate-400">Assign Class / Batch</p>
+              <button
+                aria-label="Assign class or batch"
+                title="Assign class or batch"
+                disabled={saving || !assignmentTeacherId || !assignmentBatchId}
+                onClick={() => void assignBatch()}
+                className="primary-action flex h-9 w-9 items-center justify-center p-0"
+              >
+                ✓
+              </button>
+            </div>
             <select className="mt-2 w-full" value={assignmentTeacherId} onChange={(event) => setAssignmentTeacherId(event.target.value)}>
               <option value="">Select teacher</option>
               {activeTeachers.map((teacher) => <option key={teacher.id} value={teacher.id}>{teacher.firstName} {teacher.lastName}</option>)}
@@ -270,9 +281,6 @@ export default function TeachersPage() {
               <option value="">Select class or batch</option>
               {batches.filter((batch) => batch.isActive).map((batch) => <option key={batch.id} value={batch.id}>{batch.name}</option>)}
             </select>
-            <button disabled={saving || !assignmentTeacherId || !assignmentBatchId} onClick={() => void assignBatch()} className="primary-action mt-2 w-full">
-              {saving ? "Assigning…" : "Assign"}
-            </button>
           </article>
         </section>
         <section className="mt-6 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
