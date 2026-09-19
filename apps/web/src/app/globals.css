@@ -1676,6 +1676,80 @@ html[data-theme="light"] .field-label { color: #475569; }
   opacity: 0.55;
 }
 
+/* ADMIN STD — final shared finish for every academy-admin module.
+   This deliberately lives at the shell level so new and legacy pages inherit
+   the same typography, control breathing-room, action affordance and table
+   treatment without duplicating one-off visual rules page by page. */
+.enterprise-workspace > main {
+  min-width: 0;
+  color: var(--ad-text);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+.enterprise-workspace > main:not(.enterprise-settings) {
+  width: min(100%, 1440px);
+  margin-inline: auto;
+}
+.enterprise-workspace main :is(button, [role="button"]):not(.enterprise-icon-button):not(.enterprise-settings-tabs button) {
+  min-height: 38px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.enterprise-workspace main button:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+.enterprise-workspace main :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+  padding: 10px 13px !important;
+}
+.enterprise-workspace main :is(input:not([type="checkbox"]):not([type="radio"]), select) {
+  min-height: 42px;
+}
+.enterprise-workspace main textarea {
+  min-height: 104px;
+}
+.enterprise-workspace main :is(input, select, textarea)::placeholder {
+  color: var(--ad-text-subtle) !important;
+  opacity: 1;
+}
+.enterprise-workspace main :is(form, section, article, li).rounded-2xl,
+.enterprise-workspace main :is(form, section, article, li).rounded-xl,
+.enterprise-workspace main :is(form, section, article, li).rounded-lg {
+  min-width: 0;
+}
+.enterprise-workspace main :is(.overflow-auto, .overflow-x-auto) {
+  max-width: 100%;
+  border-radius: 10px;
+  -webkit-overflow-scrolling: touch;
+}
+.enterprise-workspace main table {
+  border-collapse: collapse;
+}
+.enterprise-workspace main table :is(th, td) {
+  padding: 12px 14px;
+  vertical-align: middle;
+}
+.enterprise-workspace main table th {
+  color: var(--ad-text-muted);
+  font-size: .74rem;
+  font-weight: 700;
+  letter-spacing: .025em;
+}
+.enterprise-workspace main table tbody tr:hover {
+  background: color-mix(in srgb, var(--ad-accent) 5%, transparent);
+}
+.enterprise-workspace main :is(.border-dashed, [data-empty-state]) {
+  border-color: var(--ad-border-strong) !important;
+  color: var(--ad-text-muted);
+}
+
+@media (max-width: 720px) {
+  .enterprise-workspace > main:not(.enterprise-settings) {
+    padding-inline: 16px !important;
+  }
+  .enterprise-workspace main table {
+    min-width: 600px;
+  }
+}
+
 /* Legacy Admin modules use the same visual contract while they are progressively
    migrated to EnterpriseShell. These selectors deliberately target the repeated
    page primitives, so every existing module gets the same spacing and states. */
