@@ -66,11 +66,10 @@ const navigationGroups: readonly NavigationGroup[] = [
     ],
   },
   {
-    label: "Admissions",
+    label: "Sales & Marketing",
     icon: "◌",
     links: [
       ["Leads", "/leads"],
-      ["Enrolment pipeline", "/enrollments"],
     ],
   },
   {
