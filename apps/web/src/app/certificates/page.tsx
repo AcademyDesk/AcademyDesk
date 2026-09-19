@@ -1,4 +1,92 @@
 "use client";
-import {FormEvent,useEffect,useState} from "react";import {WorkspaceNav} from "@/components/workspace-nav";import {academyApi,apiHeaders} from "@/lib/api";
-type Academy={id:string};type Student={id:string;firstName:string;lastName:string};type Batch={id:string;name:string};type Certificate={id:string;certificateNumber:string;studentId:string;batchId?:string|null;title:string;issuedDate:string;status:string;notes?:string|null};
-export default function CertificatesPage(){const[a,setA]=useState<Academy>();const[s,setS]=useState<Student[]>([]);const[b,setB]=useState<Batch[]>([]);const[c,setC]=useState<Certificate[]>([]);const[student,setStudent]=useState("");const[batch,setBatch]=useState("");const[title,setTitle]=useState("");const[date,setDate]=useState("");const[notes,setNotes]=useState("");const[m,setM]=useState("Loading certificates…");async function load(id?:string){const x=id??a?.id;if(!x)return;const[r1,r2,r3]=await Promise.all([academyApi(`/api/academies/${x}/students`),academyApi(`/api/academies/${x}/batches`),academyApi(`/api/academies/${x}/certificates`)]);if(!r1.ok||!r2.ok||!r3.ok)throw new Error();const ss:Student[]=await r1.json();setS(ss);setB(await r2.json());setC(await r3.json());if(!student&&ss.length)setStudent(ss[0].id);setM("");}useEffect(()=>{void(async()=>{try{const r=await academyApi("/api/academies");if(!r.ok)throw new Error();const q:Academy[]=await r.json();if(!q[0])return setM("Create your academy first.");setA(q[0]);await load(q[0].id)}catch{setM("Certificates could not be loaded. Apply the certificates migration and restart the API.")}})()},[]);async function issue(e:FormEvent){e.preventDefault();if(!a||!student)return;const r=await academyApi(`/api/academies/${a.id}/certificates`,{method:"POST",headers:apiHeaders(true),body:JSON.stringify({studentId:student,batchId:batch||null,title,issuedDate:date||null,notes:notes||null})});if(!r.ok)return setM("Certificate title is required.");setTitle("");setDate("");setNotes("");await load()}const name=(id:string)=>{const x=s.find(v=>v.id===id);return x?`${x.firstName} ${x.lastName}`:"Unknown student"};const batchName=(id?:string|null)=>b.find(v=>v.id===id)?.name??"No batch";return <main className="min-h-screen bg-slate-950 text-slate-100"><WorkspaceNav/><div className="mx-auto max-w-6xl px-6 py-10"><p className="text-sm font-semibold uppercase tracking-[.22em] text-cyan-300">Recognition</p><h1 className="mt-3 text-4xl font-semibold">Certificates</h1><p className="mt-3 text-slate-300">Issue unique, auditable certificates for course completion, recitals, exams, and achievements.</p>{m&&<p className="mt-6 rounded-lg border border-amber-700/50 bg-amber-950/40 p-4 text-sm text-amber-100">{m}</p>}<section className="mt-8 grid gap-6 lg:grid-cols-[.85fr_1.15fr]"><form onSubmit={issue} className="rounded-2xl border border-slate-800 bg-slate-900 p-6"><h2 className="text-xl font-semibold">Issue certificate</h2><select value={student} onChange={e=>setStudent(e.target.value)} className="mt-5 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2">{s.map(x=><option key={x.id} value={x.id}>{x.firstName} {x.lastName}</option>)}</select><select value={batch} onChange={e=>setBatch(e.target.value)} className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"><option value="">No batch</option>{b.map(x=><option key={x.id} value={x.id}>{x.name}</option>)}</select><input value={title} onChange={e=>setTitle(e.target.value)} placeholder="Certificate title" className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" required/><input type="date" value={date} onChange={e=>setDate(e.target.value)} className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"/><textarea value={notes} onChange={e=>setNotes(e.target.value)} placeholder="Notes (optional)" className="mt-3 min-h-24 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"/><button className="mt-5 w-full rounded-lg bg-cyan-400 px-4 py-2.5 font-semibold text-slate-950">Issue certificate</button></form><section className="rounded-2xl border border-slate-800 bg-slate-900 p-6"><h2 className="text-xl font-semibold">Issued certificates</h2>{c.length===0?<p className="mt-5 text-slate-400">No certificates issued yet.</p>:<ul className="mt-4 space-y-3">{c.map(x=><li key={x.id} className="rounded-lg border border-slate-700 bg-slate-950 p-4"><div className="font-medium">{x.title}</div><div className="mt-1 text-sm text-cyan-200">{name(x.studentId)} · {x.certificateNumber}</div><div className="mt-1 text-sm text-slate-400">{batchName(x.batchId)} · Issued {x.issuedDate}</div></li>)}</ul>}</section></section></div></main>}
+
+import { CSSProperties, FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { apiUrl, academyApi, apiHeaders } from "@/lib/api";
+
+type Academy = { id: string };
+type Student = { id: string; firstName: string; lastName: string };
+type Batch = { id: string; name: string };
+type Branding = { academyName: string; logoUrl?: string | null; accentColor: string; signatoryName?: string | null };
+type Certificate = { id: string; certificateNumber: string; studentId: string; batchId?: string | null; title: string; templateKey: string; verificationCode: string; issuedDate: string; status: string; notes?: string | null };
+
+const templates = [
+  ["classic", "Classic Laurels", "Professional"], ["modern", "Modern Horizon", "Professional"], ["minimal", "Minimal Studio", "Professional"], ["navy", "Premium Navy", "Professional"], ["academic", "Academic Crest", "Professional"],
+  ["gold", "Gold Achievement", "Medal"], ["silver", "Silver Achievement", "Medal"], ["bronze", "Bronze Achievement", "Medal"],
+  ["performance", "Stage Performance", "Music & coaching"], ["completion", "Course Completion", "Music & coaching"], ["excellence", "Excellence Award", "Music & coaching"],
+  ["independence-day", "Independence Day", "Seasonal"], ["republic-day", "Republic Day", "Seasonal"], ["diwali", "Diwali Celebration", "Seasonal"], ["ganesh-festival", "Ganesh Festival", "Seasonal"],
+] as const;
+
+export default function CertificatesPage() {
+  const [academy, setAcademy] = useState<Academy>();
+  const [students, setStudents] = useState<Student[]>([]);
+  const [batches, setBatches] = useState<Batch[]>([]);
+  const [certificates, setCertificates] = useState<Certificate[]>([]);
+  const [branding, setBranding] = useState<Branding>();
+  const [studentId, setStudentId] = useState("");
+  const [batchId, setBatchId] = useState("");
+  const [title, setTitle] = useState("Certificate of Achievement");
+  const [templateKey, setTemplateKey] = useState("classic");
+  const [issuedDate, setIssuedDate] = useState("");
+  const [notes, setNotes] = useState("");
+  const [status, setStatus] = useState("Loading certificates…");
+  const [savingBrand, setSavingBrand] = useState(false);
+  const fileInput = useRef<HTMLInputElement>(null);
+  const selectedStudent = useMemo(() => students.find((student) => student.id === studentId), [students, studentId]);
+  const selectedTemplate = templates.find(([key]) => key === templateKey) ?? templates[0];
+
+  async function load(academyId?: string) {
+    const id = academyId ?? academy?.id; if (!id) return;
+    const [studentResponse, batchResponse, certificateResponse, brandingResponse] = await Promise.all([
+      academyApi(`/api/academies/${id}/students`), academyApi(`/api/academies/${id}/batches`), academyApi(`/api/academies/${id}/certificates`), academyApi(`/api/academies/${id}/certificates/branding`),
+    ]);
+    if (!studentResponse.ok || !batchResponse.ok || !certificateResponse.ok || !brandingResponse.ok) throw new Error();
+    const availableStudents: Student[] = await studentResponse.json();
+    setStudents(availableStudents); setBatches(await batchResponse.json()); setCertificates(await certificateResponse.json()); setBranding(await brandingResponse.json());
+    if (!studentId && availableStudents[0]) setStudentId(availableStudents[0].id); setStatus("");
+  }
+  useEffect(() => { void (async () => { try { const response = await academyApi("/api/academies"); const academies: Academy[] = await response.json(); if (!response.ok || !academies[0]) throw new Error(); setAcademy(academies[0]); await load(academies[0].id); } catch { setStatus("Certificates could not be loaded."); } })(); }, []);
+
+  async function saveBranding(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault(); if (!academy || !branding) return; setSavingBrand(true);
+    try { const response = await academyApi(`/api/academies/${academy.id}/certificates/branding`, { method: "PUT", headers: apiHeaders(true), body: JSON.stringify({ accentColor: branding.accentColor, signatoryName: branding.signatoryName || null }) }); if (!response.ok) throw new Error(); setBranding(await response.json()); setStatus("Certificate branding saved."); }
+    catch { setStatus("Certificate branding could not be saved."); } finally { setSavingBrand(false); }
+  }
+  async function uploadLogo(event: React.ChangeEvent<HTMLInputElement>) {
+    const logo = event.target.files?.[0]; if (!academy || !logo) return; const body = new FormData(); body.append("logo", logo); setSavingBrand(true);
+    try { const response = await academyApi(`/api/academies/${academy.id}/certificates/branding/logo`, { method: "POST", body }); if (!response.ok) throw new Error(); setBranding(await response.json()); setStatus("Academy logo uploaded."); }
+    catch { setStatus("Upload a PNG, JPG or WebP logo smaller than 2.5 MB."); } finally { setSavingBrand(false); if (fileInput.current) fileInput.current.value = ""; }
+  }
+  async function issue(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault(); if (!academy || !studentId) return;
+    const response = await academyApi(`/api/academies/${academy.id}/certificates`, { method: "POST", headers: apiHeaders(true), body: JSON.stringify({ studentId, batchId: batchId || null, title, templateKey, issuedDate: issuedDate || null, notes: notes || null }) });
+    if (!response.ok) return setStatus("Certificate could not be issued. Check the required details."); setNotes(""); setIssuedDate(""); setStatus("Certificate issued and ready to print."); await load();
+  }
+  const studentName = (id: string) => { const student = students.find((value) => value.id === id); return student ? `${student.firstName} ${student.lastName}` : "Student"; };
+  const batchName = (id?: string | null) => batches.find((value) => value.id === id)?.name ?? "Independent programme";
+  const logoUrl = branding?.logoUrl ? `${apiUrl}${branding.logoUrl}` : undefined;
+
+  return <main className="enterprise-settings certificates-admin">
+    <header className="enterprise-page-header"><p>Operations / recognition</p><h2>Certificates</h2><span>Branded, verifiable recognition for every academy.</span></header>
+    {status && <p className="enterprise-page-state" role="status">{status}</p>}
+    <section className="certificate-branding surface-panel mt-5 rounded-xl p-5"><div><h3>Academy certificate branding</h3><p>Use your academy logo and approved signatory on every certificate.</p></div><form onSubmit={saveBranding}>
+      <div className="certificate-logo-slot">{logoUrl ? <img src={logoUrl} alt="Academy logo" /> : <span>{branding?.academyName?.slice(0, 1) ?? "A"}</span>}</div><input ref={fileInput} type="file" accept="image/png,image/jpeg,image/webp" onChange={uploadLogo} className="sr-only" />
+      <button type="button" className="enterprise-action-button-secondary" onClick={() => fileInput.current?.click()} disabled={savingBrand}>Upload logo</button>
+      <label>Accent colour<input type="color" value={branding?.accentColor ?? "#0F6CBD"} onChange={(event) => setBranding((current) => current ? { ...current, accentColor: event.target.value } : current)} /></label>
+      <label>Authorised signatory<input value={branding?.signatoryName ?? ""} onChange={(event) => setBranding((current) => current ? { ...current, signatoryName: event.target.value } : current)} placeholder="Principal / Director name" /></label>
+      <button className="enterprise-action-button" disabled={savingBrand}>{savingBrand ? "Saving…" : "Save branding"}</button>
+    </form></section>
+    <section className="mt-5 grid gap-5 xl:grid-cols-[.92fr_1.08fr]">
+      <form onSubmit={issue} className="surface-panel rounded-xl p-5 certificate-issue-form"><h3>Issue certificate</h3>
+        <select value={studentId} onChange={(event) => setStudentId(event.target.value)} required><option value="">Select student</option>{students.map((student) => <option key={student.id} value={student.id}>{student.firstName} {student.lastName}</option>)}</select>
+        <select value={batchId} onChange={(event) => setBatchId(event.target.value)}><option value="">No class or batch</option>{batches.map((batch) => <option key={batch.id} value={batch.id}>{batch.name}</option>)}</select>
+        <input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Certificate title" required /><input type="date" value={issuedDate} onChange={(event) => setIssuedDate(event.target.value)} />
+        <div className="certificate-template-picker"><span>Choose a template</span><div>{templates.map(([key, name, group]) => <button type="button" key={key} data-selected={key === templateKey} className={`certificate-template-card template-${key}`} onClick={() => setTemplateKey(key)}><b>{name}</b><small>{group}</small></button>)}</div></div>
+        <textarea value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="Recognition note (optional)" /><button className="enterprise-action-button">Issue certificate</button>
+      </form>
+      <section className="surface-panel rounded-xl p-5 certificate-preview-panel"><div className="flex items-center justify-between gap-3"><h3>Certificate preview</h3><button type="button" className="enterprise-action-button-secondary" onClick={() => window.print()}>Print / save PDF</button></div>
+        <article className={`certificate-preview template-${templateKey}`} style={{ "--certificate-accent": branding?.accentColor ?? "#0F6CBD" } as CSSProperties}><header>{logoUrl ? <img src={logoUrl} alt="Academy logo" /> : <span className="certificate-monogram">{branding?.academyName?.slice(0, 1) ?? "A"}</span>}<strong>{branding?.academyName ?? "Your Academy"}</strong></header><p className="certificate-kicker">{selectedTemplate[2]}</p><h4>{title || "Certificate of Achievement"}</h4><p className="certificate-presentation">This certificate is proudly presented to</p><h5>{selectedStudent ? `${selectedStudent.firstName} ${selectedStudent.lastName}` : "Student name"}</h5><p className="certificate-body">in recognition of achievement and dedication in <b>{batchName(batchId)}</b>.</p><footer><span>Issued {issuedDate || new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}</span><span>{branding?.signatoryName || "Authorised signatory"}</span></footer></article>
+      </section>
+    </section>
+    <section className="surface-panel mt-5 rounded-xl p-5"><div className="flex items-center justify-between gap-3"><h3>Issued certificates</h3><span className="text-sm text-slate-400">Each record has a unique verification code.</span></div>{certificates.length === 0 ? <p className="enterprise-settings-empty mt-4">No certificates have been issued yet.</p> : <div className="mt-4 overflow-x-auto"><table><thead><tr><th>Student</th><th>Certificate</th><th>Template</th><th>Issued</th><th>Verification</th><th>Status</th></tr></thead><tbody>{certificates.map((certificate) => <tr key={certificate.id}><td>{studentName(certificate.studentId)}</td><td><b>{certificate.title}</b><small>{certificate.certificateNumber}</small></td><td>{templates.find(([key]) => key === certificate.templateKey)?.[1] ?? certificate.templateKey}</td><td>{certificate.issuedDate}</td><td><code>{certificate.verificationCode}</code></td><td>{certificate.status}</td></tr>)}</tbody></table></div>}</section>
+  </main>;
+}

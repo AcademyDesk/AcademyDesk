@@ -399,6 +399,8 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
         {
             entity.Property(x => x.CertificateNumber).HasMaxLength(60).IsRequired();
             entity.Property(x => x.Title).HasMaxLength(250).IsRequired();
+            entity.Property(x => x.TemplateKey).HasMaxLength(60).IsRequired();
+            entity.Property(x => x.VerificationCode).HasMaxLength(40).IsRequired();
             entity.Property(x => x.Status).HasMaxLength(30).IsRequired();
             entity.Property(x => x.Notes).HasMaxLength(2000);
             entity.HasIndex(x => new { x.AcademyId, x.CertificateNumber }).IsUnique();

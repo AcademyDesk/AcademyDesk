@@ -13,6 +13,9 @@ public sealed class Academy : EntityBase
     public int StudentLimit { get; set; } = 100;
     public int StaffLimit { get; set; } = 10;
     public string EnabledModulesJson { get; set; } = "[\"Core\"]";
+    public string? CertificateLogoUrl { get; set; }
+    public string? CertificateAccentColor { get; set; }
+    public string? CertificateSignatoryName { get; set; }
 
     public List<Branch> Branches { get; set; } = [];
 }
