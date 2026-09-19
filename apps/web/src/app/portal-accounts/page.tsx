@@ -5,12 +5,15 @@ import { academyApi, apiHeaders } from "@/lib/api";
 type Academy = { id: string };
 type Student = { id: string; firstName: string; lastName: string };
 type Guardian = { id: string; firstName: string; lastName: string };
+type Teacher = { id: string; firstName: string; lastName: string };
 export default function PortalAccounts() {
   const [a, setA] = useState<Academy>();
   const [s, setS] = useState<Student[]>([]);
   const [g, setG] = useState<Guardian[]>([]);
+  const [t, setT] = useState<Teacher[]>([]);
   const [role, setRole] = useState("Student");
   const [email, setEmail] = useState("");
+  const [displayName, setDisplayName] = useState("");
   const [password, setPassword] = useState("");
   const [id, setId] = useState("");
   const [m, setM] = useState("Loading portal accounts…");
@@ -22,12 +25,14 @@ export default function PortalAccounts() {
         const x: Academy[] = await r.json();
         if (!x[0]) return setM("Create your academy first.");
         setA(x[0]);
-        const [r1, r2] = await Promise.all([
+        const [r1, r2, r3] = await Promise.all([
           academyApi(`/api/academies/${x[0].id}/students`),
           academyApi(`/api/academies/${x[0].id}/guardians`),
+          academyApi(`/api/academies/${x[0].id}/teachers`),
         ]);
         setS(await r1.json());
         setG(await r2.json());
+        setT(await r3.json());
         setM("");
       } catch {
         setM(
@@ -46,24 +51,26 @@ export default function PortalAccounts() {
         role,
         email,
         password,
-        displayName: email,
+        displayName,
         studentId: role === "Student" ? id : null,
         guardianId: role === "Guardian" ? id : null,
+        teacherId: role === "Teacher" ? id : null,
       }),
     });
     const q = await r.json().catch(() => null);
     setM(
       r.ok
-        ? `Created ${(role === "Guardian" ? "parent" : "student")} portal account for ${email}.`
+        ? `Created ${role === "Guardian" ? "parent" : role.toLowerCase()} portal account for ${email}.`
         : (q?.message ?? "Account could not be created."),
     );
     if (r.ok) {
       setEmail("");
+      setDisplayName("");
       setPassword("");
       setId("");
     }
   }
-  const choices = role === "Student" ? s : g;
+  const choices = role === "Student" ? s : role === "Teacher" ? t : g;
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100">
       <WorkspaceNav />
@@ -91,6 +98,7 @@ export default function PortalAccounts() {
           >
             <option>Student</option>
             <option value="Guardian">Parent</option>
+            <option>Teacher</option>
           </select>
           <select
             value={id}
@@ -98,13 +106,20 @@ export default function PortalAccounts() {
             className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
             required
           >
-            <option value="">Select {role === "Guardian" ? "parent" : "student"}</option>
+            <option value="">Select {role === "Guardian" ? "parent" : role.toLowerCase()}</option>
             {choices.map((x) => (
               <option key={x.id} value={x.id}>
                 {x.firstName} {x.lastName}
               </option>
             ))}
           </select>
+          <input
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+            placeholder="Display name"
+            className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
+            required
+          />
           <input
             type="email"
             value={email}

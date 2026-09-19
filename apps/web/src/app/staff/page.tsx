@@ -5,39 +5,31 @@ import { WorkspaceNav } from "@/components/workspace-nav";
 import { academyApi, apiHeaders } from "@/lib/api";
 
 type Academy = { id: string };
-type Teacher = { id: string; firstName: string; lastName: string };
 type Staff = {
   id: string;
   displayName: string;
   email: string;
-  teacherId?: string | null;
   roles: string[];
   isActive: boolean;
 };
 
 export default function StaffPage() {
   const [academy, setAcademy] = useState<Academy>();
-  const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [staff, setStaff] = useState<Staff[]>([]);
   const [email, setEmail] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("Teacher");
-  const [teacherId, setTeacherId] = useState("");
+  const [role, setRole] = useState("Operations");
   const [message, setMessage] = useState("Loading staff accounts…");
   const [updatingStaffId, setUpdatingStaffId] = useState<string>();
   async function load(id?: string) {
     const academyId = id ?? academy?.id;
     if (!academyId) return;
-    const [staffResponse, teacherResponse] = await Promise.all([
-      academyApi(`/api/academies/${academyId}/staff`, { cache: "no-store" }),
-      academyApi(`/api/academies/${academyId}/teachers`, { cache: "no-store" }),
-    ]);
+    const staffResponse = await academyApi(`/api/academies/${academyId}/staff`, { cache: "no-store" });
     if (staffResponse.status === 403)
       return setMessage("Only the academy owner can manage staff accounts.");
-    if (!staffResponse.ok || !teacherResponse.ok) throw new Error();
+    if (!staffResponse.ok) throw new Error();
     setStaff(await staffResponse.json());
-    setTeachers(await teacherResponse.json());
     setMessage("");
   }
   useEffect(() => {
@@ -72,7 +64,6 @@ export default function StaffPage() {
         displayName,
         password,
         role,
-        teacherId: role === "Teacher" && teacherId ? teacherId : null,
       }),
     });
     if (!response.ok) {
@@ -85,7 +76,6 @@ export default function StaffPage() {
     setEmail("");
     setDisplayName("");
     setPassword("");
-    setTeacherId("");
     setMessage("");
     await load();
   }
@@ -124,10 +114,6 @@ export default function StaffPage() {
     setMessage(`${person.displayName}'s access role was updated.`);
     await load();
   }
-  const teacherName = (id?: string | null) => {
-    const teacher = teachers.find((item) => item.id === id);
-    return teacher ? `${teacher.firstName} ${teacher.lastName}` : "Not linked";
-  };
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100">
       <WorkspaceNav />
@@ -175,7 +161,6 @@ export default function StaffPage() {
               onChange={(event) => setRole(event.target.value)}
               className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
             >
-              <option>Teacher</option>
               <option>Manager</option>
               <option>Operations</option>
               <option>Sales</option>
@@ -183,20 +168,6 @@ export default function StaffPage() {
               <option>FinanceUser</option>
               <option>FrontDesk</option>
             </select>
-            {role === "Teacher" && (
-              <select
-                value={teacherId}
-                onChange={(event) => setTeacherId(event.target.value)}
-                className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
-              >
-                <option value="">No teaching profile linked yet</option>
-                {teachers.map((teacher) => (
-                  <option key={teacher.id} value={teacher.id}>
-                    {teacher.firstName} {teacher.lastName}
-                  </option>
-                ))}
-              </select>
-            )}
             <button
               disabled={!academy}
               className="enterprise-action-button mt-5 w-full disabled:opacity-60"
@@ -225,7 +196,7 @@ export default function StaffPage() {
                       <label className="text-right text-xs text-slate-400">
                         Access role
                         <select
-                          value={person.roles[0] ?? "Teacher"}
+                          value={person.roles[0] ?? "Operations"}
                           disabled={
                             !person.isActive || updatingStaffId === person.id
                           }
@@ -234,7 +205,6 @@ export default function StaffPage() {
                           }
                           className="mt-1 block rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-cyan-200"
                         >
-                          <option>Teacher</option>
                           <option>Manager</option>
                           <option>Operations</option>
                           <option>Sales</option>
@@ -244,11 +214,6 @@ export default function StaffPage() {
                         </select>
                       </label>
                     </div>
-                    {person.teacherId && (
-                      <div className="mt-2 text-sm text-slate-300">
-                        Teaching profile: {teacherName(person.teacherId)}
-                      </div>
-                    )}
                     <div className="mt-3">
                       {person.isActive ? (
                         <button

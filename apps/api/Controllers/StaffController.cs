@@ -12,7 +12,7 @@ public sealed class StaffController(
     UserManager<ApplicationUser> userManager,
     RoleManager<ApplicationRole> roleManager) : ControllerBase
 {
-    private static readonly string[] AllowedRoles = ["Manager", "Operations", "Sales", "Marketing", "FinanceUser", "Teacher", "FrontDesk"];
+    private static readonly string[] AllowedRoles = ["Manager", "Operations", "Sales", "Marketing", "FinanceUser", "FrontDesk"];
 
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<StaffAccountSummary>>> List(Guid academyId)
@@ -28,6 +28,7 @@ public sealed class StaffController(
         foreach (var user in users)
         {
             var roles = await userManager.GetRolesAsync(user);
+            if (roles.Any(role => role is "Student" or "Guardian" or "Teacher")) continue;
             result.Add(new StaffAccountSummary(user.Id, user.DisplayName, user.Email ?? string.Empty, user.TeacherId, roles.ToArray(), user.IsActive));
         }
 
