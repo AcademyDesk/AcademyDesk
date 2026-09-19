@@ -178,7 +178,7 @@ export default function DashboardPage() {
               : "View student records"}
           </small>
         </Link>
-        <Link href="/schedule" className="enterprise-kpi">
+        <Link href="/batches" className="enterprise-kpi">
           <span>Classes today</span>
           <strong>{data.classesToday}</strong>
           <small>

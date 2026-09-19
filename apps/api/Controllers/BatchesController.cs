@@ -24,7 +24,20 @@ public sealed class BatchesController(AcademyDeskDbContext dbContext) : Controll
     {
         if (!await dbContext.Academies.AnyAsync(x => x.Id == academyId, token)) return NotFound();
         var problem = await Validate(academyId, request, token); if (problem is not null) return BadRequest(new { message = problem });
-        var batch = new Batch { AcademyId = academyId, Name = request.Name.Trim() }; Apply(batch, request); dbContext.Batches.Add(batch); await dbContext.SaveChangesAsync(token); return Created($"/api/academies/{academyId}/batches/{batch.Id}", Summary(batch, 0));
+        var studentIds = (request.StudentIds ?? []).Distinct().ToArray();
+        if (studentIds.Length > request.Capacity) return BadRequest(new { message = "Selected students cannot exceed batch capacity." });
+        if (studentIds.Length > 0)
+        {
+            var validStudentCount = await dbContext.Students.CountAsync(x => x.AcademyId == academyId && studentIds.Contains(x.Id) && x.IsActive, token);
+            if (validStudentCount != studentIds.Length) return BadRequest(new { message = "One or more selected students are inactive or do not belong to this academy." });
+        }
+        var batch = new Batch { AcademyId = academyId, Name = request.Name.Trim() };
+        Apply(batch, request);
+        dbContext.Batches.Add(batch);
+        foreach (var studentId in studentIds)
+            dbContext.Enrollments.Add(new Enrollment { AcademyId = academyId, StudentId = studentId, BatchId = batch.Id, StartDate = request.StartDate ?? DateOnly.FromDateTime(DateTime.UtcNow), Status = "Active" });
+        await dbContext.SaveChangesAsync(token);
+        return Created($"/api/academies/{academyId}/batches/{batch.Id}", Summary(batch, studentIds.Length));
     }
 
     [HttpPut("{batchId:guid}")]
@@ -65,8 +78,8 @@ public sealed class BatchesController(AcademyDeskDbContext dbContext) : Controll
     private static BatchSummary Summary(Batch x, int active) => new(x.Id, x.Name, x.BatchCode, x.CourseId, x.TeacherId, x.BranchId, x.Capacity, x.WaitlistCapacity, x.DeliveryMode, x.MeetingPattern, x.RoomName, x.EnrollmentStatus, x.AdminNotes, x.StartDate, x.EndDate, x.IsActive, active);
 }
 
-public abstract record BatchRequest(string Name, string? BatchCode, Guid CourseId, Guid? TeacherId, Guid? BranchId, int Capacity, int WaitlistCapacity, string? DeliveryMode, string? MeetingPattern, string? RoomName, string? EnrollmentStatus, string? AdminNotes, DateOnly? StartDate, DateOnly? EndDate, string? ClassType = null, int? SessionMinutes = null, int? SessionsPerWeek = null, string? MeetingDaysJson = null, string? MeetingLink = null);
-public sealed record CreateBatchRequest(string Name, string? BatchCode, Guid CourseId, Guid? TeacherId, Guid? BranchId, int Capacity, int WaitlistCapacity, string? DeliveryMode, string? MeetingPattern, string? RoomName, string? EnrollmentStatus, string? AdminNotes, DateOnly? StartDate, DateOnly? EndDate, string? ClassType = null, int? SessionMinutes = null, int? SessionsPerWeek = null, string? MeetingDaysJson = null, string? MeetingLink = null) : BatchRequest(Name, BatchCode, CourseId, TeacherId, BranchId, Capacity, WaitlistCapacity, DeliveryMode, MeetingPattern, RoomName, EnrollmentStatus, AdminNotes, StartDate, EndDate, ClassType, SessionMinutes, SessionsPerWeek, MeetingDaysJson, MeetingLink);
+public abstract record BatchRequest(string Name, string? BatchCode, Guid CourseId, Guid? TeacherId, Guid? BranchId, int Capacity, int WaitlistCapacity, string? DeliveryMode, string? MeetingPattern, string? RoomName, string? EnrollmentStatus, string? AdminNotes, DateOnly? StartDate, DateOnly? EndDate, string? ClassType = null, int? SessionMinutes = null, int? SessionsPerWeek = null, string? MeetingDaysJson = null, string? MeetingLink = null, IReadOnlyList<Guid>? StudentIds = null);
+public sealed record CreateBatchRequest(string Name, string? BatchCode, Guid CourseId, Guid? TeacherId, Guid? BranchId, int Capacity, int WaitlistCapacity, string? DeliveryMode, string? MeetingPattern, string? RoomName, string? EnrollmentStatus, string? AdminNotes, DateOnly? StartDate, DateOnly? EndDate, string? ClassType = null, int? SessionMinutes = null, int? SessionsPerWeek = null, string? MeetingDaysJson = null, string? MeetingLink = null, IReadOnlyList<Guid>? StudentIds = null) : BatchRequest(Name, BatchCode, CourseId, TeacherId, BranchId, Capacity, WaitlistCapacity, DeliveryMode, MeetingPattern, RoomName, EnrollmentStatus, AdminNotes, StartDate, EndDate, ClassType, SessionMinutes, SessionsPerWeek, MeetingDaysJson, MeetingLink, StudentIds);
 public sealed record UpdateBatchRequest(string Name, string? BatchCode, Guid CourseId, Guid? TeacherId, Guid? BranchId, int Capacity, int WaitlistCapacity, string? DeliveryMode, string? MeetingPattern, string? RoomName, string? EnrollmentStatus, string? AdminNotes, DateOnly? StartDate, DateOnly? EndDate, bool IsActive) : BatchRequest(Name, BatchCode, CourseId, TeacherId, BranchId, Capacity, WaitlistCapacity, DeliveryMode, MeetingPattern, RoomName, EnrollmentStatus, AdminNotes, StartDate, EndDate);
 public sealed record BatchMeetingTime(string Day, string StartTime);
 public sealed record BatchSummary(Guid Id, string Name, string? BatchCode, Guid CourseId, Guid? TeacherId, Guid? BranchId, int Capacity, int WaitlistCapacity, string DeliveryMode, string? MeetingPattern, string? RoomName, string EnrollmentStatus, string? AdminNotes, DateOnly? StartDate, DateOnly? EndDate, bool IsActive, int ActiveEnrolments);

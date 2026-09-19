@@ -52,7 +52,6 @@ const navigationGroups: readonly NavigationGroup[] = [
     links: [
       ["Overview", "/batches"],
       ["Create class or batch", "/batch-setup"],
-      ["Class scheduling", "/schedule"],
       ["Attendance", "/attendance"],
       ["Make-up classes", "/makeup"],
     ],
