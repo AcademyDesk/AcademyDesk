@@ -1403,7 +1403,7 @@ html[data-theme="light"] .field-label { color: #475569; }
 }
 .academic-module form.surface-panel > :is(input, select, textarea),
 .academic-module form.surface-panel > .grid > :is(input, select, textarea),
-.academic-module form.surface-panel > label :is(input, select, textarea) {
+.academic-module form.surface-panel > label :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
   width: 100% !important;
   min-width: 0;
   margin: 0 !important;
@@ -1416,6 +1416,22 @@ html[data-theme="light"] .field-label { color: #475569; }
 }
 .academic-module form.surface-panel > label {
   margin: 0 !important;
+}
+.academic-module form.surface-panel > label:has(> input[type="checkbox"]),
+.academic-module form.surface-panel > label:has(> input[type="radio"]) {
+  display: inline-flex;
+  width: max-content;
+  align-items: center;
+  gap: 10px;
+  color: var(--ad-text) !important;
+}
+.academic-module form.surface-panel > label > :is(input[type="checkbox"], input[type="radio"]) {
+  width: 20px !important;
+  min-width: 20px;
+  height: 20px;
+  min-height: 20px;
+  margin: 0 !important;
+  accent-color: var(--ad-accent);
 }
 .academic-module form.surface-panel > button {
   align-self: end;
@@ -1481,6 +1497,24 @@ html[data-theme="light"] .field-label { color: #475569; }
 .academic-module .surface-panel button.text-emerald-300 { color: var(--ad-accent) !important; }
 .academic-module .surface-panel button.text-rose-300 { color: var(--ad-danger) !important; border-color: color-mix(in srgb, var(--ad-danger) 42%, var(--ad-border)); }
 .academic-module .surface-panel button:is(.text-cyan-300, .text-amber-300, .text-emerald-300, .text-rose-300):hover { border-color: var(--ad-accent); background: var(--ad-accent-soft); }
+.academic-module button,
+.academic-standard button {
+  cursor: pointer;
+  transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+.academic-module button[class~="bg-cyan-400"]:hover:not(:disabled),
+.academic-standard button[class~="bg-cyan-400"]:hover:not(:disabled) {
+  background: var(--ad-action-hover) !important;
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--ad-action) 24%, transparent);
+  transform: translateY(-1px);
+}
+.academic-module button:is(.text-cyan-300, .text-amber-300, .text-emerald-300, .text-rose-300):hover:not(:disabled),
+.academic-standard button[class~="border-cyan-400"]:hover:not(:disabled),
+.academic-standard button[class~="border-cyan-500"]:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+.academic-module button:disabled,
+.academic-standard button:disabled { cursor: not-allowed; }
 .academic-standard > .mx-auto {
   width: min(100%, 1240px) !important;
   max-width: none !important;
