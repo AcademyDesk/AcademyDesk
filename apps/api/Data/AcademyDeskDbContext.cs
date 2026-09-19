@@ -9,6 +9,8 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
     public DbSet<Academy> Academies => Set<Academy>();
     public DbSet<Branch> Branches => Set<Branch>();
     public DbSet<Lead> Leads => Set<Lead>();
+    public DbSet<SalesCampaign> SalesCampaigns => Set<SalesCampaign>();
+    public DbSet<TrialClassBooking> TrialClassBookings => Set<TrialClassBooking>();
     public DbSet<Student> Students => Set<Student>();
     public DbSet<Guardian> Guardians => Set<Guardian>();
     public DbSet<StudentGuardian> StudentGuardians => Set<StudentGuardian>();
@@ -100,6 +102,23 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
             entity.Property(x => x.Notes).HasMaxLength(4000);
             entity.HasIndex(x => new { x.AcademyId, x.Stage, x.FollowUpAtUtc });
             entity.HasIndex(x => new { x.AcademyId, x.Email });
+        });
+
+        modelBuilder.Entity<SalesCampaign>(entity =>
+        {
+            entity.Property(x => x.Name).HasMaxLength(200).IsRequired();
+            entity.Property(x => x.Channel).HasMaxLength(40).IsRequired();
+            entity.Property(x => x.Status).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.Budget).HasPrecision(18, 2);
+            entity.HasIndex(x => new { x.AcademyId, x.StartDate });
+        });
+
+        modelBuilder.Entity<TrialClassBooking>(entity =>
+        {
+            entity.Property(x => x.Status).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.Notes).HasMaxLength(2000);
+            entity.HasIndex(x => new { x.AcademyId, x.ScheduledAtUtc });
+            entity.HasIndex(x => new { x.AcademyId, x.LeadId });
         });
 
         modelBuilder.Entity<Student>(entity =>

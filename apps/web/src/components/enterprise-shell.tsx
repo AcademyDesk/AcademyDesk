@@ -71,12 +71,12 @@ const navigationGroups: readonly NavigationGroup[] = [
     links: [
       ["Sales overview", "/sales-marketing"],
       ["Leads", "/leads"],
-      ["Campaigns", "/sales-marketing"],
-      ["Lead sources", "/sales-marketing"],
-      ["Follow-ups", "/sales-marketing"],
-      ["Conversion dashboard", "/sales-marketing"],
-      ["Referral tracking", "/sales-marketing"],
-      ["Trial-class bookings", "/sales-marketing"],
+      ["Campaigns", "/sales-campaigns"],
+      ["Lead sources", "/sales-marketing?view=sources"],
+      ["Follow-ups", "/sales-marketing?view=follow-ups"],
+      ["Conversion dashboard", "/sales-marketing?view=conversion"],
+      ["Referral tracking", "/sales-marketing?view=referrals"],
+      ["Trial-class bookings", "/trial-bookings"],
     ],
   },
   {
