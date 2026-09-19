@@ -8,6 +8,9 @@ public sealed class Certificate : AcademyEntity
     public required string Title { get; set; }
     public string TemplateKey { get; set; } = "classic";
     public string DesignKey { get; set; } = "laurels";
+    public int ArtworkX { get; set; } = 50;
+    public int ArtworkY { get; set; } = 30;
+    public int ArtworkSize { get; set; } = 72;
     public required string VerificationCode { get; set; }
     public DateOnly IssuedDate { get; set; } = DateOnly.FromDateTime(DateTime.UtcNow);
     public string Status { get; set; } = "Issued";

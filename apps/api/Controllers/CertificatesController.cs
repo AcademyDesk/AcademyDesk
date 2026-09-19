@@ -23,7 +23,7 @@ public sealed class CertificatesController(AcademyDeskDbContext dbContext, IWebH
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<CertificateSummary>>> List(Guid academyId, CancellationToken token) =>
         Ok(await dbContext.Certificates.AsNoTracking().Where(x => x.AcademyId == academyId).OrderByDescending(x => x.IssuedDate)
-            .Select(x => new CertificateSummary(x.Id, x.CertificateNumber, x.StudentId, x.BatchId, x.Title, x.TemplateKey, x.DesignKey, x.VerificationCode, x.IssuedDate, x.Status, x.Notes)).ToListAsync(token));
+            .Select(x => new CertificateSummary(x.Id, x.CertificateNumber, x.StudentId, x.BatchId, x.Title, x.TemplateKey, x.DesignKey, x.ArtworkX, x.ArtworkY, x.ArtworkSize, x.VerificationCode, x.IssuedDate, x.Status, x.Notes)).ToListAsync(token));
 
     [HttpGet("branding")]
     public async Task<ActionResult<CertificateBranding>> GetBranding(Guid academyId, CancellationToken token)
@@ -73,6 +73,7 @@ public sealed class CertificatesController(AcademyDeskDbContext dbContext, IWebH
         if (string.IsNullOrWhiteSpace(request.Title)) return BadRequest(new { message = "Certificate title is required." });
         if (!TemplateKeys.Contains(request.TemplateKey ?? "classic")) return BadRequest(new { message = "Select a supported certificate template." });
         if (!DesignKeys.Contains(request.DesignKey ?? "laurels")) return BadRequest(new { message = "Select a supported certificate design." });
+        if (!InRange(request.ArtworkX, 0, 100) || !InRange(request.ArtworkY, 0, 100) || !InRange(request.ArtworkSize, 36, 180)) return BadRequest(new { message = "Artwork placement is outside the certificate canvas." });
         if (!await dbContext.Students.AnyAsync(x => x.Id == request.StudentId && x.AcademyId == academyId, token)) return BadRequest(new { message = "The student does not belong to this academy." });
         if (request.BatchId.HasValue && !await dbContext.Batches.AnyAsync(x => x.Id == request.BatchId && x.AcademyId == academyId, token)) return BadRequest(new { message = "The class or batch does not belong to this academy." });
 
@@ -80,7 +81,7 @@ public sealed class CertificatesController(AcademyDeskDbContext dbContext, IWebH
         {
             AcademyId = academyId, CertificateNumber = $"CERT-{DateTime.UtcNow:yyyyMMddHHmmss}-{Random.Shared.Next(100, 999)}",
             StudentId = request.StudentId, BatchId = request.BatchId, Title = request.Title.Trim(),
-            TemplateKey = request.TemplateKey?.Trim().ToLowerInvariant() ?? "classic", DesignKey = request.DesignKey?.Trim().ToLowerInvariant() ?? "laurels", VerificationCode = Guid.NewGuid().ToString("N")[..16].ToUpperInvariant(),
+            TemplateKey = request.TemplateKey?.Trim().ToLowerInvariant() ?? "classic", DesignKey = request.DesignKey?.Trim().ToLowerInvariant() ?? "laurels", ArtworkX = request.ArtworkX ?? 50, ArtworkY = request.ArtworkY ?? 30, ArtworkSize = request.ArtworkSize ?? 72, VerificationCode = Guid.NewGuid().ToString("N")[..16].ToUpperInvariant(),
             IssuedDate = request.IssuedDate ?? DateOnly.FromDateTime(DateTime.UtcNow), Notes = Clean(request.Notes, 2000)
         };
         dbContext.Certificates.Add(certificate);
@@ -104,11 +105,12 @@ public sealed class CertificatesController(AcademyDeskDbContext dbContext, IWebH
     private static string? Clean(string? value, int maxLength) => string.IsNullOrWhiteSpace(value) ? null : value.Trim()[..Math.Min(value.Trim().Length, maxLength)];
     private static string? NormalizeAccent(string? value) => value is not null && System.Text.RegularExpressions.Regex.IsMatch(value, "^#[0-9A-Fa-f]{6}$") ? value.ToUpperInvariant() : null;
     private static CertificateBranding ToBranding(Academy academy) => new(academy.Name, academy.CertificateLogoUrl, academy.CertificateAccentColor ?? "#0F6CBD", academy.CertificateSignatoryName);
-    private static CertificateSummary ToSummary(Certificate x) => new(x.Id, x.CertificateNumber, x.StudentId, x.BatchId, x.Title, x.TemplateKey, x.DesignKey, x.VerificationCode, x.IssuedDate, x.Status, x.Notes);
+    private static bool InRange(int? value, int minimum, int maximum) => !value.HasValue || (value.Value >= minimum && value.Value <= maximum);
+    private static CertificateSummary ToSummary(Certificate x) => new(x.Id, x.CertificateNumber, x.StudentId, x.BatchId, x.Title, x.TemplateKey, x.DesignKey, x.ArtworkX, x.ArtworkY, x.ArtworkSize, x.VerificationCode, x.IssuedDate, x.Status, x.Notes);
 }
 
-public sealed record IssueCertificateRequest(Guid StudentId, Guid? BatchId, string Title, string? TemplateKey, string? DesignKey, DateOnly? IssuedDate, string? Notes);
-public sealed record CertificateSummary(Guid Id, string CertificateNumber, Guid StudentId, Guid? BatchId, string Title, string TemplateKey, string DesignKey, string VerificationCode, DateOnly IssuedDate, string Status, string? Notes);
+public sealed record IssueCertificateRequest(Guid StudentId, Guid? BatchId, string Title, string? TemplateKey, string? DesignKey, int? ArtworkX, int? ArtworkY, int? ArtworkSize, DateOnly? IssuedDate, string? Notes);
+public sealed record CertificateSummary(Guid Id, string CertificateNumber, Guid StudentId, Guid? BatchId, string Title, string TemplateKey, string DesignKey, int ArtworkX, int ArtworkY, int ArtworkSize, string VerificationCode, DateOnly IssuedDate, string Status, string? Notes);
 public sealed record CertificateBranding(string AcademyName, string? LogoUrl, string AccentColor, string? SignatoryName);
 public sealed record UpdateCertificateBrandingRequest(string? AccentColor, string? SignatoryName);
 public sealed record UpdateCertificateStatusRequest(string Status);

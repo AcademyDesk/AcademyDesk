@@ -401,6 +401,9 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
             entity.Property(x => x.Title).HasMaxLength(250).IsRequired();
             entity.Property(x => x.TemplateKey).HasMaxLength(60).IsRequired();
             entity.Property(x => x.DesignKey).HasMaxLength(60).IsRequired();
+            entity.Property(x => x.ArtworkX).IsRequired();
+            entity.Property(x => x.ArtworkY).IsRequired();
+            entity.Property(x => x.ArtworkSize).IsRequired();
             entity.Property(x => x.VerificationCode).HasMaxLength(40).IsRequired();
             entity.Property(x => x.Status).HasMaxLength(30).IsRequired();
             entity.Property(x => x.Notes).HasMaxLength(2000);
