@@ -7,13 +7,17 @@ type Academy = { id: string };
 type Student = { id: string; firstName: string; lastName: string };
 type Batch = { id: string; name: string };
 type Branding = { academyName: string; logoUrl?: string | null; accentColor: string; signatoryName?: string | null };
-type Certificate = { id: string; certificateNumber: string; studentId: string; batchId?: string | null; title: string; templateKey: string; verificationCode: string; issuedDate: string; status: string; notes?: string | null };
+type Certificate = { id: string; certificateNumber: string; studentId: string; batchId?: string | null; title: string; templateKey: string; designKey: string; verificationCode: string; issuedDate: string; status: string; notes?: string | null };
 
 const templates = [
   ["classic", "Classic Laurels", "Professional"], ["modern", "Modern Horizon", "Professional"], ["minimal", "Minimal Studio", "Professional"], ["navy", "Premium Navy", "Professional"], ["academic", "Academic Crest", "Professional"],
   ["gold", "Gold Achievement", "Medal"], ["silver", "Silver Achievement", "Medal"], ["bronze", "Bronze Achievement", "Medal"],
   ["performance", "Stage Performance", "Music & coaching"], ["completion", "Course Completion", "Music & coaching"], ["excellence", "Excellence Award", "Music & coaching"],
   ["independence-day", "Independence Day", "Seasonal"], ["republic-day", "Republic Day", "Seasonal"], ["diwali", "Diwali Celebration", "Seasonal"], ["ganesh-festival", "Ganesh Festival", "Seasonal"],
+] as const;
+const designs = [
+  ["laurels", "Laurels", "❦"], ["music-notes", "Music notes", "♫"], ["medal-ribbon", "Medal ribbon", "✦"], ["starburst", "Starburst", "✺"], ["geometric", "Geometric", "◇"],
+  ["academy-seal", "Academy seal", "A"], ["tricolour", "Tricolour ribbon", "✦"], ["diya", "Diya", "✧"], ["ganesh", "Ganesh motif", "ॐ"], ["celebration", "Celebration", "✹"],
 ] as const;
 
 export default function CertificatesPage() {
@@ -26,6 +30,7 @@ export default function CertificatesPage() {
   const [batchId, setBatchId] = useState("");
   const [title, setTitle] = useState("Certificate of Achievement");
   const [templateKey, setTemplateKey] = useState("classic");
+  const [designKey, setDesignKey] = useState("laurels");
   const [issuedDate, setIssuedDate] = useState("");
   const [notes, setNotes] = useState("");
   const [status, setStatus] = useState("Loading certificates…");
@@ -33,6 +38,7 @@ export default function CertificatesPage() {
   const fileInput = useRef<HTMLInputElement>(null);
   const selectedStudent = useMemo(() => students.find((student) => student.id === studentId), [students, studentId]);
   const selectedTemplate = templates.find(([key]) => key === templateKey) ?? templates[0];
+  const selectedDesign = designs.find(([key]) => key === designKey) ?? designs[0];
 
   async function load(academyId?: string) {
     const id = academyId ?? academy?.id; if (!id) return;
@@ -58,7 +64,7 @@ export default function CertificatesPage() {
   }
   async function issue(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); if (!academy || !studentId) return;
-    const response = await academyApi(`/api/academies/${academy.id}/certificates`, { method: "POST", headers: apiHeaders(true), body: JSON.stringify({ studentId, batchId: batchId || null, title, templateKey, issuedDate: issuedDate || null, notes: notes || null }) });
+    const response = await academyApi(`/api/academies/${academy.id}/certificates`, { method: "POST", headers: apiHeaders(true), body: JSON.stringify({ studentId, batchId: batchId || null, title, templateKey, designKey, issuedDate: issuedDate || null, notes: notes || null }) });
     if (!response.ok) return setStatus("Certificate could not be issued. Check the required details."); setNotes(""); setIssuedDate(""); setStatus("Certificate issued and ready to print."); await load();
   }
   const studentName = (id: string) => { const student = students.find((value) => value.id === id); return student ? `${student.firstName} ${student.lastName}` : "Student"; };
@@ -81,12 +87,13 @@ export default function CertificatesPage() {
         <select value={batchId} onChange={(event) => setBatchId(event.target.value)}><option value="">No class or batch</option>{batches.map((batch) => <option key={batch.id} value={batch.id}>{batch.name}</option>)}</select>
         <input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Certificate title" required /><input type="date" value={issuedDate} onChange={(event) => setIssuedDate(event.target.value)} />
         <div className="certificate-template-picker"><span>Choose a template</span><div>{templates.map(([key, name, group]) => <button type="button" key={key} data-selected={key === templateKey} className={`certificate-template-card template-${key}`} onClick={() => setTemplateKey(key)}><b>{name}</b><small>{group}</small></button>)}</div></div>
+        <div className="certificate-design-picker"><span>Certificate artwork</span><div>{designs.map(([key, name, symbol]) => <button type="button" key={key} data-selected={key === designKey} onClick={() => setDesignKey(key)}><i className={`certificate-design-icon design-${key}`} aria-hidden="true">{symbol}</i><b>{name}</b></button>)}</div></div>
         <textarea value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="Recognition note (optional)" /><button className="enterprise-action-button">Issue certificate</button>
       </form>
       <section className="surface-panel rounded-xl p-5 certificate-preview-panel"><div className="flex items-center justify-between gap-3"><h3>Certificate preview</h3><button type="button" className="enterprise-action-button-secondary" onClick={() => window.print()}>Print / save PDF</button></div>
-        <article className={`certificate-preview template-${templateKey}`} style={{ "--academy-certificate-accent": branding?.accentColor ?? "#0F6CBD" } as CSSProperties}><header>{logoUrl ? <img src={logoUrl} alt="Academy logo" /> : <span className="certificate-monogram">{branding?.academyName?.slice(0, 1) ?? "A"}</span>}<strong>{branding?.academyName ?? "Your Academy"}</strong></header><p className="certificate-kicker">{selectedTemplate[2]}</p><h4>{title || "Certificate of Achievement"}</h4><p className="certificate-presentation">This certificate is proudly presented to</p><h5>{selectedStudent ? `${selectedStudent.firstName} ${selectedStudent.lastName}` : "Student name"}</h5><p className="certificate-body">in recognition of achievement and dedication in <b>{batchName(batchId)}</b>.</p><footer><span>Issued {issuedDate || new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}</span><span>{branding?.signatoryName || "Authorised signatory"}</span></footer></article>
+        <article className={`certificate-preview template-${templateKey}`} data-design={designKey} style={{ "--academy-certificate-accent": branding?.accentColor ?? "#0F6CBD" } as CSSProperties}><header>{logoUrl ? <img src={logoUrl} alt="Academy logo" /> : <span className="certificate-monogram">{branding?.academyName?.slice(0, 1) ?? "A"}</span>}<strong>{branding?.academyName ?? "Your Academy"}</strong></header><div className={`certificate-artwork design-${designKey}`} aria-hidden="true">{selectedDesign[2]}</div><p className="certificate-kicker">{selectedTemplate[2]}</p><h4>{title || "Certificate of Achievement"}</h4><p className="certificate-presentation">This certificate is proudly presented to</p><h5>{selectedStudent ? `${selectedStudent.firstName} ${selectedStudent.lastName}` : "Student name"}</h5><p className="certificate-body">in recognition of achievement and dedication in <b>{batchName(batchId)}</b>.</p><footer><span>Issued {issuedDate || new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}</span><span>{branding?.signatoryName || "Authorised signatory"}</span></footer></article>
       </section>
     </section>
-    <section className="surface-panel mt-5 rounded-xl p-5"><div className="flex items-center justify-between gap-3"><h3>Issued certificates</h3><span className="text-sm text-slate-400">Each record has a unique verification code.</span></div>{certificates.length === 0 ? <p className="enterprise-settings-empty mt-4">No certificates have been issued yet.</p> : <div className="mt-4 overflow-x-auto"><table><thead><tr><th>Student</th><th>Certificate</th><th>Template</th><th>Issued</th><th>Verification</th><th>Status</th></tr></thead><tbody>{certificates.map((certificate) => <tr key={certificate.id}><td>{studentName(certificate.studentId)}</td><td><b>{certificate.title}</b><small>{certificate.certificateNumber}</small></td><td>{templates.find(([key]) => key === certificate.templateKey)?.[1] ?? certificate.templateKey}</td><td>{certificate.issuedDate}</td><td><code>{certificate.verificationCode}</code></td><td>{certificate.status}</td></tr>)}</tbody></table></div>}</section>
+    <section className="surface-panel mt-5 rounded-xl p-5"><div className="flex items-center justify-between gap-3"><h3>Issued certificates</h3><span className="text-sm text-slate-400">Each record has a unique verification code.</span></div>{certificates.length === 0 ? <p className="enterprise-settings-empty mt-4">No certificates have been issued yet.</p> : <div className="mt-4 overflow-x-auto"><table><thead><tr><th>Student</th><th>Certificate</th><th>Template</th><th>Artwork</th><th>Issued</th><th>Verification</th><th>Status</th></tr></thead><tbody>{certificates.map((certificate) => <tr key={certificate.id}><td>{studentName(certificate.studentId)}</td><td><b>{certificate.title}</b><small>{certificate.certificateNumber}</small></td><td>{templates.find(([key]) => key === certificate.templateKey)?.[1] ?? certificate.templateKey}</td><td>{designs.find(([key]) => key === certificate.designKey)?.[1] ?? certificate.designKey}</td><td>{certificate.issuedDate}</td><td><code>{certificate.verificationCode}</code></td><td>{certificate.status}</td></tr>)}</tbody></table></div>}</section>
   </main>;
 }
