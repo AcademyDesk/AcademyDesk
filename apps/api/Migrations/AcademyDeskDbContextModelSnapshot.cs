@@ -1877,8 +1877,17 @@ namespace AcademyDesk.Api.Migrations
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("DeliveryMode")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
                     b.Property<DateTime>("EndUtc")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("MeetingLink")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
 
                     b.Property<string>("Notes")
                         .HasMaxLength(2000)
@@ -1900,6 +1909,9 @@ namespace AcademyDesk.Api.Migrations
 
                     b.Property<DateTime?>("UpdatedAtUtc")
                         .HasColumnType("datetime2");
+
+                    b.Property<bool>("UsesNextScheduledClass")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Venue")
                         .HasMaxLength(250)

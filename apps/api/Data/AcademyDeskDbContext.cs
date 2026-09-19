@@ -395,7 +395,9 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
         });
         modelBuilder.Entity<MakeupClass>(entity =>
         {
+            entity.Property(x => x.DeliveryMode).HasMaxLength(30).IsRequired();
             entity.Property(x => x.Venue).HasMaxLength(250);
+            entity.Property(x => x.MeetingLink).HasMaxLength(1000);
             entity.Property(x => x.Status).HasMaxLength(30).IsRequired();
             entity.Property(x => x.Notes).HasMaxLength(2000);
             entity.HasIndex(x => new { x.AcademyId, x.StartUtc });
