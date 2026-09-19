@@ -1382,6 +1382,57 @@ html[data-theme="light"] .field-label { color: #475569; }
   font-size: 0.98rem;
   letter-spacing: -0.015em;
 }
+
+/* Academics uses the same calm, task-focused contract across its governance and
+   legacy pages: no instructional clutter, predictable breathing room, and
+   visible actions instead of text-only controls. */
+.academic-module .surface-panel {
+  padding: clamp(20px, 2vw, 28px) !important;
+  border-color: var(--ad-border) !important;
+  background: var(--ad-surface) !important;
+}
+.academic-module .surface-panel > h3,
+.academic-standard :is(form, section, article) > h2,
+.academic-standard :is(form, section, article) > h3 {
+  margin: 0;
+  color: var(--ad-text) !important;
+  font-size: 1rem !important;
+  font-weight: 750 !important;
+}
+.academic-module .surface-panel > h3 + p,
+.academic-standard :is(form, section, article) > :is(h2, h3) + p.text-slate-300,
+.academic-standard :is(form, section, article) > :is(h2, h3) + p.text-slate-400 {
+  display: none;
+}
+.academic-module .surface-panel button:is(.text-cyan-300, .text-amber-300, .text-emerald-300, .text-rose-300) {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 11px;
+  border: 1px solid var(--ad-border-strong);
+  border-radius: 8px;
+  background: var(--ad-surface-subtle);
+  font-size: .8rem;
+  font-weight: 700;
+}
+.academic-module .surface-panel button.text-cyan-300,
+.academic-module .surface-panel button.text-emerald-300 { color: var(--ad-accent) !important; }
+.academic-module .surface-panel button.text-rose-300 { color: var(--ad-danger) !important; border-color: color-mix(in srgb, var(--ad-danger) 42%, var(--ad-border)); }
+.academic-module .surface-panel button:is(.text-cyan-300, .text-amber-300, .text-emerald-300, .text-rose-300):hover { border-color: var(--ad-accent); background: var(--ad-accent-soft); }
+.academic-standard > .mx-auto {
+  width: min(100%, 1240px) !important;
+  max-width: none !important;
+  padding: clamp(26px, 3vw, 48px) !important;
+}
+.academic-standard :is(form, section, article).rounded-xl {
+  border: 1px solid var(--ad-border) !important;
+  border-radius: 12px !important;
+  background: var(--ad-surface) !important;
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--ad-text) 5%, transparent);
+}
+.academic-standard article { padding: clamp(18px, 2vw, 24px) !important; }
+.academic-standard button:not(.enterprise-action-button) { min-height: 38px; }
 .enterprise-settings :is(input, select, textarea).field,
 .enterprise-settings input:not([type="checkbox"]):not([type="radio"]),
 .enterprise-settings select,
