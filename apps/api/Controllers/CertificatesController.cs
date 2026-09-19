@@ -13,7 +13,8 @@ public sealed class CertificatesController(AcademyDeskDbContext dbContext, IWebH
     {
         "music-recital", "music-conservatory", "music-rhythm", "music-spotlight", "music-symphony",
         "music-acoustic", "music-vocal", "music-orchestra", "music-virtuoso", "music-practice",
-        "school-honours", "school-crest", "school-scholar", "school-merit", "school-graduation"
+        "school-honours", "school-crest", "school-scholar", "school-merit", "school-graduation",
+        "holiday-independence", "holiday-republic", "holiday-diwali", "holiday-ganesh", "holiday-christmas", "holiday-eid"
     };
     private static readonly HashSet<string> DesignKeys = new(StringComparer.OrdinalIgnoreCase)
     {
