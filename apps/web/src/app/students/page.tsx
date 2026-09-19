@@ -231,7 +231,7 @@ export default function StudentsPage() {
           </div>
         </section>
         <aside className="surface-panel rounded-xl p-5">
-          <h3 className="font-semibold">Assign batch</h3>
+          <h3 className="font-semibold">Assign Class / Batch</h3>
           <div className="mt-4 grid gap-3">
             <select value={assignmentStudentId} onChange={(event) => setAssignmentStudentId(event.target.value)}>
               <option value="">Select student</option>
@@ -242,7 +242,7 @@ export default function StudentsPage() {
               {batches.filter((batch) => batch.isActive && batch.enrollmentStatus === "Open").map((batch) => <option key={batch.id} value={batch.id}>{batch.name}</option>)}
             </select>
             <button disabled={saving || !assignmentStudentId || !assignmentBatchId} onClick={() => void assignBatch()} className="primary-action w-full">
-              {saving ? "Assigning…" : "Assign batch"}
+              {saving ? "Assigning…" : "Assign"}
             </button>
           </div>
         </aside>

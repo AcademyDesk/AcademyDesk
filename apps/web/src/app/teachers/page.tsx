@@ -261,7 +261,7 @@ export default function TeachersPage() {
             </p>
           </article>
           <article className="surface-panel rounded-xl p-5">
-            <p className="text-sm text-slate-400">Batch assignment</p>
+            <p className="text-sm text-slate-400">Assign Class / Batch</p>
             <select className="mt-2 w-full" value={assignmentTeacherId} onChange={(event) => setAssignmentTeacherId(event.target.value)}>
               <option value="">Select teacher</option>
               {activeTeachers.map((teacher) => <option key={teacher.id} value={teacher.id}>{teacher.firstName} {teacher.lastName}</option>)}
@@ -271,7 +271,7 @@ export default function TeachersPage() {
               {batches.filter((batch) => batch.isActive).map((batch) => <option key={batch.id} value={batch.id}>{batch.name}</option>)}
             </select>
             <button disabled={saving || !assignmentTeacherId || !assignmentBatchId} onClick={() => void assignBatch()} className="primary-action mt-2 w-full">
-              {saving ? "Assigning…" : "Assign teacher"}
+              {saving ? "Assigning…" : "Assign"}
             </button>
           </article>
         </section>
