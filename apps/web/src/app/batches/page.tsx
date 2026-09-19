@@ -9,7 +9,6 @@ import { academyApi, apiHeaders } from "@/lib/api";
 type Academy = { id: string; name: string };
 type Course = { id: string; name: string; academyType: string };
 type Teacher = { id: string; firstName: string; lastName: string };
-type Student = { id: string; firstName: string; lastName: string; isActive: boolean };
 type Branch = { id: string; name: string };
 type Batch = {
   id: string;
@@ -58,12 +57,9 @@ export default function BatchesPage() {
   const [academyId, setAcademyId] = useState("");
   const [courses, setCourses] = useState<Course[]>([]);
   const [teachers, setTeachers] = useState<Teacher[]>([]);
-  const [students, setStudents] = useState<Student[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [batches, setBatches] = useState<Batch[]>([]);
   const [courseId, setCourseId] = useState("");
-  const [teacherId, setTeacherId] = useState("");
-  const [studentIds, setStudentIds] = useState<string[]>([]);
   const [branchId, setBranchId] = useState("");
   const [name, setName] = useState("");
   const [capacity, setCapacity] = useState("10");
@@ -99,16 +95,15 @@ export default function BatchesPage() {
 
   async function loadWorkspace(id: string) {
     if (!id) return;
-    const [courseResponse, teacherResponse, studentResponse, branchResponse, batchResponse] =
+    const [courseResponse, teacherResponse, branchResponse, batchResponse] =
       await Promise.all([
         academyApi(`/api/academies/${id}/courses`, { cache: "no-store" }),
         academyApi(`/api/academies/${id}/teachers`, { cache: "no-store" }),
-        academyApi(`/api/academies/${id}/students`, { cache: "no-store" }),
         academyApi(`/api/academies/${id}/branches`, { cache: "no-store" }),
         academyApi(`/api/academies/${id}/batches`, { cache: "no-store" }),
       ]);
     if (
-      ![courseResponse, teacherResponse, studentResponse, branchResponse, batchResponse].every(
+      ![courseResponse, teacherResponse, branchResponse, batchResponse].every(
         (response) => response.ok,
       )
     )
@@ -116,7 +111,6 @@ export default function BatchesPage() {
     const courseData: Course[] = await courseResponse.json();
     setCourses(courseData);
     setTeachers(await teacherResponse.json());
-    setStudents(await studentResponse.json());
     setBranches(await branchResponse.json());
     setBatches(await batchResponse.json());
     if (!courseId && courseData.length) setCourseId(courseData[0].id);
@@ -145,8 +139,7 @@ export default function BatchesPage() {
         name,
         batchCode: batchCode || null,
         courseId,
-        teacherId: teacherId || null,
-        studentIds,
+        teacherId: null,
         branchId: branchId || null,
         capacity: Number(capacity),
         waitlistCapacity: Number(waitlistCapacity),
@@ -170,8 +163,6 @@ export default function BatchesPage() {
       );
     setName("");
     setBatchCode("");
-    setTeacherId("");
-    setStudentIds([]);
     setBranchId("");
     setWaitlistCapacity("0");
     setDeliveryMode("InPerson");
@@ -408,38 +399,6 @@ export default function BatchesPage() {
                   placeholder="Batch code, e.g. PNO-L1-EVE"
                   className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
                 />
-                <select
-                  value={teacherId}
-                  onChange={(event) => setTeacherId(event.target.value)}
-                  className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
-                >
-                  <option value="">No teacher assigned yet</option>
-                  {teachers.map((teacher) => (
-                    <option key={teacher.id} value={teacher.id}>
-                      {teacher.firstName} {teacher.lastName}
-                    </option>
-                  ))}
-                </select>
-                <label className="mt-3 block text-sm text-slate-300">
-                  Students
-                  <select
-                    multiple
-                    value={studentIds}
-                    onChange={(event) =>
-                      setStudentIds(
-                        Array.from(event.target.selectedOptions, (option) => option.value),
-                      )
-                    }
-                    className="mt-2 min-h-32 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
-                  >
-                    {students.filter((student) => student.isActive).map((student) => (
-                      <option key={student.id} value={student.id}>
-                        {student.firstName} {student.lastName}
-                      </option>
-                    ))}
-                  </select>
-                  <span className="mt-1 block text-xs text-slate-400">Select one or more students for this batch.</span>
-                </label>
                 <select
                   value={branchId}
                   onChange={(event) => setBranchId(event.target.value)}

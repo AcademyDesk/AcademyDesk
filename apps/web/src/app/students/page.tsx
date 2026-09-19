@@ -13,10 +13,14 @@ type Student = {
   phone?: string | null;
   isActive: boolean;
 };
+type Batch = { id: string; name: string; isActive: boolean; enrollmentStatus?: string };
 
 export default function StudentsPage() {
   const [academy, setAcademy] = useState<Academy>();
   const [students, setStudents] = useState<Student[]>([]);
+  const [batches, setBatches] = useState<Batch[]>([]);
+  const [assignmentStudentId, setAssignmentStudentId] = useState("");
+  const [assignmentBatchId, setAssignmentBatchId] = useState("");
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("Active");
   const [message, setMessage] = useState("Loading student register…");
@@ -42,11 +46,13 @@ export default function StudentsPage() {
       return;
     }
     setAcademy(current);
-    const roster = await academyApi(`/api/academies/${current.id}/students`, {
-      cache: "no-store",
-    });
-    if (!roster.ok) throw new Error();
+    const [roster, batchResponse] = await Promise.all([
+      academyApi(`/api/academies/${current.id}/students`, { cache: "no-store" }),
+      academyApi(`/api/academies/${current.id}/batches`, { cache: "no-store" }),
+    ]);
+    if (!roster.ok || !batchResponse.ok) throw new Error();
     setStudents(await roster.json());
+    setBatches(await batchResponse.json());
     setMessage("");
   }
   useEffect(() => {
@@ -80,6 +86,27 @@ export default function StudentsPage() {
       );
     } catch {
       setMessage("The student status could not be changed.");
+    } finally {
+      setSaving(false);
+    }
+  }
+  async function assignBatch() {
+    if (!academy || !assignmentStudentId || !assignmentBatchId)
+      return setMessage("Select a student and batch.");
+    setSaving(true);
+    try {
+      const response = await academyApi(`/api/academies/${academy.id}/enrollments`, {
+        method: "POST",
+        headers: apiHeaders(true),
+        body: JSON.stringify({ studentId: assignmentStudentId, batchId: assignmentBatchId, startDate: null, status: "Active" }),
+      });
+      const result = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(result?.message ?? "The batch could not be assigned.");
+      setAssignmentStudentId("");
+      setAssignmentBatchId("");
+      setMessage("Batch assigned to student.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "The batch could not be assigned.");
     } finally {
       setSaving(false);
     }
@@ -133,12 +160,6 @@ export default function StudentsPage() {
                 {academy?.name ?? "Academy"}
               </p>
             </div>
-            <Link
-              href="/enrollments"
-              className="text-sm font-semibold text-cyan-300"
-            >
-              Manage enrolments →
-            </Link>
           </header>
           <div className="overflow-auto">
             <table className="w-full min-w-[720px] text-left text-sm">
@@ -187,12 +208,6 @@ export default function StudentsPage() {
                           >
                             Open record
                           </Link>
-                          <Link
-                            className="text-cyan-300"
-                            href={`/enrollments?studentId=${student.id}`}
-                          >
-                            Enrol
-                          </Link>
                           <button
                             disabled={saving}
                             onClick={() => void toggle(student)}
@@ -216,16 +231,20 @@ export default function StudentsPage() {
           </div>
         </section>
         <aside className="surface-panel rounded-xl p-5">
-          <h3 className="font-semibold">New student</h3>
-          <p className="mt-2 text-sm leading-6 text-slate-400">
-            Use the guided onboarding record for all student and parent details.
-          </p>
-          <Link
-            href="/student-onboarding"
-            className="mt-5 inline-flex w-full items-center justify-center rounded bg-cyan-400 p-2.5 font-semibold text-slate-950"
-          >
-            Start onboarding
-          </Link>
+          <h3 className="font-semibold">Assign batch</h3>
+          <div className="mt-4 grid gap-3">
+            <select value={assignmentStudentId} onChange={(event) => setAssignmentStudentId(event.target.value)}>
+              <option value="">Select student</option>
+              {students.filter((student) => student.isActive).map((student) => <option key={student.id} value={student.id}>{student.firstName} {student.lastName}</option>)}
+            </select>
+            <select value={assignmentBatchId} onChange={(event) => setAssignmentBatchId(event.target.value)}>
+              <option value="">Select class or batch</option>
+              {batches.filter((batch) => batch.isActive && batch.enrollmentStatus === "Open").map((batch) => <option key={batch.id} value={batch.id}>{batch.name}</option>)}
+            </select>
+            <button disabled={saving || !assignmentStudentId || !assignmentBatchId} onClick={() => void assignBatch()} className="primary-action w-full">
+              {saving ? "Assigning…" : "Assign batch"}
+            </button>
+          </div>
         </aside>
       </section>
     </main>

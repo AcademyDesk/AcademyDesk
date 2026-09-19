@@ -6,6 +6,7 @@ import { academyApi, apiHeaders } from "@/lib/api";
 
 type Academy = { id: string; name: string };
 type Branch = { id: string; name: string };
+type Batch = { id: string; name: string; batchCode?: string | null; courseId: string; teacherId?: string | null; branchId?: string | null; capacity: number; waitlistCapacity: number; deliveryMode?: string; meetingPattern?: string | null; roomName?: string | null; enrollmentStatus?: string; adminNotes?: string | null; startDate?: string | null; endDate?: string | null; isActive: boolean };
 type Teacher = {
   id: string;
   firstName: string;
@@ -21,6 +22,9 @@ export default function TeachersPage() {
   const [academy, setAcademy] = useState<Academy>();
   const [branches, setBranches] = useState<Branch[]>([]);
   const [teachers, setTeachers] = useState<Teacher[]>([]);
+  const [batches, setBatches] = useState<Batch[]>([]);
+  const [assignmentTeacherId, setAssignmentTeacherId] = useState("");
+  const [assignmentBatchId, setAssignmentBatchId] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -47,13 +51,15 @@ export default function TeachersPage() {
   async function load(academyId?: string) {
     const id = academyId ?? academy?.id;
     if (!id) return;
-    const [teacherResponse, branchResponse] = await Promise.all([
+    const [teacherResponse, branchResponse, batchResponse] = await Promise.all([
       academyApi(`/api/academies/${id}/teachers`, { cache: "no-store" }),
       academyApi(`/api/academies/${id}/branches`, { cache: "no-store" }),
+      academyApi(`/api/academies/${id}/batches`, { cache: "no-store" }),
     ]);
-    if (!teacherResponse.ok || !branchResponse.ok) throw new Error();
+    if (!teacherResponse.ok || !branchResponse.ok || !batchResponse.ok) throw new Error();
     setTeachers(await teacherResponse.json());
     setBranches(await branchResponse.json());
+    setBatches(await batchResponse.json());
     setMessage("");
   }
 
@@ -179,6 +185,38 @@ export default function TeachersPage() {
     );
     await load();
   }
+  async function assignBatch() {
+    if (!academy || !assignmentTeacherId || !assignmentBatchId)
+      return setMessage("Select a teacher and class or batch.");
+    const batch = batches.find((item) => item.id === assignmentBatchId);
+    if (!batch) return;
+    setSaving(true);
+    try {
+      const response = await academyApi(`/api/academies/${academy.id}/batches/${batch.id}`, {
+        method: "PUT",
+        headers: apiHeaders(true),
+        body: JSON.stringify({
+          name: batch.name, batchCode: batch.batchCode ?? null, courseId: batch.courseId,
+          teacherId: assignmentTeacherId, branchId: batch.branchId ?? null,
+          capacity: batch.capacity, waitlistCapacity: batch.waitlistCapacity ?? 0,
+          deliveryMode: batch.deliveryMode ?? "InPerson", meetingPattern: batch.meetingPattern ?? null,
+          roomName: batch.roomName ?? null, enrollmentStatus: batch.enrollmentStatus ?? "Open",
+          adminNotes: batch.adminNotes ?? null, startDate: batch.startDate ?? null,
+          endDate: batch.endDate ?? null, isActive: batch.isActive,
+        }),
+      });
+      const result = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(result?.message ?? "The teacher could not be assigned.");
+      setAssignmentTeacherId("");
+      setAssignmentBatchId("");
+      setMessage("Teacher assigned to class or batch.");
+      await load();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "The teacher could not be assigned.");
+    } finally {
+      setSaving(false);
+    }
+  }
 
   return (
     <main className="enterprise-settings">
@@ -222,15 +260,20 @@ export default function TeachersPage() {
               Monthly settlement date
             </p>
           </article>
-          <Link
-            href="/teacher-onboarding"
-            className="surface-panel rounded-xl p-5 transition hover:border-cyan-400"
-          >
-            <p className="text-sm text-slate-400">New teacher</p>
-            <p className="mt-2 font-semibold text-cyan-300">
-              Teacher onboarding
-            </p>
-          </Link>
+          <article className="surface-panel rounded-xl p-5">
+            <p className="text-sm text-slate-400">Batch assignment</p>
+            <select className="mt-2 w-full" value={assignmentTeacherId} onChange={(event) => setAssignmentTeacherId(event.target.value)}>
+              <option value="">Select teacher</option>
+              {activeTeachers.map((teacher) => <option key={teacher.id} value={teacher.id}>{teacher.firstName} {teacher.lastName}</option>)}
+            </select>
+            <select className="mt-2 w-full" value={assignmentBatchId} onChange={(event) => setAssignmentBatchId(event.target.value)}>
+              <option value="">Select class or batch</option>
+              {batches.filter((batch) => batch.isActive).map((batch) => <option key={batch.id} value={batch.id}>{batch.name}</option>)}
+            </select>
+            <button disabled={saving || !assignmentTeacherId || !assignmentBatchId} onClick={() => void assignBatch()} className="primary-action mt-2 w-full">
+              {saving ? "Assigning…" : "Assign teacher"}
+            </button>
+          </article>
         </section>
         <section className="mt-6 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
           <form onSubmit={createTeacher} className="hidden">
