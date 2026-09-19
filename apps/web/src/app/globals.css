@@ -12,8 +12,8 @@ button:disabled,
 }
 
 :root {
-  /* Admin page headline: 75px desktop reference, responsive on smaller viewports. */
-  --ad-page-title-size: clamp(2.75rem, 5vw, 4.7rem);
+  /* Admin page headline: restrained 46px desktop reference, responsive on smaller viewports. */
+  --ad-page-title-size: clamp(2.25rem, 2.4vw, 2.875rem);
   --ad-page-title-weight: 520;
   --ad-page-title-tracking: -0.05em;
   --ad-page-title-line-height: 1.05;
@@ -829,10 +829,11 @@ html[data-theme="light"] [class~="text-red-300"] {
 }
 .enterprise-dashboard-heading h2 {
   color: var(--ad-text);
-  font-size: clamp(1.85rem, 2.2vw, 2.65rem);
-  font-weight: 520;
-  letter-spacing: -0.05em;
-  line-height: 1.05;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-size: var(--ad-page-title-size);
+  font-weight: var(--ad-page-title-weight);
+  letter-spacing: var(--ad-page-title-tracking);
+  line-height: var(--ad-page-title-line-height);
 }
 .enterprise-dashboard-heading p {
   display: none;
@@ -2559,7 +2560,7 @@ html[data-theme="light"] .field-label { color: #475569; }
     padding: 28px 22px 42px;
   }
   .enterprise-page-header h2 {
-    font-size: clamp(2.25rem, 10vw, 3.75rem) !important;
+    font-size: clamp(2rem, 8vw, 2.5rem) !important;
   }
   .enterprise-page-header span {
     font-size: 0.92rem;
