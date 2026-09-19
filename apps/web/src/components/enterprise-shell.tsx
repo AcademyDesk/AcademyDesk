@@ -57,7 +57,7 @@ const navigationGroups: readonly NavigationGroup[] = [
     ],
   },
   {
-    label: "Ops team",
+    label: "Operations & Workforce",
     icon: "♞",
     links: [
       ["Staff directory & onboarding", "/staff"],

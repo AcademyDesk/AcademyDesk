@@ -133,7 +133,7 @@ export default function StaffPage() {
       <WorkspaceNav />
       <div className="mx-auto max-w-6xl px-6 py-10">
         <h1 className="text-4xl font-semibold tracking-tight">
-          Staff accounts and roles
+          Operations & Workforce
         </h1>
         {message && (
           <p className="mt-6 rounded-lg border border-amber-700/50 bg-amber-950/40 p-4 text-sm text-amber-100">
@@ -194,14 +194,9 @@ export default function StaffPage() {
                 ))}
               </select>
             )}
-            <p className="mt-3 text-xs text-slate-400">
-              For now, give the temporary password to the staff member
-              privately. Password-reset email delivery will be added with the
-              email provider integration.
-            </p>
             <button
               disabled={!academy}
-              className="mt-5 w-full rounded-lg bg-cyan-400 px-4 py-2.5 font-semibold text-slate-950 disabled:opacity-60"
+              className="enterprise-action-button mt-5 w-full disabled:opacity-60"
             >
               Create account
             </button>
@@ -252,7 +247,7 @@ export default function StaffPage() {
                       {person.isActive ? (
                         <button
                           onClick={() => void offboard(person)}
-                          className="inline-flex items-center rounded-lg border border-rose-400/60 bg-rose-500/10 px-3 py-2 text-sm font-semibold text-rose-100 transition hover:bg-rose-500/20 focus:outline-none focus:ring-2 focus:ring-rose-300/70"
+                          className="enterprise-action-button enterprise-action-button-danger"
                         >
                           Offboard and revoke sessions
                         </button>

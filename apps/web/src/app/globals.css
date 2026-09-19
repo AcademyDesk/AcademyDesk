@@ -1481,6 +1481,15 @@ html[data-theme="light"] .field-label { color: #475569; }
 .enterprise-action-button:hover { background: var(--ad-action-hover); transform: translateY(-1px); }
 .enterprise-action-button-secondary { background: transparent; color: var(--ad-accent); border-color: var(--ad-border-strong); }
 .enterprise-action-button-secondary:hover { background: var(--ad-accent-soft); border-color: var(--ad-accent); }
+.enterprise-action-button-danger {
+  border-color: color-mix(in srgb, var(--ad-danger) 48%, var(--ad-border));
+  background: color-mix(in srgb, var(--ad-danger) 13%, var(--ad-surface));
+  color: var(--ad-danger);
+}
+.enterprise-action-button-danger:hover {
+  border-color: var(--ad-danger);
+  background: color-mix(in srgb, var(--ad-danger) 20%, var(--ad-surface));
+}
 .student-summary-tile {
   display: block;
   min-height: 154px;
