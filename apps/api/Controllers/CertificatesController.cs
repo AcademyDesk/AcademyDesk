@@ -11,13 +11,12 @@ public sealed class CertificatesController(AcademyDeskDbContext dbContext, IWebH
 {
     private static readonly HashSet<string> TemplateKeys = new(StringComparer.OrdinalIgnoreCase)
     {
-        "classic", "modern", "minimal", "navy", "academic", "gold", "silver", "bronze",
-        "performance", "completion", "excellence", "independence-day", "republic-day", "diwali", "ganesh-festival"
+        "heritage", "modern-wave", "ivory-crest", "royal-scroll", "onyx-gold", "laureate",
+        "stage", "medal", "tricolour", "festive"
     };
     private static readonly HashSet<string> DesignKeys = new(StringComparer.OrdinalIgnoreCase)
     {
-        "laurels", "music-notes", "medal-ribbon", "starburst", "geometric", "academy-seal",
-        "tricolour", "diya", "ganesh", "celebration"
+        "none"
     };
 
     [HttpGet]
@@ -71,8 +70,8 @@ public sealed class CertificatesController(AcademyDeskDbContext dbContext, IWebH
     public async Task<ActionResult<CertificateSummary>> Issue(Guid academyId, IssueCertificateRequest request, CancellationToken token)
     {
         if (string.IsNullOrWhiteSpace(request.Title)) return BadRequest(new { message = "Certificate title is required." });
-        if (!TemplateKeys.Contains(request.TemplateKey ?? "classic")) return BadRequest(new { message = "Select a supported certificate template." });
-        if (!DesignKeys.Contains(request.DesignKey ?? "laurels")) return BadRequest(new { message = "Select a supported certificate design." });
+        if (!TemplateKeys.Contains(request.TemplateKey ?? "heritage")) return BadRequest(new { message = "Select a supported certificate theme." });
+        if (!DesignKeys.Contains(request.DesignKey ?? "none")) return BadRequest(new { message = "Certificate artwork is no longer supported." });
         if (!InRange(request.ArtworkX, 0, 100) || !InRange(request.ArtworkY, 0, 100) || !InRange(request.ArtworkSize, 36, 180)) return BadRequest(new { message = "Artwork placement is outside the certificate canvas." });
         if (!await dbContext.Students.AnyAsync(x => x.Id == request.StudentId && x.AcademyId == academyId, token)) return BadRequest(new { message = "The student does not belong to this academy." });
         if (request.BatchId.HasValue && !await dbContext.Batches.AnyAsync(x => x.Id == request.BatchId && x.AcademyId == academyId, token)) return BadRequest(new { message = "The class or batch does not belong to this academy." });
@@ -81,7 +80,7 @@ public sealed class CertificatesController(AcademyDeskDbContext dbContext, IWebH
         {
             AcademyId = academyId, CertificateNumber = $"CERT-{DateTime.UtcNow:yyyyMMddHHmmss}-{Random.Shared.Next(100, 999)}",
             StudentId = request.StudentId, BatchId = request.BatchId, Title = request.Title.Trim(),
-            TemplateKey = request.TemplateKey?.Trim().ToLowerInvariant() ?? "classic", DesignKey = request.DesignKey?.Trim().ToLowerInvariant() ?? "laurels", ArtworkX = request.ArtworkX ?? 50, ArtworkY = request.ArtworkY ?? 30, ArtworkSize = request.ArtworkSize ?? 72, VerificationCode = Guid.NewGuid().ToString("N")[..16].ToUpperInvariant(),
+            TemplateKey = request.TemplateKey?.Trim().ToLowerInvariant() ?? "heritage", DesignKey = "none", ArtworkX = 50, ArtworkY = 30, ArtworkSize = 72, VerificationCode = Guid.NewGuid().ToString("N")[..16].ToUpperInvariant(),
             IssuedDate = request.IssuedDate ?? DateOnly.FromDateTime(DateTime.UtcNow), Notes = Clean(request.Notes, 2000)
         };
         dbContext.Certificates.Add(certificate);

@@ -6,8 +6,8 @@ public sealed class Certificate : AcademyEntity
     public Guid StudentId { get; set; }
     public Guid? BatchId { get; set; }
     public required string Title { get; set; }
-    public string TemplateKey { get; set; } = "classic";
-    public string DesignKey { get; set; } = "laurels";
+    public string TemplateKey { get; set; } = "heritage";
+    public string DesignKey { get; set; } = "none";
     public int ArtworkX { get; set; } = 50;
     public int ArtworkY { get; set; } = 30;
     public int ArtworkSize { get; set; } = 72;
