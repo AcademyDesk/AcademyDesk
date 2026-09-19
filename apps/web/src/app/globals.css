@@ -1416,6 +1416,22 @@ html[data-theme="light"] .field-label { color: #475569; }
   font-size: .8rem;
   font-weight: 700;
 }
+.academic-module .enterprise-page-header a,
+.academic-module .enterprise-page-header .text-cyan-300 a {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 11px;
+  border: 1px solid var(--ad-border-strong);
+  border-radius: 8px;
+  background: var(--ad-surface);
+  color: var(--ad-accent) !important;
+  font-size: .8rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+.academic-module .enterprise-page-header a:hover { border-color: var(--ad-accent); background: var(--ad-accent-soft); }
 .academic-module .surface-panel button.text-cyan-300,
 .academic-module .surface-panel button.text-emerald-300 { color: var(--ad-accent) !important; }
 .academic-module .surface-panel button.text-rose-300 { color: var(--ad-danger) !important; border-color: color-mix(in srgb, var(--ad-danger) 42%, var(--ad-border)); }
@@ -1433,6 +1449,8 @@ html[data-theme="light"] .field-label { color: #475569; }
 }
 .academic-standard article { padding: clamp(18px, 2vw, 24px) !important; }
 .academic-standard button:not(.enterprise-action-button) { min-height: 38px; }
+.academic-standard button[class~="border-cyan-400"],
+.academic-standard button[class~="border-cyan-500"] { padding: 8px 13px !important; }
 .enterprise-settings :is(input, select, textarea).field,
 .enterprise-settings input:not([type="checkbox"]):not([type="radio"]),
 .enterprise-settings select,
