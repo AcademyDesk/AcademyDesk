@@ -29,7 +29,13 @@ function formatLocal(value: string) {
   return new Intl.DateTimeFormat("en-IN", {
     dateStyle: "medium",
     timeStyle: "short",
+    timeZone: "Asia/Kolkata",
   }).format(new Date(value));
+}
+
+function istInputToUtc(value: string) {
+  const withSeconds = value.length === 16 ? `${value}:00` : value;
+  return new Date(`${withSeconds}+05:30`).toISOString();
 }
 
 export default function SchedulePage() {
@@ -119,8 +125,8 @@ export default function SchedulePage() {
         batchId,
         teacherId: teacherId || null,
         branchId: branchId || null,
-        startUtc: new Date(startLocal).toISOString(),
-        endUtc: new Date(endLocal).toISOString(),
+        startUtc: istInputToUtc(startLocal),
+        endUtc: istInputToUtc(endLocal),
         deliveryMode,
         roomName: roomName || null,
       }),
@@ -179,8 +185,8 @@ export default function SchedulePage() {
           Class schedule
         </h1>
         <p className="mt-3 text-slate-300">
-          Schedule individual classes for your batches. Times entered below use
-          your computer’s local time and are stored safely in UTC.
+          Schedule individual classes for your batches. Times use India Standard
+          Time (IST) and are stored safely in UTC.
         </p>
         {message && (
           <p className="mt-6 rounded-lg border border-amber-700/50 bg-amber-950/40 p-4 text-sm text-amber-100">
@@ -293,6 +299,7 @@ export default function SchedulePage() {
                           {formatLocal(session.startUtc)} –{" "}
                           {new Intl.DateTimeFormat("en-IN", {
                             timeStyle: "short",
+                            timeZone: "Asia/Kolkata",
                           }).format(new Date(session.endUtc))}
                         </div>
                         <div className="mt-2 text-sm text-slate-300">

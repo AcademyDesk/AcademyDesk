@@ -215,6 +215,7 @@ export default function TeachersPage() {
               {new Intl.DateTimeFormat("en-IN", {
                 day: "2-digit",
                 month: "short",
+                timeZone: "Asia/Kolkata",
               }).format(nextPayCycle)}
             </p>
             <p className="mt-1 text-sm text-slate-400">

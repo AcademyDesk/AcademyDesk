@@ -78,6 +78,7 @@ const dt = (x: string) =>
   new Intl.DateTimeFormat("en-IN", {
     dateStyle: "medium",
     timeStyle: "short",
+    timeZone: "Asia/Kolkata",
   }).format(new Date(x));
 const cash = (x: number, c = "INR") =>
   new Intl.NumberFormat("en-IN", {

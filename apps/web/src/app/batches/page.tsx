@@ -72,11 +72,10 @@ export default function BatchesPage() {
   const [sessionsPerWeek, setSessionsPerWeek] = useState("1");
   const [meetingLink, setMeetingLink] = useState("");
   const [meetingDays, setMeetingDays] = useState<string[]>([]);
-  const [meetingPattern, setMeetingPattern] = useState("");
+  const [meetingTimes, setMeetingTimes] = useState<Record<string, string>>({});
   const [roomName, setRoomName] = useState("");
   const [enrollmentStatus, setEnrollmentStatus] = useState("Open");
   const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
   const [message, setMessage] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
@@ -85,7 +84,6 @@ export default function BatchesPage() {
   const [editBranchId, setEditBranchId] = useState("");
   const [editCapacity, setEditCapacity] = useState("10");
   const [editStartDate, setEditStartDate] = useState("");
-  const [editEndDate, setEditEndDate] = useState("");
   const [savingId, setSavingId] = useState<string | null>(null);
 
   async function loadAcademies() {
@@ -150,14 +148,14 @@ export default function BatchesPage() {
         classType,
         sessionMinutes: Number(sessionMinutes),
         sessionsPerWeek: Number(sessionsPerWeek),
-        meetingDaysJson: JSON.stringify(meetingDays),
+        meetingDaysJson: JSON.stringify(meetingDays.map((day) => ({ day, startTime: meetingTimes[day] }))),
         meetingLink: meetingLink || null,
-        meetingPattern: meetingPattern || null,
+        meetingPattern: meetingDays.map((day) => `${day} ${meetingTimes[day] ?? ""}`.trim()).join(" · ") || null,
         roomName: roomName || null,
         enrollmentStatus,
         adminNotes: null,
         startDate: startDate || null,
-        endDate: endDate || null,
+        endDate: null,
       }),
     });
     if (!response.ok)
@@ -170,11 +168,10 @@ export default function BatchesPage() {
     setBranchId("");
     setWaitlistCapacity("0");
     setDeliveryMode("InPerson");
-    setMeetingPattern("");
+    setMeetingTimes({});
     setRoomName("");
     setEnrollmentStatus("Open");
     setStartDate("");
-    setEndDate("");
     setMessage("");
     await loadWorkspace(academyId);
   }
@@ -186,7 +183,6 @@ export default function BatchesPage() {
     setEditBranchId(batch.branchId ?? "");
     setEditCapacity(String(batch.capacity));
     setEditStartDate(batch.startDate ?? "");
-    setEditEndDate(batch.endDate ?? "");
   }
   async function saveBatch(batch: Batch) {
     if (!editName.trim() || !editCourseId)
@@ -204,7 +200,7 @@ export default function BatchesPage() {
           branchId: editBranchId || null,
           capacity: Number(editCapacity),
           startDate: editStartDate || null,
-          endDate: editEndDate || null,
+          endDate: null,
           isActive: batch.isActive,
         }),
       },
@@ -262,7 +258,7 @@ export default function BatchesPage() {
         <div className="mx-auto max-w-6xl px-6 py-10">
           <header className="flex flex-wrap items-center justify-between gap-4">
             <h1 className="text-4xl font-semibold tracking-tight">
-              Class &amp; Batch
+              Overview
             </h1>
             <Link
               href="/batch-setup"
@@ -473,11 +469,13 @@ export default function BatchesPage() {
                             type="checkbox"
                             checked={meetingDays.includes(day)}
                             onChange={() =>
-                              setMeetingDays((days) =>
-                                days.includes(day)
-                                  ? days.filter((item) => item !== day)
-                                  : [...days, day],
-                              )
+                              setMeetingDays((days) => {
+                                if (days.includes(day)) {
+                                  setMeetingTimes((times) => { const { [day]: _, ...remaining } = times; return remaining; });
+                                  return days.filter((item) => item !== day);
+                                }
+                                return [...days, day];
+                              })
                             }
                           />
                           {day}
@@ -486,6 +484,22 @@ export default function BatchesPage() {
                     )}
                   </div>
                 </fieldset>
+                {meetingDays.length > 0 && (
+                  <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                    {meetingDays.map((day) => (
+                      <label key={day} className="text-sm text-slate-300">
+                        {day} class time
+                        <input
+                          required
+                          type="time"
+                          value={meetingTimes[day] ?? ""}
+                          onChange={(event) => setMeetingTimes((times) => ({ ...times, [day]: event.target.value }))}
+                          className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
+                        />
+                      </label>
+                    ))}
+                  </div>
+                )}
                 <div className="mt-3 grid gap-3 sm:grid-cols-2">
                   <input
                     type="number"
@@ -515,13 +529,7 @@ export default function BatchesPage() {
                     className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
                   />
                 )}
-                <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                  <input
-                    value={meetingPattern}
-                    onChange={(event) => setMeetingPattern(event.target.value)}
-                    placeholder="Meeting pattern, e.g. Tue/Thu 17:00"
-                    className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
-                  />
+                <div className="mt-3">
                   <input
                     value={roomName}
                     onChange={(event) => setRoomName(event.target.value)}
@@ -538,20 +546,15 @@ export default function BatchesPage() {
                   placeholder="Waitlist capacity"
                   className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
                 />
-                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                <label className="mt-3 block text-sm text-slate-300">
+                  Batch start date
                   <input
                     type="date"
                     value={startDate}
                     onChange={(event) => setStartDate(event.target.value)}
-                    className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
+                    className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
                   />
-                  <input
-                    type="date"
-                    value={endDate}
-                    onChange={(event) => setEndDate(event.target.value)}
-                    className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
-                  />
-                </div>
+                </label>
                 <button className="mt-5 w-full rounded-lg bg-cyan-400 px-4 py-2.5 font-semibold text-slate-950 hover:bg-cyan-300">
                   Create batch
                 </button>
@@ -617,22 +620,14 @@ export default function BatchesPage() {
                               onChange={(e) => setEditCapacity(e.target.value)}
                               className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2"
                             />
-                            <div className="grid gap-2 sm:grid-cols-2">
+                            <label className="text-sm text-slate-300">Batch start date
                               <input
                                 type="date"
                                 value={editStartDate}
-                                onChange={(e) =>
-                                  setEditStartDate(e.target.value)
-                                }
-                                className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2"
+                                onChange={(e) => setEditStartDate(e.target.value)}
+                                className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2"
                               />
-                              <input
-                                type="date"
-                                value={editEndDate}
-                                onChange={(e) => setEditEndDate(e.target.value)}
-                                className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2"
-                              />
-                            </div>
+                            </label>
                           </div>
                           <div className="mt-3 flex gap-2">
                             <button

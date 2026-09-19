@@ -93,7 +93,7 @@ export default function TeacherOnboardingPage() {
         </section>
 
         <section className="surface-panel onboarding-section">
-          <div className="onboarding-section-header"><span>02</span><div><h3>Professional details</h3><p>Subjects, credentials and employment</p></div></div>
+          <div className="onboarding-section-header"><span>02</span><div><h3>Professional details</h3></div></div>
           <div className="onboarding-fields">
             <input name="qualifications" placeholder="Highest degree / qualification" />
             <div className="teacher-subjects onboarding-span-all">
@@ -113,7 +113,7 @@ export default function TeacherOnboardingPage() {
         </section>
 
         <section className="surface-panel onboarding-section">
-          <div className="onboarding-section-header"><span>03</span><div><h3>Availability</h3><p>Working hours for each available day</p></div></div>
+          <div className="onboarding-section-header"><span>03</span><div><h3>Availability</h3></div></div>
           <div className="availability-list">
             {days.map((day) => <div key={day} className="availability-row"><label className="consent-check"><input type="checkbox" name={`available-${day}`} />{day}</label><input type="time" name={`from-${day}`} aria-label={`${day} start time`} /><input type="time" name={`to-${day}`} aria-label={`${day} end time`} /></div>)}
           </div>

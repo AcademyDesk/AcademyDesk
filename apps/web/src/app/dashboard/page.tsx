@@ -230,6 +230,7 @@ export default function DashboardPage() {
                         hour: "2-digit",
                         minute: "2-digit",
                         hour12: false,
+                        timeZone: "Asia/Kolkata",
                       }).format(new Date(item.startUtc))}
                     </td>
                     <td>

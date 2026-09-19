@@ -36,13 +36,14 @@ type CalendarItem = {
 };
 const names = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const monthName = (date: Date) =>
-  new Intl.DateTimeFormat("en-IN", { month: "long", year: "numeric" }).format(
+  new Intl.DateTimeFormat("en-IN", { month: "long", year: "numeric", timeZone: "Asia/Kolkata" }).format(
     date,
   );
 const time = (date: Date) =>
   new Intl.DateTimeFormat("en-IN", {
     hour: "numeric",
     minute: "2-digit",
+    timeZone: "Asia/Kolkata",
   }).format(date);
 
 export default function CalendarPage() {

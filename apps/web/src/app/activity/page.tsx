@@ -138,6 +138,7 @@ export default function ActivityPage() {
                     {new Intl.DateTimeFormat("en-IN", {
                       dateStyle: "medium",
                       timeStyle: "short",
+                      timeZone: "Asia/Kolkata",
                     }).format(new Date(item.occurredAtUtc))}
                   </div>
                   {item.metadataJson && (

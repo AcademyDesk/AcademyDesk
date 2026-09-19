@@ -135,7 +135,7 @@ export default function AcademyControlPage() {
           name: form.get("name"),
           legalName: form.get("legalName") || null,
           countryCode: form.get("countryCode"),
-          timeZone: form.get("timeZone"),
+          timeZone: "Asia/Kolkata",
         }),
       });
       if (!response.ok) throw new Error();
@@ -202,8 +202,8 @@ export default function AcademyControlPage() {
                 Time zone
                 <input
                   name="timeZone"
-                  required
-                  defaultValue={academy.timeZone}
+                  value="India Standard Time (IST)"
+                  readOnly
                   className="mt-1 w-full rounded border border-slate-700 bg-slate-950 p-2"
                 />
               </label>

@@ -2,6 +2,7 @@ using AcademyDesk.Api.Data;
 using AcademyDesk.Api.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace AcademyDesk.Api.Controllers;
 
@@ -41,6 +42,17 @@ public sealed class BatchesController(AcademyDeskDbContext dbContext) : Controll
         if (r.EndDate.HasValue && r.StartDate.HasValue && r.EndDate < r.StartDate) return "End date cannot be earlier than the start date.";
         if (!new[] { "InPerson", "Online", "Hybrid" }.Contains((r.DeliveryMode ?? "InPerson").Replace(" ", ""), StringComparer.OrdinalIgnoreCase)) return "Delivery mode must be InPerson, Online, or Hybrid.";
         if ((r.DeliveryMode ?? "").Replace(" ", "") is "Online" or "Hybrid" && string.IsNullOrWhiteSpace(r.MeetingLink)) return "A meeting link is required for online and hybrid classes.";
+        if (!string.IsNullOrWhiteSpace(r.MeetingDaysJson))
+        {
+            try
+            {
+                var sessions = JsonSerializer.Deserialize<List<BatchMeetingTime>>(r.MeetingDaysJson);
+                var validDays = new[] { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
+                if (sessions is null || sessions.Count == 0 || sessions.Any(x => !validDays.Contains(x.Day, StringComparer.OrdinalIgnoreCase) || !TimeOnly.TryParse(x.StartTime, out _)))
+                    return "Select a valid class time for every teaching day.";
+            }
+            catch (JsonException) { return "Class times could not be read. Please select the teaching days again."; }
+        }
         if (!new[] { "Open", "Waitlist", "Closed" }.Contains((r.EnrollmentStatus ?? "Open").Trim(), StringComparer.OrdinalIgnoreCase)) return "Enrolment status must be Open, Waitlist, or Closed.";
         if (!await dbContext.Courses.AnyAsync(x => x.Id == r.CourseId && x.AcademyId == academyId, token)) return "The selected course does not belong to this academy.";
         if (r.BranchId.HasValue && !await dbContext.Branches.AnyAsync(x => x.Id == r.BranchId && x.AcademyId == academyId, token)) return "The selected branch does not belong to this academy.";
@@ -56,4 +68,5 @@ public sealed class BatchesController(AcademyDeskDbContext dbContext) : Controll
 public abstract record BatchRequest(string Name, string? BatchCode, Guid CourseId, Guid? TeacherId, Guid? BranchId, int Capacity, int WaitlistCapacity, string? DeliveryMode, string? MeetingPattern, string? RoomName, string? EnrollmentStatus, string? AdminNotes, DateOnly? StartDate, DateOnly? EndDate, string? ClassType = null, int? SessionMinutes = null, int? SessionsPerWeek = null, string? MeetingDaysJson = null, string? MeetingLink = null);
 public sealed record CreateBatchRequest(string Name, string? BatchCode, Guid CourseId, Guid? TeacherId, Guid? BranchId, int Capacity, int WaitlistCapacity, string? DeliveryMode, string? MeetingPattern, string? RoomName, string? EnrollmentStatus, string? AdminNotes, DateOnly? StartDate, DateOnly? EndDate, string? ClassType = null, int? SessionMinutes = null, int? SessionsPerWeek = null, string? MeetingDaysJson = null, string? MeetingLink = null) : BatchRequest(Name, BatchCode, CourseId, TeacherId, BranchId, Capacity, WaitlistCapacity, DeliveryMode, MeetingPattern, RoomName, EnrollmentStatus, AdminNotes, StartDate, EndDate, ClassType, SessionMinutes, SessionsPerWeek, MeetingDaysJson, MeetingLink);
 public sealed record UpdateBatchRequest(string Name, string? BatchCode, Guid CourseId, Guid? TeacherId, Guid? BranchId, int Capacity, int WaitlistCapacity, string? DeliveryMode, string? MeetingPattern, string? RoomName, string? EnrollmentStatus, string? AdminNotes, DateOnly? StartDate, DateOnly? EndDate, bool IsActive) : BatchRequest(Name, BatchCode, CourseId, TeacherId, BranchId, Capacity, WaitlistCapacity, DeliveryMode, MeetingPattern, RoomName, EnrollmentStatus, AdminNotes, StartDate, EndDate);
+public sealed record BatchMeetingTime(string Day, string StartTime);
 public sealed record BatchSummary(Guid Id, string Name, string? BatchCode, Guid CourseId, Guid? TeacherId, Guid? BranchId, int Capacity, int WaitlistCapacity, string DeliveryMode, string? MeetingPattern, string? RoomName, string EnrollmentStatus, string? AdminNotes, DateOnly? StartDate, DateOnly? EndDate, bool IsActive, int ActiveEnrolments);

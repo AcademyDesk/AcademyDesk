@@ -40,6 +40,7 @@ const dt = (x: string) =>
   new Intl.DateTimeFormat("en-IN", {
     dateStyle: "medium",
     timeStyle: "short",
+    timeZone: "Asia/Kolkata",
   }).format(new Date(x));
 export default function Teacher() {
   const [p, setP] = useState<P>();

@@ -47,7 +47,7 @@ const navigationGroups: readonly NavigationGroup[] = [
     ],
   },
   {
-    label: "Classes & batches",
+    label: "Class & Batch",
     icon: "♫",
     links: [
       ["Overview", "/batches"],
