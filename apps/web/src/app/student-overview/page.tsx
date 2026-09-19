@@ -50,8 +50,8 @@ export default function StudentOverviewPage() {
             <span>{academy?.name ?? "Academy"} student, admission and fee position.</span>
           </div>
           <div className="flex gap-3">
-            <Link href="/student-onboarding" className="rounded bg-cyan-400 px-4 py-2.5 text-sm font-semibold text-slate-950">Add student</Link>
-            <Link href="/student-management" className="rounded border border-slate-700 px-4 py-2.5 text-sm">Open Student 360</Link>
+            <Link href="/student-onboarding" className="enterprise-action-button">Add student</Link>
+            <Link href="/student-management" className="enterprise-action-button enterprise-action-button-secondary">Open Student 360</Link>
           </div>
         </div>
       </header>

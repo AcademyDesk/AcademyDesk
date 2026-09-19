@@ -92,7 +92,7 @@ export default function StudentFeesPage() {
                     <h3 className="font-semibold">Admission fee</h3>
                     <p className="mt-1 text-sm text-slate-400">One-time fee charged when the student joins the academy.</p>
                   </div>
-                  <button disabled={savingAdmission} className="rounded bg-cyan-400 px-4 py-2 text-sm font-semibold text-slate-950 disabled:opacity-50">
+                  <button disabled={savingAdmission} className="enterprise-action-button">
                     {savingAdmission ? "Saving…" : "Save admission fee"}
                   </button>
                 </header>

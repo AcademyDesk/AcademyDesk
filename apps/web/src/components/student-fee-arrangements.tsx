@@ -108,7 +108,7 @@ export function StudentFeeArrangements({
           <option value="HalfYearly">Half-yearly</option>
           <option>Annual</option>
         </select>
-        <button className="rounded bg-cyan-400 px-3 py-2 text-sm font-semibold text-slate-950">
+        <button className="enterprise-action-button">
           Add
         </button>
       </form>
