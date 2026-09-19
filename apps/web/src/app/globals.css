@@ -649,6 +649,8 @@ html[data-theme="light"] [class~="text-red-300"] {
   color: var(--ad-accent);
   background: var(--ad-accent-soft);
 }
+.enterprise-nav-subgroup { display:grid; gap:2px; margin:4px 0 7px; }
+.enterprise-nav-subgroup > p { margin:7px 9px 2px; color:var(--ad-text-subtle); font-size:.66rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
 .enterprise-administration-group > summary {
   color: var(--ad-text);
   background: var(--ad-surface-subtle);
@@ -1468,6 +1470,7 @@ html[data-theme="light"] .field-label { color: #475569; }
 .invoice-theme-modern { border-top:9px solid #0e7490; }.invoice-theme-minimal { border-color:#e2e8f0; box-shadow:none; }.invoice-theme-formal { border:3px double #b89248; }.invoice-theme-formal .invoice-paper-mark { background:#f8edcf; color:#75521e; }
 @media print { body * { visibility:hidden !important; }.invoice-paper,.invoice-paper * { visibility:visible !important; }.invoice-paper { position:absolute; inset:0; width:100%; max-width:none; margin:0; border:0; border-radius:0; box-shadow:none; }.invoice-paper-actions { display:none; } }
 @media (max-width:640px) { .invoice-paper { padding:24px; }.invoice-paper-header,.invoice-paper-bill,.invoice-paper-footer { flex-direction:column; }.invoice-paper-total { gap:20px; }.invoice-paper-footer { align-items:stretch; }.invoice-paper-signature { align-self:flex-end; } }
+.document-template-preview { display:grid; min-height:170px; padding:13px; border:1px solid #d9e2ec; border-radius:8px; background:#fff; color:#172033; box-shadow:0 4px 12px rgba(15,23,42,.08); font-size:.68rem; line-height:1.2; }.document-template-preview img,.document-template-preview i { width:24px; height:24px; border-radius:5px; object-fit:contain; }.document-template-preview i { display:grid; place-items:center; background:#dff5ff; color:#0e7490; font-style:normal; font-weight:800; }.document-template-preview strong { margin-top:7px; font-size:.8rem; }.document-template-preview span { color:#64748b; font-size:.65rem; }.document-template-preview b { margin-top:13px; border-top:1px solid #e2e8f0; padding-top:7px; }.document-template-preview small { color:#64748b; }.document-template-preview em { align-self:end; border-top:1px solid #cbd5e1; padding-top:5px; color:#475569; font-size:.6rem; font-style:normal; }.document-template-modern { border-top:5px solid #0e7490; }.document-template-minimal { box-shadow:none; }.document-template-formal,.document-template-professional { border:2px double #b89248; }.document-template-compact { min-height:142px; padding:10px; }.document-template-standard { border-top:4px solid #2563eb; }
 
 /* Academics uses the same calm, task-focused contract across its governance and
    legacy pages: no instructional clutter, predictable breathing room, and

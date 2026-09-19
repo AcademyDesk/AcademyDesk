@@ -10,7 +10,8 @@ type NavigationItem = readonly [label: string, href: string];
 type NavigationGroup = {
   label: string;
   icon: string;
-  links: readonly NavigationItem[];
+  links?: readonly NavigationItem[];
+  sections?: readonly { label: string; links: readonly NavigationItem[] }[];
 };
 
 const navigationGroups: readonly NavigationGroup[] = [
@@ -107,19 +108,10 @@ const navigationGroups: readonly NavigationGroup[] = [
   {
     label: "Finance",
     icon: "₹",
-    links: [
-      ["Finance overview", "/finance"],
-      ["Finance summary", "/finance-summary"],
-      ["Finance policy", "/finance-policy"],
-      ["Adjustment requests", "/finance-adjustments"],
-      ["Finance controls", "/finance-governance"],
-      ["Reconciliation", "/finance-reconciliation"],
-      ["Fee plans", "/fee-plans"],
-      ["Invoices", "/invoices"],
-      ["Payments", "/payments"],
-      ["Teacher & staff payouts", "/payroll"],
-      ["Fee reminders", "/fee-reminders"],
-      ["Expenses", "/expenses"],
+    sections: [
+      { label: "Overview & controls", links: [["Finance overview", "/finance"], ["Finance summary", "/finance-summary"], ["Finance controls", "/finance-governance"], ["Finance policy", "/finance-policy"]] },
+      { label: "Billing & collections", links: [["Fee plans", "/fee-plans"], ["Invoices", "/invoices"], ["Payments", "/payments"], ["Fee reminders", "/fee-reminders"], ["Adjustment requests", "/finance-adjustments"], ["Reconciliation", "/finance-reconciliation"]] },
+      { label: "Payroll & expenses", links: [["Teacher & staff payouts", "/payroll"], ["Expenses", "/expenses"]] },
     ],
   },
   {
@@ -147,7 +139,7 @@ const administrationNavigation: readonly NavigationItem[] = [
 ];
 const searchItems: readonly NavigationItem[] = Array.from(
   new Map(
-    [...navigationGroups.flatMap((group) => group.links), ...administrationNavigation].map(
+    [...navigationGroups.flatMap((group) => group.links ?? group.sections?.flatMap((section) => section.links) ?? []), ...administrationNavigation].map(
       ([label, href]) => [href, [label, href] as NavigationItem],
     ),
   ).values(),
@@ -192,7 +184,7 @@ export function EnterpriseShell({
     ? []
     : administrationNavigation;
   const activeSearchItems = financeOnly
-    ? activeNavigationGroups.flatMap((group) => group.links)
+    ? activeNavigationGroups.flatMap((group) => group.links ?? group.sections?.flatMap((section) => section.links) ?? [])
     : searchItems;
   const results = useMemo(
     () =>
@@ -253,7 +245,7 @@ export function EnterpriseShell({
               <details
                 key={group.label}
                 className="enterprise-module-group"
-                open={group.links.some(([, href]) => href === pathname)}
+                open={(group.links ?? group.sections?.flatMap((section) => section.links) ?? []).some(([, href]) => href === pathname)}
               >
                 <summary>
                   <i aria-hidden="true">{group.icon}</i>
@@ -261,7 +253,10 @@ export function EnterpriseShell({
                   <b aria-hidden="true">⌄</b>
                 </summary>
                 <div>
-                  {group.links.map(([label, href]) => (
+                  {group.sections?.map((section) => <section key={section.label} className="enterprise-nav-subgroup"><p>{section.label}</p>{section.links.map(([label, href]) => (
+                    <Link key={href} href={href} data-active={pathname === href}>{label}</Link>
+                  ))}</section>)}
+                  {(group.links ?? []).map(([label, href]) => (
                     <Link
                       key={href}
                       href={href}

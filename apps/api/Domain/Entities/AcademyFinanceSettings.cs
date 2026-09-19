@@ -11,4 +11,5 @@ public sealed class AcademyFinanceSettings : AcademyEntity
     public string? InvoiceAuthorityTitle { get; set; }
     public string? InvoiceSignatureUrl { get; set; }
     public string InvoiceTemplateKey { get; set; } = "Classic";
+    public string PayslipTemplateKey { get; set; } = "Standard";
 }
