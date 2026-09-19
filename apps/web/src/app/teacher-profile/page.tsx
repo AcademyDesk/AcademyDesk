@@ -139,10 +139,6 @@ export default function TeacherProfilePage() {
       <header className="enterprise-page-header">
         <p>Team & access / record</p>
         <h2>Teacher record</h2>
-        <span>
-          A governed staff record for credentialing, assignment capacity, and
-          operational duty of care.
-        </span>
       </header>
       <section className="enterprise-settings-toolbar">
         <select
@@ -187,19 +183,11 @@ export default function TeacherProfilePage() {
           </section>
           <section className="surface-panel mt-5 rounded-xl p-5">
             <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-semibold">
-                  Administrative teacher profile
-                </h3>
-                <p className="mt-1 text-sm text-slate-400">
-                  Employment, qualifications, emergency contact and internal
-                  operational notes.
-                </p>
-              </div>
+              <h3 className="font-semibold">Administrative teacher profile</h3>
               <button
                 onClick={() => void save()}
                 disabled={saving}
-                className="rounded-lg bg-cyan-400 px-4 py-2 text-sm font-semibold text-slate-950 disabled:opacity-60"
+                className="enterprise-action-button"
               >
                 {saving ? "Saving…" : "Save profile"}
               </button>
