@@ -1769,9 +1769,10 @@ html[data-theme="light"] .field-label { color: #475569; }
 .certificate-template-card[data-selected="true"] { border-color: var(--ad-accent) !important; background: var(--ad-accent-soft) !important; box-shadow: 0 5px 13px color-mix(in srgb, var(--ad-accent) 14%, transparent); }
 .certificate-template-card b { display: block; font-size: .76rem; line-height: 1.2; }
 .certificate-template-card small { display: block; margin-top: 4px; color: var(--ad-text-muted); font-size: .65rem; }
+.certificate-template-card.template-navy { border-color: #294f80 !important; background: #eaf0f8 !important; }.certificate-template-card.template-gold { border-color: #c49620 !important; background: #fff7dd !important; }.certificate-template-card.template-silver { border-color: #8a97a8 !important; background: #f0f3f6 !important; }.certificate-template-card.template-bronze { border-color: #ae6b42 !important; background: #fff0e7 !important; }.certificate-template-card.template-performance { border-color: #985681 !important; background: #fbebf6 !important; }.certificate-template-card.template-completion { border-color: #438276 !important; background: #e9f7f3 !important; }.certificate-template-card.template-excellence { border-color: #8a68b8 !important; background: #f3edfb !important; }.certificate-template-card.template-independence-day { border-color: #d77a2a !important; background: #fff1e3 !important; }.certificate-template-card.template-republic-day { border-color: #278457 !important; background: #e9f8ee !important; }.certificate-template-card.template-diwali { border-color: #b65b3b !important; background: #fff0e9 !important; }.certificate-template-card.template-ganesh-festival { border-color: #aa6337 !important; background: #fff2e8 !important; }
 .certificate-preview-panel { overflow: hidden; }
 .certificate-preview {
-  --certificate-accent: #0f6cbd;
+  --certificate-accent: var(--academy-certificate-accent, #0f6cbd);
   position: relative;
   display: flex;
   min-height: 480px;
