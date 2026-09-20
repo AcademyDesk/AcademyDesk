@@ -517,6 +517,8 @@ html[data-theme="light"] [class~="text-red-300"] {
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
 .enterprise-sidebar {
+  position: relative;
+  isolation: isolate;
   display: flex;
   min-height: 0;
   flex-direction: column;
@@ -526,6 +528,35 @@ html[data-theme="light"] [class~="text-red-300"] {
   background: color-mix(in srgb, var(--ad-surface) 82%, var(--ad-canvas));
   overflow-y: auto;
 }
+.enterprise-sidebar::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: -110px;
+  right: -100px;
+  width: 245px;
+  height: 245px;
+  border: 1px solid color-mix(in srgb, var(--ad-accent) 24%, transparent);
+  border-radius: 52% 48% 45% 55%;
+  background: radial-gradient(circle at 35% 35%, color-mix(in srgb, var(--ad-accent) 16%, transparent), transparent 62%);
+  transform: rotate(18deg);
+  pointer-events: none;
+}
+.enterprise-sidebar::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  right: 26px;
+  bottom: 28px;
+  width: 96px;
+  height: 58px;
+  opacity: .7;
+  background-image: radial-gradient(circle, color-mix(in srgb, var(--ad-accent) 46%, transparent) 1.4px, transparent 1.6px);
+  background-size: 12px 12px;
+  mask-image: linear-gradient(to left, #000, transparent);
+  pointer-events: none;
+}
+.enterprise-sidebar > * { position: relative; z-index: 1; }
 .enterprise-brand {
   display: inline-flex;
   align-items: center;
@@ -675,6 +706,7 @@ html[data-theme="light"] [class~="text-red-300"] {
 }
 .enterprise-topbar {
   position: relative;
+  isolation: isolate;
   display: flex;
   flex: 0 0 var(--topbar-height);
   min-height: 0;
@@ -685,6 +717,32 @@ html[data-theme="light"] [class~="text-red-300"] {
   border-bottom: 1px solid var(--ad-border);
   background: color-mix(in srgb, var(--ad-surface) 46%, transparent);
 }
+.enterprise-topbar::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  right: clamp(180px, 22vw, 360px);
+  width: min(34vw, 540px);
+  height: 100%;
+  opacity: .7;
+  background: linear-gradient(115deg, transparent 8%, color-mix(in srgb, var(--ad-accent) 8%, transparent) 8% 10%, transparent 10% 18%, color-mix(in srgb, var(--ad-accent) 6%, transparent) 18% 20%, transparent 20%);
+  pointer-events: none;
+}
+.enterprise-topbar::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: clamp(28px, 4vw, 76px);
+  bottom: 16px;
+  width: 76px;
+  height: 3px;
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--ad-accent), transparent);
+  opacity: .75;
+  pointer-events: none;
+}
+.enterprise-topbar > * { position: relative; z-index: 1; }
 .enterprise-topbar h1,
 .enterprise-topbar p {
   margin: 0;
