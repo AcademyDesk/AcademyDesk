@@ -168,6 +168,7 @@ export default function Teacher() {
                         onClick={() => {
                           setSid(x.id);
                           void loadRoster(x.id);
+                          setT("classroom");
                         }}
                       >
                         <b>{name(x.batchId)}</b>
@@ -177,6 +178,7 @@ export default function Teacher() {
                             x.deliveryMode +
                             (x.roomName ? " · " + x.roomName : "")}
                         </small>
+                        <small>Open classroom →</small>
                       </button>
                     ))}
                   </Panel>
