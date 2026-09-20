@@ -2792,6 +2792,23 @@ html[data-theme="light"] .field-label { color: #475569; }
 .platform-password-form h3,.platform-password-form p { margin:0; }
 .platform-password-form h3 { font-size:.96rem; }
 .platform-password-form p { margin-bottom:2px; color:var(--ad-text-muted); font-size:.76rem; }
+.platform-owner-form > button,.platform-password-form > button {
+  width:100%;
+  min-height:42px;
+  margin-top:4px;
+  border:1px solid color-mix(in srgb,var(--ad-action) 80%,var(--ad-border));
+  border-radius:10px;
+  background:var(--ad-action);
+  color:var(--ad-action-text);
+  cursor:pointer;
+  font:inherit;
+  font-size:.82rem;
+  font-weight:780;
+  box-shadow:0 5px 12px color-mix(in srgb,var(--ad-action) 19%,transparent);
+}
+.platform-owner-form > button:hover:not(:disabled),.platform-password-form > button:hover:not(:disabled) { background:var(--ad-action-hover); transform:translateY(-1px); }
+.platform-owner-form > button:focus-visible,.platform-password-form > button:focus-visible,.platform-owner-photo:focus-visible { outline:3px solid color-mix(in srgb,var(--ad-accent) 55%,transparent); outline-offset:2px; }
+.platform-owner-form > button:disabled,.platform-password-form > button:disabled,.platform-owner-photo:disabled { cursor:not-allowed; opacity:.58; box-shadow:none; transform:none; }
 .platform-heading p {
   margin-top: 7px;
   color: var(--ad-text-muted);
