@@ -123,6 +123,7 @@ export default function Teacher() {
           ) : (
             p && (
               <>
+                {t === "classroom" && <TeacherActiveClassBanner batch={p.batches.find((batch) => batch.id === p.sessions.find((session) => session.id === sid)?.batchId)} rosterCount={roster.length} status={p.sessions.find((session) => session.id === sid)?.status} />}
                 <header className="learner-heading">
                   <p>Teacher workspace</p>
                   <h1>
@@ -299,6 +300,11 @@ type TeacherBatch = P["batches"][number];
 type Resource = { id: string; batchId: string; studentId?: string; classSessionId?: string; title: string; description?: string; type: string; url: string; createdAtUtc: string };
 
 type ClassroomActivity = { resources: Resource[]; homework: { id: string; batchId: string; studentId?: string; title: string; description?: string; dueAtUtc?: string; type: string; isPublished: boolean }[] };
+function TeacherActiveClassBanner({ batch, rosterCount, status }: { batch?: TeacherBatch; rosterCount: number; status?: string }) {
+  return <section className="teacher-active-class-banner">
+    <span className="teacher-live-dot" /><div><b>Active class</b><small>{batch ? `${batch.name} · ${batch.capacity === 1 ? "1:1 lesson" : `${rosterCount || batch.capacity} students`}` : "Select a class to begin"}</small></div><em>{status ?? "Ready"}</em>
+  </section>;
+}
 function TeacherClassroom({ batches, sessionId, sessionBatchId, sessionStatus, roster }: { batches: TeacherBatch[]; sessionId: string; sessionBatchId?: string; sessionStatus?: string; roster: S[] }) {
   const [batchId, setBatchId] = useState(batches[0]?.id ?? "");
   const [studentId, setStudentId] = useState("");
@@ -360,9 +366,6 @@ function TeacherClassroom({ batches, sessionId, sessionBatchId, sessionStatus, r
     if (response.ok) { event.currentTarget.reset(); await refresh(); }
   }
   return <>
-    <section className="teacher-active-class-banner">
-      <span className="teacher-live-dot" /> <div><b>Active class</b><small>{selected?.name ?? "Select a class to begin"} · {selected?.capacity === 1 ? "1:1 lesson" : `${roster.length || selected?.capacity || 0} students`}</small></div><em>{sessionStatus ?? "Ready"}</em>
-    </section>
     <section className="teacher-classroom-hero">
       <div><p>Classroom</p><h2>{selected?.name ?? "Select a class"}</h2><span>{selected?.deliveryMode ?? ""}{selected?.roomName ? ` · ${selected.roomName}` : ""}</span></div>
       <div className="teacher-classroom-hero-actions">{isLiveDelivery && sessionId && <button type="button" className="enterprise-action-button" onClick={() => void startOnlineClass()}>{sessionStatus === "InProgress" ? "Rejoin online class" : "Start online class"}</button>}{sessionId && sessionStatus === "InProgress" && <button type="button" className="enterprise-action-button enterprise-action-button-secondary" onClick={() => void setClassStatus("Completed")}>Complete class</button>}</div>
