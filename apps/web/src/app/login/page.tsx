@@ -53,27 +53,28 @@ export default function LoginPage() {
     }
   }
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-950 px-6 text-slate-100">
+    <main className="auth-shell">
       <form
         onSubmit={login}
-        className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900 p-7 shadow-xl"
+        className="auth-card"
       >
-        <p className="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-300">
+        <p className="auth-eyebrow">
           AcademyDesk
         </p>
-        <h1 className="mt-5 text-3xl font-semibold">Sign in</h1>
-        <label className="mt-7 block text-sm text-slate-300" htmlFor="username">
+        <h1>Sign in</h1>
+        <p className="auth-intro">Your academy workspace, in one place.</p>
+        <label className="auth-label auth-label-first" htmlFor="username">
           User name
         </label>
         <input
           id="username"
           value={userName}
           onChange={(e) => setUserName(e.target.value)}
-          className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
+          className="auth-input"
           required
           autoComplete="username"
         />
-        <label className="mt-4 block text-sm text-slate-300" htmlFor="password">
+        <label className="auth-label" htmlFor="password">
           Password
         </label>
         <input
@@ -81,18 +82,18 @@ export default function LoginPage() {
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
+          className="auth-input"
           required
           autoComplete="current-password"
         />
         <button
           disabled={busy}
-          className="mt-6 w-full rounded-lg bg-cyan-400 px-4 py-2.5 font-semibold text-slate-950 hover:bg-cyan-300 disabled:opacity-60"
+          className="auth-submit"
         >
           {busy ? "Signing in…" : "Sign in"}
         </button>
         {message && (
-          <p className="mt-4 rounded-lg border border-slate-700 p-3 text-sm text-slate-300">
+          <p className="auth-message">
             {message}
           </p>
         )}
