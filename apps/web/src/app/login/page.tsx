@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5092";
 
@@ -54,6 +55,9 @@ export default function LoginPage() {
   }
   return (
     <main className="auth-shell">
+      <div className="auth-theme">
+        <ThemeToggle />
+      </div>
       <form
         onSubmit={login}
         className="auth-card"
