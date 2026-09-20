@@ -1986,6 +1986,73 @@ html[data-theme="light"] .field-label { color: #475569; }
 
 @media print { body * { visibility: hidden !important; }.certificate-preview, .certificate-preview * { visibility: visible !important; }.certificate-preview { position: fixed; inset: 0; width: 100%; min-height: 100%; margin: 0; border-width: 10px; } }
 
+/* ADMIN STD — Academy Experience and Engagement share the same page rhythm as
+   Students and Teachers. Route scoping keeps the progressive legacy cleanup
+   precise while every action remains recognisable and keyboard accessible. */
+.enterprise-workspace:is([data-route="/holidays"], [data-route="/events"], [data-route="/certificates"], [data-route="/resources"], [data-route="/communications"], [data-route="/message-templates"], [data-route="/communication-preferences"], [data-route="/communication-settings"]) > main:not(.enterprise-settings) > .mx-auto {
+  width: min(100%, 1240px) !important;
+  max-width: none !important;
+  padding: clamp(28px, 3vw, 50px) !important;
+}
+.enterprise-workspace:is([data-route="/holidays"], [data-route="/events"], [data-route="/certificates"], [data-route="/resources"], [data-route="/communications"], [data-route="/message-templates"], [data-route="/communication-preferences"], [data-route="/communication-settings"]) > main:not(.enterprise-settings) h1 {
+  margin-top: 0 !important;
+}
+.enterprise-workspace:is([data-route="/events"], [data-route="/resources"], [data-route="/communications"], [data-route="/communication-preferences"], [data-route="/communication-settings"]) > main:not(.enterprise-settings) h1 + p,
+.enterprise-workspace:is([data-route="/events"], [data-route="/resources"], [data-route="/communications"], [data-route="/communication-preferences"], [data-route="/communication-settings"]) > main:not(.enterprise-settings) > .mx-auto > p:first-child {
+  display: none;
+}
+.enterprise-workspace:is([data-route="/holidays"], [data-route="/events"], [data-route="/resources"], [data-route="/communications"], [data-route="/message-templates"], [data-route="/communication-preferences"], [data-route="/communication-settings"]) main :is(form, section, article, li).rounded-2xl,
+.enterprise-workspace:is([data-route="/holidays"], [data-route="/events"], [data-route="/resources"], [data-route="/communications"], [data-route="/message-templates"], [data-route="/communication-preferences"], [data-route="/communication-settings"]) main :is(form, section, article, li).rounded-xl,
+.enterprise-workspace:is([data-route="/holidays"], [data-route="/events"], [data-route="/resources"], [data-route="/communications"], [data-route="/message-templates"], [data-route="/communication-preferences"], [data-route="/communication-settings"]) main :is(form, section, article, li).rounded-lg {
+  border: 1px solid var(--ad-border) !important;
+  background: var(--ad-surface) !important;
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--ad-text) 5%, transparent);
+}
+.enterprise-workspace:is([data-route="/holidays"], [data-route="/events"], [data-route="/resources"], [data-route="/communications"], [data-route="/message-templates"], [data-route="/communication-preferences"], [data-route="/communication-settings"]) main :is(ul > li, article).rounded-lg {
+  background: var(--ad-surface-subtle) !important;
+  box-shadow: none;
+}
+.enterprise-workspace:is([data-route="/holidays"], [data-route="/events"], [data-route="/resources"], [data-route="/communications"], [data-route="/message-templates"], [data-route="/communication-preferences"], [data-route="/communication-settings"]) main button[class~="bg-cyan-400"] {
+  min-height: 40px;
+  padding: 9px 14px;
+  border: 1px solid color-mix(in srgb, var(--ad-action) 72%, var(--ad-border));
+  border-radius: 8px;
+  background: var(--ad-action) !important;
+  color: var(--ad-action-text) !important;
+  font-size: .82rem;
+  font-weight: 750;
+  transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+.enterprise-workspace:is([data-route="/holidays"], [data-route="/events"], [data-route="/resources"], [data-route="/communications"], [data-route="/message-templates"], [data-route="/communication-preferences"], [data-route="/communication-settings"]) main button[class~="bg-cyan-400"]:hover:not(:disabled) {
+  border-color: var(--ad-action-hover);
+  background: var(--ad-action-hover) !important;
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--ad-action) 23%, transparent);
+  transform: translateY(-1px);
+}
+.enterprise-workspace:is([data-route="/holidays"], [data-route="/events"], [data-route="/resources"], [data-route="/communications"], [data-route="/message-templates"], [data-route="/communication-preferences"], [data-route="/communication-settings"]) main button[class*="text-red"],
+.enterprise-workspace:is([data-route="/holidays"], [data-route="/events"], [data-route="/resources"], [data-route="/communications"], [data-route="/message-templates"], [data-route="/communication-preferences"], [data-route="/communication-settings"]) main button[class*="text-rose"] {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 6px 10px;
+  border: 1px solid color-mix(in srgb, var(--ad-danger) 42%, var(--ad-border));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ad-danger) 10%, var(--ad-surface));
+  color: var(--ad-danger) !important;
+  font-size: .78rem;
+  font-weight: 700;
+  transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+.enterprise-workspace:is([data-route="/holidays"], [data-route="/events"], [data-route="/resources"], [data-route="/communications"], [data-route="/message-templates"], [data-route="/communication-preferences"], [data-route="/communication-settings"]) main button[class*="text-red"]:hover:not(:disabled),
+.enterprise-workspace:is([data-route="/holidays"], [data-route="/events"], [data-route="/resources"], [data-route="/communications"], [data-route="/message-templates"], [data-route="/communication-preferences"], [data-route="/communication-settings"]) main button[class*="text-rose"]:hover:not(:disabled) {
+  border-color: var(--ad-danger);
+  background: color-mix(in srgb, var(--ad-danger) 17%, var(--ad-surface));
+}
+.enterprise-workspace:is([data-route="/holidays"], [data-route="/events"], [data-route="/resources"], [data-route="/communications"], [data-route="/message-templates"], [data-route="/communication-preferences"], [data-route="/communication-settings"]) main :is(button, a):focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--ad-accent) 42%, transparent);
+  outline-offset: 2px;
+}
+
 @media (max-width: 720px) {
   .enterprise-workspace > main:not(.enterprise-settings) {
     padding-inline: 16px !important;

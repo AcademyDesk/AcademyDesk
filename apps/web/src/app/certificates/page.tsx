@@ -66,7 +66,7 @@ export default function CertificatesPage() {
   const logoUrl = branding?.logoUrl ? `${apiUrl}${branding.logoUrl}` : undefined;
 
   return <main className="enterprise-settings certificates-admin">
-    <header className="enterprise-page-header"><p>Operations / recognition</p><h2>Certificates</h2><span>Branded, verifiable recognition for every academy.</span></header>
+    <header className="enterprise-page-header"><p>Academy experience / recognition</p><h2>Certificates</h2><span>Branded, verifiable recognition for every academy.</span></header>
     {status && <p className="enterprise-page-state" role="status">{status}</p>}
     <section className="certificate-branding surface-panel mt-5 rounded-xl p-5"><div><h3>Academy certificate branding</h3></div><form onSubmit={saveBranding}>
       <div className="certificate-logo-slot">{logoUrl ? <img src={logoUrl} alt="Academy logo" /> : <span>{branding?.academyName?.slice(0, 1) ?? "A"}</span>}</div><input ref={fileInput} type="file" accept="image/png,image/jpeg,image/webp" onChange={uploadLogo} className="sr-only" />

@@ -96,7 +96,7 @@ const navigationGroups: readonly NavigationGroup[] = [
     ],
   },
   {
-    label: "Operations",
+    label: "Academy Experience",
     icon: "◷",
     links: [
       ["Holidays", "/holidays"],
@@ -301,7 +301,7 @@ export function EnterpriseShell({
             </nav>
           )}
         </aside>
-        <section className="enterprise-workspace">
+        <section className="enterprise-workspace" data-route={pathname}>
           <header className="enterprise-topbar">
             <div />
             <div className="enterprise-utilities">
