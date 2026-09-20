@@ -26,7 +26,7 @@ export default function TeacherOverviewPage() {
     })();
   }, []);
   const active = teachers.filter((teacher) => teacher.isActive).length;
-  return <main className="enterprise-settings">
+  return <main className="enterprise-settings teacher-standard teacher-overview-standard">
     <header className="enterprise-page-header">
       <div className="flex flex-wrap items-end justify-between gap-4"><div><p>Teachers / overview</p><h2>Teacher overview</h2><span>{academy?.name ?? "Academy"} teaching team and payment setup.</span></div><Link href="/teacher-onboarding" className="enterprise-action-button">Add teacher</Link></div>
     </header>

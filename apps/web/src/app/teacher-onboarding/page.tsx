@@ -74,8 +74,8 @@ export default function TeacherOnboardingPage() {
   }
 
   return (
-    <main className="enterprise-settings">
-      <header className="enterprise-page-header"><h2>Teacher onboarding</h2></header>
+    <main className="enterprise-settings teacher-standard teacher-onboarding-standard">
+      <header className="enterprise-page-header"><p>Teachers / onboarding</p><h2>Teacher onboarding</h2></header>
       {message && <p className="enterprise-page-state enterprise-page-state-loading">{message}</p>}
       <form onSubmit={submit} className="teacher-onboarding-form mt-5">
         <section className="surface-panel onboarding-section">

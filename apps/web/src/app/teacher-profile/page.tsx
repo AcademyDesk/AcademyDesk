@@ -135,10 +135,10 @@ export default function TeacherProfilePage() {
   const set = (key: string, value: string) =>
     setForm((current) => ({ ...current, [key]: value }));
   return (
-    <main className="enterprise-settings">
+    <main className="enterprise-settings teacher-standard teacher-profile-standard">
       <header className="enterprise-page-header">
-        <p>Team & access / record</p>
-        <h2>Teacher record</h2>
+        <p>Teachers / Teacher 360</p>
+        <h2>Teacher 360</h2>
       </header>
       <section className="enterprise-settings-toolbar">
         <select
@@ -181,9 +181,9 @@ export default function TeacherProfilePage() {
               </strong>
             </div>
           </section>
-          <section className="surface-panel mt-5 rounded-xl p-5">
+          <section className="surface-panel teacher-profile-card mt-5 rounded-xl p-5">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold">Administrative teacher profile</h3>
+              <h3 className="font-semibold">Teacher profile</h3>
               <button
                 onClick={() => void save()}
                 disabled={saving}
@@ -192,7 +192,7 @@ export default function TeacherProfilePage() {
                 {saving ? "Saving…" : "Save profile"}
               </button>
             </div>
-            <div className="mt-5 grid gap-3 md:grid-cols-2">
+            <div className="teacher-profile-fields mt-5 grid gap-3 md:grid-cols-2">
               <input
                 value={form.employeeCode ?? ""}
                 onChange={(e) => set("employeeCode", e.target.value)}

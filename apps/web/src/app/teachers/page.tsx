@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { academyApi, apiHeaders } from "@/lib/api";
 
 type Academy = { id: string; name: string };
@@ -25,12 +25,6 @@ export default function TeachersPage() {
   const [batches, setBatches] = useState<Batch[]>([]);
   const [assignmentTeacherId, setAssignmentTeacherId] = useState("");
   const [assignmentBatchId, setAssignmentBatchId] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [specialties, setSpecialties] = useState("");
-  const [branchId, setBranchId] = useState("");
   const [message, setMessage] = useState("Loading teachers…");
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -86,43 +80,6 @@ export default function TeachersPage() {
     void initialise();
   }, []);
 
-  async function createTeacher(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!academy) return;
-    setSaving(true);
-    setMessage("");
-    try {
-      const response = await academyApi(
-        `/api/academies/${academy.id}/teachers`,
-        {
-          method: "POST",
-          headers: apiHeaders(true),
-          body: JSON.stringify({
-            firstName,
-            lastName,
-            email: email || null,
-            phone: phone || null,
-            specialties: specialties || null,
-            branchId: branchId || null,
-          }),
-        },
-      );
-      if (!response.ok) throw new Error();
-      setFirstName("");
-      setLastName("");
-      setEmail("");
-      setPhone("");
-      setSpecialties("");
-      setBranchId("");
-      await load();
-    } catch {
-      setMessage(
-        "The teacher could not be saved. Check the required details and try again.",
-      );
-    } finally {
-      setSaving(false);
-    }
-  }
   function beginEdit(teacher: Teacher) {
     setEditingId(teacher.id);
     setEditFirstName(teacher.firstName);
@@ -219,19 +176,15 @@ export default function TeachersPage() {
   }
 
   return (
-    <main className="enterprise-settings">
-      <div className="mx-auto max-w-6xl py-6">
+    <main className="enterprise-settings teacher-standard teacher-management-standard">
+      <div className="teacher-management-content">
         <header className="enterprise-page-header">
           <p>Teachers / management</p>
           <h2>Teacher management</h2>
           <span>Manage core teacher records, active status, and open Teacher 360.</span>
         </header>
-        {message && (
-          <p className="mt-6 rounded-lg border border-amber-700/50 bg-amber-950/40 p-4 text-sm text-amber-100">
-            {message}
-          </p>
-        )}
-        <section className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {message && <p className="enterprise-page-state">{message}</p>}
+        <section className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <article className="surface-panel rounded-xl p-5">
             <p className="text-sm text-slate-400">Active teachers</p>
             <p className="mt-2 text-3xl font-semibold">
@@ -264,13 +217,13 @@ export default function TeachersPage() {
             <div className="flex items-center justify-between gap-3">
               <p className="text-sm text-slate-400">Assign Class / Batch</p>
               <button
-                aria-label="Assign class or batch"
-                title="Assign class or batch"
+                aria-label="Save class or batch assignment"
+                title="Save class or batch assignment"
                 disabled={saving || !assignmentTeacherId || !assignmentBatchId}
                 onClick={() => void assignBatch()}
-                className="primary-action flex h-9 w-9 items-center justify-center p-0"
+                className="teacher-assignment-confirm"
               >
-                ✓
+                Save
               </button>
             </div>
             <select className="mt-2 w-full" value={assignmentTeacherId} onChange={(event) => setAssignmentTeacherId(event.target.value)}>
@@ -283,68 +236,12 @@ export default function TeachersPage() {
             </select>
           </article>
         </section>
-        <section className="mt-6 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-          <form onSubmit={createTeacher} className="hidden">
-            <h2 className="text-xl font-semibold">Add teacher</h2>
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              <input
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                placeholder="First name"
-                className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
-                required
-              />
-              <input
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                placeholder="Last name"
-                className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
-                required
-              />
-            </div>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Email (optional)"
-              className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
-            />
-            <input
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="Phone (optional)"
-              className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
-            />
-            <input
-              value={specialties}
-              onChange={(e) => setSpecialties(e.target.value)}
-              placeholder="Specialties, e.g. Piano, vocals"
-              className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
-            />
-            <select
-              value={branchId}
-              onChange={(e) => setBranchId(e.target.value)}
-              className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
-            >
-              <option value="">No branch assigned</option>
-              {branches.map((branch) => (
-                <option key={branch.id} value={branch.id}>
-                  {branch.name}
-                </option>
-              ))}
-            </select>
-            <button
-              disabled={!academy || saving}
-              className="mt-5 w-full rounded-lg bg-cyan-400 px-4 py-2.5 font-semibold text-slate-950 hover:bg-cyan-300 disabled:opacity-60"
-            >
-              {saving ? "Saving…" : "Add teacher"}
-            </button>
-          </form>
-          <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+        <section className="mt-6">
+          <section className="surface-panel teacher-directory-panel rounded-xl p-5">
             <h2 className="text-xl font-semibold">Teaching team</h2>
             {teachers.length === 0 ? (
               <p className="mt-6 text-slate-400">
-                No teachers yet. Add the first instructor above.
+                No teachers yet. Start with Teacher onboarding.
               </p>
             ) : (
               <ul className="mt-5 space-y-3">
@@ -358,35 +255,35 @@ export default function TeachersPage() {
                         <input
                           value={editFirstName}
                           onChange={(e) => setEditFirstName(e.target.value)}
-                          className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2"
+                          className="field"
                         />
                         <input
                           value={editLastName}
                           onChange={(e) => setEditLastName(e.target.value)}
-                          className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2"
+                          className="field"
                         />
                         <input
                           value={editEmail}
                           onChange={(e) => setEditEmail(e.target.value)}
                           placeholder="Email"
-                          className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2"
+                          className="field"
                         />
                         <input
                           value={editPhone}
                           onChange={(e) => setEditPhone(e.target.value)}
                           placeholder="Phone"
-                          className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2"
+                          className="field"
                         />
                         <input
                           value={editSpecialties}
                           onChange={(e) => setEditSpecialties(e.target.value)}
                           placeholder="Specialties"
-                          className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2"
+                          className="field"
                         />
                         <select
                           value={editBranchId}
                           onChange={(e) => setEditBranchId(e.target.value)}
-                          className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2"
+                          className="field"
                         >
                           <option value="">No branch assigned</option>
                           {branches.map((branch) => (
@@ -399,20 +296,20 @@ export default function TeachersPage() {
                       <div className="mt-3 flex gap-2">
                         <Link
                           href={`/teacher-profile?teacherId=${teacher.id}`}
-                          className="rounded-lg border border-slate-700 px-3 py-1.5 text-sm text-cyan-300 hover:border-cyan-400"
+                          className="enterprise-action-button enterprise-action-button-secondary"
                         >
                           Open record
                         </Link>
                         <button
                           onClick={() => void saveTeacher(teacher)}
                           disabled={savingId === teacher.id}
-                          className="rounded-lg bg-cyan-400 px-3 py-2 text-sm font-semibold text-slate-950 disabled:opacity-50"
+                          className="enterprise-action-button"
                         >
                           {savingId === teacher.id ? "Saving…" : "Save"}
                         </button>
                         <button
                           onClick={() => setEditingId(null)}
-                          className="rounded-lg border border-slate-700 px-3 py-2 text-sm"
+                          className="enterprise-action-button enterprise-action-button-secondary"
                         >
                           Cancel
                         </button>
@@ -443,17 +340,23 @@ export default function TeachersPage() {
                           {teacher.isActive ? "Active" : "Inactive"}
                         </span>
                       </div>
-                      <div className="mt-3 flex gap-2">
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <Link
+                          href={`/teacher-profile?teacherId=${teacher.id}`}
+                          className="enterprise-action-button enterprise-action-button-secondary"
+                        >
+                          Open Teacher 360
+                        </Link>
                         <button
                           onClick={() => beginEdit(teacher)}
-                          className="rounded-lg border border-slate-700 px-3 py-1.5 text-sm hover:border-cyan-400"
+                          className="enterprise-action-button enterprise-action-button-secondary"
                         >
                           Edit
                         </button>
                         <button
                           onClick={() => void toggleActive(teacher)}
                           disabled={savingId === teacher.id}
-                          className="rounded-lg border border-slate-700 px-3 py-1.5 text-sm hover:border-amber-400 disabled:opacity-50"
+                          className="teacher-status-action"
                         >
                           {teacher.isActive ? "Deactivate" : "Reactivate"}
                         </button>
