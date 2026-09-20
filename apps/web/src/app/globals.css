@@ -3142,7 +3142,16 @@ html[data-theme="light"] .field-label { color: #475569; }
 .teacher-attendance-grid small { margin-top: 4px; color: var(--ad-text-muted); font-size: .69rem; }
 .teacher-attendance-grid small[data-status="Present"], .teacher-attendance-grid small[data-status="Online"] { color: #198d70; }
 .teacher-attendance-grid small[data-status="Absent"] { color: #be4c5a; }
-.teacher-attendance-grid select { min-height: 38px; padding: 0 8px; font-size: .75rem; }
+.teacher-attendance-menu { position: relative; }
+.teacher-attendance-menu > button { display: flex; width: 112px; min-height: 38px; align-items: center; justify-content: space-between; gap: 7px; padding: 0 10px; border: 1px solid var(--ad-border-strong); border-radius: 9px; background: var(--ad-surface); color: var(--ad-text); cursor: pointer; font: inherit; font-size: .74rem; font-weight: 700; }
+.teacher-attendance-menu > button:hover:not(:disabled), .teacher-attendance-menu > button:focus-visible { border-color: var(--ad-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ad-accent) 15%, transparent); outline: none; }
+.teacher-attendance-menu > button:disabled { cursor: wait; opacity: .65; }
+.teacher-attendance-menu > button i { color: var(--ad-text-muted); font-size: 1rem; font-style: normal; }
+.teacher-attendance-menu > button span[data-status="Present"], .teacher-attendance-menu > button span[data-status="Online"] { color: #198d70; }
+.teacher-attendance-menu > button span[data-status="Absent"] { color: #be4c5a; }
+.teacher-attendance-menu > div { position: absolute; z-index: 10; right: 0; top: calc(100% + 6px); display: grid; width: 150px; padding: 5px; border: 1px solid var(--ad-border-strong); border-radius: 10px; background: var(--ad-surface); box-shadow: var(--ad-shadow); }
+.teacher-attendance-menu > div button { padding: 8px 9px; border: 0; border-radius: 6px; background: transparent; color: var(--ad-text); cursor: pointer; font: inherit; font-size: .74rem; font-weight: 650; text-align: left; }
+.teacher-attendance-menu > div button:hover, .teacher-attendance-menu > div button[data-active="true"] { background: var(--ad-accent-soft); color: var(--ad-accent); }
 .teacher-classroom-hero { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin: 0 0 18px; padding: clamp(22px, 2vw, 34px); border: 1px solid color-mix(in srgb, var(--ad-accent) 28%, var(--ad-border)); border-radius: 18px; background: linear-gradient(115deg, color-mix(in srgb, var(--ad-accent) 14%, var(--ad-surface)), var(--ad-surface) 58%); }
 .teacher-classroom-hero p { margin: 0 0 7px; color: var(--ad-accent); font-size: .72rem; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
 .teacher-classroom-hero h2 { margin: 0; color: var(--ad-text); font-size: clamp(1.45rem, 1.9vw, 2.25rem); letter-spacing: -.04em; }
