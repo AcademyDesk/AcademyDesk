@@ -14,6 +14,7 @@ type P = {
     deliveryMode: string;
     roomName?: string;
     status: string;
+    teacherAttendanceStatus?: string | null;
   }[];
 };
 type S = { id: string; firstName: string; lastName: string };
@@ -78,15 +79,17 @@ export default function Teacher() {
       setM("This account is not linked to an active teacher profile."),
     );
   }, []);
-  async function mark(studentId: string, status: string) {
-    setBusy(studentId);
-    const r = await academyApi(`/api/teacher/sessions/${sid}/attendance`, {
-      method: "POST",
-      headers: apiHeaders(true),
-      body: JSON.stringify({ studentId, status, notes: null }),
-    });
-    if (r.ok) await loadRoster();
-    else setM("Attendance could not be saved.");
+  async function submitAttendance(teacherStatus: string, records: { studentId: string; status: string }[]) {
+    if (!sid) return;
+    setBusy("attendance");
+    const [studentsResponse, teacherResponse] = await Promise.all([
+      academyApi(`/api/teacher/sessions/${sid}/attendance/bulk`, { method: "POST", headers: apiHeaders(true), body: JSON.stringify({ records: records.map((record) => ({ ...record, notes: null })) }) }),
+      academyApi(`/api/teacher/sessions/${sid}/teacher-attendance`, { method: "PUT", headers: apiHeaders(true), body: JSON.stringify({ status: teacherStatus }) }),
+    ]);
+    if (studentsResponse.ok && teacherResponse.ok) {
+      setP((current) => current ? { ...current, sessions: current.sessions.map((session) => session.id === sid ? { ...session, teacherAttendanceStatus: teacherStatus } : session) } : current);
+      await loadRoster();
+    } else setM("Attendance could not be submitted. Please try again.");
     setBusy("");
   }
   async function selectClassroomSession(id: string) {
@@ -132,7 +135,7 @@ export default function Teacher() {
               <>
                 {t === "classroom" && p.sessions.find((session) => session.id === sid)?.status === "InProgress" && <TeacherActiveClassBanner batch={p.batches.find((batch) => batch.id === p.sessions.find((session) => session.id === sid)?.batchId)} rosterCount={roster.length} status="In progress" />}
                 {t === "classroom" && sid && <TeacherClassroomHero batch={p.batches.find((batch) => batch.id === p.sessions.find((session) => session.id === sid)?.batchId)} sessionId={sid} sessionStatus={p.sessions.find((session) => session.id === sid)?.status} onStatusChange={(status) => updateSessionStatus(sid, status)} />}
-                {t === "classroom" && sid && <TeacherAttendanceRoster sessionId={sid} roster={roster} attendance={attendance} busy={busy} onMark={mark} />}
+                {t === "classroom" && sid && <TeacherAttendanceRoster sessionId={sid} roster={roster} attendance={attendance} teacherStatus={p.sessions.find((session) => session.id === sid)?.teacherAttendanceStatus} busy={busy === "attendance"} onSubmit={submitAttendance} />}
                 {t === "classroom" && <TeacherClassroom batches={p.batches} sessions={p.sessions} sessionId={sid} roster={roster} onSessionSelect={(id) => void selectClassroomSession(id)} />}
                 {t !== "classroom" && <header className="learner-heading">
                   <p>Teacher workspace</p>
@@ -281,17 +284,20 @@ function Panel({
 type TeacherBatch = P["batches"][number];
 type Resource = { id: string; batchId: string; studentId?: string; classSessionId?: string; title: string; description?: string; type: string; url: string; createdAtUtc: string };
 
-function TeacherAttendanceRoster({ sessionId, roster, attendance, busy, onMark }: { sessionId: string; roster: S[]; attendance: A[]; busy: string; onMark: (studentId: string, status: string) => Promise<void> }) {
-  const marked = attendance.length;
-  const statusFor = (studentId: string) => attendance.find((item) => item.studentId === studentId)?.status;
+function TeacherAttendanceRoster({ sessionId, roster, attendance, teacherStatus, busy, onSubmit }: { sessionId: string; roster: S[]; attendance: A[]; teacherStatus?: string | null; busy: boolean; onSubmit: (teacherStatus: string, records: { studentId: string; status: string }[]) => Promise<void> }) {
+  const [draft, setDraft] = useState<Record<string, string>>({});
+  const [teacherDraft, setTeacherDraft] = useState(teacherStatus ?? "Present");
+  useEffect(() => { setDraft(Object.fromEntries(roster.map((student) => [student.id, attendance.find((item) => item.studentId === student.id)?.status ?? "Present"]))); setTeacherDraft(teacherStatus ?? "Present"); }, [attendance, roster, teacherStatus, sessionId]);
+  const recorded = attendance.length;
   return <section className="teacher-attendance-panel">
-    <header><div><p>Attendance</p><h2>Mark today’s class</h2><span>{sessionId ? `${marked} of ${roster.length} students recorded` : "Select a class to mark attendance"}</span></div><strong>{roster.length} students</strong></header>
-    {!sessionId ? <p className="learner-empty">Select a scheduled class first.</p> : <div className="teacher-attendance-grid">{roster.map((student) => {
-      const value = statusFor(student.id) ?? "Present";
-      const label = statusFor(student.id) ?? "Not marked";
+    <header><div><p>Attendance</p><h2>Class attendance</h2><span>{recorded ? `${recorded} of ${roster.length} students submitted` : "Mark the teacher and students, then submit once."}</span></div><strong>{roster.length} students</strong></header>
+    <div className="teacher-attendance-teacher"><div><b>Teacher attendance</b><small>Record your attendance for this class.</small></div><AttendanceStatusMenu value={teacherDraft} disabled={busy} label="Teacher attendance" onChange={setTeacherDraft} /></div>
+    <div className="teacher-attendance-grid">{roster.map((student) => {
+      const value = draft[student.id] ?? "Present";
       const initials = `${student.firstName[0] ?? ""}${student.lastName[0] ?? ""}`.toUpperCase();
-      return <article key={student.id}><span className="teacher-student-avatar">{initials}</span><div><b>{student.firstName} {student.lastName}</b><small data-status={label}>{label}</small></div><AttendanceStatusMenu value={value} disabled={busy === student.id} label={`Attendance for ${student.firstName} ${student.lastName}`} onChange={(status) => void onMark(student.id, status)} /></article>;
-    })}</div>}
+      return <article key={student.id}><span className="teacher-student-avatar">{initials}</span><div><b>{student.firstName} {student.lastName}</b><small data-status={value}>{value}</small></div><AttendanceStatusMenu value={value} disabled={busy} label={`Attendance for ${student.firstName} ${student.lastName}`} onChange={(status) => setDraft((current) => ({ ...current, [student.id]: status }))} /></article>;
+    })}</div>
+    <div className="teacher-attendance-submit"><button type="button" className="enterprise-action-button" disabled={busy || !sessionId} onClick={() => void onSubmit(teacherDraft, roster.map((student) => ({ studentId: student.id, status: draft[student.id] ?? "Present" })))}>{busy ? "Submitting attendance…" : "Submit attendance"}</button></div>
   </section>;
 }
 function AttendanceStatusMenu({ value, disabled, label, onChange }: { value: string; disabled: boolean; label: string; onChange: (status: string) => void }) {
@@ -357,10 +363,10 @@ function TeacherClassroomHero({ batch, sessionId, sessionStatus, onStatusChange 
 function TeacherClassroom({ batches, sessions, sessionId, roster, onSessionSelect }: { batches: TeacherBatch[]; sessions: P["sessions"]; sessionId: string; roster: S[]; onSessionSelect: (id: string) => void }) {
   const [batchId, setBatchId] = useState("");
   const [studentId, setStudentId] = useState("");
-  const [noteType, setNoteType] = useState("Class note");
-  const [materialType, setMaterialType] = useState("Class material");
   const [resources, setResources] = useState<Resource[]>([]);
   const [activity, setActivity] = useState<ClassroomActivity>({ resources: [], homework: [] });
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
   const [message, setMessage] = useState("");
   const [recording, setRecording] = useState(false);
   const [recordingPaused, setRecordingPaused] = useState(false);
@@ -378,24 +384,24 @@ function TeacherClassroom({ batches, sessions, sessionId, roster, onSessionSelec
     if (!id) return;
     const [materials, history] = await Promise.all([
       academyApi(`/api/teacher/resources?batchId=${id}`),
-      academyApi(`/api/teacher/classroom-activity?batchId=${id}${studentId ? `&studentId=${studentId}` : ""}`),
+      academyApi(`/api/teacher/classroom-activity?batchId=${id}${studentId ? `&studentId=${studentId}` : ""}${fromDate ? `&fromUtc=${encodeURIComponent(fromDate)}` : ""}${toDate ? `&toUtc=${encodeURIComponent(toDate)}` : ""}`),
     ]);
     if (materials.ok) setResources(await materials.json());
     if (history.ok) setActivity(await history.json());
   }
   useEffect(() => { setBatchId(sessions.find((session) => session.id === sessionId)?.batchId ?? ""); }, [sessionId, sessions]);
-  useEffect(() => { void refresh(); }, [batchId, studentId]);
+  useEffect(() => { void refresh(); }, [batchId, studentId, fromDate, toDate]);
   async function addNote(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault(); const form = new FormData(event.currentTarget);
-    const response = await academyApi("/api/teacher/resources/note", { method: "POST", headers: apiHeaders(true), body: JSON.stringify({ batchId, studentId: studentId || null, classSessionId: sessionId || null, title: form.get("title"), notes: form.get("notes"), type: form.get("type") }) });
+    const response = await academyApi("/api/teacher/resources/note", { method: "POST", headers: apiHeaders(true), body: JSON.stringify({ batchId, studentId: studentId || null, classSessionId: sessionId || null, title: form.get("title"), notes: form.get("notes"), type: "Note" }) });
     setMessage(response.ok ? "Class note saved." : "Class note could not be saved."); if (response.ok) { event.currentTarget.reset(); await refresh(); }
   }
-  async function upload(file: File, title?: string, description?: string, type = "Class material") {
+  async function upload(file: File, title?: string, description?: string, type = "Attachment") {
     const form = new FormData(); form.append("batchId", batchId); if (studentId) form.append("studentId", studentId); if (sessionId) form.append("classSessionId", sessionId); form.append("file", file); form.append("title", title || file.name); form.append("description", description || ""); form.append("type", type);
     const response = await academyApi("/api/teacher/resources/upload", { method: "POST", body: form });
     setMessage(response.ok ? "Material uploaded." : "Material could not be uploaded."); if (response.ok) await refresh();
   }
-  async function addFile(event: React.FormEvent<HTMLFormElement>) { event.preventDefault(); const form = new FormData(event.currentTarget); if (pendingFile) { await upload(pendingFile, String(form.get("title") || pendingFile.name), String(form.get("description") || ""), String(form.get("type") || "Class material")); stageFile(null); event.currentTarget.reset(); } else setMessage("Choose a file or record audio before uploading."); }
+  async function addFile(event: React.FormEvent<HTMLFormElement>) { event.preventDefault(); const form = new FormData(event.currentTarget); if (pendingFile) { await upload(pendingFile, String(form.get("title") || pendingFile.name), String(form.get("description") || ""), "Attachment"); stageFile(null); event.currentTarget.reset(); } else setMessage("Choose a file or record audio before uploading."); }
   async function toggleRecording() {
     if (recording) { recorder.current?.stop(); return; }
     try { const stream = await navigator.mediaDevices.getUserMedia({ audio: true }); const current = new MediaRecorder(stream); chunks.current = []; current.ondataavailable = (event) => chunks.current.push(event.data); current.onstop = () => { stream.getTracks().forEach((track) => track.stop()); setRecording(false); setRecordingPaused(false); stageFile(new File([new Blob(chunks.current, { type: current.mimeType || "audio/webm" })], `class-recording-${Date.now()}.webm`, { type: current.mimeType || "audio/webm" })); setMessage("Recording ready. Listen to it below, then upload when you are happy."); }; recorder.current = current; current.start(); setRecording(true); } catch { setMessage("Microphone access is required to record class audio."); }
@@ -414,11 +420,11 @@ function TeacherClassroom({ batches, sessions, sessionId, roster, onSessionSelec
     </section>
     {selected && <>
     <section className="teacher-classroom-grid">
-      <Panel title="Capture today’s learning"><form className="learner-form teacher-note-form" onSubmit={(event) => void addNote(event)}><TeacherDropdown name="type" label="Learning record type" value={noteType} onChange={setNoteType} options={["Class note", "Student remark", "Music repertoire progress", "Syllabus / textbook reference"].map((value) => ({ value, label: value }))} /><input required name="title" placeholder="Topic, repertoire, chapter, or page" /><textarea required name="notes" placeholder="What was taught, progress, feedback, and the next practice step" /><button>Save learning record</button></form></Panel>
-      <Panel title="Class material"><form className="learner-form teacher-upload-form" onSubmit={(event) => void addFile(event)}><TeacherDropdown name="type" label="Material type" value={materialType} onChange={setMaterialType} options={["Class material", "Homework material", "Reference recording", "Syllabus / textbook"].map((value) => ({ value, label: value }))} /><input name="title" placeholder="File title" /><input name="description" placeholder="Short description" /><label className="teacher-file-picker"><input name="file" type="file" accept="image/*,.pdf,audio/*,video/*,.doc,.docx" onChange={(event) => stageFile(event.target.files?.[0] ?? null)} /><span>{pendingFile ? pendingFile.name : "Choose photo, video, audio, PDF, or document"}</span></label>{pendingFile && <div className="teacher-file-preview"><b>Ready to review</b>{pendingFile.type.startsWith("audio/") && <audio controls src={pendingPreviewUrl} />}{pendingFile.type.startsWith("video/") && <video controls src={pendingPreviewUrl} />}{pendingFile.type.startsWith("image/") && <img src={pendingPreviewUrl} alt="Selected upload preview" />} {!/^(audio|video|image)\//.test(pendingFile.type) && <small>{pendingFile.name} · {(pendingFile.size / 1024 / 1024).toFixed(1)} MB</small>}<button type="button" className="teacher-clear-file" onClick={() => stageFile(null)}>Remove</button></div>}<div className="teacher-material-actions"><button disabled={!pendingFile}>Upload confirmed file</button>{!recording ? <button type="button" className="teacher-mic-button" aria-label="Start audio recording" title="Start audio recording" onClick={() => void toggleRecording()}>🎙</button> : <><span className="teacher-recording-state">● Recording{recordingPaused ? " paused" : ""}</span><button type="button" className="enterprise-action-button enterprise-action-button-secondary" onClick={toggleRecordingPause}>{recordingPaused ? "Resume" : "Pause"}</button><button type="button" className="teacher-stop-button" onClick={() => void toggleRecording()}>Stop</button></>}</div></form></Panel>
-      <Panel title={selectedStudent ? `Homework for ${selectedStudent.firstName}` : "Homework for the class"}><form className="learner-form" onSubmit={(event) => void assignHomework(event)}><input required name="title" placeholder="Practice or homework title" /><textarea name="description" placeholder="Clear instructions, duration, or textbook page" /><input name="dueAtUtc" type="datetime-local" /><button>Assign homework</button></form><div className="teacher-upload-divider"><span>Assigned work</span><small>{selectedStudent ? "Private tasks for this student" : "Tasks shared with the class"}</small></div><div className="teacher-activity-list">{activity.homework.length ? activity.homework.map((item) => <article key={item.id}><b>{item.title}</b><small>{item.studentId ? "Individual" : "Whole class"}{item.dueAtUtc ? ` · due ${dt(item.dueAtUtc)}` : " · no due date"}</small></article>) : <p className="learner-empty">No homework has been assigned for this view.</p>}</div></Panel>
+      <Panel title={selectedStudent ? `Notes for ${selectedStudent.firstName}` : "Notes"}><form className="learner-form teacher-note-form" onSubmit={(event) => void addNote(event)}><input required name="title" placeholder="Note title" /><textarea required name="notes" placeholder="Add a comment" /><button>Save note</button></form></Panel>
+      <Panel title={selectedStudent ? `Attachments & recordings for ${selectedStudent.firstName}` : "Attachments & recordings"}><form className="learner-form teacher-upload-form" onSubmit={(event) => void addFile(event)}><input name="title" placeholder="Attachment title" /><input name="description" placeholder="Comment (optional)" /><label className="teacher-file-picker"><input name="file" type="file" accept="image/*,.pdf,audio/*,video/*,.doc,.docx" onChange={(event) => stageFile(event.target.files?.[0] ?? null)} /><span>{pendingFile ? pendingFile.name : "Choose photo, video, audio, PDF, or document"}</span></label>{pendingFile && <div className="teacher-file-preview"><b>Ready to review</b>{pendingFile.type.startsWith("audio/") && <audio controls src={pendingPreviewUrl} />}{pendingFile.type.startsWith("video/") && <video controls src={pendingPreviewUrl} />}{pendingFile.type.startsWith("image/") && <img src={pendingPreviewUrl} alt="Selected upload preview" />} {!/^(audio|video|image)\//.test(pendingFile.type) && <small>{pendingFile.name} · {(pendingFile.size / 1024 / 1024).toFixed(1)} MB</small>}<button type="button" className="teacher-clear-file" onClick={() => stageFile(null)}>Remove</button></div>}<div className="teacher-material-actions"><button disabled={!pendingFile}>Upload confirmed file</button>{!recording ? <button type="button" className="teacher-mic-button" aria-label="Start audio recording" title="Start audio recording" onClick={() => void toggleRecording()}>🎙</button> : <><span className="teacher-recording-state">● Recording{recordingPaused ? " paused" : ""}</span><button type="button" className="enterprise-action-button enterprise-action-button-secondary" onClick={toggleRecordingPause}>{recordingPaused ? "Resume" : "Pause"}</button><button type="button" className="teacher-stop-button" onClick={() => void toggleRecording()}>Stop</button></>}</div></form></Panel>
+      <Panel title={selectedStudent ? `Homework for ${selectedStudent.firstName}` : "Homework (optional)"}><form className="learner-form" onSubmit={(event) => void assignHomework(event)}><input required name="title" placeholder="Homework title" /><textarea name="description" placeholder="Add a comment" /><button>Assign homework</button></form><div className="teacher-activity-list">{activity.homework.length ? activity.homework.map((item) => <article key={item.id}><b>{item.title}</b><small>{item.studentId ? "Individual" : "Whole class"}</small></article>) : <p className="learner-empty">No homework has been assigned for this view.</p>}</div></Panel>
     </section>
-    <Panel title={selectedStudent ? `${selectedStudent.firstName}'s learning history` : "Class learning history"}><div className="teacher-activity-list">{activity.resources.length ? activity.resources.map((item) => <article key={item.id}><div><b>{item.title}</b><small>{item.type}{item.studentId ? " · individual record" : " · class record"} · {dt(item.createdAtUtc)}</small>{item.description && <p>{item.description}</p>}</div>{!item.url.startsWith("note://") && <a href={`${apiUrl}${item.url}`} target="_blank" rel="noreferrer">Open</a>}</article>) : <p className="learner-empty">No learning records yet. Save notes, recordings, or files above to build the class history.</p>}</div></Panel>
+    <Panel title={selectedStudent ? `${selectedStudent.firstName}'s history` : "Class history"}>{!selectedStudent && <div className="teacher-history-filter"><label>From<input type="date" value={fromDate} onChange={(event) => setFromDate(event.target.value)} /></label><label>To<input type="date" value={toDate} onChange={(event) => setToDate(event.target.value)} /></label><button type="button" onClick={() => { setFromDate(""); setToDate(""); }}>Clear</button></div>}<div className="teacher-activity-list">{activity.resources.length || activity.homework.length ? <>{activity.resources.map((item) => <article key={item.id}><div><b>{item.title}</b><small>{item.type}{item.studentId ? " · individual" : " · whole class"} · {dt(item.createdAtUtc)}</small>{item.description && <p>{item.description}</p>}</div>{!item.url.startsWith("note://") && <a href={`${apiUrl}${item.url}`} target="_blank" rel="noreferrer">Open</a>}</article>)}{activity.homework.map((item) => <article key={item.id}><div><b>{item.title}</b><small>Homework{item.studentId ? " · individual" : " · whole class"}{item.dueAtUtc ? ` · due ${dt(item.dueAtUtc)}` : ""}</small>{item.description && <p>{item.description}</p>}</div></article>)}</> : <p className="learner-empty">No class history for this period.</p>}</div></Panel>
     {message && <p className="teacher-classroom-message" role="status">{message}</p>}
     </>}
   </>;

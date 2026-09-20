@@ -38,7 +38,7 @@ public sealed class TeacherPortalController(
             .Where(x => x.AcademyId == user.AcademyId && batchIds.Contains(x.BatchId) && x.StartUtc >= DateTime.UtcNow.AddDays(-1))
             .OrderBy(x => x.StartUtc)
             .Take(30)
-            .Select(x => new TeacherSessionSummary(x.Id, x.BatchId, x.StartUtc, x.EndUtc, x.DeliveryMode, x.RoomName, x.Status))
+            .Select(x => new TeacherSessionSummary(x.Id, x.BatchId, x.StartUtc, x.EndUtc, x.DeliveryMode, x.RoomName, x.Status, x.TeacherAttendanceStatus))
             .ToListAsync(cancellationToken);
 
         return Ok(new TeacherPortalSummary(teacher.FirstName, teacher.LastName, batches, sessions));
@@ -341,18 +341,18 @@ public sealed class TeacherPortalController(
     }
 
     [HttpGet("classroom-activity")]
-    public async Task<ActionResult<TeacherClassroomActivitySummary>> ClassroomActivity(Guid batchId, Guid? studentId, CancellationToken cancellationToken)
+    public async Task<ActionResult<TeacherClassroomActivitySummary>> ClassroomActivity(Guid batchId, Guid? studentId, DateTime? fromUtc, DateTime? toUtc, CancellationToken cancellationToken)
     {
         var user = await userManager.GetUserAsync(User);
         if (user?.AcademyId is null || user.TeacherId is null || !await OwnsBatch(user, batchId, cancellationToken)) return Forbid();
         if (studentId.HasValue && !await dbContext.Enrollments.AnyAsync(x => x.AcademyId == user.AcademyId && x.BatchId == batchId && x.StudentId == studentId && x.Status == "Active", cancellationToken))
             return BadRequest(new { message = "The selected student is not active in this batch." });
         var resources = await dbContext.LearningResources.AsNoTracking()
-            .Where(x => x.AcademyId == user.AcademyId && x.BatchId == batchId && (!studentId.HasValue || x.StudentId == null || x.StudentId == studentId))
+            .Where(x => x.AcademyId == user.AcademyId && x.BatchId == batchId && (!studentId.HasValue || x.StudentId == null || x.StudentId == studentId) && (!fromUtc.HasValue || x.CreatedAtUtc >= fromUtc) && (!toUtc.HasValue || x.CreatedAtUtc < toUtc.Value.AddDays(1)))
             .OrderByDescending(x => x.CreatedAtUtc).Take(30)
             .Select(x => new TeacherResourceSummary(x.Id, x.BatchId!.Value, x.StudentId, x.ClassSessionId, x.Title, x.Description, x.Type, x.Url, x.CreatedAtUtc)).ToListAsync(cancellationToken);
         var homework = await dbContext.Assignments.AsNoTracking()
-            .Where(x => x.AcademyId == user.AcademyId && x.BatchId == batchId && (!studentId.HasValue || x.StudentId == null || x.StudentId == studentId))
+            .Where(x => x.AcademyId == user.AcademyId && x.BatchId == batchId && (!studentId.HasValue || x.StudentId == null || x.StudentId == studentId) && (!fromUtc.HasValue || x.CreatedAtUtc >= fromUtc) && (!toUtc.HasValue || x.CreatedAtUtc < toUtc.Value.AddDays(1)))
             .OrderByDescending(x => x.CreatedAtUtc).Take(30)
             .Select(x => new TeacherAssignmentSummary(x.Id, x.BatchId, x.StudentId, x.Title, x.Description, x.DueAtUtc, x.Type, x.IsPublished)).ToListAsync(cancellationToken);
         return Ok(new TeacherClassroomActivitySummary(resources, homework));
@@ -524,6 +524,18 @@ public sealed class TeacherPortalController(
         return Ok(new { updated = request.Records.Count });
     }
 
+    [HttpPut("sessions/{sessionId:guid}/teacher-attendance")]
+    public async Task<ActionResult> MarkTeacherAttendance(Guid sessionId, TeacherSessionAttendanceRequest request, CancellationToken cancellationToken)
+    {
+        var context = await GetTeacherContext(sessionId, cancellationToken);
+        if (context is null) return Forbid();
+        if (!AttendanceStatuses.Contains(request.Status, StringComparer.OrdinalIgnoreCase)) return BadRequest(new { message = "Invalid attendance status." });
+        context.Session.TeacherAttendanceStatus = request.Status.Trim();
+        context.Session.TeacherAttendanceMarkedAtUtc = DateTime.UtcNow;
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return Ok(new { context.Session.Id, context.Session.TeacherAttendanceStatus });
+    }
+
     private async Task<TeacherContext?> GetTeacherContext(Guid sessionId, CancellationToken cancellationToken)
     {
         var user = await userManager.GetUserAsync(User);
@@ -538,13 +550,14 @@ public sealed class TeacherPortalController(
 
 public sealed record TeacherPortalSummary(string FirstName, string LastName, IReadOnlyList<TeacherBatchSummary> Batches, IReadOnlyList<TeacherSessionSummary> Sessions);
 public sealed record TeacherBatchSummary(Guid Id, string Name, int Capacity, string DeliveryMode, string? MeetingLink, string? RoomName);
-public sealed record TeacherSessionSummary(Guid Id, Guid BatchId, DateTime StartUtc, DateTime EndUtc, string DeliveryMode, string? RoomName, string Status);
+public sealed record TeacherSessionSummary(Guid Id, Guid BatchId, DateTime StartUtc, DateTime EndUtc, string DeliveryMode, string? RoomName, string Status, string? TeacherAttendanceStatus);
 public sealed record TeacherRosterStudent(Guid Id, string FirstName, string LastName);
 public sealed record TeacherMarkAttendanceRequest(Guid StudentId, string Status, string? Notes);
 public sealed record TeacherAttendanceSummary(Guid StudentId, string Status, string? Notes);
 public sealed record TeacherSessionStatusRequest(string Status);
 public sealed record TeacherBulkAttendanceRequest(IReadOnlyList<TeacherBulkAttendanceItem> Records);
 public sealed record TeacherBulkAttendanceItem(Guid StudentId, string Status, string? Notes);
+public sealed record TeacherSessionAttendanceRequest(string Status);
 public sealed record TeacherPortalProfileRequest(string? Email, string? Phone);
 public sealed record TeacherLeaveRequest(DateOnly StartDate, DateOnly EndDate, string Reason);
 public sealed record TeacherLeaveSummary(Guid Id, DateOnly StartDate, DateOnly EndDate, string Reason, string Status, string? DecisionNotes);

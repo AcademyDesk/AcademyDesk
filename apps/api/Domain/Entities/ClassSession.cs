@@ -10,4 +10,6 @@ public sealed class ClassSession : AcademyEntity
     public string DeliveryMode { get; set; } = "InPerson";
     public string? RoomName { get; set; }
     public string Status { get; set; } = "Scheduled";
+    public string? TeacherAttendanceStatus { get; set; }
+    public DateTime? TeacherAttendanceMarkedAtUtc { get; set; }
 }

@@ -292,6 +292,7 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
             entity.Property(x => x.DeliveryMode).HasMaxLength(30).IsRequired();
             entity.Property(x => x.RoomName).HasMaxLength(120);
             entity.Property(x => x.Status).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.TeacherAttendanceStatus).HasMaxLength(30);
             entity.HasIndex(x => new { x.AcademyId, x.StartUtc });
         });
 
