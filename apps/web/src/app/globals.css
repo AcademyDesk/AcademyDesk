@@ -3248,6 +3248,39 @@ html[data-theme="light"] .field-label { color: #475569; }
 .teacher-portal-shell .learner-heading p { display: none; }
 .teacher-portal-shell .learner-heading span { font-size: .9rem; }
 .teacher-portal-shell .learner-kpi, .teacher-portal-shell .learner-panel { border-radius: 14px; background: var(--ad-surface); box-shadow: none; }
+/* Teacher dropdown standard — the classroom lives outside Admin's main wrapper, so it needs its own complete control treatment. */
+.teacher-portal-shell select {
+  width: 100%;
+  min-height: 44px;
+  appearance: none;
+  padding: 0 42px 0 13px;
+  border: 1px solid var(--ad-border);
+  border-radius: 10px;
+  background-color: var(--ad-control-surface);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='m3.25 5.75 4.75 4.5 4.75-4.5' stroke='%237f93aa' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 16px;
+  box-shadow: none;
+  color: var(--ad-text);
+  color-scheme: light;
+  cursor: pointer;
+  font: inherit;
+  font-size: .86rem;
+  line-height: 1.2;
+  outline: 0;
+}
+.teacher-portal-shell select:hover { border-color: var(--ad-border-strong); background-color: var(--ad-surface-strong); }
+.teacher-portal-shell select:focus-visible {
+  border-color: var(--ad-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ad-accent) 18%, transparent);
+}
+.teacher-portal-shell select:disabled { cursor: not-allowed; opacity: .6; }
+.teacher-portal-shell select option,
+.teacher-portal-shell select optgroup { background: var(--ad-surface); color: var(--ad-text); }
+:root[data-theme="dark"] .teacher-portal-shell select { color-scheme: dark; }
+:root[data-theme="dark"] .teacher-portal-shell select option { background: #0d1a2b; color: #e7edf7; }
+:root[data-theme="light"] .teacher-portal-shell select option { background: #ffffff; color: #172033; }
 .teacher-active-class-banner { display: flex; align-items: center; gap: 10px; min-height: 54px; margin: 0 0 14px; padding: 10px 16px; border: 1px solid color-mix(in srgb, var(--ad-accent) 34%, var(--ad-border)); border-radius: 13px; background: color-mix(in srgb, var(--ad-accent) 10%, var(--ad-surface)); }
 .teacher-active-class-banner > div { display: grid; gap: 2px; }
 .teacher-active-class-banner b { color: var(--ad-text); font-size: .82rem; }
