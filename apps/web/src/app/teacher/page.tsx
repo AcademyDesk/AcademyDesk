@@ -287,7 +287,15 @@ function TeacherAttendanceRoster({ sessionId, roster, attendance, busy, onMark }
 }
 function AttendanceStatusMenu({ value, disabled, label, onChange }: { value: string; disabled: boolean; label: string; onChange: (status: string) => void }) {
   const [open, setOpen] = useState(false);
-  return <div className="teacher-attendance-menu"><button type="button" aria-label={label} aria-expanded={open} disabled={disabled} onClick={() => setOpen((current) => !current)}><span data-status={value}>{value}</span><i>⌄</i></button>{open && <div role="listbox">{statuses.map((status) => <button type="button" role="option" aria-selected={value === status} key={status} data-active={value === status} onClick={() => { onChange(status); setOpen(false); }}>{status}</button>)}</div>}</div>;
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const close = (event: MouseEvent) => { if (!ref.current?.contains(event.target as Node)) setOpen(false); };
+    const escape = (event: KeyboardEvent) => { if (event.key === "Escape") setOpen(false); };
+    document.addEventListener("mousedown", close); document.addEventListener("keydown", escape);
+    return () => { document.removeEventListener("mousedown", close); document.removeEventListener("keydown", escape); };
+  }, [open]);
+  return <div className="teacher-attendance-menu" ref={ref}><button type="button" aria-label={label} aria-haspopup="listbox" aria-expanded={open} disabled={disabled} onClick={() => setOpen((current) => !current)}><span data-status={value}>{value}</span><i>⌄</i></button>{open && <div role="listbox" aria-label={label}>{statuses.map((status) => <button type="button" role="option" aria-selected={value === status} key={status} data-active={value === status} onClick={() => { onChange(status); setOpen(false); }}>{status}</button>)}</div>}</div>;
 }
 
 type TeacherDropdownOption = { value: string; label: string };
