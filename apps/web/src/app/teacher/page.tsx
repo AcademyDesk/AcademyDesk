@@ -124,7 +124,8 @@ export default function Teacher() {
             p && (
               <>
                 {t === "classroom" && <TeacherActiveClassBanner batch={p.batches.find((batch) => batch.id === p.sessions.find((session) => session.id === sid)?.batchId)} rosterCount={roster.length} status={p.sessions.find((session) => session.id === sid)?.status} />}
-                <header className="learner-heading">
+                {t === "classroom" && <TeacherClassroom batches={p.batches} sessionId={sid} sessionBatchId={p.sessions.find((session) => session.id === sid)?.batchId} sessionStatus={p.sessions.find((session) => session.id === sid)?.status} roster={roster} />}
+                {t !== "classroom" && <header className="learner-heading">
                   <p>Teacher workspace</p>
                   <h1>
                     {t === "today"
@@ -135,7 +136,7 @@ export default function Teacher() {
                     Teaching delivery, learner progress, and class actions
                     scoped to your assigned batches.
                   </span>
-                </header>
+                </header>}
                 {t === "today" && (
                   <section className="learner-kpis">
                     <K
@@ -211,7 +212,6 @@ export default function Teacher() {
                     )}
                   </Panel>
                 )}
-                {t === "classroom" && <TeacherClassroom batches={p.batches} sessionId={sid} sessionBatchId={p.sessions.find((session) => session.id === sid)?.batchId} sessionStatus={p.sessions.find((session) => session.id === sid)?.status} roster={roster} />}
                 {t === "homework" && <TeacherTasks batches={p.batches} />}{" "}
                 {t === "progress" && <TeacherProgress />}
                 {t === "more" && <TeacherSelfService />}
