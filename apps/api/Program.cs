@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 var webRootPath = Path.Combine(builder.Environment.ContentRootPath, "wwwroot");
-var allowedWebOrigins = builder.Configuration.GetSection("AllowedWebOrigins").Get<string[]>() ?? ["http://localhost:3000"];
 Directory.CreateDirectory(webRootPath);
 
 // Add services to the container.
@@ -14,7 +13,7 @@ Directory.CreateDirectory(webRootPath);
 builder.Services.AddScoped<AcademyAccessFilter>();
 builder.Services.AddControllers(options => options.Filters.AddService<AcademyAccessFilter>());
 builder.Services.AddCors(options => options.AddPolicy("LocalWeb", policy =>
-    policy.WithOrigins(allowedWebOrigins).AllowAnyHeader().AllowAnyMethod()));
+    policy.WithOrigins("http://localhost:3000").AllowAnyHeader().AllowAnyMethod()));
 builder.Services.AddDbContext<AcademyDeskDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddDbContext<IdentityDbContext>(options =>
