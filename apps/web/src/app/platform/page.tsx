@@ -4,7 +4,7 @@ import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { academyApi, apiHeaders } from "@/lib/api";
+import { academyApi, apiHeaders, apiUrl } from "@/lib/api";
 
 type Academy = {
   id: string;
@@ -37,6 +37,7 @@ type PlatformHealth = {
   communicationProviders: string;
   maintenanceMode: boolean;
 };
+type OwnerSession = { displayName: string; email?: string | null; profileImageUrl?: string | null };
 
 const platformLinks = [
   { label: "Overview", icon: "▦", href: "/platform" },
@@ -73,6 +74,7 @@ export default function PlatformPage() {
   });
   const [overview, setOverview] = useState<PlatformOverview>();
   const [health, setHealth] = useState<PlatformHealth>();
+  const [owner, setOwner] = useState<OwnerSession>();
   const filteredAcademies = useMemo(
     () =>
       academies.filter(
@@ -89,15 +91,17 @@ export default function PlatformPage() {
   );
 
   async function load() {
-    const [response, overviewResponse, healthResponse] = await Promise.all([
+    const [response, overviewResponse, healthResponse, ownerResponse] = await Promise.all([
       academyApi("/api/platform/academies", { cache: "no-store" }),
       academyApi("/api/platform/overview", { cache: "no-store" }),
       academyApi("/api/platform/health", { cache: "no-store" }),
+      academyApi("/api/auth/session", { cache: "no-store" }),
     ]);
     if (!response.ok) throw new Error("Platform Owner access is required.");
     setAcademies(await response.json());
     if (overviewResponse.ok) setOverview(await overviewResponse.json());
     if (healthResponse.ok) setHealth(await healthResponse.json());
+    if (ownerResponse.ok) setOwner(await ownerResponse.json());
     setNotice({ text: "", tone: "neutral" });
   }
   useEffect(() => {
@@ -231,11 +235,12 @@ export default function PlatformPage() {
             <ThemeToggle />
             <details className="platform-profile">
               <summary aria-label="Open Platform Owner profile menu">
-                <span className="platform-avatar">S</span>
+                {owner?.profileImageUrl ? <img className="platform-avatar-image" src={`${apiUrl}${owner.profileImageUrl}`} alt="Profile"/> : <span className="platform-avatar">{owner?.displayName?.[0]?.toUpperCase() || "S"}</span>}
               </summary>
               <div className="platform-profile-menu">
-                <strong>Shashank</strong>
+                <strong>{owner?.displayName || "Platform Owner"}</strong>
                 <small>Platform Owner</small>
+                {owner?.email && <small>{owner.email}</small>}
                 <button type="button" onClick={signOut}>
                   Sign out
                 </button>
