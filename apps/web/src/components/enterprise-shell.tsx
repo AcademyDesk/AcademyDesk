@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { academyApi } from "@/lib/api";
+import { academyApi, apiUrl } from "@/lib/api";
 
 type NavigationItem = readonly [label: string, href: string];
 type NavigationGroup = {
@@ -169,7 +169,12 @@ export function EnterpriseShell({
   const [account, setAccount] = useState<{
     displayName: string;
     roles: string[];
+    profileImageUrl?: string | null;
   }>();
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [profileMessage, setProfileMessage] = useState("");
+  const profileRef = useRef<HTMLDivElement>(null);
+  const profileImageInputRef = useRef<HTMLInputElement>(null);
   const financeOnly =
     account?.roles.includes("FinanceUser") &&
     !account.roles.some((role) =>
@@ -204,6 +209,11 @@ export function EnterpriseShell({
     .join("")
     .slice(0, 2)
     .toUpperCase();
+  const profileImageUrl = account?.profileImageUrl
+    ? account.profileImageUrl.startsWith("http")
+      ? account.profileImageUrl
+      : `${apiUrl}${account.profileImageUrl}`
+    : undefined;
 
   useEffect(() => {
     void Promise.all([
@@ -219,6 +229,46 @@ export function EnterpriseShell({
       })
       .catch(() => undefined);
   }, []);
+
+  useEffect(() => {
+    if (!profileOpen) return;
+    function closeOnOutsidePress(event: MouseEvent) {
+      if (!profileRef.current?.contains(event.target as Node))
+        setProfileOpen(false);
+    }
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") setProfileOpen(false);
+    }
+    document.addEventListener("mousedown", closeOnOutsidePress);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("mousedown", closeOnOutsidePress);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [profileOpen]);
+
+  useEffect(() => setProfileOpen(false), [pathname]);
+
+  async function uploadProfileImage(event: React.ChangeEvent<HTMLInputElement>) {
+    const image = event.target.files?.[0];
+    event.target.value = "";
+    if (!image) return;
+    setProfileMessage("Uploading image…");
+    const body = new FormData();
+    body.append("image", image);
+    const response = await academyApi("/api/auth/session/profile-image", {
+      method: "POST",
+      body,
+    });
+    const result = await response.json().catch(() => null);
+    if (!response.ok)
+      return setProfileMessage(result?.message ?? "Profile image could not be saved.");
+    setAccount((current) =>
+      current ? { ...current, profileImageUrl: result.profileImageUrl } : current,
+    );
+    setProfileMessage("");
+    setProfileOpen(false);
+  }
 
   function signOut() {
     window.localStorage.removeItem("academydesk.accessToken");
@@ -319,18 +369,46 @@ export function EnterpriseShell({
                 ♧
               </Link>
               <ThemeToggle />
-              <details className="enterprise-profile">
-                <summary aria-label="Open account menu">
-                  <span>{initials}</span>
-                </summary>
-                <div>
+              <div className="enterprise-profile" ref={profileRef}>
+                <button
+                  type="button"
+                  className="enterprise-profile-trigger"
+                  aria-label="Open account menu"
+                  aria-expanded={profileOpen}
+                  onClick={() => {
+                    setProfileMessage("");
+                    setProfileOpen((open) => !open);
+                  }}
+                >
+                  {profileImageUrl ? (
+                    <img src={profileImageUrl} alt="Profile" />
+                  ) : (
+                    <span>{initials}</span>
+                  )}
+                </button>
+                {profileOpen && <div className="enterprise-profile-menu" role="menu">
                   <strong>{resolvedUserName}</strong>
                   <small>{resolvedUserRole}</small>
-                  <button type="button" onClick={signOut}>
+                  <button
+                    type="button"
+                    className="enterprise-profile-menu-action"
+                    onClick={() => profileImageInputRef.current?.click()}
+                  >
+                    Edit profile picture
+                  </button>
+                  {profileMessage && <small role="status">{profileMessage}</small>}
+                  <button type="button" className="enterprise-profile-menu-action" onClick={signOut}>
                     Sign out
                   </button>
-                </div>
-              </details>
+                </div>}
+                <input
+                  ref={profileImageInputRef}
+                  className="sr-only"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={uploadProfileImage}
+                />
+              </div>
             </div>
             {searchOpen && (
               <div className="enterprise-search-panel">

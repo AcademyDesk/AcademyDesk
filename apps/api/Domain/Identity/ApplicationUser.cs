@@ -9,6 +9,7 @@ public sealed class ApplicationUser : IdentityUser<Guid>
     public Guid? StudentId { get; set; }
     public Guid? GuardianId { get; set; }
     public string DisplayName { get; set; } = string.Empty;
+    public string? ProfileImageUrl { get; set; }
     public bool IsActive { get; set; } = true;
     public bool IsPlatformOwner { get; set; }
 }

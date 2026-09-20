@@ -781,14 +781,18 @@ html[data-theme="light"] [class~="text-red-300"] {
 .enterprise-profile {
   position: relative;
 }
-.enterprise-profile summary {
-  list-style: none;
+.enterprise-profile-trigger {
+  display: grid;
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--ad-border-strong);
+  border-radius: 999px;
+  background: var(--ad-surface);
   cursor: pointer;
 }
-.enterprise-profile summary::-webkit-details-marker {
-  display: none;
-}
-.enterprise-profile summary span {
+.enterprise-profile-trigger span {
   display: grid;
   width: 52px;
   height: 52px;
@@ -799,7 +803,17 @@ html[data-theme="light"] [class~="text-red-300"] {
   font-size: 1.1rem;
   font-weight: 600;
 }
-.enterprise-profile > div {
+.enterprise-profile-trigger img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.enterprise-profile-trigger:hover,
+.enterprise-profile-trigger[aria-expanded="true"] {
+  border-color: var(--ad-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ad-accent) 14%, transparent);
+}
+.enterprise-profile-menu {
   position: absolute;
   z-index: 50;
   top: 62px;
@@ -816,7 +830,8 @@ html[data-theme="light"] [class~="text-red-300"] {
 .enterprise-profile small {
   color: var(--ad-text-muted);
 }
-.enterprise-profile button {
+.enterprise-profile-menu-action {
+  width: 100%;
   margin-top: 7px;
   padding: 8px 9px;
   border: 1px solid var(--ad-border);
@@ -825,6 +840,11 @@ html[data-theme="light"] [class~="text-red-300"] {
   color: var(--ad-text);
   cursor: pointer;
   text-align: left;
+}
+.enterprise-profile-menu-action:hover {
+  border-color: var(--ad-accent);
+  background: var(--ad-accent-soft);
+  color: var(--ad-accent);
 }
 .enterprise-search-panel {
   position: absolute;
@@ -3364,7 +3384,8 @@ html[data-theme="light"] .field-label { color: #475569; }
     height: 39px;
     font-size: 1.1rem;
   }
-  .enterprise-profile summary span {
+  .enterprise-profile-trigger,
+  .enterprise-profile-trigger span {
     width: 39px;
     height: 39px;
     font-size: 0.85rem;

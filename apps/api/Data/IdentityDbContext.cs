@@ -15,6 +15,7 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
         builder.Entity<ApplicationUser>(entity =>
         {
             entity.Property(x => x.DisplayName).HasMaxLength(200).IsRequired();
+            entity.Property(x => x.ProfileImageUrl).HasMaxLength(300);
             entity.HasIndex(x => new { x.AcademyId, x.Email });
             entity.HasIndex(x => new { x.AcademyId, x.TeacherId });
             entity.HasIndex(x => new { x.AcademyId, x.StudentId });
