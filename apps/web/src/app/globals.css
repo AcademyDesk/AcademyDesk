@@ -2554,6 +2554,11 @@ html[data-theme="light"] .field-label { color: #475569; }
   backdrop-filter:blur(18px);
 }
 .platform-topbar::after { content:""; position:absolute; right:clamp(192px,15vw,280px); bottom:-1px; width:86px; height:2px; border-radius:999px; background:var(--ad-action); opacity:.9; }
+.platform-topbar-context { display:flex; align-items:center; gap:11px; min-width:0; }
+.platform-topbar-context > i { display:grid; width:34px; height:34px; flex:0 0 auto; place-items:center; border:1px solid color-mix(in srgb,var(--ad-accent) 28%,var(--ad-border)); border-radius:11px; background:color-mix(in srgb,var(--ad-accent) 10%,var(--ad-surface)); color:var(--ad-accent); font-size:.94rem; font-style:normal; }
+.platform-topbar-context > div { display:grid; gap:2px; }
+.platform-topbar-context strong { color:var(--ad-text); font-size:.82rem; font-weight:760; letter-spacing:-.02em; }
+.platform-topbar-context small { color:var(--ad-text-subtle); font-size:.68rem; font-weight:620; letter-spacing:.04em; text-transform:uppercase; }
 .platform-topbar h1,
 .platform-topbar p {
   margin: 0;

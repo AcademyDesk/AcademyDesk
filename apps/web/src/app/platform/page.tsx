@@ -204,7 +204,10 @@ export default function PlatformPage() {
       </aside>
       <section className="platform-workspace">
         <header className="platform-topbar">
-          <div />
+          <div className="platform-topbar-context">
+            <i aria-hidden="true">✦</i>
+            <div><strong>Platform Owner</strong><small>AcademyDesk control plane</small></div>
+          </div>
           <div className="enterprise-utilities">
             <button
               type="button"
