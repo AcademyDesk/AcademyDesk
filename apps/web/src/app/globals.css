@@ -2423,62 +2423,44 @@ html[data-theme="light"] .field-label { color: #475569; }
 
 /* Platform Owner is a separate SaaS control plane: it never inherits academy operations. */
 .platform-shell {
-  --platform-gutter: clamp(0px, 0.55vw, 12px);
-  --platform-panel-gap: clamp(8px, 0.7vw, 14px);
-  --platform-sidebar: clamp(236px, 19vw, 340px);
-  display: grid;
-  height: calc(100dvh - (var(--platform-gutter) * 2));
-  grid-template-columns: var(--platform-sidebar) minmax(0, 1fr);
-  gap:var(--platform-panel-gap);
-  margin: var(--platform-gutter);
-  overflow: hidden;
-  border-radius: clamp(0px, 1.3vw, 26px);
-  background:var(--ad-canvas);
-  box-shadow: var(--ad-shadow);
+  /* Platform Owner shares the Admin workspace frame exactly. */
+  --sidebar-width: clamp(252px, 21vw, 420px);
+  gap: 0;
 }
 .platform-sidebar {
-  position:relative;
-  isolation:isolate;
-  display: flex;
-  min-height: 0;
-  flex-direction: column;
-  padding: clamp(22px, 1.65vw, 32px) clamp(16px, 1.2vw, 24px);
-  border:1px solid var(--ad-border);
-  border-radius:clamp(0px, 1.05vw, 22px);
+  padding: clamp(22px, 1.65vw, 34px) clamp(16px, 1.18vw, 24px) clamp(18px, 1.35vw, 28px);
+  border: 0;
+  border-right: 1px solid var(--ad-border);
+  border-radius: 0;
   background: color-mix(in srgb, var(--ad-surface) 82%, var(--ad-canvas));
-  overflow:auto;
+  overflow-y: auto;
 }
-.platform-sidebar::before { content:""; position:absolute; z-index:-1; top:0; right:0; left:0; height:4px; background:linear-gradient(90deg,var(--ad-action),color-mix(in srgb,var(--ad-accent) 35%,transparent)); pointer-events:none; }
-.platform-sidebar::after { content:""; position:absolute; z-index:-1; right:22px; bottom:26px; width:58px; height:34px; opacity:.48; background-image:radial-gradient(circle,color-mix(in srgb,var(--ad-accent) 46%,transparent) 1.2px,transparent 1.4px); background-size:11px 11px; mask-image:linear-gradient(to left,#000,transparent); pointer-events:none; }
-.platform-sidebar > * { position:relative; z-index:1; }
-.platform-sidebar .enterprise-brand { padding-left:clamp(8px,1vw,20px); }
+.platform-sidebar::before { top:-110px; right:-100px; left:auto; width:245px; height:245px; border:1px solid color-mix(in srgb,var(--ad-accent) 24%,transparent); border-radius:52% 48% 45% 55%; background:radial-gradient(circle at 35% 35%,color-mix(in srgb,var(--ad-accent) 16%,transparent),transparent 62%); transform:rotate(18deg); }
+.platform-sidebar::after { right:26px; bottom:28px; width:96px; height:58px; opacity:.7; background-image:radial-gradient(circle,color-mix(in srgb,var(--ad-accent) 46%,transparent) 1.4px,transparent 1.6px); background-size:12px 12px; }
 .platform-nav {
-  display: grid;
-  gap: 4px;
+  gap: clamp(2px, 0.28vw, 6px);
   margin-top: clamp(34px, 3.35vw, 68px);
 }
 .platform-nav p {
-  margin: 0 0 10px clamp(10px, 1vw, 18px);
+  margin: 0 0 clamp(7px, 0.7vw, 14px) clamp(10px, 1vw, 20px);
   color: var(--ad-text-subtle);
-  font-size: 0.72rem;
+  font-size: clamp(0.63rem, 0.62vw, 0.78rem);
   font-weight: 700;
-  letter-spacing: 0.15em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
 }
 .platform-nav a,
 .platform-nav button {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 13px 14px;
-  border-radius: 12px;
+  gap: clamp(10px, 0.7vw, 14px);
+  padding: clamp(9px, 0.78vw, 15px) clamp(10px, 0.78vw, 16px);
+  border-radius: clamp(9px, 0.65vw, 13px);
   color: var(--ad-text-muted);
   border: 0;
   background: transparent;
   cursor: pointer;
   font: inherit;
-  font-size: 0.95rem;
-  font-weight: 570;
+  font-size: clamp(0.82rem, 0.84vw, 1rem);
+  font-weight: 530;
   text-align: left;
 }
 .platform-nav a:hover,
@@ -2494,6 +2476,7 @@ html[data-theme="light"] .field-label { color: #475569; }
 .platform-nav i {
   width: 16px;
   color: var(--ad-accent);
+  font-size: 1.15rem;
   font-style: normal;
   text-align: center;
 }
@@ -2537,47 +2520,17 @@ html[data-theme="light"] .field-label { color: #475569; }
   color: var(--ad-text);
 }
 .platform-workspace {
-  display: flex;
-  min-width: 0;
-  min-height: 0;
-  flex-direction: column;
   overflow: hidden;
-  border:1px solid var(--ad-border);
-  border-radius:clamp(0px, 1.05vw, 22px);
-  background:var(--ad-canvas);
+  border: 0;
+  border-radius: 0;
 }
 .platform-topbar {
-  position:relative;
-  display: flex;
-  flex: 0 0 clamp(82px, 5.6vw, 108px);
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  padding: clamp(16px, 1.3vw, 26px) clamp(22px, 2vw, 40px);
-  border-bottom: 1px solid var(--ad-border);
-  background:color-mix(in srgb,var(--ad-surface) 78%,transparent);
-  backdrop-filter:blur(18px);
+  flex-basis: var(--topbar-height);
+  background: color-mix(in srgb, var(--ad-surface) 46%, transparent);
+  backdrop-filter: none;
 }
-.platform-topbar::after { content:""; position:absolute; right:clamp(192px,15vw,280px); bottom:-1px; width:86px; height:2px; border-radius:999px; background:var(--ad-action); opacity:.9; }
-.platform-topbar-context { display:flex; align-items:center; gap:11px; min-width:0; }
-.platform-topbar-context > i { display:grid; width:34px; height:34px; flex:0 0 auto; place-items:center; border:1px solid color-mix(in srgb,var(--ad-accent) 28%,var(--ad-border)); border-radius:11px; background:color-mix(in srgb,var(--ad-accent) 10%,var(--ad-surface)); color:var(--ad-accent); font-size:.94rem; font-style:normal; }
-.platform-topbar-context > div { display:grid; gap:2px; }
-.platform-topbar-context strong { color:var(--ad-text); font-size:.82rem; font-weight:760; letter-spacing:-.02em; }
-.platform-topbar-context small { color:var(--ad-text-subtle); font-size:.68rem; font-weight:620; letter-spacing:.04em; text-transform:uppercase; }
-.platform-topbar h1,
-.platform-topbar p {
-  margin: 0;
-}
-.platform-topbar p {
-  color: var(--ad-text-subtle);
-  font-size: 0.78rem;
-}
-.platform-topbar h1 {
-  margin-top: 8px;
-  color: var(--ad-text);
-  font-size: clamp(1.05rem, 1.17vw, 1.45rem);
-  letter-spacing: -0.025em;
-}
+.platform-topbar::after { left:clamp(28px,4vw,76px); right:auto; bottom:16px; width:76px; height:3px; background:linear-gradient(90deg,var(--ad-accent),transparent); opacity:.75; }
+.platform-topbar-context { min-width:0; }
 .platform-avatar {
   display: grid;
   width: 52px;
@@ -2593,7 +2546,7 @@ html[data-theme="light"] .field-label { color: #475569; }
 .platform-profile {
   position: relative;
 }
-.platform-profile summary {
+.platform-profile summary:not(.enterprise-profile-trigger) {
   display: block;
   border-radius:999px;
   cursor: pointer;
@@ -3894,6 +3847,10 @@ html[data-theme="light"] .field-label { color: #475569; }
     width: 39px;
     height: 39px;
     font-size: 0.85rem;
+  }
+  .platform-avatar-image {
+    width: 39px;
+    height: 39px;
   }
   .platform-content {
     display: block;

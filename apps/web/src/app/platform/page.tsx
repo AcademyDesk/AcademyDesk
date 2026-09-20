@@ -190,8 +190,8 @@ export default function PlatformPage() {
   }
 
   return (
-    <main className="platform-shell">
-      <aside className="platform-sidebar">
+    <main className="enterprise-app-shell platform-shell">
+      <aside className="enterprise-sidebar platform-sidebar">
         <div className="enterprise-brand">
           <span>A</span>
           <strong>AcademyDesk</strong>
@@ -210,12 +210,9 @@ export default function PlatformPage() {
           ))}
         </nav>
       </aside>
-      <section className="platform-workspace">
-        <header className="platform-topbar">
-          <div className="platform-topbar-context">
-            <i aria-hidden="true">✦</i>
-            <div><strong>Platform Owner</strong><small>AcademyDesk control plane</small></div>
-          </div>
+      <section className="enterprise-workspace platform-workspace">
+        <header className="enterprise-topbar platform-topbar">
+          <div className="platform-topbar-context" aria-hidden="true" />
           <div className="enterprise-utilities">
             <button
               type="button"
@@ -233,8 +230,8 @@ export default function PlatformPage() {
               ♧
             </button>
             <ThemeToggle />
-            <details className="platform-profile">
-              <summary aria-label="Open Platform Owner profile menu">
+            <details className="platform-profile enterprise-profile">
+              <summary className="enterprise-profile-trigger" aria-label="Open Platform Owner profile menu">
                 {owner?.profileImageUrl ? <img className="platform-avatar-image" src={`${apiUrl}${owner.profileImageUrl}`} alt="Profile"/> : <span className="platform-avatar">{owner?.displayName?.[0]?.toUpperCase() || "S"}</span>}
               </summary>
               <div className="platform-profile-menu">
