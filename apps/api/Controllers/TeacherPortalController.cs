@@ -335,8 +335,9 @@ public sealed class TeacherPortalController(
         var students = await dbContext.Enrollments.AsNoTracking()
             .Where(x => x.AcademyId == context.AcademyId && x.BatchId == context.Session.BatchId && x.Status == "Active")
             .Join(dbContext.Students.AsNoTracking(), enrollment => enrollment.StudentId, student => student.Id,
-                (enrollment, student) => new TeacherRosterStudent(student.Id, student.FirstName, student.LastName))
+                (enrollment, student) => new { student.Id, student.FirstName, student.LastName })
             .OrderBy(x => x.LastName).ThenBy(x => x.FirstName)
+            .Select(x => new TeacherRosterStudent(x.Id, x.FirstName, x.LastName))
             .ToListAsync(cancellationToken);
         return Ok(students);
     }
