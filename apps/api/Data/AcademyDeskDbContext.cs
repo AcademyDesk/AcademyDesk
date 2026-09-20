@@ -308,6 +308,7 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
             entity.Property(x => x.Description).HasMaxLength(4000);
             entity.Property(x => x.Type).HasMaxLength(40).IsRequired();
             entity.HasIndex(x => new { x.AcademyId, x.BatchId, x.DueAtUtc });
+            entity.HasIndex(x => new { x.AcademyId, x.BatchId, x.StudentId, x.CreatedAtUtc });
         });
 
         modelBuilder.Entity<Assessment>(entity =>

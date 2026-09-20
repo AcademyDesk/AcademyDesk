@@ -567,6 +567,9 @@ namespace AcademyDesk.Api.Migrations
                     b.Property<bool>("IsPublished")
                         .HasColumnType("bit");
 
+                    b.Property<Guid?>("StudentId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(250)
@@ -583,6 +586,8 @@ namespace AcademyDesk.Api.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AcademyId", "BatchId", "DueAtUtc");
+
+                    b.HasIndex("AcademyId", "BatchId", "StudentId", "CreatedAtUtc");
 
                     b.ToTable("Assignments");
                 });

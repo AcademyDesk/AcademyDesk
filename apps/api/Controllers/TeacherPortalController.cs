@@ -134,7 +134,7 @@ public sealed class TeacherPortalController(
         var items = await dbContext.Assignments.AsNoTracking()
             .Where(x => x.AcademyId == user.AcademyId && dbContext.Batches.Any(b => b.Id == x.BatchId && b.TeacherId == user.TeacherId))
             .OrderByDescending(x => x.DueAtUtc)
-            .Select(x => new TeacherAssignmentSummary(x.Id, x.BatchId, x.Title, x.Description, x.DueAtUtc, x.Type, x.IsPublished))
+            .Select(x => new TeacherAssignmentSummary(x.Id, x.BatchId, x.StudentId, x.Title, x.Description, x.DueAtUtc, x.Type, x.IsPublished))
             .ToListAsync(cancellationToken);
         return Ok(items);
     }
@@ -146,10 +146,13 @@ public sealed class TeacherPortalController(
         if (user?.AcademyId is null || user.TeacherId is null) return Forbid();
         if (string.IsNullOrWhiteSpace(request.Title) || !await OwnsBatch(user, request.BatchId, cancellationToken))
             return BadRequest(new { message = "Select a batch you teach and provide an assignment title." });
+        if (request.StudentId.HasValue && !await dbContext.Enrollments.AnyAsync(x => x.AcademyId == user.AcademyId && x.BatchId == request.BatchId && x.StudentId == request.StudentId && x.Status == "Active", cancellationToken))
+            return BadRequest(new { message = "The selected student is not active in this batch." });
         var assignment = new Assignment
         {
             AcademyId = user.AcademyId.Value,
             BatchId = request.BatchId,
+            StudentId = request.StudentId,
             Title = request.Title.Trim(),
             Description = request.Description?.Trim(),
             DueAtUtc = request.DueAtUtc,
@@ -158,7 +161,7 @@ public sealed class TeacherPortalController(
         };
         dbContext.Assignments.Add(assignment);
         await dbContext.SaveChangesAsync(cancellationToken);
-        return Ok(new TeacherAssignmentSummary(assignment.Id, assignment.BatchId, assignment.Title, assignment.Description, assignment.DueAtUtc, assignment.Type, assignment.IsPublished));
+        return Ok(new TeacherAssignmentSummary(assignment.Id, assignment.BatchId, assignment.StudentId, assignment.Title, assignment.Description, assignment.DueAtUtc, assignment.Type, assignment.IsPublished));
     }
 
     [HttpPatch("assignments/{assignmentId:guid}/publish")]
@@ -335,6 +338,24 @@ public sealed class TeacherPortalController(
             .Select(x => new TeacherResourceSummary(x.Id, x.BatchId!.Value, x.StudentId, x.ClassSessionId, x.Title, x.Description, x.Type, x.Url, x.CreatedAtUtc))
             .ToListAsync(cancellationToken);
         return Ok(items);
+    }
+
+    [HttpGet("classroom-activity")]
+    public async Task<ActionResult<TeacherClassroomActivitySummary>> ClassroomActivity(Guid batchId, Guid? studentId, CancellationToken cancellationToken)
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user?.AcademyId is null || user.TeacherId is null || !await OwnsBatch(user, batchId, cancellationToken)) return Forbid();
+        if (studentId.HasValue && !await dbContext.Enrollments.AnyAsync(x => x.AcademyId == user.AcademyId && x.BatchId == batchId && x.StudentId == studentId && x.Status == "Active", cancellationToken))
+            return BadRequest(new { message = "The selected student is not active in this batch." });
+        var resources = await dbContext.LearningResources.AsNoTracking()
+            .Where(x => x.AcademyId == user.AcademyId && x.BatchId == batchId && (!studentId.HasValue || x.StudentId == null || x.StudentId == studentId))
+            .OrderByDescending(x => x.CreatedAtUtc).Take(30)
+            .Select(x => new TeacherResourceSummary(x.Id, x.BatchId!.Value, x.StudentId, x.ClassSessionId, x.Title, x.Description, x.Type, x.Url, x.CreatedAtUtc)).ToListAsync(cancellationToken);
+        var homework = await dbContext.Assignments.AsNoTracking()
+            .Where(x => x.AcademyId == user.AcademyId && x.BatchId == batchId && (!studentId.HasValue || x.StudentId == null || x.StudentId == studentId))
+            .OrderByDescending(x => x.CreatedAtUtc).Take(30)
+            .Select(x => new TeacherAssignmentSummary(x.Id, x.BatchId, x.StudentId, x.Title, x.Description, x.DueAtUtc, x.Type, x.IsPublished)).ToListAsync(cancellationToken);
+        return Ok(new TeacherClassroomActivitySummary(resources, homework));
     }
 
     [HttpPost("resources/note")]
@@ -529,8 +550,8 @@ public sealed record TeacherLeaveRequest(DateOnly StartDate, DateOnly EndDate, s
 public sealed record TeacherLeaveSummary(Guid Id, DateOnly StartDate, DateOnly EndDate, string Reason, string Status, string? DecisionNotes);
 public sealed record TeacherPracticeLogSummary(Guid Id, Guid StudentId, string StudentName, DateOnly PracticeDate, int MinutesPracticed, string? FocusArea, string? Notes, string? TeacherFeedback, string Status);
 public sealed record TeacherPracticeReviewRequest(string? TeacherFeedback);
-public sealed record TeacherAssignmentSummary(Guid Id, Guid BatchId, string Title, string? Description, DateTime? DueAtUtc, string Type, bool IsPublished);
-public sealed record TeacherCreateAssignmentRequest(Guid BatchId, string Title, string? Description, DateTime? DueAtUtc, string? Type, bool IsPublished);
+public sealed record TeacherAssignmentSummary(Guid Id, Guid BatchId, Guid? StudentId, string Title, string? Description, DateTime? DueAtUtc, string Type, bool IsPublished);
+public sealed record TeacherCreateAssignmentRequest(Guid BatchId, Guid? StudentId, string Title, string? Description, DateTime? DueAtUtc, string? Type, bool IsPublished);
 public sealed record TeacherPublishAssignmentRequest(bool IsPublished);
 public sealed record TeacherSubmissionSummary(Guid Id, Guid StudentId, string StudentName, string? ResponseText, string Status, DateTime SubmittedAtUtc, string? TeacherFeedback);
 public sealed record TeacherSubmissionReviewRequest(string? Feedback);
@@ -543,6 +564,7 @@ public sealed record TeacherPublishAssessmentRequest(bool IsPublished);
 public sealed record TeacherAssessmentResultSummary(Guid Id, Guid StudentId, string StudentName, decimal Score, string? Grade, string? Remarks, bool IsPublished);
 public sealed record TeacherRecordAssessmentResultRequest(Guid StudentId, decimal Score, string? Grade, string? Remarks, bool IsPublished);
 public sealed record TeacherResourceSummary(Guid Id, Guid BatchId, Guid? StudentId, Guid? ClassSessionId, string Title, string? Description, string Type, string Url, DateTime CreatedAtUtc);
+public sealed record TeacherClassroomActivitySummary(IReadOnlyList<TeacherResourceSummary> Resources, IReadOnlyList<TeacherAssignmentSummary> Homework);
 public sealed record TeacherCreateResourceNoteRequest(Guid BatchId, Guid? StudentId, Guid? ClassSessionId, string Title, string Notes, string? Type);
 public sealed class TeacherUploadResourceRequest { public Guid BatchId { get; set; } public Guid? StudentId { get; set; } public Guid? ClassSessionId { get; set; } public string? Title { get; set; } public string? Description { get; set; } public string? Type { get; set; } public IFormFile? File { get; set; } }
 public sealed record TeacherProgressSummary(int CompletedClasses, int UpcomingClasses, int AttendanceRecords, int PresentOrOnline);
