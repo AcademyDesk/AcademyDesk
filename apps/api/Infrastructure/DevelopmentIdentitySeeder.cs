@@ -103,7 +103,11 @@ public static class DevelopmentIdentitySeeder
         await EnsureUser(users, "Kavya", "Kavya@academydesk.local", "Kavya", academy.Id, false, "AcademyAdmin");
         await EnsureUser(users, "Finance", "finance@academydesk.local", "Finance user", academy.Id, false, "FinanceUser");
         await EnsureUser(users, "Haynsh", "Haynsh@academydesk.local", "Haynsh", academy.Id, false, "Student", student.Id, null);
-        await EnsureUser(users, "Hayansh1", "Hayansh1@academydesk.local", "Hayansh1", academy.Id, false, "Teacher", null, teacher.Id);
+        // Active teaching profiles have matching portal accounts, so the Teacher
+        // workspace can be tested with a real linked profile rather than a stub.
+        await EnsureUser(users, "Hayansh1", "Hayansh1@academydesk.local", "Hayansh1", academy.Id, false, "Teacher", null, hayansh.Id);
+        await EnsureUser(users, "Ananya.Rao", "ananya.rao@academydesk.local", "Ananya Rao", academy.Id, false, "Teacher", null, ananya.Id);
+        await EnsureUser(users, "Arjun.Mehta", "arjun.mehta@academydesk.local", "Arjun Mehta", academy.Id, false, "Teacher", null, arjun.Id);
     }
 
     private static async Task EnsureUser(UserManager<ApplicationUser> users, string userName, string email, string displayName, Guid? academyId, bool platformOwner, string role, Guid? studentId = null, Guid? teacherId = null)
