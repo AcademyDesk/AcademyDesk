@@ -1945,6 +1945,90 @@ html[data-theme="light"] .field-label { color: #475569; }
   color: var(--ad-text-muted);
 }
 
+/* ADMIN STD — final legacy convergence. Older Admin pages intentionally keep
+   their functional markup, while this shared layer gives every remaining
+   action, surface and feedback state the same visual contract. */
+.enterprise-workspace > main:not(.enterprise-settings) > .mx-auto {
+  width: min(100%, 1440px);
+  max-width: none !important;
+  padding: clamp(28px, 3vw, 50px) !important;
+}
+.enterprise-workspace main :is(form, section, article, li).rounded-2xl[class*="bg-slate-"],
+.enterprise-workspace main :is(form, section, article, li).rounded-xl[class*="bg-slate-"],
+.enterprise-workspace main :is(form, section, article, li).rounded-lg[class*="bg-slate-"] {
+  border: 1px solid var(--ad-border) !important;
+  background: var(--ad-surface) !important;
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--ad-text) 5%, transparent);
+}
+.enterprise-workspace main :is(ul > li, article).rounded-lg[class*="bg-slate-"] {
+  background: var(--ad-surface-subtle) !important;
+  box-shadow: none;
+}
+.enterprise-workspace main button[class~="bg-cyan-400"],
+.enterprise-workspace main button[class~="bg-cyan-500"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 9px 14px;
+  border: 1px solid color-mix(in srgb, var(--ad-action) 72%, var(--ad-border));
+  border-radius: 8px;
+  background: var(--ad-action) !important;
+  color: var(--ad-action-text) !important;
+  font-size: .82rem;
+  font-weight: 750;
+  transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+.enterprise-workspace main button:is([class~="bg-cyan-400"], [class~="bg-cyan-500"]):hover:not(:disabled) {
+  border-color: var(--ad-action-hover);
+  background: var(--ad-action-hover) !important;
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--ad-action) 23%, transparent);
+}
+.enterprise-workspace main :is(button, a)[class~="text-cyan-300"]:not(.enterprise-setting-card) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 6px 10px;
+  border: 1px solid var(--ad-border-strong);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ad-accent) !important;
+  font-size: .8rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+.enterprise-workspace main :is(button, a)[class~="text-cyan-300"]:not(.enterprise-setting-card):hover {
+  border-color: var(--ad-accent);
+  background: var(--ad-accent-soft);
+}
+.enterprise-workspace main button[class*="text-red"],
+.enterprise-workspace main button[class*="text-rose"] {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 6px 10px;
+  border: 1px solid color-mix(in srgb, var(--ad-danger) 42%, var(--ad-border));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ad-danger) 10%, var(--ad-surface));
+  color: var(--ad-danger) !important;
+  font-size: .78rem;
+  font-weight: 700;
+}
+.enterprise-workspace main button:is([class*="text-red"], [class*="text-rose"]):hover:not(:disabled) {
+  border-color: var(--ad-danger);
+  background: color-mix(in srgb, var(--ad-danger) 17%, var(--ad-surface));
+}
+.enterprise-workspace main :is(input, select, textarea):focus {
+  border-color: var(--ad-accent) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ad-accent) 16%, transparent);
+  outline: 0;
+}
+.enterprise-workspace main :is(button, a):focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--ad-accent) 42%, transparent);
+  outline-offset: 2px;
+}
+
 /* Certificate studio: original vector/CSS templates, designed for print and
    academy branding rather than image-based, licensed template assets. */
 .certificates-admin .certificate-branding {
