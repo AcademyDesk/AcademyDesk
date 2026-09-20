@@ -2436,13 +2436,20 @@ html[data-theme="light"] .field-label { color: #475569; }
   box-shadow: var(--ad-shadow);
 }
 .platform-sidebar {
+  position:relative;
+  isolation:isolate;
   display: flex;
   min-height: 0;
   flex-direction: column;
   padding: clamp(22px, 1.65vw, 32px) clamp(16px, 1.2vw, 24px);
   border-right: 1px solid var(--ad-border);
   background: color-mix(in srgb, var(--ad-surface) 82%, var(--ad-canvas));
+  overflow:auto;
 }
+.platform-sidebar::before { content:""; position:absolute; z-index:-1; top:-110px; right:-100px; width:245px; height:245px; border:1px solid color-mix(in srgb,var(--ad-accent) 24%,transparent); border-radius:52% 48% 45% 55%; background:radial-gradient(circle at 35% 35%,color-mix(in srgb,var(--ad-accent) 16%,transparent),transparent 62%); transform:rotate(18deg); pointer-events:none; }
+.platform-sidebar::after { content:""; position:absolute; z-index:-1; right:26px; bottom:28px; width:96px; height:58px; opacity:.7; background-image:radial-gradient(circle,color-mix(in srgb,var(--ad-accent) 46%,transparent) 1.4px,transparent 1.6px); background-size:12px 12px; mask-image:linear-gradient(to left,#000,transparent); pointer-events:none; }
+.platform-sidebar > * { position:relative; z-index:1; }
+.platform-sidebar .enterprise-brand { padding-left:clamp(8px,1vw,20px); }
 .platform-nav {
   display: grid;
   gap: 4px;
@@ -2535,6 +2542,7 @@ html[data-theme="light"] .field-label { color: #475569; }
   overflow: hidden;
 }
 .platform-topbar {
+  position:relative;
   display: flex;
   flex: 0 0 clamp(82px, 5.6vw, 108px);
   align-items: center;
@@ -2542,8 +2550,10 @@ html[data-theme="light"] .field-label { color: #475569; }
   gap: 20px;
   padding: clamp(16px, 1.3vw, 26px) clamp(22px, 2vw, 40px);
   border-bottom: 1px solid var(--ad-border);
-  background: color-mix(in srgb, var(--ad-surface) 46%, transparent);
+  background:color-mix(in srgb,var(--ad-surface) 78%,transparent);
+  backdrop-filter:blur(18px);
 }
+.platform-topbar::after { content:""; position:absolute; right:clamp(192px,15vw,280px); bottom:-1px; width:86px; height:2px; border-radius:999px; background:var(--ad-action); opacity:.9; }
 .platform-topbar h1,
 .platform-topbar p {
   margin: 0;
@@ -2575,9 +2585,11 @@ html[data-theme="light"] .field-label { color: #475569; }
 }
 .platform-profile summary {
   display: block;
+  border-radius:999px;
   cursor: pointer;
   list-style: none;
 }
+.platform-profile summary:hover,.platform-profile[open] summary { box-shadow:0 0 0 3px color-mix(in srgb,var(--ad-accent) 14%,transparent); }
 .platform-profile summary::-webkit-details-marker {
   display: none;
 }
