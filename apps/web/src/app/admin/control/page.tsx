@@ -149,7 +149,7 @@ export default function AcademyControlPage() {
     }
   }
   return (
-    <main className="enterprise-settings">
+    <main className="enterprise-settings admin-control-standard">
       <header className="enterprise-page-header">
         <p>Administration / Academy control</p>
         <h2>Academy control centre</h2>
@@ -164,7 +164,10 @@ export default function AcademyControlPage() {
         </p>
       )}
       <section className="mt-6 grid gap-5 xl:grid-cols-[.8fr_1.2fr]">
-        <form onSubmit={saveProfile} className="surface-panel rounded-xl p-5">
+        <form
+          onSubmit={saveProfile}
+          className="admin-control-profile surface-panel rounded-xl p-5"
+        >
           <h3 className="font-semibold">Academy profile</h3>
           <p className="mt-1 text-sm text-slate-400">
             This applies only to your academy; Platform Owner controls SaaS

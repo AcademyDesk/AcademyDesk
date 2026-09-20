@@ -2085,6 +2085,78 @@ html[data-theme="light"] .field-label { color: #475569; }
   outline-offset: 2px;
 }
 
+/* ADMIN STD — Administration controls. These routes are often used for
+   sensitive operational work, so actions, register rows and empty states use
+   one calm, consistent hierarchy across the entire administration section. */
+.enterprise-workspace:is([data-route="/admin/control"], [data-route="/admin-intelligence"], [data-route="/data-operations"], [data-route="/access-review"], [data-route="/work-queue"], [data-route="/compliance"], [data-route="/settings"], [data-route="/branches"], [data-route="/activity"]) > main {
+  position: relative;
+}
+.enterprise-workspace:is([data-route="/admin/control"], [data-route="/admin-intelligence"], [data-route="/data-operations"], [data-route="/access-review"], [data-route="/work-queue"], [data-route="/compliance"], [data-route="/settings"], [data-route="/branches"], [data-route="/activity"]) > main:not(.enterprise-settings) {
+  width: min(100%, 1440px);
+  margin-inline: auto;
+  padding: clamp(28px, 3vw, 50px) !important;
+}
+.enterprise-workspace:is([data-route="/admin/control"], [data-route="/admin-intelligence"], [data-route="/data-operations"], [data-route="/access-review"], [data-route="/work-queue"], [data-route="/compliance"], [data-route="/settings"], [data-route="/branches"], [data-route="/activity"]) main :is(.surface-panel, form, section, article).rounded-xl,
+.enterprise-workspace:is([data-route="/admin/control"], [data-route="/admin-intelligence"], [data-route="/data-operations"], [data-route="/access-review"], [data-route="/work-queue"], [data-route="/compliance"], [data-route="/settings"], [data-route="/branches"], [data-route="/activity"]) main :is(.surface-panel, form, section, article).rounded-2xl,
+.enterprise-workspace:is([data-route="/admin/control"], [data-route="/admin-intelligence"], [data-route="/data-operations"], [data-route="/access-review"], [data-route="/work-queue"], [data-route="/compliance"], [data-route="/settings"], [data-route="/branches"], [data-route="/activity"]) main :is(.surface-panel, form, section, article).rounded-lg {
+  border-color: var(--ad-border) !important;
+  background: var(--ad-surface) !important;
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--ad-text) 5%, transparent);
+}
+.enterprise-workspace:is([data-route="/admin/control"], [data-route="/admin-intelligence"], [data-route="/data-operations"], [data-route="/access-review"], [data-route="/work-queue"], [data-route="/compliance"], [data-route="/settings"], [data-route="/branches"], [data-route="/activity"]) main :is(.surface-panel, form, section, article).rounded-lg :is(.rounded-lg, .rounded-xl) {
+  border-color: var(--ad-border) !important;
+  background: var(--ad-surface-subtle) !important;
+  box-shadow: none;
+}
+.enterprise-workspace:is([data-route="/admin/control"], [data-route="/admin-intelligence"], [data-route="/data-operations"], [data-route="/access-review"], [data-route="/work-queue"], [data-route="/compliance"], [data-route="/settings"], [data-route="/branches"], [data-route="/activity"]) main button[class~="bg-cyan-400"] {
+  min-height: 40px;
+  padding: 9px 14px;
+  border: 1px solid color-mix(in srgb, var(--ad-action) 72%, var(--ad-border));
+  border-radius: 8px;
+  background: var(--ad-action) !important;
+  color: var(--ad-action-text) !important;
+  font-size: .82rem;
+  font-weight: 750;
+  transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+.enterprise-workspace:is([data-route="/admin/control"], [data-route="/admin-intelligence"], [data-route="/data-operations"], [data-route="/access-review"], [data-route="/work-queue"], [data-route="/compliance"], [data-route="/settings"], [data-route="/branches"], [data-route="/activity"]) main button[class~="bg-cyan-400"]:hover:not(:disabled) {
+  border-color: var(--ad-action-hover);
+  background: var(--ad-action-hover) !important;
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--ad-action) 23%, transparent);
+}
+.enterprise-workspace:is([data-route="/admin/control"], [data-route="/admin-intelligence"], [data-route="/data-operations"], [data-route="/access-review"], [data-route="/work-queue"], [data-route="/compliance"], [data-route="/settings"], [data-route="/branches"], [data-route="/activity"]) main :is(button, a):focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--ad-accent) 42%, transparent);
+  outline-offset: 2px;
+}
+.admin-control-profile {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+}
+.admin-control-profile > h3 { margin: 0; }
+.admin-control-profile > h3 + p { display: none; }
+.admin-control-profile label {
+  display: grid !important;
+  gap: 6px;
+  margin: 0 !important;
+  color: var(--ad-text-muted) !important;
+  font-size: .8rem !important;
+  font-weight: 650;
+}
+.admin-control-profile label:first-of-type { margin-top: 8px !important; }
+.admin-control-profile :is(input, select) { width: 100%; margin: 0 !important; }
+.admin-control-profile > .enterprise-action-button,
+.admin-control-profile > button { width: 100%; margin-top: 6px !important; }
+.admin-control-standard .enterprise-setting-card {
+  min-height: 158px;
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+.admin-control-standard .enterprise-setting-card:hover {
+  border-color: var(--ad-accent);
+  box-shadow: 0 12px 28px color-mix(in srgb, var(--ad-accent) 14%, transparent);
+  transform: translateY(-2px);
+}
+
 @media (max-width: 720px) {
   .enterprise-workspace > main:not(.enterprise-settings) {
     padding-inline: 16px !important;
