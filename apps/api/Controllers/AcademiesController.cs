@@ -26,7 +26,7 @@ public sealed class AcademiesController(
             .AsNoTracking()
             .Where(x => x.Id == user.AcademyId)
             .OrderBy(x => x.Name)
-            .Select(x => new AcademySummary(x.Id, x.Name, x.LegalName, x.CountryCode, x.TimeZone, x.IsActive))
+            .Select(x => new AcademySummary(x.Id, x.Name, x.LegalName, x.CountryCode, x.TimeZone, x.IsActive, x.SubscriptionPlan, x.SubscriptionStatus, x.EnabledModulesJson))
             .ToListAsync(cancellationToken);
 
         return Ok(academies);
@@ -76,13 +76,13 @@ public sealed class AcademiesController(
             academy.LegalName,
             academy.CountryCode,
             academy.TimeZone,
-            academy.IsActive);
+            academy.IsActive, academy.SubscriptionPlan, academy.SubscriptionStatus, academy.EnabledModulesJson);
 
         return CreatedAtAction(nameof(List), new { id = academy.Id }, response);
     }
     [HttpPut("{academyId:guid}")]
     public async Task<ActionResult<AcademySummary>> Update(Guid academyId, UpdateAcademyRequest request, CancellationToken token)
-    { var user=await userManager.GetUserAsync(User); if(user?.AcademyId!=academyId)return Forbid(); var x=await dbContext.Academies.SingleOrDefaultAsync(v=>v.Id==academyId,token); if(x is null)return NotFound(); if(string.IsNullOrWhiteSpace(request.Name))return BadRequest(new{message="Academy name is required."}); x.Name=request.Name.Trim();x.LegalName=string.IsNullOrWhiteSpace(request.LegalName)?null:request.LegalName.Trim();x.CountryCode=string.IsNullOrWhiteSpace(request.CountryCode)?x.CountryCode:request.CountryCode.Trim().ToUpperInvariant();x.TimeZone="Asia/Kolkata"; await dbContext.SaveChangesAsync(token); return Ok(new AcademySummary(x.Id,x.Name,x.LegalName,x.CountryCode,x.TimeZone,x.IsActive)); }
+    { var user=await userManager.GetUserAsync(User); if(user?.AcademyId!=academyId)return Forbid(); var x=await dbContext.Academies.SingleOrDefaultAsync(v=>v.Id==academyId,token); if(x is null)return NotFound(); if(string.IsNullOrWhiteSpace(request.Name))return BadRequest(new{message="Academy name is required."}); x.Name=request.Name.Trim();x.LegalName=string.IsNullOrWhiteSpace(request.LegalName)?null:request.LegalName.Trim();x.CountryCode=string.IsNullOrWhiteSpace(request.CountryCode)?x.CountryCode:request.CountryCode.Trim().ToUpperInvariant();x.TimeZone="Asia/Kolkata"; await dbContext.SaveChangesAsync(token); return Ok(new AcademySummary(x.Id,x.Name,x.LegalName,x.CountryCode,x.TimeZone,x.IsActive,x.SubscriptionPlan,x.SubscriptionStatus,x.EnabledModulesJson)); }
     [HttpPatch("{academyId:guid}/active")]
     public async Task<ActionResult> SetActive(Guid academyId, SetAcademyActiveRequest request, CancellationToken token)
     { var user=await userManager.GetUserAsync(User); if(user?.AcademyId!=academyId)return Forbid(); var x=await dbContext.Academies.SingleOrDefaultAsync(v=>v.Id==academyId,token); if(x is null)return NotFound(); x.IsActive=request.IsActive; await dbContext.SaveChangesAsync(token); return Ok(); }
@@ -102,4 +102,7 @@ public sealed record AcademySummary(
     string? LegalName,
     string CountryCode,
     string TimeZone,
-    bool IsActive);
+    bool IsActive,
+    string SubscriptionPlan,
+    string SubscriptionStatus,
+    string EnabledModulesJson);

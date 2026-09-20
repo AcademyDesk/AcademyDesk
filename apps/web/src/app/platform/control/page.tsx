@@ -168,12 +168,6 @@ export default function PlatformControlPage() {
         subscriptionPlan: form.get("plan"),
         subscriptionStatus: form.get("status"),
         subscriptionEndsAtUtc: form.get("endsAt") || null,
-        studentLimit: Number(form.get("studentLimit")),
-        staffLimit: Number(form.get("staffLimit")),
-        enabledModules: String(form.get("modules"))
-          .split(",")
-          .map((item) => item.trim())
-          .filter(Boolean),
       },
       "Tenant configuration saved.",
     );
@@ -412,7 +406,8 @@ export default function PlatformControlPage() {
                         className="mt-1 w-full rounded border border-slate-700 bg-slate-950 p-2"
                       >
                         <option>Trial</option>
-                        <option>Starter</option>
+                        <option>Launch</option>
+                        <option>Growth</option>
                         <option>Professional</option>
                         <option>Enterprise</option>
                       </select>
@@ -430,36 +425,11 @@ export default function PlatformControlPage() {
                         <option>Cancelled</option>
                       </select>
                     </label>
-                    <label>
-                      Student limit
-                      <input
-                        name="studentLimit"
-                        type="number"
-                        min="1"
-                        defaultValue={selected.studentLimit}
-                        className="mt-1 w-full rounded border border-slate-700 bg-slate-950 p-2"
-                      />
-                    </label>
-                    <label>
-                      Staff limit
-                      <input
-                        name="staffLimit"
-                        type="number"
-                        min="1"
-                        defaultValue={selected.staffLimit}
-                        className="mt-1 w-full rounded border border-slate-700 bg-slate-950 p-2"
-                      />
-                    </label>
-                    <label className="sm:col-span-2">
-                      Enabled modules
-                      <input
-                        name="modules"
-                        defaultValue={JSON.parse(
-                          selected.enabledModulesJson || "[]",
-                        ).join(", ")}
-                        className="mt-1 w-full rounded border border-slate-700 bg-slate-950 p-2"
-                      />
-                    </label>
+                    <section className="sm:col-span-2 rounded border border-cyan-800/60 bg-cyan-950/20 p-3 text-sm text-slate-300">
+                      <b className="text-cyan-200">Plan-managed access</b>
+                      <p className="mt-1">Selecting a plan automatically applies its student and staff limits, plus the included modules. Academy admins cannot change these entitlements.</p>
+                      <p className="mt-2 text-cyan-100">Current allowance: {selected.studentLimit} students · {selected.staffLimit} staff</p>
+                    </section>
                     <button
                       disabled={busy}
                       className="rounded bg-cyan-400 px-4 py-2 font-semibold text-slate-950 sm:col-span-2"

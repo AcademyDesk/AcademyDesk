@@ -12,7 +12,7 @@ namespace AcademyDesk.Api.Security;
 /// Prevents an authenticated user from reading or changing another academy's data.
 /// It applies to every controller action that has an academyId route parameter.
 /// </summary>
-public sealed class AcademyAccessFilter(UserManager<ApplicationUser> userManager, IdentityDbContext identityDb) : IAsyncActionFilter
+public sealed class AcademyAccessFilter(UserManager<ApplicationUser> userManager, IdentityDbContext identityDb, AcademyDeskDbContext academyDb) : IAsyncActionFilter
 {
     private static readonly HashSet<string> FinanceControllers = new(StringComparer.Ordinal)
     {
@@ -43,6 +43,15 @@ public sealed class AcademyAccessFilter(UserManager<ApplicationUser> userManager
             return;
         }
 
+        var controller = context.Controller.GetType().Name;
+        var requiredModule = SubscriptionPlanCatalog.ModuleForController(controller);
+        var academy = await academyDb.Academies.AsNoTracking().SingleOrDefaultAsync(x => x.Id == academyId, context.HttpContext.RequestAborted);
+        if (academy is null || !academy.IsActive || !SubscriptionPlanCatalog.Allows(academy.EnabledModulesJson, requiredModule))
+        {
+            context.Result = new ObjectResult(new { message = "This feature is not included in your academy subscription." }) { StatusCode = StatusCodes.Status403Forbidden };
+            return;
+        }
+
         var isAdministrator = await userManager.IsInRoleAsync(user, "Owner") ||
             await userManager.IsInRoleAsync(user, "AcademyAdmin");
         if (isAdministrator)
@@ -51,7 +60,6 @@ public sealed class AcademyAccessFilter(UserManager<ApplicationUser> userManager
             return;
         }
 
-        var controller = context.Controller.GetType().Name;
         var required = PermissionCatalog.RequiredFor(controller);
         if (required is null)
         {
