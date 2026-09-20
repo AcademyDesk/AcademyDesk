@@ -130,10 +130,8 @@ const administrationNavigation: readonly NavigationItem[] = [
   ["Academy control", "/admin/control"],
   ["Admin intelligence", "/admin-intelligence"],
   ["Data operations", "/data-operations"],
-  ["Access review", "/access-review"],
   ["Work queue", "/work-queue"],
   ["Compliance centre", "/compliance"],
-  ["Settings", "/settings"],
   ["Branches", "/branches"],
   ["Activity log", "/activity"],
 ];
