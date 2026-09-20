@@ -19,7 +19,10 @@ type Academy = {
 type Notice = { text: string; tone: "success" | "error" | "neutral" };
 type PlatformOverview = {
   openSupportCases: number;
+  totalBilled: number;
+  collectedBilling: number;
   outstandingBilling: number;
+  overdueInvoices: number;
   recentAudit: {
     id: string;
     action: string;
@@ -27,6 +30,7 @@ type PlatformOverview = {
     occurredAtUtc: string;
   }[];
 };
+const money = (value: number) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(value);
 type PlatformHealth = {
   api: string;
   database: string;
@@ -273,6 +277,21 @@ export default function PlatformPage() {
             <article>
               <span>Open support</span>
               <strong>{overview?.openSupportCases ?? 0}</strong>
+            </article>
+            <article className="platform-finance-kpi">
+              <span>Platform billed</span>
+              <strong>{money(overview?.totalBilled ?? 0)}</strong>
+              <small>Issued platform invoices</small>
+            </article>
+            <article className="platform-finance-kpi collected">
+              <span>Collected</span>
+              <strong>{money(overview?.collectedBilling ?? 0)}</strong>
+              <small>Paid platform invoices</small>
+            </article>
+            <article className="platform-finance-kpi outstanding">
+              <span>Outstanding</span>
+              <strong>{money(overview?.outstandingBilling ?? 0)}</strong>
+              <small>{overview?.overdueInvoices ?? 0} overdue invoice{overview?.overdueInvoices === 1 ? "" : "s"}</small>
             </article>
           </section>
           <section className="platform-main-grid">

@@ -2862,6 +2862,10 @@ html[data-theme="light"] .field-label { color: #475569; }
   letter-spacing: -0.05em;
   line-height: 0.95;
 }
+.platform-finance-kpi { position:relative; overflow:hidden; }
+.platform-finance-kpi::after { content:""; position:absolute; top:0; left:0; width:3px; height:100%; background:var(--ad-accent); }
+.platform-finance-kpi.collected::after { background:var(--ad-success); }
+.platform-finance-kpi.outstanding::after { background:var(--ad-warning); }
 .platform-kpis small {
   margin-top: 8px;
   color: var(--ad-success);

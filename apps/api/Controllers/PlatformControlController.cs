@@ -26,7 +26,10 @@ public sealed class PlatformControlController(AcademyDeskDbContext db, UserManag
             ActiveAcademies = await academies.CountAsync(x => x.IsActive, token),
             ActiveStudents = await db.Students.CountAsync(x => x.IsActive, token),
             OpenSupportCases = await db.PlatformSupportCases.CountAsync(x => x.Status != "Resolved" && x.Status != "Closed", token),
+            TotalBilled = await invoices.Where(x => x.Status != "Draft" && x.Status != "Void").SumAsync(x => (decimal?)x.Amount, token) ?? 0,
+            CollectedBilling = await invoices.Where(x => x.Status == "Paid").SumAsync(x => (decimal?)x.Amount, token) ?? 0,
             OutstandingBilling = await invoices.Where(x => x.Status == "Issued" || x.Status == "Overdue").SumAsync(x => (decimal?)x.Amount, token) ?? 0,
+            OverdueInvoices = await invoices.CountAsync(x => x.Status == "Overdue", token),
             Plans = await academies.GroupBy(x => x.SubscriptionPlan).Select(x => new { Plan = x.Key, Count = x.Count() }).ToListAsync(token),
             RecentAudit = await db.PlatformAuditEntries.AsNoTracking().OrderByDescending(x => x.OccurredAtUtc).Take(8).Select(x => new { x.Id, x.Action, x.EntityType, x.ActorName, x.OccurredAtUtc }).ToListAsync(token)
         });
