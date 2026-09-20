@@ -1,6 +1,7 @@
 "use client";
-import { useEffect, useState } from "react";
-import { academyApi, apiHeaders } from "@/lib/api";
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { academyApi, apiHeaders, apiUrl } from "@/lib/api";
 import { ThemeToggle } from "@/components/theme-toggle";
 type P = {
   firstName: string;
@@ -31,7 +32,7 @@ type T = "today" | "classes" | "learners" | "tasks" | "more";
 const tabs: [T, string, string][] = [
   ["today", "Today", "⌂"],
   ["classes", "Classes", "◷"],
-  ["learners", "Learners", "♙"],
+  ["learners", "Students", "♙"],
   ["tasks", "Teaching", "✓"],
   ["more", "More", "•••"],
 ];
@@ -96,13 +97,13 @@ export default function Teacher() {
       <header className="learner-topbar">
         <a href="/teacher" className="learner-brand">
           <span>A</span>
-          <b>AcademyDesk</b>
-          <small>Teacher</small>
+          <div><b>AcademyDesk</b><small>Teacher portal</small></div>
         </a>
-        <ThemeToggle />
+        <div className="learner-utilities"><ThemeToggle /><TeacherPortalProfile /></div>
       </header>
       <div className="learner-layout">
         <aside className="learner-sidebar">
+          <p className="learner-sidebar-label">Workspace</p>
           {tabs.map(([k, x, i]) => (
             <button key={k} data-active={t === k} onClick={() => setT(k)}>
               <i>{i}</i>
@@ -220,6 +221,40 @@ export default function Teacher() {
       </nav>
     </main>
   );
+}
+
+function TeacherPortalProfile() {
+  const router = useRouter();
+  const [account, setAccount] = useState<{ displayName?: string; profileImageUrl?: string | null }>({});
+  const [open, setOpen] = useState(false);
+  const [message, setMessage] = useState("");
+  const ref = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const name = account.displayName || "Teacher";
+  const initials = name.split(" ").map((part) => part[0]).join("").slice(0, 2).toUpperCase();
+  const imageUrl = account.profileImageUrl ? account.profileImageUrl.startsWith("http") ? account.profileImageUrl : `${apiUrl}${account.profileImageUrl}` : undefined;
+  useEffect(() => { void academyApi("/api/auth/session").then(async (response) => response.ok && setAccount(await response.json())).catch(() => undefined); }, []);
+  useEffect(() => {
+    if (!open) return;
+    const close = (event: MouseEvent) => { if (!ref.current?.contains(event.target as Node)) setOpen(false); };
+    const escape = (event: KeyboardEvent) => { if (event.key === "Escape") setOpen(false); };
+    document.addEventListener("mousedown", close); document.addEventListener("keydown", escape);
+    return () => { document.removeEventListener("mousedown", close); document.removeEventListener("keydown", escape); };
+  }, [open]);
+  async function upload(event: React.ChangeEvent<HTMLInputElement>) {
+    const image = event.target.files?.[0]; event.target.value = ""; if (!image) return;
+    setMessage("Uploading…"); const body = new FormData(); body.append("image", image);
+    const response = await academyApi("/api/auth/session/profile-image", { method: "POST", body }); const result = await response.json().catch(() => null);
+    if (!response.ok) return setMessage(result?.message ?? "Profile image could not be saved.");
+    setAccount((current) => ({ ...current, profileImageUrl: result.profileImageUrl })); setMessage(""); setOpen(false);
+  }
+  function signOut() { window.localStorage.removeItem("academydesk.accessToken"); window.localStorage.removeItem("academydesk.refreshToken"); router.push("/login"); }
+  return <div className="learner-profile" ref={ref}>
+    <button type="button" className="learner-profile-trigger" onClick={() => { setMessage(""); setOpen((value) => !value); }} aria-label="Open profile menu" aria-expanded={open}>
+      {imageUrl ? <img src={imageUrl} alt="Profile" /> : <span>{initials}</span>}
+    </button>
+    {open && <div className="learner-profile-menu" role="menu"><strong>{name}</strong><small>Teacher portal</small><input ref={inputRef} className="sr-only" type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => void upload(event)} /><button type="button" onClick={() => inputRef.current?.click()}>Edit profile picture</button><button type="button" onClick={signOut}>Sign out</button>{message && <p role="status">{message}</p>}</div>}
+  </div>;
 }
 function K({ a, b, c }: { a: string; b: string; c: string }) {
   return (
