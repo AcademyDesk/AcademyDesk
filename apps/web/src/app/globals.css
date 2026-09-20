@@ -1795,6 +1795,38 @@ html[data-theme="light"] .field-label { color: #475569; }
   border-color: var(--ad-danger);
   background: color-mix(in srgb, var(--ad-danger) 20%, var(--ad-surface));
 }
+.finance-adjustment-form {
+  display: grid;
+  gap: 14px;
+}
+.finance-adjustment-form > :is(h3, p, button) { grid-column: 1 / -1; }
+.finance-adjustment-form > h3 { margin: 0; }
+.finance-adjustment-form > p { margin: 0; }
+.finance-adjustment-field {
+  display: grid !important;
+  grid-template-columns: minmax(132px, 0.65fr) minmax(0, 1.35fr);
+  gap: 16px;
+  align-items: center;
+  margin: 0 !important;
+  color: var(--ad-text-muted) !important;
+  font-size: 0.82rem !important;
+  font-weight: 650;
+}
+.finance-adjustment-field-first { margin-top: 8px !important; }
+.finance-adjustment-field > span { min-width: 0; }
+.finance-adjustment-field .field {
+  width: 100%;
+  margin-top: 0 !important;
+}
+.finance-adjustment-reason { align-items: start; }
+.finance-adjustment-reason > span { padding-top: 11px; }
+.finance-adjustment-reason textarea { min-height: 112px !important; }
+.finance-adjustment-form > .enterprise-action-button { justify-self: start; margin-top: 4px; }
+@media (max-width: 620px) {
+  .finance-adjustment-field { grid-template-columns: 1fr; gap: 7px; }
+  .finance-adjustment-reason > span { padding-top: 0; }
+  .finance-adjustment-form > .enterprise-action-button { width: 100%; }
+}
 .student-summary-tile {
   display: block;
   min-height: 154px;

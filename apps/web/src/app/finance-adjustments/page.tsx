@@ -160,14 +160,17 @@ export default function AdjustmentsPage() {
         </p>
       )}
       <section className="mt-5 grid gap-5 xl:grid-cols-[0.75fr_1.25fr]">
-        <form onSubmit={save} className="surface-panel rounded-xl p-5">
+        <form
+          onSubmit={save}
+          className="finance-adjustment-form surface-panel rounded-xl p-5"
+        >
           <h3 className="font-semibold">New adjustment request</h3>
           <p className="mt-1 text-sm text-slate-400">
             An approved request updates the invoice balance. Rejected requests
             remain in the register for audit.
           </p>
-          <label className="mt-5 block text-sm text-slate-300">
-            Invoice
+          <label className="finance-adjustment-field finance-adjustment-field-first">
+            <span>Invoice</span>
             <select required name="invoiceId" className="field mt-2">
               <option value="">Select invoice…</option>
               {invoices.map((invoice) => (
@@ -177,8 +180,8 @@ export default function AdjustmentsPage() {
               ))}
             </select>
           </label>
-          <label className="mt-3 block text-sm text-slate-300">
-            Adjustment type
+          <label className="finance-adjustment-field">
+            <span>Adjustment type</span>
             <select name="type" className="field mt-2">
               <option>Discount</option>
               <option>Scholarship</option>
@@ -187,8 +190,8 @@ export default function AdjustmentsPage() {
               <option>CreditNote</option>
             </select>
           </label>
-          <label className="mt-3 block text-sm text-slate-300">
-            Amount
+          <label className="finance-adjustment-field">
+            <span>Amount</span>
             <input
               required
               name="amount"
@@ -199,8 +202,8 @@ export default function AdjustmentsPage() {
               placeholder="0.00"
             />
           </label>
-          <label className="mt-3 block text-sm text-slate-300">
-            Business reason
+          <label className="finance-adjustment-field finance-adjustment-reason">
+            <span>Business reason</span>
             <textarea
               required
               name="reason"
