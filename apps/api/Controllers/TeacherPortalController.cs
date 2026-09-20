@@ -13,7 +13,8 @@ namespace AcademyDesk.Api.Controllers;
 [Route("api/teacher")]
 public sealed class TeacherPortalController(
     AcademyDeskDbContext dbContext,
-    UserManager<ApplicationUser> userManager) : ControllerBase
+    UserManager<ApplicationUser> userManager,
+    IWebHostEnvironment environment) : ControllerBase
 {
     private static readonly string[] AttendanceStatuses = ["Present", "Absent", "Late", "Excused", "Online"];
 
@@ -30,7 +31,7 @@ public sealed class TeacherPortalController(
         var batches = await dbContext.Batches.AsNoTracking()
             .Where(x => x.AcademyId == user.AcademyId && x.TeacherId == user.TeacherId && x.IsActive)
             .OrderBy(x => x.Name)
-            .Select(x => new TeacherBatchSummary(x.Id, x.Name, x.Capacity))
+            .Select(x => new TeacherBatchSummary(x.Id, x.Name, x.Capacity, x.DeliveryMode, x.MeetingLink, x.RoomName))
             .ToListAsync(cancellationToken);
         var batchIds = batches.Select(x => x.Id).ToArray();
         var sessions = await dbContext.ClassSessions.AsNoTracking()
@@ -323,6 +324,81 @@ public sealed class TeacherPortalController(
         return Ok(new TeacherAssessmentResultSummary(result.Id, result.StudentId, student.FirstName + " " + student.LastName, result.Score, result.Grade, result.Remarks, result.IsPublished));
     }
 
+    [HttpGet("resources")]
+    public async Task<ActionResult<IReadOnlyList<TeacherResourceSummary>>> Resources(Guid? batchId, CancellationToken cancellationToken)
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user?.AcademyId is null || user.TeacherId is null) return Forbid();
+        var items = await dbContext.LearningResources.AsNoTracking()
+            .Where(x => x.AcademyId == user.AcademyId && (!batchId.HasValue || x.BatchId == batchId) && x.BatchId.HasValue && dbContext.Batches.Any(b => b.Id == x.BatchId && b.TeacherId == user.TeacherId))
+            .OrderByDescending(x => x.CreatedAtUtc)
+            .Select(x => new TeacherResourceSummary(x.Id, x.BatchId!.Value, x.StudentId, x.ClassSessionId, x.Title, x.Description, x.Type, x.Url, x.CreatedAtUtc))
+            .ToListAsync(cancellationToken);
+        return Ok(items);
+    }
+
+    [HttpPost("resources/note")]
+    public async Task<ActionResult<TeacherResourceSummary>> CreateClassNote(TeacherCreateResourceNoteRequest request, CancellationToken cancellationToken)
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user?.AcademyId is null || user.TeacherId is null || string.IsNullOrWhiteSpace(request.Title) || string.IsNullOrWhiteSpace(request.Notes) || !await OwnsBatch(user, request.BatchId, cancellationToken))
+            return BadRequest(new { message = "Select one of your batches and provide a title and note." });
+        if (request.StudentId.HasValue && !await dbContext.Enrollments.AnyAsync(x => x.AcademyId == user.AcademyId && x.BatchId == request.BatchId && x.StudentId == request.StudentId && x.Status == "Active", cancellationToken))
+            return BadRequest(new { message = "The selected student is not active in this batch." });
+        var resource = new LearningResource { AcademyId = user.AcademyId.Value, BatchId = request.BatchId, StudentId = request.StudentId, ClassSessionId = request.ClassSessionId, Title = request.Title.Trim(), Description = request.Notes.Trim(), Type = string.IsNullOrWhiteSpace(request.Type) ? "Class note" : request.Type.Trim(), Url = $"note://{Guid.NewGuid():N}", IsPublished = true };
+        dbContext.LearningResources.Add(resource);
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return Ok(ResourceSummary(resource));
+    }
+
+    [HttpPost("resources/upload")]
+    [RequestSizeLimit(50_000_000)]
+    public async Task<ActionResult<TeacherResourceSummary>> UploadClassMaterial([FromForm] TeacherUploadResourceRequest request, CancellationToken cancellationToken)
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user?.AcademyId is null || user.TeacherId is null || request.File is null || request.File.Length == 0 || !await OwnsBatch(user, request.BatchId, cancellationToken))
+            return BadRequest(new { message = "Select one of your batches and a file to upload." });
+        if (request.File.Length > 50_000_000) return BadRequest(new { message = "Files must be 50 MB or smaller." });
+        if (request.StudentId.HasValue && !await dbContext.Enrollments.AnyAsync(x => x.AcademyId == user.AcademyId && x.BatchId == request.BatchId && x.StudentId == request.StudentId && x.Status == "Active", cancellationToken))
+            return BadRequest(new { message = "The selected student is not active in this batch." });
+        var extension = Path.GetExtension(request.File.FileName).ToLowerInvariant();
+        var allowed = new[] { ".jpg", ".jpeg", ".png", ".webp", ".pdf", ".mp3", ".m4a", ".wav", ".mp4", ".mov", ".webm", ".doc", ".docx" };
+        if (!allowed.Contains(extension)) return BadRequest(new { message = "Upload a photo, PDF, audio, video, or document." });
+        var folder = Path.Combine(environment.WebRootPath, "uploads", "teacher-materials");
+        Directory.CreateDirectory(folder);
+        var fileName = $"{Guid.NewGuid():N}{extension}";
+        await using (var stream = System.IO.File.Create(Path.Combine(folder, fileName))) await request.File.CopyToAsync(stream, cancellationToken);
+        var resource = new LearningResource { AcademyId = user.AcademyId.Value, BatchId = request.BatchId, StudentId = request.StudentId, ClassSessionId = request.ClassSessionId, Title = string.IsNullOrWhiteSpace(request.Title) ? Path.GetFileNameWithoutExtension(request.File.FileName) : request.Title.Trim(), Description = request.Description?.Trim(), Type = string.IsNullOrWhiteSpace(request.Type) ? "Class material" : request.Type.Trim(), Url = $"/uploads/teacher-materials/{fileName}", IsPublished = true };
+        dbContext.LearningResources.Add(resource);
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return Ok(ResourceSummary(resource));
+    }
+
+    [HttpGet("progress")]
+    public async Task<ActionResult<TeacherProgressSummary>> Progress(CancellationToken cancellationToken)
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user?.AcademyId is null || user.TeacherId is null) return Forbid();
+        var sessions = dbContext.ClassSessions.AsNoTracking().Where(x => x.AcademyId == user.AcademyId && x.TeacherId == user.TeacherId);
+        var completed = await sessions.CountAsync(x => x.Status == "Completed", cancellationToken);
+        var upcoming = await sessions.CountAsync(x => (x.Status == "Scheduled" || x.Status == "InProgress") && x.StartUtc >= DateTime.UtcNow, cancellationToken);
+        var attendance = await dbContext.AttendanceRecords.AsNoTracking().Where(x => x.AcademyId == user.AcademyId && dbContext.ClassSessions.Any(s => s.Id == x.ClassSessionId && s.TeacherId == user.TeacherId)).ToListAsync(cancellationToken);
+        var present = attendance.Count(x => x.Status is "Present" or "Late" or "Online");
+        return Ok(new TeacherProgressSummary(completed, upcoming, attendance.Count, present));
+    }
+
+    [HttpGet("payments")]
+    public async Task<ActionResult<TeacherPaymentSummary>> Payments(CancellationToken cancellationToken)
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user?.AcademyId is null || user.TeacherId is null) return Forbid();
+        var profile = await dbContext.PayrollProfiles.AsNoTracking().FirstOrDefaultAsync(x => x.AcademyId == user.AcademyId && x.TeacherId == user.TeacherId && x.IsActive, cancellationToken);
+        IReadOnlyList<TeacherPayslipSummary> payouts = profile is null ? [] : await dbContext.PayrollPayouts.AsNoTracking().Where(x => x.AcademyId == user.AcademyId && x.PayrollProfileId == profile.Id).OrderByDescending(x => x.PaidAtUtc).Take(12).Select(x => new TeacherPayslipSummary(x.Id, x.PayslipNumber, x.PeriodLabel, x.NetAmount, x.Currency, x.Status, x.PaidAtUtc)).ToListAsync(cancellationToken);
+        return Ok(new TeacherPaymentSummary(profile?.PaymentModel, profile?.MonthlyAmount, profile?.AmountPerCycle, profile?.SessionsPerCycle, payouts));
+    }
+
+    private static TeacherResourceSummary ResourceSummary(LearningResource resource) => new(resource.Id, resource.BatchId!.Value, resource.StudentId, resource.ClassSessionId, resource.Title, resource.Description, resource.Type, resource.Url, resource.CreatedAtUtc);
+
     private async Task<bool> OwnsBatch(ApplicationUser user, Guid batchId, CancellationToken token) =>
         await dbContext.Batches.AnyAsync(x => x.Id == batchId && x.AcademyId == user.AcademyId && x.TeacherId == user.TeacherId, token);
 
@@ -440,7 +516,7 @@ public sealed class TeacherPortalController(
 }
 
 public sealed record TeacherPortalSummary(string FirstName, string LastName, IReadOnlyList<TeacherBatchSummary> Batches, IReadOnlyList<TeacherSessionSummary> Sessions);
-public sealed record TeacherBatchSummary(Guid Id, string Name, int Capacity);
+public sealed record TeacherBatchSummary(Guid Id, string Name, int Capacity, string DeliveryMode, string? MeetingLink, string? RoomName);
 public sealed record TeacherSessionSummary(Guid Id, Guid BatchId, DateTime StartUtc, DateTime EndUtc, string DeliveryMode, string? RoomName, string Status);
 public sealed record TeacherRosterStudent(Guid Id, string FirstName, string LastName);
 public sealed record TeacherMarkAttendanceRequest(Guid StudentId, string Status, string? Notes);
@@ -466,3 +542,9 @@ public sealed record TeacherCreateAssessmentRequest(Guid BatchId, string Title, 
 public sealed record TeacherPublishAssessmentRequest(bool IsPublished);
 public sealed record TeacherAssessmentResultSummary(Guid Id, Guid StudentId, string StudentName, decimal Score, string? Grade, string? Remarks, bool IsPublished);
 public sealed record TeacherRecordAssessmentResultRequest(Guid StudentId, decimal Score, string? Grade, string? Remarks, bool IsPublished);
+public sealed record TeacherResourceSummary(Guid Id, Guid BatchId, Guid? StudentId, Guid? ClassSessionId, string Title, string? Description, string Type, string Url, DateTime CreatedAtUtc);
+public sealed record TeacherCreateResourceNoteRequest(Guid BatchId, Guid? StudentId, Guid? ClassSessionId, string Title, string Notes, string? Type);
+public sealed class TeacherUploadResourceRequest { public Guid BatchId { get; set; } public Guid? StudentId { get; set; } public Guid? ClassSessionId { get; set; } public string? Title { get; set; } public string? Description { get; set; } public string? Type { get; set; } public IFormFile? File { get; set; } }
+public sealed record TeacherProgressSummary(int CompletedClasses, int UpcomingClasses, int AttendanceRecords, int PresentOrOnline);
+public sealed record TeacherPaymentSummary(string? PaymentModel, decimal? MonthlyAmount, decimal? AmountPerCycle, int? SessionsPerCycle, IReadOnlyList<TeacherPayslipSummary> Payslips);
+public sealed record TeacherPayslipSummary(Guid Id, string PayslipNumber, string PeriodLabel, decimal NetAmount, string Currency, string Status, DateTime PaidAtUtc);

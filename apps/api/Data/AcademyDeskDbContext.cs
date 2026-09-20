@@ -462,6 +462,7 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
             entity.Property(x => x.Type).HasMaxLength(40).IsRequired();
             entity.Property(x => x.Url).HasMaxLength(2000).IsRequired();
             entity.HasIndex(x => new { x.AcademyId, x.BatchId, x.IsPublished });
+            entity.HasIndex(x => new { x.AcademyId, x.ClassSessionId, x.StudentId });
         });
         modelBuilder.Entity<CourseModule>(entity=>{entity.Property(x=>x.Title).HasMaxLength(250).IsRequired();entity.Property(x=>x.Description).HasMaxLength(2000);entity.HasIndex(x=>new{x.AcademyId,x.CourseId,x.Sequence}).IsUnique();});
         modelBuilder.Entity<LessonPlan>(entity=>{entity.Property(x=>x.Title).HasMaxLength(250).IsRequired();entity.Property(x=>x.Objectives).HasMaxLength(2000);entity.Property(x=>x.Status).HasMaxLength(30).IsRequired();entity.HasIndex(x=>new{x.AcademyId,x.BatchId,x.ClassSessionId});});

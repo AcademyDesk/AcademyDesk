@@ -38,7 +38,7 @@ public static class DevelopmentIdentitySeeder
         await db.SaveChangesAsync();
 
         var pianoBatch = await EnsureBatch(db, academy.Id, piano.Id, hayansh.Id, "Piano Foundations — Evening", "PF-SEP-01", "Offline", "Studio 1");
-        var violinBatch = await EnsureBatch(db, academy.Id, violin.Id, ananya.Id, "Violin Essentials — Weekend", "VE-SEP-01", "Hybrid", "Studio 2");
+        var violinBatch = await EnsureBatch(db, academy.Id, violin.Id, ananya.Id, "Violin Essentials — Weekend", "VE-SEP-01", "Hybrid", "https://meet.example.com/violin");
         _ = await EnsureBatch(db, academy.Id, vocals.Id, arjun.Id, "Contemporary Vocals — Online", "CV-SEP-01", "Online", "https://meet.example.com/vocals");
         var roster = new[]
         {
@@ -56,6 +56,22 @@ public static class DevelopmentIdentitySeeder
             db.ClassSessions.Add(new ClassSession { AcademyId = academy.Id, BatchId = pianoBatch.Id, TeacherId = hayansh.Id, StartUtc = nextSession, EndUtc = nextSession.AddHours(1), DeliveryMode = "Offline", RoomName = "Studio 1", Status = "Scheduled" });
         if (!await db.ClassSessions.AnyAsync(x => x.AcademyId == academy.Id && x.BatchId == violinBatch.Id && x.StartUtc == nextSession.AddDays(1)))
             db.ClassSessions.Add(new ClassSession { AcademyId = academy.Id, BatchId = violinBatch.Id, TeacherId = ananya.Id, StartUtc = nextSession.AddDays(1), EndUtc = nextSession.AddDays(1).AddHours(1), DeliveryMode = "Hybrid", RoomName = "Studio 2", Status = "Scheduled" });
+        await db.SaveChangesAsync();
+        var hayanshPayroll = await db.PayrollProfiles.FirstOrDefaultAsync(x => x.AcademyId == academy.Id && x.TeacherId == hayansh.Id);
+        if (hayanshPayroll is null)
+        {
+            hayanshPayroll = new PayrollProfile { AcademyId = academy.Id, TeacherId = hayansh.Id, WorkerType = "Teacher", WorkerName = "Hayansh Teacher", PaymentModel = "Monthly", MonthlyAmount = 32000m, EffectiveFrom = new DateOnly(2025, 4, 1) };
+            db.PayrollProfiles.Add(hayanshPayroll);
+            await db.SaveChangesAsync();
+        }
+        if (!await db.PayrollPayouts.AnyAsync(x => x.AcademyId == academy.Id && x.PayrollProfileId == hayanshPayroll.Id))
+            db.PayrollPayouts.Add(new PayrollPayout { AcademyId = academy.Id, PayrollProfileId = hayanshPayroll.Id, PayslipNumber = "PS-DEMO-1001", PeriodLabel = "August 2026", GrossAmount = 32000m, Deductions = 1200m, NetAmount = 30800m, Status = "Paid", PaymentMethod = "Bank transfer", Reference = "DEMO-PAY-1001", PaidAtUtc = DateTime.UtcNow.AddDays(-12) });
+        if (!await db.LearningResources.AnyAsync(x => x.AcademyId == academy.Id && x.BatchId == pianoBatch.Id))
+        {
+            db.LearningResources.AddRange(
+                new LearningResource { AcademyId = academy.Id, BatchId = pianoBatch.Id, Title = "Week 1 — C major scale practice", Description = "Practice hands separately at a slow tempo for 10 minutes each day.", Type = "Homework material", Url = "note://piano-week-1", IsPublished = true },
+                new LearningResource { AcademyId = academy.Id, BatchId = pianoBatch.Id, Title = "Lesson note — posture and hand shape", Description = "Use this class note to revise the technique covered in today’s lesson.", Type = "Class note", Url = "note://piano-posture", IsPublished = true });
+        }
         await db.SaveChangesAsync();
 
         // Development-only sample records make the Platform Owner workspace useful
