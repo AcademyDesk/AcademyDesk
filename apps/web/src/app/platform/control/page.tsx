@@ -370,9 +370,11 @@ export default function PlatformControlPage() {
           </div>
         </header>
         <div className="platform-content platform-control-content">
-          <div className="flex flex-wrap items-end justify-between gap-4">
+          <header className="platform-control-heading">
+            <p>Platform / control centre</p>
             <h1 className="platform-workspace-title">{tab}</h1>
-          </div>
+            <span>Manage tenant configuration, support, billing and platform operations with controlled access.</span>
+          </header>
           {message && (
             <p className="mt-4 rounded-lg border border-slate-700 bg-slate-900 p-3 text-sm text-slate-300">
               {message}

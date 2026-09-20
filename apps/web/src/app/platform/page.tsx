@@ -238,7 +238,11 @@ export default function PlatformPage() {
         </header>
         <div className="platform-content">
           <section id="overview" className="platform-heading">
-            <h2 className="platform-workspace-title">Academies</h2>
+            <div>
+              <p className="platform-page-eyebrow">Platform / portfolio</p>
+              <h2 className="platform-workspace-title">Academies</h2>
+              <span>Monitor academy health, commercial activity and tenant access from one workspace.</span>
+            </div>
             <button
               type="button"
               className="enterprise-primary-action"
