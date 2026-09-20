@@ -89,6 +89,15 @@ export default function Teacher() {
     else setM("Attendance could not be saved.");
     setBusy("");
   }
+  async function selectClassroomSession(id: string) {
+    setSid(id);
+    setRoster([]);
+    setAttendance([]);
+    if (id) await loadRoster(id);
+  }
+  function updateSessionStatus(id: string, status: "InProgress" | "Completed") {
+    setP((current) => current ? { ...current, sessions: current.sessions.map((session) => session.id === id ? { ...session, status } : session) } : current);
+  }
   const name = (id: string) =>
     p?.batches.find((x) => x.id === id)?.name || "Assigned batch";
   return (
@@ -101,7 +110,7 @@ export default function Teacher() {
         <nav className="enterprise-nav-section teacher-portal-nav" aria-label="Teacher workspace">
           <p>Teacher portal</p>
           {tabs.map(([k, x, i]) => (
-            <button key={k} data-active={t === k} onClick={() => setT(k)}>
+            <button key={k} data-active={t === k} onClick={() => { if (k === "classroom") { setSid(""); setRoster([]); setAttendance([]); } setT(k); }}>
               <i>{i}</i>
               {x}
             </button>
@@ -121,10 +130,10 @@ export default function Teacher() {
           ) : (
             p && (
               <>
-                {t === "classroom" && <TeacherActiveClassBanner batch={p.batches.find((batch) => batch.id === p.sessions.find((session) => session.id === sid)?.batchId)} rosterCount={roster.length} status={p.sessions.find((session) => session.id === sid)?.status} />}
-                {t === "classroom" && <TeacherClassroomHero batch={p.batches.find((batch) => batch.id === p.sessions.find((session) => session.id === sid)?.batchId)} sessionId={sid} sessionStatus={p.sessions.find((session) => session.id === sid)?.status} />}
-                {t === "classroom" && <TeacherAttendanceRoster sessionId={sid} roster={roster} attendance={attendance} busy={busy} onMark={mark} />}
-                {t === "classroom" && <TeacherClassroom batches={p.batches} sessionId={sid} sessionBatchId={p.sessions.find((session) => session.id === sid)?.batchId} sessionStatus={p.sessions.find((session) => session.id === sid)?.status} roster={roster} />}
+                {t === "classroom" && p.sessions.find((session) => session.id === sid)?.status === "InProgress" && <TeacherActiveClassBanner batch={p.batches.find((batch) => batch.id === p.sessions.find((session) => session.id === sid)?.batchId)} rosterCount={roster.length} status="In progress" />}
+                {t === "classroom" && sid && <TeacherClassroomHero batch={p.batches.find((batch) => batch.id === p.sessions.find((session) => session.id === sid)?.batchId)} sessionId={sid} sessionStatus={p.sessions.find((session) => session.id === sid)?.status} onStatusChange={(status) => updateSessionStatus(sid, status)} />}
+                {t === "classroom" && sid && <TeacherAttendanceRoster sessionId={sid} roster={roster} attendance={attendance} busy={busy} onMark={mark} />}
+                {t === "classroom" && <TeacherClassroom batches={p.batches} sessions={p.sessions} sessionId={sid} roster={roster} onSessionSelect={(id) => void selectClassroomSession(id)} />}
                 {t !== "classroom" && <header className="learner-heading">
                   <p>Teacher workspace</p>
                   <h1>
@@ -327,24 +336,26 @@ function TeacherActiveClassBanner({ batch, rosterCount, status }: { batch?: Teac
     <span className="teacher-live-dot" /><div><b>Active class</b><small>{batch ? `${batch.name} · ${batch.capacity === 1 ? "1:1 lesson" : `${rosterCount || batch.capacity} students`}` : "Select a class to begin"}</small></div><em>{status ?? "Ready"}</em>
   </section>;
 }
-function TeacherClassroomHero({ batch, sessionId, sessionStatus }: { batch?: TeacherBatch; sessionId: string; sessionStatus?: string }) {
+function TeacherClassroomHero({ batch, sessionId, sessionStatus, onStatusChange }: { batch?: TeacherBatch; sessionId: string; sessionStatus?: string; onStatusChange: (status: "InProgress" | "Completed") => void }) {
   const isLiveDelivery = batch?.deliveryMode === "Online" || batch?.deliveryMode === "Hybrid";
   async function updateStatus(status: "InProgress" | "Completed") {
     if (!sessionId) return;
-    await academyApi(`/api/teacher/sessions/${sessionId}/status`, { method: "PATCH", headers: apiHeaders(true), body: JSON.stringify({ status }) });
+    const response = await academyApi(`/api/teacher/sessions/${sessionId}/status`, { method: "PATCH", headers: apiHeaders(true), body: JSON.stringify({ status }) });
+    if (response.ok) onStatusChange(status);
   }
   async function startOnlineClass() {
     if (!batch?.meetingLink) return;
     await updateStatus("InProgress");
     window.open(batch.meetingLink, "_blank", "noopener,noreferrer");
   }
+  if (!batch) return null;
   return <section className="teacher-classroom-hero">
     <div><p>Classroom</p><h2>{batch?.name ?? "Select a class"}</h2><span>{batch?.deliveryMode ?? ""}{batch?.roomName ? ` · ${batch.roomName}` : ""}</span></div>
-    <div className="teacher-classroom-hero-actions">{isLiveDelivery && sessionId && <button type="button" className="enterprise-action-button" onClick={() => void startOnlineClass()}>{sessionStatus === "InProgress" ? "Rejoin online class" : "Start online class"}</button>}{sessionId && sessionStatus === "InProgress" && <button type="button" className="enterprise-action-button enterprise-action-button-secondary" onClick={() => void updateStatus("Completed")}>Complete class</button>}</div>
+    <div className="teacher-classroom-hero-actions">{sessionId && sessionStatus !== "InProgress" && sessionStatus !== "Completed" && <button type="button" className="enterprise-action-button" onClick={() => void (isLiveDelivery ? startOnlineClass() : updateStatus("InProgress"))}>{isLiveDelivery ? "Start online class" : "Start class"}</button>}{isLiveDelivery && sessionId && sessionStatus === "InProgress" && <button type="button" className="enterprise-action-button" onClick={() => void startOnlineClass()}>Rejoin online class</button>}{sessionId && sessionStatus === "InProgress" && <button type="button" className="enterprise-action-button enterprise-action-button-secondary" onClick={() => void updateStatus("Completed")}>Complete class</button>}</div>
   </section>;
 }
-function TeacherClassroom({ batches, sessionId, sessionBatchId, sessionStatus, roster }: { batches: TeacherBatch[]; sessionId: string; sessionBatchId?: string; sessionStatus?: string; roster: S[] }) {
-  const [batchId, setBatchId] = useState(batches[0]?.id ?? "");
+function TeacherClassroom({ batches, sessions, sessionId, roster, onSessionSelect }: { batches: TeacherBatch[]; sessions: P["sessions"]; sessionId: string; roster: S[]; onSessionSelect: (id: string) => void }) {
+  const [batchId, setBatchId] = useState("");
   const [studentId, setStudentId] = useState("");
   const [noteType, setNoteType] = useState("Class note");
   const [materialType, setMaterialType] = useState("Class material");
@@ -372,7 +383,7 @@ function TeacherClassroom({ batches, sessionId, sessionBatchId, sessionStatus, r
     if (materials.ok) setResources(await materials.json());
     if (history.ok) setActivity(await history.json());
   }
-  useEffect(() => { if (sessionBatchId) setBatchId(sessionBatchId); }, [sessionBatchId]);
+  useEffect(() => { setBatchId(sessions.find((session) => session.id === sessionId)?.batchId ?? ""); }, [sessionId, sessions]);
   useEffect(() => { void refresh(); }, [batchId, studentId]);
   async function addNote(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault(); const form = new FormData(event.currentTarget);
@@ -397,18 +408,19 @@ function TeacherClassroom({ batches, sessionId, sessionBatchId, sessionStatus, r
     if (response.ok) { event.currentTarget.reset(); await refresh(); }
   }
   return <>
-    <section className="teacher-classroom-controls">
-      <label>Class<TeacherDropdown label="Class" value={batchId} onChange={(value) => { setBatchId(value); setStudentId(""); }} options={[{ value: "", label: "Select class" }, ...batches.map((batch) => ({ value: batch.id, label: `${batch.name}${batch.capacity === 1 ? " · 1:1" : ""}` }))]} /></label>
-      <label>Teaching focus<TeacherDropdown label="Teaching focus" value={studentId} onChange={setStudentId} options={[{ value: "", label: "Whole class" }, ...roster.map((student) => ({ value: student.id, label: `${student.firstName} ${student.lastName}` }))]} /></label>
-      <aside><b>{selectedStudent ? `${selectedStudent.firstName} ${selectedStudent.lastName}` : "Class overview"}</b><span>History and homework are filtered to this selection.</span></aside>
+    <section className="teacher-classroom-controls" data-selected={Boolean(selected)}>
+      <label>Class<TeacherDropdown label="Class" value={batchId} onChange={(value) => { setBatchId(value); setStudentId(""); const nextSession = sessions.find((session) => session.batchId === value && session.status !== "Completed") ?? sessions.find((session) => session.batchId === value); onSessionSelect(nextSession?.id ?? ""); }} options={[{ value: "", label: "Select class" }, ...batches.map((batch) => ({ value: batch.id, label: `${batch.name}${batch.capacity === 1 ? " · 1:1" : ""}` }))]} /></label>
+      {selected && <label>Teaching focus<TeacherDropdown label="Teaching focus" value={studentId} onChange={setStudentId} options={[{ value: "", label: "Whole class" }, ...roster.map((student) => ({ value: student.id, label: `${student.firstName} ${student.lastName}` }))]} /></label>}
     </section>
+    {selected && <>
     <section className="teacher-classroom-grid">
-      <Panel title="Capture today’s learning"><p className="teacher-panel-intro">Record the lesson, progress, and the next practice step.</p><form className="learner-form teacher-note-form" onSubmit={(event) => void addNote(event)}><TeacherDropdown name="type" label="Learning record type" value={noteType} onChange={setNoteType} options={["Class note", "Student remark", "Music repertoire progress", "Syllabus / textbook reference"].map((value) => ({ value, label: value }))} /><input required name="title" placeholder="Topic, repertoire, chapter, or page" /><textarea required name="notes" placeholder="What was taught, progress, feedback, and the next practice step" /><button>Save learning record</button></form></Panel>
-      <Panel title="Class material"><p className="teacher-panel-intro">Add a file or record a reference audio clip students should revisit.</p><form className="learner-form teacher-upload-form" onSubmit={(event) => void addFile(event)}><TeacherDropdown name="type" label="Material type" value={materialType} onChange={setMaterialType} options={["Class material", "Homework material", "Reference recording", "Syllabus / textbook"].map((value) => ({ value, label: value }))} /><input name="title" placeholder="File title" /><input name="description" placeholder="Short description" /><label className="teacher-file-picker"><input name="file" type="file" accept="image/*,.pdf,audio/*,video/*,.doc,.docx" onChange={(event) => stageFile(event.target.files?.[0] ?? null)} /><span>{pendingFile ? pendingFile.name : "Choose photo, video, audio, PDF, or document"}</span></label>{pendingFile && <div className="teacher-file-preview"><b>Ready to review</b>{pendingFile.type.startsWith("audio/") && <audio controls src={pendingPreviewUrl} />}{pendingFile.type.startsWith("video/") && <video controls src={pendingPreviewUrl} />}{pendingFile.type.startsWith("image/") && <img src={pendingPreviewUrl} alt="Selected upload preview" />} {!/^(audio|video|image)\//.test(pendingFile.type) && <small>{pendingFile.name} · {(pendingFile.size / 1024 / 1024).toFixed(1)} MB</small>}<button type="button" className="teacher-clear-file" onClick={() => stageFile(null)}>Remove</button></div>}<div className="teacher-material-actions"><button disabled={!pendingFile}>Upload confirmed file</button>{!recording ? <button type="button" className="teacher-mic-button" aria-label="Start audio recording" title="Start audio recording" onClick={() => void toggleRecording()}>🎙</button> : <><span className="teacher-recording-state">● Recording{recordingPaused ? " paused" : ""}</span><button type="button" className="enterprise-action-button enterprise-action-button-secondary" onClick={toggleRecordingPause}>{recordingPaused ? "Resume" : "Pause"}</button><button type="button" className="teacher-stop-button" onClick={() => void toggleRecording()}>Stop</button></>}</div></form></Panel>
-      <Panel title={selectedStudent ? `Homework for ${selectedStudent.firstName}` : "Homework for the class"}><p className="teacher-panel-intro">Give a clear practice task, add a due date if needed, and keep every assignment visible below.</p><form className="learner-form" onSubmit={(event) => void assignHomework(event)}><input required name="title" placeholder="Practice or homework title" /><textarea name="description" placeholder="Clear instructions, duration, or textbook page" /><input name="dueAtUtc" type="datetime-local" /><button>Assign homework</button></form><div className="teacher-upload-divider"><span>Assigned work</span><small>{selectedStudent ? "Private tasks for this student" : "Tasks shared with the class"}</small></div><div className="teacher-activity-list">{activity.homework.length ? activity.homework.map((item) => <article key={item.id}><b>{item.title}</b><small>{item.studentId ? "Individual" : "Whole class"}{item.dueAtUtc ? ` · due ${dt(item.dueAtUtc)}` : " · no due date"}</small></article>) : <p className="learner-empty">No homework has been assigned for this view.</p>}</div></Panel>
+      <Panel title="Capture today’s learning"><form className="learner-form teacher-note-form" onSubmit={(event) => void addNote(event)}><TeacherDropdown name="type" label="Learning record type" value={noteType} onChange={setNoteType} options={["Class note", "Student remark", "Music repertoire progress", "Syllabus / textbook reference"].map((value) => ({ value, label: value }))} /><input required name="title" placeholder="Topic, repertoire, chapter, or page" /><textarea required name="notes" placeholder="What was taught, progress, feedback, and the next practice step" /><button>Save learning record</button></form></Panel>
+      <Panel title="Class material"><form className="learner-form teacher-upload-form" onSubmit={(event) => void addFile(event)}><TeacherDropdown name="type" label="Material type" value={materialType} onChange={setMaterialType} options={["Class material", "Homework material", "Reference recording", "Syllabus / textbook"].map((value) => ({ value, label: value }))} /><input name="title" placeholder="File title" /><input name="description" placeholder="Short description" /><label className="teacher-file-picker"><input name="file" type="file" accept="image/*,.pdf,audio/*,video/*,.doc,.docx" onChange={(event) => stageFile(event.target.files?.[0] ?? null)} /><span>{pendingFile ? pendingFile.name : "Choose photo, video, audio, PDF, or document"}</span></label>{pendingFile && <div className="teacher-file-preview"><b>Ready to review</b>{pendingFile.type.startsWith("audio/") && <audio controls src={pendingPreviewUrl} />}{pendingFile.type.startsWith("video/") && <video controls src={pendingPreviewUrl} />}{pendingFile.type.startsWith("image/") && <img src={pendingPreviewUrl} alt="Selected upload preview" />} {!/^(audio|video|image)\//.test(pendingFile.type) && <small>{pendingFile.name} · {(pendingFile.size / 1024 / 1024).toFixed(1)} MB</small>}<button type="button" className="teacher-clear-file" onClick={() => stageFile(null)}>Remove</button></div>}<div className="teacher-material-actions"><button disabled={!pendingFile}>Upload confirmed file</button>{!recording ? <button type="button" className="teacher-mic-button" aria-label="Start audio recording" title="Start audio recording" onClick={() => void toggleRecording()}>🎙</button> : <><span className="teacher-recording-state">● Recording{recordingPaused ? " paused" : ""}</span><button type="button" className="enterprise-action-button enterprise-action-button-secondary" onClick={toggleRecordingPause}>{recordingPaused ? "Resume" : "Pause"}</button><button type="button" className="teacher-stop-button" onClick={() => void toggleRecording()}>Stop</button></>}</div></form></Panel>
+      <Panel title={selectedStudent ? `Homework for ${selectedStudent.firstName}` : "Homework for the class"}><form className="learner-form" onSubmit={(event) => void assignHomework(event)}><input required name="title" placeholder="Practice or homework title" /><textarea name="description" placeholder="Clear instructions, duration, or textbook page" /><input name="dueAtUtc" type="datetime-local" /><button>Assign homework</button></form><div className="teacher-upload-divider"><span>Assigned work</span><small>{selectedStudent ? "Private tasks for this student" : "Tasks shared with the class"}</small></div><div className="teacher-activity-list">{activity.homework.length ? activity.homework.map((item) => <article key={item.id}><b>{item.title}</b><small>{item.studentId ? "Individual" : "Whole class"}{item.dueAtUtc ? ` · due ${dt(item.dueAtUtc)}` : " · no due date"}</small></article>) : <p className="learner-empty">No homework has been assigned for this view.</p>}</div></Panel>
     </section>
     <Panel title={selectedStudent ? `${selectedStudent.firstName}'s learning history` : "Class learning history"}><div className="teacher-activity-list">{activity.resources.length ? activity.resources.map((item) => <article key={item.id}><div><b>{item.title}</b><small>{item.type}{item.studentId ? " · individual record" : " · class record"} · {dt(item.createdAtUtc)}</small>{item.description && <p>{item.description}</p>}</div>{!item.url.startsWith("note://") && <a href={`${apiUrl}${item.url}`} target="_blank" rel="noreferrer">Open</a>}</article>) : <p className="learner-empty">No learning records yet. Save notes, recordings, or files above to build the class history.</p>}</div></Panel>
     {message && <p className="teacher-classroom-message" role="status">{message}</p>}
+    </>}
   </>;
 }
 

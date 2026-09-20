@@ -3372,7 +3372,8 @@ html[data-theme="light"] .field-label { color: #475569; }
 .teacher-classroom-hero h2 { margin: 0; color: var(--ad-text); font-size: clamp(1.45rem, 1.9vw, 2.25rem); letter-spacing: -.04em; }
 .teacher-classroom-hero span, .teacher-classroom-controls aside span { display: block; margin-top: 7px; color: var(--ad-text-muted); font-size: .84rem; }
 .teacher-classroom-hero-actions, .teacher-classroom-hero-actions > * { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.teacher-classroom-controls { display: grid; grid-template-columns: minmax(180px, 1fr) minmax(180px, 1fr) minmax(220px, 1.3fr); gap: 12px; margin: 0 0 18px; }
+.teacher-classroom-controls { display: grid; grid-template-columns: repeat(2, minmax(180px, 1fr)); gap: 12px; margin: 0 0 18px; }
+.teacher-classroom-controls[data-selected="false"] { grid-template-columns: minmax(220px, 420px); }
 .teacher-classroom-controls label { display: grid; gap: 6px; color: var(--ad-text-muted); font-size: .73rem; font-weight: 750; letter-spacing: .06em; text-transform: uppercase; }
 .teacher-classroom-controls select { min-height: 46px; }
 .teacher-classroom-controls aside { display: grid; align-content: center; padding: 10px 14px; border: 1px solid var(--ad-border); border-radius: 12px; background: var(--ad-surface-subtle); }
