@@ -2438,6 +2438,7 @@ html[data-theme="light"] .field-label { color: #475569; }
 .platform-sidebar::before { top:-110px; right:-100px; left:auto; width:245px; height:245px; border:1px solid color-mix(in srgb,var(--ad-accent) 24%,transparent); border-radius:52% 48% 45% 55%; background:radial-gradient(circle at 35% 35%,color-mix(in srgb,var(--ad-accent) 16%,transparent),transparent 62%); transform:rotate(18deg); }
 .platform-sidebar::after { right:26px; bottom:28px; width:96px; height:58px; opacity:.7; background-image:radial-gradient(circle,color-mix(in srgb,var(--ad-accent) 46%,transparent) 1.4px,transparent 1.6px); background-size:12px 12px; }
 .platform-nav {
+  display: grid;
   gap: clamp(2px, 0.28vw, 6px);
   margin-top: clamp(34px, 3.35vw, 68px);
 }
@@ -2451,6 +2452,9 @@ html[data-theme="light"] .field-label { color: #475569; }
 }
 .platform-nav a,
 .platform-nav button {
+  display: flex;
+  width: 100%;
+  align-items: center;
   gap: clamp(10px, 0.7vw, 14px);
   padding: clamp(9px, 0.78vw, 15px) clamp(10px, 0.78vw, 16px);
   border-radius: clamp(9px, 0.65vw, 13px);
