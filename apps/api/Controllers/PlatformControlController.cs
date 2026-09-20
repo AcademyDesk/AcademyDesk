@@ -131,7 +131,29 @@ public sealed class PlatformControlController(AcademyDeskDbContext db, UserManag
         if (!await IsPlatformOwner()) return Forbid(); var settings = await GetSettingsRecord(token); return Ok(new { Api = "Operational", Database = await db.Database.CanConnectAsync(token) ? "Operational" : "Unavailable", BackgroundJobs = "Not configured", CommunicationProviders = "Not configured", MaintenanceMode = settings.MaintenanceMode, StatusMessage = settings.StatusMessage });
     }
 
-    private async Task<PlatformSettings> GetSettingsRecord(CancellationToken token) { var settings = await db.PlatformSettings.SingleOrDefaultAsync(token); if (settings is not null) return settings; settings = new PlatformSettings(); db.PlatformSettings.Add(settings); await db.SaveChangesAsync(token); return settings; }
+    private async Task<PlatformSettings> GetSettingsRecord(CancellationToken token)
+    {
+        // Platform settings are singleton data. Older local runs could create more
+        // than one row, so retain the most recently updated record and clean up the
+        // stale copies instead of making the Settings screen unavailable.
+        var records = await db.PlatformSettings
+            .OrderByDescending(x => x.UpdatedAtUtc ?? x.CreatedAtUtc)
+            .ToListAsync(token);
+        if (records.Count > 0)
+        {
+            if (records.Count > 1)
+            {
+                db.PlatformSettings.RemoveRange(records.Skip(1));
+                await db.SaveChangesAsync(token);
+            }
+            return records[0];
+        }
+
+        var settings = new PlatformSettings();
+        db.PlatformSettings.Add(settings);
+        await db.SaveChangesAsync(token);
+        return settings;
+    }
     private async Task<bool> IsPlatformOwner() { var user = await users.GetUserAsync(User); return user?.IsPlatformOwner == true; }
     private async Task Audit(string action, string entityType, Guid? entityId, object metadata, CancellationToken token) { var user = await users.GetUserAsync(User); db.PlatformAuditEntries.Add(new PlatformAuditEntry { ActorUserId = user?.Id, ActorName = user?.DisplayName ?? "System", Action = action, EntityType = entityType, EntityId = entityId, MetadataJson = JsonSerializer.Serialize(metadata) }); await Task.CompletedTask; }
 }
