@@ -2446,8 +2446,8 @@ html[data-theme="light"] .field-label { color: #475569; }
   background: color-mix(in srgb, var(--ad-surface) 82%, var(--ad-canvas));
   overflow:auto;
 }
-.platform-sidebar::before { content:""; position:absolute; z-index:-1; top:-110px; right:-100px; width:245px; height:245px; border:1px solid color-mix(in srgb,var(--ad-accent) 24%,transparent); border-radius:52% 48% 45% 55%; background:radial-gradient(circle at 35% 35%,color-mix(in srgb,var(--ad-accent) 16%,transparent),transparent 62%); transform:rotate(18deg); pointer-events:none; }
-.platform-sidebar::after { content:""; position:absolute; z-index:-1; right:26px; bottom:28px; width:96px; height:58px; opacity:.7; background-image:radial-gradient(circle,color-mix(in srgb,var(--ad-accent) 46%,transparent) 1.4px,transparent 1.6px); background-size:12px 12px; mask-image:linear-gradient(to left,#000,transparent); pointer-events:none; }
+.platform-sidebar::before { content:""; position:absolute; z-index:-1; top:0; right:0; left:0; height:4px; background:linear-gradient(90deg,var(--ad-action),color-mix(in srgb,var(--ad-accent) 35%,transparent)); pointer-events:none; }
+.platform-sidebar::after { content:""; position:absolute; z-index:-1; right:22px; bottom:26px; width:58px; height:34px; opacity:.48; background-image:radial-gradient(circle,color-mix(in srgb,var(--ad-accent) 46%,transparent) 1.2px,transparent 1.4px); background-size:11px 11px; mask-image:linear-gradient(to left,#000,transparent); pointer-events:none; }
 .platform-sidebar > * { position:relative; z-index:1; }
 .platform-sidebar .enterprise-brand { padding-left:clamp(8px,1vw,20px); }
 .platform-nav {
