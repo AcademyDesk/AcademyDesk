@@ -13,7 +13,9 @@ public static class SubscriptionPlanCatalog
             // Trial mirrors Professional so a prospect can evaluate the complete product.
             ["Trial"] = new("Trial", 75, 15, [Core, "Sales", "Engagement", "Finance", "Certificates", "TeacherClassroom", "AcademicGovernance", "MultiBranch", "AccessGovernance", "FinanceControls"]),
             ["Launch"] = new("Launch", 75, 15, [Core, "TeacherClassroom"]),
-            ["Growth"] = new("Growth", 250, 40, [Core, "TeacherClassroom", "Sales", "Engagement", "Finance", "Certificates"]),
+            // Finance on Growth is a complete operational finance workspace: invoices,
+            // collections, payouts, document templates and the controls needed to run them.
+            ["Growth"] = new("Growth", 250, 40, [Core, "TeacherClassroom", "Sales", "Engagement", "Finance", "FinanceControls", "Certificates"]),
             ["Professional"] = new("Professional", 750, 120, [Core, "TeacherClassroom", "Sales", "Engagement", "Finance", "Certificates", "AcademicGovernance", "MultiBranch", "AccessGovernance", "FinanceControls"]),
             ["Enterprise"] = new("Enterprise", 5000, 1000, [Core, "TeacherClassroom", "Sales", "Engagement", "Finance", "Certificates", "AcademicGovernance", "MultiBranch", "AccessGovernance", "FinanceControls", "Integrations", "WhiteLabel"])
         };

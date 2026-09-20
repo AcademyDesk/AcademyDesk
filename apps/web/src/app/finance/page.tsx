@@ -32,14 +32,14 @@ const money = (amount: number, currency = "INR") =>
   }).format(amount);
 const modules = [
   [
-    "Invoices",
-    "Issue fees, inspect balances and manage billing status.",
+    "Create & generate invoices",
+    "Issue academy-branded invoices, inspect balances, then print or save them as PDF.",
     "/invoices",
     "Billing",
   ],
   [
-    "Payments",
-    "Record collections against an invoice and keep balances current.",
+    "Payments received",
+    "Record collections against an invoice and keep paid balances current.",
     "/payments",
     "Collections",
   ],
@@ -68,8 +68,8 @@ const modules = [
     "Settings",
   ],
   [
-    "Fee reminders",
-    "Queue communication for overdue invoice follow-up.",
+    "Outstanding & unpaid",
+    "See unpaid and overdue invoices, then queue follow-up reminders.",
     "/fee-reminders",
     "Automation",
   ],
@@ -78,6 +78,12 @@ const modules = [
     "Record operating costs and maintain cash-position visibility.",
     "/expenses",
     "Operations",
+  ],
+  [
+    "Invoice & payslip templates",
+    "Select document layouts and set the academy logo and authorised signature.",
+    "/finance-governance",
+    "Documents",
   ],
 ] as const;
 
@@ -177,8 +183,8 @@ export default function FinancePage() {
           <div>
             <h2>Finance operations</h2>
             <span>
-              Run billing, collections, approvals, reconciliation and reporting
-              from one controlled workspace.
+              Create and generate invoices, record payments, track unpaid fees,
+              prepare payouts and manage finance documents from one workspace.
             </span>
           </div>
           <div className="flex flex-wrap gap-2">
