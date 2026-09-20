@@ -91,8 +91,6 @@ export default function Teacher() {
   }
   const name = (id: string) =>
     p?.batches.find((x) => x.id === id)?.name || "Assigned batch";
-  const current = (id: string) =>
-    attendance.find((x) => x.studentId === id)?.status || "Not marked";
   return (
     <main className="enterprise-app-shell teacher-portal-shell">
       <aside className="enterprise-sidebar teacher-portal-sidebar">
@@ -124,6 +122,7 @@ export default function Teacher() {
             p && (
               <>
                 {t === "classroom" && <TeacherActiveClassBanner batch={p.batches.find((batch) => batch.id === p.sessions.find((session) => session.id === sid)?.batchId)} rosterCount={roster.length} status={p.sessions.find((session) => session.id === sid)?.status} />}
+                {t === "classroom" && <TeacherAttendanceRoster sessionId={sid} roster={roster} attendance={attendance} busy={busy} onMark={mark} />}
                 {t === "classroom" && <TeacherClassroom batches={p.batches} sessionId={sid} sessionBatchId={p.sessions.find((session) => session.id === sid)?.batchId} sessionStatus={p.sessions.find((session) => session.id === sid)?.status} roster={roster} />}
                 {t !== "classroom" && <header className="learner-heading">
                   <p>Teacher workspace</p>
@@ -183,33 +182,6 @@ export default function Teacher() {
                         <small>Open classroom →</small>
                       </button>
                     ))}
-                  </Panel>
-                )}
-                {t === "classroom" && (
-                  <Panel title="Attendance and class roster">
-                    {!sid ? (
-                      <p className="learner-empty">Select a class first.</p>
-                    ) : (
-                      roster.map((x) => (
-                        <article className="learner-row" key={x.id}>
-                          <b>{x.firstName + " " + x.lastName}</b>
-                          <small>{current(x.id)}</small>
-                          <select
-                            disabled={busy === x.id}
-                            value={
-                              current(x.id) === "Not marked"
-                                ? "Present"
-                                : current(x.id)
-                            }
-                            onChange={(e) => void mark(x.id, e.target.value)}
-                          >
-                            {statuses.map((v) => (
-                              <option key={v}>{v}</option>
-                            ))}
-                          </select>
-                        </article>
-                      ))
-                    )}
                   </Panel>
                 )}
                 {t === "homework" && <TeacherTasks batches={p.batches} />}{" "}
@@ -298,6 +270,20 @@ function Panel({
 }
 type TeacherBatch = P["batches"][number];
 type Resource = { id: string; batchId: string; studentId?: string; classSessionId?: string; title: string; description?: string; type: string; url: string; createdAtUtc: string };
+
+function TeacherAttendanceRoster({ sessionId, roster, attendance, busy, onMark }: { sessionId: string; roster: S[]; attendance: A[]; busy: string; onMark: (studentId: string, status: string) => Promise<void> }) {
+  const marked = attendance.length;
+  const statusFor = (studentId: string) => attendance.find((item) => item.studentId === studentId)?.status;
+  return <section className="teacher-attendance-panel">
+    <header><div><p>Attendance</p><h2>Mark today’s class</h2><span>{sessionId ? `${marked} of ${roster.length} students recorded` : "Select a class to mark attendance"}</span></div><strong>{roster.length} students</strong></header>
+    {!sessionId ? <p className="learner-empty">Select a scheduled class first.</p> : <div className="teacher-attendance-grid">{roster.map((student) => {
+      const value = statusFor(student.id) ?? "Present";
+      const label = statusFor(student.id) ?? "Not marked";
+      const initials = `${student.firstName[0] ?? ""}${student.lastName[0] ?? ""}`.toUpperCase();
+      return <article key={student.id}><span className="teacher-student-avatar">{initials}</span><div><b>{student.firstName} {student.lastName}</b><small data-status={label}>{label}</small></div><select aria-label={`Attendance for ${student.firstName} ${student.lastName}`} disabled={busy === student.id} value={value} onChange={(event) => void onMark(student.id, event.target.value)}>{statuses.map((status) => <option key={status}>{status}</option>)}</select></article>;
+    })}</div>}
+  </section>;
+}
 
 type ClassroomActivity = { resources: Resource[]; homework: { id: string; batchId: string; studentId?: string; title: string; description?: string; dueAtUtc?: string; type: string; isPublished: boolean }[] };
 function TeacherActiveClassBanner({ batch, rosterCount, status }: { batch?: TeacherBatch; rosterCount: number; status?: string }) {
