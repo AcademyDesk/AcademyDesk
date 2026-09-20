@@ -12,101 +12,6 @@ type Academy = {
   timeZone: string;
   isActive: boolean;
 };
-type ControlCard = {
-  title: string;
-  description: string;
-  href: string;
-};
-const groups: { title: string; cards: ControlCard[] }[] = [
-  {
-    title: "People, access & safeguarding",
-    cards: [
-      {
-        title: "Team and staff access",
-        description:
-          "Create staff accounts, link teacher records, reset access and manage roles.",
-        href: "/staff",
-      },
-      {
-        title: "Teachers and teaching profiles",
-        description:
-          "Manage teachers, specialisms and their teaching assignments.",
-        href: "/teachers",
-      },
-      {
-        title: "Family and portal access",
-        description:
-          "Link parents and create student or parent portal accounts.",
-        href: "/portal-accounts",
-      },
-      {
-        title: "Student records",
-        description:
-          "Manage student records and connected academic information.",
-        href: "/students",
-      },
-    ],
-  },
-  {
-    title: "Academic delivery & operations",
-    cards: [
-      {
-        title: "Program and curriculum",
-        description:
-          "Control courses, curriculum modules, lesson plans and learning resources.",
-        href: "/courses",
-      },
-      {
-        title: "Batches and enrolments",
-        description:
-          "Place students, control batch capacity and keep academic participation current.",
-        href: "/enrollments",
-      },
-      {
-        title: "Schedule and attendance",
-        description:
-          "Run the daily timetable, attendance, leave, make-ups and holidays.",
-        href: "/schedule",
-      },
-      {
-        title: "Assessment and certificates",
-        description:
-          "Manage assessments, results, music progress and achievement records.",
-        href: "/assessments",
-      },
-    ],
-  },
-  {
-    title: "Finance, engagement & governance",
-    cards: [
-      {
-        title: "Finance controls",
-        description:
-          "Set fee plans, manage invoices, payments, reminders and expenses.",
-        href: "/finance",
-      },
-      {
-        title: "Communication controls",
-        description:
-          "Configure channels, templates, preferences and operational messages.",
-        href: "/communication-settings",
-      },
-      {
-        title: "Branches and academy calendar",
-        description:
-          "Manage branches, regional holidays, events and operating calendar.",
-        href: "/branches",
-      },
-      {
-        title: "Audit and reports",
-        description:
-          "Review changes, exports and academy-wide operating reports.",
-        href: "/reports",
-      },
-    ],
-  },
-];
-
 export default function AcademyControlPage() {
   const [academy, setAcademy] = useState<Academy>();
   const [message, setMessage] = useState("Loading academy controls…");
@@ -241,26 +146,6 @@ export default function AcademyControlPage() {
           </div>
         </section>
       </section>
-      {groups.map((group) => (
-        <section key={group.title} className="mt-7">
-          <h3 className="text-lg font-semibold">{group.title}</h3>
-          <div className="enterprise-settings-grid">
-            {group.cards.map((card) => (
-              <Link
-                key={card.title}
-                href={card.href}
-                className="enterprise-setting-card"
-              >
-                <div>
-                  <span>Academy admin</span>
-                  <h3>{card.title}</h3>
-                  <p>{card.description}</p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
-      ))}
     </main>
   );
 }
