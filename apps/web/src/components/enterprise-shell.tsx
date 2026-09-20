@@ -7,6 +7,11 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { academyApi, apiUrl } from "@/lib/api";
 
 type NavigationItem = readonly [label: string, href: string];
+type AcademySubscription = {
+  subscriptionPlan?: string;
+  subscriptionStatus?: string;
+  enabledModulesJson?: string;
+};
 type NavigationGroup = {
   label: string;
   icon: string;
@@ -143,6 +148,19 @@ const searchItems: readonly NavigationItem[] = Array.from(
   ).values(),
 );
 
+const routeModule = (href: string) => {
+  const path = href.split("?")[0];
+  if (["/sales-marketing", "/leads", "/sales-campaigns", "/trial-bookings"].includes(path)) return "Sales";
+  if (["/communications", "/message-templates", "/communication-preferences", "/communication-settings"].includes(path)) return "Engagement";
+  if (["/academic-governance", "/academic-periods", "/courses", "/curriculum", "/batch-promotions", "/submission-review", "/assessments", "/assessment-governance", "/music"].includes(path)) return "AcademicGovernance";
+  if (["/holidays", "/events", "/certificates", "/resources"].includes(path)) return "Certificates";
+  if (["/branches"].includes(path)) return "MultiBranch";
+  if (["/access-review", "/data-operations", "/compliance"].includes(path)) return "AccessGovernance";
+  if (path.startsWith("/finance")) return path === "/finance-governance" || path === "/finance-adjustments" ? "FinanceControls" : "Finance";
+  if (["/fee-plans", "/invoices", "/payments", "/fee-reminders", "/payroll", "/expenses"].includes(path)) return "Finance";
+  return "Core";
+};
+
 type EnterpriseShellProps = {
   academyName?: string;
   userName?: string;
@@ -166,6 +184,8 @@ export function EnterpriseShell({
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [workspaceName, setWorkspaceName] = useState<string>();
+  const [subscription, setSubscription] = useState<AcademySubscription>();
+  const [upgradeModule, setUpgradeModule] = useState<string>();
   const [account, setAccount] = useState<{
     displayName: string;
     roles: string[];
@@ -222,13 +242,41 @@ export function EnterpriseShell({
     ])
       .then(async ([academyResponse, sessionResponse]) => {
         if (academyResponse.ok) {
-          const academies = await academyResponse.json();
+          const academies: (AcademySubscription & { name?: string })[] = await academyResponse.json();
           setWorkspaceName(academies[0]?.name);
+          setSubscription(academies[0]);
         }
         if (sessionResponse.ok) setAccount(await sessionResponse.json());
       })
       .catch(() => undefined);
   }, []);
+
+  const enabledModules = useMemo(() => {
+    try {
+      return new Set<string>(JSON.parse(subscription?.enabledModulesJson || "[\"Core\"]"));
+    } catch {
+      return new Set<string>(["Core"]);
+    }
+  }, [subscription?.enabledModulesJson]);
+  const moduleIncluded = (href: string) => {
+    const module = routeModule(href);
+    return module === "Core" || enabledModules.has(module);
+  };
+  const currentModuleIncluded = moduleIncluded(pathname);
+  const moduleLabel = (module: string) => ({
+    Sales: "Sales & Marketing", Engagement: "Engagement", Finance: "Finance",
+    FinanceControls: "Finance controls", AcademicGovernance: "Academics",
+    Certificates: "Academy Experience", MultiBranch: "Multi-branch management",
+    AccessGovernance: "Access governance",
+  }[module] || module);
+  const subscriptionLabel = subscription?.subscriptionPlan || "your current";
+
+  function LockedNavigationItem({ item }: { item: NavigationItem }) {
+    const [label, href] = item;
+    const included = moduleIncluded(href);
+    if (included) return <Link href={href} data-active={pathname === href}>{label}</Link>;
+    return <button type="button" className="enterprise-locked-link" onClick={() => setUpgradeModule(routeModule(href))} aria-label={`${label} requires an upgrade`}><span>{label}</span><i aria-hidden="true">⌁</i></button>;
+  }
 
   useEffect(() => {
     if (!profileOpen) return;
@@ -301,18 +349,8 @@ export function EnterpriseShell({
                   <b aria-hidden="true">⌄</b>
                 </summary>
                 <div>
-                  {group.sections?.map((section) => <section key={section.label} className="enterprise-nav-subgroup"><p>{section.label}</p>{section.links.map(([label, href]) => (
-                    <Link key={href} href={href} data-active={pathname === href}>{label}</Link>
-                  ))}</section>)}
-                  {(group.links ?? []).map(([label, href]) => (
-                    <Link
-                      key={href}
-                      href={href}
-                      data-active={pathname === href}
-                    >
-                      {label}
-                    </Link>
-                  ))}
+                  {group.sections?.map((section) => <section key={section.label} className="enterprise-nav-subgroup"><p>{section.label}</p>{section.links.map((item) => <LockedNavigationItem key={item[1]} item={item} />)}</section>)}
+                  {(group.links ?? []).map((item) => <LockedNavigationItem key={item[1]} item={item} />)}
                 </div>
               </details>
             ))}
@@ -335,15 +373,7 @@ export function EnterpriseShell({
                   <b aria-hidden="true">⌄</b>
                 </summary>
                 <div>
-                  {activeAdministrationNavigation.map(([label, href]) => (
-                    <Link
-                      key={href}
-                      href={href}
-                      data-active={pathname === href}
-                    >
-                      {label}
-                    </Link>
-                  ))}
+                  {activeAdministrationNavigation.map((item) => <LockedNavigationItem key={item[1]} item={item} />)}
                 </div>
               </details>
             </nav>
@@ -361,13 +391,20 @@ export function EnterpriseShell({
               >
                 ⌕
               </button>
-              <Link
+              {moduleIncluded("/communications") ? <Link
                 href="/communications"
                 className="enterprise-icon-button"
                 aria-label="Open communications"
               >
                 ♧
-              </Link>
+              </Link> : <button
+                type="button"
+                className="enterprise-icon-button enterprise-icon-button-locked"
+                aria-label="Communications requires an upgrade"
+                onClick={() => setUpgradeModule("Engagement")}
+              >
+                ♧
+              </button>}
               <ThemeToggle />
               <div className="enterprise-profile" ref={profileRef}>
                 <button
@@ -419,21 +456,20 @@ export function EnterpriseShell({
                   placeholder="Search modules…"
                   aria-label="Search AcademyDesk modules"
                 />
-                {results.map(([label, href]) => (
-                  <Link
-                    key={href}
-                    href={href}
-                    onClick={() => setSearchOpen(false)}
-                  >
-                    {label}
-                    <span>Go to module →</span>
-                  </Link>
+                {results.map(([label, href]) => moduleIncluded(href) ? (
+                  <Link key={href} href={href} onClick={() => setSearchOpen(false)}>{label}<span>Go to module →</span></Link>
+                ) : (
+                  <button key={href} type="button" onClick={() => { setSearchOpen(false); setUpgradeModule(routeModule(href)); }}>{label}<span>Upgrade required</span></button>
                 ))}
                 {results.length === 0 && <p>No matching modules.</p>}
               </div>
             )}
           </header>
-          {children}
+          <div className={currentModuleIncluded ? undefined : "enterprise-locked-content"} aria-disabled={!currentModuleIncluded}>
+            {children}
+            {!currentModuleIncluded && <button type="button" className="enterprise-locked-content-overlay" onClick={() => setUpgradeModule(routeModule(pathname))} aria-label="Upgrade to use this feature"><span>Preview only · Upgrade to use this feature</span></button>}
+          </div>
+          {upgradeModule && <div className="enterprise-upgrade-backdrop" role="presentation" onMouseDown={() => setUpgradeModule(undefined)}><section className="enterprise-upgrade-dialog" role="dialog" aria-modal="true" aria-labelledby="upgrade-title" onMouseDown={(event) => event.stopPropagation()}><span className="enterprise-upgrade-icon" aria-hidden="true">✦</span><p>PLAN UPGRADE</p><h2 id="upgrade-title">Unlock {moduleLabel(upgradeModule)}</h2><span>{moduleLabel(upgradeModule)} is not included with the {subscriptionLabel} plan. Your academy administrator can upgrade the subscription to activate it.</span><div><button type="button" className="enterprise-action-button enterprise-action-button-secondary" onClick={() => setUpgradeModule(undefined)}>Keep browsing</button><Link href="/admin/control" className="enterprise-action-button" onClick={() => setUpgradeModule(undefined)}>View subscription</Link></div></section></div>}
         </section>
       </div>
     </EnterpriseShellContext.Provider>
