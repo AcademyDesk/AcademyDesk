@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { academyApi, apiHeaders } from "@/lib/api";
+import { academyApi, apiHeaders, apiUrl } from "@/lib/api";
 
 type Academy = {
   id: string;
@@ -67,6 +67,7 @@ type Health = {
   maintenanceMode: boolean;
   statusMessage?: string;
 };
+type OwnerSession = { displayName: string; email?: string | null; phoneNumber?: string | null; profileImageUrl?: string | null; roles: string[] };
 
 const platformLinks = [
   { label: "Overview", icon: "▦", href: "/platform" },
@@ -127,12 +128,14 @@ export default function PlatformControlPage() {
   const [audit, setAudit] = useState<Audit[]>([]);
   const [settings, setSettings] = useState<Settings>();
   const [health, setHealth] = useState<Health>();
+  const [owner, setOwner] = useState<OwnerSession>();
   const [selectedAcademy, setSelectedAcademy] = useState("");
   const [message, setMessage] = useState("Loading platform controls…");
   const [busy, setBusy] = useState(false);
+  const profileImageInput = useRef<HTMLInputElement>(null);
 
   async function load() {
-    const [a, ad, c, i, s, au, h] = await Promise.all([
+    const [a, ad, c, i, s, au, h, ownerResponse] = await Promise.all([
       academyApi("/api/platform/academies"),
       academyApi("/api/platform/admins"),
       academyApi("/api/platform/support-cases"),
@@ -140,6 +143,7 @@ export default function PlatformControlPage() {
       academyApi("/api/platform/settings"),
       academyApi("/api/platform/audit"),
       academyApi("/api/platform/health"),
+      academyApi("/api/auth/session"),
     ]);
     if (!a.ok) throw new Error("Platform Owner access is required.");
     const academyRows = await a.json();
@@ -151,6 +155,7 @@ export default function PlatformControlPage() {
     if (s.ok) setSettings(await s.json());
     if (au.ok) setAudit(await au.json());
     if (h.ok) setHealth(await h.json());
+    if (ownerResponse.ok) setOwner(await ownerResponse.json());
     setMessage("");
   }
   useEffect(() => {
@@ -288,6 +293,33 @@ export default function PlatformControlPage() {
       "Invoice status updated.",
     );
   }
+  async function saveOwnerProfile(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    await request("/api/auth/session/profile", "PUT", { displayName: form.get("displayName"), phoneNumber: form.get("phoneNumber") || null }, "Owner profile saved.");
+  }
+  async function changeOwnerPassword(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    const newPassword = String(form.get("newPassword") || "");
+    if (newPassword !== String(form.get("confirmPassword") || "")) return setMessage("New password and confirmation must match.");
+    await request("/api/auth/session/change-password", "POST", { currentPassword: form.get("currentPassword"), newPassword }, "Password changed. Use the new password next time you sign in.");
+    event.currentTarget.reset();
+  }
+  async function uploadOwnerImage(event: React.ChangeEvent<HTMLInputElement>) {
+    const image = event.target.files?.[0];
+    event.target.value = "";
+    if (!image) return;
+    setBusy(true); setMessage("");
+    try {
+      const body = new FormData(); body.append("image", image);
+      const response = await academyApi("/api/auth/session/profile-image", { method: "POST", body });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(payload?.message || "Profile image could not be saved.");
+      await load(); setMessage("Profile image saved.");
+    } catch (error) { setMessage(error instanceof Error ? error.message : "Profile image could not be saved."); }
+    finally { setBusy(false); }
+  }
   function signOut() {
     localStorage.removeItem("academydesk.accessToken");
     localStorage.removeItem("academydesk.refreshToken");
@@ -357,10 +389,10 @@ export default function PlatformControlPage() {
             <ThemeToggle />
             <details className="platform-profile">
               <summary aria-label="Open Platform Owner profile menu">
-                <span className="platform-avatar">S</span>
+                {owner?.profileImageUrl ? <img className="platform-avatar-image" src={`${apiUrl}${owner.profileImageUrl}`} alt="Profile"/> : <span className="platform-avatar">{owner?.displayName?.[0]?.toUpperCase() || "S"}</span>}
               </summary>
               <div className="platform-profile-menu">
-                <strong>Shashank</strong>
+                <strong>{owner?.displayName || "Platform Owner"}</strong>
                 <small>Platform Owner</small>
                 <button type="button" onClick={signOut}>
                   Sign out
@@ -636,11 +668,24 @@ export default function PlatformControlPage() {
             </section>
           )}
           {tab === "Settings" && settings && (
-            <form
-              onSubmit={saveSettings}
-              className="mt-6 max-w-2xl rounded-xl border border-slate-800 bg-slate-900 p-5"
-            >
-              <h2 className="font-semibold">Platform settings and retention</h2>
+            <section className="mt-6 grid gap-5 xl:grid-cols-[.9fr_1.1fr]">
+              <section className="platform-owner-settings rounded-xl border border-slate-800 bg-slate-900 p-5">
+                <div className="platform-owner-profile"><button type="button" className="platform-owner-photo" onClick={() => profileImageInput.current?.click()} disabled={busy}>{owner?.profileImageUrl ? <img src={`${apiUrl}${owner.profileImageUrl}`} alt="Owner profile"/> : <span>{owner?.displayName?.[0]?.toUpperCase() || "S"}</span>}<i aria-hidden="true">⌁</i></button><div><h2 className="font-semibold">My owner account</h2><p>Personal identity, security and sign-in details for this Platform Owner.</p></div></div>
+                <input ref={profileImageInput} className="sr-only" type="file" accept="image/jpeg,image/png,image/webp" onChange={uploadOwnerImage}/>
+                <form onSubmit={saveOwnerProfile} className="platform-owner-form">
+                  <label>Display name<input name="displayName" defaultValue={owner?.displayName || ""} required/></label>
+                  <label>Sign-in email<input value={owner?.email || ""} readOnly aria-label="Sign-in email"/></label>
+                  <label>Phone number <em>Optional</em><input name="phoneNumber" defaultValue={owner?.phoneNumber || ""} placeholder="+91 98765 43210"/></label>
+                  <p className="platform-account-meta">Role: <b>{owner?.roles?.join(", ") || "Platform Owner"}</b> · This account has platform-wide access.</p>
+                  <button disabled={busy}>Save personal details</button>
+                </form>
+                <form onSubmit={changeOwnerPassword} className="platform-password-form"><h3>Change password</h3><p>Use your current password to set a new one.</p><label>Current password<input name="currentPassword" type="password" autoComplete="current-password" required/></label><label>New password<input name="newPassword" type="password" autoComplete="new-password" minLength={6} required/></label><label>Confirm new password<input name="confirmPassword" type="password" autoComplete="new-password" minLength={6} required/></label><button disabled={busy}>Update password</button></form>
+              </section>
+              <form
+                onSubmit={saveSettings}
+                className="rounded-xl border border-slate-800 bg-slate-900 p-5"
+              >
+              <h2 className="font-semibold">Platform settings and retention</h2><p className="platform-settings-intro">Set the defaults that apply when new academies are provisioned.</p>
               <Field
                 name="platformName"
                 label="Platform name"
@@ -691,7 +736,8 @@ export default function PlatformControlPage() {
               >
                 Save platform settings
               </button>
-            </form>
+              </form>
+            </section>
           )}
           {tab === "Audit & health" && (
             <section className="mt-6 grid gap-5 lg:grid-cols-2">

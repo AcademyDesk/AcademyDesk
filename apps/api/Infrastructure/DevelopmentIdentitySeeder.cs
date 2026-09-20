@@ -129,6 +129,7 @@ public static class DevelopmentIdentitySeeder
     private static async Task EnsureUser(UserManager<ApplicationUser> users, string userName, string email, string displayName, Guid? academyId, bool platformOwner, string role, Guid? studentId = null, Guid? teacherId = null, string password = "Test@123")
     {
         var user = await users.FindByEmailAsync(email) ?? await users.FindByNameAsync(userName);
+        var created = false;
         if (user is null)
         {
             // ASP.NET Core's built-in Identity login endpoint authenticates against
@@ -137,6 +138,7 @@ public static class DevelopmentIdentitySeeder
             user = new ApplicationUser { UserName = email, Email = email, EmailConfirmed = true, DisplayName = displayName, AcademyId = academyId, IsPlatformOwner = platformOwner, StudentId = studentId, TeacherId = teacherId };
             var result = await users.CreateAsync(user, password);
             if (!result.Succeeded) throw new InvalidOperationException(string.Join("; ", result.Errors.Select(x => x.Description)));
+            created = true;
         }
         else
         {
@@ -152,14 +154,8 @@ public static class DevelopmentIdentitySeeder
             user.TeacherId = teacherId;
             await users.UpdateAsync(user);
 
-            // These are intentionally fixed, development-only demo accounts.  Resetting
-            // them on startup makes the documented test sign-ins deterministic even if
-            // a previous local test changed a password.
-            var resetToken = await users.GeneratePasswordResetTokenAsync(user);
-            var reset = await users.ResetPasswordAsync(user, resetToken, password);
-            if (!reset.Succeeded) throw new InvalidOperationException(string.Join("; ", reset.Errors.Select(x => x.Description)));
         }
-        if (!await users.CheckPasswordAsync(user, password)) throw new InvalidOperationException($"Unable to verify development sign-in for {userName}.");
+        if (created && !await users.CheckPasswordAsync(user, password)) throw new InvalidOperationException($"Unable to verify development sign-in for {userName}.");
         if (!await users.IsInRoleAsync(user, role)) await users.AddToRoleAsync(user, role);
     }
 

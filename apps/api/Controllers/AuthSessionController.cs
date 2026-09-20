@@ -18,7 +18,38 @@ public sealed class AuthSessionController(UserManager<ApplicationUser> users, IW
 
         var roles = await users.GetRolesAsync(user);
         var workspace = user.IsPlatformOwner ? "Platform" : roles.Contains("Teacher") ? "Teacher" : roles.Contains("Student") || roles.Contains("Guardian") ? "Portal" : "AcademyAdmin";
-        return Ok(new SessionSummary(user.DisplayName, roles.ToArray(), user.AcademyId, user.IsPlatformOwner, workspace, user.ProfileImageUrl));
+        return Ok(new SessionSummary(user.DisplayName, user.Email, user.PhoneNumber, roles.ToArray(), user.AcademyId, user.IsPlatformOwner, workspace, user.ProfileImageUrl));
+    }
+
+    [HttpPut("profile")]
+    public async Task<ActionResult<SessionSummary>> UpdateProfile(UpdateSessionProfileRequest request, CancellationToken token)
+    {
+        var user = await users.GetUserAsync(User);
+        if (user is null) return Unauthorized();
+        if (string.IsNullOrWhiteSpace(request.DisplayName) || request.DisplayName.Trim().Length > 200)
+            return BadRequest(new { message = "Enter a display name of up to 200 characters." });
+
+        user.DisplayName = request.DisplayName.Trim();
+        user.PhoneNumber = string.IsNullOrWhiteSpace(request.PhoneNumber) ? null : request.PhoneNumber.Trim();
+        var update = await users.UpdateAsync(user);
+        if (!update.Succeeded) return BadRequest(new { message = string.Join(" ", update.Errors.Select(x => x.Description)) });
+
+        var roles = await users.GetRolesAsync(user);
+        var workspace = user.IsPlatformOwner ? "Platform" : roles.Contains("Teacher") ? "Teacher" : roles.Contains("Student") || roles.Contains("Guardian") ? "Portal" : "AcademyAdmin";
+        return Ok(new SessionSummary(user.DisplayName, user.Email, user.PhoneNumber, roles.ToArray(), user.AcademyId, user.IsPlatformOwner, workspace, user.ProfileImageUrl));
+    }
+
+    [HttpPost("change-password")]
+    public async Task<ActionResult> ChangePassword(ChangeSessionPasswordRequest request, CancellationToken token)
+    {
+        var user = await users.GetUserAsync(User);
+        if (user is null) return Unauthorized();
+        if (string.IsNullOrWhiteSpace(request.NewPassword) || request.NewPassword.Length < 6)
+            return BadRequest(new { message = "Use a password of at least 6 characters." });
+
+        var result = await users.ChangePasswordAsync(user, request.CurrentPassword ?? string.Empty, request.NewPassword);
+        if (!result.Succeeded) return BadRequest(new { message = "The current password is incorrect or the new password does not meet the security rules." });
+        return Ok(new { message = "Password changed." });
     }
 
     [HttpPost("profile-image")]
@@ -66,5 +97,7 @@ public sealed class AuthSessionController(UserManager<ApplicationUser> users, IW
     }
 }
 
-public sealed record SessionSummary(string DisplayName, IReadOnlyList<string> Roles, Guid? AcademyId, bool IsPlatformOwner, string Workspace, string? ProfileImageUrl);
+public sealed record SessionSummary(string DisplayName, string? Email, string? PhoneNumber, IReadOnlyList<string> Roles, Guid? AcademyId, bool IsPlatformOwner, string Workspace, string? ProfileImageUrl);
+public sealed record UpdateSessionProfileRequest(string? DisplayName, string? PhoneNumber);
+public sealed record ChangeSessionPasswordRequest(string? CurrentPassword, string? NewPassword);
 public sealed record ProfileImageSummary(string ProfileImageUrl);
