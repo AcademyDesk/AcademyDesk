@@ -2992,6 +2992,29 @@ html[data-theme="light"] .field-label { color: #475569; }
   color: var(--ad-text);
 }
 .auth-theme { position: fixed; z-index: 2; top: 24px; right: 24px; }
+/* The login switch is intentionally self-contained: no overlapping selected card. */
+.auth-theme .theme-toggle {
+  display:grid;
+  width:176px;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:4px;
+  box-sizing:border-box;
+  padding:4px;
+  border-radius:13px;
+  background:color-mix(in srgb,var(--ad-surface-subtle) 94%,transparent);
+  box-shadow:0 5px 16px rgba(32,53,80,.08);
+}
+.auth-theme .theme-toggle button {
+  min-width:0;
+  min-height:36px;
+  justify-content:center;
+  padding:6px 7px;
+  border-radius:9px;
+  font-size:.75rem;
+}
+.auth-theme .theme-toggle button[aria-pressed="true"] {
+  box-shadow:0 2px 7px rgba(32,53,80,.14);
+}
 .auth-shell::before,
 .auth-shell::after {
   position: absolute;
