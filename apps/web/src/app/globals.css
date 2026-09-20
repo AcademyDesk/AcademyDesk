@@ -3281,6 +3281,62 @@ html[data-theme="light"] .field-label { color: #475569; }
 :root[data-theme="dark"] .teacher-portal-shell select { color-scheme: dark; }
 :root[data-theme="dark"] .teacher-portal-shell select option { background: #0d1a2b; color: #e7edf7; }
 :root[data-theme="light"] .teacher-portal-shell select option { background: #ffffff; color: #172033; }
+/* In-app dropdowns replace browser menus throughout the Teacher Portal. */
+.teacher-dropdown { position: relative; width: 100%; min-width: 0; }
+.teacher-dropdown > button {
+  display: flex;
+  width: 100%;
+  min-height: 46px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 14px;
+  border: 1px solid var(--ad-border-strong);
+  border-radius: 13px;
+  background: var(--ad-surface);
+  color: var(--ad-text);
+  cursor: pointer;
+  font: inherit;
+  font-size: .86rem;
+  font-weight: 700;
+  text-align: left;
+}
+.teacher-dropdown > button:hover,
+.teacher-dropdown > button[aria-expanded="true"] { border-color: var(--ad-accent); background: var(--ad-surface-subtle); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ad-accent) 14%, transparent); }
+.teacher-dropdown > button span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.teacher-dropdown > button i { flex: 0 0 auto; color: var(--ad-accent); font-size: 1.15rem; font-style: normal; transition: transform 160ms ease; }
+.teacher-dropdown > button[aria-expanded="true"] i { transform: rotate(180deg); }
+.teacher-dropdown > div {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 8px);
+  right: 0;
+  left: 0;
+  display: grid;
+  gap: 3px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding: 8px;
+  border: 1px solid var(--ad-border-strong);
+  border-radius: 16px;
+  background: var(--ad-surface);
+  box-shadow: var(--ad-shadow);
+}
+.teacher-dropdown > div button {
+  min-height: 42px;
+  padding: 9px 13px;
+  border: 0;
+  border-radius: 11px;
+  background: transparent;
+  color: var(--ad-text);
+  cursor: pointer;
+  font: inherit;
+  font-size: .84rem;
+  font-weight: 700;
+  text-align: left;
+}
+.teacher-dropdown > div button:hover,
+.teacher-dropdown > div button[data-active="true"] { background: var(--ad-accent-soft); color: var(--ad-accent); }
 .teacher-active-class-banner { display: flex; align-items: center; gap: 10px; min-height: 54px; margin: 0 0 14px; padding: 10px 16px; border: 1px solid color-mix(in srgb, var(--ad-accent) 34%, var(--ad-border)); border-radius: 13px; background: color-mix(in srgb, var(--ad-accent) 10%, var(--ad-surface)); }
 .teacher-active-class-banner > div { display: grid; gap: 2px; }
 .teacher-active-class-banner b { color: var(--ad-text); font-size: .82rem; }

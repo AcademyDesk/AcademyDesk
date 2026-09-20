@@ -290,6 +290,29 @@ function AttendanceStatusMenu({ value, disabled, label, onChange }: { value: str
   return <div className="teacher-attendance-menu"><button type="button" aria-label={label} aria-expanded={open} disabled={disabled} onClick={() => setOpen((current) => !current)}><span data-status={value}>{value}</span><i>⌄</i></button>{open && <div role="listbox">{statuses.map((status) => <button type="button" role="option" aria-selected={value === status} key={status} data-active={value === status} onClick={() => { onChange(status); setOpen(false); }}>{status}</button>)}</div>}</div>;
 }
 
+type TeacherDropdownOption = { value: string; label: string };
+function TeacherDropdown({ name, value, options, onChange, label, required = false }: { name?: string; value: string; options: TeacherDropdownOption[]; onChange: (value: string) => void; label: string; required?: boolean }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const current = options.find((option) => option.value === value) ?? options[0];
+  useEffect(() => {
+    if (!open) return;
+    const close = (event: MouseEvent) => { if (!ref.current?.contains(event.target as Node)) setOpen(false); };
+    const escape = (event: KeyboardEvent) => { if (event.key === "Escape") setOpen(false); };
+    document.addEventListener("mousedown", close); document.addEventListener("keydown", escape);
+    return () => { document.removeEventListener("mousedown", close); document.removeEventListener("keydown", escape); };
+  }, [open]);
+  return <div className="teacher-dropdown" ref={ref}>
+    {name && <input type="hidden" name={name} value={value} required={required} />}
+    <button type="button" aria-label={label} aria-haspopup="listbox" aria-expanded={open} onClick={() => setOpen((currentOpen) => !currentOpen)}><span>{current?.label ?? label}</span><i aria-hidden="true">⌄</i></button>
+    {open && <div role="listbox" aria-label={label}>{options.map((option) => <button type="button" role="option" aria-selected={option.value === value} data-active={option.value === value} key={option.value} onClick={() => { onChange(option.value); setOpen(false); }}>{option.label}</button>)}</div>}
+  </div>;
+}
+function TeacherBatchDropdown({ batches }: { batches: { id: string; name: string }[] }) {
+  const [value, setValue] = useState("");
+  return <TeacherDropdown name="batchId" required label="Assigned batch" value={value} onChange={setValue} options={[{ value: "", label: "Select assigned batch…" }, ...batches.map((batch) => ({ value: batch.id, label: batch.name }))]} />;
+}
+
 type ClassroomActivity = { resources: Resource[]; homework: { id: string; batchId: string; studentId?: string; title: string; description?: string; dueAtUtc?: string; type: string; isPublished: boolean }[] };
 function TeacherActiveClassBanner({ batch, rosterCount, status }: { batch?: TeacherBatch; rosterCount: number; status?: string }) {
   return <section className="teacher-active-class-banner">
@@ -315,6 +338,8 @@ function TeacherClassroomHero({ batch, sessionId, sessionStatus }: { batch?: Tea
 function TeacherClassroom({ batches, sessionId, sessionBatchId, sessionStatus, roster }: { batches: TeacherBatch[]; sessionId: string; sessionBatchId?: string; sessionStatus?: string; roster: S[] }) {
   const [batchId, setBatchId] = useState(batches[0]?.id ?? "");
   const [studentId, setStudentId] = useState("");
+  const [noteType, setNoteType] = useState("Class note");
+  const [materialType, setMaterialType] = useState("Class material");
   const [resources, setResources] = useState<Resource[]>([]);
   const [activity, setActivity] = useState<ClassroomActivity>({ resources: [], homework: [] });
   const [message, setMessage] = useState("");
@@ -364,9 +389,13 @@ function TeacherClassroom({ batches, sessionId, sessionBatchId, sessionStatus, r
     if (response.ok) { event.currentTarget.reset(); await refresh(); }
   }
   return <>
-    <section className="teacher-classroom-controls"><label>Class<select value={batchId} onChange={(event) => { setBatchId(event.target.value); setStudentId(""); }}><option value="">Select class</option>{batches.map((batch) => <option key={batch.id} value={batch.id}>{batch.name}{batch.capacity === 1 ? " · 1:1" : ""}</option>)}</select></label><label>Teaching focus<select value={studentId} onChange={(event) => setStudentId(event.target.value)}><option value="">Whole class</option>{roster.map((student) => <option key={student.id} value={student.id}>{student.firstName} {student.lastName}</option>)}</select></label><aside><b>{selectedStudent ? `${selectedStudent.firstName} ${selectedStudent.lastName}` : "Class overview"}</b><span>History and homework are filtered to this selection.</span></aside></section>
+    <section className="teacher-classroom-controls">
+      <label>Class<TeacherDropdown label="Class" value={batchId} onChange={(value) => { setBatchId(value); setStudentId(""); }} options={[{ value: "", label: "Select class" }, ...batches.map((batch) => ({ value: batch.id, label: `${batch.name}${batch.capacity === 1 ? " · 1:1" : ""}` }))]} /></label>
+      <label>Teaching focus<TeacherDropdown label="Teaching focus" value={studentId} onChange={setStudentId} options={[{ value: "", label: "Whole class" }, ...roster.map((student) => ({ value: student.id, label: `${student.firstName} ${student.lastName}` }))]} /></label>
+      <aside><b>{selectedStudent ? `${selectedStudent.firstName} ${selectedStudent.lastName}` : "Class overview"}</b><span>History and homework are filtered to this selection.</span></aside>
+    </section>
     <section className="teacher-classroom-grid">
-      <Panel title="Capture today’s learning"><p className="teacher-panel-intro">Record the lesson, then add any file or audio students should revisit.</p><form className="learner-form teacher-note-form" onSubmit={(event) => void addNote(event)}><select name="type"><option>Class note</option><option>Student remark</option><option>Music repertoire progress</option><option>Syllabus / textbook reference</option></select><input required name="title" placeholder="Topic, repertoire, chapter, or page" /><textarea required name="notes" placeholder="What was taught, progress, feedback, and the next practice step" /><button>Save learning record</button></form><div className="teacher-upload-divider"><span>Class material</span><small>Add a file or record a reference audio clip.</small></div><form className="learner-form teacher-upload-form" onSubmit={(event) => void addFile(event)}><select name="type"><option>Class material</option><option>Homework material</option><option>Reference recording</option><option>Syllabus / textbook</option></select><input name="title" placeholder="File title" /><input name="description" placeholder="Short description" /><label className="teacher-file-picker"><input name="file" type="file" accept="image/*,.pdf,audio/*,video/*,.doc,.docx" onChange={(event) => stageFile(event.target.files?.[0] ?? null)} /><span>{pendingFile ? pendingFile.name : "Choose photo, video, audio, PDF, or document"}</span></label>{pendingFile && <div className="teacher-file-preview"><b>Ready to review</b>{pendingFile.type.startsWith("audio/") && <audio controls src={pendingPreviewUrl} />}{pendingFile.type.startsWith("video/") && <video controls src={pendingPreviewUrl} />}{pendingFile.type.startsWith("image/") && <img src={pendingPreviewUrl} alt="Selected upload preview" />} {!/^(audio|video|image)\//.test(pendingFile.type) && <small>{pendingFile.name} · {(pendingFile.size / 1024 / 1024).toFixed(1)} MB</small>}<button type="button" className="teacher-clear-file" onClick={() => stageFile(null)}>Remove</button></div>}<div className="teacher-material-actions"><button disabled={!pendingFile}>Upload confirmed file</button>{!recording ? <button type="button" className="teacher-mic-button" aria-label="Start audio recording" title="Start audio recording" onClick={() => void toggleRecording()}>🎙</button> : <><span className="teacher-recording-state">● Recording{recordingPaused ? " paused" : ""}</span><button type="button" className="enterprise-action-button enterprise-action-button-secondary" onClick={toggleRecordingPause}>{recordingPaused ? "Resume" : "Pause"}</button><button type="button" className="teacher-stop-button" onClick={() => void toggleRecording()}>Stop</button></>}</div></form></Panel>
+      <Panel title="Capture today’s learning"><p className="teacher-panel-intro">Record the lesson, then add any file or audio students should revisit.</p><form className="learner-form teacher-note-form" onSubmit={(event) => void addNote(event)}><TeacherDropdown name="type" label="Learning record type" value={noteType} onChange={setNoteType} options={["Class note", "Student remark", "Music repertoire progress", "Syllabus / textbook reference"].map((value) => ({ value, label: value }))} /><input required name="title" placeholder="Topic, repertoire, chapter, or page" /><textarea required name="notes" placeholder="What was taught, progress, feedback, and the next practice step" /><button>Save learning record</button></form><div className="teacher-upload-divider"><span>Class material</span><small>Add a file or record a reference audio clip.</small></div><form className="learner-form teacher-upload-form" onSubmit={(event) => void addFile(event)}><TeacherDropdown name="type" label="Material type" value={materialType} onChange={setMaterialType} options={["Class material", "Homework material", "Reference recording", "Syllabus / textbook"].map((value) => ({ value, label: value }))} /><input name="title" placeholder="File title" /><input name="description" placeholder="Short description" /><label className="teacher-file-picker"><input name="file" type="file" accept="image/*,.pdf,audio/*,video/*,.doc,.docx" onChange={(event) => stageFile(event.target.files?.[0] ?? null)} /><span>{pendingFile ? pendingFile.name : "Choose photo, video, audio, PDF, or document"}</span></label>{pendingFile && <div className="teacher-file-preview"><b>Ready to review</b>{pendingFile.type.startsWith("audio/") && <audio controls src={pendingPreviewUrl} />}{pendingFile.type.startsWith("video/") && <video controls src={pendingPreviewUrl} />}{pendingFile.type.startsWith("image/") && <img src={pendingPreviewUrl} alt="Selected upload preview" />} {!/^(audio|video|image)\//.test(pendingFile.type) && <small>{pendingFile.name} · {(pendingFile.size / 1024 / 1024).toFixed(1)} MB</small>}<button type="button" className="teacher-clear-file" onClick={() => stageFile(null)}>Remove</button></div>}<div className="teacher-material-actions"><button disabled={!pendingFile}>Upload confirmed file</button>{!recording ? <button type="button" className="teacher-mic-button" aria-label="Start audio recording" title="Start audio recording" onClick={() => void toggleRecording()}>🎙</button> : <><span className="teacher-recording-state">● Recording{recordingPaused ? " paused" : ""}</span><button type="button" className="enterprise-action-button enterprise-action-button-secondary" onClick={toggleRecordingPause}>{recordingPaused ? "Resume" : "Pause"}</button><button type="button" className="teacher-stop-button" onClick={() => void toggleRecording()}>Stop</button></>}</div></form></Panel>
       <Panel title={selectedStudent ? `Homework for ${selectedStudent.firstName}` : "Homework for the class"}><p className="teacher-panel-intro">Give a clear practice task, add a due date if needed, and keep every assignment visible below.</p><form className="learner-form" onSubmit={(event) => void assignHomework(event)}><input required name="title" placeholder="Practice or homework title" /><textarea name="description" placeholder="Clear instructions, duration, or textbook page" /><input name="dueAtUtc" type="datetime-local" /><button>Assign homework</button></form><div className="teacher-upload-divider"><span>Assigned work</span><small>{selectedStudent ? "Private tasks for this student" : "Tasks shared with the class"}</small></div><div className="teacher-activity-list">{activity.homework.length ? activity.homework.map((item) => <article key={item.id}><b>{item.title}</b><small>{item.studentId ? "Individual" : "Whole class"}{item.dueAtUtc ? ` · due ${dt(item.dueAtUtc)}` : " · no due date"}</small></article>) : <p className="learner-empty">No homework has been assigned for this view.</p>}</div></Panel>
     </section>
     <Panel title={selectedStudent ? `${selectedStudent.firstName}'s learning history` : "Class learning history"}><div className="teacher-activity-list">{activity.resources.length ? activity.resources.map((item) => <article key={item.id}><div><b>{item.title}</b><small>{item.type}{item.studentId ? " · individual record" : " · class record"} · {dt(item.createdAtUtc)}</small>{item.description && <p>{item.description}</p>}</div>{!item.url.startsWith("note://") && <a href={`${apiUrl}${item.url}`} target="_blank" rel="noreferrer">Open</a>}</article>) : <p className="learner-empty">No learning records yet. Save notes, recordings, or files above to build the class history.</p>}</div></Panel>
@@ -402,6 +431,10 @@ function TeacherTasks({
     e.preventDefault();
     const f = new FormData(e.currentTarget);
     const body = Object.fromEntries(f) as Record<string, unknown>;
+    if (!body.batchId) {
+      setM("Select an assigned batch before saving.");
+      return;
+    }
     if ("maxScore" in body) body.maxScore = Number(body.maxScore);
     if ("scheduledAtUtc" in body && body.scheduledAtUtc)
       body.scheduledAtUtc = new Date(String(body.scheduledAtUtc)).toISOString();
@@ -417,16 +450,7 @@ function TeacherTasks({
     );
     if (r.ok) e.currentTarget.reset();
   }
-  const batch = (
-    <select required name="batchId">
-      <option value="">Select assigned batch…</option>
-      {batches.map((x) => (
-        <option key={x.id} value={x.id}>
-          {x.name}
-        </option>
-      ))}
-    </select>
-  );
+  const batch = <TeacherBatchDropdown batches={batches} />;
   async function reviewPractice(log: PracticeLog) {
     setReviewing(log.id);
     const response = await academyApi(`/api/teacher/practice-logs/${log.id}/review`, {
