@@ -3164,6 +3164,13 @@ html[data-theme="light"] .field-label { color: #475569; }
 .teacher-classroom-controls aside b { color: var(--ad-text); font-size: .9rem; }
 .teacher-classroom-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
 .teacher-classroom-grid .learner-panel { margin: 0; }
+.teacher-classroom-grid .learner-panel { padding: clamp(20px, 1.6vw, 28px); border-color: var(--ad-border); background: linear-gradient(145deg, color-mix(in srgb, var(--ad-accent) 4%, var(--ad-surface)), var(--ad-surface) 42%); }
+.teacher-classroom-grid .learner-panel h3 { margin-bottom: 5px; font-size: clamp(1.05rem, 1.1vw, 1.3rem); }
+.teacher-panel-intro { margin: 0 0 15px; color: var(--ad-text-muted); font-size: .79rem; line-height: 1.5; }
+.teacher-note-form { padding-bottom: 16px; }
+.teacher-upload-divider { display: grid; gap: 3px; margin: 0 0 14px; padding-top: 16px; border-top: 1px solid var(--ad-border); }
+.teacher-upload-divider span { color: var(--ad-text); font-size: .88rem; font-weight: 750; }
+.teacher-upload-divider small { color: var(--ad-text-muted); font-size: .73rem; }
 .teacher-activity-list { display: grid; gap: 8px; margin-top: 14px; }
 .teacher-activity-list article { display: flex; justify-content: space-between; gap: 14px; padding: 12px; border: 1px solid var(--ad-border); border-radius: 10px; background: var(--ad-surface-subtle); }
 .teacher-activity-list b, .teacher-activity-list small { display: block; }
@@ -3184,7 +3191,11 @@ html[data-theme="light"] .field-label { color: #475569; }
 .teacher-file-preview small { color: var(--ad-text-muted); font-size: .72rem; }
 .teacher-clear-file { width: max-content; padding: 0; border: 0; background: transparent; color: var(--ad-text-muted); cursor: pointer; font: inherit; font-size: .72rem; text-decoration: underline; }
 .teacher-clear-file:hover { color: var(--ad-text); transform: none; }
-.teacher-mic-button { gap: 7px; }
+.teacher-mic-button { display: grid; width: 46px; height: 42px; place-items: center; padding: 0; border: 0; border-radius: 11px; background: var(--ad-action); color: var(--ad-action-text); cursor: pointer; font-size: 1.08rem; transition: transform 160ms ease, background 160ms ease; }
+.teacher-mic-button:hover { background: var(--ad-action-hover); transform: translateY(-1px); }
+.teacher-recording-state { padding: 0 3px; color: #bd4251; font-size: .76rem; font-weight: 750; }
+.teacher-stop-button { min-height: 40px; padding: 0 13px; border: 1px solid color-mix(in srgb, #bd4251 46%, var(--ad-border)); border-radius: 9px; background: color-mix(in srgb, #bd4251 9%, var(--ad-surface)); color: #a62e3d; cursor: pointer; font: inherit; font-size: .76rem; font-weight: 750; }
+.teacher-stop-button:hover { background: color-mix(in srgb, #bd4251 16%, var(--ad-surface)); transform: none; }
 .teacher-classroom-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 14px 0 4px; }
 .teacher-classroom-toolbar select { min-width: min(100%, 280px); }
 .teacher-classroom-toolbar span { color: var(--ad-text-muted); font-size: .8rem; }
