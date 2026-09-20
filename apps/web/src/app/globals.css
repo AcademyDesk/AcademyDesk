@@ -3092,6 +3092,36 @@ html[data-theme="light"] .field-label { color: #475569; }
 }
 
 /* PORTAL STD — Teacher workspace shell */
+.teacher-portal-shell { --sidebar-width: clamp(252px, 21vw, 420px); --topbar-height: clamp(84px, 5.8vw, 112px); }
+.teacher-portal-sidebar .enterprise-brand { margin-bottom: 0; }
+.teacher-portal-nav > button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: clamp(10px, 0.7vw, 14px);
+  padding: clamp(9px, 0.78vw, 15px) clamp(10px, 0.78vw, 16px);
+  border: 0;
+  border-radius: clamp(9px, 0.65vw, 13px);
+  background: transparent;
+  color: var(--ad-text-muted);
+  cursor: pointer;
+  font-size: clamp(0.82rem, 0.84vw, 1rem);
+  font-weight: 530;
+  text-align: left;
+  transition: background 160ms ease, color 160ms ease;
+}
+.teacher-portal-nav > button:hover { color: var(--ad-text); background: var(--ad-surface-subtle); transform: none; }
+.teacher-portal-nav > button[data-active="true"] { color: var(--ad-text); background: color-mix(in srgb, var(--ad-accent) 22%, var(--ad-surface)); }
+.teacher-portal-nav > button > i { width: 16px; color: var(--ad-accent); font-size: 1.15rem; font-style: normal; text-align: center; }
+.teacher-portal-context { display: grid; gap: 5px; }
+.teacher-portal-context span { color: var(--ad-text-subtle); font-size: clamp(.63rem, .62vw, .78rem); font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
+.teacher-portal-context strong { color: var(--ad-text); font-size: clamp(1.08rem, 1.18vw, 1.5rem); letter-spacing: -.025em; }
+.teacher-portal-workspace { background: var(--ad-canvas); }
+.teacher-portal-content { max-width: 1440px; padding: clamp(28px, 2.3vw, 46px) clamp(22px, 2.4vw, 48px) 52px; }
+.teacher-portal-shell .learner-heading h1 { font-size: var(--ad-page-title-size); }
+.teacher-portal-shell .learner-heading p { display: none; }
+.teacher-portal-shell .learner-heading span { font-size: .9rem; }
+.teacher-portal-shell .learner-kpi, .teacher-portal-shell .learner-panel { border-radius: 14px; background: var(--ad-surface); box-shadow: none; }
 .learner-shell .learner-topbar { height: 78px; }
 .learner-shell .learner-brand > div { display: grid; gap: 2px; }
 .learner-shell .learner-brand b { font-size: .96rem; letter-spacing: -.02em; }

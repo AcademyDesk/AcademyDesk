@@ -93,25 +93,28 @@ export default function Teacher() {
   const current = (id: string) =>
     attendance.find((x) => x.studentId === id)?.status || "Not marked";
   return (
-    <main className="learner-shell">
-      <header className="learner-topbar">
-        <a href="/teacher" className="learner-brand">
+    <main className="enterprise-app-shell teacher-portal-shell">
+      <aside className="enterprise-sidebar teacher-portal-sidebar">
+        <a href="/teacher" className="enterprise-brand">
           <span>A</span>
-          <div><b>AcademyDesk</b><small>Teacher portal</small></div>
+          <strong>AcademyDesk</strong>
         </a>
-        <div className="learner-utilities"><ThemeToggle /><TeacherPortalProfile /></div>
-      </header>
-      <div className="learner-layout">
-        <aside className="learner-sidebar">
-          <p className="learner-sidebar-label">Workspace</p>
+        <nav className="enterprise-nav-section teacher-portal-nav" aria-label="Teacher workspace">
+          <p>Teacher portal</p>
           {tabs.map(([k, x, i]) => (
             <button key={k} data-active={t === k} onClick={() => setT(k)}>
               <i>{i}</i>
               {x}
             </button>
           ))}
-        </aside>
-        <section className="learner-content">
+        </nav>
+      </aside>
+      <section className="enterprise-workspace teacher-portal-workspace">
+        <header className="enterprise-topbar">
+          <div className="teacher-portal-context"><span>Teacher portal</span><strong>{p ? `${p.firstName} ${p.lastName}` : "Teacher workspace"}</strong></div>
+          <div className="enterprise-utilities"><ThemeToggle /><TeacherPortalProfile /></div>
+        </header>
+        <section className="learner-content teacher-portal-content">
           {m ? (
             <p className="learner-state" role="status" aria-live="polite">
               {m}
@@ -210,7 +213,7 @@ export default function Teacher() {
             )
           )}
         </section>
-      </div>
+      </section>
       <nav className="learner-bottom-nav">
         {tabs.map(([k, x, i]) => (
           <button key={k} data-active={t === k} onClick={() => setT(k)}>
@@ -249,11 +252,11 @@ function TeacherPortalProfile() {
     setAccount((current) => ({ ...current, profileImageUrl: result.profileImageUrl })); setMessage(""); setOpen(false);
   }
   function signOut() { window.localStorage.removeItem("academydesk.accessToken"); window.localStorage.removeItem("academydesk.refreshToken"); router.push("/login"); }
-  return <div className="learner-profile" ref={ref}>
-    <button type="button" className="learner-profile-trigger" onClick={() => { setMessage(""); setOpen((value) => !value); }} aria-label="Open profile menu" aria-expanded={open}>
+  return <div className="enterprise-profile" ref={ref}>
+    <button type="button" className="enterprise-profile-trigger" onClick={() => { setMessage(""); setOpen((value) => !value); }} aria-label="Open profile menu" aria-expanded={open}>
       {imageUrl ? <img src={imageUrl} alt="Profile" /> : <span>{initials}</span>}
     </button>
-    {open && <div className="learner-profile-menu" role="menu"><strong>{name}</strong><small>Teacher portal</small><input ref={inputRef} className="sr-only" type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => void upload(event)} /><button type="button" onClick={() => inputRef.current?.click()}>Edit profile picture</button><button type="button" onClick={signOut}>Sign out</button>{message && <p role="status">{message}</p>}</div>}
+    {open && <div className="enterprise-profile-menu" role="menu"><strong>{name}</strong><small>Teacher portal</small><input ref={inputRef} className="sr-only" type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => void upload(event)} /><button type="button" className="enterprise-profile-menu-action" onClick={() => inputRef.current?.click()}>Edit profile picture</button><button type="button" className="enterprise-profile-menu-action" onClick={signOut}>Sign out</button>{message && <small role="status">{message}</small>}</div>}
   </div>;
 }
 function K({ a, b, c }: { a: string; b: string; c: string }) {
