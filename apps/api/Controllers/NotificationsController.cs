@@ -33,6 +33,12 @@ public sealed class NotificationsController(AcademyDeskDbContext dbContext) : Co
         }
         if (string.IsNullOrWhiteSpace(title) || string.IsNullOrWhiteSpace(body)) return BadRequest(new { message = "A title and message are required." });
         var variables = request.Variables ?? new Dictionary<string, string>();
+        if (string.Equals(request.RecipientType, "Academy", StringComparison.OrdinalIgnoreCase) && request.IsImportant)
+        {
+            if (request.DisplayHours is < 1 or > 168) return BadRequest(new { message = "Important announcements must be displayed for 1 to 168 hours." });
+            variables["important"] = "true";
+            variables["expiresAtUtc"] = DateTime.UtcNow.AddHours(request.DisplayHours ?? 1).ToString("O");
+        }
         body = Regex.Replace(body, "\\{\\{([a-zA-Z0-9_]+)\\}\\}", match => variables.TryGetValue(match.Groups[1].Value, out var value) ? value : match.Value);
         var status = "Queued"; string? failureReason = null;
         if (channel is "Email" or "WhatsApp")
@@ -60,6 +66,6 @@ public sealed class NotificationsController(AcademyDeskDbContext dbContext) : Co
     { var x=await dbContext.Notifications.SingleOrDefaultAsync(v=>v.Id==notificationId&&v.AcademyId==academyId,token); if(x is null)return NotFound(); if(!new[]{"Queued","Cancelled","RetryRequested"}.Contains(request.Status,StringComparer.OrdinalIgnoreCase))return BadRequest(); x.Status=request.Status.Trim(); x.FailureReason=request.Status=="RetryRequested"?null:x.FailureReason; await dbContext.SaveChangesAsync(token); return Ok(); }
 }
 
-public sealed record CreateNotificationRequest(Guid? RecipientId, string? RecipientType, string? Title, string? Message, string? Channel, DateTime? ScheduledAtUtc, Guid? TemplateId, Dictionary<string, string>? Variables);
+public sealed record CreateNotificationRequest(Guid? RecipientId, string? RecipientType, string? Title, string? Message, string? Channel, DateTime? ScheduledAtUtc, Guid? TemplateId, Dictionary<string, string>? Variables, bool IsImportant = false, int? DisplayHours = null);
 public sealed record NotificationSummary(Guid Id, Guid? RecipientId, string RecipientType, string Title, string Message, string Channel, string Status, Guid? TemplateId, string? VariablesJson, string? FailureReason, DateTime? ScheduledAtUtc, DateTime? SentAtUtc);
 public sealed record UpdateNotificationStatusRequest(string Status);

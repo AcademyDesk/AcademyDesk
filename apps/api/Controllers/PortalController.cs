@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
 using System.Text;
+using System.Text.Json;
 
 namespace AcademyDesk.Api.Controllers;
 
@@ -77,11 +78,14 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
     {
         var user = await users.GetUserAsync(User);
         if (user?.AcademyId is null) return Forbid();
-        var announcements = await db.Notifications.AsNoTracking()
+        var candidates = await db.Notifications.AsNoTracking()
             .Where(x => x.AcademyId == user.AcademyId && x.RecipientId == null && x.RecipientType == "Academy" && x.Status != "Cancelled")
             .OrderByDescending(x => x.CreatedAtUtc).Take(10)
-            .Select(x => new PortalAnnouncementSummary(x.Id, x.Title, x.Message, x.CreatedAtUtc))
+            .Select(x => new PortalAnnouncementCandidate(x.Id, x.Title, x.Message, x.CreatedAtUtc, x.VariablesJson))
             .ToListAsync(token);
+        var now = DateTime.UtcNow;
+        var announcements = candidates.Where(x => IsActiveImportantAnnouncement(x.VariablesJson, now))
+            .Select(x => new PortalAnnouncementSummary(x.Id, x.Title, x.Message, x.CreatedAtUtc)).ToList();
         return Ok(announcements);
     }
 
@@ -148,7 +152,7 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
             .Where(x => x.AcademyId == user.AcademyId && batchIds.Contains(x.BatchId) && x.StartUtc >= DateTime.UtcNow.AddDays(-1))
             .OrderBy(x => x.StartUtc).Take(20)
             .Join(db.Batches.AsNoTracking(), session => session.BatchId, batch => batch.Id,
-                (session, batch) => new PortalSession(session.Id, batch.Name, session.StartUtc, session.EndUtc, session.DeliveryMode, session.RoomName, session.Status))
+                (session, batch) => new PortalSession(session.Id, batch.Name, session.StartUtc, session.EndUtc, session.DeliveryMode, session.RoomName, batch.MeetingLink, session.Status))
             .ToListAsync(token);
         var assignments = await db.Assignments.AsNoTracking().Where(x => x.AcademyId == user.AcademyId && batchIds.Contains(x.BatchId) && x.IsPublished).OrderBy(x => x.DueAtUtc).Take(30).Select(x => new PortalAssignment(x.Id, x.Title, x.Type, x.DueAtUtc)).ToListAsync(token);
         var attendance = await db.AttendanceRecords.AsNoTracking()
@@ -335,6 +339,19 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
 
     private async Task<bool> CanManageLeave(ApplicationUser user, Guid studentId, CancellationToken token) =>
         user.StudentId == studentId || (await ParentAccess(user, studentId, token))?.CanManageLeave == true;
+
+    private static bool IsActiveImportantAnnouncement(string? variablesJson, DateTime now)
+    {
+        if (string.IsNullOrWhiteSpace(variablesJson)) return false;
+        try
+        {
+            using var document = JsonDocument.Parse(variablesJson);
+            var root = document.RootElement;
+            if (!root.TryGetProperty("important", out var important) || !string.Equals(important.GetString(), "true", StringComparison.OrdinalIgnoreCase)) return false;
+            return root.TryGetProperty("expiresAtUtc", out var expiry) && DateTime.TryParse(expiry.GetString(), out var expiresAtUtc) && expiresAtUtc.ToUniversalTime() > now;
+        }
+        catch (JsonException) { return false; }
+    }
     [HttpPut("students/{studentId:guid}/profile")]
     public async Task<ActionResult> UpdateProfile(Guid studentId, PortalStudentProfileRequest request, CancellationToken token)
     {
@@ -368,7 +385,7 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
 
 public sealed record PortalStudentDetails(string Name, string? Email, string? Phone, string FirstName, string LastName, string? PreferredName, string? Gender, DateOnly? DateOfBirth, string? AddressLine1, string? City, string? State, string? PostalCode, string? EmergencyContactName, string? EmergencyContactPhone, IReadOnlyList<PortalBatch> Batches, IReadOnlyList<PortalSession> Schedule, IReadOnlyList<PortalAssignment> Assignments, IReadOnlyList<PortalAttendance> Attendance, PortalAttendanceSummary AttendanceSummary, IReadOnlyList<PortalMusicProgress> Music, IReadOnlyList<PortalResource> Resources, IReadOnlyList<PortalPracticeLog> PracticeLogs, PortalPracticeSummary PracticeSummary, IReadOnlyList<PortalLessonPlan> LessonPlans, IReadOnlyList<PortalCourseModule> Modules, IReadOnlyList<PortalCertificate> Certificates, IReadOnlyList<PortalInvoice> Invoices, IReadOnlyList<PortalAssessmentResult> AssessmentResults, IReadOnlyList<PortalClassHistory> ClassHistory, IReadOnlyList<PortalCycleProgress> CycleProgress);
 public sealed record PortalBatch(Guid Id, string Name);
-public sealed record PortalSession(Guid Id, string BatchName, DateTime StartUtc, DateTime EndUtc, string DeliveryMode, string? RoomName, string Status);
+public sealed record PortalSession(Guid Id, string BatchName, DateTime StartUtc, DateTime EndUtc, string DeliveryMode, string? RoomName, string? MeetingLink, string Status);
 public sealed record PortalAssignment(Guid Id, string Title, string Type, DateTime? DueAtUtc);
 public sealed record PortalAttendance(DateTime StartUtc, string Status);
 public sealed record PortalAttendanceSummary(int Total, int Present, int Absent, int Late, int Other);
@@ -393,5 +410,6 @@ public sealed record PortalLeaveSummary(Guid Id, DateOnly StartDate, DateOnly En
 public sealed record PortalPracticeLogRequest(DateOnly PracticeDate, int MinutesPracticed, string? FocusArea, string? Notes);
 public sealed record PortalNotificationSummary(Guid Id, string Title, string Message, string Channel, string Status, DateTime CreatedAtUtc, DateTime? SentAtUtc);
 public sealed record PortalAnnouncementSummary(Guid Id, string Title, string Message, DateTime CreatedAtUtc);
+public sealed record PortalAnnouncementCandidate(Guid Id, string Title, string Message, DateTime CreatedAtUtc, string? VariablesJson);
 public sealed record PortalChildSummary(Guid Id, string Name, string? Email, string? Phone, bool IsActive, int ActiveEnrollmentCount);
 public sealed record PortalEventSummary(Guid Id, string Title, string Type, DateTime StartUtc, DateTime EndUtc, string? Venue, string? Notes);

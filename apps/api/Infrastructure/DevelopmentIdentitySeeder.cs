@@ -203,8 +203,13 @@ public static class DevelopmentIdentitySeeder
                 new Notification { AcademyId = academy.Id, RecipientId = student.Id, RecipientType = "Student", Title = "Homework assigned", Message = "Your C major scale practice is due in five days.", Channel = "InApp", Status = "Sent", SentAtUtc = DateTime.UtcNow.AddDays(-1) },
                 new Notification { AcademyId = academy.Id, RecipientId = student.Id, RecipientType = "Student", Title = "Assessment result published", Message = "Your Piano foundations check-in result is ready to view.", Channel = "InApp", Status = "Sent", SentAtUtc = DateTime.UtcNow.AddDays(-2) });
         }
-        if (!await db.Notifications.AnyAsync(x => x.AcademyId == academy.Id && x.RecipientId == null && x.RecipientType == "Academy" && x.Title == "Emergency update"))
-            db.Notifications.Add(new Notification { AcademyId = academy.Id, RecipientType = "Academy", Title = "Emergency update", Message = "Heavy rain advisory: please check your class schedule before travelling to the academy.", Channel = "InApp", Status = "Sent", SentAtUtc = DateTime.UtcNow });
+        var emergencyAnnouncement = await db.Notifications.SingleOrDefaultAsync(x => x.AcademyId == academy.Id && x.RecipientId == null && x.RecipientType == "Academy" && x.Title == "Emergency update");
+        if (emergencyAnnouncement is null)
+        {
+            emergencyAnnouncement = new Notification { AcademyId = academy.Id, RecipientType = "Academy", Title = "Emergency update", Message = "Heavy rain advisory: please check your class schedule before travelling to the academy.", Channel = "InApp", Status = "Sent", SentAtUtc = DateTime.UtcNow };
+            db.Notifications.Add(emergencyAnnouncement);
+        }
+        emergencyAnnouncement.VariablesJson = JsonSerializer.Serialize(new Dictionary<string, string> { ["important"] = "true", ["expiresAtUtc"] = DateTime.UtcNow.AddHours(24).ToString("O") });
         if (!await db.LeaveRequests.AnyAsync(x => x.AcademyId == academy.Id && x.StudentId == student.Id))
             db.LeaveRequests.Add(new LeaveRequest { AcademyId = academy.Id, RequesterType = "Student", StudentId = student.Id, StartDate = studentToday.AddDays(12), EndDate = studentToday.AddDays(12), Reason = "Family commitment", Status = "Approved", DecisionNotes = "Approved—please review the class note after the session." });
         await db.SaveChangesAsync();

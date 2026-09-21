@@ -40,6 +40,7 @@ type D = {
     startUtc: string;
     deliveryMode: string;
     roomName?: string;
+    meetingLink?: string;
   }[];
   assignments: { id: string; title: string; type: string; dueAtUtc?: string }[];
   attendanceSummary: { total: number; present: number; late: number };
@@ -268,7 +269,14 @@ function AnnouncementTicker({ announcements }: { announcements: Announcement[] }
 }
 function PortalNotifications({ notices, setNotices }: { notices: Notice[]; setNotices: React.Dispatch<React.SetStateAction<Notice[]>> }) {
   const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
   const unread = notices.filter((notice) => notice.status !== "Read").length;
+  useEffect(() => {
+    if (!open) return;
+    const close = (event: MouseEvent) => { if (!ref.current?.contains(event.target as Node)) setOpen(false); };
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, [open]);
   async function openNotifications() {
     setOpen((value) => !value);
     const unreadItems = notices.filter((notice) => notice.status !== "Read");
@@ -276,7 +284,7 @@ function PortalNotifications({ notices, setNotices }: { notices: Notice[]; setNo
     await Promise.all(unreadItems.map((notice) => academyApi(`/api/portal/notifications/${notice.id}/read`, { method: "PATCH" })));
     setNotices((items) => items.map((item) => ({ ...item, status: "Read" })));
   }
-  return <div className="learner-notifications">
+  return <div className="learner-notifications" ref={ref}>
     <button type="button" className="learner-notification-button" onClick={() => void openNotifications()} aria-label="Open notifications" aria-expanded={open}>♢{unread > 0 && <em>{unread > 9 ? "9+" : unread}</em>}</button>
     {open && <section className="learner-notification-menu"><header><strong>Notifications</strong><small>{unread ? `${unread} new` : "All caught up"}</small></header>{notices.length ? notices.slice(0, 8).map((notice) => <article key={notice.id}><b>{notice.title}</b><span>{notice.message}</span></article>) : <p>No notifications yet.</p>}</section>}
   </div>;
@@ -356,29 +364,16 @@ function View({
           </section>
           <P title="Today and next">
             {d.schedule.slice(0, 4).map((x) => (
-              <R
-                key={x.id}
-                a={x.batchName}
-                b={dt(x.startUtc) + " · " + x.deliveryMode}
-              />
+              <SessionRow key={x.id} x={x} />
             ))}
           </P>
         </>
       )}
       {tab === "classes" && (
-        <>
+        <section className="learner-tab-grid">
           <P title="Upcoming timetable">
             {d.schedule.map((x) => (
-              <R
-                key={x.id}
-                a={x.batchName}
-                b={
-                  dt(x.startUtc) +
-                  " · " +
-                  x.deliveryMode +
-                  (x.roomName ? " · " + x.roomName : "")
-                }
-              />
+              <SessionRow key={x.id} x={x} />
             ))}
           </P>
           <P title="Learning resources">
@@ -389,10 +384,10 @@ function View({
           <P title="Class history">
             {d.classHistory.map((item) => <ClassHistoryRow key={item.sessionId} item={item} />)}
           </P>
-        </>
+        </section>
       )}
       {tab === "tasks" && (
-        <>
+        <section className="learner-tab-grid">
           <P title="Assignments">
             {d.assignments.map((x) =>
               parentAccess ? (
@@ -406,10 +401,10 @@ function View({
           {(!parentAccess || parentAccess.canManageLeave) && (
             <Leave id={id} items={l} />
           )}
-        </>
+        </section>
       )}
       {tab === "progress" && (
-        <>
+        <section className="learner-tab-grid">
           <P title="Current class cycle">
             {d.cycleProgress.map((cycle) => <CycleRow key={cycle.batchId} cycle={cycle} />)}
           </P>
@@ -439,10 +434,10 @@ function View({
               <DownloadRow key={x.certificateNumber} a={x.title} b={x.certificateNumber + " · " + x.issuedDate} label="Download certificate" path={`/api/portal/students/${id}/certificates/${encodeURIComponent(x.certificateNumber)}/download`} filename={`${x.certificateNumber}.html`} />
             ))}
           </P>
-        </>
+        </section>
       )}
       {tab === "more" && (
-        <>
+        <section className="learner-tab-grid">
           <P title="Fees and payments">
             {d.invoices.map((x) => (
               <DownloadRow key={x.invoiceNumber} a={x.invoiceNumber + " · " + cash(x.balance, x.currency)} b={"Due " + x.dueDate + " · " + x.status} label="View / download invoice" path={`/api/portal/students/${id}/invoices/${x.id}/download`} filename={`${x.invoiceNumber}.html`} />
@@ -462,7 +457,7 @@ function View({
               <R key={x.id} a={x.title} b={x.message} />
             ))}
           </P>
-        </>
+        </section>
       )}
     </>
   );
@@ -493,6 +488,10 @@ function R({ a, b }: { a: string; b: string }) {
       <small>{b}</small>
     </article>
   );
+}
+function SessionRow({ x }: { x: D["schedule"][number] }) {
+  const canJoin = (x.deliveryMode === "Online" || x.deliveryMode === "Hybrid") && x.meetingLink;
+  return <article className="learner-row learner-session-row"><div><b>{x.batchName}</b><small>{dt(x.startUtc)} · {x.deliveryMode}{x.roomName ? ` · ${x.roomName}` : ""}</small></div>{canJoin && <a className="learner-join-link" href={x.meetingLink} target="_blank" rel="noreferrer">Join class ↗</a>}</article>;
 }
 function ResourceRow({ x }: { x: { title: string; type: string; url: string; description?: string } }) {
   const downloadable = x.url.startsWith("/") || x.url.startsWith("http");
@@ -636,7 +635,6 @@ function Profile({ id, d }: { id: string; d: D }) {
           <div className="learner-form-grid"><input name="city" defaultValue={d.city || ""} placeholder="City" /><input name="state" defaultValue={d.state || ""} placeholder="State" /></div>
           <input name="postalCode" defaultValue={d.postalCode || ""} placeholder="Postal / PIN code" />
           <div className="learner-form-grid"><input name="emergencyContactName" defaultValue={d.emergencyContactName || ""} placeholder="Emergency contact name" /><input name="emergencyContactPhone" defaultValue={d.emergencyContactPhone || ""} placeholder="Emergency contact phone" /></div>
-          <small className="learner-muted">Your user ID and password are protected and cannot be changed here. Use the profile menu above to update your picture.</small>
         </>
       }
     />
