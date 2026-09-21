@@ -427,6 +427,7 @@ function TeacherClassroom({ batches, sessions, sessionId, roster, onSessionSelec
     if (history.ok) setActivity(await history.json());
   }
   useEffect(() => { setBatchId(sessions.find((session) => session.id === sessionId)?.batchId ?? ""); }, [sessionId, sessions]);
+  useEffect(() => { if (selected?.capacity === 1 && roster[0] && studentId !== roster[0].id) setStudentId(roster[0].id); }, [selected?.capacity, selected?.id, roster, studentId]);
   useEffect(() => { void refresh(); }, [batchId, studentId, fromDate, toDate]);
   async function addNote(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault(); const form = new FormData(event.currentTarget);
@@ -453,7 +454,7 @@ function TeacherClassroom({ batches, sessions, sessionId, roster, onSessionSelec
   return <>
     <section className="teacher-classroom-controls" data-selected={Boolean(selected)}>
       <label>Class<TeacherDropdown label="Class" value={batchId} onChange={(value) => { setBatchId(value); setStudentId(""); const nextSession = sessions.find((session) => session.batchId === value && session.status !== "Completed") ?? sessions.find((session) => session.batchId === value); onSessionSelect(nextSession?.id ?? ""); }} options={[{ value: "", label: "Select class" }, ...batches.map((batch) => ({ value: batch.id, label: `${batch.name}${batch.capacity === 1 ? " · 1:1" : ""}` }))]} /></label>
-      {selected && <label>Teaching focus<TeacherDropdown label="Teaching focus" value={studentId} onChange={setStudentId} options={[{ value: "", label: "Whole class" }, ...roster.map((student) => ({ value: student.id, label: `${student.firstName} ${student.lastName}` }))]} /></label>}
+      {selected && (selected.capacity === 1 ? <label>Teaching focus<div className="teacher-single-focus">{selectedStudent ? `${selectedStudent.firstName} ${selectedStudent.lastName}` : "Loading student…"}</div></label> : <label>Teaching focus<TeacherDropdown label="Teaching focus" value={studentId} onChange={setStudentId} options={[{ value: "", label: "Whole class" }, ...roster.map((student) => ({ value: student.id, label: `${student.firstName} ${student.lastName}` }))]} /></label>)}
     </section>
     {selected && <>
     <section className="teacher-classroom-grid">
