@@ -185,7 +185,7 @@ export default function Teacher() {
                           setT("classroom");
                         }}
                       >
-                        <time dateTime={x.startUtc}>{new Intl.DateTimeFormat("en-IN", { day: "2-digit", month: "short" }).format(new Date(x.startUtc))}<strong>{new Intl.DateTimeFormat("en-IN", { weekday: "short" }).format(new Date(x.startUtc))}</strong></time>
+                        <time dateTime={x.startUtc}><b>{new Intl.DateTimeFormat("en-IN", { day: "2-digit" }).format(new Date(x.startUtc))}</b><span>{new Intl.DateTimeFormat("en-IN", { month: "short" }).format(new Date(x.startUtc))}</span><strong>{new Intl.DateTimeFormat("en-IN", { weekday: "short" }).format(new Date(x.startUtc))}</strong></time>
                         <div><b>{name(x.batchId)}</b><small>{dt(x.startUtc) + " · " + x.deliveryMode + (x.roomName ? " · " + x.roomName : "")}</small></div>
                         <span>Open classroom <i aria-hidden="true">→</i></span>
                       </button>
