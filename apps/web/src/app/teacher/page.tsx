@@ -144,10 +144,6 @@ export default function Teacher() {
                       ? `Welcome, ${p.firstName}`
                       : t[0].toUpperCase() + t.slice(1)}
                   </h1>
-                  <span>
-                    Teaching delivery, learner progress, and class actions
-                    scoped to your assigned batches.
-                  </span>
                 </header>}
                 {t === "today" && (
                   <section className="learner-kpis">
