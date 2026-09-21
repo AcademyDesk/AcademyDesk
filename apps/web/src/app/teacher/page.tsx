@@ -32,10 +32,10 @@ type PracticeLog = {
 type T = "today" | "classes" | "classroom" | "homework" | "progress" | "more";
 const tabs: [T, string, string][] = [
   ["today", "Today", "⌂"],
-  ["classes", "Classes", "◷"],
+  ["classes", "My classes & progress", "◷"],
   ["classroom", "Classroom", "♙"],
   ["homework", "Homework", "✓"],
-  ["progress", "Progress & pay", "◌"],
+  ["progress", "Pay slip", "₹"],
   ["more", "Profile & leave", "•••"],
 ];
 const statuses = ["Present", "Absent"];
@@ -147,7 +147,7 @@ export default function Teacher() {
                   <h1>
                     {t === "today"
                       ? `Welcome, ${p.firstName}`
-                      : t[0].toUpperCase() + t.slice(1)}
+                      : t === "classes" ? "My classes & progress" : t === "progress" ? "Pay slip" : t[0].toUpperCase() + t.slice(1)}
                   </h1>
                 </header>}
                 {t === "today" && (
@@ -199,7 +199,7 @@ export default function Teacher() {
                     </div>
                   </section>
                 )}
-                {t === "classes" && <TeacherCalendar batches={p.batches} onOpen={(id) => { setSid(id); void loadRoster(id); setT("classroom"); }} />}
+                {t === "classes" && <><TeacherProgress includeMetrics /><TeacherCalendar batches={p.batches} compact onOpen={(id) => { setSid(id); void loadRoster(id); setT("classroom"); }} /></>}
                 {t === "homework" && <TeacherTasks batches={p.batches} />}{" "}
                 {t === "progress" && <TeacherProgress />}
                 {t === "more" && <TeacherSelfService />}
@@ -289,7 +289,7 @@ function TeacherActionPanel({ title, icon, children }: { title: string; icon: st
 }
 type TeacherCalendarSession = P["sessions"][number];
 type TeacherCalendarHoliday = { id: string; name: string; holidayDate: string; isClosed: boolean };
-function TeacherCalendar({ batches, onOpen }: { batches: P["batches"]; onOpen: (id: string) => void }) {
+function TeacherCalendar({ batches, onOpen, compact = false }: { batches: P["batches"]; onOpen: (id: string) => void; compact?: boolean }) {
   const [month, setMonth] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
   const [data, setData] = useState<{ sessions: TeacherCalendarSession[]; holidays: TeacherCalendarHoliday[] }>({ sessions: [], holidays: [] });
   const [selectedDay, setSelectedDay] = useState<string>(indiaDateKey(new Date()));
@@ -305,7 +305,7 @@ function TeacherCalendar({ batches, onOpen }: { batches: P["batches"]; onOpen: (
   const selectedSessions = sessionByDay.get(selectedDay) ?? [];
   const selectedHoliday = holidayByDay.get(selectedDay);
   const batchName = (id: string) => batches.find((batch) => batch.id === id)?.name ?? "Assigned class";
-  return <section className="teacher-calendar-panel">
+  return <section className="teacher-calendar-panel" data-compact={compact}>
     <header className="teacher-calendar-header"><div><span>Class calendar</span><h2>{new Intl.DateTimeFormat("en-IN", { month: "long", year: "numeric" }).format(month)}</h2></div><div><button type="button" aria-label="Previous month" onClick={() => setMonth((current) => new Date(current.getFullYear(), current.getMonth() - 1, 1))}>‹</button><button type="button" onClick={() => { const today = new Date(); setMonth(new Date(today.getFullYear(), today.getMonth(), 1)); setSelectedDay(indiaDateKey(today)); }}>Today</button><button type="button" aria-label="Next month" onClick={() => setMonth((current) => new Date(current.getFullYear(), current.getMonth() + 1, 1))}>›</button></div></header>
     <div className="teacher-calendar-weekdays">{["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => <span key={day}>{day}</span>)}</div>
     <div className="teacher-calendar-grid">{cells.map((day, index) => {
@@ -467,15 +467,16 @@ function TeacherClassroom({ batches, sessions, sessionId, roster, onSessionSelec
   </>;
 }
 
-function TeacherProgress() {
+function TeacherProgress({ includeMetrics = false }: { includeMetrics?: boolean }) {
   const [progress, setProgress] = useState<{ completedClasses: number; upcomingClasses: number; attendanceRecords: number; presentOrOnline: number }>();
   const [payments, setPayments] = useState<TeacherPaymentData>();
   const [viewing, setViewing] = useState<TeacherPaymentData["payslips"][number] | null>(null);
   const [payslipMonth, setPayslipMonth] = useState("");
-  useEffect(() => { void academyApi("/api/teacher/progress").then(async (response) => { if (response.ok) setProgress(await response.json()); }); }, []);
-  useEffect(() => { const [year, month] = payslipMonth.split("-"); const query = year && month ? `?year=${year}&month=${Number(month)}` : ""; void academyApi(`/api/teacher/payments${query}`).then(async (response) => { if (response.ok) setPayments(await response.json()); }); }, [payslipMonth]);
+  useEffect(() => { if (includeMetrics) void academyApi("/api/teacher/progress").then(async (response) => { if (response.ok) setProgress(await response.json()); }); }, [includeMetrics]);
+  useEffect(() => { if (!includeMetrics) { const [year, month] = payslipMonth.split("-"); const query = year && month ? `?year=${year}&month=${Number(month)}` : ""; void academyApi(`/api/teacher/payments${query}`).then(async (response) => { if (response.ok) setPayments(await response.json()); }); } }, [includeMetrics, payslipMonth]);
   function download(item: TeacherPaymentData["payslips"][number]) { const popup = window.open("", "_blank"); if (!popup) return; popup.document.write(`<!doctype html><title>${item.payslipNumber}</title><style>body{font-family:Arial,sans-serif;color:#13233b;padding:44px}header{display:flex;justify-content:space-between;border-bottom:2px solid #1674c6;padding-bottom:18px}h1{margin:0;font-size:24px}.label{color:#59708e;font-size:12px;text-transform:uppercase;letter-spacing:1px}.amount{font-size:28px;color:#1674c6;font-weight:700}.row{display:flex;justify-content:space-between;padding:13px 0;border-bottom:1px solid #dce6f1}</style><header><div><div class="label">AcademyDesk</div><h1>Salary payslip</h1></div><div><div class="label">Payslip number</div><b>${item.payslipNumber}</b></div></header><p class="label" style="margin-top:28px">Pay period</p><h2>${item.periodLabel}</h2><div class="row"><span>Gross amount</span><b>₹${item.grossAmount.toLocaleString("en-IN")}</b></div><div class="row"><span>Deductions</span><b>₹${item.deductions.toLocaleString("en-IN")}</b></div><div class="row"><span>Payment method</span><b>${item.paymentMethod}</b></div><div class="row"><span>Reference</span><b>${item.reference ?? "—"}</b></div><p class="label" style="margin-top:28px">Net payment</p><div class="amount">₹${item.netAmount.toLocaleString("en-IN")}</div><p>Paid on ${dt(item.paidAtUtc)}</p>`); popup.document.close(); popup.focus(); popup.print(); }
-  return <><section className="learner-kpis"><K a="Classes completed" b={String(progress?.completedClasses ?? "—")} c="Delivered sessions" /><K a="Upcoming classes" b={String(progress?.upcomingClasses ?? "—")} c="Scheduled ahead" /><K a="Attendance marked" b={String(progress?.attendanceRecords ?? "—")} c="Student records" /><K a="Present" b={String(progress?.presentOrOnline ?? "—")} c="Attendance outcomes" /></section><TeacherActionPanel icon="₹" title="Payment and payslips"><section className="teacher-payment-model"><b>Payment model: {payments?.paymentModel ?? "Not configured"}</b><small>{payments?.monthlyAmount ? `Monthly salary ₹${payments.monthlyAmount.toLocaleString("en-IN")}` : payments?.amountPerCycle ? `₹${payments.amountPerCycle.toLocaleString("en-IN")} per ${payments.sessionsPerCycle ?? "configured"} sessions` : ""}</small></section><div className="teacher-payslip-filter"><label>Month<input type="month" value={payslipMonth} onChange={(event) => setPayslipMonth(event.target.value)} /></label>{payslipMonth && <button type="button" onClick={() => setPayslipMonth("")}>All months</button>}</div><section className="teacher-payslip-list">{payments?.payslips?.length ? payments.payslips.map((item) => <article key={item.id}><div><b>{item.periodLabel}</b><small>{item.payslipNumber} · ₹{item.netAmount.toLocaleString("en-IN")}</small></div><div><em data-paid={item.status === "Paid"}>{item.status === "PendingApproval" ? "Awaiting approval" : item.status}</em>{item.status === "Paid" ? <><button type="button" onClick={() => setViewing(item)}>View</button><button type="button" onClick={() => download(item)}>Download PDF</button></> : <button type="button" disabled>Available after approval</button>}</div></article>) : <p className="learner-empty">No payslips were issued for this month.</p>}</section></TeacherActionPanel>{viewing && <div className="teacher-payslip-modal" role="dialog" aria-modal="true" aria-label="Payslip preview"><article><header><div><span>Salary payslip</span><h2>{viewing.periodLabel}</h2></div><button type="button" aria-label="Close payslip" onClick={() => setViewing(null)}>×</button></header><p>{viewing.payslipNumber}</p><div><span>Gross amount</span><b>₹{viewing.grossAmount.toLocaleString("en-IN")}</b></div><div><span>Deductions</span><b>₹{viewing.deductions.toLocaleString("en-IN")}</b></div><div><span>Net payment</span><b>₹{viewing.netAmount.toLocaleString("en-IN")}</b></div><div><span>Payment method</span><b>{viewing.paymentMethod}</b></div><footer><button type="button" onClick={() => download(viewing)}>Download PDF</button></footer></article></div>}</>;
+  if (includeMetrics) return <section className="learner-kpis"><K a="Classes completed" b={String(progress?.completedClasses ?? "—")} c="Delivered sessions" /><K a="Upcoming classes" b={String(progress?.upcomingClasses ?? "—")} c="Scheduled ahead" /><K a="Attendance marked" b={String(progress?.attendanceRecords ?? "—")} c="Student records" /><K a="Present" b={String(progress?.presentOrOnline ?? "—")} c="Attendance outcomes" /></section>;
+  return <><TeacherActionPanel icon="₹" title="Payment and payslips"><section className="teacher-payment-model"><b>Payment model: {payments?.paymentModel ?? "Not configured"}</b><small>{payments?.monthlyAmount ? `Monthly salary ₹${payments.monthlyAmount.toLocaleString("en-IN")}` : payments?.amountPerCycle ? `₹${payments.amountPerCycle.toLocaleString("en-IN")} per ${payments.sessionsPerCycle ?? "configured"} sessions` : ""}</small></section><div className="teacher-payslip-filter"><label>Month<input type="month" value={payslipMonth} onChange={(event) => setPayslipMonth(event.target.value)} /></label>{payslipMonth && <button type="button" onClick={() => setPayslipMonth("")}>All months</button>}</div><section className="teacher-payslip-list">{payments?.payslips?.length ? payments.payslips.map((item) => <article key={item.id}><div><b>{item.periodLabel}</b><small>{item.payslipNumber} · ₹{item.netAmount.toLocaleString("en-IN")}</small></div><div><em data-paid={item.status === "Paid"}>{item.status === "PendingApproval" ? "Awaiting approval" : item.status}</em>{item.status === "Paid" ? <><button type="button" onClick={() => setViewing(item)}>View</button><button type="button" onClick={() => download(item)}>Download PDF</button></> : <button type="button" disabled>Available after approval</button>}</div></article>) : <p className="learner-empty">No payslips were issued for this month.</p>}</section></TeacherActionPanel>{viewing && <div className="teacher-payslip-modal" role="dialog" aria-modal="true" aria-label="Payslip preview"><article><header><div><span>Salary payslip</span><h2>{viewing.periodLabel}</h2></div><button type="button" aria-label="Close payslip" onClick={() => setViewing(null)}>×</button></header><p>{viewing.payslipNumber}</p><div><span>Gross amount</span><b>₹{viewing.grossAmount.toLocaleString("en-IN")}</b></div><div><span>Deductions</span><b>₹{viewing.deductions.toLocaleString("en-IN")}</b></div><div><span>Net payment</span><b>₹{viewing.netAmount.toLocaleString("en-IN")}</b></div><div><span>Payment method</span><b>{viewing.paymentMethod}</b></div><footer><button type="button" onClick={() => download(viewing)}>Download PDF</button></footer></article></div>}</>;
 }
 
 type TeacherPaymentData = { paymentModel?: string; monthlyAmount?: number; amountPerCycle?: number; sessionsPerCycle?: number; payslips: { id: string; payslipNumber: string; periodLabel: string; grossAmount: number; deductions: number; netAmount: number; currency: string; status: string; paymentMethod: string; reference?: string; paidAtUtc: string }[] };
@@ -616,6 +617,10 @@ function TeacherTasks({
 
 function TeacherSelfService() {
   const [message, setMessage] = useState("");
+  const [profile, setProfile] = useState<Record<string, string>>({});
+  const [leaveRequests, setLeaveRequests] = useState<{ id: string; startDate: string; endDate: string; reason: string; status: string; decisionNotes?: string }[]>([]);
+  const imageInput = useRef<HTMLInputElement>(null);
+  useEffect(() => { void academyApi("/api/teacher/profile").then(async (response) => { if (response.ok) setProfile(await response.json()); }); void academyApi("/api/teacher/leave-requests").then(async (response) => { if (response.ok) setLeaveRequests(await response.json()); }); }, []);
   async function save(event: React.FormEvent<HTMLFormElement>, path: string) {
     event.preventDefault();
     const response = await academyApi(path, {
@@ -628,20 +633,36 @@ function TeacherSelfService() {
     setMessage(
       response.ok ? "Saved successfully." : "The request could not be saved.",
     );
-    if (response.ok) event.currentTarget.reset();
+    if (response.ok) {
+      if (path === "/api/teacher/leave-requests") { const created = await response.json(); setLeaveRequests((current) => [created, ...current]); event.currentTarget.reset(); }
+      if (path === "/api/teacher/profile") setProfile(await response.json());
+    }
   }
+  async function changePassword(event: React.FormEvent<HTMLFormElement>) { event.preventDefault(); const form = new FormData(event.currentTarget); const response = await academyApi("/api/auth/session/change-password", { method: "POST", headers: apiHeaders(true), body: JSON.stringify({ currentPassword: form.get("currentPassword"), newPassword: form.get("newPassword") }) }); setMessage(response.ok ? "Password changed." : "Password could not be changed. Check your current password."); if (response.ok) event.currentTarget.reset(); }
+  async function uploadPicture(event: React.ChangeEvent<HTMLInputElement>) { const image = event.target.files?.[0]; event.target.value = ""; if (!image) return; const body = new FormData(); body.append("image", image); const response = await academyApi("/api/auth/session/profile-image", { method: "POST", body }); setMessage(response.ok ? "Profile picture updated." : "Profile picture could not be updated."); }
   return (
     <>
-      <TeacherActionPanel icon="◉" title="My contact profile">
+      <TeacherActionPanel icon="◉" title="My profile">
         <form
           className="learner-form"
           onSubmit={(event) => void save(event, "/api/teacher/profile")}
         >
-          <input name="email" type="email" placeholder="Email address" />
-          <input name="phone" placeholder="Phone number" />
+          <div className="teacher-profile-photo"><input ref={imageInput} className="sr-only" type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => void uploadPicture(event)} /><button type="button" onClick={() => imageInput.current?.click()}>Update profile picture</button></div>
+          <input required name="firstName" value={profile.firstName ?? ""} onChange={(event) => setProfile((current) => ({ ...current, firstName: event.target.value }))} placeholder="First name" />
+          <input required name="lastName" value={profile.lastName ?? ""} onChange={(event) => setProfile((current) => ({ ...current, lastName: event.target.value }))} placeholder="Last name" />
+          <input name="preferredName" value={profile.preferredName ?? ""} onChange={(event) => setProfile((current) => ({ ...current, preferredName: event.target.value }))} placeholder="Preferred name" />
+          <input name="email" type="email" value={profile.email ?? ""} onChange={(event) => setProfile((current) => ({ ...current, email: event.target.value }))} placeholder="Email address" />
+          <input name="phone" value={profile.phone ?? ""} onChange={(event) => setProfile((current) => ({ ...current, phone: event.target.value }))} placeholder="Phone number" />
+          <input name="addressLine1" value={profile.addressLine1 ?? ""} onChange={(event) => setProfile((current) => ({ ...current, addressLine1: event.target.value }))} placeholder="Address" />
+          <input name="city" value={profile.city ?? ""} onChange={(event) => setProfile((current) => ({ ...current, city: event.target.value }))} placeholder="City" />
+          <input name="state" value={profile.state ?? ""} onChange={(event) => setProfile((current) => ({ ...current, state: event.target.value }))} placeholder="State" />
+          <input name="postalCode" value={profile.postalCode ?? ""} onChange={(event) => setProfile((current) => ({ ...current, postalCode: event.target.value }))} placeholder="Postal / PIN code" />
+          <input name="emergencyContactName" value={profile.emergencyContactName ?? ""} onChange={(event) => setProfile((current) => ({ ...current, emergencyContactName: event.target.value }))} placeholder="Emergency contact name" />
+          <input name="emergencyContactPhone" value={profile.emergencyContactPhone ?? ""} onChange={(event) => setProfile((current) => ({ ...current, emergencyContactPhone: event.target.value }))} placeholder="Emergency contact phone" />
           <button>Save profile</button>
         </form>
       </TeacherActionPanel>
+      <TeacherActionPanel icon="◇" title="Security"><form className="learner-form" onSubmit={(event) => void changePassword(event)}><input required name="currentPassword" type="password" placeholder="Current password" /><input required name="newPassword" minLength={6} type="password" placeholder="New password" /><button>Change password</button></form></TeacherActionPanel>
       <TeacherActionPanel icon="◷" title="Request leave">
         <form
           className="learner-form"
@@ -653,6 +674,7 @@ function TeacherSelfService() {
           <button>Send leave request</button>
           <small>{message}</small>
         </form>
+        <section className="teacher-leave-list">{leaveRequests.length ? leaveRequests.map((request) => <article key={request.id}><div><b>{request.startDate} to {request.endDate}</b><small>{request.reason}</small>{request.decisionNotes && <small>{request.decisionNotes}</small>}</div><em data-status={request.status}>{request.status === "Pending" ? "Pending approval" : request.status}</em></article>) : <p className="learner-empty">No leave requests yet.</p>}</section>
       </TeacherActionPanel>
       <TeacherActionPanel icon="✓" title="Teaching review queues">
         <R

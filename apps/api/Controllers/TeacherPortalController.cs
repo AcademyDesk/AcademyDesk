@@ -64,6 +64,16 @@ public sealed class TeacherPortalController(
         return Ok(new TeacherCalendarSummary(sessions, holidays));
     }
 
+    [HttpGet("profile")]
+    public async Task<ActionResult<TeacherPortalProfileSummary>> Profile(CancellationToken cancellationToken)
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user?.AcademyId is null || user.TeacherId is null) return Forbid();
+        var teacher = await dbContext.Teachers.AsNoTracking().SingleOrDefaultAsync(x =>
+            x.Id == user.TeacherId && x.AcademyId == user.AcademyId && x.IsActive, cancellationToken);
+        return teacher is null ? Forbid() : Ok(new TeacherPortalProfileSummary(teacher.FirstName, teacher.LastName, teacher.PreferredName, teacher.Email, teacher.Phone, teacher.AddressLine1, teacher.City, teacher.State, teacher.PostalCode, teacher.EmergencyContactName, teacher.EmergencyContactPhone));
+    }
+
     [HttpPut("profile")]
     public async Task<ActionResult> UpdateProfile(TeacherPortalProfileRequest request, CancellationToken cancellationToken)
     {
@@ -72,10 +82,25 @@ public sealed class TeacherPortalController(
         var teacher = await dbContext.Teachers.SingleOrDefaultAsync(x =>
             x.Id == user.TeacherId && x.AcademyId == user.AcademyId && x.IsActive, cancellationToken);
         if (teacher is null) return Forbid();
+        if (string.IsNullOrWhiteSpace(request.FirstName) || string.IsNullOrWhiteSpace(request.LastName))
+            return BadRequest(new { message = "First and last name are required." });
+        teacher.FirstName = request.FirstName.Trim();
+        teacher.LastName = request.LastName.Trim();
+        teacher.PreferredName = request.PreferredName?.Trim();
         teacher.Email = request.Email?.Trim();
         teacher.Phone = request.Phone?.Trim();
+        teacher.AddressLine1 = request.AddressLine1?.Trim();
+        teacher.City = request.City?.Trim();
+        teacher.State = request.State?.Trim();
+        teacher.PostalCode = request.PostalCode?.Trim();
+        teacher.EmergencyContactName = request.EmergencyContactName?.Trim();
+        teacher.EmergencyContactPhone = request.EmergencyContactPhone?.Trim();
+        user.DisplayName = string.Join(" ", new[] { teacher.FirstName, teacher.LastName }.Where(x => !string.IsNullOrWhiteSpace(x)));
+        user.PhoneNumber = teacher.Phone;
+        var identityUpdate = await userManager.UpdateAsync(user);
+        if (!identityUpdate.Succeeded) return BadRequest(new { message = string.Join(" ", identityUpdate.Errors.Select(x => x.Description)) });
         await dbContext.SaveChangesAsync(cancellationToken);
-        return Ok(new { teacher.Id, teacher.Email, teacher.Phone });
+        return Ok(new TeacherPortalProfileSummary(teacher.FirstName, teacher.LastName, teacher.PreferredName, teacher.Email, teacher.Phone, teacher.AddressLine1, teacher.City, teacher.State, teacher.PostalCode, teacher.EmergencyContactName, teacher.EmergencyContactPhone));
     }
 
     [HttpGet("leave-requests")]
@@ -583,7 +608,8 @@ public sealed record TeacherSessionStatusRequest(string Status);
 public sealed record TeacherBulkAttendanceRequest(IReadOnlyList<TeacherBulkAttendanceItem> Records);
 public sealed record TeacherBulkAttendanceItem(Guid StudentId, string Status, string? Notes);
 public sealed record TeacherSessionAttendanceRequest(string Status);
-public sealed record TeacherPortalProfileRequest(string? Email, string? Phone);
+public sealed record TeacherPortalProfileRequest(string? FirstName, string? LastName, string? PreferredName, string? Email, string? Phone, string? AddressLine1, string? City, string? State, string? PostalCode, string? EmergencyContactName, string? EmergencyContactPhone);
+public sealed record TeacherPortalProfileSummary(string FirstName, string LastName, string? PreferredName, string? Email, string? Phone, string? AddressLine1, string? City, string? State, string? PostalCode, string? EmergencyContactName, string? EmergencyContactPhone);
 public sealed record TeacherLeaveRequest(DateOnly StartDate, DateOnly EndDate, string Reason);
 public sealed record TeacherLeaveSummary(Guid Id, DateOnly StartDate, DateOnly EndDate, string Reason, string Status, string? DecisionNotes);
 public sealed record TeacherPracticeLogSummary(Guid Id, Guid StudentId, string StudentName, DateOnly PracticeDate, int MinutesPracticed, string? FocusArea, string? Notes, string? TeacherFeedback, string Status);
