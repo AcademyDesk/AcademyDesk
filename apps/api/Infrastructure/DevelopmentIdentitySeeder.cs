@@ -106,6 +106,98 @@ public static class DevelopmentIdentitySeeder
                 new LearningResource { AcademyId = academy.Id, BatchId = pianoBatch.Id, Title = "Week 1 — C major scale practice", Description = "Practice hands separately at a slow tempo for 10 minutes each day.", Type = "Homework material", Url = "note://piano-week-1", IsPublished = true },
                 new LearningResource { AcademyId = academy.Id, BatchId = pianoBatch.Id, Title = "Lesson note — posture and hand shape", Description = "Use this class note to revise the technique covered in today’s lesson.", Type = "Class note", Url = "note://piano-posture", IsPublished = true });
         }
+
+        // Give the Student portal a complete, realistic local data set. Every item is
+        // scoped to Haynsh's student profile and inserted only once, so restarting the
+        // development API does not keep adding test records.
+        var studentToday = DateOnly.FromDateTime(DateTime.UtcNow);
+        if (await db.ClassSessions.CountAsync(x => x.AcademyId == academy.Id && (x.BatchId == pianoBatch.Id || x.BatchId == hybridOneToOneB.Id) && x.Status == "Completed") < 4)
+        {
+            var firstPastClass = DateTime.UtcNow.Date.AddDays(-15).AddHours(12);
+            db.ClassSessions.AddRange(
+                new ClassSession { AcademyId = academy.Id, BatchId = pianoBatch.Id, TeacherId = hayansh.Id, StartUtc = firstPastClass, EndUtc = firstPastClass.AddHours(1), DeliveryMode = "Offline", RoomName = "Studio 1", Status = "Completed", TeacherAttendanceStatus = "Present", TeacherAttendanceMarkedAtUtc = firstPastClass },
+                new ClassSession { AcademyId = academy.Id, BatchId = pianoBatch.Id, TeacherId = hayansh.Id, StartUtc = firstPastClass.AddDays(4), EndUtc = firstPastClass.AddDays(4).AddHours(1), DeliveryMode = "Offline", RoomName = "Studio 1", Status = "Completed", TeacherAttendanceStatus = "Present", TeacherAttendanceMarkedAtUtc = firstPastClass.AddDays(4) },
+                new ClassSession { AcademyId = academy.Id, BatchId = pianoBatch.Id, TeacherId = hayansh.Id, StartUtc = firstPastClass.AddDays(8), EndUtc = firstPastClass.AddDays(8).AddHours(1), DeliveryMode = "Offline", RoomName = "Studio 1", Status = "Completed", TeacherAttendanceStatus = "Present", TeacherAttendanceMarkedAtUtc = firstPastClass.AddDays(8) },
+                new ClassSession { AcademyId = academy.Id, BatchId = hybridOneToOneB.Id, TeacherId = hayansh.Id, StartUtc = firstPastClass.AddDays(10), EndUtc = firstPastClass.AddDays(10).AddHours(1), DeliveryMode = "Hybrid", RoomName = "Studio 3", Status = "Completed", TeacherAttendanceStatus = "Present", TeacherAttendanceMarkedAtUtc = firstPastClass.AddDays(10) });
+            await db.SaveChangesAsync();
+        }
+
+        var studentCompletedSessions = await db.ClassSessions
+            .Where(x => x.AcademyId == academy.Id && (x.BatchId == pianoBatch.Id || x.BatchId == hybridOneToOneB.Id) && x.Status == "Completed")
+            .OrderBy(x => x.StartUtc)
+            .ToListAsync();
+        var sampleAbsenceSessionId = studentCompletedSessions.Skip(1).FirstOrDefault()?.Id;
+        foreach (var session in studentCompletedSessions)
+        {
+            if (!await db.AttendanceRecords.AnyAsync(x => x.ClassSessionId == session.Id && x.StudentId == student.Id))
+            {
+                db.AttendanceRecords.Add(new AttendanceRecord
+                {
+                    AcademyId = academy.Id,
+                    ClassSessionId = session.Id,
+                    StudentId = student.Id,
+                    Status = session.Id == sampleAbsenceSessionId ? "Absent" : "Present",
+                    MarkedAtUtc = session.EndUtc,
+                    Notes = session.Id == sampleAbsenceSessionId ? "Leave informed in advance." : "Recorded during class."
+                });
+            }
+        }
+
+        if (!await db.Assignments.AnyAsync(x => x.AcademyId == academy.Id && x.BatchId == pianoBatch.Id))
+        {
+            db.Assignments.AddRange(
+                new Assignment { AcademyId = academy.Id, BatchId = pianoBatch.Id, Title = "Week 2 — C major scale", Description = "Practice hands separately for 10 minutes a day and submit a short recording.", DueAtUtc = DateTime.UtcNow.AddDays(5), Type = "Homework", IsPublished = true },
+                new Assignment { AcademyId = academy.Id, BatchId = pianoBatch.Id, StudentId = student.Id, Title = "Haynsh — posture check-in", Description = "Record the first eight bars while keeping relaxed wrists.", DueAtUtc = DateTime.UtcNow.AddDays(8), Type = "Practice recording", IsPublished = true });
+        }
+
+        var musicPiece = await db.MusicPieces.FirstOrDefaultAsync(x => x.AcademyId == academy.Id && x.Title == "Ode to Joy");
+        if (musicPiece is null)
+        {
+            musicPiece = new MusicPiece { AcademyId = academy.Id, Title = "Ode to Joy", Composer = "Ludwig van Beethoven", Instrument = "Piano", Genre = "Classical", Difficulty = "Beginner", DurationMinutes = 3 };
+            db.MusicPieces.Add(musicPiece);
+            await db.SaveChangesAsync();
+        }
+        if (!await db.StudentMusicProgress.AnyAsync(x => x.AcademyId == academy.Id && x.StudentId == student.Id && x.MusicPieceId == musicPiece.Id))
+            db.StudentMusicProgress.Add(new StudentMusicProgress { AcademyId = academy.Id, StudentId = student.Id, MusicPieceId = musicPiece.Id, Status = "In progress", TargetDate = studentToday.AddDays(21), Score = 78m, Notes = "Strong rhythm. Keep the left hand lighter in the middle section." });
+        if (!await db.PracticeLogs.AnyAsync(x => x.AcademyId == academy.Id && x.StudentId == student.Id))
+        {
+            db.PracticeLogs.AddRange(
+                new PracticeLog { AcademyId = academy.Id, StudentId = student.Id, PracticeDate = studentToday.AddDays(-3), MinutesPracticed = 25, FocusArea = "C major scale", Notes = "Hands separately at a slow tempo.", TeacherFeedback = "Good consistency—gradually increase the tempo only when every note is even.", ReviewedAtUtc = DateTime.UtcNow.AddDays(-2), Status = "Reviewed" },
+                new PracticeLog { AcademyId = academy.Id, StudentId = student.Id, PracticeDate = studentToday.AddDays(-1), MinutesPracticed = 30, FocusArea = "Ode to Joy", Notes = "Worked on the opening phrase.", TeacherFeedback = "Nice musical phrasing. Keep the wrist relaxed.", ReviewedAtUtc = DateTime.UtcNow, Status = "Reviewed" });
+        }
+
+        var assessment = await db.Assessments.FirstOrDefaultAsync(x => x.AcademyId == academy.Id && x.BatchId == pianoBatch.Id && x.Title == "Piano foundations check-in");
+        if (assessment is null)
+        {
+            assessment = new Assessment { AcademyId = academy.Id, BatchId = pianoBatch.Id, Title = "Piano foundations check-in", Type = "Technique assessment", MaxScore = 100m, ScheduledAtUtc = DateTime.UtcNow.AddDays(-5), IsPublished = true };
+            db.Assessments.Add(assessment);
+            await db.SaveChangesAsync();
+        }
+        if (!await db.AssessmentResults.AnyAsync(x => x.AcademyId == academy.Id && x.AssessmentId == assessment.Id && x.StudentId == student.Id))
+            db.AssessmentResults.Add(new AssessmentResult { AcademyId = academy.Id, AssessmentId = assessment.Id, StudentId = student.Id, Score = 86m, Grade = "A", Remarks = "Confident rhythm and hand position. Continue refining finger independence.", IsPublished = true });
+        if (!await db.Certificates.AnyAsync(x => x.AcademyId == academy.Id && x.StudentId == student.Id && x.CertificateNumber == "CERT-HAY-1001"))
+            db.Certificates.Add(new Certificate { AcademyId = academy.Id, CertificateNumber = "CERT-HAY-1001", StudentId = student.Id, BatchId = pianoBatch.Id, Title = "Piano Foundations — Level 1", VerificationCode = "HAY-FOUNDATION-2026", IssuedDate = studentToday.AddDays(-7), Status = "Issued", Notes = "Awarded for completing the introductory foundations module." });
+
+        var paidInvoice = await db.Invoices.FirstOrDefaultAsync(x => x.AcademyId == academy.Id && x.InvoiceNumber == "INV-HAY-2026-08");
+        if (paidInvoice is null)
+        {
+            paidInvoice = new Invoice { AcademyId = academy.Id, InvoiceNumber = "INV-HAY-2026-08", StudentId = student.Id, TotalAmount = 4800m, AdjustedAmount = 4800m, IssuedDate = studentToday.AddMonths(-1), DueDate = studentToday.AddDays(-15), Status = "Paid" };
+            db.Invoices.Add(paidInvoice);
+            await db.SaveChangesAsync();
+        }
+        if (!await db.Payments.AnyAsync(x => x.AcademyId == academy.Id && x.InvoiceId == paidInvoice.Id))
+            db.Payments.Add(new Payment { AcademyId = academy.Id, InvoiceId = paidInvoice.Id, Amount = 4800m, Method = "UPI", Status = "Completed", Reference = "UPI-HAY-1001", PaidAtUtc = DateTime.UtcNow.AddDays(-14), ReconciledAtUtc = DateTime.UtcNow.AddDays(-14), ReconciliationReference = "REC-HAY-1001" });
+        if (!await db.Invoices.AnyAsync(x => x.AcademyId == academy.Id && x.InvoiceNumber == "INV-HAY-2026-09"))
+            db.Invoices.Add(new Invoice { AcademyId = academy.Id, InvoiceNumber = "INV-HAY-2026-09", StudentId = student.Id, TotalAmount = 4800m, AdjustedAmount = 4800m, IssuedDate = studentToday, DueDate = studentToday.AddDays(7), Status = "Issued" });
+
+        if (!await db.Notifications.AnyAsync(x => x.AcademyId == academy.Id && x.RecipientId == student.Id))
+        {
+            db.Notifications.AddRange(
+                new Notification { AcademyId = academy.Id, RecipientId = student.Id, RecipientType = "Student", Title = "Homework assigned", Message = "Your C major scale practice is due in five days.", Channel = "InApp", Status = "Sent", SentAtUtc = DateTime.UtcNow.AddDays(-1) },
+                new Notification { AcademyId = academy.Id, RecipientId = student.Id, RecipientType = "Student", Title = "Assessment result published", Message = "Your Piano foundations check-in result is ready to view.", Channel = "InApp", Status = "Sent", SentAtUtc = DateTime.UtcNow.AddDays(-2) });
+        }
+        if (!await db.LeaveRequests.AnyAsync(x => x.AcademyId == academy.Id && x.StudentId == student.Id))
+            db.LeaveRequests.Add(new LeaveRequest { AcademyId = academy.Id, RequesterType = "Student", StudentId = student.Id, StartDate = studentToday.AddDays(12), EndDate = studentToday.AddDays(12), Reason = "Family commitment", Status = "Approved", DecisionNotes = "Approved—please review the class note after the session." });
         await db.SaveChangesAsync();
 
         // Development-only sample records make the Platform Owner workspace useful

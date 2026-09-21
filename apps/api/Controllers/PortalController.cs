@@ -135,8 +135,20 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
                 (session, batch) => new PortalSession(session.Id, batch.Name, session.StartUtc, session.EndUtc, session.DeliveryMode, session.RoomName, session.Status))
             .ToListAsync(token);
         var assignments = await db.Assignments.AsNoTracking().Where(x => x.AcademyId == user.AcademyId && batchIds.Contains(x.BatchId) && x.IsPublished).OrderBy(x => x.DueAtUtc).Take(30).Select(x => new PortalAssignment(x.Id, x.Title, x.Type, x.DueAtUtc)).ToListAsync(token);
-        var attendance = await db.AttendanceRecords.AsNoTracking().Where(x => x.AcademyId == user.AcademyId && x.StudentId == studentId).Join(db.ClassSessions.AsNoTracking(), a => a.ClassSessionId, s => s.Id, (a, s) => new PortalAttendance(s.StartUtc, a.Status)).OrderByDescending(x => x.StartUtc).Take(30).ToListAsync(token);
-        var music = await db.StudentMusicProgress.AsNoTracking().Where(x => x.AcademyId == user.AcademyId && x.StudentId == studentId).Join(db.MusicPieces.AsNoTracking(), p => p.MusicPieceId, piece => piece.Id, (p, piece) => new PortalMusicProgress(piece.Title, p.Status, p.TargetDate)).OrderBy(x => x.TargetDate).ToListAsync(token);
+        var attendance = await db.AttendanceRecords.AsNoTracking()
+            .Where(x => x.AcademyId == user.AcademyId && x.StudentId == studentId)
+            .Join(db.ClassSessions.AsNoTracking(), a => a.ClassSessionId, s => s.Id,
+                (a, s) => new { s.StartUtc, a.Status })
+            .OrderByDescending(x => x.StartUtc).Take(30)
+            .Select(x => new PortalAttendance(x.StartUtc, x.Status))
+            .ToListAsync(token);
+        var music = await db.StudentMusicProgress.AsNoTracking()
+            .Where(x => x.AcademyId == user.AcademyId && x.StudentId == studentId)
+            .Join(db.MusicPieces.AsNoTracking(), p => p.MusicPieceId, piece => piece.Id,
+                (p, piece) => new { piece.Title, p.Status, p.TargetDate })
+            .OrderBy(x => x.TargetDate)
+            .Select(x => new PortalMusicProgress(x.Title, x.Status, x.TargetDate))
+            .ToListAsync(token);
         var resources = await db.LearningResources.AsNoTracking().Where(x => x.AcademyId == user.AcademyId && x.IsPublished && (!x.BatchId.HasValue || batchIds.Contains(x.BatchId.Value))).OrderByDescending(x => x.CreatedAtUtc).Take(30).Select(x => new PortalResource(x.Title, x.Type, x.Url)).ToListAsync(token);
         var practice = await db.PracticeLogs.AsNoTracking().Where(x => x.AcademyId == user.AcademyId && x.StudentId == studentId).OrderByDescending(x => x.PracticeDate).Take(20).Select(x => new PortalPracticeLog(x.PracticeDate, x.MinutesPracticed, x.FocusArea, x.TeacherFeedback, x.Status)).ToListAsync(token);
         var attendanceSummary = new PortalAttendanceSummary(attendance.Count, attendance.Count(x => x.Status == "Present"), attendance.Count(x => x.Status == "Absent"), attendance.Count(x => x.Status == "Late"), attendance.Count(x => x.Status == "Excused" || x.Status == "Online"));
@@ -151,8 +163,10 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
         var results = await db.AssessmentResults.AsNoTracking()
             .Where(x => x.AcademyId == user.AcademyId && x.StudentId == studentId && x.IsPublished)
             .Join(db.Assessments.AsNoTracking().Where(x => batchIds.Contains(x.BatchId)), x => x.AssessmentId, a => a.Id,
-                (x, a) => new PortalAssessmentResult(a.Title, a.Type, a.MaxScore, x.Score, x.Grade, x.Remarks))
-            .OrderByDescending(x => x.Title).ToListAsync(token);
+                (x, a) => new { a.Title, a.Type, a.MaxScore, x.Score, x.Grade, x.Remarks })
+            .OrderByDescending(x => x.Title)
+            .Select(x => new PortalAssessmentResult(x.Title, x.Type, x.MaxScore, x.Score, x.Grade, x.Remarks))
+            .ToListAsync(token);
         return Ok(new PortalStudentDetails($"{student.FirstName} {student.LastName}", student.Email, student.Phone,
             canViewAcademicProgress ? batches : [], canViewAcademicProgress ? schedule : [], canViewAcademicProgress ? assignments : [], canViewAcademicProgress ? attendance : [], canViewAcademicProgress ? attendanceSummary : new PortalAttendanceSummary(0, 0, 0, 0, 0),
             canViewAcademicProgress ? music : [], canViewDocuments ? resources : [], canViewAcademicProgress ? practice : [], canViewAcademicProgress ? practiceSummary : new PortalPracticeSummary(0, 0), canViewAcademicProgress ? lessonPlans : [], canViewAcademicProgress ? modules : [], canViewDocuments ? certificates : [],
