@@ -550,7 +550,7 @@ function TeacherTasks({
     setReviewing("");
   }
   return (
-    <>
+    <section className="teacher-compact-panels teacher-homework-panels">
       <TeacherActionPanel icon="✓" title="Assign homework">
         <form
           className="learner-form"
@@ -611,7 +611,7 @@ function TeacherTasks({
           ))}
         </div>
       </TeacherActionPanel>
-    </>
+    </section>
   );
 }
 
@@ -641,7 +641,7 @@ function TeacherSelfService() {
   async function changePassword(event: React.FormEvent<HTMLFormElement>) { event.preventDefault(); const form = new FormData(event.currentTarget); const response = await academyApi("/api/auth/session/change-password", { method: "POST", headers: apiHeaders(true), body: JSON.stringify({ currentPassword: form.get("currentPassword"), newPassword: form.get("newPassword") }) }); setMessage(response.ok ? "Password changed." : "Password could not be changed. Check your current password."); if (response.ok) event.currentTarget.reset(); }
   async function uploadPicture(event: React.ChangeEvent<HTMLInputElement>) { const image = event.target.files?.[0]; event.target.value = ""; if (!image) return; const body = new FormData(); body.append("image", image); const response = await academyApi("/api/auth/session/profile-image", { method: "POST", body }); setMessage(response.ok ? "Profile picture updated." : "Profile picture could not be updated."); }
   return (
-    <>
+    <section className="teacher-compact-panels teacher-profile-panels">
       <TeacherActionPanel icon="◉" title="My profile">
         <form
           className="learner-form"
@@ -686,6 +686,6 @@ function TeacherSelfService() {
           b="Record and publish results for active learners in your assigned batches."
         />
       </TeacherActionPanel>
-    </>
+    </section>
   );
 }
