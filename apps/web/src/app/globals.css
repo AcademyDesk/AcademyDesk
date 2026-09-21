@@ -3526,6 +3526,36 @@ html[data-theme="light"] .field-label { color: #475569; }
 .learner-shell .learner-sidebar button { font-size: .84rem; font-weight: 650; transition: background 160ms ease, color 160ms ease, transform 160ms ease; }
 .learner-shell .learner-sidebar button:hover { background: var(--ad-surface-subtle); color: var(--ad-text); transform: translateX(2px); }
 .learner-shell .learner-heading h1 { color: var(--ad-text); font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif; font-size: var(--ad-page-title-size); font-weight: var(--ad-page-title-weight); letter-spacing: var(--ad-page-title-tracking); line-height: var(--ad-page-title-line-height); }
+.learner-announcement { display:flex; align-items:center; gap:12px; min-height:38px; padding:0 24px; background:var(--ad-panel); border-bottom:1px solid var(--ad-border); color:var(--ad-text); overflow:hidden; }
+.learner-announcement > span { flex:none; border-radius:999px; padding:4px 9px; background:var(--ad-accent-soft); color:var(--ad-accent); font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
+.learner-announcement > div { overflow:hidden; white-space:nowrap; }
+.learner-announcement p { margin:0; display:inline-block; padding-left:100%; animation:learner-ticker 26s linear infinite; color:var(--ad-muted); font-size:13px; }
+@keyframes learner-ticker { to { transform:translateX(-50%); } }
+.learner-notifications { position:relative; }
+.learner-notification-button { position:relative; width:42px; height:42px; border:1px solid var(--ad-border); border-radius:13px; background:var(--ad-panel); color:var(--ad-accent); font-size:20px; cursor:pointer; }
+.learner-notification-button em { position:absolute; top:-7px; right:-7px; min-width:18px; height:18px; padding:1px 4px; border-radius:999px; background:#e24c62; color:white; font-style:normal; font-size:10px; font-weight:800; }
+.learner-notification-menu { position:absolute; z-index:30; top:50px; right:0; width:min(360px,calc(100vw - 32px)); max-height:420px; overflow:auto; border:1px solid var(--ad-border); border-radius:15px; background:var(--ad-panel); box-shadow:0 20px 45px rgba(4,18,35,.25); padding:10px; }
+.learner-notification-menu header { display:flex; justify-content:space-between; align-items:center; padding:8px 10px; }
+.learner-notification-menu article { display:grid; gap:3px; padding:11px 10px; border-top:1px solid var(--ad-border); }
+.learner-notification-menu article span,.learner-notification-menu header small { color:var(--ad-muted); font-size:12px; }
+.learner-resource-row,.learner-history-row,.learner-cycle-row,.learner-download-row { display:grid; gap:8px; }
+.learner-resource-row a { color:var(--ad-accent); font-size:13px; font-weight:700; }
+.learner-history-row { padding:14px 0; border-top:1px solid var(--ad-border); }
+.learner-history-row:first-child { border-top:0; padding-top:0; }
+.learner-history-resources { display:grid; gap:0; margin-top:4px; padding:8px 12px; border-radius:10px; background:var(--ad-input); }
+.learner-muted { color:var(--ad-muted); font-size:12px; }
+.learner-cycle-row { padding:14px 0; border-top:1px solid var(--ad-border); }
+.learner-cycle-row:first-child { border-top:0; padding-top:0; }
+.learner-cycle-row > div:first-child,.learner-download-row { display:flex; align-items:center; justify-content:space-between; gap:14px; }
+.learner-cycle-row b,.learner-cycle-row small,.learner-download-row b,.learner-download-row small { display:block; }
+.learner-cycle-count { display:flex; align-items:baseline; gap:8px; }
+.learner-cycle-count strong { color:var(--ad-accent); font-size:20px; }
+.learner-cycle-bar { height:7px; border-radius:99px; background:var(--ad-input); overflow:hidden; }
+.learner-cycle-bar i { display:block; height:100%; border-radius:inherit; background:var(--ad-accent); }
+.learner-download-row button,.learner-assignment button { border:0; border-radius:9px; padding:8px 11px; background:var(--ad-accent); color:white; font:inherit; font-size:12px; font-weight:800; cursor:pointer; white-space:nowrap; }
+.learner-upload-label { display:grid; gap:5px; color:var(--ad-muted); font-size:12px; }
+.learner-upload-label input { padding:8px !important; }
+.learner-form-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
 .learner-shell::before,
 .learner-shell::after {
   position: absolute;

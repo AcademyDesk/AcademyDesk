@@ -243,6 +243,8 @@ public sealed class TeacherPortalController(
             IsPublished = request.IsPublished
         };
         dbContext.Assignments.Add(assignment);
+        if (assignment.IsPublished)
+            await NotifyStudents(assignment.BatchId, assignment.StudentId, "New homework", $"{assignment.Title} has been assigned. Open Tasks to view and submit your work.", cancellationToken);
         await dbContext.SaveChangesAsync(cancellationToken);
         return Ok(new TeacherAssignmentSummary(assignment.Id, assignment.BatchId, assignment.StudentId, assignment.Title, assignment.Description, assignment.DueAtUtc, assignment.Type, assignment.IsPublished));
     }
@@ -255,6 +257,8 @@ public sealed class TeacherPortalController(
         var assignment = await dbContext.Assignments.SingleOrDefaultAsync(x => x.Id == assignmentId && x.AcademyId == user.AcademyId, cancellationToken);
         if (assignment is null || !await OwnsBatch(user, assignment.BatchId, cancellationToken)) return Forbid();
         assignment.IsPublished = request.IsPublished;
+        if (assignment.IsPublished)
+            await NotifyStudents(assignment.BatchId, assignment.StudentId, "New homework", $"{assignment.Title} has been assigned. Open Tasks to view and submit your work.", cancellationToken);
         await dbContext.SaveChangesAsync(cancellationToken);
         return Ok(new { assignment.Id, assignment.IsPublished });
     }
@@ -451,6 +455,7 @@ public sealed class TeacherPortalController(
             return BadRequest(new { message = "The selected student is not active in this batch." });
         var resource = new LearningResource { AcademyId = user.AcademyId.Value, BatchId = request.BatchId, StudentId = request.StudentId, ClassSessionId = request.ClassSessionId, Title = request.Title.Trim(), Description = request.Notes.Trim(), Type = string.IsNullOrWhiteSpace(request.Type) ? "Class note" : request.Type.Trim(), Url = $"note://{Guid.NewGuid():N}", IsPublished = true };
         dbContext.LearningResources.Add(resource);
+        await NotifyStudents(request.BatchId, request.StudentId, "New class note", $"{resource.Title} is available in your class history.", cancellationToken);
         await dbContext.SaveChangesAsync(cancellationToken);
         return Ok(ResourceSummary(resource));
     }
@@ -474,6 +479,7 @@ public sealed class TeacherPortalController(
         await using (var stream = System.IO.File.Create(Path.Combine(folder, fileName))) await request.File.CopyToAsync(stream, cancellationToken);
         var resource = new LearningResource { AcademyId = user.AcademyId.Value, BatchId = request.BatchId, StudentId = request.StudentId, ClassSessionId = request.ClassSessionId, Title = string.IsNullOrWhiteSpace(request.Title) ? Path.GetFileNameWithoutExtension(request.File.FileName) : request.Title.Trim(), Description = request.Description?.Trim(), Type = string.IsNullOrWhiteSpace(request.Type) ? "Class material" : request.Type.Trim(), Url = $"/uploads/teacher-materials/{fileName}", IsPublished = true };
         dbContext.LearningResources.Add(resource);
+        await NotifyStudents(request.BatchId, request.StudentId, "New class material", $"{resource.Title} is available in your class history.", cancellationToken);
         await dbContext.SaveChangesAsync(cancellationToken);
         return Ok(ResourceSummary(resource));
     }
@@ -505,6 +511,17 @@ public sealed class TeacherPortalController(
     }
 
     private static TeacherResourceSummary ResourceSummary(LearningResource resource) => new(resource.Id, resource.BatchId!.Value, resource.StudentId, resource.ClassSessionId, resource.Title, resource.Description, resource.Type, resource.Url, resource.CreatedAtUtc);
+
+    private async Task NotifyStudents(Guid batchId, Guid? studentId, string title, string message, CancellationToken token)
+    {
+        var batch = await dbContext.Batches.AsNoTracking().SingleOrDefaultAsync(x => x.Id == batchId, token);
+        if (batch is null) return;
+        var recipients = studentId.HasValue
+            ? new[] { studentId.Value }
+            : await dbContext.Enrollments.AsNoTracking().Where(x => x.AcademyId == batch.AcademyId && x.BatchId == batchId && x.Status == "Active").Select(x => x.StudentId).ToArrayAsync(token);
+        foreach (var recipientId in recipients.Distinct())
+            dbContext.Notifications.Add(new Notification { AcademyId = batch.AcademyId, RecipientId = recipientId, RecipientType = "Student", Title = title, Message = message, Channel = "InApp", Status = "Queued" });
+    }
 
     private async Task<bool> OwnsBatch(ApplicationUser user, Guid batchId, CancellationToken token) =>
         await dbContext.Batches.AnyAsync(x => x.Id == batchId && x.AcademyId == user.AcademyId && x.TeacherId == user.TeacherId, token);
@@ -556,6 +573,7 @@ public sealed class TeacherPortalController(
         record.Status = request.Status.Trim();
         record.Notes = request.Notes?.Trim();
         record.MarkedAtUtc = DateTime.UtcNow;
+        dbContext.Notifications.Add(new Notification { AcademyId = context.AcademyId, RecipientId = request.StudentId, RecipientType = "Student", Title = "Attendance updated", Message = $"Your attendance for the class has been marked {record.Status}.", Channel = "InApp", Status = "Queued" });
         await dbContext.SaveChangesAsync(cancellationToken);
         return Ok(new TeacherAttendanceSummary(record.StudentId, record.Status, record.Notes));
     }
@@ -605,6 +623,7 @@ public sealed class TeacherPortalController(
                 dbContext.AttendanceRecords.Add(record);
             }
             record.Status = item.Status.Trim(); record.Notes = item.Notes?.Trim(); record.MarkedAtUtc = DateTime.UtcNow;
+            dbContext.Notifications.Add(new Notification { AcademyId = context.AcademyId, RecipientId = item.StudentId, RecipientType = "Student", Title = "Attendance updated", Message = $"Your attendance for the class has been marked {record.Status}.", Channel = "InApp", Status = "Queued" });
         }
         await dbContext.SaveChangesAsync(cancellationToken);
         return Ok(new { updated = request.Records.Count });

@@ -23,6 +23,17 @@ type D = {
   name: string;
   email?: string;
   phone?: string;
+  firstName: string;
+  lastName: string;
+  preferredName?: string;
+  gender?: string;
+  dateOfBirth?: string;
+  addressLine1?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  emergencyContactName?: string;
+  emergencyContactPhone?: string;
   schedule: {
     id: string;
     batchName: string;
@@ -50,16 +61,39 @@ type D = {
     certificateNumber: string;
     title: string;
     issuedDate: string;
+    notes?: string;
   }[];
   invoices: {
+    id: string;
     invoiceNumber: string;
     balance: number;
     currency: string;
     dueDate: string;
     status: string;
   }[];
+  classHistory: {
+    sessionId: string;
+    batchName: string;
+    startUtc: string;
+    endUtc: string;
+    deliveryMode: string;
+    status: string;
+    attendanceStatus: string;
+    resources: { title: string; description?: string; type: string; url: string }[];
+  }[];
+  cycleProgress: {
+    batchId: string;
+    batchName: string;
+    sessionMinutes: number;
+    cycleTotal: number;
+    completedInCycle: number;
+    remainingInCycle: number;
+    coveredDates: string[];
+    upcomingDates: string[];
+  }[];
 };
-type Notice = { id: string; title: string; message: string; status: string };
+type Notice = { id: string; title: string; message: string; status: string; createdAtUtc?: string };
+type Announcement = { id: string; title: string; message: string };
 type Leave = {
   id: string;
   startDate: string;
@@ -92,20 +126,23 @@ export default function Portal() {
   const [id, setId] = useState("");
   const [d, setD] = useState<D>();
   const [n, setN] = useState<Notice[]>([]);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [l, setL] = useState<Leave[]>([]);
   const [t, setT] = useState<Tab>("home");
   const [m, setM] = useState("Loading your learning workspace…");
   async function load(student = id) {
     if (!student) return;
-    const [a, b, c] = await Promise.all([
+    const [a, b, c, e] = await Promise.all([
       academyApi(`/api/portal/students/${student}`),
       academyApi(`/api/portal/students/${student}/leave-requests`),
       academyApi("/api/portal/notifications"),
+      academyApi("/api/portal/announcements"),
     ]);
     if (!a.ok) throw Error("Your student record could not be loaded.");
     setD(await a.json());
     if (b.ok) setL(await b.json());
     if (c.ok) setN(await c.json());
+    if (e.ok) setAnnouncements(await e.json());
     setM("");
   }
   useEffect(() => {
@@ -144,8 +181,9 @@ export default function Portal() {
       <section className="enterprise-workspace teacher-portal-workspace learner-portal-workspace">
         <header className="enterprise-topbar">
           <div className="teacher-portal-context"><strong>{me?.role === "Parent" ? "Parent workspace" : d?.name ?? "Student workspace"}</strong></div>
-          <div className="enterprise-utilities"><ThemeToggle /><StudentPortalProfile /></div>
+          <div className="enterprise-utilities"><PortalNotifications notices={n} setNotices={setN} /><ThemeToggle /><StudentPortalProfile /></div>
         </header>
+        {announcements.length > 0 && <AnnouncementTicker announcements={announcements} />}
         <section className="learner-content teacher-portal-content learner-portal-content">
           {me?.role === "Parent" && (
             <div className="learner-switcher">
@@ -223,6 +261,25 @@ function StudentPortalProfile() {
   async function upload(event: React.ChangeEvent<HTMLInputElement>) { const file = event.target.files?.[0]; event.target.value = ""; if (!file) return; const body = new FormData(); body.append("image", file); const response = await academyApi("/api/auth/session/profile-image", { method: "POST", body }); const result = await response.json().catch(() => null); if (!response.ok) return setMessage(result?.message ?? "Profile image could not be saved."); setAccount((current) => ({ ...current, profileImageUrl: result.profileImageUrl })); setMessage(""); setOpen(false); }
   function signOut() { window.localStorage.removeItem("academydesk.accessToken"); window.localStorage.removeItem("academydesk.refreshToken"); router.push("/login"); }
   return <div className="enterprise-profile" ref={ref}><button type="button" className="enterprise-profile-trigger" onClick={() => setOpen((value) => !value)} aria-label="Open profile menu" aria-expanded={open}>{imageUrl ? <img src={imageUrl} alt="Profile" /> : <span>{initials}</span>}</button>{open && <div className="enterprise-profile-menu" role="menu"><strong>{name}</strong><small>Student portal</small><input ref={input} className="sr-only" type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => void upload(event)} /><button type="button" className="enterprise-profile-menu-action" onClick={() => input.current?.click()}>Edit profile picture</button><button type="button" className="enterprise-profile-menu-action" onClick={signOut}>Sign out</button>{message && <small role="status">{message}</small>}</div>}</div>;
+}
+function AnnouncementTicker({ announcements }: { announcements: Announcement[] }) {
+  const text = announcements.map((item) => `${item.title}: ${item.message}`).join("   •   ");
+  return <div className="learner-announcement" role="status" aria-label="Academy announcement"><span>Important</span><div><p>{text}   •   {text}</p></div></div>;
+}
+function PortalNotifications({ notices, setNotices }: { notices: Notice[]; setNotices: React.Dispatch<React.SetStateAction<Notice[]>> }) {
+  const [open, setOpen] = useState(false);
+  const unread = notices.filter((notice) => notice.status !== "Read").length;
+  async function openNotifications() {
+    setOpen((value) => !value);
+    const unreadItems = notices.filter((notice) => notice.status !== "Read");
+    if (unreadItems.length === 0) return;
+    await Promise.all(unreadItems.map((notice) => academyApi(`/api/portal/notifications/${notice.id}/read`, { method: "PATCH" })));
+    setNotices((items) => items.map((item) => ({ ...item, status: "Read" })));
+  }
+  return <div className="learner-notifications">
+    <button type="button" className="learner-notification-button" onClick={() => void openNotifications()} aria-label="Open notifications" aria-expanded={open}>♢{unread > 0 && <em>{unread > 9 ? "9+" : unread}</em>}</button>
+    {open && <section className="learner-notification-menu"><header><strong>Notifications</strong><small>{unread ? `${unread} new` : "All caught up"}</small></header>{notices.length ? notices.slice(0, 8).map((notice) => <article key={notice.id}><b>{notice.title}</b><span>{notice.message}</span></article>) : <p>No notifications yet.</p>}</section>}
+  </div>;
 }
 function View({
   d,
@@ -326,11 +383,11 @@ function View({
           </P>
           <P title="Learning resources">
             {d.resources.map((x, i) => (
-              <a key={i} className="learner-row" href={x.url} target="_blank">
-                <b>{x.title}</b>
-                <small>{x.type} · Open resource →</small>
-              </a>
+              <ResourceRow key={i} x={x} />
             ))}
+          </P>
+          <P title="Class history">
+            {d.classHistory.map((item) => <ClassHistoryRow key={item.sessionId} item={item} />)}
           </P>
         </>
       )}
@@ -353,6 +410,9 @@ function View({
       )}
       {tab === "progress" && (
         <>
+          <P title="Current class cycle">
+            {d.cycleProgress.map((cycle) => <CycleRow key={cycle.batchId} cycle={cycle} />)}
+          </P>
           <P title="Music and practice progress">
             {d.music.map((x, i) => (
               <R key={i} a={x.title} b={x.status} />
@@ -376,11 +436,7 @@ function View({
           </P>
           <P title="Certificates">
             {d.certificates.map((x) => (
-              <R
-                key={x.certificateNumber}
-                a={x.title}
-                b={x.certificateNumber + " · " + x.issuedDate}
-              />
+              <DownloadRow key={x.certificateNumber} a={x.title} b={x.certificateNumber + " · " + x.issuedDate} label="Download certificate" path={`/api/portal/students/${id}/certificates/${encodeURIComponent(x.certificateNumber)}/download`} filename={`${x.certificateNumber}.html`} />
             ))}
           </P>
         </>
@@ -389,11 +445,7 @@ function View({
         <>
           <P title="Fees and payments">
             {d.invoices.map((x) => (
-              <R
-                key={x.invoiceNumber}
-                a={x.invoiceNumber + " · " + cash(x.balance, x.currency)}
-                b={"Due " + x.dueDate + " · " + x.status}
-              />
+              <DownloadRow key={x.invoiceNumber} a={x.invoiceNumber + " · " + cash(x.balance, x.currency)} b={"Due " + x.dueDate + " · " + x.status} label="View / download invoice" path={`/api/portal/students/${id}/invoices/${x.id}/download`} filename={`${x.invoiceNumber}.html`} />
             ))}
           </P>
           {parentAccess ? (
@@ -442,6 +494,26 @@ function R({ a, b }: { a: string; b: string }) {
     </article>
   );
 }
+function ResourceRow({ x }: { x: { title: string; type: string; url: string; description?: string } }) {
+  const downloadable = x.url.startsWith("/") || x.url.startsWith("http");
+  return <article className="learner-row learner-resource-row"><b>{x.title}</b><small>{x.type}{x.description ? ` · ${x.description}` : ""}</small>{downloadable && <a href={x.url.startsWith("/") ? `${apiUrl}${x.url}` : x.url} target="_blank" rel="noreferrer">Open / download</a>}</article>;
+}
+function ClassHistoryRow({ item }: { item: D["classHistory"][number] }) {
+  return <article className="learner-history-row"><div><b>{item.batchName}</b><small>{dt(item.startUtc)} · {item.deliveryMode} · Attendance: {item.attendanceStatus}</small></div>{item.resources.length > 0 ? <div className="learner-history-resources">{item.resources.map((resource, index) => <ResourceRow key={index} x={resource} />)}</div> : <small className="learner-muted">No notes, attachments, or recordings were shared for this class.</small>}</article>;
+}
+function CycleRow({ cycle }: { cycle: D["cycleProgress"][number] }) {
+  const percent = Math.round((cycle.completedInCycle / cycle.cycleTotal) * 100);
+  return <article className="learner-cycle-row"><div><b>{cycle.batchName}</b><small>{cycle.sessionMinutes} min sessions · Current 4-week cycle</small></div><div className="learner-cycle-count"><strong>{cycle.completedInCycle}/{cycle.cycleTotal}</strong><small>{cycle.remainingInCycle} class{cycle.remainingInCycle === 1 ? "" : "es"} remaining</small></div><div className="learner-cycle-bar" aria-label={`${percent}% completed`}><i style={{ width: `${percent}%` }} /></div><small>Covered: {cycle.coveredDates.length ? cycle.coveredDates.map(dt).join(", ") : "No classes completed"} · Upcoming: {cycle.upcomingDates.length ? cycle.upcomingDates.map(dt).join(", ") : "No sessions scheduled"}</small></article>;
+}
+async function downloadPortalFile(path: string, filename: string) {
+  const response = await academyApi(path);
+  if (!response.ok) throw Error("Download could not be prepared.");
+  const blob = await response.blob(); const url = URL.createObjectURL(blob); const anchor = document.createElement("a"); anchor.href = url; anchor.download = filename; document.body.appendChild(anchor); anchor.click(); anchor.remove(); URL.revokeObjectURL(url);
+}
+function DownloadRow({ a, b, label, path, filename }: { a: string; b: string; label: string; path: string; filename: string }) {
+  const [message, setMessage] = useState("");
+  return <article className="learner-row learner-download-row"><div><b>{a}</b><small>{b}</small></div><button type="button" onClick={() => void downloadPortalFile(path, filename).catch(() => setMessage("Download could not be prepared."))}>{label}</button>{message && <small>{message}</small>}</article>;
+}
 function Assignment({
   id,
   x,
@@ -452,6 +524,7 @@ function Assignment({
   refresh: () => Promise<void>;
 }) {
   const [v, setV] = useState("");
+  const [file, setFile] = useState<File>();
   const [m, setM] = useState("");
   async function go(e: FormEvent) {
     e.preventDefault();
@@ -459,13 +532,13 @@ function Assignment({
       `/api/portal/students/${id}/assignments/${x.id}/submit`,
       {
         method: "POST",
-        headers: apiHeaders(true),
-        body: JSON.stringify({ responseText: v }),
+        body: (() => { const body = new FormData(); body.append("responseText", v); if (file) body.append("file", file); return body; })(),
       },
     );
     setM(r.ok ? "Submitted for review." : "Submission could not be saved.");
     if (r.ok) {
       setV("");
+      setFile(undefined);
       void refresh();
     }
   }
@@ -475,11 +548,12 @@ function Assignment({
       <small>{x.type}</small>
       <form onSubmit={go}>
         <textarea
-          required
           value={v}
           onChange={(e) => setV(e.target.value)}
-          placeholder="Write your submission…"
+          placeholder="Add a note about your practice (optional when uploading a file)…"
         />
+        <label className="learner-upload-label">Practice recording, photo, video, or file<input type="file" accept="image/*,audio/*,video/*,.pdf,.doc,.docx" capture="environment" onChange={(event) => setFile(event.target.files?.[0])} /></label>
+        {file && <small>{file.name} ready to upload</small>}
         <button>Submit</button>
       </form>
       <small>{m}</small>
@@ -539,11 +613,14 @@ function Leave({ id, items }: { id: string; items: Leave[] }) {
 function Profile({ id, d }: { id: string; d: D }) {
   return (
     <Action
-      title="My contact details"
+      title="My profile"
       url={`/api/portal/students/${id}/profile`}
       method="PUT"
       fields={
         <>
+          <div className="learner-form-grid"><input required name="firstName" defaultValue={d.firstName || ""} placeholder="First name" /><input required name="lastName" defaultValue={d.lastName || ""} placeholder="Last name" /></div>
+          <div className="learner-form-grid"><input name="preferredName" defaultValue={d.preferredName || ""} placeholder="Preferred name" /><select name="gender" defaultValue={d.gender || ""}><option value="">Gender (optional)</option><option>Female</option><option>Male</option><option>Non-binary</option><option>Prefer not to say</option></select></div>
+          <input name="dateOfBirth" type="date" defaultValue={d.dateOfBirth || ""} />
           <input
             name="email"
             type="email"
@@ -555,6 +632,11 @@ function Profile({ id, d }: { id: string; d: D }) {
             defaultValue={d.phone || ""}
             placeholder="Phone number"
           />
+          <input name="addressLine1" defaultValue={d.addressLine1 || ""} placeholder="Address" />
+          <div className="learner-form-grid"><input name="city" defaultValue={d.city || ""} placeholder="City" /><input name="state" defaultValue={d.state || ""} placeholder="State" /></div>
+          <input name="postalCode" defaultValue={d.postalCode || ""} placeholder="Postal / PIN code" />
+          <div className="learner-form-grid"><input name="emergencyContactName" defaultValue={d.emergencyContactName || ""} placeholder="Emergency contact name" /><input name="emergencyContactPhone" defaultValue={d.emergencyContactPhone || ""} placeholder="Emergency contact phone" /></div>
+          <small className="learner-muted">Your user ID and password are protected and cannot be changed here. Use the profile menu above to update your picture.</small>
         </>
       }
     />

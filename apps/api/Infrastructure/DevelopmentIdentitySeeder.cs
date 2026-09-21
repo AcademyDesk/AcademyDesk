@@ -127,6 +127,13 @@ public static class DevelopmentIdentitySeeder
             .OrderBy(x => x.StartUtc)
             .ToListAsync();
         var sampleAbsenceSessionId = studentCompletedSessions.Skip(1).FirstOrDefault()?.Id;
+        if (studentCompletedSessions.Count > 0 && !await db.LearningResources.AnyAsync(x => x.AcademyId == academy.Id && x.ClassSessionId == studentCompletedSessions[0].Id))
+        {
+            db.LearningResources.AddRange(
+                new LearningResource { AcademyId = academy.Id, BatchId = pianoBatch.Id, ClassSessionId = studentCompletedSessions[0].Id, Title = "Lesson note — posture and hand shape", Description = "Keep relaxed shoulders and curved fingers while you practise the opening phrase.", Type = "Class note", Url = "note://piano-posture-history", IsPublished = true },
+                new LearningResource { AcademyId = academy.Id, BatchId = pianoBatch.Id, ClassSessionId = studentCompletedSessions[0].Id, Title = "C major fingering chart", Description = "Reference image from the class.", Type = "Attachment", Url = "note://c-major-fingering-chart", IsPublished = true },
+                new LearningResource { AcademyId = academy.Id, BatchId = pianoBatch.Id, ClassSessionId = studentCompletedSessions[0].Id, Title = "Teacher demonstration — C major", Description = "Audio recording for this specific class.", Type = "Recording", Url = "note://c-major-demo-recording", IsPublished = true });
+        }
         foreach (var session in studentCompletedSessions)
         {
             if (!await db.AttendanceRecords.AnyAsync(x => x.ClassSessionId == session.Id && x.StudentId == student.Id))
@@ -196,6 +203,8 @@ public static class DevelopmentIdentitySeeder
                 new Notification { AcademyId = academy.Id, RecipientId = student.Id, RecipientType = "Student", Title = "Homework assigned", Message = "Your C major scale practice is due in five days.", Channel = "InApp", Status = "Sent", SentAtUtc = DateTime.UtcNow.AddDays(-1) },
                 new Notification { AcademyId = academy.Id, RecipientId = student.Id, RecipientType = "Student", Title = "Assessment result published", Message = "Your Piano foundations check-in result is ready to view.", Channel = "InApp", Status = "Sent", SentAtUtc = DateTime.UtcNow.AddDays(-2) });
         }
+        if (!await db.Notifications.AnyAsync(x => x.AcademyId == academy.Id && x.RecipientId == null && x.RecipientType == "Academy" && x.Title == "Emergency update"))
+            db.Notifications.Add(new Notification { AcademyId = academy.Id, RecipientType = "Academy", Title = "Emergency update", Message = "Heavy rain advisory: please check your class schedule before travelling to the academy.", Channel = "InApp", Status = "Sent", SentAtUtc = DateTime.UtcNow });
         if (!await db.LeaveRequests.AnyAsync(x => x.AcademyId == academy.Id && x.StudentId == student.Id))
             db.LeaveRequests.Add(new LeaveRequest { AcademyId = academy.Id, RequesterType = "Student", StudentId = student.Id, StartDate = studentToday.AddDays(12), EndDate = studentToday.AddDays(12), Reason = "Family commitment", Status = "Approved", DecisionNotes = "Approved—please review the class note after the session." });
         await db.SaveChangesAsync();
