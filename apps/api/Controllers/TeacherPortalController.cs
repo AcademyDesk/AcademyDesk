@@ -434,7 +434,7 @@ public sealed class TeacherPortalController(
         var user = await userManager.GetUserAsync(User);
         if (user?.AcademyId is null || user.TeacherId is null) return Forbid();
         var profile = await dbContext.PayrollProfiles.AsNoTracking().FirstOrDefaultAsync(x => x.AcademyId == user.AcademyId && x.TeacherId == user.TeacherId && x.IsActive, cancellationToken);
-        IReadOnlyList<TeacherPayslipSummary> payouts = profile is null ? [] : await dbContext.PayrollPayouts.AsNoTracking().Where(x => x.AcademyId == user.AcademyId && x.PayrollProfileId == profile.Id).OrderByDescending(x => x.PaidAtUtc).Take(12).Select(x => new TeacherPayslipSummary(x.Id, x.PayslipNumber, x.PeriodLabel, x.NetAmount, x.Currency, x.Status, x.PaidAtUtc)).ToListAsync(cancellationToken);
+        IReadOnlyList<TeacherPayslipSummary> payouts = profile is null ? [] : await dbContext.PayrollPayouts.AsNoTracking().Where(x => x.AcademyId == user.AcademyId && x.PayrollProfileId == profile.Id).OrderByDescending(x => x.PaidAtUtc).Take(12).Select(x => new TeacherPayslipSummary(x.Id, x.PayslipNumber, x.PeriodLabel, x.GrossAmount, x.Deductions, x.NetAmount, x.Currency, x.Status, x.PaymentMethod, x.Reference, x.PaidAtUtc)).ToListAsync(cancellationToken);
         return Ok(new TeacherPaymentSummary(profile?.PaymentModel, profile?.MonthlyAmount, profile?.AmountPerCycle, profile?.SessionsPerCycle, payouts));
     }
 
@@ -604,4 +604,4 @@ public sealed record TeacherCreateResourceNoteRequest(Guid BatchId, Guid? Studen
 public sealed class TeacherUploadResourceRequest { public Guid BatchId { get; set; } public Guid? StudentId { get; set; } public Guid? ClassSessionId { get; set; } public string? Title { get; set; } public string? Description { get; set; } public string? Type { get; set; } public IFormFile? File { get; set; } }
 public sealed record TeacherProgressSummary(int CompletedClasses, int UpcomingClasses, int AttendanceRecords, int PresentOrOnline);
 public sealed record TeacherPaymentSummary(string? PaymentModel, decimal? MonthlyAmount, decimal? AmountPerCycle, int? SessionsPerCycle, IReadOnlyList<TeacherPayslipSummary> Payslips);
-public sealed record TeacherPayslipSummary(Guid Id, string PayslipNumber, string PeriodLabel, decimal NetAmount, string Currency, string Status, DateTime PaidAtUtc);
+public sealed record TeacherPayslipSummary(Guid Id, string PayslipNumber, string PeriodLabel, decimal GrossAmount, decimal Deductions, decimal NetAmount, string Currency, string Status, string PaymentMethod, string? Reference, DateTime PaidAtUtc);
