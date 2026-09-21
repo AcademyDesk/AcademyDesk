@@ -507,7 +507,7 @@ function TeacherTasks({
         if (!response.ok) throw new Error();
         setPracticeLogs(await response.json());
       })
-      .catch(() => setM("Practice feedback could not be loaded."));
+      .catch(() => undefined);
   }, []);
   async function create(e: React.FormEvent<HTMLFormElement>, path: string) {
     e.preventDefault();
@@ -638,7 +638,6 @@ function TeacherSelfService() {
       if (path === "/api/teacher/profile") setProfile(await response.json());
     }
   }
-  async function changePassword(event: React.FormEvent<HTMLFormElement>) { event.preventDefault(); const form = new FormData(event.currentTarget); const response = await academyApi("/api/auth/session/change-password", { method: "POST", headers: apiHeaders(true), body: JSON.stringify({ currentPassword: form.get("currentPassword"), newPassword: form.get("newPassword") }) }); setMessage(response.ok ? "Password changed." : "Password could not be changed. Check your current password."); if (response.ok) event.currentTarget.reset(); }
   async function uploadPicture(event: React.ChangeEvent<HTMLInputElement>) { const image = event.target.files?.[0]; event.target.value = ""; if (!image) return; const body = new FormData(); body.append("image", image); const response = await academyApi("/api/auth/session/profile-image", { method: "POST", body }); setMessage(response.ok ? "Profile picture updated." : "Profile picture could not be updated."); }
   return (
     <section className="teacher-compact-panels teacher-profile-panels">
@@ -662,7 +661,6 @@ function TeacherSelfService() {
           <button>Save profile</button>
         </form>
       </TeacherActionPanel>
-      <TeacherActionPanel icon="◇" title="Security"><form className="learner-form" onSubmit={(event) => void changePassword(event)}><input required name="currentPassword" type="password" placeholder="Current password" /><input required name="newPassword" minLength={6} type="password" placeholder="New password" /><button>Change password</button></form></TeacherActionPanel>
       <TeacherActionPanel icon="◷" title="Request leave">
         <form
           className="learner-form"
