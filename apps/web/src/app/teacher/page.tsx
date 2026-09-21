@@ -32,7 +32,7 @@ type PracticeLog = {
 type T = "today" | "classes" | "classroom" | "homework" | "batchProgress" | "progress" | "more";
 const tabs: [T, string, string][] = [
   ["today", "Today", "⌂"],
-  ["classes", "My classes & progress", "◷"],
+  ["classes", "My classes", "◷"],
   ["classroom", "Classroom", "♙"],
   ["homework", "Homework", "✓"],
   ["batchProgress", "My progress", "◷"],
@@ -196,9 +196,9 @@ export default function Teacher() {
                     </div>
                   </section>
                 )}
-                {t === "classes" && <><TeacherProgress includeMetrics /><TeacherCalendar batches={p.batches} compact onOpen={(id) => { setSid(id); void loadRoster(id); setT("classroom"); }} /></>}
+                {t === "classes" && <TeacherCalendar batches={p.batches} compact onOpen={(id) => { setSid(id); void loadRoster(id); setT("classroom"); }} />}
                 {t === "homework" && <TeacherTasks batches={p.batches} />}{" "}
-                {t === "batchProgress" && <TeacherBatchProgress />}
+                {t === "batchProgress" && <section className="teacher-my-progress-view"><TeacherProgress includeMetrics /><TeacherBatchProgress /></section>}
                 {t === "progress" && <TeacherProgress />}
                 {t === "more" && <TeacherSelfService />}
               </>
