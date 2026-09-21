@@ -3256,7 +3256,7 @@ html[data-theme="light"] .field-label { color: #475569; }
 .teacher-timetable-list { display: grid; gap: 1px; padding: 10px; background: var(--ad-border); }
 .teacher-timetable-row { display: grid; grid-template-columns: 54px minmax(0, 1fr) auto; align-items: center; gap: 14px; width: 100%; padding: 13px; border: 0; border-radius: 11px; background: var(--ad-surface); color: var(--ad-text); cursor: pointer; font: inherit; text-align: left; transition: background 160ms ease, transform 160ms ease; }
 .teacher-timetable-row:hover { background: var(--ad-surface-subtle); transform: translateX(2px); }
-.teacher-timetable-row time { display: grid; grid-template-columns: 20px 1fr; grid-template-rows: 1fr 1fr; align-items: center; column-gap: 4px; min-height: 48px; padding: 6px 7px; border-radius: 10px; background: var(--ad-accent-soft); color: var(--ad-accent); font-size: .64rem; font-weight: 800; line-height: 1; text-transform: uppercase; }
+.teacher-timetable-row time { display: grid; grid-template-columns: 20px 1fr; grid-template-rows: 1fr 1fr; align-items: center; column-gap: 4px; min-height: 48px; padding: 6px 7px; border: 1px solid color-mix(in srgb, var(--ad-accent) 28%, var(--ad-border)); border-radius: 10px; background: var(--ad-surface-subtle); color: var(--ad-accent); font-size: .64rem; font-weight: 800; line-height: 1; text-transform: uppercase; }
 .teacher-timetable-row time b { grid-row: 1 / span 2; align-self: center; color: inherit; font-size: 1.05rem; letter-spacing: -.05em; }
 .teacher-timetable-row time span, .teacher-timetable-row time strong { font-size: .61rem; letter-spacing: .05em; }
 .teacher-timetable-row time strong { font-weight: 800; }
