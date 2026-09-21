@@ -144,11 +144,7 @@ export default function Teacher() {
                 {t === "classroom" && <TeacherClassroom batches={p.batches} sessions={p.sessions} sessionId={sid} roster={roster} onSessionSelect={(id) => void selectClassroomSession(id)} />}
                 {t === "today" && <header className="learner-heading">
                   <p>Teacher workspace</p>
-                  <h1>
-                    {t === "today"
-                      ? `Welcome, ${p.firstName}`
-                      : t === "classes" ? "My classes & progress" : t === "progress" ? "Pay slip" : t[0].toUpperCase() + t.slice(1)}
-                  </h1>
+                  <h1>{`Welcome, ${p.firstName}`}</h1>
                 </header>}
                 {t === "today" && (
                   <section className="learner-kpis">
