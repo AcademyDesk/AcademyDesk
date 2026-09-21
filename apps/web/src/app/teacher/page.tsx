@@ -142,7 +142,7 @@ export default function Teacher() {
                 {t === "classroom" && sid && <TeacherClassroomHero batch={p.batches.find((batch) => batch.id === p.sessions.find((session) => session.id === sid)?.batchId)} sessionId={sid} sessionStatus={p.sessions.find((session) => session.id === sid)?.status} onStatusChange={(status) => updateSessionStatus(sid, status)} />}
                 {t === "classroom" && sid && <TeacherAttendanceRoster sessionId={sid} roster={roster} attendance={attendance} teacherStatus={p.sessions.find((session) => session.id === sid)?.teacherAttendanceStatus} busy={busy === "attendance"} onSubmit={submitAttendance} />}
                 {t === "classroom" && <TeacherClassroom batches={p.batches} sessions={p.sessions} sessionId={sid} roster={roster} onSessionSelect={(id) => void selectClassroomSession(id)} />}
-                {t !== "classroom" && <header className="learner-heading">
+                {t !== "classroom" && t !== "homework" && <header className="learner-heading">
                   <p>Teacher workspace</p>
                   <h1>
                     {t === "today"
