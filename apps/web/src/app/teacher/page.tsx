@@ -289,7 +289,7 @@ function TeacherAttendanceRoster({ sessionId, roster, attendance, teacherStatus,
   useEffect(() => { setDraft(Object.fromEntries(roster.map((student) => [student.id, attendance.find((item) => item.studentId === student.id)?.status ?? "Present"]))); setTeacherDraft(teacherStatus ?? "Present"); }, [attendance, roster, teacherStatus, sessionId]);
   const recorded = attendance.length;
   return <section className="teacher-attendance-panel">
-    <header><div><p>Attendance</p><h2>Class attendance</h2><span>{recorded ? `${recorded} of ${roster.length} students submitted` : "Mark the teacher and students, then submit once."}</span></div><strong>{roster.length} students</strong></header>
+    <header><div><p>Attendance</p></div><strong>{recorded ? `${recorded} / ${roster.length}` : `${roster.length} students`}</strong></header>
     <div className="teacher-attendance-teacher"><div><b>Teacher attendance</b><small>Record your attendance for this class.</small></div><AttendanceStatusMenu value={teacherDraft} disabled={busy} label="Teacher attendance" onChange={setTeacherDraft} /></div>
     <div className="teacher-attendance-grid">{roster.map((student) => {
       const value = draft[student.id] ?? "Present";
