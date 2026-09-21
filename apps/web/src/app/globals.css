@@ -3249,8 +3249,7 @@ html[data-theme="light"] .field-label { color: #475569; }
 .teacher-portal-shell .learner-heading span { font-size: .9rem; }
 .teacher-portal-shell .learner-kpi, .teacher-portal-shell .learner-panel { border-radius: 14px; background: var(--ad-surface); box-shadow: none; }
 .teacher-timetable-panel { overflow: hidden; margin: 18px 0; border: 1px solid var(--ad-border); border-radius: 16px; background: var(--ad-surface); }
-.teacher-section-heading { display: flex; align-items: center; justify-content: space-between; min-height: 82px; padding: 18px 22px; border-bottom: 1px solid var(--ad-border); background: linear-gradient(105deg, color-mix(in srgb, var(--ad-accent) 12%, var(--ad-surface)), var(--ad-surface) 68%); }
-.teacher-section-heading > span { color: var(--ad-accent); font-size: .68rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+.teacher-section-heading { display: flex; align-items: center; justify-content: flex-start; min-height: 82px; padding: 18px 22px; border-bottom: 1px solid var(--ad-border); background: linear-gradient(105deg, color-mix(in srgb, var(--ad-accent) 12%, var(--ad-surface)), var(--ad-surface) 68%); }
 .teacher-section-heading > div { display: flex; align-items: center; gap: 10px; }
 .teacher-section-heading i { display: grid; width: 32px; height: 32px; place-items: center; border-radius: 10px; background: var(--ad-accent); color: #fff; font-size: 1rem; font-style: normal; box-shadow: 0 8px 18px color-mix(in srgb, var(--ad-accent) 28%, transparent); }
 .teacher-section-heading h2 { margin: 0; color: var(--ad-text); font-size: clamp(1.15rem, 1.4vw, 1.45rem); letter-spacing: -.035em; }

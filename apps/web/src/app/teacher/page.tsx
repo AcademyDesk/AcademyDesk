@@ -176,7 +176,6 @@ export default function Teacher() {
                 {(t === "today" || t === "classes") && (
                   <section className="teacher-timetable-panel">
                     <header className="teacher-section-heading">
-                      <span>Teaching schedule</span>
                       <div><i aria-hidden="true">◷</i><h2>My timetable</h2></div>
                     </header>
                     <div className="teacher-timetable-list">
