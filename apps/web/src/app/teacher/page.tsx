@@ -122,7 +122,7 @@ export default function Teacher() {
       </aside>
       <section className="enterprise-workspace teacher-portal-workspace">
         <header className="enterprise-topbar">
-          <div className="teacher-portal-context"><span>Teacher portal</span><strong>{p ? `${p.firstName} ${p.lastName}` : "Teacher workspace"}</strong></div>
+          <div className="teacher-portal-context"><strong>{p ? `${p.firstName} ${p.lastName}` : "Teacher workspace"}</strong></div>
           <div className="enterprise-utilities"><ThemeToggle /><TeacherPortalProfile /></div>
         </header>
         <section className="learner-content teacher-portal-content">
@@ -285,18 +285,19 @@ const historyLinkLabel = (url: string) => /\.(mp3|wav|m4a|ogg|webm)$/i.test(url)
 
 function TeacherAttendanceRoster({ sessionId, roster, attendance, teacherStatus, busy, onSubmit }: { sessionId: string; roster: S[]; attendance: A[]; teacherStatus?: string | null; busy: boolean; onSubmit: (teacherStatus: string, records: { studentId: string; status: string }[]) => Promise<void> }) {
   const [draft, setDraft] = useState<Record<string, string>>({});
-  const [teacherDraft, setTeacherDraft] = useState(teacherStatus ?? "Present");
-  useEffect(() => { setDraft(Object.fromEntries(roster.map((student) => [student.id, attendance.find((item) => item.studentId === student.id)?.status ?? "Present"]))); setTeacherDraft(teacherStatus ?? "Present"); }, [attendance, roster, teacherStatus, sessionId]);
+  const [teacherDraft, setTeacherDraft] = useState(teacherStatus ?? "");
+  useEffect(() => { setDraft(Object.fromEntries(roster.map((student) => [student.id, attendance.find((item) => item.studentId === student.id)?.status ?? ""]))); setTeacherDraft(teacherStatus ?? ""); }, [attendance, roster, teacherStatus, sessionId]);
   const recorded = attendance.length;
+  const attendanceReady = Boolean(teacherDraft) && roster.every((student) => Boolean(draft[student.id]));
   return <section className="teacher-attendance-panel">
     <header><div><p>Attendance</p></div><strong>{recorded ? `${recorded} / ${roster.length}` : `${roster.length} students`}</strong></header>
     <div className="teacher-attendance-teacher"><div><b>Teacher attendance</b><small>Record your attendance for this class.</small></div><AttendanceStatusMenu value={teacherDraft} disabled={busy} label="Teacher attendance" onChange={setTeacherDraft} /></div>
     <div className="teacher-attendance-grid">{roster.map((student) => {
-      const value = draft[student.id] ?? "Present";
+      const value = draft[student.id] ?? "";
       const initials = `${student.firstName[0] ?? ""}${student.lastName[0] ?? ""}`.toUpperCase();
       return <article key={student.id}><span className="teacher-student-avatar">{initials}</span><div><b>{student.firstName} {student.lastName}</b><small data-status={value}>{value}</small></div><AttendanceStatusMenu value={value} disabled={busy} label={`Attendance for ${student.firstName} ${student.lastName}`} onChange={(status) => setDraft((current) => ({ ...current, [student.id]: status }))} /></article>;
     })}</div>
-    <div className="teacher-attendance-submit"><button type="button" className="enterprise-action-button" disabled={busy || !sessionId} onClick={() => void onSubmit(teacherDraft, roster.map((student) => ({ studentId: student.id, status: draft[student.id] ?? "Present" })))}>{busy ? "Submitting attendance…" : "Submit attendance"}</button></div>
+    <div className="teacher-attendance-submit"><button type="button" className="enterprise-action-button" disabled={busy || !sessionId || !attendanceReady} onClick={() => void onSubmit(teacherDraft, roster.map((student) => ({ studentId: student.id, status: draft[student.id] ?? "" })))}>{busy ? "Submitting attendance…" : "Submit attendance"}</button></div>
   </section>;
 }
 function AttendanceStatusMenu({ value, disabled, label, onChange }: { value: string; disabled: boolean; label: string; onChange: (status: string) => void }) {
@@ -309,7 +310,7 @@ function AttendanceStatusMenu({ value, disabled, label, onChange }: { value: str
     document.addEventListener("mousedown", close); document.addEventListener("keydown", escape);
     return () => { document.removeEventListener("mousedown", close); document.removeEventListener("keydown", escape); };
   }, [open]);
-  return <div className="teacher-attendance-menu" ref={ref}><button type="button" aria-label={label} aria-haspopup="listbox" aria-expanded={open} disabled={disabled} onClick={() => setOpen((current) => !current)}><span data-status={value}>{value}</span><i>⌄</i></button>{open && <div role="listbox" aria-label={label}>{statuses.map((status) => <button type="button" role="option" aria-selected={value === status} key={status} data-active={value === status} onClick={() => { onChange(status); setOpen(false); }}>{status}</button>)}</div>}</div>;
+  return <div className="teacher-attendance-menu" ref={ref}><button type="button" aria-label={label} aria-haspopup="listbox" aria-expanded={open} disabled={disabled} onClick={() => setOpen((current) => !current)}><span data-status={value}>{value || "Select status"}</span><i>⌄</i></button>{open && <div role="listbox" aria-label={label}>{statuses.map((status) => <button type="button" role="option" aria-selected={value === status} key={status} data-active={value === status} onClick={() => { onChange(status); setOpen(false); }}>{status}</button>)}</div>}</div>;
 }
 
 type TeacherDropdownOption = { value: string; label: string };
