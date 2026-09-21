@@ -3260,7 +3260,8 @@ html[data-theme="light"] .field-label { color: #475569; }
 .teacher-timetable-row time b { grid-row: 1 / span 2; display: block; align-self: center; overflow: visible; color: inherit; font-size: 1.1rem; letter-spacing: -.05em; white-space: nowrap; }
 .teacher-timetable-row time span, .teacher-timetable-row time strong { font-size: .61rem; letter-spacing: .05em; }
 .teacher-timetable-row time strong { font-weight: 800; }
-.teacher-action-panel { margin: 0; overflow: hidden; padding: 0; border: 1px solid var(--ad-border); border-radius: 14px; background: var(--ad-surface); }
+.teacher-action-panel { margin: 0 0 18px; overflow: hidden; padding: 0; border: 1px solid var(--ad-border); border-radius: 14px; background: var(--ad-surface); }
+.teacher-classroom-grid .teacher-action-panel { margin: 0; }
 .teacher-action-panel > header { display: flex; align-items: center; gap: 10px; min-height: 66px; padding: 15px 20px; border-bottom: 1px solid var(--ad-border); background: linear-gradient(105deg, color-mix(in srgb, var(--ad-accent) 9%, var(--ad-surface)), var(--ad-surface) 70%); }
 .teacher-action-panel > header i { display: grid; width: 29px; height: 29px; place-items: center; border-radius: 9px; background: var(--ad-accent); color: #fff; font-size: .9rem; font-style: normal; box-shadow: 0 6px 14px color-mix(in srgb, var(--ad-accent) 24%, transparent); }
 .teacher-action-panel h3 { margin: 0; color: var(--ad-text); font-size: clamp(1rem, 1.05vw, 1.2rem); letter-spacing: -.025em; }

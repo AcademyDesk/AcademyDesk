@@ -423,7 +423,7 @@ function TeacherClassroom({ batches, sessions, sessionId, roster, onSessionSelec
       <TeacherActionPanel icon="⌁" title={selectedStudent ? `Attachments & recordings for ${selectedStudent.firstName}` : "Attachments & recordings"}><form className="learner-form teacher-upload-form" onSubmit={(event) => void addFile(event)}><input name="title" placeholder="Attachment title" /><input name="description" placeholder="Comment (optional)" /><label className="teacher-file-picker"><input name="file" type="file" accept="image/*,.pdf,audio/*,video/*,.doc,.docx" onChange={(event) => stageFile(event.target.files?.[0] ?? null)} /><span>{pendingFile ? pendingFile.name : "Choose photo, video, audio, PDF, or document"}</span></label>{pendingFile && <div className="teacher-file-preview"><b>Ready to review</b>{pendingFile.type.startsWith("audio/") && <audio controls src={pendingPreviewUrl} />}{pendingFile.type.startsWith("video/") && <video controls src={pendingPreviewUrl} />}{pendingFile.type.startsWith("image/") && <img src={pendingPreviewUrl} alt="Selected upload preview" />} {!/^(audio|video|image)\//.test(pendingFile.type) && <small>{pendingFile.name} · {(pendingFile.size / 1024 / 1024).toFixed(1)} MB</small>}<button type="button" className="teacher-clear-file" onClick={() => stageFile(null)}>Remove</button></div>}<div className="teacher-material-actions"><button disabled={!pendingFile}>Upload confirmed file</button>{!recording ? <button type="button" className="teacher-mic-button" aria-label="Start audio recording" title="Start audio recording" onClick={() => void toggleRecording()}>🎙</button> : <><span className="teacher-recording-state">● Recording{recordingPaused ? " paused" : ""}</span><button type="button" className="enterprise-action-button enterprise-action-button-secondary" onClick={toggleRecordingPause}>{recordingPaused ? "Resume" : "Pause"}</button><button type="button" className="teacher-stop-button" onClick={() => void toggleRecording()}>Stop</button></>}</div></form></TeacherActionPanel>
       <TeacherActionPanel icon="✓" title={selectedStudent ? `Homework for ${selectedStudent.firstName}` : "Homework (optional)"}><form className="learner-form" onSubmit={(event) => void assignHomework(event)}><input required name="title" placeholder="Homework title" /><textarea name="description" placeholder="Add a comment" /><button>Assign homework</button></form>{activity.homework.length > 0 && <div className="teacher-activity-list">{activity.homework.map((item) => <article key={item.id}><b>{item.title}</b><small>{item.studentId ? "Individual" : "Whole class"}</small></article>)}</div>}</TeacherActionPanel>
     </section>
-    <Panel title={selectedStudent ? `${selectedStudent.firstName}'s history` : "Class history"}><div className="teacher-history-filter"><label>From<input type="date" value={fromDate} onChange={(event) => setFromDate(event.target.value)} /></label><label>To<input type="date" value={toDate} onChange={(event) => setToDate(event.target.value)} /></label><button type="button" onClick={() => { setFromDate(""); setToDate(""); }}>Clear</button></div><div className="teacher-activity-list">{activity.resources.length || activity.homework.length ? <>{activity.resources.map((item) => <article key={item.id}><div><b>{item.title}</b><small>{item.type}{item.studentId ? " · individual" : " · whole class"} · {dt(item.createdAtUtc)}</small>{item.description && <p>{item.description}</p>}</div>{!item.url.startsWith("note://") && <a href={`${apiUrl}${item.url}`} target="_blank" rel="noreferrer">{historyLinkLabel(item.url)}</a>}</article>)}{activity.homework.map((item) => <article key={item.id}><div><b>{item.title}</b><small>Homework{item.studentId ? " · individual" : " · whole class"}{item.dueAtUtc ? ` · due ${dt(item.dueAtUtc)}` : ""}</small>{item.description && <p>{item.description}</p>}</div></article>)}</> : <p className="learner-empty">No class history for this period.</p>}</div></Panel>
+    <TeacherActionPanel icon="◴" title={selectedStudent ? `${selectedStudent.firstName}'s history` : "Class history"}><div className="teacher-history-filter"><label>From<input type="date" value={fromDate} onChange={(event) => setFromDate(event.target.value)} /></label><label>To<input type="date" value={toDate} onChange={(event) => setToDate(event.target.value)} /></label><button type="button" onClick={() => { setFromDate(""); setToDate(""); }}>Clear</button></div><div className="teacher-activity-list">{activity.resources.length || activity.homework.length ? <>{activity.resources.map((item) => <article key={item.id}><div><b>{item.title}</b><small>{item.type}{item.studentId ? " · individual" : " · whole class"} · {dt(item.createdAtUtc)}</small>{item.description && <p>{item.description}</p>}</div>{!item.url.startsWith("note://") && <a href={`${apiUrl}${item.url}`} target="_blank" rel="noreferrer">{historyLinkLabel(item.url)}</a>}</article>)}{activity.homework.map((item) => <article key={item.id}><div><b>{item.title}</b><small>Homework{item.studentId ? " · individual" : " · whole class"}{item.dueAtUtc ? ` · due ${dt(item.dueAtUtc)}` : ""}</small>{item.description && <p>{item.description}</p>}</div></article>)}</> : <p className="learner-empty">No class history for this period.</p>}</div></TeacherActionPanel>
     {message && <p className="teacher-classroom-message" role="status">{message}</p>}
     </>}
   </>;
@@ -433,7 +433,7 @@ function TeacherProgress() {
   const [progress, setProgress] = useState<{ completedClasses: number; upcomingClasses: number; attendanceRecords: number; presentOrOnline: number }>();
   const [payments, setPayments] = useState<{ paymentModel?: string; monthlyAmount?: number; amountPerCycle?: number; sessionsPerCycle?: number; payslips: { id: string; payslipNumber: string; periodLabel: string; netAmount: number; currency: string; status: string; paidAtUtc: string }[] }>();
   useEffect(() => { void Promise.all([academyApi("/api/teacher/progress"), academyApi("/api/teacher/payments")]).then(async ([a, b]) => { if (a.ok) setProgress(await a.json()); if (b.ok) setPayments(await b.json()); }); }, []);
-  return <><section className="learner-kpis"><K a="Classes completed" b={String(progress?.completedClasses ?? "—")} c="Delivered sessions" /><K a="Upcoming classes" b={String(progress?.upcomingClasses ?? "—")} c="Scheduled ahead" /><K a="Attendance marked" b={String(progress?.attendanceRecords ?? "—")} c="Student records" /><K a="Present / online" b={String(progress?.presentOrOnline ?? "—")} c="Attendance outcomes" /></section><Panel title="Payment and payslips"><div className="learner-list"><R a={`Payment model: ${payments?.paymentModel ?? "Not configured"}`} b={payments?.monthlyAmount ? `Monthly salary ₹${payments.monthlyAmount.toLocaleString("en-IN")}` : payments?.amountPerCycle ? `₹${payments.amountPerCycle.toLocaleString("en-IN")} per ${payments.sessionsPerCycle ?? "configured"} sessions` : "Payment details will appear when finance completes setup."} />{payments?.payslips?.length ? payments.payslips.map((item) => <R key={item.id} a={`${item.payslipNumber} · ${item.periodLabel}`} b={`₹${item.netAmount.toLocaleString("en-IN")} · ${item.status}`} />) : <p className="learner-empty">No payslips issued yet.</p>}</div></Panel></>;
+  return <><section className="learner-kpis"><K a="Classes completed" b={String(progress?.completedClasses ?? "—")} c="Delivered sessions" /><K a="Upcoming classes" b={String(progress?.upcomingClasses ?? "—")} c="Scheduled ahead" /><K a="Attendance marked" b={String(progress?.attendanceRecords ?? "—")} c="Student records" /><K a="Present / online" b={String(progress?.presentOrOnline ?? "—")} c="Attendance outcomes" /></section><TeacherActionPanel icon="₹" title="Payment and payslips"><div className="learner-list"><R a={`Payment model: ${payments?.paymentModel ?? "Not configured"}`} b={payments?.monthlyAmount ? `Monthly salary ₹${payments.monthlyAmount.toLocaleString("en-IN")}` : payments?.amountPerCycle ? `₹${payments.amountPerCycle.toLocaleString("en-IN")} per ${payments.sessionsPerCycle ?? "configured"} sessions` : "Payment details will appear when finance completes setup."} />{payments?.payslips?.length ? payments.payslips.map((item) => <R key={item.id} a={`${item.payslipNumber} · ${item.periodLabel}`} b={`₹${item.netAmount.toLocaleString("en-IN")} · ${item.status}`} />) : <p className="learner-empty">No payslips issued yet.</p>}</div></TeacherActionPanel></>;
 }
 
 function TeacherTasks({
@@ -495,8 +495,7 @@ function TeacherTasks({
   }
   return (
     <>
-      <section className="learner-panel">
-        <h3>Assign homework</h3>
+      <TeacherActionPanel icon="✓" title="Assign homework">
         <form
           className="learner-form"
           onSubmit={(e) => void create(e, "/api/teacher/assignments")}
@@ -511,9 +510,8 @@ function TeacherTasks({
           <input name="isPublished" type="hidden" value="true" />
           <button>Assign homework</button>
         </form>
-      </section>
-      <section className="learner-panel">
-        <h3>Create lesson plan</h3>
+      </TeacherActionPanel>
+      <TeacherActionPanel icon="◫" title="Create lesson plan">
         <form
           className="learner-form"
           onSubmit={(e) => void create(e, "/api/teacher/lesson-plans")}
@@ -523,9 +521,8 @@ function TeacherTasks({
           <textarea name="objectives" placeholder="Learning objectives" />
           <button>Save lesson plan</button>
         </form>
-      </section>
-      <section className="learner-panel">
-        <h3>Create assessment</h3>
+      </TeacherActionPanel>
+      <TeacherActionPanel icon="★" title="Create assessment">
         <form
           className="learner-form"
           onSubmit={(e) => void create(e, "/api/teacher/assessments")}
@@ -545,9 +542,8 @@ function TeacherTasks({
           <button>Create assessment</button>
         </form>
         <small>{m}</small>
-      </section>
-      <section className="learner-panel">
-        <h3>Practice feedback</h3>
+      </TeacherActionPanel>
+      <TeacherActionPanel icon="✦" title="Practice feedback">
         <div className="learner-list">
           {practiceLogs.length === 0 ? <p className="learner-empty">No practice logs from your assigned students.</p> : practiceLogs.map((log) => (
             <article className="learner-row" key={log.id}>
@@ -558,7 +554,7 @@ function TeacherTasks({
             </article>
           ))}
         </div>
-      </section>
+      </TeacherActionPanel>
     </>
   );
 }
@@ -581,7 +577,7 @@ function TeacherSelfService() {
   }
   return (
     <>
-      <Panel title="My contact profile">
+      <TeacherActionPanel icon="◉" title="My contact profile">
         <form
           className="learner-form"
           onSubmit={(event) => void save(event, "/api/teacher/profile")}
@@ -590,8 +586,8 @@ function TeacherSelfService() {
           <input name="phone" placeholder="Phone number" />
           <button>Save profile</button>
         </form>
-      </Panel>
-      <Panel title="Request leave">
+      </TeacherActionPanel>
+      <TeacherActionPanel icon="◷" title="Request leave">
         <form
           className="learner-form"
           onSubmit={(event) => void save(event, "/api/teacher/leave-requests")}
@@ -602,8 +598,8 @@ function TeacherSelfService() {
           <button>Send leave request</button>
           <small>{message}</small>
         </form>
-      </Panel>
-      <Panel title="Teaching review queues">
+      </TeacherActionPanel>
+      <TeacherActionPanel icon="✓" title="Teaching review queues">
         <R
           a="Submission review"
           b="Open a published assignment to review learner work and return feedback."
@@ -612,7 +608,7 @@ function TeacherSelfService() {
           a="Assessment results"
           b="Record and publish results for active learners in your assigned batches."
         />
-      </Panel>
+      </TeacherActionPanel>
     </>
   );
 }
