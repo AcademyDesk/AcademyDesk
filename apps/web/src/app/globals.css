@@ -3254,17 +3254,15 @@ html[data-theme="light"] .field-label { color: #475569; }
 .teacher-section-heading i { display: grid; width: 32px; height: 32px; place-items: center; border-radius: 10px; background: var(--ad-accent); color: #fff; font-size: 1rem; font-style: normal; box-shadow: 0 8px 18px color-mix(in srgb, var(--ad-accent) 28%, transparent); }
 .teacher-section-heading h2 { margin: 0; color: var(--ad-text); font-size: clamp(1.15rem, 1.4vw, 1.45rem); letter-spacing: -.035em; }
 .teacher-timetable-list { display: grid; gap: 1px; padding: 10px; background: var(--ad-border); }
-.teacher-timetable-row { display: grid; grid-template-columns: 54px minmax(0, 1fr) auto; align-items: center; gap: 14px; width: 100%; padding: 13px; border: 0; border-radius: 11px; background: var(--ad-surface); color: var(--ad-text); cursor: pointer; font: inherit; text-align: left; transition: background 160ms ease, transform 160ms ease; }
+.teacher-timetable-row { display: grid; grid-template-columns: 68px minmax(0, 1fr); align-items: center; gap: 14px; width: 100%; padding: 13px; border: 0; border-radius: 11px; background: var(--ad-surface); color: var(--ad-text); cursor: pointer; font: inherit; text-align: left; transition: background 160ms ease, transform 160ms ease; }
 .teacher-timetable-row:hover { background: var(--ad-surface-subtle); transform: translateX(2px); }
-.teacher-timetable-row time { display: grid; grid-template-columns: 20px 1fr; grid-template-rows: 1fr 1fr; align-items: center; column-gap: 4px; min-height: 48px; padding: 6px 7px; border: 1px solid color-mix(in srgb, var(--ad-accent) 28%, var(--ad-border)); border-radius: 10px; background: var(--ad-surface-subtle); color: var(--ad-accent); font-size: .64rem; font-weight: 800; line-height: 1; text-transform: uppercase; }
-.teacher-timetable-row time b { grid-row: 1 / span 2; align-self: center; color: inherit; font-size: 1.05rem; letter-spacing: -.05em; }
+.teacher-timetable-row time { display: grid; grid-template-columns: 30px 1fr; grid-template-rows: 1fr 1fr; align-items: center; column-gap: 5px; min-height: 48px; padding: 6px 8px; border: 1px solid color-mix(in srgb, var(--ad-accent) 28%, var(--ad-border)); border-radius: 10px; background: var(--ad-surface-subtle); color: var(--ad-accent); font-size: .64rem; font-weight: 800; line-height: 1; text-transform: uppercase; }
+.teacher-timetable-row time b { grid-row: 1 / span 2; display: block; align-self: center; overflow: visible; color: inherit; font-size: 1.1rem; letter-spacing: -.05em; white-space: nowrap; }
 .teacher-timetable-row time span, .teacher-timetable-row time strong { font-size: .61rem; letter-spacing: .05em; }
 .teacher-timetable-row time strong { font-weight: 800; }
 .teacher-timetable-row b, .teacher-timetable-row small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .teacher-timetable-row b { font-size: .9rem; }
 .teacher-timetable-row small { margin-top: 4px; color: var(--ad-text-muted); font-size: .74rem; }
-.teacher-timetable-row > span { color: var(--ad-accent); font-size: .75rem; font-weight: 750; white-space: nowrap; }
-.teacher-timetable-row > span i { margin-left: 5px; font-size: 1rem; font-style: normal; }
 /* Teacher dropdown standard — the classroom lives outside Admin's main wrapper, so it needs its own complete control treatment. */
 .teacher-portal-shell select {
   width: 100%;
