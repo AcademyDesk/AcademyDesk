@@ -16,7 +16,7 @@ public sealed class TeacherPortalController(
     UserManager<ApplicationUser> userManager,
     IWebHostEnvironment environment) : ControllerBase
 {
-    private static readonly string[] AttendanceStatuses = ["Present", "Absent", "Late", "Excused", "Online"];
+    private static readonly string[] AttendanceStatuses = ["Present", "Absent"];
 
     [HttpGet("me")]
     public async Task<ActionResult<TeacherPortalSummary>> Me(CancellationToken cancellationToken)
@@ -424,7 +424,7 @@ public sealed class TeacherPortalController(
         var completed = await sessions.CountAsync(x => x.Status == "Completed", cancellationToken);
         var upcoming = await sessions.CountAsync(x => (x.Status == "Scheduled" || x.Status == "InProgress") && x.StartUtc >= DateTime.UtcNow, cancellationToken);
         var attendance = await dbContext.AttendanceRecords.AsNoTracking().Where(x => x.AcademyId == user.AcademyId && dbContext.ClassSessions.Any(s => s.Id == x.ClassSessionId && s.TeacherId == user.TeacherId)).ToListAsync(cancellationToken);
-        var present = attendance.Count(x => x.Status is "Present" or "Late" or "Online");
+        var present = attendance.Count(x => x.Status == "Present");
         return Ok(new TeacherProgressSummary(completed, upcoming, attendance.Count, present));
     }
 
