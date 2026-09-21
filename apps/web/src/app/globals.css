@@ -3544,8 +3544,9 @@ html[data-theme="light"] .field-label { color: #475569; }
 .learner-filter-bar button { border:0; border-radius:8px; padding:0 10px; background:var(--ad-surface-subtle); color:var(--ad-accent); font:inherit; font-size:12px; font-weight:800; cursor:pointer; }
 .learner-tab-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; align-items:start; }
 .learner-tab-grid > .teacher-action-panel { margin:0; }
+.learner-tab-grid > .learner-grid-wide { grid-column:1 / -1; }
 .learner-session-row { display:flex; align-items:center; justify-content:space-between; gap:12px; }
-.learner-join-link { flex:none; border-radius:8px; padding:7px 10px; background:var(--ad-accent); color:#fff; font-size:12px; font-weight:800; text-decoration:none; }
+.learner-join-link { display:inline-flex; align-items:center; gap:7px; flex:none; border-radius:8px; padding:7px 10px; background:var(--ad-accent); color:#fff; font-size:12px; font-weight:800; text-decoration:none; }
 .learner-calendar { display:grid; gap:9px; }
 .learner-calendar > header { display:flex; align-items:center; justify-content:space-between; gap:8px; }
 .learner-calendar > header button { border:1px solid var(--ad-border); border-radius:7px; padding:6px 9px; background:var(--ad-surface-subtle); color:var(--ad-accent); font:inherit; font-size:11px; font-weight:800; cursor:pointer; }
@@ -3568,11 +3569,15 @@ html[data-theme="light"] .field-label { color: #475569; }
 .learner-cycle-count strong { color:var(--ad-accent); font-size:20px; }
 .learner-cycle-bar { height:7px; border-radius:99px; background:var(--ad-input); overflow:hidden; }
 .learner-cycle-bar i { display:block; height:100%; border-radius:inherit; background:var(--ad-accent); }
+.learner-cycle-toggle { justify-self:start; border:0; padding:0; background:transparent; color:var(--ad-accent); font:inherit; font-size:12px; font-weight:800; cursor:pointer; }
+.learner-cycle-dates { display:grid; grid-template-columns:1fr 1fr; gap:10px; padding-top:4px; }
+.learner-cycle-dates section { display:grid; gap:4px; padding:9px; border-radius:8px; background:var(--ad-input); }
+.learner-cycle-dates b { font-size:11px; color:var(--ad-text); }.learner-cycle-dates span { color:var(--ad-muted); font-size:11px; }
 .learner-download-row button,.learner-assignment button { border:0; border-radius:9px; padding:8px 11px; background:var(--ad-accent); color:white; font:inherit; font-size:12px; font-weight:800; cursor:pointer; white-space:nowrap; }
 .learner-upload-label { display:grid; gap:5px; color:var(--ad-muted); font-size:12px; }
 .learner-upload-label input { padding:8px !important; }
 .learner-form-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-@media (max-width: 800px) { .learner-tab-grid { grid-template-columns:1fr; } .learner-session-row { align-items:flex-start; flex-direction:column; } .learner-form-grid { grid-template-columns:1fr; } .learner-calendar-day,.learner-calendar-empty { min-height:54px; padding:3px; } .learner-calendar-event { font-size:8px; padding:3px; } .learner-calendar-event a { font-size:8px; } }
+@media (max-width: 800px) { .learner-tab-grid { grid-template-columns:1fr; } .learner-tab-grid > .learner-grid-wide { grid-column:auto; } .learner-session-row { align-items:flex-start; flex-direction:column; } .learner-form-grid,.learner-cycle-dates { grid-template-columns:1fr; } .learner-calendar-day,.learner-calendar-empty { min-height:54px; padding:3px; } .learner-calendar-event { font-size:8px; padding:3px; } .learner-calendar-event a { font-size:8px; } }
 .learner-shell::before,
 .learner-shell::after {
   position: absolute;

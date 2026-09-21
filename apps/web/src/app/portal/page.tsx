@@ -382,7 +382,7 @@ function View({
               <ResourceRow key={i} x={x} />
             ))}
           </P>
-          <P title="Class history">
+          <P title="Class history" className="learner-grid-wide">
             <ClassHistoryFilter items={d.classHistory} />
           </P>
         </section>
@@ -470,9 +470,9 @@ function K({ a, b, c }: { a: string; b: string; c: string }) {
     </article>
   );
 }
-function P({ title, children }: { title: string; children: React.ReactNode }) {
+function P({ title, children, className = "" }: { title: string; children: React.ReactNode; className?: string }) {
   return (
-    <section className="teacher-action-panel learner-student-panel">
+    <section className={`teacher-action-panel learner-student-panel ${className}`}>
       <header><i aria-hidden="true">◌</i><h3>{title}</h3></header>
       <div className="learner-list">
         {children || <p className="learner-empty">Nothing to show yet.</p>}
@@ -495,7 +495,7 @@ function TodayClasses({ sessions }: { sessions: D["schedule"] }) {
 }
 function SessionRow({ x, actionLabel = "Open class" }: { x: D["schedule"][number]; actionLabel?: string }) {
   const canJoin = (x.deliveryMode === "Online" || x.deliveryMode === "Hybrid") && x.meetingLink;
-  return <article className="learner-row learner-session-row"><div><b>{x.batchName}</b><small>{dt(x.startUtc)} · {x.deliveryMode}{x.roomName ? ` · ${x.roomName}` : ""}</small></div>{canJoin && <a className="learner-join-link" href={x.meetingLink} target="_blank" rel="noreferrer">{actionLabel} ↗</a>}</article>;
+  return <article className="learner-row learner-session-row"><div><b>{x.batchName}</b><small>{dt(x.startUtc)} · {x.deliveryMode}{x.roomName ? ` · ${x.roomName}` : ""}</small></div>{canJoin && <a className="learner-join-link" href={x.meetingLink} target="_blank" rel="noreferrer" aria-label={`${actionLabel} for ${x.batchName}`}><span>{actionLabel}</span><span aria-hidden="true">↗</span></a>}</article>;
 }
 function ClassCalendar({ sessions }: { sessions: D["schedule"] }) {
   const [month, setMonth] = useState(() => { const now = new Date(); return new Date(now.getFullYear(), now.getMonth(), 1); });
@@ -519,8 +519,9 @@ function ClassHistoryFilter({ items }: { items: D["classHistory"] }) {
   return <><div className="learner-filter-bar"><input aria-label="History from date" type="date" value={from} onChange={event => setFrom(event.target.value)} /><input aria-label="History to date" type="date" value={to} min={from || undefined} onChange={event => setTo(event.target.value)} /><button type="button" onClick={() => { setFrom(""); setTo(""); }}>Clear</button></div>{filtered.length ? filtered.map(item => <ClassHistoryRow key={item.sessionId} item={item} />) : <p className="learner-empty">No classes match this date range.</p>}</>;
 }
 function CycleRow({ cycle }: { cycle: D["cycleProgress"][number] }) {
+  const [expanded, setExpanded] = useState(false);
   const percent = Math.round((cycle.completedInCycle / cycle.cycleTotal) * 100);
-  return <article className="learner-cycle-row"><div><b>{cycle.batchName}</b><small>{cycle.sessionMinutes} min sessions · Current 4-week cycle</small></div><div className="learner-cycle-count"><strong>{cycle.completedInCycle}/{cycle.cycleTotal}</strong><small>{cycle.remainingInCycle} class{cycle.remainingInCycle === 1 ? "" : "es"} remaining</small></div><div className="learner-cycle-bar" aria-label={`${percent}% completed`}><i style={{ width: `${percent}%` }} /></div><small>Covered: {cycle.coveredDates.length ? cycle.coveredDates.map(dt).join(", ") : "No classes completed"} · Upcoming: {cycle.upcomingDates.length ? cycle.upcomingDates.map(dt).join(", ") : "No sessions scheduled"}</small></article>;
+  return <article className="learner-cycle-row"><div><b>{cycle.batchName}</b><small>{cycle.sessionMinutes} min sessions · Current 4-week cycle</small></div><div className="learner-cycle-count"><strong>{cycle.completedInCycle}/{cycle.cycleTotal}</strong><small>{cycle.remainingInCycle} class{cycle.remainingInCycle === 1 ? "" : "es"} remaining</small></div><div className="learner-cycle-bar" aria-label={`${percent}% completed`}><i style={{ width: `${percent}%` }} /></div><button type="button" className="learner-cycle-toggle" onClick={() => setExpanded(value => !value)} aria-expanded={expanded}>{expanded ? "Hide class dates" : "View class dates"}</button>{expanded && <div className="learner-cycle-dates"><section><b>Covered</b>{cycle.coveredDates.length ? cycle.coveredDates.map(date => <span key={date}>{dt(date)}</span>) : <span>No classes completed</span>}</section><section><b>Upcoming</b>{cycle.upcomingDates.length ? cycle.upcomingDates.map(date => <span key={date}>{dt(date)}</span>) : <span>No sessions scheduled</span>}</section></div>}</article>;
 }
 async function downloadPortalFile(path: string, filename: string) {
   const response = await academyApi(path);
