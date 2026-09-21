@@ -3252,7 +3252,7 @@ html[data-theme="light"] .field-label { color: #475569; }
 .teacher-section-heading { display: flex; align-items: center; justify-content: flex-start; min-height: 82px; padding: 18px 22px; border-bottom: 1px solid var(--ad-border); background: linear-gradient(105deg, color-mix(in srgb, var(--ad-accent) 12%, var(--ad-surface)), var(--ad-surface) 68%); }
 .teacher-section-heading > div { display: flex; align-items: center; gap: 10px; }
 .teacher-section-heading i { display: grid; width: 32px; height: 32px; place-items: center; border-radius: 10px; background: var(--ad-accent); color: #fff; font-size: 1rem; font-style: normal; box-shadow: 0 8px 18px color-mix(in srgb, var(--ad-accent) 28%, transparent); }
-.teacher-section-heading h2 { margin: 0; color: var(--ad-text); font-size: clamp(1.15rem, 1.4vw, 1.45rem); letter-spacing: -.035em; }
+.teacher-section-heading h2 { margin: 0; color: var(--ad-accent); font-size: clamp(.92rem, 1vw, 1.08rem); font-weight: 850; letter-spacing: .13em; text-transform: uppercase; }
 .teacher-timetable-list { display: grid; gap: 1px; padding: 10px; background: var(--ad-border); }
 .teacher-timetable-row { display: grid; grid-template-columns: 112px minmax(0, 1fr); align-items: center; gap: 14px; width: 100%; padding: 13px; border: 0; border-radius: 11px; background: var(--ad-surface); color: var(--ad-text); cursor: pointer; font: inherit; text-align: left; transition: background 160ms ease, transform 160ms ease; }
 .teacher-timetable-row:hover { background: var(--ad-surface-subtle); transform: translateX(2px); }
@@ -3264,7 +3264,7 @@ html[data-theme="light"] .field-label { color: #475569; }
 .teacher-classroom-grid .teacher-action-panel { margin: 0; }
 .teacher-action-panel > header { display: flex; align-items: center; gap: 10px; min-height: 66px; padding: 15px 20px; border-bottom: 1px solid var(--ad-border); background: linear-gradient(105deg, color-mix(in srgb, var(--ad-accent) 9%, var(--ad-surface)), var(--ad-surface) 70%); }
 .teacher-action-panel > header i { display: grid; width: 29px; height: 29px; place-items: center; border-radius: 9px; background: var(--ad-accent); color: #fff; font-size: .9rem; font-style: normal; box-shadow: 0 6px 14px color-mix(in srgb, var(--ad-accent) 24%, transparent); }
-.teacher-action-panel h3 { margin: 0; color: var(--ad-text); font-size: clamp(1rem, 1.05vw, 1.2rem); letter-spacing: -.025em; }
+.teacher-action-panel h3 { margin: 0; color: var(--ad-accent); font-size: clamp(.88rem, .98vw, 1.05rem); font-weight: 850; letter-spacing: .13em; text-transform: uppercase; }
 .teacher-action-panel > .learner-list { padding: clamp(17px, 1.45vw, 24px); }
 .teacher-timetable-row b, .teacher-timetable-row small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .teacher-timetable-row b { font-size: .9rem; }
