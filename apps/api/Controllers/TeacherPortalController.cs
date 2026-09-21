@@ -64,6 +64,44 @@ public sealed class TeacherPortalController(
         return Ok(new TeacherCalendarSummary(sessions, holidays));
     }
 
+    [HttpGet("batch-progress")]
+    public async Task<ActionResult<IReadOnlyList<TeacherBatchProgressSummary>>> BatchProgress(CancellationToken cancellationToken)
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user?.AcademyId is null || user.TeacherId is null) return Forbid();
+
+        var batches = await dbContext.Batches.AsNoTracking()
+            .Where(x => x.AcademyId == user.AcademyId && x.TeacherId == user.TeacherId && x.IsActive)
+            .OrderBy(x => x.Name)
+            .Select(x => new { x.Id, x.Name, x.SessionMinutes, x.SessionsPerWeek })
+            .ToListAsync(cancellationToken);
+        var batchIds = batches.Select(x => x.Id).ToArray();
+        var sessions = await dbContext.ClassSessions.AsNoTracking()
+            .Where(x => x.AcademyId == user.AcademyId && batchIds.Contains(x.BatchId))
+            .OrderBy(x => x.StartUtc)
+            .Select(x => new { x.BatchId, x.StartUtc, x.EndUtc, x.Status })
+            .ToListAsync(cancellationToken);
+        var payroll = await dbContext.PayrollProfiles.AsNoTracking()
+            .SingleOrDefaultAsync(x => x.AcademyId == user.AcademyId && x.TeacherId == user.TeacherId && x.IsActive, cancellationToken);
+        var now = DateTime.UtcNow;
+        var monthStart = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+        var monthEnd = monthStart.AddMonths(1);
+
+        var result = batches.Select(batch =>
+        {
+            var batchSessions = sessions.Where(x => x.BatchId == batch.Id).ToArray();
+            var completed = batchSessions.Where(x => x.Status == "Completed").OrderByDescending(x => x.StartUtc).ToArray();
+            var upcoming = batchSessions.Where(x => x.StartUtc >= now && x.Status != "Completed").OrderBy(x => x.StartUtc).ToArray();
+            var isSessionBlock = payroll?.PaymentModel == "SessionBlock" && payroll.SessionsPerCycle is > 0;
+            var cycleTotal = isSessionBlock ? payroll!.SessionsPerCycle!.Value : Math.Max(1, batchSessions.Count(x => x.StartUtc >= monthStart && x.StartUtc < monthEnd));
+            var completeForCycle = isSessionBlock
+                ? completed.Length == 0 ? 0 : completed.Length % cycleTotal == 0 ? cycleTotal : completed.Length % cycleTotal
+                : batchSessions.Count(x => x.Status == "Completed" && x.StartUtc >= monthStart && x.StartUtc < monthEnd);
+            return new TeacherBatchProgressSummary(batch.Id, batch.Name, batch.SessionMinutes, batch.SessionsPerWeek, isSessionBlock ? "Session cycle" : "Monthly", cycleTotal, completeForCycle, Math.Max(0, cycleTotal - completeForCycle), completeForCycle >= cycleTotal, completed.Take(4).Select(x => x.StartUtc).ToArray(), upcoming.Take(4).Select(x => new TeacherScheduledClassSummary(x.StartUtc, x.EndUtc)).ToArray());
+        }).ToArray();
+        return Ok(result);
+    }
+
     [HttpGet("profile")]
     public async Task<ActionResult<TeacherPortalProfileSummary>> Profile(CancellationToken cancellationToken)
     {
@@ -632,5 +670,7 @@ public sealed record TeacherClassroomActivitySummary(IReadOnlyList<TeacherResour
 public sealed record TeacherCreateResourceNoteRequest(Guid BatchId, Guid? StudentId, Guid? ClassSessionId, string Title, string Notes, string? Type);
 public sealed class TeacherUploadResourceRequest { public Guid BatchId { get; set; } public Guid? StudentId { get; set; } public Guid? ClassSessionId { get; set; } public string? Title { get; set; } public string? Description { get; set; } public string? Type { get; set; } public IFormFile? File { get; set; } }
 public sealed record TeacherProgressSummary(int CompletedClasses, int UpcomingClasses, int AttendanceRecords, int PresentOrOnline);
+public sealed record TeacherBatchProgressSummary(Guid BatchId, string BatchName, int SessionMinutes, int SessionsPerWeek, string PaymentCycle, int CycleTotal, int CompletedInCycle, int RemainingInCycle, bool PaymentReady, IReadOnlyList<DateTime> CoveredClassDates, IReadOnlyList<TeacherScheduledClassSummary> UpcomingClasses);
+public sealed record TeacherScheduledClassSummary(DateTime StartUtc, DateTime EndUtc);
 public sealed record TeacherPaymentSummary(string? PaymentModel, decimal? MonthlyAmount, decimal? AmountPerCycle, int? SessionsPerCycle, IReadOnlyList<TeacherPayslipSummary> Payslips);
 public sealed record TeacherPayslipSummary(Guid Id, string PayslipNumber, string PeriodLabel, decimal GrossAmount, decimal Deductions, decimal NetAmount, string Currency, string Status, string PaymentMethod, string? Reference, DateTime PaidAtUtc);

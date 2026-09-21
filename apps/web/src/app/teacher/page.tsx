@@ -196,7 +196,7 @@ export default function Teacher() {
                   </section>
                 )}
                 {t === "classes" && <><TeacherProgress includeMetrics /><TeacherCalendar batches={p.batches} compact onOpen={(id) => { setSid(id); void loadRoster(id); setT("classroom"); }} /></>}
-                {t === "homework" && <TeacherTasks batches={p.batches} />}{" "}
+                {t === "homework" && <><TeacherTasks batches={p.batches} /><TeacherBatchProgress /></>}{" "}
                 {t === "progress" && <TeacherProgress />}
                 {t === "more" && <TeacherSelfService />}
               </>
@@ -480,6 +480,14 @@ function TeacherOverviewFinance() {
   const next = pending[0];
   const expected = next?.netAmount ?? payments?.monthlyAmount ?? payments?.amountPerCycle ?? 0;
   return <TeacherActionPanel icon="₹" title="Salary & payments"><section className="teacher-finance-summary"><article><span>Earnings so far</span><b>₹{earnings.toLocaleString("en-IN")}</b><small>Paid salary and session payouts</small></article><article><span>Upcoming payment</span><b>₹{expected.toLocaleString("en-IN")}</b><small>{next ? next.periodLabel : payments?.paymentModel ?? "Not configured"}</small></article><article data-pending={pending.length > 0}><span>Awaiting approval</span><b>₹{pending.reduce((total, item) => total + item.netAmount, 0).toLocaleString("en-IN")}</b><small>{pending.length ? `${pending.length} payment awaiting approval` : "No payments awaiting approval"}</small></article></section><section className="teacher-recent-payments"><header><span>Recent payments</span></header>{paid.length ? paid.slice(0, 3).map((item) => <article key={item.id}><div><b>{item.periodLabel}</b><small>{item.payslipNumber} · {dt(item.paidAtUtc)}</small></div><strong>₹{item.netAmount.toLocaleString("en-IN")}</strong></article>) : <p className="learner-empty">No payments have been made yet.</p>}</section></TeacherActionPanel>;
+}
+
+type TeacherBatchProgressData = { batchId: string; batchName: string; sessionMinutes: number; sessionsPerWeek: number; paymentCycle: string; cycleTotal: number; completedInCycle: number; remainingInCycle: number; paymentReady: boolean; coveredClassDates: string[]; upcomingClasses: { startUtc: string; endUtc: string }[] };
+function TeacherBatchProgress() {
+  const [batches, setBatches] = useState<TeacherBatchProgressData[]>([]);
+  useEffect(() => { void academyApi("/api/teacher/batch-progress").then(async (response) => { if (response.ok) setBatches(await response.json()); }); }, []);
+  const date = (value: string) => new Intl.DateTimeFormat("en-IN", { day: "2-digit", month: "short", year: "numeric", timeZone: "Asia/Kolkata" }).format(new Date(value));
+  return <section className="teacher-batch-progress"><header><i aria-hidden="true">◷</i><div><h3>My progress</h3><span>Class delivery and payment-cycle progress by batch</span></div></header><div className="teacher-batch-progress-list">{batches.length ? batches.map((batch) => <article key={batch.batchId}><header><div><b>{batch.batchName}</b><small>{batch.sessionsPerWeek} class{batch.sessionsPerWeek === 1 ? "" : "es"} / week · {batch.sessionMinutes} min each</small></div><em data-ready={batch.paymentReady}>{batch.paymentReady ? "Ready for payment" : batch.paymentCycle}</em></header><div className="teacher-batch-cycle"><div><span>Cycle progress</span><b>{batch.completedInCycle} / {batch.cycleTotal} classes</b></div><div className="teacher-batch-progress-track"><i style={{ width: `${Math.min(100, (batch.completedInCycle / Math.max(1, batch.cycleTotal)) * 100)}%` }} /></div><small>{batch.paymentReady ? "Payment threshold reached." : `${batch.remainingInCycle} class${batch.remainingInCycle === 1 ? "" : "es"} remaining in this cycle.`}</small></div><div className="teacher-batch-date-columns"><section><span>Classes covered</span>{batch.coveredClassDates.length ? <div>{batch.coveredClassDates.map((value) => <time key={value}>{date(value)}</time>)}</div> : <small>No completed classes yet.</small>}</section><section><span>Upcoming classes</span>{batch.upcomingClasses.length ? <div>{batch.upcomingClasses.map((item) => <time key={item.startUtc}>{date(item.startUtc)} · {new Intl.DateTimeFormat("en-IN", { hour: "numeric", minute: "2-digit", timeZone: "Asia/Kolkata" }).format(new Date(item.startUtc))}</time>)}</div> : <small>No future classes scheduled.</small>}</section></div></article>) : <p className="learner-empty">No assigned batches yet.</p>}</div></section>;
 }
 
 function TeacherTasks({
