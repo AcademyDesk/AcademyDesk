@@ -382,7 +382,7 @@ function View({
             ))}
           </P>
           <P title="Class history">
-            {d.classHistory.map((item) => <ClassHistoryRow key={item.sessionId} item={item} />)}
+            <ClassHistoryFilter items={d.classHistory} />
           </P>
         </section>
       )}
@@ -439,9 +439,7 @@ function View({
       {tab === "more" && (
         <section className="learner-tab-grid">
           <P title="Fees and payments">
-            {d.invoices.map((x) => (
-              <DownloadRow key={x.invoiceNumber} a={x.invoiceNumber + " · " + cash(x.balance, x.currency)} b={"Due " + x.dueDate + " · " + x.status} label="View / download invoice" path={`/api/portal/students/${id}/invoices/${x.id}/download`} filename={`${x.invoiceNumber}.html`} />
-            ))}
+            <InvoicePaymentFilter studentId={id} invoices={d.invoices} />
           </P>
           {parentAccess ? (
             <ParentProfile
@@ -500,6 +498,11 @@ function ResourceRow({ x }: { x: { title: string; type: string; url: string; des
 function ClassHistoryRow({ item }: { item: D["classHistory"][number] }) {
   return <article className="learner-history-row"><div><b>{item.batchName}</b><small>{dt(item.startUtc)} · {item.deliveryMode} · Attendance: {item.attendanceStatus}</small></div>{item.resources.length > 0 ? <div className="learner-history-resources">{item.resources.map((resource, index) => <ResourceRow key={index} x={resource} />)}</div> : <small className="learner-muted">No notes, attachments, or recordings were shared for this class.</small>}</article>;
 }
+function ClassHistoryFilter({ items }: { items: D["classHistory"] }) {
+  const [from, setFrom] = useState(""); const [to, setTo] = useState("");
+  const filtered = items.filter(item => (!from || item.startUtc.slice(0, 10) >= from) && (!to || item.startUtc.slice(0, 10) <= to));
+  return <><div className="learner-filter-bar"><input aria-label="History from date" type="date" value={from} onChange={event => setFrom(event.target.value)} /><input aria-label="History to date" type="date" value={to} min={from || undefined} onChange={event => setTo(event.target.value)} /><button type="button" onClick={() => { setFrom(""); setTo(""); }}>Clear</button></div>{filtered.length ? filtered.map(item => <ClassHistoryRow key={item.sessionId} item={item} />) : <p className="learner-empty">No classes match this date range.</p>}</>;
+}
 function CycleRow({ cycle }: { cycle: D["cycleProgress"][number] }) {
   const percent = Math.round((cycle.completedInCycle / cycle.cycleTotal) * 100);
   return <article className="learner-cycle-row"><div><b>{cycle.batchName}</b><small>{cycle.sessionMinutes} min sessions · Current 4-week cycle</small></div><div className="learner-cycle-count"><strong>{cycle.completedInCycle}/{cycle.cycleTotal}</strong><small>{cycle.remainingInCycle} class{cycle.remainingInCycle === 1 ? "" : "es"} remaining</small></div><div className="learner-cycle-bar" aria-label={`${percent}% completed`}><i style={{ width: `${percent}%` }} /></div><small>Covered: {cycle.coveredDates.length ? cycle.coveredDates.map(dt).join(", ") : "No classes completed"} · Upcoming: {cycle.upcomingDates.length ? cycle.upcomingDates.map(dt).join(", ") : "No sessions scheduled"}</small></article>;
@@ -512,6 +515,11 @@ async function downloadPortalFile(path: string, filename: string) {
 function DownloadRow({ a, b, label, path, filename }: { a: string; b: string; label: string; path: string; filename: string }) {
   const [message, setMessage] = useState("");
   return <article className="learner-row learner-download-row"><div><b>{a}</b><small>{b}</small></div><button type="button" onClick={() => void downloadPortalFile(path, filename).catch(() => setMessage("Download could not be prepared."))}>{label}</button>{message && <small>{message}</small>}</article>;
+}
+function InvoicePaymentFilter({ studentId, invoices }: { studentId: string; invoices: D["invoices"] }) {
+  const [cycle, setCycle] = useState(""); const [status, setStatus] = useState("All");
+  const filtered = invoices.filter(invoice => (!cycle || invoice.dueDate.slice(0, 7) === cycle) && (status === "All" || (status === "Paid" ? invoice.balance <= 0 : invoice.balance > 0)));
+  return <><div className="learner-filter-bar"><input aria-label="Payment cycle" type="month" value={cycle} onChange={event => setCycle(event.target.value)} /><select aria-label="Payment status" value={status} onChange={event => setStatus(event.target.value)}><option>All</option><option>Paid</option><option>Outstanding</option></select><button type="button" onClick={() => { setCycle(""); setStatus("All"); }}>Clear</button></div>{filtered.length ? filtered.map(invoice => <DownloadRow key={invoice.invoiceNumber} a={invoice.invoiceNumber + " · " + cash(invoice.balance, invoice.currency)} b={`Due ${invoice.dueDate} · ${invoice.status}`} label="View / download invoice" path={`/api/portal/students/${studentId}/invoices/${invoice.id}/download`} filename={`${invoice.invoiceNumber}.html`} />) : <p className="learner-empty">No invoices match this filter.</p>}</>;
 }
 function Assignment({
   id,

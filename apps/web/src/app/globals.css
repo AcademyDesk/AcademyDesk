@@ -3539,6 +3539,9 @@ html[data-theme="light"] .field-label { color: #475569; }
 .learner-notification-menu article { display:grid; gap:3px; padding:11px 10px; border-top:1px solid var(--ad-border); }
 .learner-notification-menu article span,.learner-notification-menu header small { color:var(--ad-muted); font-size:12px; }
 .learner-resource-row,.learner-history-row,.learner-cycle-row,.learner-download-row { display:grid; gap:8px; }
+.learner-filter-bar { display:flex; flex-wrap:wrap; gap:8px; padding:0 0 12px; border-bottom:1px solid var(--ad-border); }
+.learner-filter-bar input,.learner-filter-bar select { min-height:34px; border:1px solid var(--ad-border); border-radius:8px; padding:0 9px; background:var(--ad-input); color:var(--ad-text); font:inherit; font-size:12px; }
+.learner-filter-bar button { border:0; border-radius:8px; padding:0 10px; background:var(--ad-surface-subtle); color:var(--ad-accent); font:inherit; font-size:12px; font-weight:800; cursor:pointer; }
 .learner-tab-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; align-items:start; }
 .learner-tab-grid > .teacher-action-panel { margin:0; }
 .learner-session-row { display:flex; align-items:center; justify-content:space-between; gap:12px; }
