@@ -9,6 +9,7 @@ export default function LoginPage() {
   const router = useRouter();
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   async function login(event: FormEvent<HTMLFormElement>) {
@@ -77,15 +78,20 @@ export default function LoginPage() {
         <label className="auth-label" htmlFor="password">
           Password
         </label>
-        <input
-          id="password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="auth-input"
-          required
-          autoComplete="current-password"
-        />
+        <div className="auth-password-field">
+          <input
+            id="password"
+            type={showPassword ? "text" : "password"}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="auth-input"
+            required
+            autoComplete="current-password"
+          />
+          <button type="button" onClick={() => setShowPassword((current) => !current)} aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword}>
+            {showPassword ? "Hide" : "Show"}
+          </button>
+        </div>
         <button
           disabled={busy}
           className="auth-submit"
