@@ -174,10 +174,15 @@ export default function Teacher() {
                   </section>
                 )}
                 {(t === "today" || t === "classes") && (
-                  <Panel title="My timetable">
+                  <section className="teacher-timetable-panel">
+                    <header className="teacher-section-heading">
+                      <span>Teaching schedule</span>
+                      <div><i aria-hidden="true">◷</i><h2>My timetable</h2></div>
+                    </header>
+                    <div className="teacher-timetable-list">
                     {p.sessions.map((x) => (
                       <button
-                        className="learner-row"
+                        className="teacher-timetable-row"
                         key={x.id}
                         onClick={() => {
                           setSid(x.id);
@@ -185,17 +190,13 @@ export default function Teacher() {
                           setT("classroom");
                         }}
                       >
-                        <b>{name(x.batchId)}</b>
-                        <small>
-                          {dt(x.startUtc) +
-                            " · " +
-                            x.deliveryMode +
-                            (x.roomName ? " · " + x.roomName : "")}
-                        </small>
-                        <small>Open classroom →</small>
+                        <time dateTime={x.startUtc}>{new Intl.DateTimeFormat("en-IN", { day: "2-digit", month: "short" }).format(new Date(x.startUtc))}<strong>{new Intl.DateTimeFormat("en-IN", { weekday: "short" }).format(new Date(x.startUtc))}</strong></time>
+                        <div><b>{name(x.batchId)}</b><small>{dt(x.startUtc) + " · " + x.deliveryMode + (x.roomName ? " · " + x.roomName : "")}</small></div>
+                        <span>Open classroom <i aria-hidden="true">→</i></span>
                       </button>
                     ))}
-                  </Panel>
+                    </div>
+                  </section>
                 )}
                 {t === "homework" && <TeacherTasks batches={p.batches} />}{" "}
                 {t === "progress" && <TeacherProgress />}
