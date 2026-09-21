@@ -429,12 +429,15 @@ public sealed class TeacherPortalController(
     }
 
     [HttpGet("payments")]
-    public async Task<ActionResult<TeacherPaymentSummary>> Payments(CancellationToken cancellationToken)
+    public async Task<ActionResult<TeacherPaymentSummary>> Payments(int? year, int? month, CancellationToken cancellationToken)
     {
         var user = await userManager.GetUserAsync(User);
-        if (user?.AcademyId is null || user.TeacherId is null) return Forbid();
+        if (user?.AcademyId is null || user.TeacherId is null || (year.HasValue != month.HasValue) || (month.HasValue && month is < 1 or > 12) || (year.HasValue && year is < 2020 or > 2100)) return BadRequest();
         var profile = await dbContext.PayrollProfiles.AsNoTracking().FirstOrDefaultAsync(x => x.AcademyId == user.AcademyId && x.TeacherId == user.TeacherId && x.IsActive, cancellationToken);
-        IReadOnlyList<TeacherPayslipSummary> payouts = profile is null ? [] : await dbContext.PayrollPayouts.AsNoTracking().Where(x => x.AcademyId == user.AcademyId && x.PayrollProfileId == profile.Id).OrderByDescending(x => x.PaidAtUtc).Take(12).Select(x => new TeacherPayslipSummary(x.Id, x.PayslipNumber, x.PeriodLabel, x.GrossAmount, x.Deductions, x.NetAmount, x.Currency, x.Status, x.PaymentMethod, x.Reference, x.PaidAtUtc)).ToListAsync(cancellationToken);
+        var payoutQuery = profile is null ? dbContext.PayrollPayouts.AsNoTracking().Where(x => false) : dbContext.PayrollPayouts.AsNoTracking().Where(x => x.AcademyId == user.AcademyId && x.PayrollProfileId == profile.Id);
+        if (year.HasValue && month.HasValue)
+            payoutQuery = payoutQuery.Where(x => x.Status == "Paid" && x.PaidAtUtc.Year == year.Value && x.PaidAtUtc.Month == month.Value);
+        IReadOnlyList<TeacherPayslipSummary> payouts = await payoutQuery.OrderByDescending(x => x.PaidAtUtc).Take(year.HasValue ? 100 : 12).Select(x => new TeacherPayslipSummary(x.Id, x.PayslipNumber, x.PeriodLabel, x.GrossAmount, x.Deductions, x.NetAmount, x.Currency, x.Status, x.PaymentMethod, x.Reference, x.PaidAtUtc)).ToListAsync(cancellationToken);
         return Ok(new TeacherPaymentSummary(profile?.PaymentModel, profile?.MonthlyAmount, profile?.AmountPerCycle, profile?.SessionsPerCycle, payouts));
     }
 
