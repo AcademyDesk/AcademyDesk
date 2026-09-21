@@ -3260,6 +3260,33 @@ html[data-theme="light"] .field-label { color: #475569; }
 .teacher-timetable-row time b { grid-row: 1 / span 2; display: block; align-self: center; overflow: visible; color: inherit; font-size: 1.1rem; letter-spacing: -.05em; white-space: nowrap; }
 .teacher-timetable-row time span, .teacher-timetable-row time strong { font-size: .61rem; letter-spacing: .05em; }
 .teacher-timetable-row time strong { font-weight: 800; }
+.teacher-timetable-empty { margin: 0; padding: 26px 16px; background: var(--ad-surface); color: var(--ad-text-muted); font-size: .82rem; text-align: center; }
+.teacher-calendar-panel { overflow: hidden; margin: 18px 0; border: 1px solid var(--ad-border); border-radius: 16px; background: var(--ad-surface); }
+.teacher-calendar-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 20px 22px; border-bottom: 1px solid var(--ad-border); background: linear-gradient(105deg, color-mix(in srgb, var(--ad-accent) 10%, var(--ad-surface)), var(--ad-surface) 70%); }
+.teacher-calendar-header span { display: block; margin-bottom: 5px; color: var(--ad-accent); font-size: .7rem; font-weight: 850; letter-spacing: .13em; text-transform: uppercase; }
+.teacher-calendar-header h2 { margin: 0; color: var(--ad-text); font-size: clamp(1.2rem, 1.55vw, 1.6rem); letter-spacing: -.04em; }
+.teacher-calendar-header > div:last-child { display: flex; align-items: center; gap: 7px; }
+.teacher-calendar-header button { min-width: 34px; min-height: 34px; padding: 0 10px; border: 1px solid var(--ad-border-strong); border-radius: 8px; background: var(--ad-surface); color: var(--ad-accent); cursor: pointer; font: inherit; font-size: .76rem; font-weight: 750; }
+.teacher-calendar-header button:hover { border-color: var(--ad-accent); background: var(--ad-accent-soft); }
+.teacher-calendar-weekdays, .teacher-calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
+.teacher-calendar-weekdays { border-bottom: 1px solid var(--ad-border); background: var(--ad-surface-subtle); }
+.teacher-calendar-weekdays span { padding: 10px 8px; color: var(--ad-text-muted); font-size: .67rem; font-weight: 800; letter-spacing: .08em; text-align: center; text-transform: uppercase; }
+.teacher-calendar-grid { border-left: 1px solid var(--ad-border); }
+.teacher-calendar-day, .teacher-calendar-blank { min-height: 116px; padding: 9px; border: 0; border-right: 1px solid var(--ad-border); border-bottom: 1px solid var(--ad-border); background: var(--ad-surface); text-align: left; }
+.teacher-calendar-day { cursor: pointer; }
+.teacher-calendar-day:hover, .teacher-calendar-day[data-selected="true"] { background: color-mix(in srgb, var(--ad-accent) 7%, var(--ad-surface)); }
+.teacher-calendar-day[data-selected="true"] { box-shadow: inset 0 0 0 2px var(--ad-accent); }
+.teacher-calendar-day time { display: block; width: 24px; height: 24px; padding-top: 4px; border-radius: 50%; color: var(--ad-text); font-size: .72rem; font-weight: 800; text-align: center; }
+.teacher-calendar-day[data-holiday="true"] time { background: #f2d5d7; color: #a33d4c; }
+.teacher-calendar-day small { display: block; margin: 4px 0; overflow: hidden; color: #a33d4c; font-size: .62rem; font-weight: 750; text-overflow: ellipsis; white-space: nowrap; }
+.teacher-calendar-day > span { display: block; margin-top: 4px; padding: 4px 5px; overflow: hidden; border-radius: 5px; background: var(--ad-accent-soft); color: var(--ad-accent); font-size: .61rem; font-weight: 750; text-overflow: ellipsis; white-space: nowrap; }
+.teacher-calendar-detail { display: grid; gap: 8px; padding: 17px 20px; border-top: 1px solid var(--ad-border); background: var(--ad-surface-subtle); }
+.teacher-calendar-detail > b { color: var(--ad-text); font-size: .88rem; }
+.teacher-calendar-detail > em { color: #a33d4c; font-size: .75rem; font-style: normal; font-weight: 750; }
+.teacher-calendar-detail > small { color: var(--ad-text-muted); font-size: .78rem; }
+.teacher-calendar-detail > button { display: grid; gap: 3px; padding: 10px 12px; border: 1px solid var(--ad-border); border-radius: 9px; background: var(--ad-surface); color: var(--ad-text); cursor: pointer; font: inherit; text-align: left; }
+.teacher-calendar-detail > button:hover { border-color: var(--ad-accent); }
+.teacher-calendar-detail > button span { font-size: .8rem; font-weight: 750; }.teacher-calendar-detail > button small { color: var(--ad-text-muted); font-size: .7rem; }
 .teacher-action-panel { margin: 0 0 18px; overflow: hidden; padding: 0; border: 1px solid var(--ad-border); border-radius: 14px; background: var(--ad-surface); }
 .teacher-classroom-grid .teacher-action-panel { margin: 0; }
 .teacher-action-panel > header { display: flex; align-items: center; gap: 10px; min-height: 66px; padding: 15px 20px; border-bottom: 1px solid var(--ad-border); background: linear-gradient(105deg, color-mix(in srgb, var(--ad-accent) 9%, var(--ad-surface)), var(--ad-surface) 70%); }

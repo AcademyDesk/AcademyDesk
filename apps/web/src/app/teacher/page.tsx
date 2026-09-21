@@ -45,6 +45,11 @@ const dt = (x: string) =>
     timeStyle: "short",
     timeZone: "Asia/Kolkata",
   }).format(new Date(x));
+const indiaDateKey = (value: string | Date) => {
+  const parts = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Kolkata", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date(value));
+  const get = (type: string) => parts.find((part) => part.type === type)?.value ?? "";
+  return `${get("year")}-${get("month")}-${get("day")}`;
+};
 export default function Teacher() {
   const [p, setP] = useState<P>();
   const [sid, setSid] = useState("");
@@ -169,13 +174,13 @@ export default function Teacher() {
                     />
                   </section>
                 )}
-                {(t === "today" || t === "classes") && (
+                {t === "today" && (
                   <section className="teacher-timetable-panel">
                     <header className="teacher-section-heading">
                       <div><i aria-hidden="true">◷</i><h2>My timetable</h2></div>
                     </header>
                     <div className="teacher-timetable-list">
-                    {p.sessions.map((x) => (
+                    {p.sessions.filter((session) => indiaDateKey(session.startUtc) === indiaDateKey(new Date())).map((x) => (
                       <button
                         className="teacher-timetable-row"
                         key={x.id}
@@ -189,9 +194,11 @@ export default function Teacher() {
                         <div><b>{name(x.batchId)}</b><small>{dt(x.startUtc) + " · " + x.deliveryMode + (x.roomName ? " · " + x.roomName : "")}</small></div>
                       </button>
                     ))}
+                    {!p.sessions.some((session) => indiaDateKey(session.startUtc) === indiaDateKey(new Date())) && <p className="teacher-timetable-empty">No classes scheduled for today.</p>}
                     </div>
                   </section>
                 )}
+                {t === "classes" && <TeacherCalendar batches={p.batches} onOpen={(id) => { setSid(id); void loadRoster(id); setT("classroom"); }} />}
                 {t === "homework" && <TeacherTasks batches={p.batches} />}{" "}
                 {t === "progress" && <TeacherProgress />}
                 {t === "more" && <TeacherSelfService />}
@@ -278,6 +285,35 @@ function Panel({
 }
 function TeacherActionPanel({ title, icon, children }: { title: string; icon: string; children: React.ReactNode }) {
   return <section className="teacher-action-panel"><header><i aria-hidden="true">{icon}</i><h3>{title}</h3></header><div className="learner-list">{children}</div></section>;
+}
+type TeacherCalendarSession = P["sessions"][number];
+type TeacherCalendarHoliday = { id: string; name: string; holidayDate: string; isClosed: boolean };
+function TeacherCalendar({ batches, onOpen }: { batches: P["batches"]; onOpen: (id: string) => void }) {
+  const [month, setMonth] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+  const [data, setData] = useState<{ sessions: TeacherCalendarSession[]; holidays: TeacherCalendarHoliday[] }>({ sessions: [], holidays: [] });
+  const [selectedDay, setSelectedDay] = useState<string>(indiaDateKey(new Date()));
+  useEffect(() => {
+    void academyApi(`/api/teacher/calendar?year=${month.getFullYear()}&month=${month.getMonth() + 1}`).then(async (response) => { if (response.ok) setData(await response.json()); });
+  }, [month]);
+  const sessionByDay = new Map<string, TeacherCalendarSession[]>();
+  data.sessions.forEach((session) => { const key = indiaDateKey(session.startUtc); sessionByDay.set(key, [...(sessionByDay.get(key) ?? []), session]); });
+  const holidayByDay = new Map(data.holidays.map((holiday) => [holiday.holidayDate, holiday]));
+  const firstOffset = (month.getDay() + 6) % 7;
+  const daysInMonth = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
+  const cells = Array.from({ length: Math.ceil((firstOffset + daysInMonth) / 7) * 7 }, (_, index) => index - firstOffset + 1);
+  const selectedSessions = sessionByDay.get(selectedDay) ?? [];
+  const selectedHoliday = holidayByDay.get(selectedDay);
+  const batchName = (id: string) => batches.find((batch) => batch.id === id)?.name ?? "Assigned class";
+  return <section className="teacher-calendar-panel">
+    <header className="teacher-calendar-header"><div><span>Class calendar</span><h2>{new Intl.DateTimeFormat("en-IN", { month: "long", year: "numeric" }).format(month)}</h2></div><div><button type="button" aria-label="Previous month" onClick={() => setMonth((current) => new Date(current.getFullYear(), current.getMonth() - 1, 1))}>‹</button><button type="button" onClick={() => { const today = new Date(); setMonth(new Date(today.getFullYear(), today.getMonth(), 1)); setSelectedDay(indiaDateKey(today)); }}>Today</button><button type="button" aria-label="Next month" onClick={() => setMonth((current) => new Date(current.getFullYear(), current.getMonth() + 1, 1))}>›</button></div></header>
+    <div className="teacher-calendar-weekdays">{["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => <span key={day}>{day}</span>)}</div>
+    <div className="teacher-calendar-grid">{cells.map((day, index) => {
+      if (day < 1 || day > daysInMonth) return <div className="teacher-calendar-blank" key={`blank-${index}`} />;
+      const date = new Date(month.getFullYear(), month.getMonth(), day); const key = indiaDateKey(date); const sessions = sessionByDay.get(key) ?? []; const holiday = holidayByDay.get(key);
+      return <button type="button" key={key} className="teacher-calendar-day" data-selected={selectedDay === key} data-holiday={Boolean(holiday)} onClick={() => setSelectedDay(key)}><time>{day}</time>{holiday && <small>{holiday.name}</small>}{sessions.map((session) => <span key={session.id} onClick={(event) => { event.stopPropagation(); onOpen(session.id); }}>{batchName(session.batchId)}</span>)}</button>;
+    })}</div>
+    <section className="teacher-calendar-detail"><b>{new Intl.DateTimeFormat("en-IN", { weekday: "long", day: "numeric", month: "long" }).format(new Date(`${selectedDay}T00:00:00`))}</b>{selectedHoliday && <em>{selectedHoliday.name}</em>}{selectedSessions.length ? selectedSessions.map((session) => <button type="button" key={session.id} onClick={() => onOpen(session.id)}><span>{batchName(session.batchId)}</span><small>{dt(session.startUtc)} · {session.deliveryMode}</small></button>) : !selectedHoliday && <small>No assigned classes.</small>}</section>
+  </section>;
 }
 type TeacherBatch = P["batches"][number];
 type Resource = { id: string; batchId: string; studentId?: string; classSessionId?: string; title: string; description?: string; type: string; url: string; createdAtUtc: string };

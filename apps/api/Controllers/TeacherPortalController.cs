@@ -44,6 +44,26 @@ public sealed class TeacherPortalController(
         return Ok(new TeacherPortalSummary(teacher.FirstName, teacher.LastName, batches, sessions));
     }
 
+    [HttpGet("calendar")]
+    public async Task<ActionResult<TeacherCalendarSummary>> Calendar(int year, int month, CancellationToken cancellationToken)
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user?.AcademyId is null || user.TeacherId is null || month is < 1 or > 12 || year is < 2020 or > 2100) return BadRequest();
+        var start = new DateTime(year, month, 1, 0, 0, 0, DateTimeKind.Utc);
+        var end = start.AddMonths(1);
+        var sessions = await dbContext.ClassSessions.AsNoTracking()
+            .Where(x => x.AcademyId == user.AcademyId && x.TeacherId == user.TeacherId && x.StartUtc >= start && x.StartUtc < end)
+            .OrderBy(x => x.StartUtc)
+            .Select(x => new TeacherSessionSummary(x.Id, x.BatchId, x.StartUtc, x.EndUtc, x.DeliveryMode, x.RoomName, x.Status, x.TeacherAttendanceStatus))
+            .ToListAsync(cancellationToken);
+        var holidays = await dbContext.AcademyHolidays.AsNoTracking()
+            .Where(x => x.AcademyId == user.AcademyId && x.HolidayDate >= DateOnly.FromDateTime(start) && x.HolidayDate < DateOnly.FromDateTime(end))
+            .OrderBy(x => x.HolidayDate)
+            .Select(x => new TeacherHolidaySummary(x.Id, x.Name, x.HolidayDate, x.IsClosed))
+            .ToListAsync(cancellationToken);
+        return Ok(new TeacherCalendarSummary(sessions, holidays));
+    }
+
     [HttpPut("profile")]
     public async Task<ActionResult> UpdateProfile(TeacherPortalProfileRequest request, CancellationToken cancellationToken)
     {
@@ -551,6 +571,8 @@ public sealed class TeacherPortalController(
 public sealed record TeacherPortalSummary(string FirstName, string LastName, IReadOnlyList<TeacherBatchSummary> Batches, IReadOnlyList<TeacherSessionSummary> Sessions);
 public sealed record TeacherBatchSummary(Guid Id, string Name, int Capacity, string DeliveryMode, string? MeetingLink, string? RoomName);
 public sealed record TeacherSessionSummary(Guid Id, Guid BatchId, DateTime StartUtc, DateTime EndUtc, string DeliveryMode, string? RoomName, string Status, string? TeacherAttendanceStatus);
+public sealed record TeacherHolidaySummary(Guid Id, string Name, DateOnly HolidayDate, bool IsClosed);
+public sealed record TeacherCalendarSummary(IReadOnlyList<TeacherSessionSummary> Sessions, IReadOnlyList<TeacherHolidaySummary> Holidays);
 public sealed record TeacherRosterStudent(Guid Id, string FirstName, string LastName);
 public sealed record TeacherMarkAttendanceRequest(Guid StudentId, string Status, string? Notes);
 public sealed record TeacherAttendanceSummary(Guid StudentId, string Status, string? Notes);
