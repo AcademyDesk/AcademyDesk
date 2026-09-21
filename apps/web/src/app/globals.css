@@ -3296,6 +3296,17 @@ html[data-theme="light"] .field-label { color: #475569; }
 .teacher-action-panel .learner-form button { padding: 7px 11px; border-radius: 7px; font-size: .78rem; }
 .teacher-action-panel .teacher-dropdown > button { min-height: 40px; padding: 0 11px; border-radius: 10px; font-size: .78rem; }
 .teacher-action-panel .teacher-dropdown > button i { font-size: 1rem; }
+.teacher-finance-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.teacher-finance-summary article { display: grid; gap: 5px; padding: 14px; border: 1px solid var(--ad-border); border-radius: 11px; background: var(--ad-surface-subtle); }
+.teacher-finance-summary article[data-pending="true"] { border-color: color-mix(in srgb, #d98b2a 42%, var(--ad-border)); background: color-mix(in srgb, #d98b2a 7%, var(--ad-surface)); }
+.teacher-finance-summary span { color: var(--ad-text-muted); font-size: .68rem; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; }
+.teacher-finance-summary b { color: var(--ad-text); font-size: clamp(1.12rem, 1.4vw, 1.45rem); letter-spacing: -.04em; }
+.teacher-finance-summary small { color: var(--ad-text-muted); font-size: .7rem; }
+.teacher-recent-payments { margin-top: 18px; }
+.teacher-recent-payments > header { padding-bottom: 8px; border-bottom: 1px solid var(--ad-border); }
+.teacher-recent-payments > header span { color: var(--ad-accent); font-size: .7rem; font-weight: 850; letter-spacing: .12em; text-transform: uppercase; }
+.teacher-recent-payments article { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--ad-border); }
+.teacher-recent-payments article b, .teacher-recent-payments article small { display: block; }.teacher-recent-payments article b { color: var(--ad-text); font-size: .8rem; }.teacher-recent-payments article small { margin-top: 3px; color: var(--ad-text-muted); font-size: .68rem; }.teacher-recent-payments article strong { color: #198d70; font-size: .82rem; white-space: nowrap; }
 .teacher-timetable-row b, .teacher-timetable-row small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .teacher-timetable-row b { font-size: .9rem; }
 .teacher-timetable-row small { margin-top: 4px; color: var(--ad-text-muted); font-size: .74rem; }
@@ -3480,7 +3491,7 @@ html[data-theme="light"] .field-label { color: #475569; }
 .teacher-classroom-toolbar span { color: var(--ad-text-muted); font-size: .8rem; }
 .teacher-material-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .teacher-portal-shell .learner-row a { display: inline-flex; width: max-content; margin-top: 8px; color: var(--ad-accent); font-size: .78rem; font-weight: 700; }
-@media (max-width: 760px) { .teacher-classroom-hero { align-items: flex-start; flex-direction: column; } .teacher-classroom-controls, .teacher-classroom-grid { grid-template-columns: 1fr; } .teacher-classroom-grid > :nth-child(3) { grid-column: auto; } .teacher-attendance-grid { grid-template-columns: 1fr; } }
+@media (max-width: 760px) { .teacher-classroom-hero { align-items: flex-start; flex-direction: column; } .teacher-classroom-controls, .teacher-classroom-grid, .teacher-finance-summary { grid-template-columns: 1fr; } .teacher-classroom-grid > :nth-child(3) { grid-column: auto; } .teacher-attendance-grid { grid-template-columns: 1fr; } .teacher-calendar-day, .teacher-calendar-blank { min-height: 82px; padding: 5px; } .teacher-calendar-day > span { font-size: .55rem; } }
 .learner-shell .learner-topbar { height: 78px; }
 .learner-shell .learner-brand > div { display: grid; gap: 2px; }
 .learner-shell .learner-brand b { font-size: .96rem; letter-spacing: -.02em; }

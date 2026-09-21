@@ -174,6 +174,7 @@ export default function Teacher() {
                     />
                   </section>
                 )}
+                {t === "today" && <TeacherOverviewFinance />}
                 {t === "today" && (
                   <section className="teacher-timetable-panel">
                     <header className="teacher-section-heading">
@@ -471,6 +472,19 @@ function TeacherProgress() {
   const [payments, setPayments] = useState<{ paymentModel?: string; monthlyAmount?: number; amountPerCycle?: number; sessionsPerCycle?: number; payslips: { id: string; payslipNumber: string; periodLabel: string; netAmount: number; currency: string; status: string; paidAtUtc: string }[] }>();
   useEffect(() => { void Promise.all([academyApi("/api/teacher/progress"), academyApi("/api/teacher/payments")]).then(async ([a, b]) => { if (a.ok) setProgress(await a.json()); if (b.ok) setPayments(await b.json()); }); }, []);
   return <><section className="learner-kpis"><K a="Classes completed" b={String(progress?.completedClasses ?? "—")} c="Delivered sessions" /><K a="Upcoming classes" b={String(progress?.upcomingClasses ?? "—")} c="Scheduled ahead" /><K a="Attendance marked" b={String(progress?.attendanceRecords ?? "—")} c="Student records" /><K a="Present / online" b={String(progress?.presentOrOnline ?? "—")} c="Attendance outcomes" /></section><TeacherActionPanel icon="₹" title="Payment and payslips"><div className="learner-list"><R a={`Payment model: ${payments?.paymentModel ?? "Not configured"}`} b={payments?.monthlyAmount ? `Monthly salary ₹${payments.monthlyAmount.toLocaleString("en-IN")}` : payments?.amountPerCycle ? `₹${payments.amountPerCycle.toLocaleString("en-IN")} per ${payments.sessionsPerCycle ?? "configured"} sessions` : "Payment details will appear when finance completes setup."} />{payments?.payslips?.length ? payments.payslips.map((item) => <R key={item.id} a={`${item.payslipNumber} · ${item.periodLabel}`} b={`₹${item.netAmount.toLocaleString("en-IN")} · ${item.status}`} />) : <p className="learner-empty">No payslips issued yet.</p>}</div></TeacherActionPanel></>;
+}
+
+type TeacherPaymentData = { paymentModel?: string; monthlyAmount?: number; amountPerCycle?: number; sessionsPerCycle?: number; payslips: { id: string; payslipNumber: string; periodLabel: string; netAmount: number; currency: string; status: string; paidAtUtc: string }[] };
+function TeacherOverviewFinance() {
+  const [payments, setPayments] = useState<TeacherPaymentData>();
+  useEffect(() => { void academyApi("/api/teacher/payments").then(async (response) => { if (response.ok) setPayments(await response.json()); }); }, []);
+  const payouts = payments?.payslips ?? [];
+  const paid = payouts.filter((item) => item.status === "Paid");
+  const pending = payouts.filter((item) => item.status !== "Paid");
+  const earnings = paid.reduce((total, item) => total + item.netAmount, 0);
+  const next = pending[0];
+  const expected = next?.netAmount ?? payments?.monthlyAmount ?? payments?.amountPerCycle ?? 0;
+  return <TeacherActionPanel icon="₹" title="Salary & payments"><section className="teacher-finance-summary"><article><span>Earnings so far</span><b>₹{earnings.toLocaleString("en-IN")}</b><small>Paid salary and session payouts</small></article><article><span>Upcoming payment</span><b>₹{expected.toLocaleString("en-IN")}</b><small>{next ? next.periodLabel : payments?.paymentModel ?? "Not configured"}</small></article><article data-pending={pending.length > 0}><span>Awaiting approval</span><b>₹{pending.reduce((total, item) => total + item.netAmount, 0).toLocaleString("en-IN")}</b><small>{pending.length ? `${pending.length} payment awaiting approval` : "No payments awaiting approval"}</small></article></section><section className="teacher-recent-payments"><header><span>Recent payments</span></header>{paid.length ? paid.slice(0, 3).map((item) => <article key={item.id}><div><b>{item.periodLabel}</b><small>{item.payslipNumber} · {dt(item.paidAtUtc)}</small></div><strong>₹{item.netAmount.toLocaleString("en-IN")}</strong></article>) : <p className="learner-empty">No payments have been made yet.</p>}</section></TeacherActionPanel>;
 }
 
 function TeacherTasks({

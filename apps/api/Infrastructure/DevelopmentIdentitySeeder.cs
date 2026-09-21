@@ -98,6 +98,8 @@ public static class DevelopmentIdentitySeeder
         }
         if (!await db.PayrollPayouts.AnyAsync(x => x.AcademyId == academy.Id && x.PayrollProfileId == hayanshPayroll.Id))
             db.PayrollPayouts.Add(new PayrollPayout { AcademyId = academy.Id, PayrollProfileId = hayanshPayroll.Id, PayslipNumber = "PS-DEMO-1001", PeriodLabel = "August 2026", GrossAmount = 32000m, Deductions = 1200m, NetAmount = 30800m, Status = "Paid", PaymentMethod = "Bank transfer", Reference = "DEMO-PAY-1001", PaidAtUtc = DateTime.UtcNow.AddDays(-12) });
+        if (!await db.PayrollPayouts.AnyAsync(x => x.AcademyId == academy.Id && x.PayrollProfileId == hayanshPayroll.Id && x.Status == "PendingApproval"))
+            db.PayrollPayouts.Add(new PayrollPayout { AcademyId = academy.Id, PayrollProfileId = hayanshPayroll.Id, PayslipNumber = "PS-DEMO-1002", PeriodLabel = "September 2026", GrossAmount = 32000m, Deductions = 0m, NetAmount = 32000m, Status = "PendingApproval", PaymentMethod = "Bank transfer", Reference = "DEMO-PAY-1002", PaidAtUtc = DateTime.UtcNow.AddDays(8) });
         if (!await db.LearningResources.AnyAsync(x => x.AcademyId == academy.Id && x.BatchId == pianoBatch.Id))
         {
             db.LearningResources.AddRange(
