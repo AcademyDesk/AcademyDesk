@@ -40,6 +40,18 @@ public static class DevelopmentIdentitySeeder
         var pianoBatch = await EnsureBatch(db, academy.Id, piano.Id, hayansh.Id, "Piano Foundations — Evening", "PF-SEP-01", "Offline", "Studio 1");
         var violinBatch = await EnsureBatch(db, academy.Id, violin.Id, ananya.Id, "Violin Essentials — Weekend", "VE-SEP-01", "Hybrid", "https://meet.example.com/violin");
         _ = await EnsureBatch(db, academy.Id, vocals.Id, arjun.Id, "Contemporary Vocals — Online", "CV-SEP-01", "Online", "https://meet.example.com/vocals");
+        var onlineOneToOneA = await EnsureBatch(db, academy.Id, piano.Id, hayansh.Id, "Piano 1:1 — Aarav", "PF-1TO1-ON-01", "Online", "https://meet.example.com/piano-aarav");
+        var onlineOneToOneB = await EnsureBatch(db, academy.Id, piano.Id, hayansh.Id, "Piano 1:1 — Meera", "PF-1TO1-ON-02", "Online", "https://meet.example.com/piano-meera");
+        var hybridOneToOneA = await EnsureBatch(db, academy.Id, piano.Id, hayansh.Id, "Piano 1:1 — Riya", "PF-1TO1-HY-01", "Hybrid", "https://meet.example.com/piano-riya");
+        var hybridOneToOneB = await EnsureBatch(db, academy.Id, piano.Id, hayansh.Id, "Piano 1:1 — Haynsh", "PF-1TO1-HY-02", "Hybrid", "https://meet.example.com/piano-haynsh");
+        foreach (var oneToOne in new[] { onlineOneToOneA, onlineOneToOneB, hybridOneToOneA, hybridOneToOneB })
+        {
+            oneToOne.Capacity = 1;
+            oneToOne.WaitlistCapacity = 0;
+            oneToOne.ClassType = "1:1";
+            oneToOne.SessionsPerWeek = 1;
+            oneToOne.MeetingPattern = "Weekly 1:1";
+        }
         var roster = new[]
         {
             student,
@@ -51,11 +63,31 @@ public static class DevelopmentIdentitySeeder
         foreach (var learner in roster)
             if (!await db.Enrollments.AnyAsync(x => x.AcademyId == academy.Id && x.StudentId == learner.Id && x.BatchId == pianoBatch.Id))
                 db.Enrollments.Add(new Enrollment { AcademyId = academy.Id, StudentId = learner.Id, BatchId = pianoBatch.Id, StartDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-14)) });
+        var oneToOneEnrollments = new[]
+        {
+            (Batch: onlineOneToOneA, Student: roster[1]),
+            (Batch: onlineOneToOneB, Student: roster[2]),
+            (Batch: hybridOneToOneA, Student: roster[3]),
+            (Batch: hybridOneToOneB, Student: roster[0])
+        };
+        foreach (var item in oneToOneEnrollments)
+            if (!await db.Enrollments.AnyAsync(x => x.AcademyId == academy.Id && x.StudentId == item.Student.Id && x.BatchId == item.Batch.Id))
+                db.Enrollments.Add(new Enrollment { AcademyId = academy.Id, StudentId = item.Student.Id, BatchId = item.Batch.Id, StartDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-14)) });
         var nextSession = DateTime.UtcNow.Date.AddDays(1).AddHours(12);
         if (!await db.ClassSessions.AnyAsync(x => x.AcademyId == academy.Id && x.BatchId == pianoBatch.Id && x.StartUtc == nextSession))
             db.ClassSessions.Add(new ClassSession { AcademyId = academy.Id, BatchId = pianoBatch.Id, TeacherId = hayansh.Id, StartUtc = nextSession, EndUtc = nextSession.AddHours(1), DeliveryMode = "Offline", RoomName = "Studio 1", Status = "Scheduled" });
         if (!await db.ClassSessions.AnyAsync(x => x.AcademyId == academy.Id && x.BatchId == violinBatch.Id && x.StartUtc == nextSession.AddDays(1)))
             db.ClassSessions.Add(new ClassSession { AcademyId = academy.Id, BatchId = violinBatch.Id, TeacherId = ananya.Id, StartUtc = nextSession.AddDays(1), EndUtc = nextSession.AddDays(1).AddHours(1), DeliveryMode = "Hybrid", RoomName = "Studio 2", Status = "Scheduled" });
+        var oneToOneSessions = new[]
+        {
+            (Batch: onlineOneToOneA, Start: nextSession.AddHours(2), Mode: "Online", Room: (string?)null),
+            (Batch: onlineOneToOneB, Start: nextSession.AddHours(4), Mode: "Online", Room: (string?)null),
+            (Batch: hybridOneToOneA, Start: nextSession.AddHours(6), Mode: "Hybrid", Room: "Studio 2"),
+            (Batch: hybridOneToOneB, Start: nextSession.AddHours(8), Mode: "Hybrid", Room: "Studio 3")
+        };
+        foreach (var item in oneToOneSessions)
+            if (!await db.ClassSessions.AnyAsync(x => x.AcademyId == academy.Id && x.BatchId == item.Batch.Id && x.StartUtc == item.Start))
+                db.ClassSessions.Add(new ClassSession { AcademyId = academy.Id, BatchId = item.Batch.Id, TeacherId = hayansh.Id, StartUtc = item.Start, EndUtc = item.Start.AddHours(1), DeliveryMode = item.Mode, RoomName = item.Room, Status = "Scheduled" });
         await db.SaveChangesAsync();
         var hayanshPayroll = await db.PayrollProfiles.FirstOrDefaultAsync(x => x.AcademyId == academy.Id && x.TeacherId == hayansh.Id);
         if (hayanshPayroll is null)
