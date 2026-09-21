@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import { ThemeToggle } from "@/components/theme-toggle";
 
-const standaloneRoutes = new Set(["/login", "/register", "/portal"]);
+const standaloneRoutes = new Set(["/login", "/register"]);
 
 export function StandaloneThemeControl() {
   const pathname = usePathname();
