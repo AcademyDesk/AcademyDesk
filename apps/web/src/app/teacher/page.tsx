@@ -29,12 +29,13 @@ type PracticeLog = {
   teacherFeedback?: string;
   status: string;
 };
-type T = "today" | "classes" | "classroom" | "homework" | "progress" | "more";
+type T = "today" | "classes" | "classroom" | "homework" | "batchProgress" | "progress" | "more";
 const tabs: [T, string, string][] = [
   ["today", "Today", "⌂"],
   ["classes", "My classes & progress", "◷"],
   ["classroom", "Classroom", "♙"],
   ["homework", "Homework", "✓"],
+  ["batchProgress", "My progress", "◷"],
   ["progress", "Pay slip", "₹"],
   ["more", "Profile & leave", "•••"],
 ];
@@ -196,7 +197,8 @@ export default function Teacher() {
                   </section>
                 )}
                 {t === "classes" && <><TeacherProgress includeMetrics /><TeacherCalendar batches={p.batches} compact onOpen={(id) => { setSid(id); void loadRoster(id); setT("classroom"); }} /></>}
-                {t === "homework" && <><TeacherTasks batches={p.batches} /><TeacherBatchProgress /></>}{" "}
+                {t === "homework" && <TeacherTasks batches={p.batches} />}{" "}
+                {t === "batchProgress" && <TeacherBatchProgress />}
                 {t === "progress" && <TeacherProgress />}
                 {t === "more" && <TeacherSelfService />}
               </>
