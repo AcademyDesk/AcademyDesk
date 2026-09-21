@@ -149,8 +149,8 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
         var batchDetails = await db.Batches.AsNoTracking().Where(x => batchIds.Contains(x.Id)).ToListAsync(token);
         var batches = batchDetails.Select(x => new PortalBatch(x.Id, x.Name)).ToList();
         var schedule = await db.ClassSessions.AsNoTracking()
-            .Where(x => x.AcademyId == user.AcademyId && batchIds.Contains(x.BatchId) && x.StartUtc >= DateTime.UtcNow.AddDays(-1))
-            .OrderBy(x => x.StartUtc).Take(20)
+            .Where(x => x.AcademyId == user.AcademyId && batchIds.Contains(x.BatchId) && x.StartUtc >= DateTime.UtcNow.AddMonths(-6) && x.StartUtc <= DateTime.UtcNow.AddMonths(6))
+            .OrderBy(x => x.StartUtc).Take(250)
             .Join(db.Batches.AsNoTracking(), session => session.BatchId, batch => batch.Id,
                 (session, batch) => new PortalSession(session.Id, batch.Name, session.StartUtc, session.EndUtc, session.DeliveryMode, session.RoomName, batch.MeetingLink, session.Status))
             .ToListAsync(token);

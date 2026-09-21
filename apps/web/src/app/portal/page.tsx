@@ -105,7 +105,7 @@ type Leave = {
 type Tab = "home" | "classes" | "tasks" | "progress" | "more";
 const tabs: [Tab, string, string][] = [
   ["home", "Home", "⌂"],
-  ["classes", "Classes", "◷"],
+  ["classes", "My Classes", "◷"],
   ["tasks", "Tasks", "✓"],
   ["progress", "Progress", "↗"],
   ["more", "More", "•••"],
@@ -122,6 +122,11 @@ const cash = (x: number, c = "INR") =>
     currency: c,
     maximumFractionDigits: 0,
   }).format(x);
+const indiaDateKey = (value: string | Date) => {
+  const parts = new Intl.DateTimeFormat("en-IN", { timeZone: "Asia/Kolkata", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date(value));
+  const part = (type: string) => parts.find(item => item.type === type)?.value ?? "";
+  return `${part("year")}-${part("month")}-${part("day")}`;
+};
 export default function Portal() {
   const [me, setMe] = useState<Me>();
   const [id, setId] = useState("");
@@ -362,19 +367,15 @@ function View({
               c={balance ? "Review fees" : "No outstanding balance"}
             />
           </section>
-          <P title="Today and next">
-            {d.schedule.slice(0, 4).map((x) => (
-              <SessionRow key={x.id} x={x} />
-            ))}
+          <P title="Today’s classes">
+            <TodayClasses sessions={d.schedule} />
           </P>
         </>
       )}
       {tab === "classes" && (
         <section className="learner-tab-grid">
-          <P title="Upcoming timetable">
-            {d.schedule.map((x) => (
-              <SessionRow key={x.id} x={x} />
-            ))}
+          <P title="Class calendar">
+            <ClassCalendar sessions={d.schedule} />
           </P>
           <P title="Learning resources">
             {d.resources.map((x, i) => (
@@ -487,9 +488,23 @@ function R({ a, b }: { a: string; b: string }) {
     </article>
   );
 }
-function SessionRow({ x }: { x: D["schedule"][number] }) {
+function TodayClasses({ sessions }: { sessions: D["schedule"] }) {
+  const today = indiaDateKey(new Date());
+  const items = sessions.filter(session => indiaDateKey(session.startUtc) === today);
+  return <>{items.length ? items.map(session => <SessionRow key={session.id} x={session} actionLabel="Start class" />) : <p className="learner-empty">No classes today.</p>}</>;
+}
+function SessionRow({ x, actionLabel = "Open class" }: { x: D["schedule"][number]; actionLabel?: string }) {
   const canJoin = (x.deliveryMode === "Online" || x.deliveryMode === "Hybrid") && x.meetingLink;
-  return <article className="learner-row learner-session-row"><div><b>{x.batchName}</b><small>{dt(x.startUtc)} · {x.deliveryMode}{x.roomName ? ` · ${x.roomName}` : ""}</small></div>{canJoin && <a className="learner-join-link" href={x.meetingLink} target="_blank" rel="noreferrer">Join class ↗</a>}</article>;
+  return <article className="learner-row learner-session-row"><div><b>{x.batchName}</b><small>{dt(x.startUtc)} · {x.deliveryMode}{x.roomName ? ` · ${x.roomName}` : ""}</small></div>{canJoin && <a className="learner-join-link" href={x.meetingLink} target="_blank" rel="noreferrer">{actionLabel} ↗</a>}</article>;
+}
+function ClassCalendar({ sessions }: { sessions: D["schedule"] }) {
+  const [month, setMonth] = useState(() => { const now = new Date(); return new Date(now.getFullYear(), now.getMonth(), 1); });
+  const year = month.getFullYear(); const monthIndex = month.getMonth(); const firstDay = new Date(year, monthIndex, 1).getDay(); const days = new Date(year, monthIndex + 1, 0).getDate();
+  const monthKey = `${year}-${String(monthIndex + 1).padStart(2, "0")}`;
+  const byDay = new Map<string, D["schedule"]>();
+  sessions.filter(session => indiaDateKey(session.startUtc).startsWith(monthKey)).forEach(session => { const key = indiaDateKey(session.startUtc); byDay.set(key, [...(byDay.get(key) ?? []), session]); });
+  const cells = Array.from({ length: firstDay + days }, (_, index) => index < firstDay ? null : index - firstDay + 1);
+  return <div className="learner-calendar"><header><button type="button" aria-label="Previous month" onClick={() => setMonth(new Date(year, monthIndex - 1, 1))}>Previous</button><strong>{month.toLocaleDateString("en-IN", { month: "long", year: "numeric" })}</strong><button type="button" aria-label="Next month" onClick={() => setMonth(new Date(year, monthIndex + 1, 1))}>Next</button></header><div className="learner-calendar-weekdays">{["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(day => <span key={day}>{day}</span>)}</div><div className="learner-calendar-grid">{cells.map((day, index) => { if (!day) return <div key={`empty-${index}`} className="learner-calendar-empty" />; const key = `${monthKey}-${String(day).padStart(2, "0")}`; const daySessions = byDay.get(key) ?? []; return <div className="learner-calendar-day" key={key}><b>{day}</b>{daySessions.map(session => <div className="learner-calendar-event" key={session.id}><span>{session.batchName}</span>{(session.deliveryMode === "Online" || session.deliveryMode === "Hybrid") && session.meetingLink && <a href={session.meetingLink} target="_blank" rel="noreferrer">Open class</a>}</div>)}</div>; })}</div></div>;
 }
 function ResourceRow({ x }: { x: { title: string; type: string; url: string; description?: string } }) {
   const downloadable = x.url.startsWith("/") || x.url.startsWith("http");
