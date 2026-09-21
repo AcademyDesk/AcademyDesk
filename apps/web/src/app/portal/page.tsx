@@ -1,6 +1,7 @@
 "use client";
-import { FormEvent, useEffect, useState } from "react";
-import { academyApi, apiHeaders } from "@/lib/api";
+import { FormEvent, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { academyApi, apiHeaders, apiUrl } from "@/lib/api";
 import { ThemeToggle } from "@/components/theme-toggle";
 type Me = {
   role: "Student" | "Parent";
@@ -124,25 +125,28 @@ export default function Portal() {
       );
   }, []);
   return (
-    <main className="learner-shell">
-      <header className="learner-topbar">
-        <a href="/portal" className="learner-brand">
+    <main className="enterprise-app-shell teacher-portal-shell learner-portal-shell">
+      <aside className="enterprise-sidebar teacher-portal-sidebar learner-portal-sidebar">
+        <a href="/portal" className="enterprise-brand">
           <span>A</span>
-          <b>AcademyDesk</b>
-          <small>{me?.role === "Parent" ? "Parent" : "Student"}</small>
+          <strong>AcademyDesk</strong>
         </a>
-        <ThemeToggle />
-      </header>
-      <div className="learner-layout">
-        <aside className="learner-sidebar">
+        <nav className="enterprise-nav-section teacher-portal-nav learner-portal-nav" aria-label="Student workspace">
+          <p>{me?.role === "Parent" ? "Parent portal" : "Student portal"}</p>
           {tabs.map(([k, x, i]) => (
             <button key={k} data-active={t === k} onClick={() => setT(k)}>
               <i>{i}</i>
               {x}
             </button>
           ))}
-        </aside>
-        <section className="learner-content">
+        </nav>
+      </aside>
+      <section className="enterprise-workspace teacher-portal-workspace learner-portal-workspace">
+        <header className="enterprise-topbar">
+          <div className="teacher-portal-context"><strong>{me?.role === "Parent" ? "Parent workspace" : d?.name ?? "Student workspace"}</strong></div>
+          <div className="enterprise-utilities"><ThemeToggle /><StudentPortalProfile /></div>
+        </header>
+        <section className="learner-content teacher-portal-content learner-portal-content">
           {me?.role === "Parent" && (
             <div className="learner-switcher">
               <label>
@@ -192,7 +196,7 @@ export default function Portal() {
             )
           )}
         </section>
-      </div>
+      </section>
       <nav className="learner-bottom-nav">
         {tabs.map(([k, x, i]) => (
           <button key={k} data-active={t === k} onClick={() => setT(k)}>
@@ -203,6 +207,22 @@ export default function Portal() {
       </nav>
     </main>
   );
+}
+function StudentPortalProfile() {
+  const router = useRouter();
+  const [account, setAccount] = useState<{ displayName?: string; profileImageUrl?: string | null }>({});
+  const [open, setOpen] = useState(false);
+  const [message, setMessage] = useState("");
+  const ref = useRef<HTMLDivElement>(null);
+  const input = useRef<HTMLInputElement>(null);
+  const name = account.displayName || "Student";
+  const initials = name.split(" ").map((part) => part[0]).join("").slice(0, 2).toUpperCase();
+  const imageUrl = account.profileImageUrl ? account.profileImageUrl.startsWith("http") ? account.profileImageUrl : `${apiUrl}${account.profileImageUrl}` : undefined;
+  useEffect(() => { void academyApi("/api/auth/session").then(async (response) => response.ok && setAccount(await response.json())).catch(() => undefined); }, []);
+  useEffect(() => { if (!open) return; const close = (event: MouseEvent) => { if (!ref.current?.contains(event.target as Node)) setOpen(false); }; document.addEventListener("mousedown", close); return () => document.removeEventListener("mousedown", close); }, [open]);
+  async function upload(event: React.ChangeEvent<HTMLInputElement>) { const file = event.target.files?.[0]; event.target.value = ""; if (!file) return; const body = new FormData(); body.append("image", file); const response = await academyApi("/api/auth/session/profile-image", { method: "POST", body }); const result = await response.json().catch(() => null); if (!response.ok) return setMessage(result?.message ?? "Profile image could not be saved."); setAccount((current) => ({ ...current, profileImageUrl: result.profileImageUrl })); setMessage(""); setOpen(false); }
+  function signOut() { window.localStorage.removeItem("academydesk.accessToken"); window.localStorage.removeItem("academydesk.refreshToken"); router.push("/login"); }
+  return <div className="enterprise-profile" ref={ref}><button type="button" className="enterprise-profile-trigger" onClick={() => setOpen((value) => !value)} aria-label="Open profile menu" aria-expanded={open}>{imageUrl ? <img src={imageUrl} alt="Profile" /> : <span>{initials}</span>}</button>{open && <div className="enterprise-profile-menu" role="menu"><strong>{name}</strong><small>Student portal</small><input ref={input} className="sr-only" type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => void upload(event)} /><button type="button" className="enterprise-profile-menu-action" onClick={() => input.current?.click()}>Edit profile picture</button><button type="button" className="enterprise-profile-menu-action" onClick={signOut}>Sign out</button>{message && <small role="status">{message}</small>}</div>}</div>;
 }
 function View({
   d,
@@ -406,8 +426,8 @@ function K({ a, b, c }: { a: string; b: string; c: string }) {
 }
 function P({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="learner-panel">
-      <h3>{title}</h3>
+    <section className="teacher-action-panel learner-student-panel">
+      <header><i aria-hidden="true">◌</i><h3>{title}</h3></header>
       <div className="learner-list">
         {children || <p className="learner-empty">Nothing to show yet.</p>}
       </div>
@@ -607,8 +627,8 @@ function Action({
     }
   }
   return (
-    <section className="learner-panel">
-      <h3>{title}</h3>
+    <section className="teacher-action-panel learner-student-panel">
+      <header><i aria-hidden="true">◌</i><h3>{title}</h3></header>
       <form className="learner-form" onSubmit={go}>
         {fields}
         <button>Save</button>
