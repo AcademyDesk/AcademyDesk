@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { academyApi } from "@/lib/api";
+import { StandardSelectField } from "@/components/standard-select-field";
 type Academy = { id: string };
 type Audit = {
   id: string;
@@ -14,8 +15,8 @@ export default function ActivityPage() {
   const [items, setItems] = useState<Audit[]>([]);
   const [message, setMessage] = useState("Loading activity…");
   const [query, setQuery] = useState("");
-  const [entity, setEntity] = useState("All");
-  const [period, setPeriod] = useState("All");
+  const [entity, setEntity] = useState("");
+  const [period, setPeriod] = useState("");
   useEffect(() => {
     async function load() {
       try {
@@ -51,12 +52,12 @@ export default function ActivityPage() {
           `${item.action} ${item.entityType} ${item.metadataJson ?? ""}`.toLowerCase();
         const age = Date.now() - new Date(item.occurredAtUtc).getTime();
         const periodMatch =
-          period === "All" ||
+          !period ||
           (period === "Today" && age <= 86400000) ||
           (period === "7 days" && age <= 604800000) ||
           (period === "30 days" && age <= 2592000000);
         return (
-          (entity === "All" || item.entityType === entity) &&
+          (!entity || item.entityType === entity) &&
           periodMatch &&
           searchable.includes(query.toLowerCase())
         );
@@ -90,34 +91,28 @@ export default function ActivityPage() {
               placeholder="Search activity"
               className="field"
             />
-            <select
+            <StandardSelectField
+              name="activity-record-type"
               value={entity}
-              onChange={(event) => setEntity(event.target.value)}
-              className="field"
-            >
-              <option>All</option>
-              {entityTypes.map((value) => (
-                <option key={value}>{value}</option>
-              ))}
-            </select>
-            <select
+              onChange={setEntity}
+              placeholder="All record types"
+              options={entityTypes.map((value) => ({ value, label: label(value) }))}
+            />
+            <StandardSelectField
+              name="activity-period"
               value={period}
-              onChange={(event) => setPeriod(event.target.value)}
-              className="field"
-            >
-              <option>All</option>
-              <option>Today</option>
-              <option>7 days</option>
-              <option>30 days</option>
-            </select>
+              onChange={setPeriod}
+              placeholder="All time"
+              options={["Today", "7 days", "30 days"].map((value) => ({ value, label: value }))}
+            />
           </div>
           <div className="workspace-activity-filter-summary">
             <span>Use search, record type, or period to narrow the audit trail.</span>
             <button
               onClick={() => {
                 setQuery("");
-                setEntity("All");
-                setPeriod("All");
+                setEntity("");
+                setPeriod("");
               }}
               className="workspace-activity-clear"
             >
