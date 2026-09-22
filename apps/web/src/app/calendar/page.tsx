@@ -34,6 +34,8 @@ type CalendarItem = {
   detail: string;
   start: Date;
   href: string;
+  actionLabel: string;
+  opensExternally?: boolean;
 };
 const names = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const monthName = (date: Date) =>
@@ -71,12 +73,15 @@ export default function CalendarPage() {
             (path) => academyApi(`/api/academies/${id}/${path}`),
           ),
         );
-        if (responses.some((response) => !response.ok)) throw new Error();
-        setBatches(await responses[0].json());
-        setSessions(await responses[1].json());
-        setEvents(await responses[2].json());
-        setMakeups(await responses[3].json());
-        setStudents(await responses[4].json());
+        // Sessions and batches are the core calendar. Optional records must
+        // not hide the whole month if one supporting endpoint is unavailable.
+        if (!responses[0].ok || !responses[1].ok) throw new Error();
+        const readRows = async <T,>(response: Response): Promise<T[]> => response.ok ? response.json() : [];
+        setBatches(await readRows<Batch>(responses[0]));
+        setSessions(await readRows<Session>(responses[1]));
+        setEvents(await readRows<Event>(responses[2]));
+        setMakeups(await readRows<Makeup>(responses[3]));
+        setStudents(await readRows<Student>(responses[4]));
         setMessage("");
       } catch {
         setMessage("Calendar could not be loaded.");
@@ -97,7 +102,9 @@ export default function CalendarPage() {
         title: batchName(row.batchId),
         detail: `${row.deliveryMode}${row.roomName ? ` · ${row.roomName}` : ""}`,
         start: new Date(row.startUtc),
-        href: `/schedule?session=${row.id}`,
+        href: ["Online", "Hybrid"].includes(row.deliveryMode) && /^https?:\/\//i.test(row.roomName ?? "") ? row.roomName! : `/schedule?session=${row.id}`,
+        actionLabel: ["Online", "Hybrid"].includes(row.deliveryMode) && /^https?:\/\//i.test(row.roomName ?? "") ? "Join class" : "Open class",
+        opensExternally: ["Online", "Hybrid"].includes(row.deliveryMode) && /^https?:\/\//i.test(row.roomName ?? ""),
       })),
       ...makeups.map((row) => ({
         id: row.id,
@@ -106,6 +113,7 @@ export default function CalendarPage() {
         detail: row.venue ?? "Make-up class",
         start: new Date(row.startUtc),
         href: "/makeup",
+        actionLabel: "Open make-up",
       })),
       ...events.map((row) => ({
         id: row.id,
@@ -114,6 +122,7 @@ export default function CalendarPage() {
         detail: `${row.type}${row.venue ? ` · ${row.venue}` : ""}`,
         start: new Date(row.startUtc),
         href: "/events",
+        actionLabel: "View event",
       })),
     ].filter((item) => filter === "All" || item.type === filter);
   }, [batches, sessions, events, makeups, students, filter]);
@@ -214,9 +223,11 @@ export default function CalendarPage() {
                       href={item.href}
                       className={`calendar-event ${item.type.toLowerCase().replace("-", "")}`}
                       title={`${item.title} · ${item.detail}`}
+                      target={item.opensExternally ? "_blank" : undefined}
+                      rel={item.opensExternally ? "noreferrer" : undefined}
                     >
-                      <time>{time(item.start)}</time>
-                      {item.title}
+                      <span><time>{time(item.start)}</time>{item.title}</span>
+                      <strong>{item.actionLabel}</strong>
                     </a>
                   ))}
                   {dayItems.length > 3 && (

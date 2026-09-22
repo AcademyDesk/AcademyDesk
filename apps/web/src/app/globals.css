@@ -1912,7 +1912,11 @@ html[data-theme="light"] .field-label { color: #475569; }
 .workspace-calendar .calendar-day { min-height: 128px; padding: 10px; border-color: var(--ad-border); background: var(--ad-surface); }
 .workspace-calendar .calendar-day:hover { background: color-mix(in srgb, var(--ad-accent) 4%, var(--ad-surface)); }
 .workspace-calendar .calendar-date { width: 25px; height: 25px; color: var(--ad-text); font-size: .72rem; }
-.workspace-calendar .calendar-event { padding: 5px 6px; border-left-width: 3px; border-radius: 6px; font-size: .68rem; font-weight: 650; }
+.workspace-calendar .calendar-event { display: grid; gap: 4px; padding: 6px 7px; border-left-width: 3px; border-radius: 6px; font-size: .68rem; font-weight: 650; white-space: normal; }
+.workspace-calendar .calendar-event > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.workspace-calendar .calendar-event strong { width: fit-content; color: var(--ad-accent); font-size: .61rem; font-weight: 800; letter-spacing: .02em; text-transform: uppercase; }
+.workspace-calendar .calendar-event.makeup strong { color: var(--ad-warning); }
+.workspace-calendar .calendar-event.event strong { color: #7665bf; }
 .workspace-calendar-agenda { margin-top: 22px; padding: 0 22px 16px; }
 .workspace-calendar-agenda-header { margin: 0 -22px; }
 .workspace-calendar-agenda-header > span { padding: 6px 10px; border-radius: 999px; background: var(--ad-accent-soft); color: var(--ad-accent); font-size: .72rem; font-weight: 750; }
