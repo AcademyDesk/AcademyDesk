@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { academyApi, apiHeaders } from "@/lib/api";
+import { StandardDateField } from "@/components/standard-date-field";
 
 type Profile = {
   studentNumber?: string;
@@ -123,24 +124,8 @@ export function StudentAdminProfile({
           <option>Non-binary</option>
           <option>Prefer not to say</option>
         </select>
-        <label className="text-sm text-slate-400">
-          Date of birth
-          <input
-            type="date"
-            value={form.dateOfBirth}
-            onChange={(e) => set("dateOfBirth", e.target.value)}
-            className="field mt-1"
-          />
-        </label>
-        <label className="text-sm text-slate-400">
-          Admission date
-          <input
-            type="date"
-            value={form.admissionDate}
-            onChange={(e) => set("admissionDate", e.target.value)}
-            className="field mt-1"
-          />
-        </label>
+        <StandardDateField name="dateOfBirthDisplay" label="Date of birth" value={form.dateOfBirth} onChange={(value) => set("dateOfBirth", value)} />
+        <StandardDateField name="admissionDateDisplay" label="Admission date" value={form.admissionDate} onChange={(value) => set("admissionDate", value)} />
         <input
           value={form.addressLine1}
           onChange={(e) => set("addressLine1", e.target.value)}

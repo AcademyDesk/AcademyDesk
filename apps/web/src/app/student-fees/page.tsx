@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { StudentFeeArrangements } from "@/components/student-fee-arrangements";
 import { academyApi, apiHeaders } from "@/lib/api";
+import { StandardDateField } from "@/components/standard-date-field";
 
 type Academy = { id: string; name: string };
 type Student = { id: string; firstName: string; lastName: string; isActive: boolean };
@@ -97,7 +98,7 @@ export default function StudentFeesPage() {
                 </header>
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
                   <label className="field-label">Admission fee amount<input value={admissionAmount} onChange={(event) => setAdmissionAmount(event.target.value)} type="number" min="0" step="0.01" placeholder="Optional amount" /></label>
-                  <label className="field-label">Due date<input value={admissionDueDate} onChange={(event) => setAdmissionDueDate(event.target.value)} type="date" /></label>
+                  <StandardDateField name="admissionDueDateDisplay" label="Due date" value={admissionDueDate} onChange={setAdmissionDueDate} />
                 </div>
               </form>
               <StudentFeeArrangements academyId={academy.id} studentId={studentId} />

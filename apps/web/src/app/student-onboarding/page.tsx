@@ -1,11 +1,13 @@
 "use client";
 import { FormEvent, useEffect, useState } from "react";
 import { academyApi, apiHeaders } from "@/lib/api";
+import { StandardDateField } from "@/components/standard-date-field";
 
 type Academy = { id: string };
 export default function StudentOnboardingPage() {
   const [academy, setAcademy] = useState<Academy>();
   const [dob, setDob] = useState("");
+  const [admissionDate, setAdmissionDate] = useState("");
   const [message, setMessage] = useState("Loading onboarding…");
   const [saving, setSaving] = useState(false);
   const minor =
@@ -49,6 +51,7 @@ export default function StudentOnboardingPage() {
         throw new Error(result?.message || "Onboarding could not be saved.");
       event.currentTarget.reset();
       setDob("");
+      setAdmissionDate("");
       setMessage(
         `Student onboarded. ${result.parentAccountCreated ? "Parent account created." : ""} ${result.studentAccountCreated ? "Student account created." : ""}`,
       );
@@ -101,20 +104,8 @@ export default function StudentOnboardingPage() {
               <option>Non-binary</option>
               <option>Prefer not to say</option>
             </select>
-            <label className="field-label">
-              Date of birth (DOB)
-              <input
-                required
-                name="dateOfBirth"
-                type="date"
-                value={dob}
-                onChange={(event) => setDob(event.target.value)}
-              />
-            </label>
-            <label className="field-label">
-              Admission date
-              <input name="admissionDate" type="date" />
-            </label>
+            <StandardDateField required name="dateOfBirth" label="Date of birth (DOB)" value={dob} onChange={setDob} />
+            <StandardDateField name="admissionDate" label="Admission date" value={admissionDate} onChange={setAdmissionDate} />
           </div>
         </section>
         <section className="surface-panel onboarding-section">
