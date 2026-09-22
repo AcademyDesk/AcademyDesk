@@ -259,6 +259,15 @@ public static class DevelopmentIdentitySeeder
 
         await EnsureUser(users, "Shashank", "Shashank@academydesk.local", "Shashank", null, true, "PlatformOwner", password: "Test\\@123");
         await EnsureUser(users, "Kavya", "Kavya@academydesk.local", "Kavya", academy.Id, false, "AcademyAdmin", password: "Test\\@123", loginId: "Kavya");
+        // Kavya is the local Academy Administrator used for end-to-end testing.
+        // Keep this account active; AcademyAdmin is intentionally unrestricted
+        // within its academy and does not receive Platform Owner access.
+        var kavya = await users.FindByNameAsync("Kavya");
+        if (kavya is not null && !kavya.IsActive)
+        {
+            kavya.IsActive = true;
+            await users.UpdateAsync(kavya);
+        }
         await EnsureUser(users, "Finance", "finance@academydesk.local", "Finance user", academy.Id, false, "FinanceUser");
         await EnsureUser(users, "Haynsh", "Haynsh@academydesk.local", "Haynsh", academy.Id, false, "Student", student.Id, null);
         // Active teaching profiles have matching portal accounts, so the Teacher
