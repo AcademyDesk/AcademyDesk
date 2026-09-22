@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { academyApi, apiHeaders } from "@/lib/api";
+import { StandardDateField, StandardSelectField } from "@/components/design-system/controls";
 
 type Academy = { id: string };
 type Teacher = { id: string; firstName: string; lastName: string };
@@ -136,23 +137,17 @@ export default function TeacherProfilePage() {
     setForm((current) => ({ ...current, [key]: value }));
   return (
     <main className="enterprise-settings teacher-standard teacher-profile-standard">
-      <header className="enterprise-page-header">
-        <p>Teachers / Teacher 360</p>
-        <h2>Teacher 360</h2>
+      <header className="teacher-profile-heading">
+        <div className="teacher-profile-title"><span className="teacher-profile-title-icon" aria-hidden="true">◎</span><div><p>Teachers</p><h1>Teacher 360</h1></div></div>
       </header>
-      <section className="enterprise-settings-toolbar">
-        <select
+      <section className="teacher-profile-toolbar">
+        <StandardSelectField
+          name="teacher-record"
           value={teacherId}
-          onChange={(e) => void select(e.target.value)}
-          className="field max-w-md"
-        >
-          <option value="">Select teacher</option>
-          {teachers.map((teacher) => (
-            <option key={teacher.id} value={teacher.id}>
-              {teacher.firstName} {teacher.lastName}
-            </option>
-          ))}
-        </select>
+          onChange={(value) => void select(value)}
+          placeholder="Select teacher"
+          options={teachers.map((teacher) => ({ value: teacher.id, label: `${teacher.firstName} ${teacher.lastName}` }))}
+        />
       </section>
       {message && (
         <p className="mt-5 rounded-lg border border-amber-700/50 bg-amber-950/30 p-3 text-sm text-amber-100">
@@ -161,29 +156,29 @@ export default function TeacherProfilePage() {
       )}
       {profile && (
         <>
-          <section className="mt-5 grid gap-4 md:grid-cols-3">
-            <div className="surface-panel rounded-xl p-5">
-              <p className="text-sm text-slate-400">Assigned batches</p>
-              <strong className="mt-2 block text-3xl">
+          <section className="teacher-profile-summary-grid">
+            <article className="teacher-profile-summary-tile">
+              <span>Assigned batches</span>
+              <strong>
                 {count(profile.batches)}
               </strong>
-            </div>
-            <div className="surface-panel rounded-xl p-5">
-              <p className="text-sm text-slate-400">Class sessions</p>
-              <strong className="mt-2 block text-3xl">
+            </article>
+            <article className="teacher-profile-summary-tile">
+              <span>Class sessions</span>
+              <strong>
                 {count(profile.classes)}
               </strong>
-            </div>
-            <div className="surface-panel rounded-xl p-5">
-              <p className="text-sm text-slate-400">Leave requests</p>
-              <strong className="mt-2 block text-3xl">
+            </article>
+            <article className="teacher-profile-summary-tile">
+              <span>Leave requests</span>
+              <strong>
                 {count(profile.leaveRequests)}
               </strong>
-            </div>
+            </article>
           </section>
-          <section className="surface-panel teacher-profile-card mt-5 rounded-xl p-5">
-            <div className="flex items-center justify-between">
-              <h3 className="font-semibold">Teacher profile</h3>
+          <section className="teacher-profile-card">
+            <header className="teacher-profile-card-header">
+              <div><p>Profile</p><h2>Teacher profile</h2></div>
               <button
                 onClick={() => void save()}
                 disabled={saving}
@@ -191,8 +186,8 @@ export default function TeacherProfilePage() {
               >
                 {saving ? "Saving…" : "Save profile"}
               </button>
-            </div>
-            <div className="teacher-profile-fields mt-5 grid gap-3 md:grid-cols-2">
+            </header>
+            <div className="teacher-profile-fields">
               <input
                 value={form.employeeCode ?? ""}
                 onChange={(e) => set("employeeCode", e.target.value)}
@@ -205,35 +200,15 @@ export default function TeacherProfilePage() {
                 placeholder="Preferred name"
                 className="field"
               />
-              <select
+              <StandardSelectField
+                name="teacher-employment-type"
                 value={form.employmentType ?? ""}
-                onChange={(e) => set("employmentType", e.target.value)}
-                className="field"
-              >
-                <option value="">Employment type</option>
-                <option>Full-time</option>
-                <option>Part-time</option>
-                <option>Contract</option>
-                <option>Visiting faculty</option>
-              </select>
-              <label className="text-sm text-slate-400">
-                Date of birth (DOB)
-                <input
-                  type="date"
-                  value={form.dateOfBirth ?? ""}
-                  onChange={(e) => set("dateOfBirth", e.target.value)}
-                  className="field mt-1"
-                />
-              </label>
-              <label className="text-sm text-slate-400">
-                Joining date
-                <input
-                  type="date"
-                  value={form.joiningDate ?? ""}
-                  onChange={(e) => set("joiningDate", e.target.value)}
-                  className="field mt-1"
-                />
-              </label>
+                onChange={(value) => set("employmentType", value)}
+                placeholder="Employment type"
+                options={[{ value: "Full-time", label: "Full-time" }, { value: "Part-time", label: "Part-time" }, { value: "Contract", label: "Contract" }, { value: "Visiting faculty", label: "Visiting faculty" }]}
+              />
+              <StandardDateField name="teacher-date-of-birth" label="Date of birth (DOB)" value={form.dateOfBirth ?? ""} onChange={(value) => set("dateOfBirth", value)} />
+              <StandardDateField name="teacher-joining-date" label="Joining date" value={form.joiningDate ?? ""} onChange={(value) => set("joiningDate", value)} />
               <input
                 value={form.addressLine1 ?? ""}
                 onChange={(e) => set("addressLine1", e.target.value)}
@@ -275,13 +250,13 @@ export default function TeacherProfilePage() {
               value={form.qualifications ?? ""}
               onChange={(e) => set("qualifications", e.target.value)}
               placeholder="Qualifications, certifications and background"
-              className="field mt-3 min-h-24"
+              className="field teacher-profile-notes"
             />
             <textarea
               value={form.adminNotes ?? ""}
               onChange={(e) => set("adminNotes", e.target.value)}
               placeholder="Internal operational notes — not visible in teacher portal"
-              className="field mt-3 min-h-24"
+              className="field teacher-profile-notes"
             />
           </section>
         </>
