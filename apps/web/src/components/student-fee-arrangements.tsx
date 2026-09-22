@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { academyApi, apiHeaders } from "@/lib/api";
+import { StandardSelectField } from "@/components/design-system/controls";
 type Item = {
   id: string;
   subjectName: string;
@@ -99,15 +100,18 @@ export function StudentFeeArrangements({
           placeholder="Amount"
           required
         />
-        <select
+        <StandardSelectField
+          name="fee-frequency"
           value={frequency}
-          onChange={(event) => setFrequency(event.target.value)}
-        >
-          <option>Monthly</option>
-          <option>Quarterly</option>
-          <option value="HalfYearly">Half-yearly</option>
-          <option>Annual</option>
-        </select>
+          onChange={setFrequency}
+          placeholder="Billing frequency"
+          options={[
+            { value: "Monthly", label: "Monthly" },
+            { value: "Quarterly", label: "Quarterly" },
+            { value: "HalfYearly", label: "Half-yearly" },
+            { value: "Annual", label: "Annual" },
+          ]}
+        />
         <button className="enterprise-action-button">
           Add
         </button>

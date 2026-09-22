@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { StudentFeeArrangements } from "@/components/student-fee-arrangements";
 import { academyApi, apiHeaders } from "@/lib/api";
-import { StandardDateField } from "@/components/standard-date-field";
+import { StandardDateField, StandardSelectField } from "@/components/design-system/controls";
 
 type Academy = { id: string; name: string };
 type Student = { id: string; firstName: string; lastName: string; isActive: boolean };
@@ -74,15 +74,15 @@ export default function StudentFeesPage() {
         <section className="student-fees-layout">
           <section className="student-fees-student-panel">
             <header className="student-fees-panel-header"><div><p>Student</p><h3>Select student</h3></div></header>
-            <label className="field-label mt-4">
-              <select value={studentId} onChange={(event) => setStudentId(event.target.value)}>
-                {students.map((student) => (
-                  <option key={student.id} value={student.id}>
-                    {student.firstName} {student.lastName}{student.isActive ? "" : " (Inactive)"}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <div className="field-label mt-4">
+              <StandardSelectField
+                name="fee-student"
+                value={studentId}
+                onChange={setStudentId}
+                placeholder="Select student"
+                options={students.map((student) => ({ value: student.id, label: `${student.firstName} ${student.lastName}${student.isActive ? "" : " (Inactive)"}` }))}
+              />
+            </div>
             {!students.length ? <p className="enterprise-settings-empty mt-4">No students are available yet.</p> : null}
           </section>
           {studentId ? (
