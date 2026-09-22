@@ -39,13 +39,13 @@ function Metric({
   note?: string;
 }) {
   return (
-    <article className="enterprise-metric-card rounded-xl border border-slate-800 bg-slate-900 p-5">
-      <p className="text-sm text-slate-400">{label}</p>
-      <strong className="mt-3 block text-3xl font-semibold tracking-tight">
+    <article className="batch-overview-kpi">
+      <span>{label}</span>
+      <strong>
         {value}
       </strong>
       {note ? (
-        <small className="mt-2 block text-sm text-amber-200">{note}</small>
+        <small>{note}</small>
       ) : null}
     </article>
   );
@@ -251,16 +251,14 @@ export default function BatchesPage() {
       (batch) => (batch.activeEnrolments ?? 0) >= batch.capacity,
     );
     return (
-      <main className="enterprise-settings enterprise-legacy-standard min-h-screen bg-slate-950 text-slate-100">
+      <main className="enterprise-settings enterprise-legacy-standard batch-overview-standard min-h-screen bg-slate-950 text-slate-100">
         <WorkspaceNav />
-        <div className="mx-auto max-w-6xl px-6 py-10">
-          <header className="flex flex-wrap items-center justify-between gap-4">
-            <h1 className="text-4xl font-semibold tracking-tight">
-              Overview
-            </h1>
+        <div className="batch-overview-content mx-auto max-w-6xl px-6 py-10">
+          <header className="batch-overview-heading">
+            <div className="batch-overview-title"><span className="batch-overview-title-icon" aria-hidden="true">♫</span><div><p>Class &amp; batch</p><h1>Overview</h1></div></div>
             <Link
               href="/batch-setup"
-              className="rounded-lg bg-cyan-400 px-4 py-2.5 font-semibold text-slate-950"
+              className="enterprise-action-button"
             >
               Create class or batch
             </Link>
@@ -270,7 +268,7 @@ export default function BatchesPage() {
               {message}
             </p>
           )}
-          <section className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <section className="batch-overview-kpis">
             <Metric label="Active classes" value={active.length} />
             <Metric
               label="1:1 classes"
@@ -287,36 +285,31 @@ export default function BatchesPage() {
               note="Full classes"
             />
           </section>
-          <section className="mt-6 surface-panel rounded-xl p-5">
-            <header>
-              <h2 className="font-semibold">Active class and batch delivery</h2>
-            </header>
+          <section className="batch-overview-panel">
+            <header className="batch-overview-panel-header"><div><p>Delivery</p><h2>Active classes and batches</h2></div><span>{active.length} active</span></header>
             {active.length ? (
-              <ul className="mt-4 divide-y divide-slate-800">
+              <ul className="batch-overview-list">
                 {active.map((batch) => (
                   <li
                     key={batch.id}
-                    className="flex flex-wrap items-center justify-between gap-3 py-4"
+                    className="batch-overview-row"
                   >
                     <div>
                       <b>{batch.name}</b>
-                      <p className="mt-1 text-sm text-slate-400">
+                      <p>
                         {teacherName(batch.teacherId)} ·{" "}
                         {batch.activeEnrolments ?? 0}/{batch.capacity} enrolled
                         · {batch.deliveryMode ?? "Offline"}
                       </p>
                     </div>
-                    <Link href="/batch-setup" className="text-sm text-cyan-300">
+                    <Link href="/batch-setup" className="batch-overview-row-action">
                       Manage class
                     </Link>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="py-8 text-center text-sm text-slate-400">
-                No active classes or batches. Create the first one to begin
-                scheduling.
-              </p>
+              <p className="batch-overview-empty">No active classes or batches.</p>
             )}
           </section>
         </div>
