@@ -258,7 +258,7 @@ public static class DevelopmentIdentitySeeder
         await db.SaveChangesAsync();
 
         await EnsureUser(users, "Shashank", "Shashank@academydesk.local", "Shashank", null, true, "PlatformOwner", password: "Test\\@123");
-        await EnsureUser(users, "Kavya", "Kavya@academydesk.local", "Kavya", academy.Id, false, "AcademyAdmin");
+        await EnsureUser(users, "Kavya", "Kavya@academydesk.local", "Kavya", academy.Id, false, "AcademyAdmin", loginId: "Kavya");
         await EnsureUser(users, "Finance", "finance@academydesk.local", "Finance user", academy.Id, false, "FinanceUser");
         await EnsureUser(users, "Haynsh", "Haynsh@academydesk.local", "Haynsh", academy.Id, false, "Student", student.Id, null);
         // Active teaching profiles have matching portal accounts, so the Teacher
@@ -268,23 +268,20 @@ public static class DevelopmentIdentitySeeder
         await EnsureUser(users, "Arjun.Mehta", "arjun.mehta@academydesk.local", "Arjun Mehta", academy.Id, false, "Teacher", null, arjun.Id);
     }
 
-    private static async Task EnsureUser(UserManager<ApplicationUser> users, string userName, string email, string displayName, Guid? academyId, bool platformOwner, string role, Guid? studentId = null, Guid? teacherId = null, string password = "Test@123")
+    private static async Task EnsureUser(UserManager<ApplicationUser> users, string userName, string email, string displayName, Guid? academyId, bool platformOwner, string role, Guid? studentId = null, Guid? teacherId = null, string password = "Test@123", string? loginId = null)
     {
         var user = await users.FindByEmailAsync(email) ?? await users.FindByNameAsync(userName);
         var created = false;
         if (user is null)
         {
-            // ASP.NET Core's built-in Identity login endpoint authenticates against
-            // UserName even though its JSON property is named "email". Keep the
-            // friendly ID in DisplayName and store the login address as UserName.
-            user = new ApplicationUser { UserName = email, Email = email, EmailConfirmed = true, DisplayName = displayName, AcademyId = academyId, IsPlatformOwner = platformOwner, StudentId = studentId, TeacherId = teacherId };
+            user = new ApplicationUser { UserName = loginId ?? email, Email = email, EmailConfirmed = true, DisplayName = displayName, AcademyId = academyId, IsPlatformOwner = platformOwner, StudentId = studentId, TeacherId = teacherId };
             var result = await users.CreateAsync(user, password);
             if (!result.Succeeded) throw new InvalidOperationException(string.Join("; ", result.Errors.Select(x => x.Description)));
             created = true;
         }
         else
         {
-            user.UserName = email;
+            user.UserName = loginId ?? email;
             user.Email = email;
             user.EmailConfirmed = true;
             user.DisplayName = displayName;
