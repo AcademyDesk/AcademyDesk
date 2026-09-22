@@ -934,12 +934,28 @@ html[data-theme="light"] [class~="text-red-300"] {
   margin: 0;
 }
 .enterprise-dashboard-heading h2 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   color: var(--ad-text);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
   font-size: var(--ad-page-title-size);
   font-weight: var(--ad-page-title-weight);
   letter-spacing: var(--ad-page-title-tracking);
   line-height: var(--ad-page-title-line-height);
+}
+.enterprise-dashboard-heading h2::before {
+  content: "▦";
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  flex: none;
+  border-radius: 10px;
+  background: var(--ad-accent);
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--ad-accent) 28%, transparent);
+  color: #fff;
+  font-size: .9rem;
 }
 .enterprise-dashboard-heading p {
   display: none;
@@ -1048,8 +1064,11 @@ html[data-theme="light"] [class~="text-red-300"] {
   display: block;
 }
 .enterprise-kpi > span {
-  color: var(--ad-text-muted);
-  font-size: clamp(0.78rem, 0.77vw, 0.98rem);
+  color: var(--ad-accent);
+  font-size: clamp(.68rem, .7vw, .82rem);
+  font-weight: 850;
+  letter-spacing: .1em;
+  text-transform: uppercase;
 }
 .enterprise-kpi > strong {
   margin-top: clamp(9px, 0.86vw, 17px);
@@ -1085,13 +1104,21 @@ html[data-theme="light"] [class~="text-red-300"] {
   justify-content: space-between;
   gap: 16px;
   padding: clamp(16px, 1.25vw, 24px) clamp(18px, 1.35vw, 26px);
+  border-bottom: 1px solid var(--ad-border);
+  background: linear-gradient(105deg, color-mix(in srgb, var(--ad-accent) 9%, var(--ad-surface)), var(--ad-surface) 70%);
 }
 .enterprise-panel-header h3 {
+  display: flex;
+  align-items: center;
+  gap: 9px;
   margin: 0;
-  color: var(--ad-text);
-  font-size: 1.24rem;
-  letter-spacing: -0.025em;
+  color: var(--ad-accent);
+  font-size: clamp(.88rem, .98vw, 1.05rem);
+  font-weight: 850;
+  letter-spacing: .13em;
+  text-transform: uppercase;
 }
+.enterprise-panel-header h3::before { content: "◌"; display: grid; width: 29px; height: 29px; place-items: center; border-radius: 9px; background: var(--ad-accent); box-shadow: 0 6px 14px color-mix(in srgb, var(--ad-accent) 24%, transparent); color: #fff; font-size: .9rem; }
 .enterprise-panel-header a {
   display: inline-flex;
   align-items: center;
