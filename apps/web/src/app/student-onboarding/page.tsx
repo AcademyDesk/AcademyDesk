@@ -2,12 +2,14 @@
 import { FormEvent, useEffect, useState } from "react";
 import { academyApi, apiHeaders } from "@/lib/api";
 import { StandardDateField } from "@/components/standard-date-field";
+import { StandardSelectField } from "@/components/standard-select-field";
 
 type Academy = { id: string };
 export default function StudentOnboardingPage() {
   const [academy, setAcademy] = useState<Academy>();
   const [dob, setDob] = useState("");
   const [admissionDate, setAdmissionDate] = useState("");
+  const [gender, setGender] = useState("");
   const [message, setMessage] = useState("Loading onboarding…");
   const [saving, setSaving] = useState(false);
   const minor =
@@ -52,6 +54,7 @@ export default function StudentOnboardingPage() {
       event.currentTarget.reset();
       setDob("");
       setAdmissionDate("");
+      setGender("");
       setMessage(
         `Student onboarded. ${result.parentAccountCreated ? "Parent account created." : ""} ${result.studentAccountCreated ? "Student account created." : ""}`,
       );
@@ -97,13 +100,7 @@ export default function StudentOnboardingPage() {
             />
             <input name="studentNumber" placeholder="Student number (optional)" />
             <input name="preferredName" placeholder="Preferred name (optional)" />
-            <select name="gender" defaultValue="">
-              <option value="">Gender (optional)</option>
-              <option>Female</option>
-              <option>Male</option>
-              <option>Non-binary</option>
-              <option>Prefer not to say</option>
-            </select>
+            <StandardSelectField name="gender" value={gender} onChange={setGender} placeholder="Gender (optional)" options={[{ value: "Female", label: "Female" }, { value: "Male", label: "Male" }, { value: "Non-binary", label: "Non-binary" }, { value: "Prefer not to say", label: "Prefer not to say" }]} />
             <StandardDateField required name="dateOfBirth" label="Date of birth (DOB)" value={dob} onChange={setDob} />
             <StandardDateField name="admissionDate" label="Admission date" value={admissionDate} onChange={setAdmissionDate} />
           </div>
