@@ -1920,8 +1920,26 @@ html[data-theme="light"] .field-label { color: #475569; }
 .workspace-calendar-agenda { margin-top: 22px; padding: 0 22px 16px; }
 .workspace-calendar-agenda-header { margin: 0 -22px; }
 .workspace-calendar-agenda-header > span { padding: 6px 10px; border-radius: 999px; background: var(--ad-accent-soft); color: var(--ad-accent); font-size: .72rem; font-weight: 750; }
-.workspace-calendar-agenda li { padding: 14px 0 !important; }
-.workspace-calendar-agenda li:hover { background: color-mix(in srgb, var(--ad-accent) 4%, transparent); }
+.workspace-calendar-agenda-list { display: grid; margin: 0; padding: 0; list-style: none; }
+.workspace-calendar-agenda-item { padding: 17px 0; border-bottom: 1px solid var(--ad-border); }
+.workspace-calendar-agenda-item:last-child { border-bottom: 0; }
+.workspace-calendar-agenda-item:hover { background: color-mix(in srgb, var(--ad-accent) 4%, transparent); }
+.workspace-calendar-agenda-item-heading { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+.workspace-calendar-agenda-item-heading > div { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.workspace-calendar-agenda-item h3 { margin: 0; overflow: hidden; color: var(--ad-text); font-size: .95rem; font-weight: 780; letter-spacing: -.02em; text-overflow: ellipsis; white-space: nowrap; }
+.workspace-calendar-agenda-action { flex: 0 0 auto; min-height: 31px; padding: 6px 10px; border: 1px solid var(--ad-border-strong); border-radius: 8px; color: var(--ad-accent); font-size: .72rem; font-weight: 780; text-decoration: none; }
+.workspace-calendar-agenda-action:hover { border-color: var(--ad-accent); background: var(--ad-accent-soft); }
+.workspace-calendar-agenda-details { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; margin: 14px 0 10px; }
+.workspace-calendar-agenda-details > div { min-width: 0; padding: 10px; border: 1px solid var(--ad-border); border-radius: 9px; background: var(--ad-surface-subtle); }
+.workspace-calendar-agenda-details dt,.workspace-calendar-agenda-students span { color: var(--ad-text-muted); font-size: .65rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.workspace-calendar-agenda-details dd { margin: 5px 0 0; overflow: hidden; color: var(--ad-text); font-size: .78rem; font-weight: 680; text-overflow: ellipsis; white-space: nowrap; }
+.workspace-calendar-agenda-students { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; border-radius: 9px; background: color-mix(in srgb, var(--ad-accent) 6%, var(--ad-surface)); }
+.workspace-calendar-agenda-students strong { display: block; margin-top: 3px; color: var(--ad-text); font-size: .78rem; font-weight: 720; }
+.workspace-calendar-agenda-students button { min-height: 30px; padding: 5px 9px; border: 1px solid var(--ad-border-strong); border-radius: 7px; background: var(--ad-surface); color: var(--ad-accent); font-size: .7rem; font-weight: 760; }
+.workspace-calendar-agenda-students button:hover { border-color: var(--ad-accent); background: var(--ad-accent-soft); }
+.workspace-calendar-student-list { display: flex; flex-wrap: wrap; gap: 7px; margin: 10px 0 0; padding: 0; list-style: none; }
+.workspace-calendar-student-list li { padding: 5px 8px; border-radius: 999px; background: var(--ad-accent-soft); color: var(--ad-accent); font-size: .72rem; font-weight: 700; }
+.workspace-calendar-agenda-summary { display: flex; flex-wrap: wrap; gap: 8px; margin: 11px 0 0; color: var(--ad-text-muted); font-size: .78rem; }.workspace-calendar-agenda-summary time { color: var(--ad-text); font-weight: 700; }
 @media (max-width: 760px) {
   .workspace-calendar-heading,.workspace-calendar-panel-header,.workspace-calendar-agenda-header { align-items: flex-start; flex-direction: column; }
   .workspace-calendar-month-actions { padding-top: 0; }
@@ -1931,6 +1949,8 @@ html[data-theme="light"] .field-label { color: #475569; }
   .workspace-calendar-filters { width: 100%; }
   .workspace-calendar .calendar-filter { flex: 1 1 auto; }
   .workspace-calendar .calendar-day { min-height: 100px; }
+  .workspace-calendar-agenda-details { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .workspace-calendar-agenda-item-heading { align-items: flex-start; flex-direction: column; }
 }
 
 /* Workspace activity log — matches the Dashboard's clear identity, framed

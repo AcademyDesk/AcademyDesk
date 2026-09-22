@@ -4,7 +4,13 @@ import { useEffect, useMemo, useState } from "react";
 import { academyApi } from "@/lib/api";
 
 type Academy = { id: string };
-type Batch = { id: string; name: string };
+type Batch = {
+  id: string;
+  name: string;
+  courseId: string;
+  teacherId?: string | null;
+  meetingPattern?: string | null;
+};
 type Session = {
   id: string;
   batchId: string;
@@ -27,6 +33,9 @@ type Makeup = {
   venue?: string;
 };
 type Student = { id: string; firstName: string; lastName: string };
+type Teacher = { id: string; firstName: string; lastName: string };
+type Course = { id: string; name: string };
+type Enrollment = { studentId: string; batchId: string; status: string };
 type CalendarItem = {
   id: string;
   type: "Class" | "Make-up" | "Event";
@@ -36,6 +45,10 @@ type CalendarItem = {
   href: string;
   actionLabel: string;
   opensExternally?: boolean;
+  subject?: string;
+  teacher?: string;
+  students?: string[];
+  meetingPattern?: string;
 };
 const names = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const monthName = (date: Date) =>
@@ -49,12 +62,75 @@ const time = (date: Date) =>
     timeZone: "Asia/Kolkata",
   }).format(date);
 
+function AgendaItem({ item }: { item: CalendarItem }) {
+  const [studentsExpanded, setStudentsExpanded] = useState(false);
+  const isClass = item.type === "Class";
+  const students = item.students ?? [];
+  const schedule = new Intl.DateTimeFormat("en-IN", {
+    weekday: "short",
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    timeZone: "Asia/Kolkata",
+  }).format(item.start);
+
+  return (
+    <li className="workspace-calendar-agenda-item">
+      <div className="workspace-calendar-agenda-item-heading">
+        <div>
+          <span className="calendar-kind">{item.type}</span>
+          <h3>{item.title}</h3>
+        </div>
+        <a
+          href={item.href}
+          className="workspace-calendar-agenda-action"
+          target={item.opensExternally ? "_blank" : undefined}
+          rel={item.opensExternally ? "noreferrer" : undefined}
+        >
+          {item.actionLabel}
+        </a>
+      </div>
+      {isClass ? (
+        <>
+          <dl className="workspace-calendar-agenda-details">
+            <div><dt>Subject</dt><dd>{item.subject ?? "Not assigned"}</dd></div>
+            <div><dt>Time</dt><dd>{time(item.start)}</dd></div>
+            <div><dt>Schedule</dt><dd>{item.meetingPattern || schedule}</dd></div>
+            <div><dt>Teacher</dt><dd>{item.teacher ?? "Unassigned"}</dd></div>
+          </dl>
+          <div className="workspace-calendar-agenda-students">
+            <div>
+              <span>Students</span>
+              <strong>{students.length ? `${students.length} active student${students.length === 1 ? "" : "s"}` : "No active students"}</strong>
+            </div>
+            {students.length > 1 && (
+              <button type="button" onClick={() => setStudentsExpanded((value) => !value)}>
+                {studentsExpanded ? "Hide students" : `Show ${students.length} students`}
+              </button>
+            )}
+          </div>
+          {(students.length === 1 || studentsExpanded) && (
+            <ul className="workspace-calendar-student-list">
+              {students.map((student) => <li key={student}>{student}</li>)}
+            </ul>
+          )}
+        </>
+      ) : (
+        <p className="workspace-calendar-agenda-summary"><time>{schedule} · {time(item.start)}</time>{item.detail}</p>
+      )}
+    </li>
+  );
+}
+
 export default function CalendarPage() {
   const [batches, setBatches] = useState<Batch[]>([]);
   const [sessions, setSessions] = useState<Session[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
   const [makeups, setMakeups] = useState<Makeup[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
   const today = new Date();
   const [month, setMonth] = useState(
     () => new Date(today.getFullYear(), today.getMonth(), 1),
@@ -69,7 +145,7 @@ export default function CalendarPage() {
         if (!academyResponse.ok || !academies[0]) throw new Error();
         const id = academies[0].id;
         const responses = await Promise.all(
-          ["batches", "sessions", "events", "makeup-classes", "students"].map(
+          ["batches", "sessions", "events", "makeup-classes", "students", "teachers", "courses", "enrollments"].map(
             (path) => academyApi(`/api/academies/${id}/${path}`),
           ),
         );
@@ -82,6 +158,9 @@ export default function CalendarPage() {
         setEvents(await readRows<Event>(responses[2]));
         setMakeups(await readRows<Makeup>(responses[3]));
         setStudents(await readRows<Student>(responses[4]));
+        setTeachers(await readRows<Teacher>(responses[5]));
+        setCourses(await readRows<Course>(responses[6]));
+        setEnrollments(await readRows<Enrollment>(responses[7]));
         setMessage("");
       } catch {
         setMessage("Calendar could not be loaded.");
@@ -95,8 +174,21 @@ export default function CalendarPage() {
       const student = students.find((row) => row.id === id);
       return student ? `${student.firstName} ${student.lastName}` : "Student";
     };
+    const batch = (id: string) => batches.find((row) => row.id === id);
+    const classStudents = (batchId: string) =>
+      enrollments
+        .filter((row) => row.batchId === batchId && row.status.toLowerCase() === "active")
+        .map((row) => studentName(row.studentId));
+    const courseName = (courseId: string) =>
+      courses.find((course) => course.id === courseId)?.name ?? "Not assigned";
+    const teacherName = (teacherId?: string | null) => {
+      const teacher = teachers.find((row) => row.id === teacherId);
+      return teacher ? `${teacher.firstName} ${teacher.lastName}` : "Unassigned";
+    };
     return [
-      ...sessions.map((row) => ({
+      ...sessions.map((row) => {
+        const assignedBatch = batch(row.batchId);
+        return ({
         id: row.id,
         type: "Class" as const,
         title: batchName(row.batchId),
@@ -105,7 +197,12 @@ export default function CalendarPage() {
         href: ["Online", "Hybrid"].includes(row.deliveryMode) && /^https?:\/\//i.test(row.roomName ?? "") ? row.roomName! : `/schedule?session=${row.id}`,
         actionLabel: ["Online", "Hybrid"].includes(row.deliveryMode) && /^https?:\/\//i.test(row.roomName ?? "") ? "Join class" : "Open class",
         opensExternally: ["Online", "Hybrid"].includes(row.deliveryMode) && /^https?:\/\//i.test(row.roomName ?? ""),
-      })),
+        subject: assignedBatch ? courseName(assignedBatch.courseId) : "Not assigned",
+        teacher: teacherName(assignedBatch?.teacherId),
+        students: classStudents(row.batchId),
+        meetingPattern: assignedBatch?.meetingPattern ?? undefined,
+      });
+      }),
       ...makeups.map((row) => ({
         id: row.id,
         type: "Make-up" as const,
@@ -125,7 +222,7 @@ export default function CalendarPage() {
         actionLabel: "View event",
       })),
     ].filter((item) => filter === "All" || item.type === filter);
-  }, [batches, sessions, events, makeups, students, filter]);
+  }, [batches, sessions, events, makeups, students, teachers, courses, enrollments, filter]);
   const days = useMemo(() => {
     const offset = (month.getDay() + 6) % 7;
     const start = new Date(month);
@@ -249,24 +346,12 @@ export default function CalendarPage() {
             </span>
           </header>
           {agenda.length ? (
-            <ul className="mt-4 divide-y divide-slate-800">
+            <ul className="workspace-calendar-agenda-list">
               {agenda.map((item) => (
-                <li
+                <AgendaItem
                   key={`agenda-${item.type}-${item.id}`}
-                  className="flex flex-wrap items-center gap-x-5 gap-y-1 py-3 text-sm"
-                >
-                  <time className="w-32 text-slate-400">
-                    {new Intl.DateTimeFormat("en-IN", {
-                      day: "2-digit",
-                      month: "short",
-                      hour: "numeric",
-                      minute: "2-digit",
-                    }).format(item.start)}
-                  </time>
-                  <span className="font-medium">{item.title}</span>
-                  <span className="text-slate-400">{item.detail}</span>
-                  <span className="calendar-kind">{item.type}</span>
-                </li>
+                  item={item}
+                />
               ))}
             </ul>
           ) : (
