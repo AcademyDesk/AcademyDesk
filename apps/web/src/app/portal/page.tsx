@@ -377,14 +377,16 @@ function View({
           <P title="Class calendar">
             <ClassCalendar sessions={d.schedule} />
           </P>
-          <P title="Learning resources">
-            {d.resources.map((x, i) => (
-              <ResourceRow key={i} x={x} />
-            ))}
-          </P>
-          <P title="Class history" className="learner-grid-wide">
-            <ClassHistoryFilter items={d.classHistory} />
-          </P>
+          <div className="learner-class-side-stack">
+            <P title="Learning resources">
+              {d.resources.map((x, i) => (
+                <ResourceRow key={i} x={x} />
+              ))}
+            </P>
+            <P title="Class history">
+              <ClassHistoryFilter items={d.classHistory} />
+            </P>
+          </div>
         </section>
       )}
       {tab === "tasks" && (
@@ -516,7 +518,8 @@ function ResourceRow({ x }: { x: { title: string; type: string; url: string; des
   return <article className="learner-row learner-resource-row"><b>{x.title}</b><small>{x.type}{x.description ? ` · ${x.description}` : ""}</small>{downloadable && <a href={x.url.startsWith("/") ? `${apiUrl}${x.url}` : x.url} target="_blank" rel="noreferrer">Open / download</a>}</article>;
 }
 function ClassHistoryRow({ item }: { item: D["classHistory"][number] }) {
-  return <article className="learner-history-row"><div><b>{item.batchName}</b><small>{dt(item.startUtc)} · {item.deliveryMode} · Attendance: {item.attendanceStatus}</small></div>{item.resources.length > 0 ? <div className="learner-history-resources">{item.resources.map((resource, index) => <ResourceRow key={index} x={resource} />)}</div> : <small className="learner-muted">No notes, attachments, or recordings were shared for this class.</small>}</article>;
+  const [expanded, setExpanded] = useState(false);
+  return <article className="learner-history-row"><div className="learner-history-summary"><div><b>{item.batchName}</b><small>{dt(item.startUtc)} · {item.deliveryMode} · {item.attendanceStatus}</small></div><button type="button" onClick={() => setExpanded(value => !value)} aria-expanded={expanded}>{expanded ? "Hide details" : "View details"}</button></div>{expanded && item.resources.length > 0 && <div className="learner-history-resources">{item.resources.map((resource, index) => <ResourceRow key={index} x={resource} />)}</div>}</article>;
 }
 function ClassHistoryFilter({ items }: { items: D["classHistory"] }) {
   const [from, setFrom] = useState(""); const [to, setTo] = useState("");
