@@ -1147,9 +1147,11 @@ html[data-theme="light"] [class~="text-red-300"] {
   text-align: left;
 }
 .enterprise-schedule-table th {
-  color: var(--ad-text-muted);
-  font-size: 0.82rem;
-  font-weight: 650;
+  color: var(--ad-accent);
+  font-size: .68rem;
+  font-weight: 850;
+  letter-spacing: .09em;
+  text-transform: uppercase;
 }
 .enterprise-schedule-table td {
   font-size: 0.92rem;
@@ -1167,8 +1169,9 @@ html[data-theme="light"] [class~="text-red-300"] {
   border-radius: 999px;
   background: color-mix(in srgb, var(--ad-success) 16%, var(--ad-surface));
   color: var(--ad-success);
-  font-size: 0.76rem;
-  font-weight: 700;
+  font-size: .68rem;
+  font-weight: 800;
+  letter-spacing: .03em;
 }
 .enterprise-empty-row {
   padding: 32px 28px;
@@ -1849,6 +1852,8 @@ html[data-theme="light"] .field-label { color: #475569; }
   color: var(--ad-text);
   font-size: .66rem;
 }
+.workspace-calendar a.calendar-event { cursor:pointer; text-decoration:none; transition: outline-color 160ms ease, transform 160ms ease; }
+.workspace-calendar a.calendar-event:hover { outline:1px solid var(--ad-accent); outline-offset:1px; transform:translateY(-1px); }
 .workspace-calendar .calendar-event time { color: var(--ad-text-muted); }
 .workspace-calendar .calendar-event.makeup { border-left-color: var(--ad-warning); background: color-mix(in srgb, var(--ad-warning) 12%, var(--ad-surface)); }
 .workspace-calendar .calendar-event.event { border-left-color: #8b7bd8; background: color-mix(in srgb, #8b7bd8 12%, var(--ad-surface)); }

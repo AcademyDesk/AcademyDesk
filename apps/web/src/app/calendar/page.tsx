@@ -33,6 +33,7 @@ type CalendarItem = {
   title: string;
   detail: string;
   start: Date;
+  href: string;
 };
 const names = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const monthName = (date: Date) =>
@@ -96,6 +97,7 @@ export default function CalendarPage() {
         title: batchName(row.batchId),
         detail: `${row.deliveryMode}${row.roomName ? ` · ${row.roomName}` : ""}`,
         start: new Date(row.startUtc),
+        href: `/schedule?session=${row.id}`,
       })),
       ...makeups.map((row) => ({
         id: row.id,
@@ -103,6 +105,7 @@ export default function CalendarPage() {
         title: `${studentName(row.studentId)} · ${batchName(row.batchId)}`,
         detail: row.venue ?? "Make-up class",
         start: new Date(row.startUtc),
+        href: "/makeup",
       })),
       ...events.map((row) => ({
         id: row.id,
@@ -110,6 +113,7 @@ export default function CalendarPage() {
         title: row.title,
         detail: `${row.type}${row.venue ? ` · ${row.venue}` : ""}`,
         start: new Date(row.startUtc),
+        href: "/events",
       })),
     ].filter((item) => filter === "All" || item.type === filter);
   }, [batches, sessions, events, makeups, students, filter]);
@@ -208,14 +212,15 @@ export default function CalendarPage() {
                 <span className="calendar-date">{date.getDate()}</span>
                 <div className="calendar-events">
                   {dayItems.slice(0, 3).map((item) => (
-                    <div
+                    <a
                       key={`${item.type}-${item.id}`}
+                      href={item.href}
                       className={`calendar-event ${item.type.toLowerCase().replace("-", "")}`}
                       title={`${item.title} · ${item.detail}`}
                     >
                       <time>{time(item.start)}</time>
                       {item.title}
-                    </div>
+                    </a>
                   ))}
                   {dayItems.length > 3 && (
                     <span className="calendar-more">
