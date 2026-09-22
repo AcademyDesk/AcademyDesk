@@ -169,12 +169,12 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
             .OrderBy(x => x.TargetDate)
             .Select(x => new PortalMusicProgress(x.Title, x.Status, x.TargetDate))
             .ToListAsync(token);
-        var resources = await db.LearningResources.AsNoTracking().Where(x => x.AcademyId == user.AcademyId && x.IsPublished && (!x.BatchId.HasValue || batchIds.Contains(x.BatchId.Value)) && (!x.StudentId.HasValue || x.StudentId == studentId)).OrderByDescending(x => x.CreatedAtUtc).Take(30).Select(x => new PortalResource(x.Title, x.Type, x.Url)).ToListAsync(token);
+        var courseIds = batchDetails.Select(x => x.CourseId).Distinct().ToArray();
+        var resources = await db.LearningResources.AsNoTracking().Where(x => x.AcademyId == user.AcademyId && x.IsPublished && (!x.BatchId.HasValue || batchIds.Contains(x.BatchId.Value)) && (!x.CourseId.HasValue || courseIds.Contains(x.CourseId.Value)) && (!x.StudentId.HasValue || x.StudentId == studentId)).OrderByDescending(x => x.CreatedAtUtc).Take(30).Select(x => new PortalResource(x.Title, x.Type, x.Url)).ToListAsync(token);
         var practice = await db.PracticeLogs.AsNoTracking().Where(x => x.AcademyId == user.AcademyId && x.StudentId == studentId).OrderByDescending(x => x.PracticeDate).Take(20).Select(x => new PortalPracticeLog(x.PracticeDate, x.MinutesPracticed, x.FocusArea, x.TeacherFeedback, x.Status)).ToListAsync(token);
         var attendanceSummary = new PortalAttendanceSummary(attendance.Count, attendance.Count(x => x.Status == "Present"), attendance.Count(x => x.Status == "Absent"), attendance.Count(x => x.Status == "Late"), attendance.Count(x => x.Status == "Excused" || x.Status == "Online"));
         var practiceSummary = new PortalPracticeSummary(practice.Count, practice.Sum(x => x.MinutesPracticed));
         var lessonPlans = await db.LessonPlans.AsNoTracking().Where(x => x.AcademyId == user.AcademyId && batchIds.Contains(x.BatchId)).OrderByDescending(x => x.CreatedAtUtc).Take(50).Select(x => new PortalLessonPlan(x.BatchId, x.Title, x.Objectives, x.Status)).ToListAsync(token);
-        var courseIds = batchDetails.Select(x => x.CourseId).Distinct().ToArray();
         var modules = await db.CourseModules.AsNoTracking().Where(x => x.AcademyId == user.AcademyId && courseIds.Contains(x.CourseId) && x.IsPublished).OrderBy(x => x.Sequence).Select(x => new PortalCourseModule(x.CourseId, x.Title, x.Description, x.Sequence)).ToListAsync(token);
         var certificates = await db.Certificates.AsNoTracking().Where(x => x.AcademyId == user.AcademyId && x.StudentId == studentId && x.Status == "Issued").OrderByDescending(x => x.IssuedDate).Select(x => new PortalCertificate(x.CertificateNumber, x.Title, x.IssuedDate, x.Notes)).ToListAsync(token);
         var invoices = await db.Invoices.AsNoTracking().Where(x => x.AcademyId == user.AcademyId && x.StudentId == studentId).OrderByDescending(x => x.IssuedDate).ToListAsync(token);
