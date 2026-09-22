@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { academyApi, apiHeaders } from "@/lib/api";
+import { StandardSelectField } from "@/components/design-system/controls";
 
 type Academy = { id: string; name: string };
 type Branch = { id: string; name: string };
@@ -226,14 +227,24 @@ export default function TeachersPage() {
                 Save
               </button>
             </div>
-            <select className="mt-2 w-full" value={assignmentTeacherId} onChange={(event) => setAssignmentTeacherId(event.target.value)}>
-              <option value="">Select teacher</option>
-              {activeTeachers.map((teacher) => <option key={teacher.id} value={teacher.id}>{teacher.firstName} {teacher.lastName}</option>)}
-            </select>
-            <select className="mt-2 w-full" value={assignmentBatchId} onChange={(event) => setAssignmentBatchId(event.target.value)}>
-              <option value="">Select class or batch</option>
-              {batches.filter((batch) => batch.isActive).map((batch) => <option key={batch.id} value={batch.id}>{batch.name}</option>)}
-            </select>
+            <div className="teacher-assignment-control mt-2">
+              <StandardSelectField
+                name="assignment-teacher"
+                value={assignmentTeacherId}
+                onChange={setAssignmentTeacherId}
+                placeholder="Select teacher"
+                options={activeTeachers.map((teacher) => ({ value: teacher.id, label: `${teacher.firstName} ${teacher.lastName}` }))}
+              />
+            </div>
+            <div className="teacher-assignment-control mt-2">
+              <StandardSelectField
+                name="assignment-batch"
+                value={assignmentBatchId}
+                onChange={setAssignmentBatchId}
+                placeholder="Select class or batch"
+                options={batches.filter((batch) => batch.isActive).map((batch) => ({ value: batch.id, label: batch.name }))}
+              />
+            </div>
           </article>
         </section>
         <section className="mt-6">
@@ -280,18 +291,13 @@ export default function TeachersPage() {
                           placeholder="Specialties"
                           className="field"
                         />
-                        <select
+                        <StandardSelectField
+                          name="teacher-branch"
                           value={editBranchId}
-                          onChange={(e) => setEditBranchId(e.target.value)}
-                          className="field"
-                        >
-                          <option value="">No branch assigned</option>
-                          {branches.map((branch) => (
-                            <option key={branch.id} value={branch.id}>
-                              {branch.name}
-                            </option>
-                          ))}
-                        </select>
+                          onChange={setEditBranchId}
+                          placeholder="No branch assigned"
+                          options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
+                        />
                       </div>
                       <div className="mt-3 flex gap-2">
                         <Link

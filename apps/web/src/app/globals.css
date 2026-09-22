@@ -4290,6 +4290,9 @@ html[data-theme="light"] .field-label { color: #475569; }
 .teacher-onboarding-standard :is(.standard-date-field,.standard-select-field) { position: relative; z-index: 1; }
 .teacher-onboarding-standard :is(.standard-date-field,.standard-select-field):has(.standard-date-popover,.standard-select-menu) { z-index: 60; }
 .teacher-management-content { width: min(100%, 1180px); margin-inline: auto; }
+.teacher-management-standard .surface-panel { overflow: visible; }
+.teacher-management-standard :is(.standard-select-field,.standard-date-field) { position: relative; z-index: 1; }
+.teacher-management-standard :is(.standard-select-field,.standard-date-field):has(.standard-select-menu,.standard-date-popover) { z-index: 60; }
 .teacher-assignment-confirm {
   min-height: 32px;
   padding: 6px 10px;
