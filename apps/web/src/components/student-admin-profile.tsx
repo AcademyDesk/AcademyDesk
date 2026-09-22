@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { academyApi, apiHeaders } from "@/lib/api";
-import { StandardDateField } from "@/components/standard-date-field";
+import { StandardDateField, StandardSelectField } from "@/components/design-system/controls";
 
 type Profile = {
   studentNumber?: string;
@@ -113,17 +113,18 @@ export function StudentAdminProfile({
           placeholder="Preferred name"
           className="field"
         />
-        <select
+        <StandardSelectField
+          name="student-gender"
           value={form.gender}
-          onChange={(e) => set("gender", e.target.value)}
-          className="field"
-        >
-          <option value="">Gender (optional)</option>
-          <option>Female</option>
-          <option>Male</option>
-          <option>Non-binary</option>
-          <option>Prefer not to say</option>
-        </select>
+          onChange={(value) => set("gender", value)}
+          placeholder="Gender (optional)"
+          options={[
+            { value: "Female", label: "Female" },
+            { value: "Male", label: "Male" },
+            { value: "Non-binary", label: "Non-binary" },
+            { value: "Prefer not to say", label: "Prefer not to say" },
+          ]}
+        />
         <StandardDateField name="dateOfBirthDisplay" label="Date of birth" value={form.dateOfBirth} onChange={(value) => set("dateOfBirth", value)} />
         <StandardDateField name="admissionDateDisplay" label="Admission date" value={form.admissionDate} onChange={(value) => set("admissionDate", value)} />
         <input
