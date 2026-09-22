@@ -1944,6 +1944,27 @@ html[data-theme="light"] .field-label { color: #475569; }
 .workspace-calendar-student-list { display: flex; flex-wrap: wrap; gap: 7px; margin: 10px 0 0; padding: 0; list-style: none; }
 .workspace-calendar-student-list li { padding: 5px 8px; border-radius: 999px; background: var(--ad-accent-soft); color: var(--ad-accent); font-size: .72rem; font-weight: 700; }
 .workspace-calendar-agenda-summary { display: flex; flex-wrap: wrap; gap: 8px; margin: 11px 0 0; color: var(--ad-text-muted); font-size: .78rem; }.workspace-calendar-agenda-summary time { color: var(--ad-text); font-weight: 700; }
+
+/* Admin content is intentionally self-explanatory. Remove decorative helper
+   copy from page identities while preserving form labels, records, alerts and
+   operational metadata. */
+.enterprise-workspace :is(
+  .workspace-calendar-title,
+  .workspace-activity-title,
+  .workspace-reports-title,
+  .student-overview-title,
+  .student-onboarding-title,
+  .student-management-title,
+  .student-fees-title,
+  .student-360-title,
+  .teacher-overview-title,
+  .teacher-onboarding-title
+) > div > span,
+.enterprise-workspace .enterprise-page-intro,
+.enterprise-workspace .enterprise-settings.enterprise-legacy-standard h1 + p,
+.enterprise-workspace > main:not(.enterprise-settings) > .mx-auto > h1 + p {
+  display: none !important;
+}
 @media (max-width: 760px) {
   .workspace-calendar-heading,.workspace-calendar-panel-header,.workspace-calendar-agenda-header { align-items: flex-start; flex-direction: column; }
   .workspace-calendar-month-actions { padding-top: 0; }

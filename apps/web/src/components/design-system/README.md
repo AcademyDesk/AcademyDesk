@@ -35,6 +35,9 @@ screens stay visually consistent.
   with an explicit show/hide roster action.
 - Cards use the shared surface, border, compact spacing, and empty-state text.
 - Urgent banners are duration-bound and audience-targeted.
+- Admin pages do not show decorative helper sentences below a page title. Keep
+  form labels, data captions, error/status messages, and operational metadata;
+  remove only explanatory page or tile copy that does not help complete work.
 
 ## Adoption order for Admin
 
