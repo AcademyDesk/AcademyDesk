@@ -179,47 +179,40 @@ export default function TeachersPage() {
   return (
     <main className="enterprise-settings teacher-standard teacher-management-standard">
       <div className="teacher-management-content">
-        <header className="enterprise-page-header">
-          <p>Teachers / management</p>
-          <h2>Teacher management</h2>
-          <span>Manage core teacher records, active status, and open Teacher 360.</span>
+        <header className="teacher-management-heading">
+          <div className="teacher-management-title">
+            <span className="teacher-management-title-icon" aria-hidden="true">♜</span>
+            <div><p>Teachers</p><h1>Teacher management</h1></div>
+          </div>
         </header>
         {message && <p className="enterprise-page-state">{message}</p>}
-        <section className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <article className="surface-panel rounded-xl p-5">
-            <p className="text-sm text-slate-400">Active teachers</p>
-            <p className="mt-2 text-3xl font-semibold">
+        <section className="teacher-management-kpis">
+          <article className="teacher-management-kpi">
+            <span>Active teachers</span>
+            <strong>
               {activeTeachers.length}
-            </p>
+            </strong>
           </article>
-          <article className="surface-panel rounded-xl p-5">
-            <p className="text-sm text-slate-400">Due this cycle</p>
-            <p className="mt-2 text-3xl font-semibold">
+          <article className="teacher-management-kpi">
+            <span>Due this cycle</span>
+            <strong>
               {activeTeachers.length}
-            </p>
-            <p className="mt-1 text-sm text-slate-400">
-              Active teachers pending payroll review
-            </p>
+            </strong>
           </article>
-          <article className="surface-panel rounded-xl p-5">
-            <p className="text-sm text-slate-400">Next payment cycle</p>
-            <p className="mt-2 font-semibold">
+          <article className="teacher-management-kpi">
+            <span>Next payment cycle</span>
+            <strong className="teacher-management-date">
               {new Intl.DateTimeFormat("en-IN", {
                 day: "2-digit",
                 month: "short",
                 timeZone: "Asia/Kolkata",
               }).format(nextPayCycle)}
-            </p>
-            <p className="mt-1 text-sm text-slate-400">
-              Monthly settlement date
-            </p>
+            </strong>
           </article>
-          <article className="surface-panel rounded-xl p-5">
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-sm text-slate-400">Assign Class / Batch</p>
+          <article className="teacher-management-assignment-tile">
+            <div className="teacher-management-assignment-heading">
+              <span>Assign class / batch</span>
               <button
-                aria-label="Save class or batch assignment"
-                title="Save class or batch assignment"
                 disabled={saving || !assignmentTeacherId || !assignmentBatchId}
                 onClick={() => void assignBatch()}
                 className="teacher-assignment-confirm"
@@ -247,20 +240,17 @@ export default function TeachersPage() {
             </div>
           </article>
         </section>
-        <section className="mt-6">
-          <section className="surface-panel teacher-directory-panel rounded-xl p-5">
-            <h2 className="text-xl font-semibold">Teaching team</h2>
+        <section className="teacher-directory-panel">
+            <header className="teacher-directory-header"><div><p>Directory</p><h2>Teaching team</h2></div><span>{teachers.length} records</span></header>
             {teachers.length === 0 ? (
-              <p className="mt-6 text-slate-400">
-                No teachers yet. Start with Teacher onboarding.
-              </p>
+              <p className="teacher-directory-empty">No teachers yet.</p>
             ) : (
-              <ul className="mt-5 space-y-3">
+              <ul className="teacher-directory-list">
                 {teachers.map((teacher) =>
                   editingId === teacher.id ? (
                     <li
                       key={teacher.id}
-                      className="rounded-lg border border-cyan-700/60 bg-slate-950 p-4"
+                      className="teacher-directory-record teacher-directory-record-editing"
                     >
                       <div className="grid gap-2 sm:grid-cols-2">
                         <input
@@ -324,24 +314,24 @@ export default function TeachersPage() {
                   ) : (
                     <li
                       key={teacher.id}
-                      className="rounded-lg border border-slate-700 bg-slate-950 p-4"
+                      className="teacher-directory-record"
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <div className="font-medium">
                             {teacher.firstName} {teacher.lastName}
                           </div>
-                          <div className="mt-1 text-sm text-slate-400">
+                          <div className="teacher-directory-specialty">
                             {teacher.specialties || "No specialties set"}
                           </div>
-                          <div className="mt-2 text-sm text-slate-300">
+                          <div className="teacher-directory-contact">
                             {teacher.email ||
                               teacher.phone ||
                               "No contact details"}
                           </div>
                         </div>
                         <span
-                          className={`rounded-full px-2 py-1 text-xs ${teacher.isActive ? "bg-emerald-950 text-emerald-300" : "bg-slate-800 text-slate-400"}`}
+                          className={teacher.isActive ? "teacher-directory-status active" : "teacher-directory-status"}
                         >
                           {teacher.isActive ? "Active" : "Inactive"}
                         </span>
@@ -372,7 +362,6 @@ export default function TeachersPage() {
                 )}
               </ul>
             )}
-          </section>
         </section>
       </div>
     </main>

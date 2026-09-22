@@ -4293,6 +4293,25 @@ html[data-theme="light"] .field-label { color: #475569; }
 .teacher-management-standard .surface-panel { overflow: visible; }
 .teacher-management-standard :is(.standard-select-field,.standard-date-field) { position: relative; z-index: 1; }
 .teacher-management-standard :is(.standard-select-field,.standard-date-field):has(.standard-select-menu,.standard-date-popover) { z-index: 60; }
+.teacher-management-heading { display: flex; align-items: center; min-height: 74px; margin-bottom: 24px; }
+.teacher-management-title { display: flex; align-items: center; gap: 16px; }
+.teacher-management-title-icon { display: grid; width: 56px; height: 56px; place-items: center; border-radius: 15px; background: var(--ad-accent); box-shadow: 0 12px 22px color-mix(in srgb, var(--ad-accent) 24%, transparent); color: #fff; font-size: 1.35rem; }
+.teacher-management-title p,.teacher-directory-header p { margin: 0 0 5px; color: var(--ad-accent); font-size: .7rem; font-weight: 850; letter-spacing: .14em; text-transform: uppercase; }
+.teacher-management-title h1 { margin: 0; color: var(--ad-text); font-size: var(--ad-page-title-size); font-weight: var(--ad-page-title-weight); letter-spacing: var(--ad-page-title-tracking); line-height: var(--ad-page-title-line-height); }
+.teacher-management-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.teacher-management-kpi,.teacher-management-assignment-tile { min-height: 132px; padding: 17px; border: 1px solid var(--ad-border); border-radius: 15px; background: var(--ad-surface); box-shadow: 0 8px 22px color-mix(in srgb, var(--ad-text) 5%, transparent); }
+.teacher-management-kpi > span,.teacher-management-assignment-heading > span { display: block; color: var(--ad-accent); font-size: .68rem; font-weight: 850; letter-spacing: .11em; text-transform: uppercase; }
+.teacher-management-kpi strong { display: block; margin-top: 22px; color: var(--ad-text); font-size: clamp(1.45rem, 2vw, 2.1rem); font-weight: 700; letter-spacing: -.045em; }
+.teacher-management-kpi .teacher-management-date { font-size: 1.42rem; }
+.teacher-management-assignment-tile { position: relative; z-index: 1; min-height: 0; }.teacher-management-assignment-tile:has(.standard-select-menu) { z-index: 60; }
+.teacher-management-assignment-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.teacher-directory-panel { margin-top: 22px; overflow: visible; border: 1px solid var(--ad-border); border-radius: 16px; background: var(--ad-surface); box-shadow: 0 8px 22px color-mix(in srgb, var(--ad-text) 5%, transparent); }
+.teacher-directory-header { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 18px 20px; border-bottom: 1px solid var(--ad-border); background: linear-gradient(105deg, color-mix(in srgb, var(--ad-accent) 10%, var(--ad-surface)), var(--ad-surface) 72%); }
+.teacher-directory-header h2 { margin: 0; color: var(--ad-text); font-size: 1.05rem; font-weight: 750; }.teacher-directory-header > span { padding: 6px 10px; border-radius: 999px; background: var(--ad-accent-soft); color: var(--ad-accent); font-size: .72rem; font-weight: 750; }
+.teacher-directory-list { display: grid; gap: 10px; margin: 0; padding: 16px 20px 20px; list-style: none; }
+.teacher-directory-record { padding: 14px; border: 1px solid var(--ad-border) !important; border-radius: 11px; background: var(--ad-surface-subtle) !important; }.teacher-directory-record-editing { border-color: color-mix(in srgb, var(--ad-accent) 48%, var(--ad-border)) !important; background: color-mix(in srgb, var(--ad-accent) 4%, var(--ad-surface)) !important; }
+.teacher-directory-record .font-medium { color: var(--ad-text); font-size: .9rem; font-weight: 760; }.teacher-directory-specialty,.teacher-directory-contact { color: var(--ad-text-muted); font-size: .76rem; }.teacher-directory-specialty { margin-top: 4px; }.teacher-directory-contact { margin-top: 8px; }
+.teacher-directory-status { flex: 0 0 auto; padding: 5px 8px; border-radius: 999px; background: var(--ad-surface-strong); color: var(--ad-text-muted); font-size: .68rem; font-weight: 750; }.teacher-directory-status.active { background: color-mix(in srgb, var(--ad-success) 14%, var(--ad-surface)); color: var(--ad-success); }.teacher-directory-empty { margin: 0; padding: 34px 20px; color: var(--ad-text-muted); text-align: center; }
 .teacher-assignment-confirm {
   min-height: 32px;
   padding: 6px 10px;
@@ -4331,7 +4350,7 @@ html[data-theme="light"] .field-label { color: #475569; }
 @media (max-width: 760px) {
   .teacher-onboarding-heading { min-height: 0; }.teacher-onboarding-title-icon { width: 46px; height: 46px; border-radius: 13px; }.teacher-onboarding-title h1 { font-size: var(--ad-page-title-size); }.teacher-onboarding-title > div > span { font-size: .82rem; }
   .teacher-onboarding-standard .availability-list { grid-template-columns: 1fr; }
-  .teacher-management-standard .surface-panel { padding: 16px; }
+  .teacher-management-heading { min-height: 0; }.teacher-management-title-icon { width: 46px; height: 46px; border-radius: 13px; }.teacher-management-kpis { grid-template-columns: 1fr; }.teacher-directory-header { align-items: flex-start; flex-direction: column; }.teacher-directory-list { padding: 14px; }
   .teacher-assignment-confirm { min-width: 52px; }
 }
 .onboarding-section { padding: 20px; }
