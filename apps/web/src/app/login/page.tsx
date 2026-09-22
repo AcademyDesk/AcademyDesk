@@ -17,9 +17,7 @@ export default function LoginPage() {
     setBusy(true);
     setMessage("");
     try {
-      const email = userName.includes("@")
-        ? userName
-        : `${userName.trim()}@academydesk.local`;
+      const email = userName.trim();
       const response = await fetch(
         `${apiUrl}/api/auth/login?useCookies=false`,
         {
