@@ -257,7 +257,7 @@ public static class DevelopmentIdentitySeeder
         }
         await db.SaveChangesAsync();
 
-        await EnsureUser(users, "Shashank", "Shashank@academydesk.local", "Shashank", null, true, "PlatformOwner", password: "Test\\@123");
+        await EnsureUser(users, "Shashank", "Shashank@academydesk.local", "Shashank", null, true, "PlatformOwner", password: "Test\\@123", loginId: "Shashank");
         await EnsureUser(users, "Kavya", "Kavya@academydesk.local", "Kavya", academy.Id, false, "AcademyAdmin", password: "Test\\@123", loginId: "Kavya");
         // Kavya is the local Academy Administrator used for end-to-end testing.
         // Keep this account active; AcademyAdmin is intentionally unrestricted
