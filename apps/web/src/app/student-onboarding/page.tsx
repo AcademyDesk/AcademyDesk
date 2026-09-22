@@ -63,14 +63,12 @@ export default function StudentOnboardingPage() {
     }
   }
   return (
-    <main className="enterprise-settings">
-      <header className="enterprise-page-header">
-        <p>Students / onboarding</p>
-        <h2>Student onboarding</h2>
-        <span>
-          One governed intake for student, Parent, safeguarding contact, and
-          portal access.
-        </span>
+    <main className="enterprise-settings student-onboarding-standard">
+      <header className="student-onboarding-heading">
+        <div className="student-onboarding-title">
+          <span className="student-onboarding-title-icon" aria-hidden="true">+</span>
+          <div><p>Students</p><h1>Student onboarding</h1><span>One governed intake for student, parent, safeguarding contact, and portal access.</span></div>
+        </div>
       </header>
       {message && (
         <p className="enterprise-page-state enterprise-page-state-loading">
@@ -224,7 +222,7 @@ export default function StudentOnboardingPage() {
         <section className="surface-panel onboarding-submit xl:col-span-2">
           <button
             disabled={saving || !academy}
-            className="inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-cyan-400 px-5 py-3 font-semibold text-slate-950 hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-50"
+          className="student-onboarding-submit"
           >
             {saving ? "Creating…" : "Complete onboarding"}
           </button>
