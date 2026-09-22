@@ -258,7 +258,7 @@ public static class DevelopmentIdentitySeeder
         await db.SaveChangesAsync();
 
         await EnsureUser(users, "Shashank", "Shashank@academydesk.local", "Shashank", null, true, "PlatformOwner", password: "Test\\@123");
-        await EnsureUser(users, "Kavya", "Kavya@academydesk.local", "Kavya", academy.Id, false, "AcademyAdmin", loginId: "Kavya");
+        await EnsureUser(users, "Kavya", "Kavya@academydesk.local", "Kavya", academy.Id, false, "AcademyAdmin", password: "Test\\@123", loginId: "Kavya");
         await EnsureUser(users, "Finance", "finance@academydesk.local", "Finance user", academy.Id, false, "FinanceUser");
         await EnsureUser(users, "Haynsh", "Haynsh@academydesk.local", "Haynsh", academy.Id, false, "Student", student.Id, null);
         // Active teaching profiles have matching portal accounts, so the Teacher
@@ -292,6 +292,12 @@ public static class DevelopmentIdentitySeeder
             user.StudentId = studentId;
             user.TeacherId = teacherId;
             await users.UpdateAsync(user);
+
+            if (loginId is not null)
+            {
+                var reset = await users.ResetPasswordAsync(user, await users.GeneratePasswordResetTokenAsync(user), password);
+                if (!reset.Succeeded) throw new InvalidOperationException(string.Join("; ", reset.Errors.Select(x => x.Description)));
+            }
 
         }
         if (created && !await users.CheckPasswordAsync(user, password)) throw new InvalidOperationException($"Unable to verify development sign-in for {userName}.");
