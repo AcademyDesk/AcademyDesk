@@ -1940,7 +1940,7 @@ html[data-theme="light"] .field-label { color: #475569; }
 .workspace-activity-title { display: flex; align-items: center; gap: 16px; }
 .workspace-activity-title-icon { display: grid; width: 56px; height: 56px; place-items: center; border-radius: 15px; background: var(--ad-accent); box-shadow: 0 12px 22px color-mix(in srgb, var(--ad-accent) 24%, transparent); color: #fff; font-size: 1.35rem; }
 .workspace-activity-title p,.workspace-activity-panel-header p { margin: 0 0 5px; color: var(--ad-accent); font-size: .7rem; font-weight: 850; letter-spacing: .14em; text-transform: uppercase; }
-.workspace-activity-title h1 { margin: 0; color: var(--ad-text); font-size: clamp(2.15rem, 3.3vw, 3.35rem); font-weight: 520; letter-spacing: -.055em; line-height: 1; }
+.workspace-activity-title h1 { margin: 0; color: var(--ad-text); font-size: var(--ad-page-title-size); font-weight: var(--ad-page-title-weight); letter-spacing: var(--ad-page-title-tracking); line-height: var(--ad-page-title-line-height); }
 .workspace-activity-title > div > span { display: block; margin-top: 7px; color: var(--ad-text-muted); font-size: .9rem; }
 .workspace-activity-message { margin-bottom: 18px; }
 .workspace-activity-panel { overflow: hidden; border: 1px solid var(--ad-border); border-radius: 16px; background: var(--ad-surface); box-shadow: 0 8px 22px color-mix(in srgb, var(--ad-text) 5%, transparent); }
