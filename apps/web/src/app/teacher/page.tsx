@@ -19,6 +19,7 @@ type P = {
 };
 type S = { id: string; firstName: string; lastName: string };
 type A = { studentId: string; status: string };
+type Announcement = { id: string; title: string; message: string };
 type PracticeLog = {
   id: string;
   studentName: string;
@@ -59,6 +60,7 @@ export default function Teacher() {
   const [t, setT] = useState<T>("today");
   const [m, setM] = useState("Loading your teaching workspace…");
   const [busy, setBusy] = useState("");
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   async function loadRoster(id = sid) {
     if (!id) return;
     const [a, b] = await Promise.all([
@@ -84,6 +86,7 @@ export default function Teacher() {
     void load().catch(() =>
       setM("This account is not linked to an active teacher profile."),
     );
+    void academyApi("/api/portal/announcements").then(async (response) => { if (response.ok) setAnnouncements(await response.json()); }).catch(() => undefined);
   }, []);
   async function submitAttendance(teacherStatus: string, records: { studentId: string; status: string }[]) {
     if (!sid) return;
@@ -131,6 +134,7 @@ export default function Teacher() {
           <div className="teacher-portal-context"><strong>{p ? `${p.firstName} ${p.lastName}` : "Teacher workspace"}</strong></div>
           <div className="enterprise-utilities"><ThemeToggle /><TeacherPortalProfile /></div>
         </header>
+        {announcements.length > 0 && <AnnouncementTicker announcements={announcements} />}
         <section className="learner-content teacher-portal-content">
           {m ? (
             <p className="learner-state" role="status" aria-live="polite">
@@ -217,6 +221,7 @@ export default function Teacher() {
     </main>
   );
 }
+function AnnouncementTicker({ announcements }: { announcements: Announcement[] }) { const text = announcements.map((item) => `${item.title}: ${item.message}`).join("   •   "); return <div className="learner-announcement" role="status" aria-label="Important announcement"><span>Important</span><div><p>{text}   •   {text}</p></div></div>; }
 
 function TeacherPortalProfile() {
   const router = useRouter();

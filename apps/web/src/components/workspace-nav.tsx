@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useEnterpriseShell } from "@/components/enterprise-shell";
+import { academyApi } from "@/lib/api";
 
 const navigationGroups = [
   { label: "Overview", links: [["Dashboard", "/dashboard"], ["Academy profile", "/"], ["Branches", "/branches"], ["Activity", "/activity"], ["Reports", "/reports"]] },
@@ -19,6 +21,8 @@ export function WorkspaceNav() {
   const isInsideEnterpriseShell = useEnterpriseShell();
   const pathname = usePathname();
   const router = useRouter();
+  const [announcements, setAnnouncements] = useState<{ id: string; title: string; message: string }[]>([]);
+  useEffect(() => { void academyApi("/api/portal/announcements").then(async response => { if (response.ok) setAnnouncements(await response.json()); }).catch(() => undefined); }, []);
   if (isInsideEnterpriseShell) return null;
 
   function signOut() {
@@ -28,7 +32,7 @@ export function WorkspaceNav() {
   }
 
   return (
-    <header className="enterprise-nav sticky top-0 z-40 px-4 py-3 sm:px-6">
+    <><header className="enterprise-nav sticky top-0 z-40 px-4 py-3 sm:px-6">
       <div className="mx-auto flex max-w-[1600px] flex-wrap items-center gap-3">
         <Link href="/dashboard" className="mr-2 flex items-center gap-2 font-semibold tracking-tight" data-active={pathname === "/dashboard"}>
           <span className="grid h-8 w-8 place-items-center rounded-lg bg-blue-600 text-sm font-bold text-white">A</span>
@@ -53,6 +57,6 @@ export function WorkspaceNav() {
           <button type="button" onClick={signOut} className="enterprise-signout text-sm font-medium">Sign out</button>
         </div>
       </div>
-    </header>
+    </header>{announcements.length > 0 && <div className="learner-announcement" role="status"><span>Important</span><div><p>{announcements.map(x => `${x.title}: ${x.message}`).join("   •   ")}   •   {announcements.map(x => `${x.title}: ${x.message}`).join("   •   ")}</p></div></div>}</>
   );
 }

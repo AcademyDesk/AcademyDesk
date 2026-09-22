@@ -78,13 +78,14 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
     {
         var user = await users.GetUserAsync(User);
         if (user?.AcademyId is null) return Forbid();
+        var audience = user.StudentId.HasValue ? "Student" : user.TeacherId.HasValue ? "Teacher" : "Admin";
         var candidates = await db.Notifications.AsNoTracking()
             .Where(x => x.AcademyId == user.AcademyId && x.RecipientId == null && x.RecipientType == "Academy" && x.Status != "Cancelled")
             .OrderByDescending(x => x.CreatedAtUtc).Take(10)
             .Select(x => new PortalAnnouncementCandidate(x.Id, x.Title, x.Message, x.CreatedAtUtc, x.VariablesJson))
             .ToListAsync(token);
         var now = DateTime.UtcNow;
-        var announcements = candidates.Where(x => IsActiveImportantAnnouncement(x.VariablesJson, now))
+        var announcements = candidates.Where(x => IsActiveImportantAnnouncement(x.VariablesJson, now) && IsAnnouncementForAudience(x.VariablesJson, audience))
             .Select(x => new PortalAnnouncementSummary(x.Id, x.Title, x.Message, x.CreatedAtUtc)).ToList();
         return Ok(announcements);
     }
@@ -350,6 +351,11 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
             if (!root.TryGetProperty("important", out var important) || !string.Equals(important.GetString(), "true", StringComparison.OrdinalIgnoreCase)) return false;
             return root.TryGetProperty("expiresAtUtc", out var expiry) && DateTime.TryParse(expiry.GetString(), out var expiresAtUtc) && expiresAtUtc.ToUniversalTime() > now;
         }
+        catch (JsonException) { return false; }
+    }
+    private static bool IsAnnouncementForAudience(string? variablesJson, string audience)
+    {
+        try { using var document = JsonDocument.Parse(variablesJson ?? "{}"); if (!document.RootElement.TryGetProperty("audiences", out var targets)) return true; return targets.GetString()?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Any(x => string.Equals(x, audience, StringComparison.OrdinalIgnoreCase) || string.Equals(x, "Both", StringComparison.OrdinalIgnoreCase)) == true; }
         catch (JsonException) { return false; }
     }
     [HttpPut("students/{studentId:guid}/profile")]

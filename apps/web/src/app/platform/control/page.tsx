@@ -95,6 +95,7 @@ const platformLinks = [
     href: "/platform/control?tab=Support",
     tab: "Support",
   },
+  { label: "Announcements", icon: "!", href: "/platform/control?tab=Announcements", tab: "Announcements" },
   {
     label: "Settings",
     icon: "⚙",
@@ -114,6 +115,7 @@ const platformControlTabs = [
   "Admins",
   "Billing",
   "Support",
+  "Announcements",
   "Settings",
   "Audit & health",
 ];
@@ -320,6 +322,10 @@ export default function PlatformControlPage() {
     } catch (error) { setMessage(error instanceof Error ? error.message : "Profile image could not be saved."); }
     finally { setBusy(false); }
   }
+  async function publishAnnouncement(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault(); const form = new FormData(event.currentTarget); setBusy(true);
+    try { const response = await academyApi("/api/platform/announcements", { method: "POST", headers: apiHeaders(true), body: JSON.stringify({ academyId: form.get("academyId"), title: form.get("title"), message: form.get("body"), displayHours: Number(form.get("hours")), audiences: ["Student", "Teacher", "Admin"].filter((x) => form.get(x) === "on") }) }); if (!response.ok) { const error = await response.json().catch(() => null); throw new Error(error?.message ?? "Announcement could not be published."); } event.currentTarget.reset(); setMessage("Important announcement is now live for the selected audience."); } catch (error) { setMessage(error instanceof Error ? error.message : "Announcement could not be published."); } finally { setBusy(false); }
+  }
   function signOut() {
     localStorage.removeItem("academydesk.accessToken");
     localStorage.removeItem("academydesk.refreshToken");
@@ -496,6 +502,7 @@ export default function PlatformControlPage() {
               </section>
             </section>
           )}
+          {tab === "Announcements" && <section className="mt-6 max-w-2xl rounded-xl border border-slate-800 bg-slate-900 p-5"><h2 className="font-semibold">Important scrolling announcement</h2><p className="mt-2 text-sm text-slate-400">Choose who sees the banner. It automatically disappears when its display time ends.</p><form onSubmit={publishAnnouncement} className="mt-5 grid gap-3"><select name="academyId" className="rounded border border-slate-700 bg-slate-950 p-2" required>{academies.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select><input name="title" placeholder="Announcement title" className="rounded border border-slate-700 bg-slate-950 p-2" required /><textarea name="body" placeholder="Important message" className="min-h-28 rounded border border-slate-700 bg-slate-950 p-2" required /><input name="hours" type="number" min="1" max="168" defaultValue="24" className="rounded border border-slate-700 bg-slate-950 p-2" required /><div className="flex flex-wrap gap-4 text-sm"><label><input name="Student" type="checkbox" defaultChecked /> Students</label><label><input name="Teacher" type="checkbox" defaultChecked /> Teachers</label><label><input name="Admin" type="checkbox" defaultChecked /> Academy admins</label></div><button disabled={busy} className="rounded bg-cyan-400 px-4 py-2 font-semibold text-slate-950 disabled:opacity-60">Publish important announcement</button></form></section>}
           {tab === "Admins" && (
             <section className="mt-6 rounded-xl border border-slate-800 bg-slate-900 p-5">
               <h2 className="font-semibold">Academy administrators</h2>
