@@ -122,7 +122,7 @@ export default function CoursesPage() {
   return (
     <>
       <WorkspaceNav />
-      <main className="academic-standard min-h-screen px-6 py-12">
+      <main className="enterprise-settings enterprise-legacy-standard academic-standard min-h-screen px-6 py-12">
         <div className="mx-auto max-w-5xl">
         <h1 className="text-4xl font-semibold">Course catalogue</h1>
           {message && (

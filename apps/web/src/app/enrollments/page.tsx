@@ -52,7 +52,7 @@ export default function EnrollmentsPage() {
   const studentName = (id: string) => { const student = students.find((item) => item.id === id); return student ? `${student.firstName} ${student.lastName}` : "Unknown student"; };
   const batchName = (id: string) => batches.find((item) => item.id === id)?.name ?? "Unknown batch";
 
-  return <main className="min-h-screen bg-slate-950 text-slate-100"><WorkspaceNav /><div className="mx-auto max-w-6xl px-6 py-10">
+  return <main className="enterprise-settings enterprise-legacy-standard min-h-screen bg-slate-950 text-slate-100"><WorkspaceNav /><div className="mx-auto max-w-6xl px-6 py-10">
     <p className="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-300">Learning</p><h1 className="mt-3 text-4xl font-semibold tracking-tight">Student enrolments</h1><p className="mt-3 text-slate-300">Connect each learner to the batch they attend. Only active enrolments can be marked for attendance.</p>
     {message && <p className="mt-6 rounded-lg border border-amber-700/50 bg-amber-950/40 p-4 text-sm text-amber-100">{message}</p>}
     <section className="mt-8 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]"><form onSubmit={createEnrollment} className="rounded-2xl border border-slate-800 bg-slate-900 p-6"><h2 className="text-xl font-semibold">Enrol a student</h2>

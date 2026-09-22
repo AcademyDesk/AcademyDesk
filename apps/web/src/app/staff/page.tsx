@@ -115,7 +115,7 @@ export default function StaffPage() {
     await load();
   }
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100">
+    <main className="enterprise-settings enterprise-legacy-standard min-h-screen bg-slate-950 text-slate-100">
       <WorkspaceNav />
       <div className="mx-auto max-w-6xl px-6 py-10">
         <h1 className="text-4xl font-semibold tracking-tight">

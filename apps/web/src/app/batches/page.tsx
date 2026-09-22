@@ -251,7 +251,7 @@ export default function BatchesPage() {
       (batch) => (batch.activeEnrolments ?? 0) >= batch.capacity,
     );
     return (
-      <main className="min-h-screen bg-slate-950 text-slate-100">
+      <main className="enterprise-settings enterprise-legacy-standard min-h-screen bg-slate-950 text-slate-100">
         <WorkspaceNav />
         <div className="mx-auto max-w-6xl px-6 py-10">
           <header className="flex flex-wrap items-center justify-between gap-4">
@@ -325,7 +325,7 @@ export default function BatchesPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100">
+    <main className="enterprise-settings enterprise-legacy-standard min-h-screen bg-slate-950 text-slate-100">
       <WorkspaceNav />
       <div className="mx-auto max-w-6xl px-6 py-10">
         <p className="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-300">

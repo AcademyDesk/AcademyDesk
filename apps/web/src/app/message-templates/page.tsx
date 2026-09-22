@@ -78,7 +78,7 @@ export default function MessageTemplatesPage() {
     setMessage("Template saved.");
   }
   const field = "w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2";
-  return <main className="min-h-screen bg-slate-950 text-slate-100"><WorkspaceNav /><div className="mx-auto max-w-6xl px-6 py-10">
+  return <main className="enterprise-settings enterprise-legacy-standard min-h-screen bg-slate-950 text-slate-100"><WorkspaceNav /><div className="mx-auto max-w-6xl px-6 py-10">
     <p className="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-300">Communication</p><h1 className="mt-3 text-4xl font-semibold tracking-tight">Message templates</h1>
     <p className="mt-3 max-w-3xl text-slate-300">Choose only the templates your academy needs. Keep WhatsApp templates as drafts until their exact Meta template and language have been approved.</p>
     {message && <p className="mt-6 rounded-lg border border-amber-700/50 bg-amber-950/40 p-4 text-sm text-amber-100">{message}</p>}

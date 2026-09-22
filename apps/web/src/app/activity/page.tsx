@@ -67,7 +67,7 @@ export default function ActivityPage() {
   const label = (value: string) =>
     value.replace(/([a-z])([A-Z])/g, "$1 $2").replaceAll("_", " ");
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100">
+    <main className="enterprise-settings enterprise-legacy-standard min-h-screen bg-slate-950 text-slate-100">
       <WorkspaceNav />
       <div className="mx-auto max-w-4xl px-6 py-10">
         <p className="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-300">

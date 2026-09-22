@@ -68,7 +68,7 @@ export default function AttendancePage() {
     finally { setSavingId(""); }
   }
 
-  return <main className="min-h-screen bg-slate-950 text-slate-100"><WorkspaceNav /><div className="mx-auto max-w-5xl px-6 py-10">
+  return <main className="enterprise-settings enterprise-legacy-standard min-h-screen bg-slate-950 text-slate-100"><WorkspaceNav /><div className="mx-auto max-w-5xl px-6 py-10">
     <p className="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-300">Class records</p><h1 className="mt-3 text-4xl font-semibold tracking-tight">Attendance</h1><p className="mt-3 text-slate-300">Select a scheduled class, then mark attendance for every actively enrolled student.</p>
     {message && <p className="mt-6 rounded-lg border border-amber-700/50 bg-amber-950/40 p-4 text-sm text-amber-100">{message}</p>}
     <section className="mt-8 rounded-2xl border border-slate-800 bg-slate-900 p-6"><label className="block text-sm text-slate-300" htmlFor="session">Class session</label><select id="session" value={sessionId} onChange={(event) => setSessionId(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"><option value="">Select a class</option>{sessions.map((session) => <option key={session.id} value={session.id}>{sessionLabel(session, batches)}</option>)}</select>

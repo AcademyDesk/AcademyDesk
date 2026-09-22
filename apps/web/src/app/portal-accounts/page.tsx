@@ -72,7 +72,7 @@ export default function PortalAccounts() {
   }
   const choices = role === "Student" ? s : role === "Teacher" ? t : g;
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100">
+    <main className="enterprise-settings enterprise-legacy-standard min-h-screen bg-slate-950 text-slate-100">
       <WorkspaceNav />
       <div className="mx-auto max-w-xl px-6 py-10">
         <p className="text-sm font-semibold uppercase tracking-[.22em] text-cyan-300">

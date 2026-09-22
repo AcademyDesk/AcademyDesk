@@ -2134,6 +2134,72 @@ html[data-theme="light"] .field-label { color: #475569; }
   background: linear-gradient(90deg, var(--ad-accent), transparent);
   content: "";
 }
+.enterprise-settings.enterprise-legacy-standard {
+  flex: 1;
+  min-height: 0 !important;
+  background: transparent !important;
+  color: var(--ad-text) !important;
+}
+.enterprise-settings.enterprise-legacy-standard > .mx-auto {
+  width: min(100%, 1440px) !important;
+  max-width: none !important;
+  margin-inline: auto;
+  padding: 0 !important;
+}
+.enterprise-settings.enterprise-legacy-standard > header.enterprise-nav {
+  display: none;
+}
+.enterprise-settings.enterprise-legacy-standard h1 {
+  position: relative;
+  margin-top: 0 !important;
+  margin-bottom: 22px !important;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--ad-border);
+  color: var(--ad-text) !important;
+  font-size: var(--ad-page-title-size) !important;
+  font-weight: var(--ad-page-title-weight) !important;
+  letter-spacing: var(--ad-page-title-tracking) !important;
+  line-height: var(--ad-page-title-line-height) !important;
+}
+.enterprise-settings.enterprise-legacy-standard h1::after {
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 72px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--ad-accent), transparent);
+  content: "";
+}
+.enterprise-settings.enterprise-legacy-standard :is(form, section, article, li).rounded-2xl[class*="bg-slate-"],
+.enterprise-settings.enterprise-legacy-standard :is(form, section, article, li).rounded-xl[class*="bg-slate-"],
+.enterprise-settings.enterprise-legacy-standard :is(form, section, article, li).rounded-lg[class*="bg-slate-"] {
+  border: 1px solid var(--ad-border) !important;
+  background: var(--ad-surface) !important;
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--ad-text) 5%, transparent);
+}
+.enterprise-settings.enterprise-legacy-standard :is(ul > li, article).rounded-lg[class*="bg-slate-"] {
+  background: var(--ad-surface-subtle) !important;
+  box-shadow: none;
+}
+.enterprise-settings.enterprise-legacy-standard :is(form, section, article).rounded-2xl > :is(h2, h3):first-child,
+.enterprise-settings.enterprise-legacy-standard :is(form, section, article).rounded-xl > :is(h2, h3):first-child,
+.enterprise-settings.enterprise-legacy-standard :is(form, section, article).rounded-lg > :is(h2, h3):first-child {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--ad-text) !important;
+  font-size: .94rem !important;
+  font-weight: 750 !important;
+}
+.enterprise-settings.enterprise-legacy-standard :is(form, section, article).rounded-2xl > :is(h2, h3):first-child::before,
+.enterprise-settings.enterprise-legacy-standard :is(form, section, article).rounded-xl > :is(h2, h3):first-child::before,
+.enterprise-settings.enterprise-legacy-standard :is(form, section, article).rounded-lg > :is(h2, h3):first-child::before {
+  width: 5px;
+  height: 18px;
+  border-radius: 999px;
+  background: var(--ad-accent);
+  content: "";
+}
 .enterprise-workspace > main:not(.enterprise-settings) h2 {
   font-size: clamp(1.05rem, 1.15vw, 1.3rem) !important;
   font-weight: 750 !important;

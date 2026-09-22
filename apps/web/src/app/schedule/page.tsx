@@ -175,7 +175,7 @@ export default function SchedulePage() {
     branches.find((branch) => branch.id === id)?.name ?? "No branch";
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100">
+    <main className="enterprise-settings enterprise-legacy-standard min-h-screen bg-slate-950 text-slate-100">
       <WorkspaceNav />
       <div className="mx-auto max-w-6xl px-6 py-10">
         <p className="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-300">
