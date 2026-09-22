@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { WorkspaceNav } from "@/components/workspace-nav";
 import { academyApi } from "@/lib/api";
 type Academy = { id: string };
 type Audit = {
@@ -67,22 +66,24 @@ export default function ActivityPage() {
   const label = (value: string) =>
     value.replace(/([a-z])([A-Z])/g, "$1 $2").replaceAll("_", " ");
   return (
-    <main className="enterprise-settings enterprise-legacy-standard min-h-screen bg-slate-950 text-slate-100">
-      <WorkspaceNav />
-      <div className="mx-auto max-w-4xl px-6 py-10">
-        <p className="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-300">
-          Administration
-        </p>
-        <h1 className="mt-3 text-4xl font-semibold tracking-tight">
-          Activity log
-        </h1>
+    <main className="enterprise-settings workspace-activity">
+      <header className="workspace-activity-heading">
+        <div className="workspace-activity-title">
+          <span className="workspace-activity-title-icon" aria-hidden="true">◌</span>
+          <div><p>Workspace</p><h1>Activity log</h1><span>Track changes and operational actions across the academy.</span></div>
+        </div>
+      </header>
         {message && (
-          <p className="mt-6 rounded-lg border border-amber-700/50 bg-amber-950/40 p-4 text-sm text-amber-100">
+          <p className="enterprise-page-state enterprise-page-state-loading workspace-activity-message">
             {message}
           </p>
         )}
-        <section className="mt-8 rounded-2xl border border-slate-800 bg-slate-900 p-6">
-          <div className="grid gap-3 md:grid-cols-[1fr_180px_150px]">
+        <section className="workspace-activity-panel">
+          <header className="workspace-activity-panel-header">
+            <div><p>Audit trail</p><h2>Recent activity</h2></div>
+            <span>{visible.length} matching events</span>
+          </header>
+          <div className="workspace-activity-filters">
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
@@ -110,53 +111,54 @@ export default function ActivityPage() {
               <option>30 days</option>
             </select>
           </div>
-          <div className="mt-4 flex items-center justify-between text-sm text-slate-400">
-            <span>{visible.length} matching events</span>
+          <div className="workspace-activity-filter-summary">
+            <span>Use search, record type, or period to narrow the audit trail.</span>
             <button
               onClick={() => {
                 setQuery("");
                 setEntity("All");
                 setPeriod("All");
               }}
-              className="text-cyan-300"
+              className="workspace-activity-clear"
             >
               Clear filters
             </button>
           </div>
           {visible.length === 0 ? (
-            <p className="text-slate-400">No activity recorded yet.</p>
+            <p className="workspace-activity-empty">No activity recorded for this view.</p>
           ) : (
-            <ul className="space-y-3">
+            <ul className="workspace-activity-list">
               {visible.map((item) => (
                 <li
                   key={item.id}
-                  className="rounded-lg border border-slate-700 bg-slate-950 p-4"
                 >
-                  <div className="font-medium">{label(item.action)}</div>
-                  <div className="mt-1 text-sm text-slate-400">
-                    {label(item.entityType)} ·{" "}
+                  <span className="workspace-activity-dot" aria-hidden="true" />
+                  <div>
+                    <strong>{label(item.action)}</strong>
+                    <small>
+                      {label(item.entityType)} ·{" "}
                     {new Intl.DateTimeFormat("en-IN", {
                       dateStyle: "medium",
                       timeStyle: "short",
                       timeZone: "Asia/Kolkata",
                     }).format(new Date(item.occurredAtUtc))}
-                  </div>
-                  {item.metadataJson && (
-                    <details className="mt-2 text-xs text-slate-500">
-                      <summary className="cursor-pointer text-slate-400">
+                    </small>
+                    {item.metadataJson && (
+                    <details>
+                      <summary>
                         View details
                       </summary>
-                      <pre className="mt-2 overflow-auto whitespace-pre-wrap">
+                      <pre>
                         {item.metadataJson}
                       </pre>
                     </details>
-                  )}
+                    )}
+                  </div>
                 </li>
               ))}
             </ul>
           )}
         </section>
-      </div>
     </main>
   );
 }

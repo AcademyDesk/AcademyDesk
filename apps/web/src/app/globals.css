@@ -1928,6 +1928,38 @@ html[data-theme="light"] .field-label { color: #475569; }
   .workspace-calendar .calendar-filter { flex: 1 1 auto; }
   .workspace-calendar .calendar-day { min-height: 100px; }
 }
+
+/* Workspace activity log — matches the Dashboard's clear identity, framed
+   panel header and deliberate list rhythm. */
+.workspace-activity { width: min(100%, 1180px); }
+.workspace-activity-heading { display: flex; align-items: center; min-height: 74px; margin-bottom: 28px; }
+.workspace-activity-title { display: flex; align-items: center; gap: 16px; }
+.workspace-activity-title-icon { display: grid; width: 56px; height: 56px; place-items: center; border-radius: 15px; background: var(--ad-accent); box-shadow: 0 12px 22px color-mix(in srgb, var(--ad-accent) 24%, transparent); color: #fff; font-size: 1.35rem; }
+.workspace-activity-title p,.workspace-activity-panel-header p { margin: 0 0 5px; color: var(--ad-accent); font-size: .7rem; font-weight: 850; letter-spacing: .14em; text-transform: uppercase; }
+.workspace-activity-title h1 { margin: 0; color: var(--ad-text); font-size: clamp(2.15rem, 3.3vw, 3.35rem); font-weight: 520; letter-spacing: -.055em; line-height: 1; }
+.workspace-activity-title > div > span { display: block; margin-top: 7px; color: var(--ad-text-muted); font-size: .9rem; }
+.workspace-activity-message { margin-bottom: 18px; }
+.workspace-activity-panel { overflow: hidden; border: 1px solid var(--ad-border); border-radius: 16px; background: var(--ad-surface); box-shadow: 0 8px 22px color-mix(in srgb, var(--ad-text) 5%, transparent); }
+.workspace-activity-panel-header { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 18px 22px; border-bottom: 1px solid var(--ad-border); background: linear-gradient(105deg, color-mix(in srgb, var(--ad-accent) 10%, var(--ad-surface)), var(--ad-surface) 72%); }
+.workspace-activity-panel-header h2 { margin: 0; color: var(--ad-text); font-size: 1.15rem; font-weight: 750; letter-spacing: -.025em; }
+.workspace-activity-panel-header > span { padding: 6px 10px; border-radius: 999px; background: var(--ad-accent-soft); color: var(--ad-accent); font-size: .72rem; font-weight: 750; }
+.workspace-activity-filters { display: grid; grid-template-columns: minmax(0, 1fr) 190px 150px; gap: 10px; padding: 18px 22px 12px; }
+.workspace-activity-filter-summary { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 0 22px 16px; border-bottom: 1px solid var(--ad-border); color: var(--ad-text-muted); font-size: .78rem; }
+.workspace-activity-clear { min-height: 34px !important; padding: 6px 10px !important; border: 1px solid var(--ad-border-strong) !important; border-radius: 8px !important; background: var(--ad-surface) !important; color: var(--ad-accent) !important; font-size: .78rem !important; font-weight: 750 !important; }
+.workspace-activity-clear:hover { border-color: var(--ad-accent) !important; background: var(--ad-accent-soft) !important; }
+.workspace-activity-list { display: grid; margin: 0; padding: 0 22px; list-style: none; }
+.workspace-activity-list li { display: grid; grid-template-columns: 14px minmax(0, 1fr); gap: 13px; padding: 17px 0; border-bottom: 1px solid var(--ad-border); }
+.workspace-activity-list li:last-child { border-bottom: 0; }
+.workspace-activity-list li:hover { background: color-mix(in srgb, var(--ad-accent) 4%, transparent); }
+.workspace-activity-dot { width: 11px; height: 11px; margin-top: 5px; border-radius: 50%; background: #2cc5e8; box-shadow: 0 0 0 8px color-mix(in srgb, #2cc5e8 14%, transparent); }
+.workspace-activity-list strong,.workspace-activity-list small { display: block; }
+.workspace-activity-list strong { color: var(--ad-text); font-size: .9rem; font-weight: 750; }
+.workspace-activity-list small { margin-top: 5px; color: var(--ad-text-muted); font-size: .78rem; }
+.workspace-activity-list details { margin-top: 9px; }
+.workspace-activity-list summary { width: fit-content; color: var(--ad-accent); cursor: pointer; font-size: .75rem; font-weight: 700; }
+.workspace-activity-list pre { margin: 9px 0 0; padding: 10px; overflow: auto; border: 1px solid var(--ad-border); border-radius: 8px; background: var(--ad-surface-subtle); color: var(--ad-text-muted); font-family: var(--font-geist-mono), monospace; font-size: .7rem; white-space: pre-wrap; }
+.workspace-activity-empty { padding: 34px 22px; margin: 0; color: var(--ad-text-muted); text-align: center; }
+@media (max-width: 760px) { .workspace-activity-heading { min-height: 0; }.workspace-activity-title-icon { width: 46px; height: 46px; border-radius: 13px; }.workspace-activity-title h1 { font-size: 2rem; }.workspace-activity-title > div > span { font-size: .82rem; }.workspace-activity-filters { grid-template-columns: 1fr; }.workspace-activity-filter-summary { align-items: flex-start; flex-direction: column; }.workspace-activity-panel-header { align-items: flex-start; flex-direction: column; } }
 .enterprise-page-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .enterprise-action-button {
   display: inline-flex;
