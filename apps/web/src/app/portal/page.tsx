@@ -375,7 +375,7 @@ function View({
       )}
       {tab === "classes" && (
         <section className="learner-tab-grid">
-          <P title="Class calendar">
+          <P title="Class calendar" className="learner-grid-wide learner-calendar-panel">
             <ClassCalendar sessions={d.schedule} />
           </P>
         </section>
