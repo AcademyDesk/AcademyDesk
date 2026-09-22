@@ -1285,7 +1285,24 @@ html[data-theme="light"] .field-label { color: #475569; }
   color: var(--ad-text) !important;
   font-size: .875rem !important;
   line-height: 1.35;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
 }
+.enterprise-workspace main:not(.enterprise-settings) :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea):focus {
+  border-color: var(--ad-accent) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ad-accent) 15%, transparent);
+  outline: 0;
+}
+.enterprise-workspace main:not(.enterprise-settings) select {
+  appearance: none;
+  cursor: pointer;
+  padding-right: 38px !important;
+  background-image: linear-gradient(45deg, transparent 50%, var(--ad-accent) 50%), linear-gradient(135deg, var(--ad-accent) 50%, transparent 50%) !important;
+  background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50% !important;
+  background-repeat: no-repeat !important;
+  background-size: 5px 5px, 5px 5px !important;
+  font-weight: 650;
+}
+.enterprise-workspace main:not(.enterprise-settings) select:hover { border-color: var(--ad-border-strong) !important; }
 .enterprise-workspace main:not(.enterprise-settings) textarea { min-height: 92px; }
 .enterprise-workspace main:not(.enterprise-settings) :is(label, small) { font-size: .8rem; }
 .enterprise-workspace main:not(.enterprise-settings) h1 {
