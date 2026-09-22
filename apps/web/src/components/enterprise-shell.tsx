@@ -394,7 +394,10 @@ export function EnterpriseShell({
         </aside>
         <section className="enterprise-workspace" data-route={pathname}>
           <header className="enterprise-topbar">
-            <div />
+            <div className="enterprise-admin-context">
+              <span>{resolvedUserRole}</span>
+              <strong>{resolvedUserName}</strong>
+            </div>
             <div className="enterprise-utilities">
               <button
                 type="button"
