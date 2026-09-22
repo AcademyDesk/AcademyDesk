@@ -2112,6 +2112,80 @@ html[data-theme="light"] .field-label { color: #475569; }
   outline-offset: 2px;
 }
 
+/* ADMIN STD — route-wide convergence for every remaining Admin section and
+   subsection. The admin shell is the single visual boundary, so pages that
+   retain their earlier functional markup still receive the same hierarchy as
+   the newer dashboard, finance and academic modules. */
+.enterprise-workspace > main:not(.enterprise-settings) :is(h1, h2, h3, h4) {
+  color: var(--ad-text) !important;
+}
+.enterprise-workspace > main:not(.enterprise-settings) h1 {
+  position: relative;
+  margin-bottom: 22px !important;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--ad-border);
+}
+.enterprise-workspace > main:not(.enterprise-settings) h1::after {
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 72px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--ad-accent), transparent);
+  content: "";
+}
+.enterprise-workspace > main:not(.enterprise-settings) h2 {
+  font-size: clamp(1.05rem, 1.15vw, 1.3rem) !important;
+  font-weight: 750 !important;
+  letter-spacing: -.02em;
+}
+.enterprise-workspace > main:not(.enterprise-settings) h3 {
+  font-size: .94rem !important;
+  font-weight: 750 !important;
+}
+.enterprise-workspace > main:not(.enterprise-settings) :is(form, section, article).rounded-2xl > :is(h2, h3):first-child,
+.enterprise-workspace > main:not(.enterprise-settings) :is(form, section, article).rounded-xl > :is(h2, h3):first-child,
+.enterprise-workspace > main:not(.enterprise-settings) :is(form, section, article).rounded-lg > :is(h2, h3):first-child {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.enterprise-workspace > main:not(.enterprise-settings) :is(form, section, article).rounded-2xl > :is(h2, h3):first-child::before,
+.enterprise-workspace > main:not(.enterprise-settings) :is(form, section, article).rounded-xl > :is(h2, h3):first-child::before,
+.enterprise-workspace > main:not(.enterprise-settings) :is(form, section, article).rounded-lg > :is(h2, h3):first-child::before {
+  width: 5px;
+  height: 18px;
+  border-radius: 999px;
+  background: var(--ad-accent);
+  content: "";
+}
+.enterprise-workspace > main:not(.enterprise-settings) :is(form, section, article).rounded-2xl > :is(p, small):first-of-type,
+.enterprise-workspace > main:not(.enterprise-settings) :is(form, section, article).rounded-xl > :is(p, small):first-of-type,
+.enterprise-workspace > main:not(.enterprise-settings) :is(form, section, article).rounded-lg > :is(p, small):first-of-type {
+  color: var(--ad-text-muted) !important;
+  line-height: 1.5;
+}
+.enterprise-workspace > main:not(.enterprise-settings) :is(.grid, .space-y-2, .space-y-3, .space-y-4) > :is(section, article, li).rounded-lg {
+  border-color: var(--ad-border) !important;
+}
+.enterprise-workspace > main:not(.enterprise-settings) table thead {
+  background: var(--ad-surface-subtle);
+}
+.enterprise-workspace > main:not(.enterprise-settings) table th {
+  color: var(--ad-accent) !important;
+  font-size: .7rem !important;
+  font-weight: 800 !important;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+.enterprise-workspace > main:not(.enterprise-settings) table tbody tr + tr {
+  border-top: 1px solid var(--ad-border);
+}
+.enterprise-workspace > main:not(.enterprise-settings) :is(button, a).rounded:not(.enterprise-icon-button),
+.enterprise-workspace > main:not(.enterprise-settings) :is(button, a).rounded-lg:not(.enterprise-icon-button) {
+  font-weight: 700;
+}
+
 /* Certificate studio: original vector/CSS templates, designed for print and
    academy branding rather than image-based, licensed template assets. */
 .certificates-admin .certificate-branding {
