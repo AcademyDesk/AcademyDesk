@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { WorkspaceNav } from "@/components/workspace-nav";
 import { academyApi } from "@/lib/api";
 
 type Academy = { id: string };
@@ -162,35 +161,33 @@ export default function ReportsPage() {
     ["Net cash", money(collected - spent)],
   ];
   return (
-    <main className="enterprise-settings enterprise-legacy-standard min-h-screen bg-slate-950 text-slate-100">
-      <WorkspaceNav />
-      <div className="mx-auto max-w-6xl px-6 py-10">
-        <p className="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-300">
-          Reporting
-        </p>
-        <h1 className="mt-3 text-4xl font-semibold tracking-tight">
-          Operational reports
-        </h1>
+    <main className="enterprise-settings workspace-reports">
+      <header className="workspace-reports-heading">
+        <div className="workspace-reports-title">
+          <span className="workspace-reports-title-icon" aria-hidden="true">▤</span>
+          <div><p>Workspace</p><h1>Reports</h1><span>Academy operations, capacity, attendance, and financial performance.</span></div>
+        </div>
+      </header>
         {message && (
-          <p className="mt-6 rounded-lg border border-amber-700/50 bg-amber-950/40 p-4 text-sm text-amber-100">
+          <p className="enterprise-page-state enterprise-page-state-loading workspace-reports-message">
             {message}
           </p>
         )}
-        <section className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <section className="workspace-reports-kpis" aria-label="Operational metrics">
           {metrics.map(([label, value]) => (
-            <div
+            <article
               key={label}
-              className="rounded-2xl border border-slate-800 bg-slate-900 p-5"
+              className="workspace-reports-kpi"
             >
-              <p className="text-sm text-slate-400">{label}</p>
-              <p className="mt-2 text-2xl font-semibold">{value}</p>
-            </div>
+              <span>{label}</span>
+              <strong>{value}</strong>
+            </article>
           ))}
         </section>
-        <section className="mt-8 grid gap-6 lg:grid-cols-2">
-          <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Batch occupancy</h2>
+        <section className="workspace-reports-grid">
+          <section className="workspace-reports-panel">
+            <header className="workspace-reports-panel-header">
+              <div><p>Capacity</p><h2>Batch occupancy</h2></div>
               <button
                 onClick={() =>
                   downloadCsv("academydesk-batch-occupancy.csv", [
@@ -198,37 +195,36 @@ export default function ReportsPage() {
                     ...batchRows,
                   ])
                 }
-                className="text-sm text-cyan-300"
+                className="workspace-reports-secondary-action"
               >
                 Download CSV
               </button>
-            </div>
+            </header>
             {batches.length === 0 ? (
-              <p className="mt-5 text-slate-400">No batches yet.</p>
+              <p className="workspace-reports-empty">No batches yet.</p>
             ) : (
-              <ul className="mt-4 space-y-3">
+              <ul className="workspace-reports-list">
                 {batches.map((batch) => (
                   <li
                     key={batch.id}
-                    className="rounded-lg border border-slate-700 bg-slate-950 p-4"
-                  >
-                    <div className="font-medium">{batch.name}</div>
-                    <div className="mt-1 text-sm text-slate-400">
+                >
+                    <strong>{batch.name}</strong>
+                    <small>
                       {
                         activeEnrolments.filter(
                           (item) => item.batchId === batch.id,
                         ).length
                       }{" "}
                       of {batch.capacity} places filled
-                    </div>
+                    </small>
                   </li>
                 ))}
               </ul>
             )}
           </section>
-          <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Finance export</h2>
+          <section className="workspace-reports-panel">
+            <header className="workspace-reports-panel-header">
+              <div><p>Finance</p><h2>Finance export</h2></div>
               <button
                 onClick={() =>
                   downloadCsv("academydesk-invoices.csv", [
@@ -248,25 +244,25 @@ export default function ReportsPage() {
                     }),
                   ])
                 }
-                className="text-sm text-cyan-300"
+                className="workspace-reports-secondary-action"
               >
                 Download CSV
               </button>
-            </div>
-            <div className="mt-6 rounded-lg bg-slate-950 p-4 text-sm text-slate-400">
+            </header>
+            <div className="workspace-reports-finance-summary">
               {invoices.length} invoices · {money(invoiced)} issued ·{" "}
               {money(collected)} collected
             </div>
           </section>
         </section>
-        <section className="mt-6 rounded-2xl border border-slate-800 bg-slate-900 p-6">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-xl font-semibold">Export centre</h2>
-            <span className="text-sm text-slate-400">
+        <section className="workspace-reports-export-panel">
+          <header className="workspace-reports-panel-header">
+            <div><p>Downloads</p><h2>Export centre</h2></div>
+            <span>
               CSV downloads for operational use
             </span>
-          </div>
-          <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          </header>
+          <div className="workspace-reports-export-grid">
             <ExportCard
               title="Students"
               detail="Student contact register"
@@ -324,7 +320,6 @@ export default function ReportsPage() {
             />
           </div>
         </section>
-      </div>
     </main>
   );
 }
@@ -338,12 +333,12 @@ function ExportCard({
   onClick: () => void;
 }) {
   return (
-    <article className="rounded-xl border border-slate-700 bg-slate-950 p-4">
-      <h3 className="font-semibold">{title}</h3>
-      <p className="mt-1 text-sm text-slate-400">{detail}</p>
+    <article className="workspace-reports-export-card">
+      <h3>{title}</h3>
+      <p>{detail}</p>
       <button
         onClick={onClick}
-        className="mt-4 text-sm font-semibold text-cyan-300"
+        className="workspace-reports-secondary-action"
       >
         Download CSV →
       </button>
