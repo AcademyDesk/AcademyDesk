@@ -140,9 +140,12 @@ export default function CalendarPage() {
     .sort((a, b) => +a.start - +b.start);
   return (
     <main className="enterprise-settings workspace-calendar">
-        <header className="enterprise-page-header flex flex-wrap items-end justify-between gap-5">
-          <div><p>Workspace / calendar</p><h2>Calendar</h2></div>
-          <div className="flex items-center gap-2">
+        <header className="workspace-calendar-heading">
+          <div className="workspace-calendar-title">
+            <span className="workspace-calendar-title-icon" aria-hidden="true">▦</span>
+            <div><p>Workspace</p><h1>Calendar</h1><span>Classes, make-ups and academy events in one view.</span></div>
+          </div>
+          <div className="workspace-calendar-month-actions" aria-label="Calendar navigation">
             <button
               onClick={() =>
                 setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))
@@ -171,30 +174,24 @@ export default function CalendarPage() {
             </button>
           </div>
         </header>
-        <div className="workspace-calendar-toolbar mt-5 flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-xl font-semibold">{monthName(month)}</h2>
-          <div className="flex gap-2">
-            {(["All", "Class", "Make-up", "Event"] as const).map((value) => (
-              <button
-                key={value}
-                onClick={() => setFilter(value)}
-                className={
-                  filter === value
-                    ? "calendar-filter active"
-                    : "calendar-filter"
-                }
-              >
-                {value}
-              </button>
-            ))}
-          </div>
-        </div>
-        {message && (
-          <p className="enterprise-page-state enterprise-page-state-loading mt-5">
-            {message}
-          </p>
-        )}
-        <section className="calendar-grid mt-5">
+        <section className="workspace-calendar-panel">
+          <header className="workspace-calendar-panel-header">
+            <div><p>Month view</p><h2>{monthName(month)}</h2></div>
+            <div className="workspace-calendar-filters" aria-label="Filter calendar items">
+              {(["All", "Class", "Make-up", "Event"] as const).map((value) => (
+                <button
+                  key={value}
+                  onClick={() => setFilter(value)}
+                  className={filter === value ? "calendar-filter active" : "calendar-filter"}
+                  aria-pressed={filter === value}
+                >
+                  {value}
+                </button>
+              ))}
+            </div>
+          </header>
+          {message && <p className="enterprise-page-state enterprise-page-state-loading workspace-calendar-message">{message}</p>}
+          <section className="calendar-grid">
           {names.map((name) => (
             <div key={name} className="calendar-weekday">
               {name}
@@ -231,14 +228,15 @@ export default function CalendarPage() {
               </div>
             );
           })}
+          </section>
         </section>
-        <section className="mt-6 surface-panel rounded-xl p-5">
-          <div className="flex items-center justify-between">
-            <h2 className="font-semibold">Month agenda</h2>
-            <span className="text-sm text-slate-400">
+        <section className="workspace-calendar-agenda">
+          <header className="workspace-calendar-agenda-header">
+            <div><p>Schedule list</p><h2>Month agenda</h2></div>
+            <span>
               {agenda.length} items
             </span>
-          </div>
+          </header>
           {agenda.length ? (
             <ul className="mt-4 divide-y divide-slate-800">
               {agenda.map((item) => (
