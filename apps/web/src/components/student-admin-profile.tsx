@@ -86,7 +86,7 @@ export function StudentAdminProfile({
   }
   return (
     <section className="surface-panel rounded-xl p-5">
-      <div className="flex items-start justify-between gap-4">
+      <header className="student-admin-profile-header">
         <div className="min-w-0">
           <h3 className="font-semibold">Student 360 profile</h3>
         </div>
@@ -97,7 +97,7 @@ export function StudentAdminProfile({
         >
           {saving ? "Saving…" : "Save profile"}
         </button>
-      </div>
+      </header>
       {message && <p className="mt-3 text-sm text-amber-200">{message}</p>}
       <div className="mt-5 grid gap-3 md:grid-cols-2">
         <input

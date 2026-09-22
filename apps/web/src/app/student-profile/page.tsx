@@ -129,20 +129,18 @@ export default function StudentProfilePage() {
     .filter((item) => item.status !== "Paid" && (item.dueDate ?? "") < today)
     .reduce((sum, item) => sum + (item.totalAmount ?? 0), 0);
   return (
-    <main className="enterprise-settings">
-      <header className="enterprise-page-header">
-        <p>Students / Student 360</p>
-        <h2>
+    <main className="enterprise-settings student-360-standard">
+      <header className="student-360-heading">
+        <div className="student-360-title">
+          <span className="student-360-title-icon" aria-hidden="true">◎</span>
+          <div><p>Students</p><h1>
           {student
             ? `${student.firstName} ${student.lastName}`
             : "Student record"}
-        </h2>
-        <span>
-          A connected student record for parent, enrolment, attendance, finance,
-          learning progress, and communication.
-        </span>
+          </h1><span>A connected record for family, enrolment, attendance, finance, learning, and communication.</span></div>
+        </div>
       </header>
-      <section className="enterprise-settings-toolbar">
+      <section className="student-360-toolbar">
         <select
           value={studentId}
           onChange={(event) => void select(event.target.value)}
@@ -167,10 +165,10 @@ export default function StudentProfilePage() {
           </Link>
         </div>
       </section>
-      {message && <p className="mt-5 text-amber-200">{message}</p>}
+      {message && <p className="enterprise-page-state student-360-message">{message}</p>}
       {student && profile && (
         <>
-          <section className="mt-5 grid gap-4 md:grid-cols-4">
+          <section className="student-360-summary-grid">
             <StudentSummaryTile
               title="Enrolments"
               href={`/enrollments?studentId=${studentId}`}
@@ -196,7 +194,7 @@ export default function StudentProfilePage() {
               <p className="mt-2 text-slate-400">Linked parent records</p>
             </StudentSummaryTile>
           </section>
-          <section className="mt-5 grid gap-5 xl:grid-cols-[1.35fr_0.65fr]">
+          <section className="student-360-detail-grid">
             <StudentAdminProfile
               academyId={academyId}
               studentId={studentId}
