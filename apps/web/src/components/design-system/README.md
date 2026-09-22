@@ -13,6 +13,13 @@ screens stay visually consistent.
   secondary is for supporting actions.
 - Use `StandardKpi` for label/value/detail summary tiles.
 - Use `standardClasses` rather than inventing parallel layout classes.
+- Use `StandardSelectField` from `design-system/controls` for every dropdown
+  that needs the AcademyDesk menu visual. Do not use a native `<select>` for
+  those controls: the standard menu has the shared blue selection treatment
+  and closes when the user clicks outside it.
+- Use `StandardDateField` from `design-system/controls` for every visible date
+  input. Do not expose the browser-native date popup; the standard picker has
+  AcademyDesk month navigation, selected/today states, and outside-click close.
 
 ## Interaction standards
 
@@ -20,6 +27,10 @@ screens stay visually consistent.
 - Every action has a visible label and accessible name.
 - Calendars provide previous month, today, next month, selected-day detail, and
   a direct action for applicable online or hybrid sessions.
+- Full-month calendars always include the `calendarStandard` contract: a month
+  grid plus an agenda, labelled class actions, and subject, time, schedule,
+  teacher, and student details. Multiple assigned students use a compact count
+  with an explicit show/hide roster action.
 - Cards use the shared surface, border, compact spacing, and empty-state text.
 - Urgent banners are duration-bound and audience-targeted.
 

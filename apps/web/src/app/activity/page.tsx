@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { academyApi } from "@/lib/api";
-import { StandardSelectField } from "@/components/standard-select-field";
+import { StandardSelectField } from "@/components/design-system/controls";
 type Academy = { id: string };
 type Audit = {
   id: string;
