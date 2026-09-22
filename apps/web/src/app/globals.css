@@ -12,8 +12,8 @@ button:disabled,
 }
 
 :root {
-  /* Page-title invariant: all workspace page titles are exactly 36px on desktop. */
-  --ad-page-title-size: 36px;
+  /* Page-title invariant: all workspace page titles are exactly 30px on desktop. */
+  --ad-page-title-size: 30px;
   --ad-page-title-weight: 520;
   --ad-page-title-tracking: -0.05em;
   --ad-page-title-line-height: 1.05;
@@ -43,7 +43,7 @@ button:disabled,
 }
 
 @media (max-width: 760px) {
-  :root { --ad-page-title-size: 32px; }
+  :root { --ad-page-title-size: 28px; }
 }
 
 :root[data-theme="dark"] {
