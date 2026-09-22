@@ -9,7 +9,7 @@ screens stay visually consistent.
   uppercase accent heading, soft header gradient, border, radius, and spacing.
 - Use `StandardSectionTitle` for major full-width sections such as timetable,
   attendance, and calendar.
-- Page titles use `--ad-page-title-size`: exactly 46px on desktop and 32px on
+- Page titles use `--ad-page-title-size`: exactly 36px on desktop and 32px on
   mobile. Do not introduce a larger page heading on an individual screen.
 - Use `StandardAction` for labelled actions. Primary is for the one main action;
   secondary is for supporting actions.
