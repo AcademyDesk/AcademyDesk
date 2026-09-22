@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { academyApi, apiHeaders } from "@/lib/api";
-import { StandardDateField } from "@/components/standard-date-field";
+import { StandardDateField, StandardSelectField } from "@/components/design-system/controls";
 
 type Academy = { id: string };
 type SubjectEntry = { subject: string; certification: string };
@@ -84,7 +84,7 @@ export default function TeacherOnboardingPage() {
       {message && <p className="enterprise-page-state enterprise-page-state-loading teacher-onboarding-message">{message}</p>}
       <form onSubmit={submit} className="teacher-onboarding-form">
         <section className="surface-panel onboarding-section">
-          <div className="onboarding-section-header"><span>01</span><div><h3>Personal details</h3><p>Teacher contact and identity record</p></div></div>
+          <div className="onboarding-section-header"><span>01</span><div><h3>Personal details</h3></div></div>
           <div className="onboarding-fields onboarding-fields-2">
             <input required name="firstName" placeholder="First name" />
             <input required name="lastName" placeholder="Last name" />
@@ -109,9 +109,17 @@ export default function TeacherOnboardingPage() {
                 {subjects.length > 1 && <button type="button" className="teacher-remove-button" onClick={() => setSubjects((current) => current.filter((_, subjectIndex) => subjectIndex !== index))}>Remove</button>}
               </div>)}
             </div>
-            <select name="employmentType" value={employmentType} onChange={(event) => setEmploymentType(event.target.value)}>
-              <option>Full-time</option><option>Part-time</option><option>Contract</option>
-            </select>
+            <StandardSelectField
+              name="employmentType"
+              value={employmentType}
+              onChange={setEmploymentType}
+              placeholder="Employment type"
+              options={[
+                { value: "Full-time", label: "Full-time" },
+                { value: "Part-time", label: "Part-time" },
+                { value: "Contract", label: "Contract" },
+              ]}
+            />
             <StandardDateField name="dateOfBirth" label="Date of birth (DOB)" value={dateOfBirth} onChange={setDateOfBirth} />
             <StandardDateField name="joiningDate" label="Joining date" value={joiningDate} onChange={setJoiningDate} />
           </div>

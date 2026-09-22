@@ -4287,6 +4287,8 @@ html[data-theme="light"] .field-label { color: #475569; }
 .teacher-onboarding-standard .teacher-onboarding-form .onboarding-section { grid-column: 1 / -1; }
 .teacher-onboarding-standard .availability-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 16px; }
 .teacher-onboarding-standard .availability-row { min-width: 0; }
+.teacher-onboarding-standard :is(.standard-date-field,.standard-select-field) { position: relative; z-index: 1; }
+.teacher-onboarding-standard :is(.standard-date-field,.standard-select-field):has(.standard-date-popover,.standard-select-menu) { z-index: 60; }
 .teacher-management-content { width: min(100%, 1180px); margin-inline: auto; }
 .teacher-assignment-confirm {
   min-height: 32px;
@@ -4324,7 +4326,7 @@ html[data-theme="light"] .field-label { color: #475569; }
 .teacher-profile-fields > label { color: var(--ad-text-muted) !important; font-size: .8rem; font-weight: 650; }
 .teacher-profile-card textarea.field { padding: 12px; }
 @media (max-width: 760px) {
-  .teacher-onboarding-heading { min-height: 0; }.teacher-onboarding-title-icon { width: 46px; height: 46px; border-radius: 13px; }.teacher-onboarding-title h1 { font-size: 2rem; }.teacher-onboarding-title > div > span { font-size: .82rem; }
+  .teacher-onboarding-heading { min-height: 0; }.teacher-onboarding-title-icon { width: 46px; height: 46px; border-radius: 13px; }.teacher-onboarding-title h1 { font-size: var(--ad-page-title-size); }.teacher-onboarding-title > div > span { font-size: .82rem; }
   .teacher-onboarding-standard .availability-list { grid-template-columns: 1fr; }
   .teacher-management-standard .surface-panel { padding: 16px; }
   .teacher-assignment-confirm { min-width: 52px; }
