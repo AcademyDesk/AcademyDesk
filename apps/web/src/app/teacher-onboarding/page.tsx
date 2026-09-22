@@ -75,9 +75,9 @@ export default function TeacherOnboardingPage() {
 
   return (
     <main className="enterprise-settings teacher-standard teacher-onboarding-standard">
-      <header className="enterprise-page-header"><p>Teachers / onboarding</p><h2>Teacher onboarding</h2></header>
-      {message && <p className="enterprise-page-state enterprise-page-state-loading">{message}</p>}
-      <form onSubmit={submit} className="teacher-onboarding-form mt-5">
+      <header className="teacher-onboarding-heading"><div className="teacher-onboarding-title"><span className="teacher-onboarding-title-icon" aria-hidden="true">+</span><div><p>Teachers</p><h1>Teacher onboarding</h1><span>Create the teaching record, subjects, availability, and employment details in one intake.</span></div></div></header>
+      {message && <p className="enterprise-page-state enterprise-page-state-loading teacher-onboarding-message">{message}</p>}
+      <form onSubmit={submit} className="teacher-onboarding-form">
         <section className="surface-panel onboarding-section">
           <div className="onboarding-section-header"><span>01</span><div><h3>Personal details</h3><p>Teacher contact and identity record</p></div></div>
           <div className="onboarding-fields onboarding-fields-2">
