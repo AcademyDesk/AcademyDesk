@@ -39,10 +39,10 @@ public sealed class PlatformControlController(AcademyDeskDbContext db, UserManag
     public async Task<ActionResult> CreateAnnouncement(CreatePlatformAnnouncementRequest request, CancellationToken token)
     {
         if (!await IsPlatformOwner()) return Forbid();
-        if (string.IsNullOrWhiteSpace(request.Title) || string.IsNullOrWhiteSpace(request.Message) || request.DisplayHours is < 1 or > 168 || request.Audiences is null || request.Audiences.Length == 0) return BadRequest(new { message = "Select an academy, audience, message, and duration from 1 to 168 hours." });
+        if (string.IsNullOrWhiteSpace(request.Title) || string.IsNullOrWhiteSpace(request.Message) || request.DisplayHours is < 1 or > 168) return BadRequest(new { message = "Select an academy, message, and duration from 1 to 168 hours." });
         if (!await db.Academies.AnyAsync(x => x.Id == request.AcademyId, token)) return NotFound();
-        var notification = new Notification { AcademyId = request.AcademyId, RecipientType = "Academy", Title = request.Title.Trim(), Message = request.Message.Trim(), Channel = "InApp", Status = "Sent", SentAtUtc = DateTime.UtcNow, VariablesJson = JsonSerializer.Serialize(new Dictionary<string, string> { ["important"] = "true", ["expiresAtUtc"] = DateTime.UtcNow.AddHours(request.DisplayHours).ToString("O"), ["audiences"] = string.Join(',', request.Audiences.Distinct(StringComparer.OrdinalIgnoreCase)) }) };
-        db.Notifications.Add(notification); await Audit("Important announcement published", "Notification", notification.Id, new { request.AcademyId, request.Audiences, request.DisplayHours }, token); await db.SaveChangesAsync(token); return Ok(new { notification.Id });
+        var notification = new Notification { AcademyId = request.AcademyId, RecipientType = "Academy", Title = request.Title.Trim(), Message = request.Message.Trim(), Channel = "InApp", Status = "Sent", SentAtUtc = DateTime.UtcNow, VariablesJson = JsonSerializer.Serialize(new Dictionary<string, string> { ["important"] = "true", ["expiresAtUtc"] = DateTime.UtcNow.AddHours(request.DisplayHours).ToString("O"), ["audiences"] = "Admin" }) };
+        db.Notifications.Add(notification); await Audit("Academy admin announcement published", "Notification", notification.Id, new { request.AcademyId, Audience = "Admin", request.DisplayHours }, token); await db.SaveChangesAsync(token); return Ok(new { notification.Id });
     }
 
     [HttpGet("settings")]
@@ -172,7 +172,7 @@ public sealed class PlatformControlController(AcademyDeskDbContext db, UserManag
 }
 
 public sealed record UpdatePlatformSettingsRequest(string PlatformName, string? SupportEmail, string? DefaultCurrency, int DefaultTrialDays, int DataRetentionDays, bool MaintenanceMode, string? StatusMessage);
-public sealed record CreatePlatformAnnouncementRequest(Guid AcademyId, string Title, string Message, int DisplayHours, string[] Audiences);
+public sealed record CreatePlatformAnnouncementRequest(Guid AcademyId, string Title, string Message, int DisplayHours);
 public sealed record SetPlatformAdminActiveRequest(bool IsActive);
 public sealed record ResetPlatformAdminPasswordRequest(string NewPassword);
 public sealed record CreatePlatformSupportCaseRequest(Guid AcademyId, string Subject, string? Priority, string? Description);
