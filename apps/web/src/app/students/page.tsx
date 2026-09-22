@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { academyApi, apiHeaders } from "@/lib/api";
+import { StandardSelectField } from "@/components/design-system/controls";
 
 type Academy = { id: string; name: string };
 type Student = {
@@ -232,24 +233,28 @@ export default function StudentsPage() {
           <header className="student-management-panel-header">
             <div><p>Enrolment</p><h3>Assign class / batch</h3></div>
             <button
-              aria-label="Assign class or batch"
-              title="Assign class or batch"
               disabled={saving || !assignmentStudentId || !assignmentBatchId}
               onClick={() => void assignBatch()}
               className="student-management-assign-button"
             >
-              ✓
+              Assign batch
             </button>
           </header>
           <div className="student-management-assignment-fields">
-            <select value={assignmentStudentId} onChange={(event) => setAssignmentStudentId(event.target.value)}>
-              <option value="">Select student</option>
-              {students.filter((student) => student.isActive).map((student) => <option key={student.id} value={student.id}>{student.firstName} {student.lastName}</option>)}
-            </select>
-            <select value={assignmentBatchId} onChange={(event) => setAssignmentBatchId(event.target.value)}>
-              <option value="">Select class or batch</option>
-              {batches.filter((batch) => batch.isActive && batch.enrollmentStatus === "Open").map((batch) => <option key={batch.id} value={batch.id}>{batch.name}</option>)}
-            </select>
+            <StandardSelectField
+              name="assignment-student"
+              value={assignmentStudentId}
+              onChange={setAssignmentStudentId}
+              placeholder="Select student"
+              options={students.filter((student) => student.isActive).map((student) => ({ value: student.id, label: `${student.firstName} ${student.lastName}` }))}
+            />
+            <StandardSelectField
+              name="assignment-batch"
+              value={assignmentBatchId}
+              onChange={setAssignmentBatchId}
+              placeholder="Select class or batch"
+              options={batches.filter((batch) => batch.isActive && batch.enrollmentStatus === "Open").map((batch) => ({ value: batch.id, label: batch.name }))}
+            />
           </div>
         </aside>
       </section>
