@@ -102,10 +102,11 @@ type Leave = {
   reason: string;
   status: string;
 };
-type Tab = "home" | "classes" | "tasks" | "progress" | "more";
+type Tab = "home" | "classes" | "library" | "tasks" | "progress" | "more";
 const tabs: [Tab, string, string][] = [
   ["home", "Home", "⌂"],
   ["classes", "My Classes", "◷"],
+  ["library", "Library", "▤"],
   ["tasks", "Tasks", "✓"],
   ["progress", "Progress", "↗"],
   ["more", "More", "•••"],
@@ -335,7 +336,7 @@ function View({
         <h1>
           {tab === "home"
             ? `Good day, ${d.name.split(" ")[0]}`
-            : tab[0].toUpperCase() + tab.slice(1)}
+            : tab === "classes" ? "My Classes" : tab[0].toUpperCase() + tab.slice(1)}
         </h1>
         <span>
           {parentAccess
@@ -377,16 +378,18 @@ function View({
           <P title="Class calendar">
             <ClassCalendar sessions={d.schedule} />
           </P>
-          <div className="learner-class-side-stack">
-            <P title="Learning resources">
-              {d.resources.map((x, i) => (
-                <ResourceRow key={i} x={x} />
-              ))}
-            </P>
-            <P title="Class history">
-              <ClassHistoryFilter items={d.classHistory} />
-            </P>
-          </div>
+        </section>
+      )}
+      {tab === "library" && (
+        <section className="learner-tab-grid">
+          <P title="Learning resources">
+            {d.resources.map((x, i) => (
+              <ResourceRow key={i} x={x} />
+            ))}
+          </P>
+          <P title="Class history">
+            <ClassHistoryFilter items={d.classHistory} />
+          </P>
         </section>
       )}
       {tab === "tasks" && (
@@ -519,7 +522,7 @@ function ResourceRow({ x }: { x: { title: string; type: string; url: string; des
 }
 function ClassHistoryRow({ item }: { item: D["classHistory"][number] }) {
   const [expanded, setExpanded] = useState(false);
-  return <article className="learner-history-row"><div className="learner-history-summary"><div><b>{item.batchName}</b><small>{dt(item.startUtc)} · {item.deliveryMode} · {item.attendanceStatus}</small></div><button type="button" onClick={() => setExpanded(value => !value)} aria-expanded={expanded}>{expanded ? "Hide details" : "View details"}</button></div>{expanded && item.resources.length > 0 && <div className="learner-history-resources">{item.resources.map((resource, index) => <ResourceRow key={index} x={resource} />)}</div>}</article>;
+  return <article className="learner-history-row"><div className="learner-history-summary"><div><b>{item.batchName}</b><small>{dt(item.startUtc)} · {item.deliveryMode} · {item.attendanceStatus}</small></div><button type="button" onClick={() => setExpanded(value => !value)} aria-expanded={expanded}>{expanded ? "Hide details" : "View details"}</button></div>{expanded && <div className="learner-history-resources">{item.resources.length ? item.resources.map((resource, index) => <ResourceRow key={index} x={resource} />) : <span>No notes, attachments, or recordings were shared for this class.</span>}</div>}</article>;
 }
 function ClassHistoryFilter({ items }: { items: D["classHistory"] }) {
   const [from, setFrom] = useState(""); const [to, setTo] = useState("");

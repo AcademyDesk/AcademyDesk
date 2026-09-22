@@ -136,6 +136,8 @@ public static class DevelopmentIdentitySeeder
         }
         foreach (var session in studentCompletedSessions)
         {
+            if (!await db.LearningResources.AnyAsync(x => x.AcademyId == academy.Id && x.ClassSessionId == session.Id))
+                db.LearningResources.Add(new LearningResource { AcademyId = academy.Id, BatchId = session.BatchId, ClassSessionId = session.Id, Title = "Class recap", Description = "Review the technique and practice focus covered in this class.", Type = "Class note", Url = $"note://class-recap-{session.Id:N}", IsPublished = true });
             if (!await db.AttendanceRecords.AnyAsync(x => x.ClassSessionId == session.Id && x.StudentId == student.Id))
             {
                 db.AttendanceRecords.Add(new AttendanceRecord
