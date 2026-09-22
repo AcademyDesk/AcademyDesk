@@ -193,7 +193,10 @@ export function EnterpriseShell({
   }>();
   const [profileOpen, setProfileOpen] = useState(false);
   const [profileMessage, setProfileMessage] = useState("");
+  const [announcements, setAnnouncements] = useState<{ id: string; title: string; message: string }[]>([]);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
+  const notificationsRef = useRef<HTMLDivElement>(null);
   const profileImageInputRef = useRef<HTMLInputElement>(null);
   const financeOnly =
     account?.roles.includes("FinanceUser") &&
@@ -250,6 +253,7 @@ export function EnterpriseShell({
       })
       .catch(() => undefined);
   }, []);
+  useEffect(() => { void academyApi("/api/portal/announcements", { cache: "no-store" }).then(async response => { if (response.ok) setAnnouncements(await response.json()); }).catch(() => undefined); }, []);
 
   const enabledModules = useMemo(() => {
     try {
@@ -295,7 +299,16 @@ export function EnterpriseShell({
     };
   }, [profileOpen]);
 
+  useEffect(() => {
+    if (!notificationsOpen) return;
+    const closeOnOutsidePress = (event: MouseEvent) => { if (!notificationsRef.current?.contains(event.target as Node)) setNotificationsOpen(false); };
+    const closeOnEscape = (event: KeyboardEvent) => { if (event.key === "Escape") setNotificationsOpen(false); };
+    document.addEventListener("mousedown", closeOnOutsidePress); document.addEventListener("keydown", closeOnEscape);
+    return () => { document.removeEventListener("mousedown", closeOnOutsidePress); document.removeEventListener("keydown", closeOnEscape); };
+  }, [notificationsOpen]);
+
   useEffect(() => setProfileOpen(false), [pathname]);
+  useEffect(() => setNotificationsOpen(false), [pathname]);
 
   async function uploadProfileImage(event: React.ChangeEvent<HTMLInputElement>) {
     const image = event.target.files?.[0];
@@ -405,6 +418,10 @@ export function EnterpriseShell({
               >
                 ♧
               </button>}
+              <div className="enterprise-notifications" ref={notificationsRef}>
+                <button type="button" className="enterprise-icon-button" aria-label="Open notifications" aria-expanded={notificationsOpen} onClick={() => setNotificationsOpen(open => !open)}>♢{announcements.length > 0 && <em>{announcements.length > 9 ? "9+" : announcements.length}</em>}</button>
+                {notificationsOpen && <section className="enterprise-notification-menu" role="menu"><header><strong>Notifications</strong><small>{announcements.length ? `${announcements.length} important` : "All caught up"}</small></header>{announcements.length ? announcements.map(item => <article key={item.id}><b>{item.title}</b><span>{item.message}</span></article>) : <p>No notifications yet.</p>}</section>}
+              </div>
               <ThemeToggle />
               <div className="enterprise-profile" ref={profileRef}>
                 <button
@@ -465,6 +482,7 @@ export function EnterpriseShell({
               </div>
             )}
           </header>
+          {announcements.length > 0 && <div className="learner-announcement enterprise-admin-announcement" role="status"><span>Important</span><div><p>{announcements.map(item => `${item.title}: ${item.message}`).join("   •   ")}   •   {announcements.map(item => `${item.title}: ${item.message}`).join("   •   ")}</p></div></div>}
           <div className={currentModuleIncluded ? undefined : "enterprise-locked-content"} aria-disabled={!currentModuleIncluded}>
             {children}
             {!currentModuleIncluded && <button type="button" className="enterprise-locked-content-overlay" onClick={() => setUpgradeModule(routeModule(pathname))} aria-label="Upgrade to use this feature"><span>Preview only · Upgrade to use this feature</span></button>}
