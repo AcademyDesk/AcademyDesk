@@ -112,16 +112,14 @@ export default function StudentsPage() {
     }
   }
   return (
-    <main className="enterprise-settings">
-      <header className="enterprise-page-header">
-        <p>Students / management</p>
-        <h2>Student management</h2>
-        <span>
-          Search, review and act on every student. Use Student 360 to connect
-          family, enrolment, attendance, fees, learning, and communications.
-        </span>
+    <main className="enterprise-settings student-management-standard">
+      <header className="student-management-heading">
+        <div className="student-management-title">
+          <span className="student-management-title-icon" aria-hidden="true">♙</span>
+          <div><p>Students</p><h1>Student management</h1><span>Search, review, and act on every student record.</span></div>
+        </div>
       </header>
-      <section className="enterprise-settings-toolbar">
+      <section className="student-management-toolbar">
         <div className="enterprise-settings-tabs">
           <button
             onClick={() => setStatus("Active")}
@@ -146,13 +144,13 @@ export default function StudentsPage() {
         </label>
       </section>
       {message && (
-        <p className="mt-4 rounded-lg border border-amber-700/50 bg-amber-950/40 p-3 text-sm text-amber-100">
+        <p className="enterprise-page-state student-management-message">
           {message}
         </p>
       )}
-      <section className="mt-5 grid gap-5 xl:grid-cols-[1fr_340px]">
-        <section className="surface-panel overflow-hidden rounded-xl">
-          <header className="flex items-center justify-between gap-4 border-b p-5">
+      <section className="student-management-layout">
+        <section className="student-management-panel">
+          <header className="student-management-panel-header">
             <div>
           <h3 className="font-semibold">Students</h3>
               <p className="mt-1 text-sm text-slate-400">
@@ -230,20 +228,20 @@ export default function StudentsPage() {
             </table>
           </div>
         </section>
-        <aside className="surface-panel rounded-xl p-5">
-          <div className="flex items-center justify-between gap-3">
-            <h3 className="font-semibold">Assign Class / Batch</h3>
+        <aside className="student-management-assignment">
+          <header className="student-management-panel-header">
+            <div><p>Enrolment</p><h3>Assign class / batch</h3></div>
             <button
               aria-label="Assign class or batch"
               title="Assign class or batch"
               disabled={saving || !assignmentStudentId || !assignmentBatchId}
               onClick={() => void assignBatch()}
-              className="primary-action flex h-9 w-9 items-center justify-center p-0"
+              className="student-management-assign-button"
             >
               ✓
             </button>
-          </div>
-          <div className="mt-4 grid gap-3">
+          </header>
+          <div className="student-management-assignment-fields">
             <select value={assignmentStudentId} onChange={(event) => setAssignmentStudentId(event.target.value)}>
               <option value="">Select student</option>
               {students.filter((student) => student.isActive).map((student) => <option key={student.id} value={student.id}>{student.firstName} {student.lastName}</option>)}
