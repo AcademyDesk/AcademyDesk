@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { academyApi } from "@/lib/api";
 import { StudentAdminProfile } from "@/components/student-admin-profile";
 import { StudentFeeArrangements } from "@/components/student-fee-arrangements";
+import { StandardSelectField } from "@/components/design-system/controls";
 
 type Student = {
   id: string;
@@ -141,18 +142,13 @@ export default function StudentProfilePage() {
         </div>
       </header>
       <section className="student-360-toolbar">
-        <select
+        <StandardSelectField
+          name="student-record"
           value={studentId}
-          onChange={(event) => void select(event.target.value)}
-          className="rounded border border-slate-700 bg-slate-950 p-2"
-        >
-          <option value="">Select student</option>
-          {students.map((item) => (
-            <option key={item.id} value={item.id}>
-              {item.firstName} {item.lastName}
-            </option>
-          ))}
-        </select>
+          onChange={(value) => void select(value)}
+          placeholder="Select student"
+          options={students.map((item) => ({ value: item.id, label: `${item.firstName} ${item.lastName}` }))}
+        />
         <div className="enterprise-page-actions">
           <Link
             href={`/enrollments?studentId=${studentId}`}
