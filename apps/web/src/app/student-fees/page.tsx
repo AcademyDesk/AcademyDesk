@@ -61,19 +61,19 @@ export default function StudentFeesPage() {
   }
 
   return (
-    <main className="enterprise-settings">
-      <header className="enterprise-page-header">
-        <p>Students / finance</p>
-        <h2>Student fee details</h2>
-        <span>Maintain each student’s subject-wise fee arrangement and billing frequency.</span>
+    <main className="enterprise-settings student-fees-standard">
+      <header className="student-fees-heading">
+        <div className="student-fees-title">
+          <span className="student-fees-title-icon" aria-hidden="true">₹</span>
+          <div><p>Students</p><h1>Student fee details</h1><span>Maintain subject fees, admission fees, and billing frequency for each student.</span></div>
+        </div>
       </header>
-      {message ? <p className="enterprise-page-state">{message}</p> : null}
+      {message ? <p className="enterprise-page-state student-fees-message">{message}</p> : null}
       {academy ? (
-        <section className="mt-5 grid gap-5 xl:grid-cols-[320px_minmax(0,1fr)]">
-          <section className="surface-panel rounded-xl p-5">
-            <h3 className="font-semibold">Student</h3>
+        <section className="student-fees-layout">
+          <section className="student-fees-student-panel">
+            <header className="student-fees-panel-header"><div><p>Student</p><h3>Select student</h3></div></header>
             <label className="field-label mt-4">
-              Select student
               <select value={studentId} onChange={(event) => setStudentId(event.target.value)}>
                 {students.map((student) => (
                   <option key={student.id} value={student.id}>
@@ -85,12 +85,11 @@ export default function StudentFeesPage() {
             {!students.length ? <p className="enterprise-settings-empty mt-4">No students are available yet.</p> : null}
           </section>
           {studentId ? (
-            <div className="space-y-5">
-              <form onSubmit={saveAdmissionFee} className="surface-panel rounded-xl p-5">
-                <header className="flex flex-wrap items-center justify-between gap-3">
+            <div className="student-fees-workspace">
+              <form onSubmit={saveAdmissionFee} className="student-fees-panel">
+                <header className="student-fees-panel-header">
                   <div>
-                    <h3 className="font-semibold">Admission fee</h3>
-                    <p className="mt-1 text-sm text-slate-400">One-time fee charged when the student joins the academy.</p>
+                    <p>One-time fee</p><h3>Admission fee</h3>
                   </div>
                   <button disabled={savingAdmission} className="enterprise-action-button">
                     {savingAdmission ? "Saving…" : "Save admission fee"}
