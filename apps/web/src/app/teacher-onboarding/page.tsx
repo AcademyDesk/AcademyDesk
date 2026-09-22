@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { academyApi, apiHeaders } from "@/lib/api";
+import { StandardDateField } from "@/components/standard-date-field";
 
 type Academy = { id: string };
 type SubjectEntry = { subject: string; certification: string };
@@ -11,6 +12,8 @@ export default function TeacherOnboardingPage() {
   const [academy, setAcademy] = useState<Academy>();
   const [employmentType, setEmploymentType] = useState("Full-time");
   const [subjects, setSubjects] = useState<SubjectEntry[]>([{ subject: "", certification: "" }]);
+  const [dateOfBirth, setDateOfBirth] = useState("");
+  const [joiningDate, setJoiningDate] = useState("");
   const [message, setMessage] = useState("Loading teacher onboarding…");
   const [saving, setSaving] = useState(false);
 
@@ -65,6 +68,8 @@ export default function TeacherOnboardingPage() {
       event.currentTarget.reset();
       setEmploymentType("Full-time");
       setSubjects([{ subject: "", certification: "" }]);
+      setDateOfBirth("");
+      setJoiningDate("");
       setMessage("Teacher onboarded. Add payment details from the Teacher payment details section.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Teacher could not be created.");
@@ -107,8 +112,8 @@ export default function TeacherOnboardingPage() {
             <select name="employmentType" value={employmentType} onChange={(event) => setEmploymentType(event.target.value)}>
               <option>Full-time</option><option>Part-time</option><option>Contract</option>
             </select>
-            <label className="field-label">Date of birth (DOB)<input type="date" name="dateOfBirth" /></label>
-            <label className="field-label">Joining date<input type="date" name="joiningDate" /></label>
+            <StandardDateField name="dateOfBirth" label="Date of birth (DOB)" value={dateOfBirth} onChange={setDateOfBirth} />
+            <StandardDateField name="joiningDate" label="Joining date" value={joiningDate} onChange={setJoiningDate} />
           </div>
         </section>
 
