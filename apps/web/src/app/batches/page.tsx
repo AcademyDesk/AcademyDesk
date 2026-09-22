@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { WorkspaceNav } from "@/components/workspace-nav";
 import { academyApi, apiHeaders } from "@/lib/api";
+import { StandardDateField, StandardSelectField } from "@/components/design-system/controls";
 
 type Academy = { id: string; name: string };
 type Course = { id: string; name: string; academyType: string };
@@ -131,7 +132,10 @@ export default function BatchesPage() {
 
   async function createBatch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!academyId || !courseId) return;
+    if (!academyId || !courseId) {
+      setMessage("Select an academy and course before creating the batch.");
+      return;
+    }
     const response = await academyApi(`/api/academies/${academyId}/batches`, {
       method: "POST",
       headers: apiHeaders(true),
@@ -318,19 +322,10 @@ export default function BatchesPage() {
   }
 
   return (
-    <main className="enterprise-settings enterprise-legacy-standard min-h-screen bg-slate-950 text-slate-100">
+    <main className="enterprise-settings enterprise-legacy-standard batch-setup-standard min-h-screen bg-slate-950 text-slate-100">
       <WorkspaceNav />
-      <div className="mx-auto max-w-6xl px-6 py-10">
-        <p className="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-300">
-          Delivery
-        </p>
-        <h1 className="mt-3 text-4xl font-semibold tracking-tight">
-          Class & Batch
-        </h1>
-        <p className="mt-3 text-slate-300">
-          Turn each course into a teaching group with its instructor, location,
-          capacity, and dates.
-        </p>
+      <div className="batch-setup-content mx-auto max-w-6xl px-6 py-10">
+        <header className="batch-setup-heading"><div className="batch-setup-title"><span className="batch-setup-title-icon" aria-hidden="true">+</span><div><p>Class &amp; batch</p><h1>Create class or batch</h1></div></div></header>
         {message && (
           <p className="mt-6 rounded-lg border border-amber-700/50 bg-amber-950/40 p-4 text-sm text-amber-100">
             {message}
@@ -342,43 +337,27 @@ export default function BatchesPage() {
           </p>
         ) : (
           <>
-            <label
-              className="mt-8 block text-sm text-slate-300"
-              htmlFor="academy"
-            >
-              Academy
-            </label>
-            <select
-              id="academy"
+            <section className="batch-setup-academy">
+              <span>Academy</span>
+            <StandardSelectField
+              name="academy"
               value={academyId}
-              onChange={(event) => setAcademyId(event.target.value)}
-              className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2"
-            >
-              {academies.map((academy) => (
-                <option key={academy.id} value={academy.id}>
-                  {academy.name}
-                </option>
-              ))}
-            </select>
-            <section className="mt-6 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-              <form
-                onSubmit={createBatch}
-                className="rounded-2xl border border-slate-800 bg-slate-900 p-6"
-              >
-                <h2 className="text-xl font-semibold">Create class or batch</h2>
-                <select
+              onChange={setAcademyId}
+              placeholder="Select academy"
+              options={academies.map((academy) => ({ value: academy.id, label: academy.name }))}
+            />
+            </section>
+            <section className="batch-setup-layout">
+              <form onSubmit={createBatch} className="batch-setup-panel">
+                <header className="batch-setup-panel-header"><div><p>Setup</p><h2>Create class or batch</h2></div></header>
+                <div className="batch-setup-form-fields">
+                <StandardSelectField
+                  name="course"
                   value={courseId}
-                  onChange={(event) => setCourseId(event.target.value)}
-                  className="mt-5 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
-                  required
-                >
-                  <option value="">Select course</option>
-                  {courses.map((course) => (
-                    <option key={course.id} value={course.id}>
-                      {course.name} · {course.academyType}
-                    </option>
-                  ))}
-                </select>
+                  onChange={setCourseId}
+                  placeholder="Select course"
+                  options={courses.map((course) => ({ value: course.id, label: `${course.name} · ${course.academyType}` }))}
+                />
                 <input
                   value={name}
                   onChange={(event) => setName(event.target.value)}
@@ -392,18 +371,13 @@ export default function BatchesPage() {
                   placeholder="Batch code, e.g. PNO-L1-EVE"
                   className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
                 />
-                <select
+                <StandardSelectField
+                  name="branch"
                   value={branchId}
-                  onChange={(event) => setBranchId(event.target.value)}
-                  className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
-                >
-                  <option value="">No branch assigned</option>
-                  {branches.map((branch) => (
-                    <option key={branch.id} value={branch.id}>
-                      {branch.name}
-                    </option>
-                  ))}
-                </select>
+                  onChange={setBranchId}
+                  placeholder="No branch assigned"
+                  options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
+                />
                 <input
                   type="number"
                   min="1"
@@ -415,23 +389,20 @@ export default function BatchesPage() {
                   required
                 />
                 <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                  <select
+                  <StandardSelectField
+                    name="class-type"
                     value={classType}
-                    onChange={(event) => setClassType(event.target.value)}
-                    className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
-                  >
-                    <option value="Group">Group class</option>
-                    <option value="OneToOne">1:1 class</option>
-                  </select>
-                  <select
+                    onChange={setClassType}
+                    placeholder="Class type"
+                    options={[{ value: "Group", label: "Group class" }, { value: "OneToOne", label: "1:1 class" }]}
+                  />
+                  <StandardSelectField
+                    name="delivery-mode"
                     value={deliveryMode}
-                    onChange={(event) => setDeliveryMode(event.target.value)}
-                    className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
-                  >
-                    <option value="InPerson">Offline</option>
-                    <option value="Online">Online</option>
-                    <option value="Hybrid">Hybrid</option>
-                  </select>
+                    onChange={setDeliveryMode}
+                    placeholder="Delivery mode"
+                    options={[{ value: "InPerson", label: "Offline" }, { value: "Online", label: "Online" }, { value: "Hybrid", label: "Hybrid" }]}
+                  />
                 </div>
                 <fieldset className="mt-3">
                   <legend className="text-sm text-slate-400">
@@ -522,21 +493,14 @@ export default function BatchesPage() {
                   placeholder="Waitlist capacity"
                   className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
                 />
-                <label className="mt-3 block text-sm text-slate-300">
-                  Batch start date
-                  <input
-                    type="date"
-                    value={startDate}
-                    onChange={(event) => setStartDate(event.target.value)}
-                    className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
-                  />
-                </label>
+                <StandardDateField name="batch-start-date" label="Batch start date" value={startDate} onChange={setStartDate} />
                 <button className="mt-5 w-full rounded-lg bg-cyan-400 px-4 py-2.5 font-semibold text-slate-950 hover:bg-cyan-300">
                   Create batch
                 </button>
+                </div>
               </form>
-              <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
-                <h2 className="text-xl font-semibold">Batches</h2>
+              <section className="batch-setup-panel batch-directory-panel">
+                <header className="batch-setup-panel-header"><div><p>Directory</p><h2>Batches</h2></div><span>{batches.length} records</span></header>
                 {batches.length === 0 ? (
                   <p className="mt-6 text-slate-400">No batches yet.</p>
                 ) : (
@@ -553,41 +517,27 @@ export default function BatchesPage() {
                               onChange={(e) => setEditName(e.target.value)}
                               className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2"
                             />
-                            <select
+                            <StandardSelectField
+                              name="edit-course"
                               value={editCourseId}
-                              onChange={(e) => setEditCourseId(e.target.value)}
-                              className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2"
-                            >
-                              {courses.map((course) => (
-                                <option key={course.id} value={course.id}>
-                                  {course.name}
-                                </option>
-                              ))}
-                            </select>
-                            <select
+                              onChange={setEditCourseId}
+                              placeholder="Select course"
+                              options={courses.map((course) => ({ value: course.id, label: course.name }))}
+                            />
+                            <StandardSelectField
+                              name="edit-teacher"
                               value={editTeacherId}
-                              onChange={(e) => setEditTeacherId(e.target.value)}
-                              className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2"
-                            >
-                              <option value="">No teacher</option>
-                              {teachers.map((teacher) => (
-                                <option key={teacher.id} value={teacher.id}>
-                                  {teacher.firstName} {teacher.lastName}
-                                </option>
-                              ))}
-                            </select>
-                            <select
+                              onChange={setEditTeacherId}
+                              placeholder="No teacher"
+                              options={teachers.map((teacher) => ({ value: teacher.id, label: `${teacher.firstName} ${teacher.lastName}` }))}
+                            />
+                            <StandardSelectField
+                              name="edit-branch"
                               value={editBranchId}
-                              onChange={(e) => setEditBranchId(e.target.value)}
-                              className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2"
-                            >
-                              <option value="">No branch</option>
-                              {branches.map((branch) => (
-                                <option key={branch.id} value={branch.id}>
-                                  {branch.name}
-                                </option>
-                              ))}
-                            </select>
+                              onChange={setEditBranchId}
+                              placeholder="No branch"
+                              options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
+                            />
                             <input
                               type="number"
                               min="1"
@@ -596,14 +546,7 @@ export default function BatchesPage() {
                               onChange={(e) => setEditCapacity(e.target.value)}
                               className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2"
                             />
-                            <label className="text-sm text-slate-300">Batch start date
-                              <input
-                                type="date"
-                                value={editStartDate}
-                                onChange={(e) => setEditStartDate(e.target.value)}
-                                className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2"
-                              />
-                            </label>
+                            <StandardDateField name="edit-batch-start-date" label="Batch start date" value={editStartDate} onChange={setEditStartDate} />
                           </div>
                           <div className="mt-3 flex gap-2">
                             <button
