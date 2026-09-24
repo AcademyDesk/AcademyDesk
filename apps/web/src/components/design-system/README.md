@@ -34,6 +34,10 @@ screens stay visually consistent.
   teacher, and student details. Multiple assigned students use a compact count
   with an explicit show/hide roster action.
 - Cards use the shared surface, border, compact spacing, and empty-state text.
+- Use `StandardInteractiveTile` only for a tile with useful operational detail
+  behind it. Its click must open `StandardDetailModal`, not navigate without a
+  visible action. The pop-up has an explicit close action and also closes when
+  the user clicks outside it.
 - Urgent banners are duration-bound and audience-targeted.
 - Admin pages do not show decorative helper sentences below a page title. Keep
   form labels, data captions, error/status messages, and operational metadata;

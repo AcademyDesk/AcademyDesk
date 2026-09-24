@@ -7,6 +7,7 @@
  */
 export { StandardDateField } from "../standard-date-field";
 export { StandardSelectField } from "../standard-select-field";
+export { StandardDetailModal, StandardInteractiveTile } from "./interactive";
 
 /** Shared contract for full-month schedule views. */
 export const calendarStandard = {

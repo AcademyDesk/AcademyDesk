@@ -1,8 +1,8 @@
 "use client";
 
-import { type ReactNode, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { academyApi, apiHeaders } from "@/lib/api";
-import { StandardDateField, StandardSelectField } from "@/components/design-system/controls";
+import { StandardDateField, StandardDetailModal, StandardInteractiveTile, StandardSelectField } from "@/components/design-system/controls";
 
 type Academy = { id: string };
 type Teacher = { id: string; firstName: string; lastName: string };
@@ -176,31 +176,15 @@ export default function TeacherProfilePage() {
       {profile && (
         <>
           <section className="teacher-profile-summary-grid">
-            <button type="button" onClick={() => setDetail("batches")} className="teacher-profile-summary-tile teacher-profile-summary-action">
-              <span>Assigned batches</span>
-              <strong>
-                {count(profile.batches)}
-              </strong>
-              <small>View batch and cycle details</small>
-            </button>
-            <button type="button" onClick={() => setDetail("sessions")} className="teacher-profile-summary-tile teacher-profile-summary-action">
-              <span>Class sessions</span>
-              <strong>
-                {count(profile.classes)}
-              </strong>
-              <small>View completed and pending sessions</small>
-            </button>
+            <StandardInteractiveTile label="Assigned batches" value={count(profile.batches)} detail="View batch and cycle details" onClick={() => setDetail("batches")} className="teacher-profile-summary-tile" />
+            <StandardInteractiveTile label="Class sessions" value={count(profile.classes)} detail="View completed and pending sessions" onClick={() => setDetail("sessions")} className="teacher-profile-summary-tile" />
             <article className="teacher-profile-summary-tile">
               <span>Leave requests</span>
               <strong>
                 {count(profile.leaveRequests)}
               </strong>
             </article>
-            <button type="button" onClick={() => setDetail("students")} className="teacher-profile-summary-tile teacher-profile-summary-action">
-              <span>Students assigned</span>
-              <strong>{count(profile.students)}</strong>
-              <small>View students and their subjects</small>
-            </button>
+            <StandardInteractiveTile label="Students assigned" value={count(profile.students)} detail="View students and their subjects" onClick={() => setDetail("students")} className="teacher-profile-summary-tile" />
           </section>
           <section className="teacher-profile-teaching-card">
             <header><div><p>Teaching details</p><h2>Subjects and availability</h2></div></header>
@@ -293,24 +277,21 @@ export default function TeacherProfilePage() {
               className="field teacher-profile-notes"
             />
           </section>
-          {detail === "batches" && <TeacherDetailModal title="Assigned batches" onClose={() => setDetail(null)}>
+          {detail === "batches" && <StandardDetailModal eyebrow="Teacher 360" title="Assigned batches" onClose={() => setDetail(null)}>
             {profile.batches?.length ? <div className="teacher-profile-detail-list">{profile.batches.map((batch) => <article key={batch.id}><header><div><b>{batch.batchName}</b><small>{batch.courseName} · {batch.isActive ? "Active" : "Inactive"}</small></div><em>{batch.completedSessions} completed</em></header><div className="teacher-profile-cycle"><span>All sessions</span><b>{batch.completedSessions} completed · {batch.pendingSessions} pending</b></div><div className="teacher-profile-cycle"><span>Current cycle</span><b>{batch.currentCycleCompleted} completed · {batch.currentCyclePending} pending</b></div></article>)}</div> : <p className="teacher-profile-detail-empty">No batches are assigned to this teacher.</p>}
-          </TeacherDetailModal>}
-          {detail === "sessions" && <TeacherDetailModal title="Class sessions" onClose={() => setDetail(null)}>
+          </StandardDetailModal>}
+          {detail === "sessions" && <StandardDetailModal eyebrow="Teacher 360" title="Class sessions" onClose={() => setDetail(null)}>
             {profile.classes?.length ? <div className="teacher-profile-detail-list">{profile.classes.map((session) => <article key={session.id}><header><div><b>{session.batchName}</b><small>{formatSessionDate(session.startUtc)} · {formatSessionTime(session.startUtc)}–{formatSessionTime(session.endUtc)} · {session.deliveryMode}{session.roomName ? ` · ${session.roomName}` : ""}</small></div><em data-completed={session.status === "Completed"}>{session.status}</em></header></article>)}</div> : <p className="teacher-profile-detail-empty">No class sessions are recorded for this teacher.</p>}
-          </TeacherDetailModal>}
-          {detail === "students" && <TeacherDetailModal title="Students assigned" onClose={() => setDetail(null)}>
+          </StandardDetailModal>}
+          {detail === "students" && <StandardDetailModal eyebrow="Teacher 360" title="Students assigned" onClose={() => setDetail(null)}>
             {profile.students?.length ? <div className="teacher-profile-detail-list">{profile.students.map((student) => <article key={`${student.id}-${student.batchName}`}><header><div><b>{student.name}</b><small>{student.subject} · {student.batchName}</small></div></header></article>)}</div> : <p className="teacher-profile-detail-empty">No active students are assigned to this teacher.</p>}
-          </TeacherDetailModal>}
+          </StandardDetailModal>}
         </>
       )}
     </main>
   );
 }
 
-function TeacherDetailModal({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
-  return <div className="teacher-profile-detail-modal" role="dialog" aria-modal="true" aria-label={title} onMouseDown={onClose}><article onMouseDown={(event) => event.stopPropagation()}><header><div><p>Teacher 360</p><h2>{title}</h2></div><button type="button" onClick={onClose} aria-label="Close details">×</button></header>{children}</article></div>;
-}
 function formatSessionDate(value: string) { return new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata" }).format(new Date(value)); }
 function formatSessionTime(value: string) { return new Intl.DateTimeFormat("en-IN", { hour: "numeric", minute: "2-digit", timeZone: "Asia/Kolkata" }).format(new Date(value)); }
 function readAvailability(value?: string) { try { const rows = JSON.parse(value ?? "[]") as Availability[]; return Array.isArray(rows) ? rows.filter((slot) => slot?.day) : []; } catch { return []; } }
