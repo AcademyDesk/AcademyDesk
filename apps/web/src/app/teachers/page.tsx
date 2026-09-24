@@ -329,6 +329,7 @@ export default function TeachersPage() {
                         <span
                           className={teacher.isActive ? "teacher-directory-status active" : "teacher-directory-status"}
                         >
+                          <i aria-hidden="true" />
                           {teacher.isActive ? "Active" : "Inactive"}
                         </span>
                       </div>
