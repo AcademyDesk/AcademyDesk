@@ -1,5 +1,7 @@
 using AcademyDesk.Api.Data;
 using AcademyDesk.Api.Domain.Entities;
+using AcademyDesk.Api.Domain.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,7 +9,7 @@ namespace AcademyDesk.Api.Controllers;
 
 [ApiController]
 [Route("api/academies/{academyId:guid}/students")]
-public sealed class StudentsController(AcademyDeskDbContext dbContext) : ControllerBase
+public sealed class StudentsController(AcademyDeskDbContext dbContext, UserManager<ApplicationUser> userManager) : ControllerBase
 {
     [HttpGet("overview")]
     public async Task<ActionResult<StudentOverviewSummary>> Overview(Guid academyId, CancellationToken cancellationToken)
@@ -64,7 +66,7 @@ public sealed class StudentsController(AcademyDeskDbContext dbContext) : Control
     }
     [HttpPut("{studentId:guid}")]
     public async Task<ActionResult<StudentSummary>> Update(Guid academyId, Guid studentId, UpdateStudentRequest request, CancellationToken token)
-    { var x=await dbContext.Students.SingleOrDefaultAsync(s=>s.Id==studentId&&s.AcademyId==academyId,token); if(x is null)return NotFound(); if(string.IsNullOrWhiteSpace(request.FirstName)||string.IsNullOrWhiteSpace(request.LastName))return BadRequest(new{message="First and last name are required."}); x.FirstName=request.FirstName.Trim();x.LastName=request.LastName.Trim();x.Email=request.Email?.Trim();x.Phone=request.Phone?.Trim();x.BranchId=request.BranchId;x.IsActive=request.IsActive;await dbContext.SaveChangesAsync(token);return Ok(new StudentSummary(x.Id,x.FirstName,x.LastName,x.Email,x.Phone,x.BranchId,x.IsActive)); }
+    { var x=await dbContext.Students.SingleOrDefaultAsync(s=>s.Id==studentId&&s.AcademyId==academyId,token); if(x is null)return NotFound(); if(string.IsNullOrWhiteSpace(request.FirstName)||string.IsNullOrWhiteSpace(request.LastName))return BadRequest(new{message="First and last name are required."}); x.FirstName=request.FirstName.Trim();x.LastName=request.LastName.Trim();x.Email=request.Email?.Trim();x.Phone=request.Phone?.Trim();x.BranchId=request.BranchId;x.IsActive=request.IsActive;await dbContext.SaveChangesAsync(token);var accounts=await userManager.Users.Where(user=>user.AcademyId==academyId&&user.StudentId==studentId).ToListAsync(token);foreach(var account in accounts){account.IsActive=request.IsActive;var update=await userManager.UpdateAsync(account);if(!update.Succeeded)return BadRequest(new{message="Student record saved, but the linked portal account could not be updated."});}return Ok(new StudentSummary(x.Id,x.FirstName,x.LastName,x.Email,x.Phone,x.BranchId,x.IsActive)); }
 }
 
 public sealed record CreateStudentRequest(string FirstName, string LastName, DateOnly? DateOfBirth, string? Email, string? Phone, Guid? BranchId);

@@ -24,7 +24,7 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
         if (user.StudentId.HasValue)
         {
             var student = await db.Students.AsNoTracking().SingleOrDefaultAsync(x => x.Id == user.StudentId && x.AcademyId == user.AcademyId, token);
-            if (student is null) return Forbid();
+            if (student is null || !student.IsActive) return Forbid();
             var enrollmentCount = await db.Enrollments.CountAsync(x => x.AcademyId == user.AcademyId && x.StudentId == student.Id && x.Status == "Active", token);
             var invoiceCount = await db.Invoices.CountAsync(x => x.AcademyId == user.AcademyId && x.StudentId == student.Id, token);
             return Ok(new { role = "Student", displayName = $"{student.FirstName} {student.LastName}", studentId = student.Id, enrollmentCount, invoiceCount });
@@ -33,7 +33,7 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
         {
             var parent = await db.Guardians.AsNoTracking().SingleOrDefaultAsync(x => x.Id == user.GuardianId && x.AcademyId == user.AcademyId, token);
             if (parent is null) return Forbid();
-            var children = await db.StudentGuardians.AsNoTracking().Where(x => x.AcademyId == user.AcademyId && x.GuardianId == user.GuardianId && x.CanAccessPortal && x.AccessRevokedAtUtc == null).Join(db.Students.AsNoTracking(), x => x.StudentId, s => s.Id, (x, s) => new { s.Id, name = s.FirstName + " " + s.LastName, x.CanViewAcademicProgress, x.CanViewFinance, x.CanViewDocuments, x.CanManageLeave }).ToListAsync(token);
+            var children = await db.StudentGuardians.AsNoTracking().Where(x => x.AcademyId == user.AcademyId && x.GuardianId == user.GuardianId && x.CanAccessPortal && x.AccessRevokedAtUtc == null).Join(db.Students.AsNoTracking().Where(s => s.IsActive), x => x.StudentId, s => s.Id, (x, s) => new { s.Id, name = s.FirstName + " " + s.LastName, x.CanViewAcademicProgress, x.CanViewFinance, x.CanViewDocuments, x.CanManageLeave }).ToListAsync(token);
             return Ok(new { role = "Parent", displayName = user.DisplayName, parentId = user.GuardianId, parentEmail = parent.Email, parentPhone = parent.Phone, children });
         }
         return Forbid();
@@ -64,9 +64,9 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
         if (user?.AcademyId is null) return Forbid();
         var recipientId = user.StudentId ?? user.GuardianId ?? user.TeacherId;
         if (!recipientId.HasValue) return Forbid();
-        var recipientType = user.StudentId.HasValue ? "Student" : user.TeacherId.HasValue ? "Teacher" : "Guardian";
+        var recipientTypes = user.StudentId.HasValue ? new[] { "Student" } : user.TeacherId.HasValue ? new[] { "Teacher" } : new[] { "Guardian", "Parent" };
         var notifications = await db.Notifications.AsNoTracking()
-            .Where(x => x.AcademyId == user.AcademyId && x.RecipientId == recipientId && x.RecipientType == recipientType)
+            .Where(x => x.AcademyId == user.AcademyId && x.RecipientId == recipientId && recipientTypes.Contains(x.RecipientType))
             .OrderByDescending(x => x.CreatedAtUtc).Take(100)
             .Select(x => new PortalNotificationSummary(x.Id, x.Title, x.Message, x.Channel, x.Status, x.CreatedAtUtc, x.SentAtUtc))
             .ToListAsync(token);
@@ -96,9 +96,9 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
         var user = await users.GetUserAsync(User);
         if (user?.AcademyId is null) return Forbid();
         var recipientId = user.StudentId ?? user.GuardianId ?? user.TeacherId;
-        var recipientType = user.StudentId.HasValue ? "Student" : user.TeacherId.HasValue ? "Teacher" : "Guardian";
+        var recipientTypes = user.StudentId.HasValue ? new[] { "Student" } : user.TeacherId.HasValue ? new[] { "Teacher" } : new[] { "Guardian", "Parent" };
         if (!recipientId.HasValue) return Forbid();
-        var notification = await db.Notifications.SingleOrDefaultAsync(x => x.Id == notificationId && x.AcademyId == user.AcademyId && x.RecipientId == recipientId && x.RecipientType == recipientType, token);
+        var notification = await db.Notifications.SingleOrDefaultAsync(x => x.Id == notificationId && x.AcademyId == user.AcademyId && x.RecipientId == recipientId && recipientTypes.Contains(x.RecipientType), token);
         if (notification is null) return NotFound();
         notification.Status = "Read";
         await db.SaveChangesAsync(token);
@@ -139,7 +139,7 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
         var user = await users.GetUserAsync(User);
         if (user?.AcademyId is null) return Forbid();
         var parentAccess = user.GuardianId.HasValue ? await ParentAccess(user, studentId, token) : null;
-        if (user.StudentId != studentId && parentAccess is null) return Forbid();
+        if (!await CanAccessStudent(user, studentId, token)) return Forbid();
         var canViewAcademicProgress = parentAccess?.CanViewAcademicProgress ?? true;
         var canViewFinance = parentAccess?.CanViewFinance ?? true;
         var canViewDocuments = parentAccess?.CanViewDocuments ?? true;
@@ -345,11 +345,18 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
         user.GuardianId.HasValue ? await db.StudentGuardians.AsNoTracking().SingleOrDefaultAsync(x =>
             x.AcademyId == user.AcademyId && x.GuardianId == user.GuardianId && x.StudentId == studentId && x.CanAccessPortal && x.AccessRevokedAtUtc == null, token) : null;
 
+    private Task<bool> IsActiveStudent(Guid academyId, Guid studentId, CancellationToken token) =>
+        db.Students.AsNoTracking().AnyAsync(x => x.Id == studentId && x.AcademyId == academyId && x.IsActive, token);
+
     private async Task<bool> CanAccessStudent(ApplicationUser user, Guid studentId, CancellationToken token) =>
-        user.StudentId == studentId || await ParentAccess(user, studentId, token) is not null;
+        user.AcademyId.HasValue
+        && await IsActiveStudent(user.AcademyId.Value, studentId, token)
+        && (user.StudentId == studentId || await ParentAccess(user, studentId, token) is not null);
 
     private async Task<bool> CanManageLeave(ApplicationUser user, Guid studentId, CancellationToken token) =>
-        user.StudentId == studentId || (await ParentAccess(user, studentId, token))?.CanManageLeave == true;
+        user.AcademyId.HasValue
+        && await IsActiveStudent(user.AcademyId.Value, studentId, token)
+        && (user.StudentId == studentId || (await ParentAccess(user, studentId, token))?.CanManageLeave == true);
 
     private static bool IsActiveImportantAnnouncement(string? variablesJson, DateTime now)
     {
@@ -373,7 +380,7 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
     public async Task<ActionResult> UpdateProfile(Guid studentId, PortalStudentProfileRequest request, CancellationToken token)
     {
         var user = await users.GetUserAsync(User);
-        if (user?.AcademyId is null || user.StudentId != studentId) return Forbid();
+        if (user?.AcademyId is null || user.StudentId != studentId || !await IsActiveStudent(user.AcademyId.Value, studentId, token)) return Forbid();
         var student = await db.Students.SingleOrDefaultAsync(x => x.Id == studentId && x.AcademyId == user.AcademyId, token);
         if (student is null) return NotFound();
         if (string.IsNullOrWhiteSpace(request.FirstName) || string.IsNullOrWhiteSpace(request.LastName)) return BadRequest(new { message = "First and last names are required." });
