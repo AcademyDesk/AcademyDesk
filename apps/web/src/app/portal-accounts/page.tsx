@@ -1,6 +1,7 @@
 "use client";
 import { FormEvent, useEffect, useState } from "react";
 import { WorkspaceNav } from "@/components/workspace-nav";
+import { StandardSelectField } from "@/components/design-system/controls";
 import { academyApi, apiHeaders } from "@/lib/api";
 type Academy = { id: string };
 type Student = { id: string; firstName: string; lastName: string };
@@ -44,6 +45,10 @@ export default function PortalAccounts() {
   async function create(e: FormEvent) {
     e.preventDefault();
     if (!a) return;
+    if (!id)
+      return setM(
+        `Select the ${role === "Guardian" ? "parent" : role.toLowerCase()} first.`,
+      );
     const r = await academyApi(`/api/academies/${a.id}/portal-accounts`, {
       method: "POST",
       headers: apiHeaders(true),
@@ -72,74 +77,89 @@ export default function PortalAccounts() {
   }
   const choices = role === "Student" ? s : role === "Teacher" ? t : g;
   return (
-    <main className="enterprise-settings enterprise-legacy-standard min-h-screen bg-slate-950 text-slate-100">
+    <main className="enterprise-settings portal-access-standard min-h-screen">
       <WorkspaceNav />
-      <div className="mx-auto max-w-xl px-6 py-10">
-        <p className="text-sm font-semibold uppercase tracking-[.22em] text-cyan-300">
-          Administration
-        </p>
-        <h1 className="mt-3 text-4xl font-semibold">Portal accounts</h1>
+      <div className="portal-access-content mx-auto max-w-xl px-6 py-10">
+        <header className="portal-access-heading">
+          <div className="portal-access-title">
+            <span className="portal-access-title-icon" aria-hidden="true">
+              ◉
+            </span>
+            <div>
+              <p>Operations &amp; workforce</p>
+              <h1>Portal Access</h1>
+            </div>
+          </div>
+        </header>
         {m && (
-          <p className="mt-6 rounded-lg border border-amber-700/50 bg-amber-950/40 p-4 text-sm text-amber-100">
-            {m}
-          </p>
+          <p className="enterprise-page-state portal-access-message">{m}</p>
         )}
-        <form
-          onSubmit={create}
-          className="mt-8 rounded-2xl border border-slate-800 bg-slate-900 p-6"
-        >
-          <select
-            value={role}
-            onChange={(e) => {
-              setRole(e.target.value);
-              setId("");
-            }}
-            className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
-          >
-            <option>Student</option>
-            <option value="Guardian">Parent</option>
-            <option>Teacher</option>
-          </select>
-          <select
-            value={id}
-            onChange={(e) => setId(e.target.value)}
-            className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
-            required
-          >
-            <option value="">Select {role === "Guardian" ? "parent" : role.toLowerCase()}</option>
-            {choices.map((x) => (
-              <option key={x.id} value={x.id}>
-                {x.firstName} {x.lastName}
-              </option>
-            ))}
-          </select>
-          <input
-            value={displayName}
-            onChange={(e) => setDisplayName(e.target.value)}
-            placeholder="Display name"
-            className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
-            required
-          />
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Portal email"
-            className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
-            required
-          />
-          <input
-            type="password"
-            minLength={6}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Temporary password"
-            className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
-            required
-          />
-          <button className="mt-5 w-full rounded-lg bg-cyan-400 px-4 py-2.5 font-semibold text-slate-950">
-            Create portal account
-          </button>
+        <form onSubmit={create} className="portal-access-panel">
+          <header className="portal-access-panel-header">
+            <div>
+              <p>New account</p>
+              <h2>Create portal account</h2>
+            </div>
+          </header>
+          <div className="portal-access-fields">
+            <StandardSelectField
+              name="portal-role"
+              value={role}
+              onChange={(nextRole) => {
+                setRole(nextRole);
+                setId("");
+              }}
+              placeholder="Account type"
+              options={[
+                { value: "Student", label: "Student" },
+                { value: "Guardian", label: "Parent" },
+                { value: "Teacher", label: "Teacher" },
+              ]}
+            />
+            <StandardSelectField
+              name="portal-person"
+              value={id}
+              onChange={setId}
+              placeholder={`Select ${role === "Guardian" ? "parent" : role.toLowerCase()}`}
+              options={choices.map((x) => ({
+                value: x.id,
+                label: `${x.firstName} ${x.lastName}`,
+              }))}
+            />
+            <label>
+              <span>Display name</span>
+              <input
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                placeholder="Full name"
+                required
+              />
+            </label>
+            <label>
+              <span>Portal email</span>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="name@example.com"
+                required
+              />
+            </label>
+            <label>
+              <span>Temporary password</span>
+              <input
+                type="password"
+                minLength={6}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Minimum 6 characters"
+                required
+              />
+            </label>
+            <button className="enterprise-action-button portal-access-action">
+              Create portal account
+            </button>
+          </div>
         </form>
       </div>
     </main>
