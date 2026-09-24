@@ -117,7 +117,7 @@ export default function StudentsPage() {
       <header className="student-management-heading">
         <div className="student-management-title">
           <span className="student-management-title-icon" aria-hidden="true">♙</span>
-          <div><p>Students</p><h1>Student management</h1><span>Search, review, and act on every student record.</span></div>
+          <div><p>Students</p><h1>Management</h1><span>Search, review, and act on every student record.</span></div>
         </div>
       </header>
       <section className="student-management-toolbar">

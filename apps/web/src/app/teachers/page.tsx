@@ -194,7 +194,7 @@ export default function TeachersPage() {
         <header className="teacher-management-heading">
           <div className="teacher-management-title">
             <span className="teacher-management-title-icon" aria-hidden="true">♜</span>
-            <div><p>Teachers</p><h1>Teacher management</h1></div>
+            <div><p>Teachers</p><h1>Management</h1></div>
           </div>
         </header>
         {message && <p className="enterprise-page-state">{message}</p>}

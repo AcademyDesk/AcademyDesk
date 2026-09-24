@@ -66,7 +66,7 @@ export default function StudentFeesPage() {
       <header className="student-fees-heading">
         <div className="student-fees-title">
           <span className="student-fees-title-icon" aria-hidden="true">₹</span>
-          <div><p>Students</p><h1>Student fee details</h1><span>Maintain subject fees, admission fees, and billing frequency for each student.</span></div>
+          <div><p>Students</p><h1>Fee Details</h1><span>Maintain subject fees, admission fees, and billing frequency for each student.</span></div>
         </div>
       </header>
       {message ? <p className="enterprise-page-state student-fees-message">{message}</p> : null}

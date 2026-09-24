@@ -30,7 +30,7 @@ export default function TeacherPaymentsPage() {
   return (
     <main className="enterprise-settings teacher-standard teacher-payments-standard">
       <header className="teacher-payments-heading">
-        <div className="teacher-payments-title"><span className="teacher-payments-title-icon" aria-hidden="true">₹</span><div><p>Teachers</p><h1>Teacher payment details</h1></div></div>
+        <div className="teacher-payments-title"><span className="teacher-payments-title-icon" aria-hidden="true">₹</span><div><p>Teachers</p><h1>Payment Details</h1></div></div>
       </header>
       {message && <p className="enterprise-page-state teacher-payments-message">{message}</p>}
       <section className="teacher-payments-layout">

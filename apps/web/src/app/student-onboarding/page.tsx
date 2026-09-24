@@ -73,7 +73,7 @@ export default function StudentOnboardingPage() {
       <header className="student-onboarding-heading">
         <div className="student-onboarding-title">
           <span className="student-onboarding-title-icon" aria-hidden="true">+</span>
-          <div><p>Students</p><h1>Student onboarding</h1><span>One governed intake for student, parent, safeguarding contact, and portal access.</span></div>
+          <div><p>Students</p><h1>Onboarding</h1><span>One governed intake for student, parent, safeguarding contact, and portal access.</span></div>
         </div>
       </header>
       {message && (
