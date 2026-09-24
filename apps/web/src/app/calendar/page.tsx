@@ -10,6 +10,7 @@ type Batch = {
   courseId: string;
   teacherId?: string | null;
   meetingPattern?: string | null;
+  meetingLink?: string | null;
 };
 type Session = {
   id: string;
@@ -42,8 +43,8 @@ type CalendarItem = {
   title: string;
   detail: string;
   start: Date;
-  href: string;
-  actionLabel: string;
+  href?: string;
+  actionLabel?: string;
   opensExternally?: boolean;
   subject?: string;
   teacher?: string;
@@ -81,14 +82,14 @@ function AgendaItem({ item }: { item: CalendarItem }) {
           <span className="calendar-kind">{item.type}</span>
           <h3>{item.title}</h3>
         </div>
-        <a
+        {item.href && item.actionLabel && <a
           href={item.href}
           className="workspace-calendar-agenda-action"
           target={item.opensExternally ? "_blank" : undefined}
           rel={item.opensExternally ? "noreferrer" : undefined}
         >
           {item.actionLabel}
-        </a>
+        </a>}
       </div>
       {isClass ? (
         <>
@@ -188,15 +189,19 @@ export default function CalendarPage() {
     return [
       ...sessions.map((row) => {
         const assignedBatch = batch(row.batchId);
+        const isVirtualClass = ["Online", "Hybrid"].includes(row.deliveryMode);
+        const meetingLink = isVirtualClass
+          ? assignedBatch?.meetingLink ?? (/^https?:\/\//i.test(row.roomName ?? "") ? row.roomName : undefined)
+          : undefined;
         return ({
         id: row.id,
         type: "Class" as const,
         title: batchName(row.batchId),
         detail: `${row.deliveryMode}${row.roomName ? ` · ${row.roomName}` : ""}`,
         start: new Date(row.startUtc),
-        href: ["Online", "Hybrid"].includes(row.deliveryMode) && /^https?:\/\//i.test(row.roomName ?? "") ? row.roomName! : `/schedule?session=${row.id}`,
-        actionLabel: ["Online", "Hybrid"].includes(row.deliveryMode) && /^https?:\/\//i.test(row.roomName ?? "") ? "Join class" : "Open class",
-        opensExternally: ["Online", "Hybrid"].includes(row.deliveryMode) && /^https?:\/\//i.test(row.roomName ?? ""),
+        href: meetingLink,
+        actionLabel: meetingLink ? "Open" : undefined,
+        opensExternally: Boolean(meetingLink),
         subject: assignedBatch ? courseName(assignedBatch.courseId) : "Not assigned",
         teacher: teacherName(assignedBatch?.teacherId),
         students: classStudents(row.batchId),
@@ -315,7 +320,7 @@ export default function CalendarPage() {
                 <span className="calendar-date">{date.getDate()}</span>
                 <div className="calendar-events">
                   {dayItems.slice(0, 3).map((item) => (
-                    <a
+                    item.href ? <a
                       key={`${item.type}-${item.id}`}
                       href={item.href}
                       className={`calendar-event ${item.type.toLowerCase().replace("-", "")}`}
@@ -324,8 +329,15 @@ export default function CalendarPage() {
                       rel={item.opensExternally ? "noreferrer" : undefined}
                     >
                       <span><time>{time(item.start)}</time>{item.title}</span>
-                      <strong>{item.actionLabel}</strong>
+                      {item.actionLabel && <strong>{item.actionLabel}</strong>}
                     </a>
+                    : <div
+                      key={`${item.type}-${item.id}`}
+                      className={`calendar-event ${item.type.toLowerCase().replace("-", "")}`}
+                      title={`${item.title} · ${item.detail}`}
+                    >
+                      <span><time>{time(item.start)}</time>{item.title}</span>
+                    </div>
                   ))}
                   {dayItems.length > 3 && (
                     <span className="calendar-more">
