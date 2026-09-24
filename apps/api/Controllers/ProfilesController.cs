@@ -136,6 +136,8 @@ public sealed class ProfilesController(AcademyDeskDbContext dbContext) : Control
         teacher.EmergencyContactName = Clean(request.EmergencyContactName);
         teacher.EmergencyContactPhone = Clean(request.EmergencyContactPhone);
         teacher.AdminNotes = Clean(request.AdminNotes);
+        teacher.Specialties = Clean(request.Specialties);
+        teacher.AvailabilityJson = Clean(request.AvailabilityJson);
         await dbContext.SaveChangesAsync(token);
         return await Teacher(academyId, teacherId, token);
     }
@@ -187,5 +189,5 @@ public sealed record TeacherAvailabilitySummary(string Day, string? From, string
 public sealed record LeaveProfileSummary(DateOnly StartDate, DateOnly EndDate, string Status, string Reason);
 public sealed record TeacherProfileSummary(Guid Id, string Name, string? Email, string? Phone, string? Specialties, string? EmployeeCode, string? PreferredName, string? EmploymentType, DateOnly? DateOfBirth, DateOnly? JoiningDate, string? Qualifications, string? AddressLine1, string? City, string? State, string? PostalCode, string? EmergencyContactName, string? EmergencyContactPhone, string? AdminNotes, IReadOnlyList<string> Subjects, IReadOnlyList<TeacherAssignedStudentSummary> Students, IReadOnlyList<TeacherAvailabilitySummary> Availability, IReadOnlyList<TeacherAssignedBatchSummary> Batches, IReadOnlyList<TeacherClassSummary> Classes, IReadOnlyList<LeaveProfileSummary> LeaveRequests);
 public sealed record UpdateStudentAdminProfileRequest(string? StudentNumber, string? PreferredName, string? Gender, DateOnly? DateOfBirth, DateOnly? AdmissionDate, string? AddressLine1, string? City, string? State, string? PostalCode, string? EmergencyContactName, string? EmergencyContactPhone, string? MedicalOrAccessibilityNotes, string? AdminNotes);
-public sealed record UpdateTeacherAdminProfileRequest(string? EmployeeCode, string? PreferredName, string? EmploymentType, DateOnly? DateOfBirth, DateOnly? JoiningDate, string? Qualifications, string? AddressLine1, string? City, string? State, string? PostalCode, string? EmergencyContactName, string? EmergencyContactPhone, string? AdminNotes);
+public sealed record UpdateTeacherAdminProfileRequest(string? EmployeeCode, string? PreferredName, string? EmploymentType, DateOnly? DateOfBirth, DateOnly? JoiningDate, string? Qualifications, string? AddressLine1, string? City, string? State, string? PostalCode, string? EmergencyContactName, string? EmergencyContactPhone, string? AdminNotes, string? Specialties, string? AvailabilityJson);
 public sealed record UpdateGuardianAdminProfileRequest(string? PreferredName, string? AddressLine1, string? City, string? State, string? PostalCode, string? PreferredLanguage);

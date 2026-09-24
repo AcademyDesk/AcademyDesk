@@ -34,6 +34,7 @@ type Profile = {
 };
 const count = (rows?: unknown[]) => rows?.length ?? 0;
 const day = (value?: string) => value?.slice(0, 10) ?? "";
+const availabilityDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 export default function TeacherProfilePage() {
   const [academy, setAcademy] = useState<Academy>();
@@ -59,6 +60,8 @@ export default function TeacherProfilePage() {
       emergencyContactName: value.emergencyContactName ?? "",
       emergencyContactPhone: value.emergencyContactPhone ?? "",
       adminNotes: value.adminNotes ?? "",
+      specialties: value.specialties ?? "",
+      availabilityJson: JSON.stringify(value.availability ?? []),
     });
   }
   async function load(id: string, academyId = academy?.id) {
@@ -144,6 +147,13 @@ export default function TeacherProfilePage() {
   }
   const set = (key: string, value: string) =>
     setForm((current) => ({ ...current, [key]: value }));
+  const availability = readAvailability(form.availabilityJson);
+  function updateAvailability(day: string, enabled: boolean, key?: "from" | "to", value?: string) {
+    const current = availability.filter((slot) => slot.day !== day);
+    const existing = availability.find((slot) => slot.day === day);
+    if (enabled) current.push({ day, from: key === "from" ? value ?? "" : existing?.from ?? "", to: key === "to" ? value ?? "" : existing?.to ?? "" });
+    set("availabilityJson", JSON.stringify(current));
+  }
   return (
     <main className="enterprise-settings teacher-standard teacher-profile-standard">
       <header className="teacher-profile-heading">
@@ -195,9 +205,9 @@ export default function TeacherProfilePage() {
           <section className="teacher-profile-teaching-card">
             <header><div><p>Teaching details</p><h2>Subjects and availability</h2></div></header>
             <div className="teacher-profile-teaching-grid">
-              <article><span>Subjects they can teach</span><p>{profile.specialties || "Not recorded"}</p></article>
+              <article><span>Subjects they can teach</span><input value={form.specialties ?? ""} onChange={(event) => set("specialties", event.target.value)} placeholder="e.g. Piano, Keyboard" aria-label="Subjects this teacher can teach" /></article>
               <article><span>Subjects currently assigned</span><p>{profile.subjects?.join(" · ") || "No current subject assignments"}</p></article>
-              <article><span>Availability</span>{profile.availability?.length ? <div className="teacher-profile-availability">{profile.availability.map((slot) => <span key={`${slot.day}-${slot.from}`}>{slot.day} · {slot.from || "—"}–{slot.to || "—"}</span>)}</div> : <p>Not recorded</p>}</article>
+              <article><span>Availability</span><div className="teacher-profile-availability-editor">{availabilityDays.map((availabilityDay) => { const slot = availability.find((item) => item.day === availabilityDay); return <div key={availabilityDay}><label><input type="checkbox" checked={Boolean(slot)} onChange={(event) => updateAvailability(availabilityDay, event.target.checked)} />{availabilityDay}</label><input type="time" value={slot?.from ?? ""} disabled={!slot} onChange={(event) => updateAvailability(availabilityDay, true, "from", event.target.value)} aria-label={`${availabilityDay} available from`} /><input type="time" value={slot?.to ?? ""} disabled={!slot} onChange={(event) => updateAvailability(availabilityDay, true, "to", event.target.value)} aria-label={`${availabilityDay} available to`} /></div>; })}</div></article>
             </div>
           </section>
           <section className="teacher-profile-card">
@@ -303,3 +313,4 @@ function TeacherDetailModal({ title, onClose, children }: { title: string; onClo
 }
 function formatSessionDate(value: string) { return new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata" }).format(new Date(value)); }
 function formatSessionTime(value: string) { return new Intl.DateTimeFormat("en-IN", { hour: "numeric", minute: "2-digit", timeZone: "Asia/Kolkata" }).format(new Date(value)); }
+function readAvailability(value?: string) { try { const rows = JSON.parse(value ?? "[]") as Availability[]; return Array.isArray(rows) ? rows.filter((slot) => slot?.day) : []; } catch { return []; } }
