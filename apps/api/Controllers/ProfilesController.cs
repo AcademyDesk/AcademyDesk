@@ -1,6 +1,7 @@
 using AcademyDesk.Api.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace AcademyDesk.Api.Controllers;
 
@@ -79,7 +80,14 @@ public sealed class ProfilesController(AcademyDeskDbContext dbContext) : Control
         var classes = sessionRows.Take(12).Select(session => new TeacherClassSummary(session.Id, session.BatchId, batchNames.GetValueOrDefault(session.BatchId, "Class"), session.StartUtc, session.EndUtc, session.DeliveryMode, session.RoomName, session.Status)).ToList();
         var leave = await dbContext.LeaveRequests.AsNoTracking().Where(x => x.AcademyId == academyId && x.TeacherId == teacherId).OrderByDescending(x => x.StartDate).Take(8).Select(x => new LeaveProfileSummary(x.StartDate, x.EndDate, x.Status, x.Reason)).ToListAsync(token);
         var subjects = assignedBatches.Select(batch => batch.CourseName).Distinct().OrderBy(subject => subject).ToList();
-        return Ok(new TeacherProfileSummary(teacher.Id, teacher.FirstName + " " + teacher.LastName, teacher.Email, teacher.Phone, teacher.Specialties, teacher.EmployeeCode, teacher.PreferredName, teacher.EmploymentType, teacher.DateOfBirth, teacher.JoiningDate, teacher.Qualifications, teacher.AddressLine1, teacher.City, teacher.State, teacher.PostalCode, teacher.EmergencyContactName, teacher.EmergencyContactPhone, teacher.AdminNotes, subjects, batches, classes, leave));
+        var students = await (from enrollment in dbContext.Enrollments.AsNoTracking()
+                              join student in dbContext.Students.AsNoTracking() on enrollment.StudentId equals student.Id
+                              join batch in dbContext.Batches.AsNoTracking() on enrollment.BatchId equals batch.Id
+                              join course in dbContext.Courses.AsNoTracking() on batch.CourseId equals course.Id
+                              where enrollment.AcademyId == academyId && enrollment.Status == "Active" && batch.TeacherId == teacherId
+                              orderby student.FirstName, student.LastName
+                              select new TeacherAssignedStudentSummary(student.Id, student.FirstName + " " + student.LastName, batch.Name, course.Name)).ToListAsync(token);
+        return Ok(new TeacherProfileSummary(teacher.Id, teacher.FirstName + " " + teacher.LastName, teacher.Email, teacher.Phone, teacher.Specialties, teacher.EmployeeCode, teacher.PreferredName, teacher.EmploymentType, teacher.DateOfBirth, teacher.JoiningDate, teacher.Qualifications, teacher.AddressLine1, teacher.City, teacher.State, teacher.PostalCode, teacher.EmergencyContactName, teacher.EmergencyContactPhone, teacher.AdminNotes, subjects, students, ReadAvailability(teacher.AvailabilityJson), batches, classes, leave));
     }
 
     [HttpPut("students/{studentId:guid}/profile")]
@@ -148,6 +156,17 @@ public sealed class ProfilesController(AcademyDeskDbContext dbContext) : Control
     }
 
     private static string? Clean(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+    private static IReadOnlyList<TeacherAvailabilitySummary> ReadAvailability(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json)) return [];
+        try
+        {
+            return (JsonSerializer.Deserialize<List<TeacherAvailabilitySummary>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? [])
+                .Where(slot => !string.IsNullOrWhiteSpace(slot.Day))
+                .ToList();
+        }
+        catch (JsonException) { return []; }
+    }
 }
 
 public sealed record ContactSummary(Guid Id, string Name, string? Email, string? Phone, string? Relationship);
@@ -163,8 +182,10 @@ public sealed record GuardianInvoiceSummary(Guid StudentId, string InvoiceNumber
 public sealed record GuardianProfileSummary(Guid Id, string Name, string? Email, string? Phone, string? PreferredName, string? AddressLine1, string? City, string? State, string? PostalCode, string? PreferredLanguage, IReadOnlyList<GuardianStudentSummary> Students, IReadOnlyList<GuardianInvoiceSummary> Invoices, IReadOnlyList<CommunicationProfileSummary> Communications);
 public sealed record TeacherAssignedBatchSummary(Guid Id, string BatchName, string CourseName, bool IsActive, int CompletedSessions, int PendingSessions, int CurrentCycleCompleted, int CurrentCyclePending);
 public sealed record TeacherClassSummary(Guid Id, Guid BatchId, string BatchName, DateTime StartUtc, DateTime EndUtc, string DeliveryMode, string? RoomName, string Status);
+public sealed record TeacherAssignedStudentSummary(Guid Id, string Name, string BatchName, string Subject);
+public sealed record TeacherAvailabilitySummary(string Day, string? From, string? To);
 public sealed record LeaveProfileSummary(DateOnly StartDate, DateOnly EndDate, string Status, string Reason);
-public sealed record TeacherProfileSummary(Guid Id, string Name, string? Email, string? Phone, string? Specialties, string? EmployeeCode, string? PreferredName, string? EmploymentType, DateOnly? DateOfBirth, DateOnly? JoiningDate, string? Qualifications, string? AddressLine1, string? City, string? State, string? PostalCode, string? EmergencyContactName, string? EmergencyContactPhone, string? AdminNotes, IReadOnlyList<string> Subjects, IReadOnlyList<TeacherAssignedBatchSummary> Batches, IReadOnlyList<TeacherClassSummary> Classes, IReadOnlyList<LeaveProfileSummary> LeaveRequests);
+public sealed record TeacherProfileSummary(Guid Id, string Name, string? Email, string? Phone, string? Specialties, string? EmployeeCode, string? PreferredName, string? EmploymentType, DateOnly? DateOfBirth, DateOnly? JoiningDate, string? Qualifications, string? AddressLine1, string? City, string? State, string? PostalCode, string? EmergencyContactName, string? EmergencyContactPhone, string? AdminNotes, IReadOnlyList<string> Subjects, IReadOnlyList<TeacherAssignedStudentSummary> Students, IReadOnlyList<TeacherAvailabilitySummary> Availability, IReadOnlyList<TeacherAssignedBatchSummary> Batches, IReadOnlyList<TeacherClassSummary> Classes, IReadOnlyList<LeaveProfileSummary> LeaveRequests);
 public sealed record UpdateStudentAdminProfileRequest(string? StudentNumber, string? PreferredName, string? Gender, DateOnly? DateOfBirth, DateOnly? AdmissionDate, string? AddressLine1, string? City, string? State, string? PostalCode, string? EmergencyContactName, string? EmergencyContactPhone, string? MedicalOrAccessibilityNotes, string? AdminNotes);
 public sealed record UpdateTeacherAdminProfileRequest(string? EmployeeCode, string? PreferredName, string? EmploymentType, DateOnly? DateOfBirth, DateOnly? JoiningDate, string? Qualifications, string? AddressLine1, string? City, string? State, string? PostalCode, string? EmergencyContactName, string? EmergencyContactPhone, string? AdminNotes);
 public sealed record UpdateGuardianAdminProfileRequest(string? PreferredName, string? AddressLine1, string? City, string? State, string? PostalCode, string? PreferredLanguage);

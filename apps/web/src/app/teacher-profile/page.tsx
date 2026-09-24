@@ -8,7 +8,10 @@ type Academy = { id: string };
 type Teacher = { id: string; firstName: string; lastName: string };
 type AssignedBatch = { id: string; batchName: string; courseName: string; isActive: boolean; completedSessions: number; pendingSessions: number; currentCycleCompleted: number; currentCyclePending: number };
 type TeacherClass = { id: string; batchId: string; batchName: string; startUtc: string; endUtc: string; deliveryMode: string; roomName?: string | null; status: string };
+type AssignedStudent = { id: string; name: string; batchName: string; subject: string };
+type Availability = { day: string; from?: string | null; to?: string | null };
 type Profile = {
+  specialties?: string;
   employeeCode?: string;
   preferredName?: string;
   employmentType?: string;
@@ -23,6 +26,8 @@ type Profile = {
   emergencyContactPhone?: string;
   adminNotes?: string;
   subjects?: string[];
+  students?: AssignedStudent[];
+  availability?: Availability[];
   batches?: AssignedBatch[];
   classes?: TeacherClass[];
   leaveRequests?: unknown[];
@@ -38,7 +43,7 @@ export default function TeacherProfilePage() {
   const [form, setForm] = useState<Record<string, string>>({});
   const [message, setMessage] = useState("Loading teaching team…");
   const [saving, setSaving] = useState(false);
-  const [detail, setDetail] = useState<"batches" | "sessions" | null>(null);
+  const [detail, setDetail] = useState<"batches" | "sessions" | "students" | null>(null);
   function prepare(value: Profile) {
     setForm({
       employeeCode: value.employeeCode ?? "",
@@ -181,11 +186,19 @@ export default function TeacherProfilePage() {
                 {count(profile.leaveRequests)}
               </strong>
             </article>
-            <article className="teacher-profile-summary-tile teacher-profile-subjects">
-              <span>Subjects taught</span>
-              <strong>{count(profile.subjects)}</strong>
-              <small>{profile.subjects?.join(" · ") || "No subjects assigned"}</small>
-            </article>
+            <button type="button" onClick={() => setDetail("students")} className="teacher-profile-summary-tile teacher-profile-summary-action">
+              <span>Students assigned</span>
+              <strong>{count(profile.students)}</strong>
+              <small>View students and their subjects</small>
+            </button>
+          </section>
+          <section className="teacher-profile-teaching-card">
+            <header><div><p>Teaching details</p><h2>Subjects and availability</h2></div></header>
+            <div className="teacher-profile-teaching-grid">
+              <article><span>Subjects they can teach</span><p>{profile.specialties || "Not recorded"}</p></article>
+              <article><span>Subjects currently assigned</span><p>{profile.subjects?.join(" · ") || "No current subject assignments"}</p></article>
+              <article><span>Availability</span>{profile.availability?.length ? <div className="teacher-profile-availability">{profile.availability.map((slot) => <span key={`${slot.day}-${slot.from}`}>{slot.day} · {slot.from || "—"}–{slot.to || "—"}</span>)}</div> : <p>Not recorded</p>}</article>
+            </div>
           </section>
           <section className="teacher-profile-card">
             <header className="teacher-profile-card-header">
@@ -275,6 +288,9 @@ export default function TeacherProfilePage() {
           </TeacherDetailModal>}
           {detail === "sessions" && <TeacherDetailModal title="Class sessions" onClose={() => setDetail(null)}>
             {profile.classes?.length ? <div className="teacher-profile-detail-list">{profile.classes.map((session) => <article key={session.id}><header><div><b>{session.batchName}</b><small>{formatSessionDate(session.startUtc)} · {formatSessionTime(session.startUtc)}–{formatSessionTime(session.endUtc)} · {session.deliveryMode}{session.roomName ? ` · ${session.roomName}` : ""}</small></div><em data-completed={session.status === "Completed"}>{session.status}</em></header></article>)}</div> : <p className="teacher-profile-detail-empty">No class sessions are recorded for this teacher.</p>}
+          </TeacherDetailModal>}
+          {detail === "students" && <TeacherDetailModal title="Students assigned" onClose={() => setDetail(null)}>
+            {profile.students?.length ? <div className="teacher-profile-detail-list">{profile.students.map((student) => <article key={`${student.id}-${student.batchName}`}><header><div><b>{student.name}</b><small>{student.subject} · {student.batchName}</small></div></header></article>)}</div> : <p className="teacher-profile-detail-empty">No active students are assigned to this teacher.</p>}
           </TeacherDetailModal>}
         </>
       )}
