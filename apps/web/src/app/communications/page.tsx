@@ -46,6 +46,8 @@ export default function CommunicationsPage() {
   const [scheduledDate, setScheduledDate] = useState("");
   const [scheduledTime, setScheduledTime] = useState("");
   const [displayHours, setDisplayHours] = useState("4");
+  const [announcementStartDate, setAnnouncementStartDate] = useState("");
+  const [announcementStartTime, setAnnouncementStartTime] = useState("09:00");
   const [announcementAudience, setAnnouncementAudience] =
     useState("Student,Teacher");
   const [message, setMessage] = useState("Loading messages…");
@@ -99,8 +101,11 @@ export default function CommunicationsPage() {
   async function create(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!academy || (!isAnnouncement && !recipientId)) return;
-    const scheduledAtUtc =
-      !isAnnouncement && scheduledDate && scheduledTime
+    const scheduledAtUtc = isAnnouncement
+      ? announcementStartDate
+        ? new Date(`${announcementStartDate}T${announcementStartTime}:00`).toISOString()
+        : null
+      : scheduledDate && scheduledTime
         ? new Date(`${scheduledDate}T${scheduledTime}:00`).toISOString()
         : null;
     const response = await academyApi(
@@ -139,6 +144,8 @@ export default function CommunicationsPage() {
     setBody("");
     setScheduledDate("");
     setScheduledTime("");
+    setAnnouncementStartDate("");
+    setAnnouncementStartTime("09:00");
     await load();
   }
   const recipientOptions = people.map((person) => ({
@@ -168,7 +175,7 @@ export default function CommunicationsPage() {
             <header className="messages-panel-header">
               <p>Compose</p>
               <h2>
-                {isAnnouncement ? "Important announcement" : "New message"}
+                {isAnnouncement ? "Portal banner message" : "New message"}
               </h2>
             </header>
             <div className="messages-fields">
@@ -185,7 +192,7 @@ export default function CommunicationsPage() {
                   options={[
                     { value: "Guardian", label: "Guardian" },
                     { value: "Student", label: "Student" },
-                    { value: "Academy", label: "Important announcement" },
+                    { value: "Academy", label: "Portal banner message" },
                   ]}
                 />
               </label>
@@ -219,6 +226,18 @@ export default function CommunicationsPage() {
                       required
                     />
                   </label>
+                  <StandardDateField
+                    name="announcementStartDate"
+                    value={announcementStartDate}
+                    onChange={setAnnouncementStartDate}
+                    label="Banner start date"
+                  />
+                  <StandardTimeField
+                    name="announcementStartTime"
+                    value={announcementStartTime}
+                    onChange={setAnnouncementStartTime}
+                    label="Banner start time"
+                  />
                 </>
               ) : (
                 <>

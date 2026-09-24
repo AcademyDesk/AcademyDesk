@@ -349,6 +349,7 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
             using var document = JsonDocument.Parse(variablesJson);
             var root = document.RootElement;
             if (!root.TryGetProperty("important", out var important) || !string.Equals(important.GetString(), "true", StringComparison.OrdinalIgnoreCase)) return false;
+            if (root.TryGetProperty("startsAtUtc", out var start) && DateTime.TryParse(start.GetString(), out var startsAtUtc) && startsAtUtc.ToUniversalTime() > now) return false;
             return root.TryGetProperty("expiresAtUtc", out var expiry) && DateTime.TryParse(expiry.GetString(), out var expiresAtUtc) && expiresAtUtc.ToUniversalTime() > now;
         }
         catch (JsonException) { return false; }

@@ -36,8 +36,10 @@ public sealed class NotificationsController(AcademyDeskDbContext dbContext) : Co
         if (string.Equals(request.RecipientType, "Academy", StringComparison.OrdinalIgnoreCase) && request.IsImportant)
         {
             if (request.DisplayHours is < 1 or > 168) return BadRequest(new { message = "Important announcements must be displayed for 1 to 168 hours." });
+            var startsAtUtc = request.ScheduledAtUtc?.ToUniversalTime() ?? DateTime.UtcNow;
             variables["important"] = "true";
-            variables["expiresAtUtc"] = DateTime.UtcNow.AddHours(request.DisplayHours ?? 1).ToString("O");
+            variables["startsAtUtc"] = startsAtUtc.ToString("O");
+            variables["expiresAtUtc"] = startsAtUtc.AddHours(request.DisplayHours ?? 1).ToString("O");
         }
         body = Regex.Replace(body, "\\{\\{([a-zA-Z0-9_]+)\\}\\}", match => variables.TryGetValue(match.Groups[1].Value, out var value) ? value : match.Value);
         var status = "Queued"; string? failureReason = null;
