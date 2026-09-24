@@ -1541,6 +1541,14 @@ html[data-theme="light"] .field-label { color: #475569; }
   border-radius: 12px;
   box-shadow: 0 8px 22px color-mix(in srgb, var(--ad-text) 5%, transparent);
 }
+.enterprise-settings .surface-panel > header:first-child {
+  border-top-left-radius: 11px;
+  border-top-right-radius: 11px;
+}
+.enterprise-settings [class*="-panel"]:not(.surface-panel) > header:first-child {
+  border-top-left-radius: 15px;
+  border-top-right-radius: 15px;
+}
 .enterprise-settings .surface-panel > h3,
 .enterprise-settings .surface-panel header h3 {
   color: var(--ad-text);
