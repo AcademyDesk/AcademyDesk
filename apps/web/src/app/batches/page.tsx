@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { WorkspaceNav } from "@/components/workspace-nav";
 import { academyApi, apiHeaders } from "@/lib/api";
 import { StandardDateField, StandardSelectField } from "@/components/design-system/controls";
+import { StandardDetailModal, StandardInteractiveTile } from "@/components/design-system/interactive";
 
 type Academy = { id: string; name: string };
 type Course = { id: string; name: string; academyType: string };
@@ -34,22 +35,14 @@ function Metric({
   label,
   value,
   note,
+  onClick,
 }: {
   label: string;
   value: number;
   note?: string;
+  onClick: () => void;
 }) {
-  return (
-    <article className="batch-overview-kpi">
-      <span>{label}</span>
-      <strong>
-        {value}
-      </strong>
-      {note ? (
-        <small>{note}</small>
-      ) : null}
-    </article>
-  );
+  return <StandardInteractiveTile className="batch-overview-kpi" label={label} value={value} detail={note ?? "View details"} onClick={onClick} />;
 }
 
 export default function BatchesPage() {
@@ -85,6 +78,7 @@ export default function BatchesPage() {
   const [editCapacity, setEditCapacity] = useState("10");
   const [editStartDate, setEditStartDate] = useState("");
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [detail, setDetail] = useState<"classes" | "teachers" | "capacity" | null>(null);
 
   async function loadAcademies() {
     const response = await academyApi("/api/academies", { cache: "no-store" });
@@ -251,9 +245,12 @@ export default function BatchesPage() {
   if (pathname === "/batches") {
     const active = batches.filter((batch) => batch.isActive);
     const unassigned = active.filter((batch) => !batch.teacherId);
-    const atCapacity = active.filter(
-      (batch) => (batch.activeEnrolments ?? 0) >= batch.capacity,
-    );
+    const assigned = active.filter((batch) => batch.teacherId);
+    const oneToOne = active.filter((batch) => batch.capacity === 1);
+    const groupClasses = active.filter((batch) => batch.capacity > 1);
+    const capacityGaps = groupClasses.filter((batch) => (batch.activeEnrolments ?? 0) < batch.capacity);
+    const courseName = (id: string) => courses.find((course) => course.id === id)?.name ?? "Subject not set";
+    const detailRows = (rows: Batch[], mode: "classes" | "teachers" | "capacity") => <div className="standard-detail-list">{rows.map((batch) => <div key={batch.id}><strong>{batch.name}</strong><span>{mode === "teachers" ? teacherName(batch.teacherId) : mode === "capacity" ? `${batch.activeEnrolments ?? 0} of ${batch.capacity} filled · ${batch.capacity - (batch.activeEnrolments ?? 0)} student${batch.capacity - (batch.activeEnrolments ?? 0) === 1 ? "" : "s"} needed` : `${courseName(batch.courseId)} · ${batch.capacity === 1 ? "1:1" : `Group · capacity ${batch.capacity}`} · ${batch.activeEnrolments ?? 0} students · ${teacherName(batch.teacherId)}`}</span></div>)}</div>;
     return (
       <main className="enterprise-settings enterprise-legacy-standard batch-overview-standard min-h-screen bg-slate-950 text-slate-100">
         <WorkspaceNav />
@@ -273,22 +270,23 @@ export default function BatchesPage() {
             </p>
           )}
           <section className="batch-overview-kpis">
-            <Metric label="Active classes" value={active.length} />
-            <Metric
-              label="1:1 classes"
-              value={active.filter((batch) => batch.capacity === 1).length}
-            />
+            <Metric label="Active classes" value={active.length} note={`${oneToOne.length} 1:1 · ${groupClasses.length} group`} onClick={() => setDetail("classes")} />
             <Metric
               label="Teacher assignment"
-              value={unassigned.length}
-              note="Need assignment"
+              value={assigned.length}
+              note={`${unassigned.length} unassigned`}
+              onClick={() => setDetail("teachers")}
             />
             <Metric
-              label="Capacity alerts"
-              value={atCapacity.length}
-              note="Full classes"
+              label="Capacity"
+              value={capacityGaps.length}
+              note="Classes with places open"
+              onClick={() => setDetail("capacity")}
             />
           </section>
+          {detail === "classes" && <StandardDetailModal eyebrow="Class & batch" title="Active classes" onClose={() => setDetail(null)}><div className="standard-detail-content"><section className="standard-detail-group"><h3>1:1 classes · {oneToOne.length}</h3>{oneToOne.length ? detailRows(oneToOne, "classes") : <p className="standard-detail-empty">No active 1:1 classes.</p>}</section><section className="standard-detail-group"><h3>Group classes · {groupClasses.length}</h3>{groupClasses.length ? detailRows(groupClasses, "classes") : <p className="standard-detail-empty">No active group classes.</p>}</section></div></StandardDetailModal>}
+          {detail === "teachers" && <StandardDetailModal eyebrow="Class & batch" title="Teaching assignment" onClose={() => setDetail(null)}><div className="standard-detail-content"><section className="standard-detail-group"><h3>Assigned · {assigned.length}</h3>{assigned.length ? detailRows(assigned, "teachers") : <p className="standard-detail-empty">No teachers are assigned.</p>}</section><section className="standard-detail-group"><h3>Unassigned · {unassigned.length}</h3>{unassigned.length ? detailRows(unassigned, "teachers") : <p className="standard-detail-empty">Every active class has a teacher.</p>}</section></div></StandardDetailModal>}
+          {detail === "capacity" && <StandardDetailModal eyebrow="Class & batch" title="Classes with places open" onClose={() => setDetail(null)}><div className="standard-detail-content">{capacityGaps.length ? detailRows(capacityGaps, "capacity") : <p className="standard-detail-empty">There are no group classes with open places.</p>}</div></StandardDetailModal>}
           <section className="batch-overview-panel">
             <header className="batch-overview-panel-header"><div><p>Delivery</p><h2>Active classes and batches</h2></div><span>{active.length} active</span></header>
             {active.length ? (
