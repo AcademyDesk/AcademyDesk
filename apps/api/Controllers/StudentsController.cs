@@ -66,7 +66,36 @@ public sealed class StudentsController(AcademyDeskDbContext dbContext, UserManag
     }
     [HttpPut("{studentId:guid}")]
     public async Task<ActionResult<StudentSummary>> Update(Guid academyId, Guid studentId, UpdateStudentRequest request, CancellationToken token)
-    { var x=await dbContext.Students.SingleOrDefaultAsync(s=>s.Id==studentId&&s.AcademyId==academyId,token); if(x is null)return NotFound(); if(string.IsNullOrWhiteSpace(request.FirstName)||string.IsNullOrWhiteSpace(request.LastName))return BadRequest(new{message="First and last name are required."}); x.FirstName=request.FirstName.Trim();x.LastName=request.LastName.Trim();x.Email=request.Email?.Trim();x.Phone=request.Phone?.Trim();x.BranchId=request.BranchId;x.IsActive=request.IsActive;await dbContext.SaveChangesAsync(token);var accounts=await userManager.Users.Where(user=>user.AcademyId==academyId&&user.StudentId==studentId).ToListAsync(token);foreach(var account in accounts){account.IsActive=request.IsActive;var update=await userManager.UpdateAsync(account);if(!update.Succeeded)return BadRequest(new{message="Student record saved, but the linked portal account could not be updated."});}return Ok(new StudentSummary(x.Id,x.FirstName,x.LastName,x.Email,x.Phone,x.BranchId,x.IsActive)); }
+    {
+        var student = await dbContext.Students.SingleOrDefaultAsync(x => x.Id == studentId && x.AcademyId == academyId, token);
+        if (student is null) return NotFound();
+        if (string.IsNullOrWhiteSpace(request.FirstName) || string.IsNullOrWhiteSpace(request.LastName))
+            return BadRequest(new { message = "First and last name are required." });
+
+        student.FirstName = request.FirstName.Trim();
+        student.LastName = request.LastName.Trim();
+        student.Email = request.Email?.Trim();
+        student.Phone = request.Phone?.Trim();
+        student.BranchId = request.BranchId;
+        student.IsActive = request.IsActive;
+        await dbContext.SaveChangesAsync(token);
+
+        var accounts = await userManager.Users
+            .Where(user => user.AcademyId == academyId && user.StudentId == studentId)
+            .ToListAsync(token);
+        foreach (var account in accounts)
+        {
+            account.IsActive = student.IsActive;
+            account.DisplayName = $"{student.FirstName} {student.LastName}";
+            if (!string.IsNullOrWhiteSpace(student.Email)) account.Email = student.Email;
+            account.PhoneNumber = student.Phone;
+            var update = await userManager.UpdateAsync(account);
+            if (!update.Succeeded)
+                return BadRequest(new { message = "Student record saved, but the linked portal account could not be updated." });
+        }
+
+        return Ok(new StudentSummary(student.Id, student.FirstName, student.LastName, student.Email, student.Phone, student.BranchId, student.IsActive));
+    }
 }
 
 public sealed record CreateStudentRequest(string FirstName, string LastName, DateOnly? DateOfBirth, string? Email, string? Phone, Guid? BranchId);

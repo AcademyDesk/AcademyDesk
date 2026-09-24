@@ -387,8 +387,10 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
         student.FirstName = request.FirstName.Trim(); student.LastName = request.LastName.Trim(); student.PreferredName = request.PreferredName?.Trim(); student.Gender = request.Gender?.Trim(); student.DateOfBirth = request.DateOfBirth;
         student.Email = request.Email?.Trim(); student.Phone = request.Phone?.Trim(); student.AddressLine1 = request.AddressLine1?.Trim(); student.City = request.City?.Trim(); student.State = request.State?.Trim(); student.PostalCode = request.PostalCode?.Trim(); student.EmergencyContactName = request.EmergencyContactName?.Trim(); student.EmergencyContactPhone = request.EmergencyContactPhone?.Trim();
         user.DisplayName = $"{student.FirstName} {student.LastName}";
+        if (!string.IsNullOrWhiteSpace(student.Email)) user.Email = student.Email;
         user.PhoneNumber = student.Phone;
-        await users.UpdateAsync(user);
+        var identityUpdate = await users.UpdateAsync(user);
+        if (!identityUpdate.Succeeded) return BadRequest(new { message = string.Join(" ", identityUpdate.Errors.Select(x => x.Description)) });
         await db.SaveChangesAsync(token);
         return Ok(new { message = "Profile saved." });
     }
@@ -402,6 +404,10 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
         if (guardian is null) return NotFound();
         guardian.Email = request.Email?.Trim();
         guardian.Phone = request.Phone?.Trim();
+        if (!string.IsNullOrWhiteSpace(guardian.Email)) user.Email = guardian.Email;
+        user.PhoneNumber = guardian.Phone;
+        var identityUpdate = await users.UpdateAsync(user);
+        if (!identityUpdate.Succeeded) return BadRequest(new { message = string.Join(" ", identityUpdate.Errors.Select(x => x.Description)) });
         await db.SaveChangesAsync(token);
         return Ok(new { guardian.Id, guardian.Email, guardian.Phone });
     }

@@ -134,6 +134,7 @@ public sealed class TeacherPortalController(
         teacher.EmergencyContactName = request.EmergencyContactName?.Trim();
         teacher.EmergencyContactPhone = request.EmergencyContactPhone?.Trim();
         user.DisplayName = string.Join(" ", new[] { teacher.FirstName, teacher.LastName }.Where(x => !string.IsNullOrWhiteSpace(x)));
+        if (!string.IsNullOrWhiteSpace(teacher.Email)) user.Email = teacher.Email;
         user.PhoneNumber = teacher.Phone;
         var identityUpdate = await userManager.UpdateAsync(user);
         if (!identityUpdate.Succeeded) return BadRequest(new { message = string.Join(" ", identityUpdate.Errors.Select(x => x.Description)) });

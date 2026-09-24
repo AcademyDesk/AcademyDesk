@@ -1,5 +1,7 @@
 using AcademyDesk.Api.Data;
 using AcademyDesk.Api.Domain.Entities;
+using AcademyDesk.Api.Domain.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,7 +9,7 @@ namespace AcademyDesk.Api.Controllers;
 
 [ApiController]
 [Route("api/academies/{academyId:guid}/teachers")]
-public sealed class TeachersController(AcademyDeskDbContext dbContext) : ControllerBase
+public sealed class TeachersController(AcademyDeskDbContext dbContext, UserManager<ApplicationUser> userManager) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<TeacherSummary>>> List(Guid academyId, CancellationToken cancellationToken)
@@ -35,7 +37,38 @@ public sealed class TeachersController(AcademyDeskDbContext dbContext) : Control
         return Created($"/api/academies/{academyId}/teachers/{teacher.Id}", new TeacherSummary(teacher.Id, teacher.FirstName, teacher.LastName, teacher.Email, teacher.Phone, teacher.Specialties, teacher.BranchId, teacher.IsActive));
     }
     [HttpPut("{teacherId:guid}")]
-    public async Task<ActionResult<TeacherSummary>> Update(Guid academyId,Guid teacherId,UpdateTeacherRequest request,CancellationToken token){var x=await dbContext.Teachers.SingleOrDefaultAsync(t=>t.Id==teacherId&&t.AcademyId==academyId,token);if(x is null)return NotFound();if(string.IsNullOrWhiteSpace(request.FirstName)||string.IsNullOrWhiteSpace(request.LastName))return BadRequest();x.FirstName=request.FirstName.Trim();x.LastName=request.LastName.Trim();x.Email=request.Email?.Trim();x.Phone=request.Phone?.Trim();x.Specialties=request.Specialties?.Trim();x.BranchId=request.BranchId;x.IsActive=request.IsActive;await dbContext.SaveChangesAsync(token);return Ok(new TeacherSummary(x.Id,x.FirstName,x.LastName,x.Email,x.Phone,x.Specialties,x.BranchId,x.IsActive));}
+    public async Task<ActionResult<TeacherSummary>> Update(Guid academyId, Guid teacherId, UpdateTeacherRequest request, CancellationToken token)
+    {
+        var teacher = await dbContext.Teachers.SingleOrDefaultAsync(x => x.Id == teacherId && x.AcademyId == academyId, token);
+        if (teacher is null) return NotFound();
+        if (string.IsNullOrWhiteSpace(request.FirstName) || string.IsNullOrWhiteSpace(request.LastName))
+            return BadRequest(new { message = "First and last name are required." });
+
+        teacher.FirstName = request.FirstName.Trim();
+        teacher.LastName = request.LastName.Trim();
+        teacher.Email = request.Email?.Trim();
+        teacher.Phone = request.Phone?.Trim();
+        teacher.Specialties = request.Specialties?.Trim();
+        teacher.BranchId = request.BranchId;
+        teacher.IsActive = request.IsActive;
+        await dbContext.SaveChangesAsync(token);
+
+        var accounts = await userManager.Users
+            .Where(user => user.AcademyId == academyId && user.TeacherId == teacherId)
+            .ToListAsync(token);
+        foreach (var account in accounts)
+        {
+            account.IsActive = teacher.IsActive;
+            account.DisplayName = $"{teacher.FirstName} {teacher.LastName}";
+            if (!string.IsNullOrWhiteSpace(teacher.Email)) account.Email = teacher.Email;
+            account.PhoneNumber = teacher.Phone;
+            var update = await userManager.UpdateAsync(account);
+            if (!update.Succeeded)
+                return BadRequest(new { message = "Teacher record saved, but the linked portal account could not be updated." });
+        }
+
+        return Ok(new TeacherSummary(teacher.Id, teacher.FirstName, teacher.LastName, teacher.Email, teacher.Phone, teacher.Specialties, teacher.BranchId, teacher.IsActive));
+    }
 }
 
 public sealed record CreateTeacherRequest(string FirstName, string LastName, string? Email, string? Phone, string? Specialties, Guid? BranchId, string? Qualifications = null, string? EmploymentType = null, DateOnly? DateOfBirth = null, DateOnly? JoiningDate = null, string? AddressLine1 = null, string? City = null, string? State = null, string? PostalCode = null, string? CertificationsJson = null, string? AvailabilityJson = null, string? CompensationJson = null);
