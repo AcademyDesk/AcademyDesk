@@ -132,7 +132,7 @@ export default function AdjustmentsPage() {
   };
 
   return (
-    <main className="enterprise-settings finance-module">
+    <main className="enterprise-settings finance-module adjustments-standard">
       <header className="enterprise-page-header">
         <p>Finance / adjustments</p>
         <div className="flex flex-wrap items-end justify-between gap-4">
