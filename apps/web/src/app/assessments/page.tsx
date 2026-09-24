@@ -2,15 +2,40 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { WorkspaceNav } from "@/components/workspace-nav";
+import {
+  StandardDateField,
+  StandardSelectField,
+  StandardTimeField,
+} from "@/components/design-system/controls";
 import { academyApi, apiHeaders } from "@/lib/api";
 
 type Academy = { id: string };
 type Batch = { id: string; name: string };
 type Student = { id: string; firstName: string; lastName: string };
 type Enrollment = { studentId: string; batchId: string; status: string };
-type Assessment = { id: string; batchId: string; title: string; type: string; maxScore: number; scheduledAtUtc?: string | null; isPublished: boolean };
-type Result = { studentId: string; score: number; grade?: string | null; remarks?: string | null; isPublished: boolean };
-type GradingScheme = { id: string; name: string; passingPercent: number; isActive: boolean };
+type Assessment = {
+  id: string;
+  batchId: string;
+  title: string;
+  type: string;
+  maxScore: number;
+  scheduledAtUtc?: string | null;
+  isPublished: boolean;
+};
+type Result = {
+  studentId: string;
+  score: number;
+  grade?: string | null;
+  remarks?: string | null;
+  isPublished: boolean;
+};
+type GradingScheme = {
+  id: string;
+  name: string;
+  passingPercent: number;
+  isActive: boolean;
+};
+const assessmentTypes = ["Performance", "Exam", "Recital", "Test", "Practical"];
 
 export default function AssessmentsPage() {
   const [academy, setAcademy] = useState<Academy>();
@@ -25,27 +50,366 @@ export default function AssessmentsPage() {
   const [title, setTitle] = useState("");
   const [type, setType] = useState("Performance");
   const [maxScore, setMaxScore] = useState("100");
-  const [scheduledAt, setScheduledAt] = useState("");
+  const [scheduledDate, setScheduledDate] = useState("");
+  const [scheduledTime, setScheduledTime] = useState("10:00");
   const [gradingSchemeId, setGradingSchemeId] = useState("");
   const [message, setMessage] = useState("Loading assessments…");
   const [savingStudentId, setSavingStudentId] = useState("");
-
-  async function load(academyId?: string) { const id = academyId ?? academy?.id; if (!id) return; const [batchResponse, studentResponse, enrollmentResponse, assessmentResponse, schemeResponse] = await Promise.all([academyApi(`/api/academies/${id}/batches`, { cache: "no-store" }), academyApi(`/api/academies/${id}/students`, { cache: "no-store" }), academyApi(`/api/academies/${id}/enrollments`, { cache: "no-store" }), academyApi(`/api/academies/${id}/assessments`, { cache: "no-store" }), academyApi(`/api/academies/${id}/grading-schemes/active`, { cache: "no-store" })]); if (![batchResponse, studentResponse, enrollmentResponse, assessmentResponse, schemeResponse].every((response) => response.ok)) throw new Error(); const batchData: Batch[] = await batchResponse.json(); setBatches(batchData); setStudents(await studentResponse.json()); setEnrollments(await enrollmentResponse.json()); const assessmentData: Assessment[] = await assessmentResponse.json(); setAssessments(assessmentData); setGradingSchemes(await schemeResponse.json()); if (!batchId && batchData.length) setBatchId(batchData[0].id); if (!assessmentId && assessmentData.length) setAssessmentId(assessmentData[0].id); setMessage(""); }
-  async function loadResults(id: string) { if (!academy || !id) return setResults([]); const response = await academyApi(`/api/academies/${academy.id}/assessments/${id}/results`, { cache: "no-store" }); if (!response.ok) throw new Error(); setResults(await response.json()); }
-  useEffect(() => { async function initialise() { try { const response = await academyApi("/api/academies", { cache: "no-store" }); if (response.status === 401) return setMessage("Please sign in before managing assessments."); if (!response.ok) throw new Error(); const academies: Academy[] = await response.json(); if (!academies[0]) return setMessage("Create your academy and batch first."); setAcademy(academies[0]); await load(academies[0].id); } catch { setMessage("Assessments could not be loaded. Confirm the API is running on port 5092."); } } void initialise(); }, []);
-  useEffect(() => { void loadResults(assessmentId).catch(() => setMessage("Assessment results could not be loaded.")); }, [academy, assessmentId]);
-  async function createAssessment(event: FormEvent<HTMLFormElement>) { event.preventDefault(); if (!academy || !batchId) return; const response = await academyApi(`/api/academies/${academy.id}/assessments`, { method: "POST", headers: apiHeaders(true), body: JSON.stringify({ batchId, title, type, maxScore: Number(maxScore), gradingSchemeId: gradingSchemeId || null, scheduledAtUtc: scheduledAt ? new Date(scheduledAt).toISOString() : null, isPublished: true }) }); if (!response.ok) return setMessage("Enter a title, positive maximum score, and an active grading scheme if one is selected."); setTitle(""); setScheduledAt(""); setGradingSchemeId(""); setMessage(""); await load(); }
-  async function togglePublished(assessment: Assessment) { if (!academy) return; const response = await academyApi(`/api/academies/${academy.id}/assessments/${assessment.id}/publish`, { method: "PATCH", headers: apiHeaders(true), body: JSON.stringify({ isPublished: !assessment.isPublished }) }); if (!response.ok) return setMessage("The assessment publication status could not be updated."); setMessage(assessment.isPublished ? "Assessment moved to draft." : "Assessment published."); await load(); }
+  async function load(academyId?: string) {
+    const id = academyId ?? academy?.id;
+    if (!id) return;
+    const [
+      batchResponse,
+      studentResponse,
+      enrollmentResponse,
+      assessmentResponse,
+      schemeResponse,
+    ] = await Promise.all([
+      academyApi(`/api/academies/${id}/batches`, { cache: "no-store" }),
+      academyApi(`/api/academies/${id}/students`, { cache: "no-store" }),
+      academyApi(`/api/academies/${id}/enrollments`, { cache: "no-store" }),
+      academyApi(`/api/academies/${id}/assessments`, { cache: "no-store" }),
+      academyApi(`/api/academies/${id}/grading-schemes/active`, {
+        cache: "no-store",
+      }),
+    ]);
+    if (
+      ![
+        batchResponse,
+        studentResponse,
+        enrollmentResponse,
+        assessmentResponse,
+        schemeResponse,
+      ].every((response) => response.ok)
+    )
+      throw new Error();
+    const batchData: Batch[] = await batchResponse.json();
+    setBatches(batchData);
+    setStudents(await studentResponse.json());
+    setEnrollments(await enrollmentResponse.json());
+    const assessmentData: Assessment[] = await assessmentResponse.json();
+    setAssessments(assessmentData);
+    setGradingSchemes(await schemeResponse.json());
+    if (!batchId && batchData.length) setBatchId(batchData[0].id);
+    if (!assessmentId && assessmentData.length)
+      setAssessmentId(assessmentData[0].id);
+    setMessage("");
+  }
+  async function loadResults(id: string) {
+    if (!academy || !id) return setResults([]);
+    const response = await academyApi(
+      `/api/academies/${academy.id}/assessments/${id}/results`,
+      { cache: "no-store" },
+    );
+    if (!response.ok) throw new Error();
+    setResults(await response.json());
+  }
+  useEffect(() => {
+    void (async () => {
+      try {
+        const response = await academyApi("/api/academies", {
+          cache: "no-store",
+        });
+        if (!response.ok) throw new Error();
+        const academies: Academy[] = await response.json();
+        if (!academies[0])
+          return setMessage("Create your academy and batch first.");
+        setAcademy(academies[0]);
+        await load(academies[0].id);
+      } catch {
+        setMessage(
+          "Assessments could not be loaded. Confirm the API is running on port 5092.",
+        );
+      }
+    })();
+  }, []);
+  useEffect(() => {
+    void loadResults(assessmentId).catch(() =>
+      setMessage("Assessment results could not be loaded."),
+    );
+  }, [academy, assessmentId]);
+  async function createAssessment(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!academy || !batchId) return;
+    const response = await academyApi(
+      `/api/academies/${academy.id}/assessments`,
+      {
+        method: "POST",
+        headers: apiHeaders(true),
+        body: JSON.stringify({
+          batchId,
+          title,
+          type,
+          maxScore: Number(maxScore),
+          gradingSchemeId: gradingSchemeId || null,
+          scheduledAtUtc: scheduledDate
+            ? new Date(`${scheduledDate}T${scheduledTime}:00`).toISOString()
+            : null,
+          isPublished: true,
+        }),
+      },
+    );
+    if (!response.ok)
+      return setMessage("Enter a title and positive maximum score.");
+    setTitle("");
+    setScheduledDate("");
+    setGradingSchemeId("");
+    setMessage("");
+    await load();
+  }
   const selected = assessments.find((item) => item.id === assessmentId);
-  const roster = selected ? enrollments.filter((item) => item.batchId === selected.batchId && item.status === "Active").map((item) => students.find((student) => student.id === item.studentId)).filter((student): student is Student => Boolean(student)) : [];
-  const currentResult = (studentId: string) => results.find((result) => result.studentId === studentId);
-  async function saveResult(studentId: string, score: number, grade: string, remarks: string) { if (!academy || !selected || Number.isNaN(score)) return; setSavingStudentId(studentId); setMessage(""); try { const response = await academyApi(`/api/academies/${academy.id}/assessments/${selected.id}/results`, { method: "POST", headers: apiHeaders(true), body: JSON.stringify({ studentId, score, grade: grade || null, remarks: remarks || null, isPublished: true }) }); if (!response.ok) throw new Error(); await loadResults(selected.id); } catch { setMessage(`Result must be between 0 and ${selected.maxScore}.`); } finally { setSavingStudentId(""); } }
-  const batchName = (id: string) => batches.find((batch) => batch.id === id)?.name ?? "Unknown batch";
-  return <main className="enterprise-settings enterprise-legacy-standard academic-standard min-h-screen"><WorkspaceNav /><div className="mx-auto max-w-6xl px-6 py-10"><p className="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-300">Learning progress</p><h1 className="mt-3 text-4xl font-semibold tracking-tight">Assessments and results</h1><p className="mt-3 text-slate-300">Create a performance review, exam, recital, or test, then record each active learner’s result.</p>{message && <p className="mt-6 rounded-lg border border-amber-700/50 bg-amber-950/40 p-4 text-sm text-amber-100">{message}</p>}<section className="mt-8 grid gap-6 lg:grid-cols-[0.85fr_1.15fr]"><form onSubmit={createAssessment} className="rounded-2xl border border-slate-800 bg-slate-900 p-6"><h2 className="text-xl font-semibold">Create assessment</h2><select value={batchId} onChange={(event) => setBatchId(event.target.value)} className="mt-5 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" required><option value="">Select batch</option>{batches.map((batch) => <option key={batch.id} value={batch.id}>{batch.name}</option>)}</select><input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Assessment title" className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" required /><div className="mt-3 grid gap-3 sm:grid-cols-2"><select value={type} onChange={(event) => setType(event.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"><option>Performance</option><option>Exam</option><option>Recital</option><option>Test</option><option>Practical</option></select><input type="number" min="1" step="0.01" value={maxScore} onChange={(event) => setMaxScore(event.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" required /></div><label className="mt-4 block text-sm text-slate-300">Grading scheme (optional)<select value={gradingSchemeId} onChange={(event) => setGradingSchemeId(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"><option value="">No scheme — record manual grade</option>{gradingSchemes.map((scheme) => <option key={scheme.id} value={scheme.id}>{scheme.name} · pass {scheme.passingPercent}%</option>)}</select></label><label className="mt-4 block text-sm text-slate-300">Scheduled time (optional)</label><input type="datetime-local" value={scheduledAt} onChange={(event) => setScheduledAt(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" /><button disabled={!academy || !batchId} className="mt-5 w-full rounded-lg bg-cyan-400 px-4 py-2.5 font-semibold text-slate-950 hover:bg-cyan-300 disabled:opacity-60">Create assessment</button></form><section className="rounded-2xl border border-slate-800 bg-slate-900 p-6"><h2 className="text-xl font-semibold">Record results</h2><select value={assessmentId} onChange={(event) => setAssessmentId(event.target.value)} className="mt-5 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"><option value="">Select assessment</option>{assessments.map((assessment) => <option key={assessment.id} value={assessment.id}>{assessment.title} · {batchName(assessment.batchId)} · /{assessment.maxScore}</option>)}</select>{selected && (roster.length === 0 ? <p className="mt-6 text-slate-400">No active students are enrolled in this assessment’s batch.</p> : <ul className="mt-5 space-y-3">{roster.map((student) => <ResultRow key={student.id} student={student} result={currentResult(student.id)} maxScore={selected.maxScore} saving={savingStudentId === student.id} onSave={saveResult} />)}</ul>)}</section></section></div></main>;
+  const roster = selected
+    ? enrollments
+        .filter(
+          (item) =>
+            item.batchId === selected.batchId && item.status === "Active",
+        )
+        .map((item) =>
+          students.find((student) => student.id === item.studentId),
+        )
+        .filter((student): student is Student => Boolean(student))
+    : [];
+  const currentResult = (studentId: string) =>
+    results.find((result) => result.studentId === studentId);
+  async function saveResult(
+    studentId: string,
+    score: number,
+    grade: string,
+    remarks: string,
+  ) {
+    if (!academy || !selected || Number.isNaN(score)) return;
+    setSavingStudentId(studentId);
+    setMessage("");
+    try {
+      const response = await academyApi(
+        `/api/academies/${academy.id}/assessments/${selected.id}/results`,
+        {
+          method: "POST",
+          headers: apiHeaders(true),
+          body: JSON.stringify({
+            studentId,
+            score,
+            grade: grade || null,
+            remarks: remarks || null,
+            isPublished: true,
+          }),
+        },
+      );
+      if (!response.ok) throw new Error();
+      await loadResults(selected.id);
+    } catch {
+      setMessage(`Result must be between 0 and ${selected.maxScore}.`);
+    } finally {
+      setSavingStudentId("");
+    }
+  }
+  const batchName = (id: string) =>
+    batches.find((batch) => batch.id === id)?.name ?? "Unknown batch";
+  return (
+    <main className="enterprise-settings assessments-standard min-h-screen">
+      <WorkspaceNav />
+      <div className="assessments-content mx-auto max-w-6xl px-6 py-10">
+        <header className="assessments-heading">
+          <div className="assessments-title">
+            <span className="assessments-title-icon" aria-hidden="true">
+              ♫
+            </span>
+            <div>
+              <p>Academics</p>
+              <h1>Assessments</h1>
+            </div>
+          </div>
+        </header>
+        {message && (
+          <p className="enterprise-page-state assessments-message">{message}</p>
+        )}
+        <section className="assessments-layout">
+          <form onSubmit={createAssessment} className="assessments-panel">
+            <header className="assessments-panel-header">
+              <div>
+                <p>Assessment setup</p>
+                <h2>Create assessment</h2>
+              </div>
+            </header>
+            <div className="assessments-fields">
+              <StandardSelectField
+                name="batch"
+                value={batchId}
+                onChange={setBatchId}
+                placeholder="Select batch"
+                options={batches.map((batch) => ({
+                  value: batch.id,
+                  label: batch.name,
+                }))}
+              />
+              <label>
+                <span>Assessment title</span>
+                <input
+                  value={title}
+                  onChange={(event) => setTitle(event.target.value)}
+                  placeholder="Assessment title"
+                  required
+                />
+              </label>
+              <div className="assessments-fields-two">
+                <StandardSelectField
+                  name="assessment-type"
+                  value={type}
+                  onChange={setType}
+                  placeholder="Assessment type"
+                  options={assessmentTypes.map((value) => ({
+                    value,
+                    label: value,
+                  }))}
+                />
+                <label>
+                  <span>Maximum score</span>
+                  <input
+                    type="number"
+                    min="1"
+                    step="0.01"
+                    value={maxScore}
+                    onChange={(event) => setMaxScore(event.target.value)}
+                    required
+                  />
+                </label>
+              </div>
+              <StandardSelectField
+                name="grading-scheme"
+                value={gradingSchemeId}
+                onChange={setGradingSchemeId}
+                placeholder="No scheme — manual grade"
+                options={gradingSchemes.map((scheme) => ({
+                  value: scheme.id,
+                  label: `${scheme.name} · pass ${scheme.passingPercent}%`,
+                }))}
+              />
+              <div className="assessments-fields-two">
+                <StandardDateField
+                  name="scheduled-date"
+                  label="Scheduled date"
+                  value={scheduledDate}
+                  onChange={setScheduledDate}
+                />
+                <StandardTimeField
+                  name="scheduled-time"
+                  label="Start time"
+                  value={scheduledTime}
+                  onChange={setScheduledTime}
+                />
+              </div>
+              <button
+                disabled={!academy || !batchId}
+                className="enterprise-action-button assessments-action"
+              >
+                Create assessment
+              </button>
+            </div>
+          </form>
+          <section className="assessments-panel assessments-results-panel">
+            <header className="assessments-panel-header">
+              <div>
+                <p>Assessment results</p>
+                <h2>Record results</h2>
+              </div>
+            </header>
+            <div className="assessments-picker">
+              <StandardSelectField
+                name="assessment"
+                value={assessmentId}
+                onChange={setAssessmentId}
+                placeholder="Select assessment"
+                options={assessments.map((assessment) => ({
+                  value: assessment.id,
+                  label: `${assessment.title} · ${batchName(assessment.batchId)} · /${assessment.maxScore}`,
+                }))}
+              />
+            </div>
+            {selected &&
+              (roster.length === 0 ? (
+                <p className="assessments-empty">
+                  No active students are enrolled in this assessment’s batch.
+                </p>
+              ) : (
+                <ul>
+                  {roster.map((student) => (
+                    <ResultRow
+                      key={student.id}
+                      student={student}
+                      result={currentResult(student.id)}
+                      maxScore={selected.maxScore}
+                      saving={savingStudentId === student.id}
+                      onSave={saveResult}
+                    />
+                  ))}
+                </ul>
+              ))}
+          </section>
+        </section>
+      </div>
+    </main>
+  );
 }
 
-function ResultRow({ student, result, maxScore, saving, onSave }: { student: Student; result?: Result; maxScore: number; saving: boolean; onSave: (studentId: string, score: number, grade: string, remarks: string) => Promise<void> }) {
-  const [score, setScore] = useState(result?.score.toString() ?? ""); const [grade, setGrade] = useState(result?.grade ?? ""); const [remarks, setRemarks] = useState(result?.remarks ?? "");
-  useEffect(() => { setScore(result?.score.toString() ?? ""); setGrade(result?.grade ?? ""); setRemarks(result?.remarks ?? ""); }, [result]);
-  return <li className="rounded-lg border border-slate-700 bg-slate-950 p-4"><div className="font-medium">{student.firstName} {student.lastName}</div><div className="mt-3 grid gap-2 sm:grid-cols-[0.6fr_0.6fr_1.3fr_auto]"><input type="number" min="0" max={maxScore} step="0.01" value={score} onChange={(event) => setScore(event.target.value)} placeholder={`Score / ${maxScore}`} className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2" /><input value={grade} onChange={(event) => setGrade(event.target.value)} placeholder="Grade" className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2" /><input value={remarks} onChange={(event) => setRemarks(event.target.value)} placeholder="Remarks" className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2" /><button disabled={saving || !score} onClick={() => void onSave(student.id, Number(score), grade, remarks)} className="rounded-lg border border-cyan-500 px-3 py-2 text-sm text-cyan-200 hover:bg-cyan-500/10 disabled:opacity-60">{saving ? "Saving…" : "Save"}</button></div></li>;
+function ResultRow({
+  student,
+  result,
+  maxScore,
+  saving,
+  onSave,
+}: {
+  student: Student;
+  result?: Result;
+  maxScore: number;
+  saving: boolean;
+  onSave: (
+    studentId: string,
+    score: number,
+    grade: string,
+    remarks: string,
+  ) => Promise<void>;
+}) {
+  const [score, setScore] = useState(result?.score.toString() ?? "");
+  const [grade, setGrade] = useState(result?.grade ?? "");
+  const [remarks, setRemarks] = useState(result?.remarks ?? "");
+  useEffect(() => {
+    setScore(result?.score.toString() ?? "");
+    setGrade(result?.grade ?? "");
+    setRemarks(result?.remarks ?? "");
+  }, [result]);
+  return (
+    <li>
+      <b>
+        {student.firstName} {student.lastName}
+      </b>
+      <div>
+        <input
+          type="number"
+          min="0"
+          max={maxScore}
+          step="0.01"
+          value={score}
+          onChange={(event) => setScore(event.target.value)}
+          placeholder={`Score / ${maxScore}`}
+        />
+        <input
+          value={grade}
+          onChange={(event) => setGrade(event.target.value)}
+          placeholder="Grade"
+        />
+        <input
+          value={remarks}
+          onChange={(event) => setRemarks(event.target.value)}
+          placeholder="Remarks"
+        />
+        <button
+          disabled={saving || !score}
+          type="button"
+          onClick={() => void onSave(student.id, Number(score), grade, remarks)}
+        >
+          {saving ? "Saving…" : "Save"}
+        </button>
+      </div>
+    </li>
+  );
 }
