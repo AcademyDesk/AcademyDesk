@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { academyApi, apiUrl } from "@/lib/api";
@@ -181,6 +181,7 @@ export function EnterpriseShell({
   children,
 }: EnterpriseShellProps) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -276,10 +277,20 @@ export function EnterpriseShell({
   }[module] || module);
   const subscriptionLabel = subscription?.subscriptionPlan || "your current";
 
+  function isNavigationActive(href: string) {
+    const [path, query] = href.split("?");
+    if (pathname !== path) return false;
+    if (!query) return searchParams.size === 0;
+    const expected = new URLSearchParams(query);
+    return Array.from(expected.entries()).every(
+      ([key, value]) => searchParams.get(key) === value,
+    );
+  }
+
   function LockedNavigationItem({ item }: { item: NavigationItem }) {
     const [label, href] = item;
     const included = moduleIncluded(href);
-    if (included) return <Link href={href} data-active={pathname === href}>{label}</Link>;
+    if (included) return <Link href={href} data-active={isNavigationActive(href)}>{label}</Link>;
     return <button type="button" className="enterprise-locked-link" onClick={() => setUpgradeModule(routeModule(href))} aria-label={`${label} requires an upgrade`}><span>{label}</span><i aria-hidden="true">⌁</i></button>;
   }
 
@@ -355,7 +366,7 @@ export function EnterpriseShell({
               <details
                 key={group.label}
                 className="enterprise-module-group"
-                open={(group.links ?? group.sections?.flatMap((section) => section.links) ?? []).some(([, href]) => href === pathname)}
+                open={(group.links ?? group.sections?.flatMap((section) => section.links) ?? []).some(([, href]) => isNavigationActive(href))}
               >
                 <summary>
                   <i aria-hidden="true">{group.icon}</i>
@@ -377,9 +388,7 @@ export function EnterpriseShell({
               <p>Administration</p>
               <details
                 className="enterprise-module-group enterprise-administration-group"
-                open={activeAdministrationNavigation.some(
-                  ([, href]) => href === pathname,
-                )}
+                open={activeAdministrationNavigation.some(([, href]) => isNavigationActive(href))}
               >
                 <summary>
                   <i aria-hidden="true">⚙</i>
