@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { academyApi } from "@/lib/api";
+import { StandardDetailModal, StandardInteractiveTile } from "@/components/design-system/controls";
 
 type Academy = { id: string; name: string };
 type ScheduleItem = {
@@ -40,6 +41,11 @@ type Session = {
   roles: string[];
   academyId?: string | null;
 };
+type Student = { id: string; firstName: string; lastName: string; isActive: boolean };
+type Invoice = { id: string; studentId: string; invoiceNumber: string; totalAmount: number; paidAmount: number; dueDate: string; status: string };
+type PayrollPayout = { id: string; workerName: string; periodLabel: string; netAmount: number; status: string };
+type Attendance = { studentId: string; status: string };
+type DetailData = { students: Student[]; invoices: Invoice[]; payroll: PayrollPayout[]; attendance: Attendance[] };
 
 const emptyDashboard: DashboardData = {
   students: 0,
@@ -54,6 +60,7 @@ const emptyDashboard: DashboardData = {
   todaySchedule: [],
   recentActivity: [],
 };
+const emptyDetails: DetailData = { students: [], invoices: [], payroll: [], attendance: [] };
 
 function greeting() {
   const hour = new Date().getHours();
@@ -91,6 +98,8 @@ export default function DashboardPage() {
   const [data, setData] = useState<DashboardData>(emptyDashboard);
   const [session, setSession] = useState<Session>();
   const [message, setMessage] = useState("Loading your workspace…");
+  const [details, setDetails] = useState<DetailData>(emptyDetails);
+  const [detail, setDetail] = useState<"students" | "classes" | "attendance" | "outstanding" | null>(null);
 
   useEffect(() => {
     async function loadDashboard() {
@@ -132,6 +141,18 @@ export default function DashboardPage() {
           todaySchedule: summary.todaySchedule ?? [],
           recentActivity: summary.recentActivity ?? [],
         });
+        const [studentResponse, invoiceResponse, payrollResponse, allSessionsResponse] = await Promise.all([
+          academyApi(`/api/academies/${academy.id}/students`),
+          academyApi(`/api/academies/${academy.id}/invoices`),
+          academyApi(`/api/academies/${academy.id}/payroll/payouts`),
+          academyApi(`/api/academies/${academy.id}/sessions`),
+        ]);
+        const allSessions: { id: string }[] = allSessionsResponse.ok ? await allSessionsResponse.json() : [];
+        const attendanceRows = await Promise.all(allSessions.map(async (item) => {
+          const response = await academyApi(`/api/academies/${academy.id}/sessions/${item.id}/attendance`);
+          return response.ok ? await response.json() as Attendance[] : [];
+        }));
+        setDetails({ students: studentResponse.ok ? await studentResponse.json() : [], invoices: invoiceResponse.ok ? await invoiceResponse.json() : [], payroll: payrollResponse.ok ? await payrollResponse.json() : [], attendance: attendanceRows.flat() });
         if (sessionResponse.ok) setSession(await sessionResponse.json());
         setMessage("");
       } catch {
@@ -148,6 +169,10 @@ export default function DashboardPage() {
         (data.presentAttendanceLast30Days / data.attendanceLast30Days) * 100,
       )
     : 0;
+  const activeStudents = details.students.filter((student) => student.isActive);
+  const outstandingInvoices = details.invoices.filter((invoice) => invoice.totalAmount - invoice.paidAmount > 0);
+  const outstandingPayroll = details.payroll.filter((payout) => payout.status !== "Paid");
+  const payrollDue = outstandingPayroll.reduce((sum, payout) => sum + payout.netAmount, 0);
   return (
     <main className="enterprise-dashboard">
       <section className="enterprise-dashboard-heading">
@@ -169,38 +194,10 @@ export default function DashboardPage() {
         className="enterprise-kpi-grid"
         aria-label="Academy operating indicators"
       >
-        <Link href="/students" className="enterprise-kpi">
-          <span>Active students</span>
-          <strong>{data.students}</strong>
-          <small>
-            {data.openLeads
-              ? `${data.openLeads} open leads`
-              : "View student records"}
-          </small>
-        </Link>
-        <Link href="/batches" className="enterprise-kpi">
-          <span>Classes today</span>
-          <strong>{data.classesToday}</strong>
-          <small>
-            {
-              data.todaySchedule.filter((item) => item.status === "Scheduled")
-                .length
-            }{" "}
-            scheduled or in progress
-          </small>
-        </Link>
-        <Link href="/attendance" className="enterprise-kpi">
-          <span>Attendance rate</span>
-          <strong>{attendanceRate}%</strong>
-          <small>
-            {data.presentAttendanceLast30Days} present in the last 30 days
-          </small>
-        </Link>
-        <Link href="/invoices" className="enterprise-kpi">
-          <span>Outstanding fees</span>
-          <strong>{formatRupees(data.outstandingBalance)}</strong>
-          <small>Review invoices and payment follow-up</small>
-        </Link>
+        <StandardInteractiveTile label="Active students" value={data.students} detail="View active student names" onClick={() => setDetail("students")} className="enterprise-kpi" />
+        <StandardInteractiveTile label="Classes today" value={data.classesToday} detail="View scheduled classes" onClick={() => setDetail("classes")} className="enterprise-kpi" />
+        <StandardInteractiveTile label="Attendance rate" value={`${attendanceRate}%`} detail="View attendance by student" onClick={() => setDetail("attendance")} className="enterprise-kpi" />
+        <StandardInteractiveTile label="Outstanding fees" value={formatRupees(data.outstandingBalance + payrollDue)} detail="View student fees and teacher salary due" onClick={() => setDetail("outstanding")} className="enterprise-kpi" />
       </section>
       <section className="enterprise-dashboard-panels">
         <section className="enterprise-data-panel">
@@ -303,6 +300,13 @@ export default function DashboardPage() {
           </div>
         </section>
       </section>
+      {detail === "students" && <StandardDetailModal eyebrow="Workspace overview" title="Active students" onClose={() => setDetail(null)}><DetailList rows={activeStudents.map((student) => [fullName(student), "Active student"])} empty="No active students." /></StandardDetailModal>}
+      {detail === "classes" && <StandardDetailModal eyebrow="Workspace overview" title="Classes today" onClose={() => setDetail(null)}><DetailList rows={data.todaySchedule.map((item) => [item.batchName, `${formatTime(item.startUtc)} · ${item.teacherName || "Unassigned"} · ${item.status}`])} empty="No classes are scheduled today." /></StandardDetailModal>}
+      {detail === "attendance" && <StandardDetailModal eyebrow="Workspace overview" title="Attendance by student" onClose={() => setDetail(null)}><DetailList rows={activeStudents.map((student) => { const records = details.attendance.filter((record) => record.studentId === student.id); const present = records.filter((record) => ["Present", "Late", "Online"].includes(record.status)).length; return [fullName(student), records.length ? `${Math.round(present * 100 / records.length)}% · ${present} of ${records.length} classes` : "No attendance recorded"]; })} empty="No active students." /></StandardDetailModal>}
+      {detail === "outstanding" && <StandardDetailModal eyebrow="Workspace overview" title="Outstanding fees and salary" onClose={() => setDetail(null)}><div className="standard-detail-group"><h3>Student fee payments</h3><DetailList rows={outstandingInvoices.map((invoice) => [fullName(details.students.find((student) => student.id === invoice.studentId)), `${invoice.invoiceNumber} · ${formatRupees(invoice.totalAmount - invoice.paidAmount)} due`])} empty="No student fees are outstanding." /><h3>Teacher salary payments</h3><DetailList rows={outstandingPayroll.map((payout) => [payout.workerName, `${payout.periodLabel} · ${formatRupees(payout.netAmount)} · ${payout.status}`])} empty="No teacher salary payments are outstanding." /></div></StandardDetailModal>}
     </main>
   );
 }
+function DetailList({ rows, empty }: { rows: [string, string][]; empty: string }) { return rows.length ? <div className="standard-detail-list">{rows.map(([title, detail], index) => <article key={`${title}-${index}`}><b>{title}</b><small>{detail}</small></article>)}</div> : <p className="standard-detail-empty">{empty}</p>; }
+function fullName(student?: Student) { return student ? `${student.firstName} ${student.lastName}` : "Unknown student"; }
+function formatTime(value: string) { return new Intl.DateTimeFormat("en-IN", { hour: "numeric", minute: "2-digit", timeZone: "Asia/Kolkata" }).format(new Date(value)); }

@@ -43,7 +43,6 @@ public sealed class DashboardController(AcademyDeskDbContext db, UserManager<App
                 && session.Status != "Cancelled"
             orderby session.StartUtc
             select new DashboardScheduleItem(session.Id, batch.Name, teacher == null ? null : teacher.FirstName + " " + teacher.LastName, session.StartUtc, session.EndUtc, session.Status, session.RoomName, session.DeliveryMode))
-            .Take(4)
             .ToListAsync(token);
         var activity = await db.AuditLogs.AsNoTracking()
             .Where(x => x.AcademyId == academyId)
