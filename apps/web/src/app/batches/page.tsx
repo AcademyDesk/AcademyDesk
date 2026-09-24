@@ -582,8 +582,11 @@ export default function BatchesPage() {
                               </div>
                             </div>
                             <span
-                              className={`rounded-full px-2 py-1 text-xs ${batch.isActive ? "bg-emerald-950 text-emerald-300" : "bg-slate-800 text-slate-400"}`}
+                              className={`batch-directory-status${batch.isActive ? " active" : ""}`}
                             >
+                              <svg viewBox="0 0 16 16" aria-hidden="true">
+                                <path d="m3.25 8.1 2.85 2.85 6.65-6.7" />
+                              </svg>
                               {batch.isActive ? "Active" : "Inactive"}
                             </span>
                           </div>
