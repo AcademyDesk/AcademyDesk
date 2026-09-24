@@ -15,12 +15,22 @@ type Summary = {
   overdueFees: number;
   activeSubjectFeeArrangements: number;
 };
+type Session = { id: string; batchId: string; startUtc: string; deliveryMode: string };
+type Enrollment = { studentId: string; batchId: string; status: string };
+type Student = { id: string; firstName: string; lastName: string };
+type Batch = { id: string; name: string };
 
 const money = (value: number) => `₹${value.toLocaleString("en-IN")}`;
+const indiaDay = (value: Date) => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(value);
+const indiaTime = (value: string) => new Intl.DateTimeFormat("en-IN", { hour: "numeric", minute: "2-digit", timeZone: "Asia/Kolkata" }).format(new Date(value));
 
 export default function StudentOverviewPage() {
   const [academy, setAcademy] = useState<Academy>();
   const [summary, setSummary] = useState<Summary>();
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
+  const [students, setStudents] = useState<Student[]>([]);
+  const [batches, setBatches] = useState<Batch[]>([]);
   const [message, setMessage] = useState("Loading student overview…");
 
   useEffect(() => {
@@ -30,15 +40,37 @@ export default function StudentOverviewPage() {
         const current = (await academies.json())[0] as Academy | undefined;
         if (!current) return setMessage("Create an academy before viewing student operations.");
         setAcademy(current);
-        const response = await academyApi(`/api/academies/${current.id}/students/overview`, { cache: "no-store" });
-        if (!response.ok) throw new Error();
-        setSummary(await response.json());
+        const [summaryResponse, sessionResponse, enrollmentResponse, studentResponse, batchResponse] = await Promise.all([
+          academyApi(`/api/academies/${current.id}/students/overview`, { cache: "no-store" }),
+          academyApi(`/api/academies/${current.id}/sessions`, { cache: "no-store" }),
+          academyApi(`/api/academies/${current.id}/enrollments`, { cache: "no-store" }),
+          academyApi(`/api/academies/${current.id}/students`, { cache: "no-store" }),
+          academyApi(`/api/academies/${current.id}/batches`, { cache: "no-store" }),
+        ]);
+        if (!summaryResponse.ok) throw new Error();
+        setSummary(await summaryResponse.json());
+        setSessions(sessionResponse.ok ? await sessionResponse.json() : []);
+        setEnrollments(enrollmentResponse.ok ? await enrollmentResponse.json() : []);
+        setStudents(studentResponse.ok ? await studentResponse.json() : []);
+        setBatches(batchResponse.ok ? await batchResponse.json() : []);
         setMessage("");
       } catch {
         setMessage("Student overview could not be loaded.");
       }
     })();
   }, []);
+  const today = indiaDay(new Date());
+  const todaySessions = sessions.filter((session) => indiaDay(new Date(session.startUtc)) === today);
+  const weekEnd = new Date();
+  weekEnd.setDate(weekEnd.getDate() + 7);
+  const upcomingSessions = sessions.filter((session) => new Date(session.startUtc) >= new Date() && new Date(session.startUtc) <= weekEnd);
+  const learnersFor = (sessionRows: Session[]) => {
+    const batchIds = new Set(sessionRows.map((session) => session.batchId));
+    return students.filter((student) => enrollments.some((enrollment) => enrollment.studentId === student.id && enrollment.status.toLowerCase() === "active" && batchIds.has(enrollment.batchId)));
+  };
+  const todayLearners = learnersFor(todaySessions);
+  const weekLearners = learnersFor(upcomingSessions);
+  const batchName = (id: string) => batches.find((batch) => batch.id === id)?.name ?? "Class";
 
   return (
     <main className="enterprise-settings student-overview-standard">
@@ -61,10 +93,10 @@ export default function StudentOverviewPage() {
             <Metric label="Total admission fees" value={money(summary.totalAdmissionFees)} note="One-time fees configured" />
             <Metric label="Outstanding fees" value={money(summary.outstandingFees)} note={`${money(summary.overdueFees)} overdue`} emphasis={summary.overdueFees > 0 ? "warning" : undefined} />
           </section>
-          <section className="student-overview-actions-grid">
-            <Action href="/student-onboarding" title="Student onboarding" text="Create the governed student and parent record." />
-            <Action href="/students" title="Student management" text="Edit status and open any student record." />
-            <Action href="/student-fees" title="Student fee details" text="Set admission and subject-wise fees." />
+          <section className="student-overview-insights-grid" aria-label="Student delivery insights">
+            <Insight title="Students with classes today" value={String(todayLearners.length)} details={todayLearners.length ? todayLearners.slice(0, 4).map((student) => `${student.firstName} ${student.lastName}`) : ["No students scheduled today."]} />
+            <Insight title="Today’s class schedule" value={String(todaySessions.length)} details={todaySessions.length ? todaySessions.slice(0, 4).map((session) => `${indiaTime(session.startUtc)} · ${batchName(session.batchId)}`) : ["No classes scheduled today."]} />
+            <Insight title="Students scheduled this week" value={String(weekLearners.length)} details={weekLearners.length ? weekLearners.slice(0, 4).map((student) => `${student.firstName} ${student.lastName}`) : ["No classes scheduled in the next 7 days."]} />
           </section>
         </>
       ) : null}
@@ -75,6 +107,6 @@ export default function StudentOverviewPage() {
 function Metric({ label, value, note, emphasis }: { label: string; value: string; note: string; emphasis?: "warning" }) {
   return <article className={`student-overview-kpi ${emphasis ? "student-overview-kpi-warning" : ""}`}><span>{label}</span><strong>{value}</strong><small>{note}</small></article>;
 }
-function Action({ href, title, text }: { href: string; title: string; text: string }) {
-  return <Link href={href} className="student-overview-action"><span>Students</span><h3>{title}</h3><p>{text}</p><small>Open section →</small></Link>;
+function Insight({ title, value, details }: { title: string; value: string; details: string[] }) {
+  return <article className="student-overview-insight"><span>Student delivery</span><div><h3>{title}</h3><strong>{value}</strong></div><ul>{details.map((detail) => <li key={detail}>{detail}</li>)}</ul></article>;
 }
