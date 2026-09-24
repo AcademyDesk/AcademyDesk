@@ -1,1 +1,86 @@
-"use client";import{useEffect,useState}from"react";import{academyApi}from"@/lib/api";type A={id:string};type G={id:string;name:string;passingPercent:number;isActive:boolean};export default function AssessmentGovernance(){const[g,setG]=useState<G[]>([]);const[m,setM]=useState('Loading assessment policy…');useEffect(()=>{void(async()=>{try{const a:A[]=await(await academyApi('/api/academies')).json();if(!a[0])throw Error();setG(await(await academyApi(`/api/academies/${a[0].id}/academic-governance/grading-schemes`)).json());setM('')}catch{setM('Assessment policy could not be loaded.')}})()},[]);return <main className="enterprise-settings academic-module"><header className="enterprise-page-header"><p>Academics / assessment governance</p><h2>Assessment policy register</h2><span>Review active grading schemes before assessment delivery.</span></header>{m&&<p className="mt-5 text-amber-200">{m}</p>}<section className="surface-panel mt-5 rounded-xl p-5"><h3 className="font-semibold">Available grading schemes</h3>{g.map(x=><div key={x.id} className="mt-3 rounded border border-slate-700 p-4"><b>{x.name}</b><span className="float-right text-cyan-300">Pass: {x.passingPercent}%</span><p className="mt-1 text-sm text-slate-400">{x.isActive?'Active for assessment selection':'Inactive'}</p></div>)}{!g.length&&<p className="mt-4 text-slate-400">Configure a grading scheme before creating assessments.</p>}</section></main>}
+"use client";
+
+import { useEffect, useState } from "react";
+import { WorkspaceNav } from "@/components/workspace-nav";
+import { academyApi } from "@/lib/api";
+
+type Academy = { id: string };
+type Scheme = {
+  id: string;
+  name: string;
+  passingPercent: number;
+  isActive: boolean;
+};
+export default function AssessmentGovernance() {
+  const [schemes, setSchemes] = useState<Scheme[]>([]);
+  const [message, setMessage] = useState("Loading assessment policy…");
+  useEffect(() => {
+    void (async () => {
+      try {
+        const academies: Academy[] = await (
+          await academyApi("/api/academies")
+        ).json();
+        if (!academies[0]) throw Error();
+        const response = await academyApi(
+          `/api/academies/${academies[0].id}/academic-governance/grading-schemes`,
+        );
+        if (!response.ok) throw Error();
+        setSchemes(await response.json());
+        setMessage("");
+      } catch {
+        setMessage("Assessment policy could not be loaded.");
+      }
+    })();
+  }, []);
+  return (
+    <main className="enterprise-settings governance-standard policy-standard min-h-screen">
+      <WorkspaceNav />
+      <div className="governance-content mx-auto max-w-5xl px-6 py-10">
+        <header className="governance-heading">
+          <div className="governance-title">
+            <span className="governance-title-icon" aria-hidden="true">
+              ♫
+            </span>
+            <div>
+              <p>Academics</p>
+              <h1>Assessment Policy</h1>
+            </div>
+          </div>
+        </header>
+        {message && (
+          <p className="enterprise-page-state governance-message">{message}</p>
+        )}
+        <section className="governance-panel policy-panel">
+          <header className="governance-panel-header">
+            <div>
+              <p>Assessment policy</p>
+              <h2>Available grading schemes</h2>
+            </div>
+            <span>
+              {schemes.filter((scheme) => scheme.isActive).length} active
+            </span>
+          </header>
+          {schemes.length === 0 ? (
+            <p className="governance-empty">No grading schemes configured.</p>
+          ) : (
+            <ul>
+              {schemes.map((scheme) => (
+                <li key={scheme.id}>
+                  <div>
+                    <b>{scheme.name}</b>
+                    <small>
+                      {scheme.isActive
+                        ? "Active for assessment selection"
+                        : "Inactive"}
+                    </small>
+                  </div>
+                  <span>Pass: {scheme.passingPercent}%</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      </div>
+    </main>
+  );
+}

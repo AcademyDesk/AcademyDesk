@@ -1,13 +1,313 @@
 "use client";
+
 import { FormEvent, useEffect, useState } from "react";
 import { WorkspaceNav } from "@/components/workspace-nav";
+import {
+  StandardDateField,
+  StandardSelectField,
+} from "@/components/design-system/controls";
 import { academyApi, apiHeaders } from "@/lib/api";
-type Academy={id:string}; type Student={id:string;firstName:string;lastName:string}; type Piece={id:string;title:string;composer?:string|null;instrument?:string|null;genre?:string|null;difficulty:string;durationMinutes?:number|null}; type Progress={id:string;studentId:string;musicPieceId:string;status:string;targetDate?:string|null;score?:number|null;notes?:string|null};
-export default function MusicPage(){const [academy,setAcademy]=useState<Academy>();const [students,setStudents]=useState<Student[]>([]);const [pieces,setPieces]=useState<Piece[]>([]);const [progress,setProgress]=useState<Progress[]>([]);const [title,setTitle]=useState("");const [composer,setComposer]=useState("");const [instrument,setInstrument]=useState("Piano");const [difficulty,setDifficulty]=useState("Beginner");const [studentId,setStudentId]=useState("");const [pieceId,setPieceId]=useState("");const [targetDate,setTargetDate]=useState("");const [message,setMessage]=useState("Loading music workspace…");
-async function load(id?:string){const academyId=id??academy?.id;if(!academyId)return;const [s,p,g]=await Promise.all([academyApi(`/api/academies/${academyId}/students`),academyApi(`/api/academies/${academyId}/music-pieces`),academyApi(`/api/academies/${academyId}/music-progress`)]);if(!s.ok||!p.ok||!g.ok)throw new Error();const ss:Student[]=await s.json();const pp:Piece[]=await p.json();setStudents(ss);setPieces(pp);setProgress(await g.json());if(!studentId&&ss.length)setStudentId(ss[0].id);if(!pieceId&&pp.length)setPieceId(pp[0].id);setMessage("");}
-useEffect(()=>{void (async()=>{try{const r=await academyApi("/api/academies");if(!r.ok)throw new Error();const a:Academy[]=await r.json();if(!a[0])return setMessage("Create your academy first.");setAcademy(a[0]);await load(a[0].id);}catch{setMessage("Music workspace could not be loaded. Apply the music migration and restart the API.");}})()},[]);
-async function addPiece(e:FormEvent){e.preventDefault();if(!academy)return;const r=await academyApi(`/api/academies/${academy.id}/music-pieces`,{method:"POST",headers:apiHeaders(true),body:JSON.stringify({title,composer:composer||null,instrument,genre:null,difficulty,durationMinutes:null})});if(!r.ok)return setMessage("Piece title is required.");setTitle("");setComposer("");await load();}
-async function assign(e:FormEvent){e.preventDefault();if(!academy||!studentId||!pieceId)return;const r=await academyApi(`/api/academies/${academy.id}/music-progress`,{method:"POST",headers:apiHeaders(true),body:JSON.stringify({studentId,musicPieceId:pieceId,targetDate:targetDate||null,notes:null})});if(r.status===409)return setMessage("This piece is already assigned to this student.");if(!r.ok)return setMessage("Assignment could not be saved.");setTargetDate("");await load();}
-async function updateProgress(x:Progress,status:string){if(!academy)return;const r=await academyApi(`/api/academies/${academy.id}/music-progress/${x.id}`,{method:"PATCH",headers:apiHeaders(true),body:JSON.stringify({status,targetDate:x.targetDate||null,score:x.score||null,notes:x.notes||null})});if(!r.ok)return setMessage("Progress could not be updated.");await load();}
-const name=(id:string)=>{const s=students.find(x=>x.id===id);return s?`${s.firstName} ${s.lastName}`:"Unknown student"};const piece=(id:string)=>pieces.find(x=>x.id===id)?.title??"Unknown piece";
-return <main className="enterprise-settings enterprise-legacy-standard academic-standard min-h-screen"><WorkspaceNav/><div className="mx-auto max-w-6xl px-6 py-10"><p className="text-sm font-semibold uppercase tracking-[.22em] text-cyan-300">Music academy</p><h1 className="mt-3 text-4xl font-semibold">Repertoire and music progress</h1><p className="mt-3 text-slate-300">Build your repertoire library, assign pieces to students, and track their progress from first assignment to mastery.</p>{message&&<p className="mt-6 rounded-lg border border-amber-700/50 bg-amber-950/40 p-4 text-sm text-amber-100">{message}</p>}<section className="mt-8 grid gap-6 lg:grid-cols-2"><form onSubmit={addPiece} className="rounded-2xl border border-slate-800 bg-slate-900 p-6"><h2 className="text-xl font-semibold">Add repertoire piece</h2><input value={title} onChange={e=>setTitle(e.target.value)} placeholder="Piece title" className="mt-5 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" required/><input value={composer} onChange={e=>setComposer(e.target.value)} placeholder="Composer (optional)" className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"/><div className="mt-3 grid gap-3 sm:grid-cols-2"><input value={instrument} onChange={e=>setInstrument(e.target.value)} placeholder="Instrument" className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"/><select value={difficulty} onChange={e=>setDifficulty(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"><option>Beginner</option><option>Intermediate</option><option>Advanced</option></select></div><button className="mt-5 w-full rounded-lg bg-cyan-400 px-4 py-2.5 font-semibold text-slate-950">Add piece</button></form><form onSubmit={assign} className="rounded-2xl border border-slate-800 bg-slate-900 p-6"><h2 className="text-xl font-semibold">Assign to student</h2><select value={studentId} onChange={e=>setStudentId(e.target.value)} className="mt-5 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"><option value="">Select student</option>{students.map(x=><option key={x.id} value={x.id}>{x.firstName} {x.lastName}</option>)}</select><select value={pieceId} onChange={e=>setPieceId(e.target.value)} className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"><option value="">Select piece</option>{pieces.map(x=><option key={x.id} value={x.id}>{x.title} · {x.difficulty}</option>)}</select><input type="date" value={targetDate} onChange={e=>setTargetDate(e.target.value)} className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"/><button className="mt-5 w-full rounded-lg border border-cyan-400 px-4 py-2.5 font-semibold text-cyan-200">Assign piece</button></form></section><section className="mt-6 rounded-2xl border border-slate-800 bg-slate-900 p-6"><h2 className="text-xl font-semibold">Student repertoire</h2>{progress.length===0?<p className="mt-5 text-slate-400">No pieces assigned yet.</p>:<ul className="mt-4 space-y-3">{progress.map(x=><li key={x.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-700 bg-slate-950 p-4"><div><div className="font-medium">{name(x.studentId)} — {piece(x.musicPieceId)}</div><div className="mt-1 text-sm text-slate-400">{x.targetDate?`Target ${x.targetDate}`:"No target date"}</div></div><select value={x.status} onChange={e=>void updateProgress(x,e.target.value)} className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2"><option>Assigned</option><option>Learning</option><option>ReadyForReview</option><option>Mastered</option><option>Paused</option></select></li>)}</ul>}</section></div></main>}
+
+type Academy = { id: string };
+type Student = { id: string; firstName: string; lastName: string };
+type Piece = {
+  id: string;
+  title: string;
+  composer?: string | null;
+  instrument?: string | null;
+  genre?: string | null;
+  difficulty: string;
+  durationMinutes?: number | null;
+};
+type Progress = {
+  id: string;
+  studentId: string;
+  musicPieceId: string;
+  status: string;
+  targetDate?: string | null;
+  score?: number | null;
+  notes?: string | null;
+};
+const difficulties = ["Beginner", "Intermediate", "Advanced"];
+const progressStates = [
+  "Assigned",
+  "Learning",
+  "ReadyForReview",
+  "Mastered",
+  "Paused",
+];
+const label = (value: string) =>
+  value === "ReadyForReview" ? "Ready for review" : value;
+
+export default function MusicPage() {
+  const [academy, setAcademy] = useState<Academy>();
+  const [students, setStudents] = useState<Student[]>([]);
+  const [pieces, setPieces] = useState<Piece[]>([]);
+  const [progress, setProgress] = useState<Progress[]>([]);
+  const [title, setTitle] = useState("");
+  const [composer, setComposer] = useState("");
+  const [instrument, setInstrument] = useState("Piano");
+  const [difficulty, setDifficulty] = useState("Beginner");
+  const [studentId, setStudentId] = useState("");
+  const [pieceId, setPieceId] = useState("");
+  const [targetDate, setTargetDate] = useState("");
+  const [message, setMessage] = useState("Loading music workspace…");
+  async function load(id?: string) {
+    const academyId = id ?? academy?.id;
+    if (!academyId) return;
+    const [studentResponse, pieceResponse, progressResponse] =
+      await Promise.all([
+        academyApi(`/api/academies/${academyId}/students`),
+        academyApi(`/api/academies/${academyId}/music-pieces`),
+        academyApi(`/api/academies/${academyId}/music-progress`),
+      ]);
+    if (!studentResponse.ok || !pieceResponse.ok || !progressResponse.ok)
+      throw new Error();
+    const studentRows: Student[] = await studentResponse.json();
+    const pieceRows: Piece[] = await pieceResponse.json();
+    setStudents(studentRows);
+    setPieces(pieceRows);
+    setProgress(await progressResponse.json());
+    if (!studentId && studentRows.length) setStudentId(studentRows[0].id);
+    if (!pieceId && pieceRows.length) setPieceId(pieceRows[0].id);
+    setMessage("");
+  }
+  useEffect(() => {
+    void (async () => {
+      try {
+        const response = await academyApi("/api/academies");
+        if (!response.ok) throw new Error();
+        const academies: Academy[] = await response.json();
+        if (!academies[0]) return setMessage("Create your academy first.");
+        setAcademy(academies[0]);
+        await load(academies[0].id);
+      } catch {
+        setMessage(
+          "Music workspace could not be loaded. Apply the music migration and restart the API.",
+        );
+      }
+    })();
+  }, []);
+  async function addPiece(event: FormEvent) {
+    event.preventDefault();
+    if (!academy) return;
+    const response = await academyApi(
+      `/api/academies/${academy.id}/music-pieces`,
+      {
+        method: "POST",
+        headers: apiHeaders(true),
+        body: JSON.stringify({
+          title,
+          composer: composer || null,
+          instrument,
+          genre: null,
+          difficulty,
+          durationMinutes: null,
+        }),
+      },
+    );
+    if (!response.ok) return setMessage("Piece title is required.");
+    setTitle("");
+    setComposer("");
+    await load();
+  }
+  async function assign(event: FormEvent) {
+    event.preventDefault();
+    if (!academy || !studentId || !pieceId) return;
+    const response = await academyApi(
+      `/api/academies/${academy.id}/music-progress`,
+      {
+        method: "POST",
+        headers: apiHeaders(true),
+        body: JSON.stringify({
+          studentId,
+          musicPieceId: pieceId,
+          targetDate: targetDate || null,
+          notes: null,
+        }),
+      },
+    );
+    if (response.status === 409)
+      return setMessage("This piece is already assigned to this student.");
+    if (!response.ok) return setMessage("Assignment could not be saved.");
+    setTargetDate("");
+    await load();
+  }
+  async function updateProgress(item: Progress, status: string) {
+    if (!academy) return;
+    const response = await academyApi(
+      `/api/academies/${academy.id}/music-progress/${item.id}`,
+      {
+        method: "PATCH",
+        headers: apiHeaders(true),
+        body: JSON.stringify({
+          status,
+          targetDate: item.targetDate || null,
+          score: item.score || null,
+          notes: item.notes || null,
+        }),
+      },
+    );
+    if (!response.ok) return setMessage("Progress could not be updated.");
+    await load();
+  }
+  const name = (id: string) => {
+    const student = students.find((item) => item.id === id);
+    return student
+      ? `${student.firstName} ${student.lastName}`
+      : "Unknown student";
+  };
+  const piece = (id: string) =>
+    pieces.find((item) => item.id === id)?.title ?? "Unknown piece";
+  return (
+    <main className="enterprise-settings music-standard min-h-screen">
+      <WorkspaceNav />
+      <div className="music-content mx-auto max-w-6xl px-6 py-10">
+        <header className="music-heading">
+          <div className="music-title">
+            <span className="music-title-icon" aria-hidden="true">
+              ♫
+            </span>
+            <div>
+              <p>Academics</p>
+              <h1>Music Progress</h1>
+            </div>
+          </div>
+        </header>
+        {message && (
+          <p className="enterprise-page-state music-message">{message}</p>
+        )}
+        <section className="music-form-grid">
+          <form onSubmit={addPiece} className="music-panel">
+            <header className="music-panel-header">
+              <div>
+                <p>Repertoire library</p>
+                <h2>Add repertoire piece</h2>
+              </div>
+            </header>
+            <div className="music-fields">
+              <label>
+                <span>Piece title</span>
+                <input
+                  value={title}
+                  onChange={(event) => setTitle(event.target.value)}
+                  placeholder="Piece title"
+                  required
+                />
+              </label>
+              <label>
+                <span>Composer</span>
+                <input
+                  value={composer}
+                  onChange={(event) => setComposer(event.target.value)}
+                  placeholder="Optional composer"
+                />
+              </label>
+              <div className="music-fields-two">
+                <label>
+                  <span>Instrument</span>
+                  <input
+                    value={instrument}
+                    onChange={(event) => setInstrument(event.target.value)}
+                    placeholder="Instrument"
+                  />
+                </label>
+                <StandardSelectField
+                  name="difficulty"
+                  value={difficulty}
+                  onChange={setDifficulty}
+                  placeholder="Difficulty"
+                  options={difficulties.map((value) => ({
+                    value,
+                    label: value,
+                  }))}
+                />
+              </div>
+              <button className="enterprise-action-button music-action">
+                Add piece
+              </button>
+            </div>
+          </form>
+          <form onSubmit={assign} className="music-panel">
+            <header className="music-panel-header">
+              <div>
+                <p>Student repertoire</p>
+                <h2>Assign to student</h2>
+              </div>
+            </header>
+            <div className="music-fields">
+              <StandardSelectField
+                name="student"
+                value={studentId}
+                onChange={setStudentId}
+                placeholder="Select student"
+                options={students.map((student) => ({
+                  value: student.id,
+                  label: `${student.firstName} ${student.lastName}`,
+                }))}
+              />
+              <StandardSelectField
+                name="piece"
+                value={pieceId}
+                onChange={setPieceId}
+                placeholder="Select piece"
+                options={pieces.map((item) => ({
+                  value: item.id,
+                  label: `${item.title} · ${item.difficulty}`,
+                }))}
+              />
+              <StandardDateField
+                name="target"
+                label="Target date"
+                value={targetDate}
+                onChange={setTargetDate}
+              />
+              <button className="enterprise-action-button music-action">
+                Assign piece
+              </button>
+            </div>
+          </form>
+        </section>
+        <section className="music-panel music-register">
+          <header className="music-panel-header">
+            <div>
+              <p>Student repertoire</p>
+              <h2>Progress register</h2>
+            </div>
+            <span>{progress.length} assignments</span>
+          </header>
+          {progress.length === 0 ? (
+            <p className="music-empty">No pieces assigned yet.</p>
+          ) : (
+            <ul>
+              {progress.map((item) => (
+                <li key={item.id}>
+                  <div>
+                    <b>
+                      {name(item.studentId)} — {piece(item.musicPieceId)}
+                    </b>
+                    <small>
+                      {item.targetDate
+                        ? `Target ${item.targetDate}`
+                        : "No target date"}
+                    </small>
+                  </div>
+                  <StandardSelectField
+                    name={`progress-${item.id}`}
+                    value={item.status}
+                    onChange={(status) => void updateProgress(item, status)}
+                    placeholder="Progress"
+                    options={progressStates.map((value) => ({
+                      value,
+                      label: label(value),
+                    }))}
+                  />
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      </div>
+    </main>
+  );
+}
