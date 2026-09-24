@@ -50,6 +50,9 @@ public sealed class ProfilesController(AcademyDeskDbContext dbContext) : Control
             x.Currency,
             x.DueDate,
             x.Status,
+            x.FeePlanId.HasValue
+                ? dbContext.FeePlans.Where(plan => plan.AcademyId == academyId && plan.Id == x.FeePlanId.Value).Select(plan => plan.Name).FirstOrDefault()
+                : "General fee",
             dbContext.Payments.Where(payment => payment.AcademyId == academyId && payment.InvoiceId == x.Id && payment.Status != "Voided").Sum(payment => (decimal?)payment.Amount) ?? 0,
             dbContext.Payments.Where(payment => payment.AcademyId == academyId && payment.InvoiceId == x.Id && payment.Status != "Voided").Max(payment => (DateTime?)payment.PaidAtUtc))).ToListAsync(token);
         var progress = await (from item in dbContext.StudentMusicProgress.AsNoTracking()
@@ -187,7 +190,7 @@ public sealed class ProfilesController(AcademyDeskDbContext dbContext) : Control
 public sealed record ContactSummary(Guid Id, string Name, string? Email, string? Phone, string? Relationship);
 public sealed record EnrollmentProfileSummary(string BatchName, string CourseName, string Status, DateOnly StartDate, DateOnly? EndDate);
 public sealed record StatusCount(string Status, int Count);
-public sealed record InvoiceProfileSummary(string InvoiceNumber, decimal TotalAmount, string Currency, DateOnly DueDate, string Status, decimal PaidAmount, DateTime? LastPaidAtUtc);
+public sealed record InvoiceProfileSummary(string InvoiceNumber, decimal TotalAmount, string Currency, DateOnly DueDate, string Status, string? SubjectName, decimal PaidAmount, DateTime? LastPaidAtUtc);
 public sealed record MusicProgressProfileSummary(string Title, string? Instrument, string Status, decimal? Score);
 public sealed record PracticeProfileSummary(DateOnly PracticeDate, int MinutesPracticed, string? FocusArea, string? Notes, string Status);
 public sealed record CommunicationProfileSummary(string Title, string Channel, string Status, DateTime CreatedAtUtc);

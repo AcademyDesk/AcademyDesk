@@ -43,8 +43,8 @@ type Profile = {
 type Guardian = { id: string; name: string; email?: string | null; phone?: string | null; relationship?: string | null };
 type Enrollment = { batchName: string; courseName: string; status: string; startDate: string; endDate?: string | null };
 type StatusCount = { status: string; count: number };
-type Invoice = { invoiceNumber: string; totalAmount: number; currency: string; dueDate: string; status: string; paidAmount?: number; lastPaidAtUtc?: string | null };
-type StudentDetail = "attendance" | "fees" | "family";
+type Invoice = { invoiceNumber: string; totalAmount: number; currency: string; dueDate: string; status: string; subjectName?: string | null; paidAmount?: number; lastPaidAtUtc?: string | null };
+type StudentDetail = "enrolments" | "attendance" | "fees" | "family";
 
 const count = (items?: unknown[]) => items?.length ?? 0;
 function DetailPanel({
@@ -59,23 +59,6 @@ function DetailPanel({
       <header><h3 className="font-semibold">{title}</h3></header>
       <div className="mt-4 text-sm text-slate-300">{children}</div>
     </section>
-  );
-}
-
-function StudentSummaryTile({
-  title,
-  href,
-  children,
-}: {
-  title: string;
-  href: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <Link href={href} className="student-summary-tile" aria-label={`Open ${title}`}>
-      <h3>{title}</h3>
-      <div>{children}</div>
-    </Link>
   );
 }
 
@@ -193,13 +176,7 @@ export default function StudentProfilePage() {
       {student && profile && (
         <>
           <section className="student-360-summary-grid">
-            <StudentSummaryTile
-              title="Enrolments"
-              href={`/enrollments?studentId=${studentId}`}
-            >
-              <strong className="text-3xl">{count(profile.enrollments)}</strong>
-              <p className="mt-2 text-slate-400">{profile.enrollments?.map((item) => item.courseName).filter((value, index, values) => values.indexOf(value) === index).join(" · ") || "No enrolled subjects"}</p>
-            </StudentSummaryTile>
+            <StandardInteractiveTile className="student-summary-tile" label="Enrolments" value={count(profile.enrollments)} detail={profile.enrollments?.map((item) => item.courseName).filter((value, index, values) => values.indexOf(value) === index).join(" · ") || "No enrolled subjects"} onClick={() => setDetail("enrolments")} />
             <StandardInteractiveTile className="student-summary-tile" label="Attendance" value={attendanceCount(profile.attendance)} detail={formatAttendance(profile.currentMonthAttendance) + " this month"} onClick={() => setDetail("attendance")} />
             <StandardInteractiveTile className="student-summary-tile" label="Fees" value={`₹${outstanding.toLocaleString("en-IN")}`} detail={`₹${upcoming.toLocaleString("en-IN")} upcoming · ₹${overdue.toLocaleString("en-IN")} overdue`} onClick={() => setDetail("fees")} />
             <StandardInteractiveTile className="student-summary-tile" label="Family" value={count(profile.guardians)} detail="View parent details" onClick={() => setDetail("family")} />
@@ -245,8 +222,9 @@ export default function StudentProfilePage() {
               </DetailPanel>
             </div>
           </section>
+          {detail === "enrolments" && <StandardDetailModal title="Enrolled subjects" eyebrow="Student 360" onClose={() => setDetail(null)}><div className="standard-detail-content"><StudentDetailList rows={(profile.enrollments ?? []).map((item) => [item.courseName, `${item.batchName} · ${item.status} · Started ${formatDate(item.startDate)}`])} empty="This student is not enrolled in any subject." /></div></StandardDetailModal>}
           {detail === "attendance" && <StandardDetailModal title="Attendance" eyebrow="Student 360" onClose={() => setDetail(null)}><div className="standard-detail-content"><section className="standard-detail-group"><h3>All recorded attendance</h3><StudentDetailList rows={(profile.attendance ?? []).map((item) => [item.status, `${item.count} class${item.count === 1 ? "" : "es"}`])} empty="No attendance has been recorded for this student." /></section><section className="standard-detail-group"><h3>This month</h3><StudentDetailList rows={(profile.currentMonthAttendance ?? []).map((item) => [item.status, `${item.count} class${item.count === 1 ? "" : "es"}`])} empty="No attendance has been recorded this month." /></section></div></StandardDetailModal>}
-          {detail === "fees" && <StandardDetailModal title="Fee payments" eyebrow="Student 360" onClose={() => setDetail(null)}><div className="standard-detail-content"><StudentDetailList rows={(profile.invoices ?? []).map((item) => { const remaining = balance(item); return [item.invoiceNumber, `${item.status} · ${item.currency} ${item.paidAmount ?? 0} paid · ${remaining > 0 ? `${item.currency} ${remaining} due` : "Paid in full"} · Due ${formatDate(item.dueDate)}${item.lastPaidAtUtc ? ` · Last payment ${formatDate(item.lastPaidAtUtc)}` : ""}`]; })} empty="No fee payments or invoices are recorded for this student." /></div></StandardDetailModal>}
+          {detail === "fees" && <StandardDetailModal title="Fee payments" eyebrow="Student 360" onClose={() => setDetail(null)}><div className="standard-detail-content"><StudentDetailList rows={(profile.invoices ?? []).map((item) => { const remaining = balance(item); return [item.invoiceNumber, `${item.subjectName || "General fee"} · ${item.status} · ${item.currency} ${item.paidAmount ?? 0} paid · ${remaining > 0 ? `${item.currency} ${remaining} due` : "Paid in full"} · Due ${formatDate(item.dueDate)}${item.lastPaidAtUtc ? ` · Last payment ${formatDate(item.lastPaidAtUtc)}` : ""}`]; })} empty="No fee payments or invoices are recorded for this student." /></div></StandardDetailModal>}
           {detail === "family" && <StandardDetailModal title="Family" eyebrow="Student 360" onClose={() => setDetail(null)}><div className="standard-detail-content"><StudentDetailList rows={(profile.guardians ?? []).map((guardian) => [guardian.name, `${guardian.relationship || "Parent"}${guardian.email ? ` · ${guardian.email}` : ""}${guardian.phone ? ` · ${guardian.phone}` : ""}`])} empty="No parent or guardian is linked to this student." /></div></StandardDetailModal>}
         </>
       )}
