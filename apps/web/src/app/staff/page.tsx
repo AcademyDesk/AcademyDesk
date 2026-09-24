@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { WorkspaceNav } from "@/components/workspace-nav";
+import { StandardSelectField } from "@/components/design-system/controls";
 import { academyApi, apiHeaders } from "@/lib/api";
 
 type Academy = { id: string };
@@ -12,6 +13,22 @@ type Staff = {
   roles: string[];
   isActive: boolean;
 };
+
+const staffRoles = [
+  "Manager",
+  "Operations",
+  "Sales",
+  "Marketing",
+  "FinanceUser",
+  "FrontDesk",
+];
+
+const roleLabel = (role: string) =>
+  role === "FinanceUser"
+    ? "Finance"
+    : role === "FrontDesk"
+      ? "Front desk"
+      : role;
 
 export default function StaffPage() {
   const [academy, setAcademy] = useState<Academy>();
@@ -25,7 +42,10 @@ export default function StaffPage() {
   async function load(id?: string) {
     const academyId = id ?? academy?.id;
     if (!academyId) return;
-    const staffResponse = await academyApi(`/api/academies/${academyId}/staff`, { cache: "no-store" });
+    const staffResponse = await academyApi(
+      `/api/academies/${academyId}/staff`,
+      { cache: "no-store" },
+    );
     if (staffResponse.status === 403)
       return setMessage("Only the academy owner can manage staff accounts.");
     if (!staffResponse.ok) throw new Error();
@@ -115,117 +135,130 @@ export default function StaffPage() {
     await load();
   }
   return (
-    <main className="enterprise-settings enterprise-legacy-standard min-h-screen bg-slate-950 text-slate-100">
+    <main className="enterprise-settings staff-standard min-h-screen">
       <WorkspaceNav />
-      <div className="mx-auto max-w-6xl px-6 py-10">
-        <h1 className="text-4xl font-semibold tracking-tight">
-          Operations & Workforce
-        </h1>
+      <div className="staff-content mx-auto max-w-6xl px-6 py-10">
+        <header className="staff-heading">
+          <div className="staff-title">
+            <span className="staff-title-icon" aria-hidden="true">
+              ♙
+            </span>
+            <div>
+              <p>Operations &amp; workforce</p>
+              <h1>Staff Directory &amp; Onboarding</h1>
+            </div>
+          </div>
+        </header>
         {message && (
-          <p className="mt-6 rounded-lg border border-amber-700/50 bg-amber-950/40 p-4 text-sm text-amber-100">
-            {message}
-          </p>
+          <p className="enterprise-page-state staff-message">{message}</p>
         )}
-        <section className="mt-8 grid gap-6 lg:grid-cols-[0.85fr_1.15fr]">
-          <form
-            onSubmit={create}
-            className="rounded-2xl border border-slate-800 bg-slate-900 p-6"
-          >
-            <h2 className="text-xl font-semibold">Create staff account</h2>
-            <input
-              value={displayName}
-              onChange={(event) => setDisplayName(event.target.value)}
-              placeholder="Display name"
-              className="mt-5 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
-              required
-            />
-            <input
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              placeholder="Work email"
-              className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
-              required
-            />
-            <input
-              type="password"
-              minLength={6}
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              placeholder="Temporary password"
-              className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
-              required
-            />
-            <select
-              value={role}
-              onChange={(event) => setRole(event.target.value)}
-              className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
-            >
-              <option>Manager</option>
-              <option>Operations</option>
-              <option>Sales</option>
-              <option>Marketing</option>
-              <option>FinanceUser</option>
-              <option>FrontDesk</option>
-            </select>
-            <button
-              disabled={!academy}
-              className="enterprise-action-button mt-5 w-full disabled:opacity-60"
-            >
-              Create account
-            </button>
+        <section className="staff-layout">
+          <form onSubmit={create} className="staff-panel staff-create-panel">
+            <header className="staff-panel-header">
+              <div>
+                <p>New account</p>
+                <h2>Onboard staff</h2>
+              </div>
+            </header>
+            <div className="staff-fields">
+              <label>
+                <span>Staff name</span>
+                <input
+                  value={displayName}
+                  onChange={(event) => setDisplayName(event.target.value)}
+                  placeholder="Full name"
+                  required
+                />
+              </label>
+              <label>
+                <span>Work email</span>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  placeholder="name@academy.com"
+                  required
+                />
+              </label>
+              <label>
+                <span>Temporary password</span>
+                <input
+                  type="password"
+                  minLength={6}
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  placeholder="Minimum 6 characters"
+                  required
+                />
+              </label>
+              <StandardSelectField
+                name="staff-role"
+                value={role}
+                onChange={setRole}
+                placeholder="Access role"
+                options={staffRoles.map((value) => ({
+                  value,
+                  label: roleLabel(value),
+                }))}
+              />
+              <button
+                disabled={!academy}
+                className="enterprise-action-button staff-create-button"
+              >
+                Create staff account
+              </button>
+            </div>
           </form>
-          <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
-            <h2 className="text-xl font-semibold">Staff directory</h2>
+          <section className="staff-panel staff-directory-panel">
+            <header className="staff-panel-header">
+              <div>
+                <p>Directory</p>
+                <h2>Staff accounts</h2>
+              </div>
+              <span>
+                {staff.filter((person) => person.isActive).length} active
+              </span>
+            </header>
             {staff.length === 0 ? (
-              <p className="mt-6 text-slate-400">No staff accounts yet.</p>
+              <p className="staff-empty">No staff accounts yet.</p>
             ) : (
-              <ul className="mt-5 space-y-3">
+              <ul>
                 {staff.map((person) => (
-                  <li
-                    key={person.id}
-                    className="rounded-lg border border-slate-700 bg-slate-950 p-4"
-                  >
-                    <div className="flex justify-between gap-3">
+                  <li key={person.id}>
+                    <div className="staff-person">
                       <div>
-                        <div className="font-medium">{person.displayName}</div>
-                        <div className="mt-1 text-sm text-slate-400">
-                          {person.email}
-                        </div>
+                        <b>{person.displayName}</b>
+                        <small>{person.email}</small>
                       </div>
-                      <label className="text-right text-xs text-slate-400">
-                        Access role
-                        <select
+                      <label>
+                        <span>Access role</span>
+                        <StandardSelectField
+                          name={`staff-role-${person.id}`}
                           value={person.roles[0] ?? "Operations"}
+                          onChange={(nextRole) =>
+                            void updateRole(person, nextRole)
+                          }
+                          placeholder="Access role"
+                          options={staffRoles.map((value) => ({
+                            value,
+                            label: roleLabel(value),
+                          }))}
                           disabled={
                             !person.isActive || updatingStaffId === person.id
                           }
-                          onChange={(event) =>
-                            void updateRole(person, event.target.value)
-                          }
-                          className="mt-1 block rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-cyan-200"
-                        >
-                          <option>Manager</option>
-                          <option>Operations</option>
-                          <option>Sales</option>
-                          <option>Marketing</option>
-                          <option>FinanceUser</option>
-                          <option>FrontDesk</option>
-                        </select>
+                        />
                       </label>
                     </div>
-                    <div className="mt-3">
+                    <div className="staff-person-actions">
                       {person.isActive ? (
                         <button
                           onClick={() => void offboard(person)}
-                          className="enterprise-action-button enterprise-action-button-danger"
+                          className="staff-offboard-button"
                         >
-                          Offboard and revoke sessions
+                          Offboard
                         </button>
                       ) : (
-                        <span className="text-sm text-slate-500">
-                          Offboarded
-                        </span>
+                        <span>Offboarded</span>
                       )}
                     </div>
                   </li>
