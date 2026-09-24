@@ -33,7 +33,19 @@ public sealed class BatchesController(AcademyDeskDbContext dbContext) : Controll
         var batch = await dbContext.Batches.SingleOrDefaultAsync(x => x.AcademyId == academyId && x.Id == batchId, token); if (batch is null) return NotFound();
         var problem = await Validate(academyId, request, token, batchId); if (problem is not null) return BadRequest(new { message = problem });
         var active = await dbContext.Enrollments.CountAsync(x => x.AcademyId == academyId && x.BatchId == batchId && x.Status == "Active", token); if (request.Capacity < active) return BadRequest(new { message = $"Capacity cannot be lower than the {active} active enrolments." });
-        Apply(batch, request); batch.IsActive = request.IsActive; await dbContext.SaveChangesAsync(token); return Ok(Summary(batch, active));
+        var teacherChanged = batch.TeacherId != request.TeacherId;
+        Apply(batch, request); batch.IsActive = request.IsActive;
+        if (teacherChanged)
+        {
+            // A batch assignment is the source of truth for forthcoming delivery. Keep
+            // future scheduled sessions in sync so the assigned teacher sees the same
+            // timetable, calendar and attendance roster as the administrator.
+            var futureSessions = await dbContext.ClassSessions
+                .Where(x => x.AcademyId == academyId && x.BatchId == batchId && x.Status == "Scheduled" && x.StartUtc >= DateTime.UtcNow)
+                .ToListAsync(token);
+            foreach (var session in futureSessions) session.TeacherId = batch.TeacherId;
+        }
+        await dbContext.SaveChangesAsync(token); return Ok(Summary(batch, active));
     }
 
     private async Task<string?> Validate(Guid academyId, BatchRequest r, CancellationToken token, Guid? ignore = null)

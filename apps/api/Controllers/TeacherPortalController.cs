@@ -35,7 +35,7 @@ public sealed class TeacherPortalController(
             .ToListAsync(cancellationToken);
         var batchIds = batches.Select(x => x.Id).ToArray();
         var sessions = await dbContext.ClassSessions.AsNoTracking()
-            .Where(x => x.AcademyId == user.AcademyId && batchIds.Contains(x.BatchId) && x.StartUtc >= DateTime.UtcNow.AddDays(-1))
+            .Where(x => x.AcademyId == user.AcademyId && batchIds.Contains(x.BatchId) && x.TeacherId == user.TeacherId && x.StartUtc >= DateTime.UtcNow.AddDays(-1))
             .OrderBy(x => x.StartUtc)
             .Take(30)
             .Select(x => new TeacherSessionSummary(x.Id, x.BatchId, x.StartUtc, x.EndUtc, x.DeliveryMode, x.RoomName, x.Status, x.TeacherAttendanceStatus))
