@@ -308,16 +308,19 @@ export default function MeetingLinksPage() {
                   value={time}
                   onChange={setTime}
                 />
-                <StandardSelectField
-                  name="duration"
-                  value={duration}
-                  onChange={setDuration}
-                  placeholder="Duration"
-                  options={["30", "45", "60", "90", "120"].map((x) => ({
-                    value: x,
-                    label: `${x} minutes`,
-                  }))}
-                />
+                <label className="meeting-duration-field">
+                  <span>Duration</span>
+                  <StandardSelectField
+                    name="duration"
+                    value={duration}
+                    onChange={setDuration}
+                    placeholder="Select duration"
+                    options={["30", "45", "60", "90", "120"].map((x) => ({
+                      value: x,
+                      label: `${x} minutes`,
+                    }))}
+                  />
+                </label>
               </div>
               <div className="meeting-links-two">
                 <StandardSelectField
