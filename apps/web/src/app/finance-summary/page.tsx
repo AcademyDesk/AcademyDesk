@@ -1,2 +1,77 @@
-"use client";import{useEffect,useState}from"react";import{academyApi}from"@/lib/api";type A={id:string};type D={grossBilled:number;approvedAdjustments:number;collected:number;outstanding:number;reconciled:number;overdueInvoices:number};
-export default function FinanceSummary(){const[d,setD]=useState<D>();const[m,setM]=useState('Loading finance summary…');useEffect(()=>{void(async()=>{try{const a:A[]=await(await academyApi('/api/academies')).json();if(!a[0])throw Error();setD(await(await academyApi(`/api/academies/${a[0].id}/finance-governance/summary`)).json());setM('')}catch{setM('Finance summary could not be loaded.')}})()},[]);return <main className="enterprise-settings finance-module"><header className="enterprise-page-header"><p>Finance / overview</p><h2>Finance summary</h2><span>Management view of billed value, adjustments, collections, reconciliation and outstanding exposure.</span></header>{m&&<p className="enterprise-settings-empty mt-5">{m}</p>}{d&&<section className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3"><Card t="Gross billed" v={d.grossBilled}/><Card t="Approved adjustments" v={d.approvedAdjustments}/><Card t="Collected" v={d.collected}/><Card t="Outstanding" v={d.outstanding}/><Card t="Reconciled" v={d.reconciled}/><Card t="Overdue invoices" v={d.overdueInvoices} money={false}/></section>}</main>};function Card(p:{t:string;v:number;money?:boolean}){return <section className="surface-panel rounded-xl p-5"><p className="text-sm text-slate-400">{p.t}</p><b className="mt-2 block text-3xl">{p.money===false?p.v:`₹${p.v.toLocaleString('en-IN')}`}</b></section>}
+"use client";
+import { useEffect, useState } from "react";
+import { WorkspaceNav } from "@/components/workspace-nav";
+import { academyApi } from "@/lib/api";
+type Academy = { id: string };
+type Summary = {
+  grossBilled: number;
+  approvedAdjustments: number;
+  collected: number;
+  outstanding: number;
+  reconciled: number;
+  overdueInvoices: number;
+};
+const money = (amount: number) => `₹${amount.toLocaleString("en-IN")}`;
+export default function FinanceSummary() {
+  const [summary, setSummary] = useState<Summary>();
+  const [message, setMessage] = useState("Loading finance summary…");
+  useEffect(() => {
+    void (async () => {
+      try {
+        const response = await academyApi("/api/academies");
+        const academies: Academy[] = await response.json();
+        if (!response.ok || !academies[0]) throw Error();
+        const summaryResponse = await academyApi(
+          `/api/academies/${academies[0].id}/finance-governance/summary`,
+        );
+        if (!summaryResponse.ok) throw Error();
+        setSummary(await summaryResponse.json());
+        setMessage("");
+      } catch {
+        setMessage("Finance summary could not be loaded.");
+      }
+    })();
+  }, []);
+  const cards = summary
+    ? [
+        { label: "Gross billed", value: money(summary.grossBilled) },
+        {
+          label: "Approved adjustments",
+          value: money(summary.approvedAdjustments),
+        },
+        { label: "Collected", value: money(summary.collected) },
+        { label: "Outstanding", value: money(summary.outstanding) },
+        { label: "Reconciled", value: money(summary.reconciled) },
+        { label: "Overdue invoices", value: String(summary.overdueInvoices) },
+      ]
+    : [];
+  return (
+    <main className="enterprise-settings finance-summary-standard min-h-screen">
+      <WorkspaceNav />
+      <div className="finance-summary-content">
+        <header className="finance-summary-heading">
+          <span className="finance-summary-title-icon" aria-hidden="true">
+            ₹
+          </span>
+          <div className="finance-summary-title">
+            <p>Finance</p>
+            <h1>Summary</h1>
+          </div>
+        </header>
+        {message && (
+          <p className="finance-summary-notice" role="status">
+            {message}
+          </p>
+        )}
+        <section className="finance-summary-grid">
+          {cards.map((card) => (
+            <article key={card.label}>
+              <span>{card.label}</span>
+              <strong>{card.value}</strong>
+            </article>
+          ))}
+        </section>
+      </div>
+    </main>
+  );
+}
