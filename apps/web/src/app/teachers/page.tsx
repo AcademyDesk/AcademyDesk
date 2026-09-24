@@ -51,12 +51,12 @@ export default function TeachersPage() {
       academyApi(`/api/academies/${id}/branches`, { cache: "no-store" }),
       academyApi(`/api/academies/${id}/batches`, { cache: "no-store" }),
     ]);
-    if (!teacherResponse.ok || !branchResponse.ok || !batchResponse.ok) {
-      const failedResponse = [teacherResponse, branchResponse, batchResponse].find((response) => !response.ok);
+    if (!teacherResponse.ok || !batchResponse.ok) {
+      const failedResponse = [teacherResponse, batchResponse].find((response) => !response.ok);
       throw new Error(failedResponse?.status === 401 ? "SESSION_EXPIRED" : "LOAD_FAILED");
     }
     setTeachers(await teacherResponse.json());
-    setBranches(await branchResponse.json());
+    setBranches(branchResponse.ok ? await branchResponse.json() : []);
     setBatches(await batchResponse.json());
     setMessage("");
   }
