@@ -6,6 +6,7 @@ import { academyApi } from "@/lib/api";
 import { StudentAdminProfile } from "@/components/student-admin-profile";
 import { StudentFeeArrangements } from "@/components/student-fee-arrangements";
 import { StandardSelectField } from "@/components/design-system/controls";
+import { StandardDetailModal, StandardInteractiveTile } from "@/components/design-system/interactive";
 
 type Student = {
   id: string;
@@ -29,14 +30,21 @@ type Profile = {
   emergencyContactPhone?: string;
   medicalOrAccessibilityNotes?: string;
   adminNotes?: string;
-  guardians?: unknown[];
-  enrollments?: unknown[];
-  attendance?: unknown[];
-  invoices?: { totalAmount?: number; status?: string; dueDate?: string }[];
+  guardians?: Guardian[];
+  enrollments?: Enrollment[];
+  attendance?: StatusCount[];
+  currentMonthAttendance?: StatusCount[];
+  invoices?: Invoice[];
   musicProgress?: unknown[];
   practiceLogs?: unknown[];
   communications?: unknown[];
 };
+
+type Guardian = { id: string; name: string; email?: string | null; phone?: string | null; relationship?: string | null };
+type Enrollment = { batchName: string; courseName: string; status: string; startDate: string; endDate?: string | null };
+type StatusCount = { status: string; count: number };
+type Invoice = { invoiceNumber: string; totalAmount: number; currency: string; dueDate: string; status: string; paidAmount?: number; lastPaidAtUtc?: string | null };
+type StudentDetail = "attendance" | "fees" | "family";
 
 const count = (items?: unknown[]) => items?.length ?? 0;
 function DetailPanel({
@@ -71,6 +79,24 @@ function StudentSummaryTile({
   );
 }
 
+function formatDate(value?: string | null) {
+  if (!value) return "Not recorded";
+  return new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric" }).format(new Date(value));
+}
+
+function formatAttendance(items?: StatusCount[]) {
+  return (items ?? []).map((item) => `${item.status}: ${item.count}`).join(" · ") || "No attendance recorded";
+}
+
+function attendanceCount(items?: StatusCount[]) {
+  return (items ?? []).reduce((total, item) => total + item.count, 0);
+}
+
+function StudentDetailList({ rows, empty }: { rows: [string, string][]; empty: string }) {
+  if (!rows.length) return <p className="standard-detail-empty">{empty}</p>;
+  return <div className="standard-detail-list">{rows.map(([title, detail], index) => <div key={`${title}-${index}`}><strong>{title}</strong><span>{detail}</span></div>)}</div>;
+}
+
 export default function StudentProfilePage() {
   const requested =
     typeof window === "undefined"
@@ -81,6 +107,7 @@ export default function StudentProfilePage() {
   const [studentId, setStudentId] = useState(requested);
   const [profile, setProfile] = useState<Profile>();
   const [message, setMessage] = useState("Loading student records…");
+  const [detail, setDetail] = useState<StudentDetail | null>(null);
   useEffect(() => {
     void (async () => {
       try {
@@ -112,6 +139,7 @@ export default function StudentProfilePage() {
   }, [requested]);
   async function select(id: string) {
     setStudentId(id);
+    setDetail(null);
     if (!academyId || !id) return;
     const response = await academyApi(
       `/api/academies/${academyId}/students/${id}/profile`,
@@ -119,16 +147,16 @@ export default function StudentProfilePage() {
     if (response.ok) setProfile(await response.json());
   }
   const student = students.find((item) => item.id === studentId);
+  const balance = (item: Invoice) => Math.max(0, item.totalAmount - (item.paidAmount ?? 0));
   const outstanding = (profile?.invoices ?? [])
-    .filter((item) => item.status !== "Paid")
-    .reduce((sum, item) => sum + (item.totalAmount ?? 0), 0);
+    .reduce((sum, item) => sum + balance(item), 0);
   const today = new Date().toISOString().slice(0, 10);
   const upcoming = (profile?.invoices ?? [])
-    .filter((item) => item.status !== "Paid" && (item.dueDate ?? "") >= today)
-    .reduce((sum, item) => sum + (item.totalAmount ?? 0), 0);
+    .filter((item) => balance(item) > 0 && item.dueDate >= today)
+    .reduce((sum, item) => sum + balance(item), 0);
   const overdue = (profile?.invoices ?? [])
-    .filter((item) => item.status !== "Paid" && (item.dueDate ?? "") < today)
-    .reduce((sum, item) => sum + (item.totalAmount ?? 0), 0);
+    .filter((item) => balance(item) > 0 && item.dueDate < today)
+    .reduce((sum, item) => sum + balance(item), 0);
   return (
     <main className="enterprise-settings student-360-standard">
       <header className="student-360-heading">
@@ -170,25 +198,11 @@ export default function StudentProfilePage() {
               href={`/enrollments?studentId=${studentId}`}
             >
               <strong className="text-3xl">{count(profile.enrollments)}</strong>
-              <p className="mt-2 text-slate-400">Active learning placements</p>
+              <p className="mt-2 text-slate-400">{profile.enrollments?.map((item) => item.courseName).filter((value, index, values) => values.indexOf(value) === index).join(" · ") || "No enrolled subjects"}</p>
             </StudentSummaryTile>
-            <StudentSummaryTile title="Attendance" href="/attendance">
-              <strong className="text-3xl">{count(profile.attendance)}</strong>
-              <p className="mt-2 text-slate-400">Recorded class attendance</p>
-            </StudentSummaryTile>
-            <StudentSummaryTile title="Fees" href="/invoices">
-              <strong className="text-3xl">
-                ₹{outstanding.toLocaleString("en-IN")}
-              </strong>
-              <p className="mt-2 text-slate-400">
-                ₹{upcoming.toLocaleString("en-IN")} upcoming · ₹
-                {overdue.toLocaleString("en-IN")} overdue
-              </p>
-            </StudentSummaryTile>
-            <StudentSummaryTile title="Family" href="/guardians">
-              <strong className="text-3xl">{count(profile.guardians)}</strong>
-              <p className="mt-2 text-slate-400">Linked parent records</p>
-            </StudentSummaryTile>
+            <StandardInteractiveTile className="student-summary-tile" label="Attendance" value={attendanceCount(profile.attendance)} detail={formatAttendance(profile.currentMonthAttendance) + " this month"} onClick={() => setDetail("attendance")} />
+            <StandardInteractiveTile className="student-summary-tile" label="Fees" value={`₹${outstanding.toLocaleString("en-IN")}`} detail={`₹${upcoming.toLocaleString("en-IN")} upcoming · ₹${overdue.toLocaleString("en-IN")} overdue`} onClick={() => setDetail("fees")} />
+            <StandardInteractiveTile className="student-summary-tile" label="Family" value={count(profile.guardians)} detail="View parent details" onClick={() => setDetail("family")} />
           </section>
           <section className="student-360-detail-grid">
             <StudentAdminProfile
@@ -231,6 +245,9 @@ export default function StudentProfilePage() {
               </DetailPanel>
             </div>
           </section>
+          {detail === "attendance" && <StandardDetailModal title="Attendance" eyebrow="Student 360" onClose={() => setDetail(null)}><div className="standard-detail-content"><section className="standard-detail-group"><h3>All recorded attendance</h3><StudentDetailList rows={(profile.attendance ?? []).map((item) => [item.status, `${item.count} class${item.count === 1 ? "" : "es"}`])} empty="No attendance has been recorded for this student." /></section><section className="standard-detail-group"><h3>This month</h3><StudentDetailList rows={(profile.currentMonthAttendance ?? []).map((item) => [item.status, `${item.count} class${item.count === 1 ? "" : "es"}`])} empty="No attendance has been recorded this month." /></section></div></StandardDetailModal>}
+          {detail === "fees" && <StandardDetailModal title="Fee payments" eyebrow="Student 360" onClose={() => setDetail(null)}><div className="standard-detail-content"><StudentDetailList rows={(profile.invoices ?? []).map((item) => { const remaining = balance(item); return [item.invoiceNumber, `${item.status} · ${item.currency} ${item.paidAmount ?? 0} paid · ${remaining > 0 ? `${item.currency} ${remaining} due` : "Paid in full"} · Due ${formatDate(item.dueDate)}${item.lastPaidAtUtc ? ` · Last payment ${formatDate(item.lastPaidAtUtc)}` : ""}`]; })} empty="No fee payments or invoices are recorded for this student." /></div></StandardDetailModal>}
+          {detail === "family" && <StandardDetailModal title="Family" eyebrow="Student 360" onClose={() => setDetail(null)}><div className="standard-detail-content"><StudentDetailList rows={(profile.guardians ?? []).map((guardian) => [guardian.name, `${guardian.relationship || "Parent"}${guardian.email ? ` · ${guardian.email}` : ""}${guardian.phone ? ` · ${guardian.phone}` : ""}`])} empty="No parent or guardian is linked to this student." /></div></StandardDetailModal>}
         </>
       )}
     </main>

@@ -38,14 +38,27 @@ public sealed class ProfilesController(AcademyDeskDbContext dbContext) : Control
                                  where enrolment.AcademyId == academyId && enrolment.StudentId == studentId
                                  select new EnrollmentProfileSummary(batch.Name, course.Name, enrolment.Status, enrolment.StartDate, enrolment.EndDate)).ToListAsync(token);
         var attendance = await dbContext.AttendanceRecords.AsNoTracking().Where(x => x.AcademyId == academyId && x.StudentId == studentId).GroupBy(x => x.Status).Select(x => new StatusCount(x.Key, x.Count())).ToListAsync(token);
-        var invoices = await dbContext.Invoices.AsNoTracking().Where(x => x.AcademyId == academyId && x.StudentId == studentId).OrderByDescending(x => x.DueDate).Take(10).Select(x => new InvoiceProfileSummary(x.InvoiceNumber, x.TotalAmount, x.Currency, x.DueDate, x.Status)).ToListAsync(token);
+        var currentMonthStart = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+        var currentMonthAttendance = await dbContext.AttendanceRecords.AsNoTracking()
+            .Where(x => x.AcademyId == academyId && x.StudentId == studentId && x.MarkedAtUtc >= currentMonthStart)
+            .GroupBy(x => x.Status)
+            .Select(x => new StatusCount(x.Key, x.Count()))
+            .ToListAsync(token);
+        var invoices = await dbContext.Invoices.AsNoTracking().Where(x => x.AcademyId == academyId && x.StudentId == studentId).OrderByDescending(x => x.DueDate).Take(10).Select(x => new InvoiceProfileSummary(
+            x.InvoiceNumber,
+            x.TotalAmount,
+            x.Currency,
+            x.DueDate,
+            x.Status,
+            dbContext.Payments.Where(payment => payment.AcademyId == academyId && payment.InvoiceId == x.Id && payment.Status != "Voided").Sum(payment => (decimal?)payment.Amount) ?? 0,
+            dbContext.Payments.Where(payment => payment.AcademyId == academyId && payment.InvoiceId == x.Id && payment.Status != "Voided").Max(payment => (DateTime?)payment.PaidAtUtc))).ToListAsync(token);
         var progress = await (from item in dbContext.StudentMusicProgress.AsNoTracking()
                               join piece in dbContext.MusicPieces.AsNoTracking() on item.MusicPieceId equals piece.Id
                               where item.AcademyId == academyId && item.StudentId == studentId
                               select new MusicProgressProfileSummary(piece.Title, piece.Instrument, item.Status, item.Score)).ToListAsync(token);
         var practice = await dbContext.PracticeLogs.AsNoTracking().Where(x => x.AcademyId == academyId && x.StudentId == studentId).OrderByDescending(x => x.PracticeDate).Take(10).Select(x => new PracticeProfileSummary(x.PracticeDate, x.MinutesPracticed, x.FocusArea, x.Notes, x.Status)).ToListAsync(token);
         var communications = await dbContext.Notifications.AsNoTracking().Where(x => x.AcademyId == academyId && x.RecipientId == studentId).OrderByDescending(x => x.CreatedAtUtc).Take(8).Select(x => new CommunicationProfileSummary(x.Title, x.Channel, x.Status, x.CreatedAtUtc)).ToListAsync(token);
-        return Ok(new StudentProfileSummary(student.Id, student.FirstName + " " + student.LastName, student.Email, student.Phone, student.StudentNumber, student.PreferredName, student.Gender, student.DateOfBirth, student.AdmissionDate, student.AddressLine1, student.City, student.State, student.PostalCode, student.EmergencyContactName, student.EmergencyContactPhone, student.MedicalOrAccessibilityNotes, student.AdminNotes, guardians, enrolments, attendance, invoices, progress, practice, communications));
+        return Ok(new StudentProfileSummary(student.Id, student.FirstName + " " + student.LastName, student.Email, student.Phone, student.StudentNumber, student.PreferredName, student.Gender, student.DateOfBirth, student.AdmissionDate, student.AddressLine1, student.City, student.State, student.PostalCode, student.EmergencyContactName, student.EmergencyContactPhone, student.MedicalOrAccessibilityNotes, student.AdminNotes, guardians, enrolments, attendance, currentMonthAttendance, invoices, progress, practice, communications));
     }
 
     [HttpGet("teachers/{teacherId:guid}/profile")]
@@ -174,11 +187,11 @@ public sealed class ProfilesController(AcademyDeskDbContext dbContext) : Control
 public sealed record ContactSummary(Guid Id, string Name, string? Email, string? Phone, string? Relationship);
 public sealed record EnrollmentProfileSummary(string BatchName, string CourseName, string Status, DateOnly StartDate, DateOnly? EndDate);
 public sealed record StatusCount(string Status, int Count);
-public sealed record InvoiceProfileSummary(string InvoiceNumber, decimal TotalAmount, string Currency, DateOnly DueDate, string Status);
+public sealed record InvoiceProfileSummary(string InvoiceNumber, decimal TotalAmount, string Currency, DateOnly DueDate, string Status, decimal PaidAmount, DateTime? LastPaidAtUtc);
 public sealed record MusicProgressProfileSummary(string Title, string? Instrument, string Status, decimal? Score);
 public sealed record PracticeProfileSummary(DateOnly PracticeDate, int MinutesPracticed, string? FocusArea, string? Notes, string Status);
 public sealed record CommunicationProfileSummary(string Title, string Channel, string Status, DateTime CreatedAtUtc);
-public sealed record StudentProfileSummary(Guid Id, string Name, string? Email, string? Phone, string? StudentNumber, string? PreferredName, string? Gender, DateOnly? DateOfBirth, DateOnly? AdmissionDate, string? AddressLine1, string? City, string? State, string? PostalCode, string? EmergencyContactName, string? EmergencyContactPhone, string? MedicalOrAccessibilityNotes, string? AdminNotes, IReadOnlyList<ContactSummary> Guardians, IReadOnlyList<EnrollmentProfileSummary> Enrollments, IReadOnlyList<StatusCount> Attendance, IReadOnlyList<InvoiceProfileSummary> Invoices, IReadOnlyList<MusicProgressProfileSummary> MusicProgress, IReadOnlyList<PracticeProfileSummary> PracticeLogs, IReadOnlyList<CommunicationProfileSummary> Communications);
+public sealed record StudentProfileSummary(Guid Id, string Name, string? Email, string? Phone, string? StudentNumber, string? PreferredName, string? Gender, DateOnly? DateOfBirth, DateOnly? AdmissionDate, string? AddressLine1, string? City, string? State, string? PostalCode, string? EmergencyContactName, string? EmergencyContactPhone, string? MedicalOrAccessibilityNotes, string? AdminNotes, IReadOnlyList<ContactSummary> Guardians, IReadOnlyList<EnrollmentProfileSummary> Enrollments, IReadOnlyList<StatusCount> Attendance, IReadOnlyList<StatusCount> CurrentMonthAttendance, IReadOnlyList<InvoiceProfileSummary> Invoices, IReadOnlyList<MusicProgressProfileSummary> MusicProgress, IReadOnlyList<PracticeProfileSummary> PracticeLogs, IReadOnlyList<CommunicationProfileSummary> Communications);
 public sealed record GuardianStudentSummary(Guid Id, string Name, string? Relationship);
 public sealed record GuardianInvoiceSummary(Guid StudentId, string InvoiceNumber, decimal TotalAmount, string Currency, DateOnly DueDate, string Status);
 public sealed record GuardianProfileSummary(Guid Id, string Name, string? Email, string? Phone, string? PreferredName, string? AddressLine1, string? City, string? State, string? PostalCode, string? PreferredLanguage, IReadOnlyList<GuardianStudentSummary> Students, IReadOnlyList<GuardianInvoiceSummary> Invoices, IReadOnlyList<CommunicationProfileSummary> Communications);
