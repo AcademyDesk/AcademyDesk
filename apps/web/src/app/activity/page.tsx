@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { academyApi } from "@/lib/api";
-import { StandardSelectField } from "@/components/design-system/controls";
+import { StandardDateField, StandardSelectField } from "@/components/design-system/controls";
 type Academy = { id: string };
 type Audit = {
   id: string;
@@ -17,6 +17,7 @@ export default function ActivityPage() {
   const [query, setQuery] = useState("");
   const [entity, setEntity] = useState("");
   const [period, setPeriod] = useState("");
+  const [activityDate, setActivityDate] = useState("");
   useEffect(() => {
     async function load() {
       try {
@@ -58,11 +59,12 @@ export default function ActivityPage() {
           (period === "30 days" && age <= 2592000000);
         return (
           (!entity || item.entityType === entity) &&
+          (!activityDate || new Date(item.occurredAtUtc).toLocaleDateString("en-CA") === activityDate) &&
           periodMatch &&
           searchable.includes(query.toLowerCase())
         );
       }),
-    [items, entity, period, query],
+    [items, entity, period, query, activityDate],
   );
   const label = (value: string) =>
     value.replace(/([a-z])([A-Z])/g, "$1 $2").replaceAll("_", " ");
@@ -105,6 +107,7 @@ export default function ActivityPage() {
               placeholder="All time"
               options={["Today", "7 days", "30 days"].map((value) => ({ value, label: value }))}
             />
+            <StandardDateField name="activity-date" value={activityDate} onChange={setActivityDate} label="Activity date" />
           </div>
           <div className="workspace-activity-filter-summary">
             <span>Use search, record type, or period to narrow the audit trail.</span>
@@ -113,6 +116,7 @@ export default function ActivityPage() {
                 setQuery("");
                 setEntity("");
                 setPeriod("");
+                setActivityDate("");
               }}
               className="workspace-activity-clear"
             >
