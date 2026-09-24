@@ -2,16 +2,343 @@
 
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
+import { WorkspaceNav } from "@/components/workspace-nav";
+import { StandardSelectField } from "@/components/design-system/controls";
 import { academyApi, apiHeaders } from "@/lib/api";
 
-type Academy = { id: string }; type Course = { id: string; name: string }; type Scheme = { id: string; name: string; passingPercent: number; bandsJson: string; isActive: boolean }; type Prerequisite = { id: string; courseId: string; requiredCourseId: string };
+type Academy = { id: string };
+type Course = { id: string; name: string };
+type Scheme = {
+  id: string;
+  name: string;
+  passingPercent: number;
+  bandsJson: string;
+  isActive: boolean;
+};
+type Prerequisite = { id: string; courseId: string; requiredCourseId: string };
 
 export default function AcademicGovernancePage() {
-  const [academy, setAcademy] = useState<Academy>(); const [courses, setCourses] = useState<Course[]>([]); const [schemes, setSchemes] = useState<Scheme[]>([]); const [prerequisites, setPrerequisites] = useState<Prerequisite[]>([]); const [notice, setNotice] = useState("Loading academic governance…"); const [saving, setSaving] = useState(false);
-  async function load(id?: string) { try { const academyId = id ?? academy?.id; if (!academyId) return; const [courseResponse, schemeResponse, prerequisiteResponse] = await Promise.all([academyApi(`/api/academies/${academyId}/courses`), academyApi(`/api/academies/${academyId}/academic-governance/grading-schemes`), academyApi(`/api/academies/${academyId}/academic-governance/prerequisites`)]); if (![courseResponse, schemeResponse, prerequisiteResponse].every((response) => response.ok)) throw new Error(); setCourses(await courseResponse.json()); setSchemes(await schemeResponse.json()); setPrerequisites(await prerequisiteResponse.json()); setNotice(""); } catch { setNotice("Academic governance could not be loaded. Confirm that the API is running and that you have academic administration access."); } }
-  useEffect(() => { void (async () => { try { const response = await academyApi("/api/academies"); if (!response.ok) throw new Error(); const academies: Academy[] = await response.json(); if (!academies[0]) return setNotice("Create an academy and courses before configuring governance."); setAcademy(academies[0]); await load(academies[0].id); } catch { setNotice("Academic governance could not be loaded. Please sign in and restart the API if needed."); } })(); }, []);
-  async function submit(event: FormEvent<HTMLFormElement>, path: "grading-schemes" | "prerequisites") { event.preventDefault(); if (!academy) return; const data = new FormData(event.currentTarget); const body = path === "grading-schemes" ? { name: data.get("name"), passingPercent: Number(data.get("passingPercent")), bandsJson: data.get("bandsJson") || "[]" } : { courseId: data.get("courseId"), requiredCourseId: data.get("requiredCourseId") }; setSaving(true); try { const response = await academyApi(`/api/academies/${academy.id}/academic-governance/${path}`, { method: "POST", headers: apiHeaders(true), body: JSON.stringify(body) }); if (!response.ok) { const error = await response.json().catch(() => null); throw new Error(error?.message || "Governance rule could not be saved."); } event.currentTarget.reset(); setNotice(path === "grading-schemes" ? "Grading scheme created and available for activation." : "Course prerequisite saved and enforced during enrolment."); await load(); } catch (error) { setNotice(error instanceof Error ? error.message : "Governance rule could not be saved."); } finally { setSaving(false); } }
-  async function toggleScheme(item: Scheme) { if (!academy) return; setSaving(true); try { const response = await academyApi(`/api/academies/${academy.id}/grading-schemes/${item.id}/status`, { method: "PATCH", headers: apiHeaders(true), body: JSON.stringify({ isActive: !item.isActive }) }); if (!response.ok) throw new Error(); setNotice(item.isActive ? "Grading scheme made inactive for new assessments." : "Grading scheme activated for assessment use."); await load(); } catch { setNotice("Scheme status could not be updated."); } finally { setSaving(false); } }
-  const courseName = (id: string) => courses.find((item) => item.id === id)?.name ?? "Course unavailable";
-  return <main className="enterprise-settings academic-module"><header className="enterprise-page-header"><p>Academics / governance</p><div className="flex flex-wrap items-end justify-between gap-4"><div><h2>Academic governance centre</h2><span>Control periods, curriculum release, grading policy, prerequisites, progression and assessment standards from one register.</span></div><div className="flex gap-3 text-sm text-cyan-300"><Link href="/academic-periods">Periods</Link><Link href="/curriculum">Curriculum</Link><Link href="/batch-promotions">Promotions</Link></div></div></header>{notice && <p className="mt-5 rounded border border-amber-700/50 bg-amber-950/30 p-3 text-sm text-amber-100" role="status">{notice}</p>}<section className="mt-5 grid gap-4 sm:grid-cols-3"><section className="surface-panel rounded-xl p-4"><p className="text-sm text-slate-400">Active grading schemes</p><b className="mt-1 block text-2xl text-emerald-300">{schemes.filter((item) => item.isActive).length}</b></section><section className="surface-panel rounded-xl p-4"><p className="text-sm text-slate-400">Course prerequisites</p><b className="mt-1 block text-2xl text-cyan-200">{prerequisites.length}</b></section><section className="surface-panel rounded-xl p-4"><p className="text-sm text-slate-400">Governed courses</p><b className="mt-1 block text-2xl">{courses.length}</b></section></section><section className="mt-5 grid gap-5 xl:grid-cols-2"><form onSubmit={(event) => void submit(event, "grading-schemes")} className="surface-panel rounded-xl p-5"><h3 className="font-semibold">Create grading scheme</h3><p className="mt-1 text-sm text-slate-400">Use valid JSON for bands, for example [{`{"grade":"A","min":85}`}].</p><input required name="name" className="field mt-4" placeholder="Performance grade bands"/><input required name="passingPercent" type="number" min="0" max="100" className="field mt-3" placeholder="Passing percentage"/><textarea name="bandsJson" className="field mt-3 min-h-24" defaultValue="[]"/><button disabled={saving} className="mt-4 rounded bg-cyan-400 px-4 py-2 font-semibold text-slate-950 disabled:opacity-60">Create scheme</button></form><form onSubmit={(event) => void submit(event, "prerequisites")} className="surface-panel rounded-xl p-5"><h3 className="font-semibold">Add course prerequisite</h3><p className="mt-1 text-sm text-slate-400">A learner must complete the required course before enrolment can progress.</p><select required name="courseId" className="field mt-4"><option value="">Course to unlock…</option>{courses.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select><select required name="requiredCourseId" className="field mt-3"><option value="">Required completed course…</option>{courses.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select><button disabled={saving} className="mt-4 rounded bg-cyan-400 px-4 py-2 font-semibold text-slate-950 disabled:opacity-60">Save prerequisite</button></form></section><section className="mt-5 grid gap-5 xl:grid-cols-2"><section className="surface-panel rounded-xl p-5"><h3 className="font-semibold">Grading-scheme register</h3>{schemes.length === 0 ? <p className="mt-4 rounded border border-dashed border-slate-700 p-4 text-sm text-slate-400">No grading schemes configured.</p> : <div className="mt-4 space-y-3">{schemes.map((item) => <div key={item.id} className="rounded border border-slate-700 p-4"><div className="flex flex-wrap items-start justify-between gap-3"><div><b>{item.name}</b><p className="mt-1 text-sm text-slate-400">Pass threshold: {item.passingPercent}% · {item.isActive ? "Active for new assessments" : "Inactive"}</p></div><button disabled={saving} onClick={() => void toggleScheme(item)} className="text-sm text-cyan-300 disabled:opacity-60">{item.isActive ? "Deactivate" : "Activate"}</button></div><pre className="mt-3 overflow-x-auto text-xs text-slate-400">{item.bandsJson}</pre></div>)}</div>}</section><section className="surface-panel rounded-xl p-5"><h3 className="font-semibold">Prerequisite register</h3>{prerequisites.length === 0 ? <p className="mt-4 rounded border border-dashed border-slate-700 p-4 text-sm text-slate-400">No course prerequisites configured.</p> : <div className="mt-4 space-y-3">{prerequisites.map((item) => <div key={item.id} className="rounded border border-slate-700 p-4"><b>{courseName(item.courseId)}</b><p className="mt-1 text-sm text-slate-400">Requires completed course: {courseName(item.requiredCourseId)}</p></div>)}</div>}</section></section></main>;
+  const [academy, setAcademy] = useState<Academy>();
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [schemes, setSchemes] = useState<Scheme[]>([]);
+  const [prerequisites, setPrerequisites] = useState<Prerequisite[]>([]);
+  const [notice, setNotice] = useState("Loading academic governance…");
+  const [saving, setSaving] = useState(false);
+  const [courseId, setCourseId] = useState("");
+  const [requiredCourseId, setRequiredCourseId] = useState("");
+  async function load(id?: string) {
+    try {
+      const academyId = id ?? academy?.id;
+      if (!academyId) return;
+      const [courseResponse, schemeResponse, prerequisiteResponse] =
+        await Promise.all([
+          academyApi(`/api/academies/${academyId}/courses`),
+          academyApi(
+            `/api/academies/${academyId}/academic-governance/grading-schemes`,
+          ),
+          academyApi(
+            `/api/academies/${academyId}/academic-governance/prerequisites`,
+          ),
+        ]);
+      if (
+        ![courseResponse, schemeResponse, prerequisiteResponse].every(
+          (response) => response.ok,
+        )
+      )
+        throw new Error();
+      setCourses(await courseResponse.json());
+      setSchemes(await schemeResponse.json());
+      setPrerequisites(await prerequisiteResponse.json());
+      setNotice("");
+    } catch {
+      setNotice(
+        "Academic governance could not be loaded. Confirm that the API is running and that you have academic administration access.",
+      );
+    }
+  }
+  useEffect(() => {
+    void (async () => {
+      try {
+        const response = await academyApi("/api/academies");
+        if (!response.ok) throw new Error();
+        const academies: Academy[] = await response.json();
+        if (!academies[0])
+          return setNotice(
+            "Create an academy and courses before configuring governance.",
+          );
+        setAcademy(academies[0]);
+        await load(academies[0].id);
+      } catch {
+        setNotice(
+          "Academic governance could not be loaded. Please sign in and restart the API if needed.",
+        );
+      }
+    })();
+  }, []);
+  async function submit(
+    event: FormEvent<HTMLFormElement>,
+    path: "grading-schemes" | "prerequisites",
+  ) {
+    event.preventDefault();
+    if (!academy) return;
+    const data = new FormData(event.currentTarget);
+    if (path === "prerequisites" && (!courseId || !requiredCourseId))
+      return setNotice("Select both courses for the prerequisite.");
+    const body =
+      path === "grading-schemes"
+        ? {
+            name: data.get("name"),
+            passingPercent: Number(data.get("passingPercent")),
+            bandsJson: data.get("bandsJson") || "[]",
+          }
+        : { courseId, requiredCourseId };
+    setSaving(true);
+    try {
+      const response = await academyApi(
+        `/api/academies/${academy.id}/academic-governance/${path}`,
+        {
+          method: "POST",
+          headers: apiHeaders(true),
+          body: JSON.stringify(body),
+        },
+      );
+      if (!response.ok) {
+        const error = await response.json().catch(() => null);
+        throw new Error(
+          error?.message || "Governance rule could not be saved.",
+        );
+      }
+      event.currentTarget.reset();
+      if (path === "prerequisites") {
+        setCourseId("");
+        setRequiredCourseId("");
+      }
+      setNotice(
+        path === "grading-schemes"
+          ? "Grading scheme created."
+          : "Course prerequisite saved.",
+      );
+      await load();
+    } catch (error) {
+      setNotice(
+        error instanceof Error
+          ? error.message
+          : "Governance rule could not be saved.",
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
+  async function toggleScheme(item: Scheme) {
+    if (!academy) return;
+    setSaving(true);
+    try {
+      const response = await academyApi(
+        `/api/academies/${academy.id}/grading-schemes/${item.id}/status`,
+        {
+          method: "PATCH",
+          headers: apiHeaders(true),
+          body: JSON.stringify({ isActive: !item.isActive }),
+        },
+      );
+      if (!response.ok) throw new Error();
+      setNotice(
+        item.isActive
+          ? "Grading scheme made inactive."
+          : "Grading scheme activated.",
+      );
+      await load();
+    } catch {
+      setNotice("Scheme status could not be updated.");
+    } finally {
+      setSaving(false);
+    }
+  }
+  const courseName = (id: string) =>
+    courses.find((item) => item.id === id)?.name ?? "Course unavailable";
+  const courseOptions = courses.map((item) => ({
+    value: item.id,
+    label: item.name,
+  }));
+  return (
+    <main className="enterprise-settings governance-standard min-h-screen">
+      <WorkspaceNav />
+      <div className="governance-content mx-auto max-w-6xl px-6 py-10">
+        <header className="governance-heading">
+          <div className="governance-title">
+            <span className="governance-title-icon" aria-hidden="true">
+              ♫
+            </span>
+            <div>
+              <p>Academics</p>
+              <h1>Academic Governance</h1>
+            </div>
+          </div>
+          <nav>
+            <Link href="/academic-periods">Periods</Link>
+            <Link href="/curriculum">Curriculum</Link>
+            <Link href="/batch-promotions">Promotions</Link>
+          </nav>
+        </header>
+        {notice && (
+          <p className="enterprise-page-state governance-message" role="status">
+            {notice}
+          </p>
+        )}
+        <section className="governance-tiles">
+          <article>
+            <span>Active grading schemes</span>
+            <b>{schemes.filter((item) => item.isActive).length}</b>
+          </article>
+          <article>
+            <span>Course prerequisites</span>
+            <b>{prerequisites.length}</b>
+          </article>
+          <article>
+            <span>Governed courses</span>
+            <b>{courses.length}</b>
+          </article>
+        </section>
+        <section className="governance-form-grid">
+          <form
+            onSubmit={(event) => void submit(event, "grading-schemes")}
+            className="governance-panel"
+          >
+            <header className="governance-panel-header">
+              <div>
+                <p>Assessment policy</p>
+                <h2>Create grading scheme</h2>
+              </div>
+            </header>
+            <div className="governance-fields">
+              <label>
+                <span>Scheme name</span>
+                <input
+                  required
+                  name="name"
+                  placeholder="Performance grade bands"
+                />
+              </label>
+              <label>
+                <span>Passing percentage</span>
+                <input
+                  required
+                  name="passingPercent"
+                  type="number"
+                  min="0"
+                  max="100"
+                  placeholder="Passing percentage"
+                />
+              </label>
+              <label>
+                <span>Grade bands</span>
+                <textarea name="bandsJson" defaultValue="[]" />
+              </label>
+              <button
+                disabled={saving}
+                className="enterprise-action-button governance-action"
+              >
+                Create scheme
+              </button>
+            </div>
+          </form>
+          <form
+            onSubmit={(event) => void submit(event, "prerequisites")}
+            className="governance-panel"
+          >
+            <header className="governance-panel-header">
+              <div>
+                <p>Course rules</p>
+                <h2>Add course prerequisite</h2>
+              </div>
+            </header>
+            <div className="governance-fields">
+              <StandardSelectField
+                name="courseId"
+                value={courseId}
+                onChange={setCourseId}
+                placeholder="Course to unlock"
+                options={courseOptions}
+              />
+              <StandardSelectField
+                name="requiredCourseId"
+                value={requiredCourseId}
+                onChange={setRequiredCourseId}
+                placeholder="Required completed course"
+                options={courseOptions}
+              />
+              <button
+                disabled={saving}
+                className="enterprise-action-button governance-action"
+              >
+                Save prerequisite
+              </button>
+            </div>
+          </form>
+        </section>
+        <section className="governance-register-grid">
+          <section className="governance-panel">
+            <header className="governance-panel-header">
+              <div>
+                <p>Assessment policy</p>
+                <h2>Grading-scheme register</h2>
+              </div>
+            </header>
+            {schemes.length === 0 ? (
+              <p className="governance-empty">No grading schemes configured.</p>
+            ) : (
+              <ul>
+                {schemes.map((item) => (
+                  <li key={item.id}>
+                    <div>
+                      <b>{item.name}</b>
+                      <small>
+                        Pass threshold: {item.passingPercent}% ·{" "}
+                        {item.isActive ? "Active" : "Inactive"}
+                      </small>
+                      <pre>{item.bandsJson}</pre>
+                    </div>
+                    <button
+                      disabled={saving}
+                      type="button"
+                      onClick={() => void toggleScheme(item)}
+                    >
+                      {item.isActive ? "Deactivate" : "Activate"}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+          <section className="governance-panel">
+            <header className="governance-panel-header">
+              <div>
+                <p>Course rules</p>
+                <h2>Prerequisite register</h2>
+              </div>
+            </header>
+            {prerequisites.length === 0 ? (
+              <p className="governance-empty">
+                No course prerequisites configured.
+              </p>
+            ) : (
+              <ul>
+                {prerequisites.map((item) => (
+                  <li key={item.id}>
+                    <div>
+                      <b>{courseName(item.courseId)}</b>
+                      <small>
+                        Requires completed course:{" "}
+                        {courseName(item.requiredCourseId)}
+                      </small>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        </section>
+      </div>
+    </main>
+  );
 }
