@@ -4,7 +4,7 @@ import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { academyApi, apiHeaders, apiUrl } from "@/lib/api";
+import { academyApi, apiHeaders, apiUrl, clearPortalTokens } from "@/lib/api";
 
 type Academy = {
   id: string;
@@ -184,8 +184,7 @@ export default function PlatformPage() {
     }
   }
   function signOut() {
-    localStorage.removeItem("academydesk.accessToken");
-    localStorage.removeItem("academydesk.refreshToken");
+    clearPortalTokens();
     router.push("/login");
   }
 

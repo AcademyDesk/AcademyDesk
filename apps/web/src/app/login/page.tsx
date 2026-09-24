@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import { PortalWorkspace, savePortalTokens } from "@/lib/api";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5092";
 
@@ -28,12 +29,18 @@ export default function LoginPage() {
       );
       if (!response.ok) throw new Error();
       const tokens = await response.json();
-      localStorage.setItem("academydesk.accessToken", tokens.accessToken);
-      localStorage.setItem("academydesk.refreshToken", tokens.refreshToken);
       const profile = await fetch(`${apiUrl}/api/auth/session`, {
         headers: { Authorization: `Bearer ${tokens.accessToken}` },
       });
       const session = profile.ok ? await profile.json() : null;
+      const workspace: PortalWorkspace = session?.workspace === "Platform"
+        ? "Platform"
+        : session?.workspace === "Teacher"
+          ? "Teacher"
+          : session?.workspace === "Portal"
+            ? "Portal"
+            : "AcademyAdmin";
+      savePortalTokens(workspace, tokens.accessToken, tokens.refreshToken);
       router.push(
         session?.workspace === "Platform"
           ? "/platform"

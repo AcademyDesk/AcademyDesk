@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { academyApi, apiUrl } from "@/lib/api";
+import { academyApi, apiUrl, clearPortalTokens } from "@/lib/api";
 
 type NavigationItem = readonly [label: string, href: string];
 type AcademySubscription = {
@@ -344,8 +344,7 @@ export function EnterpriseShell({
   }
 
   function signOut() {
-    window.localStorage.removeItem("academydesk.accessToken");
-    window.localStorage.removeItem("academydesk.refreshToken");
+    clearPortalTokens();
     router.push("/login");
   }
 

@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useEnterpriseShell } from "@/components/enterprise-shell";
-import { academyApi } from "@/lib/api";
+import { academyApi, clearPortalTokens } from "@/lib/api";
 
 const navigationGroups = [
   { label: "Overview", links: [["Dashboard", "/dashboard"], ["Academy profile", "/"], ["Branches", "/branches"], ["Activity", "/activity"], ["Reports", "/reports"]] },
@@ -26,8 +26,7 @@ export function WorkspaceNav() {
   if (isInsideEnterpriseShell) return null;
 
   function signOut() {
-    window.localStorage.removeItem("academydesk.accessToken");
-    window.localStorage.removeItem("academydesk.refreshToken");
+    clearPortalTokens();
     router.push("/login");
   }
 

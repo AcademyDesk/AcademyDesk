@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { academyApi, apiHeaders, apiUrl } from "@/lib/api";
+import { academyApi, apiHeaders, apiUrl, clearPortalTokens } from "@/lib/api";
 import { ThemeToggle } from "@/components/theme-toggle";
 type P = {
   firstName: string;
@@ -253,7 +253,7 @@ function TeacherPortalProfile() {
     if (!response.ok) return setMessage(result?.message ?? "Profile image could not be saved.");
     setAccount((current) => ({ ...current, profileImageUrl: result.profileImageUrl })); setMessage(""); setOpen(false);
   }
-  function signOut() { window.localStorage.removeItem("academydesk.accessToken"); window.localStorage.removeItem("academydesk.refreshToken"); router.push("/login"); }
+  function signOut() { clearPortalTokens(); router.push("/login"); }
   return <div className="enterprise-profile" ref={ref}>
     <button type="button" className="enterprise-profile-trigger" onClick={() => { setMessage(""); setOpen((value) => !value); }} aria-label="Open profile menu" aria-expanded={open}>
       {imageUrl ? <img src={imageUrl} alt="Profile" /> : <span>{initials}</span>}

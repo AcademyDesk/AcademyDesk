@@ -4,7 +4,7 @@ import Link from "next/link";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { academyApi, apiHeaders, apiUrl } from "@/lib/api";
+import { academyApi, apiHeaders, apiUrl, clearPortalTokens } from "@/lib/api";
 
 type Academy = {
   id: string;
@@ -327,8 +327,7 @@ export default function PlatformControlPage() {
     try { const response = await academyApi("/api/platform/announcements", { method: "POST", headers: apiHeaders(true), body: JSON.stringify({ academyId: form.get("academyId"), title: form.get("title"), message: form.get("body"), displayHours: Number(form.get("hours")) }) }); if (!response.ok) { const error = await response.json().catch(() => null); throw new Error(error?.message ?? "Announcement could not be published."); } event.currentTarget.reset(); setMessage("Academy admin announcement is now live."); } catch (error) { setMessage(error instanceof Error ? error.message : "Announcement could not be published."); } finally { setBusy(false); }
   }
   function signOut() {
-    localStorage.removeItem("academydesk.accessToken");
-    localStorage.removeItem("academydesk.refreshToken");
+    clearPortalTokens();
     router.push("/login");
   }
 
