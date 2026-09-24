@@ -227,12 +227,22 @@ export default function CertificatesPage() {
             <h2>Certificate identity</h2>
           </div>
           <form onSubmit={saveBranding}>
-            <div className="certificate-logo-slot">
-              {logoUrl ? (
-                <img src={logoUrl} alt="Academy logo" />
-              ) : (
-                <span>{branding?.academyName?.slice(0, 1) ?? "A"}</span>
-              )}
+            <div className="certificate-logo-control">
+              <div className="certificate-logo-slot">
+                {logoUrl ? (
+                  <img src={logoUrl} alt="Academy logo" />
+                ) : (
+                  <span>{branding?.academyName?.slice(0, 1) ?? "A"}</span>
+                )}
+              </div>
+              <button
+                type="button"
+                className="enterprise-action-button-secondary"
+                onClick={() => fileInput.current?.click()}
+                disabled={savingBrand}
+              >
+                Change logo
+              </button>
             </div>
             <input
               ref={fileInput}
@@ -241,14 +251,6 @@ export default function CertificatesPage() {
               onChange={uploadLogo}
               className="sr-only"
             />
-            <button
-              type="button"
-              className="enterprise-action-button-secondary"
-              onClick={() => fileInput.current?.click()}
-              disabled={savingBrand}
-            >
-              Upload logo
-            </button>
             <label>
               Accent colour
               <input
