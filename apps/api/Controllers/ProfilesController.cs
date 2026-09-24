@@ -52,13 +52,34 @@ public sealed class ProfilesController(AcademyDeskDbContext dbContext) : Control
     {
         var teacher = await dbContext.Teachers.AsNoTracking().SingleOrDefaultAsync(x => x.AcademyId == academyId && x.Id == teacherId, token);
         if (teacher is null) return NotFound();
-        var batches = await (from batch in dbContext.Batches.AsNoTracking()
-                             join course in dbContext.Courses.AsNoTracking() on batch.CourseId equals course.Id
-                             where batch.AcademyId == academyId && batch.TeacherId == teacherId
-                             select new TeacherAssignedBatchSummary(batch.Name, course.Name, batch.IsActive)).ToListAsync(token);
-        var classes = await dbContext.ClassSessions.AsNoTracking().Where(x => x.AcademyId == academyId && x.TeacherId == teacherId).OrderByDescending(x => x.StartUtc).Take(12).Select(x => new TeacherClassSummary(x.StartUtc, x.EndUtc, x.DeliveryMode, x.RoomName, x.Status)).ToListAsync(token);
+        var assignedBatches = await (from batch in dbContext.Batches.AsNoTracking()
+                                     join course in dbContext.Courses.AsNoTracking() on batch.CourseId equals course.Id
+                                     where batch.AcademyId == academyId && batch.TeacherId == teacherId
+                                     select new { batch.Id, batch.Name, CourseName = course.Name, batch.IsActive }).ToListAsync(token);
+        var batchIds = assignedBatches.Select(batch => batch.Id).ToArray();
+        var sessionRows = await dbContext.ClassSessions.AsNoTracking()
+            .Where(x => x.AcademyId == academyId && x.TeacherId == teacherId && batchIds.Contains(x.BatchId))
+            .OrderByDescending(x => x.StartUtc)
+            .Select(x => new { x.Id, x.BatchId, x.StartUtc, x.EndUtc, x.DeliveryMode, x.RoomName, x.Status })
+            .ToListAsync(token);
+        var now = DateTime.UtcNow;
+        var cycleStart = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+        var cycleEnd = cycleStart.AddMonths(1);
+        var batches = assignedBatches.Select(batch =>
+        {
+            var batchSessions = sessionRows.Where(session => session.BatchId == batch.Id).ToArray();
+            var currentCycle = batchSessions.Where(session => session.StartUtc >= cycleStart && session.StartUtc < cycleEnd).ToArray();
+            var completed = batchSessions.Count(session => session.Status == "Completed");
+            var pending = batchSessions.Count(session => session.Status is not "Completed" and not "Cancelled");
+            var cycleCompleted = currentCycle.Count(session => session.Status == "Completed");
+            var cyclePending = currentCycle.Count(session => session.Status is not "Completed" and not "Cancelled");
+            return new TeacherAssignedBatchSummary(batch.Id, batch.Name, batch.CourseName, batch.IsActive, completed, pending, cycleCompleted, cyclePending);
+        }).ToList();
+        var batchNames = assignedBatches.ToDictionary(batch => batch.Id, batch => batch.Name);
+        var classes = sessionRows.Take(12).Select(session => new TeacherClassSummary(session.Id, session.BatchId, batchNames.GetValueOrDefault(session.BatchId, "Class"), session.StartUtc, session.EndUtc, session.DeliveryMode, session.RoomName, session.Status)).ToList();
         var leave = await dbContext.LeaveRequests.AsNoTracking().Where(x => x.AcademyId == academyId && x.TeacherId == teacherId).OrderByDescending(x => x.StartDate).Take(8).Select(x => new LeaveProfileSummary(x.StartDate, x.EndDate, x.Status, x.Reason)).ToListAsync(token);
-        return Ok(new TeacherProfileSummary(teacher.Id, teacher.FirstName + " " + teacher.LastName, teacher.Email, teacher.Phone, teacher.Specialties, teacher.EmployeeCode, teacher.PreferredName, teacher.EmploymentType, teacher.DateOfBirth, teacher.JoiningDate, teacher.Qualifications, teacher.AddressLine1, teacher.City, teacher.State, teacher.PostalCode, teacher.EmergencyContactName, teacher.EmergencyContactPhone, teacher.AdminNotes, batches, classes, leave));
+        var subjects = assignedBatches.Select(batch => batch.CourseName).Distinct().OrderBy(subject => subject).ToList();
+        return Ok(new TeacherProfileSummary(teacher.Id, teacher.FirstName + " " + teacher.LastName, teacher.Email, teacher.Phone, teacher.Specialties, teacher.EmployeeCode, teacher.PreferredName, teacher.EmploymentType, teacher.DateOfBirth, teacher.JoiningDate, teacher.Qualifications, teacher.AddressLine1, teacher.City, teacher.State, teacher.PostalCode, teacher.EmergencyContactName, teacher.EmergencyContactPhone, teacher.AdminNotes, subjects, batches, classes, leave));
     }
 
     [HttpPut("students/{studentId:guid}/profile")]
@@ -140,10 +161,10 @@ public sealed record StudentProfileSummary(Guid Id, string Name, string? Email, 
 public sealed record GuardianStudentSummary(Guid Id, string Name, string? Relationship);
 public sealed record GuardianInvoiceSummary(Guid StudentId, string InvoiceNumber, decimal TotalAmount, string Currency, DateOnly DueDate, string Status);
 public sealed record GuardianProfileSummary(Guid Id, string Name, string? Email, string? Phone, string? PreferredName, string? AddressLine1, string? City, string? State, string? PostalCode, string? PreferredLanguage, IReadOnlyList<GuardianStudentSummary> Students, IReadOnlyList<GuardianInvoiceSummary> Invoices, IReadOnlyList<CommunicationProfileSummary> Communications);
-public sealed record TeacherAssignedBatchSummary(string BatchName, string CourseName, bool IsActive);
-public sealed record TeacherClassSummary(DateTime StartUtc, DateTime EndUtc, string DeliveryMode, string? RoomName, string Status);
+public sealed record TeacherAssignedBatchSummary(Guid Id, string BatchName, string CourseName, bool IsActive, int CompletedSessions, int PendingSessions, int CurrentCycleCompleted, int CurrentCyclePending);
+public sealed record TeacherClassSummary(Guid Id, Guid BatchId, string BatchName, DateTime StartUtc, DateTime EndUtc, string DeliveryMode, string? RoomName, string Status);
 public sealed record LeaveProfileSummary(DateOnly StartDate, DateOnly EndDate, string Status, string Reason);
-public sealed record TeacherProfileSummary(Guid Id, string Name, string? Email, string? Phone, string? Specialties, string? EmployeeCode, string? PreferredName, string? EmploymentType, DateOnly? DateOfBirth, DateOnly? JoiningDate, string? Qualifications, string? AddressLine1, string? City, string? State, string? PostalCode, string? EmergencyContactName, string? EmergencyContactPhone, string? AdminNotes, IReadOnlyList<TeacherAssignedBatchSummary> Batches, IReadOnlyList<TeacherClassSummary> Classes, IReadOnlyList<LeaveProfileSummary> LeaveRequests);
+public sealed record TeacherProfileSummary(Guid Id, string Name, string? Email, string? Phone, string? Specialties, string? EmployeeCode, string? PreferredName, string? EmploymentType, DateOnly? DateOfBirth, DateOnly? JoiningDate, string? Qualifications, string? AddressLine1, string? City, string? State, string? PostalCode, string? EmergencyContactName, string? EmergencyContactPhone, string? AdminNotes, IReadOnlyList<string> Subjects, IReadOnlyList<TeacherAssignedBatchSummary> Batches, IReadOnlyList<TeacherClassSummary> Classes, IReadOnlyList<LeaveProfileSummary> LeaveRequests);
 public sealed record UpdateStudentAdminProfileRequest(string? StudentNumber, string? PreferredName, string? Gender, DateOnly? DateOfBirth, DateOnly? AdmissionDate, string? AddressLine1, string? City, string? State, string? PostalCode, string? EmergencyContactName, string? EmergencyContactPhone, string? MedicalOrAccessibilityNotes, string? AdminNotes);
 public sealed record UpdateTeacherAdminProfileRequest(string? EmployeeCode, string? PreferredName, string? EmploymentType, DateOnly? DateOfBirth, DateOnly? JoiningDate, string? Qualifications, string? AddressLine1, string? City, string? State, string? PostalCode, string? EmergencyContactName, string? EmergencyContactPhone, string? AdminNotes);
 public sealed record UpdateGuardianAdminProfileRequest(string? PreferredName, string? AddressLine1, string? City, string? State, string? PostalCode, string? PreferredLanguage);

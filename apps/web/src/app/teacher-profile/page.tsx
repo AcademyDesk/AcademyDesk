@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { academyApi, apiHeaders } from "@/lib/api";
 import { StandardDateField, StandardSelectField } from "@/components/design-system/controls";
 
 type Academy = { id: string };
 type Teacher = { id: string; firstName: string; lastName: string };
+type AssignedBatch = { id: string; batchName: string; courseName: string; isActive: boolean; completedSessions: number; pendingSessions: number; currentCycleCompleted: number; currentCyclePending: number };
+type TeacherClass = { id: string; batchId: string; batchName: string; startUtc: string; endUtc: string; deliveryMode: string; roomName?: string | null; status: string };
 type Profile = {
   employeeCode?: string;
   preferredName?: string;
@@ -20,8 +22,9 @@ type Profile = {
   emergencyContactName?: string;
   emergencyContactPhone?: string;
   adminNotes?: string;
-  batches?: unknown[];
-  classes?: unknown[];
+  subjects?: string[];
+  batches?: AssignedBatch[];
+  classes?: TeacherClass[];
   leaveRequests?: unknown[];
 };
 const count = (rows?: unknown[]) => rows?.length ?? 0;
@@ -35,6 +38,7 @@ export default function TeacherProfilePage() {
   const [form, setForm] = useState<Record<string, string>>({});
   const [message, setMessage] = useState("Loading teaching team…");
   const [saving, setSaving] = useState(false);
+  const [detail, setDetail] = useState<"batches" | "sessions" | null>(null);
   function prepare(value: Profile) {
     setForm({
       employeeCode: value.employeeCode ?? "",
@@ -157,23 +161,30 @@ export default function TeacherProfilePage() {
       {profile && (
         <>
           <section className="teacher-profile-summary-grid">
-            <article className="teacher-profile-summary-tile">
+            <button type="button" onClick={() => setDetail("batches")} className="teacher-profile-summary-tile teacher-profile-summary-action">
               <span>Assigned batches</span>
               <strong>
                 {count(profile.batches)}
               </strong>
-            </article>
-            <article className="teacher-profile-summary-tile">
+              <small>View batch and cycle details</small>
+            </button>
+            <button type="button" onClick={() => setDetail("sessions")} className="teacher-profile-summary-tile teacher-profile-summary-action">
               <span>Class sessions</span>
               <strong>
                 {count(profile.classes)}
               </strong>
-            </article>
+              <small>View completed and pending sessions</small>
+            </button>
             <article className="teacher-profile-summary-tile">
               <span>Leave requests</span>
               <strong>
                 {count(profile.leaveRequests)}
               </strong>
+            </article>
+            <article className="teacher-profile-summary-tile teacher-profile-subjects">
+              <span>Subjects taught</span>
+              <strong>{count(profile.subjects)}</strong>
+              <small>{profile.subjects?.join(" · ") || "No subjects assigned"}</small>
             </article>
           </section>
           <section className="teacher-profile-card">
@@ -259,8 +270,20 @@ export default function TeacherProfilePage() {
               className="field teacher-profile-notes"
             />
           </section>
+          {detail === "batches" && <TeacherDetailModal title="Assigned batches" onClose={() => setDetail(null)}>
+            {profile.batches?.length ? <div className="teacher-profile-detail-list">{profile.batches.map((batch) => <article key={batch.id}><header><div><b>{batch.batchName}</b><small>{batch.courseName} · {batch.isActive ? "Active" : "Inactive"}</small></div><em>{batch.completedSessions} completed</em></header><div className="teacher-profile-cycle"><span>All sessions</span><b>{batch.completedSessions} completed · {batch.pendingSessions} pending</b></div><div className="teacher-profile-cycle"><span>Current cycle</span><b>{batch.currentCycleCompleted} completed · {batch.currentCyclePending} pending</b></div></article>)}</div> : <p className="teacher-profile-detail-empty">No batches are assigned to this teacher.</p>}
+          </TeacherDetailModal>}
+          {detail === "sessions" && <TeacherDetailModal title="Class sessions" onClose={() => setDetail(null)}>
+            {profile.classes?.length ? <div className="teacher-profile-detail-list">{profile.classes.map((session) => <article key={session.id}><header><div><b>{session.batchName}</b><small>{formatSessionDate(session.startUtc)} · {formatSessionTime(session.startUtc)}–{formatSessionTime(session.endUtc)} · {session.deliveryMode}{session.roomName ? ` · ${session.roomName}` : ""}</small></div><em data-completed={session.status === "Completed"}>{session.status}</em></header></article>)}</div> : <p className="teacher-profile-detail-empty">No class sessions are recorded for this teacher.</p>}
+          </TeacherDetailModal>}
         </>
       )}
     </main>
   );
 }
+
+function TeacherDetailModal({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
+  return <div className="teacher-profile-detail-modal" role="dialog" aria-modal="true" aria-label={title} onMouseDown={onClose}><article onMouseDown={(event) => event.stopPropagation()}><header><div><p>Teacher 360</p><h2>{title}</h2></div><button type="button" onClick={onClose} aria-label="Close details">×</button></header>{children}</article></div>;
+}
+function formatSessionDate(value: string) { return new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata" }).format(new Date(value)); }
+function formatSessionTime(value: string) { return new Intl.DateTimeFormat("en-IN", { hour: "numeric", minute: "2-digit", timeZone: "Asia/Kolkata" }).format(new Date(value)); }
