@@ -1232,6 +1232,11 @@ html[data-theme="light"] [class~="text-red-300"] {
   padding: clamp(22px, 2vw, 40px);
   overflow: auto;
 }
+.enterprise-settings:has(.standard-select-menu, .standard-date-popover, .standard-time-popover) {
+  position: relative;
+  z-index: 70;
+  overflow: visible;
+}
 
 .consent-check {
   display: flex;
