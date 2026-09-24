@@ -37,6 +37,14 @@ public sealed class AcademyAccessFilter(UserManager<ApplicationUser> userManager
             return;
         }
 
+        // Platform owners manage academies that are not their own tenant. Their
+        // individual platform endpoints still perform their own owner check.
+        if (user.IsPlatformOwner)
+        {
+            await next();
+            return;
+        }
+
         if (user.AcademyId != academyId)
         {
             context.Result = new ForbidResult();
