@@ -9,6 +9,7 @@ import {
 import { academyApi, apiHeaders } from "@/lib/api";
 type Academy = { id: string };
 type Person = { id: string; firstName: string; lastName: string };
+type Teacher = { id: string; firstName: string; lastName: string };
 type Template = {
   id: string;
   channel: string;
@@ -34,6 +35,7 @@ export default function CommunicationsPage() {
   const [academy, setAcademy] = useState<Academy>();
   const [students, setStudents] = useState<Person[]>([]);
   const [guardians, setGuardians] = useState<Person[]>([]);
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [templates, setTemplates] = useState<Template[]>([]);
   const [items, setItems] = useState<Notification[]>([]);
   const [recipientType, setRecipientType] = useState("Guardian");
@@ -52,7 +54,7 @@ export default function CommunicationsPage() {
     useState("Student,Teacher");
   const [message, setMessage] = useState("Loading messages…");
   const isAnnouncement = recipientType === "Academy";
-  const people = recipientType === "Student" ? students : guardians;
+  const people = recipientType === "Student" ? students : recipientType === "Teacher" ? teachers : guardians;
   const selectedTemplate = templates.find((item) => item.id === templateId);
   const templateVariables = useMemo(
     () => (selectedTemplate ? variablesFrom(selectedTemplate.body) : []),
@@ -64,14 +66,16 @@ export default function CommunicationsPage() {
     const responses = await Promise.all([
       academyApi(`/api/academies/${academyId}/students`),
       academyApi(`/api/academies/${academyId}/guardians`),
+      academyApi(`/api/academies/${academyId}/teachers`),
       academyApi(`/api/academies/${academyId}/communication-templates`),
       academyApi(`/api/academies/${academyId}/notifications`),
     ]);
     if (!responses.every((response) => response.ok)) throw Error();
     setStudents(await responses[0].json());
     setGuardians(await responses[1].json());
-    setTemplates(await responses[2].json());
-    setItems(await responses[3].json());
+    setTeachers(await responses[2].json());
+    setTemplates(await responses[3].json());
+    setItems(await responses[4].json());
     setMessage("");
   }
   useEffect(() => {
@@ -190,8 +194,9 @@ export default function CommunicationsPage() {
                   }}
                   placeholder="Select message type"
                   options={[
-                    { value: "Guardian", label: "Guardian" },
+                    { value: "Guardian", label: "Parent" },
                     { value: "Student", label: "Student" },
+                    { value: "Teacher", label: "Teacher" },
                     { value: "Academy", label: "Portal banner message" },
                   ]}
                 />

@@ -72,7 +72,7 @@ export default function GuardianProfilePage() {
         }
         setMessage("");
       } catch {
-        setMessage("Guardian records could not be loaded.");
+        setMessage("Parent records could not be loaded.");
       }
     })();
   }, []);
@@ -82,7 +82,7 @@ export default function GuardianProfilePage() {
       await load(id);
       setMessage("");
     } catch {
-      setMessage("The guardian record could not be loaded.");
+      setMessage("The parent record could not be loaded.");
     }
   }
   async function save() {
@@ -102,7 +102,7 @@ export default function GuardianProfilePage() {
         throw new Error(value?.message ?? "The profile could not be saved.");
       setProfile(value);
       prepare(value);
-      setMessage("Guardian administrative profile saved.");
+      setMessage("Parent administrative profile saved.");
     } catch (error) {
       setMessage(
         error instanceof Error

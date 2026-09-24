@@ -20,6 +20,7 @@ type P = {
 type S = { id: string; firstName: string; lastName: string };
 type A = { studentId: string; status: string };
 type Announcement = { id: string; title: string; message: string };
+type PortalNotification = { id: string; title: string; message: string; channel: string; status: string; createdAtUtc: string };
 type PracticeLog = {
   id: string;
   studentName: string;
@@ -61,6 +62,7 @@ export default function Teacher() {
   const [m, setM] = useState("Loading your teaching workspace…");
   const [busy, setBusy] = useState("");
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [messages, setMessages] = useState<PortalNotification[]>([]);
   async function loadRoster(id = sid) {
     if (!id) return;
     const [a, b] = await Promise.all([
@@ -87,6 +89,7 @@ export default function Teacher() {
       setM("This account is not linked to an active teacher profile."),
     );
     void academyApi("/api/portal/announcements").then(async (response) => { if (response.ok) setAnnouncements(await response.json()); }).catch(() => undefined);
+    void academyApi("/api/portal/notifications").then(async (response) => { if (response.ok) setMessages(await response.json()); }).catch(() => undefined);
   }, []);
   async function submitAttendance(teacherStatus: string, records: { studentId: string; status: string }[]) {
     if (!sid) return;
@@ -176,6 +179,7 @@ export default function Teacher() {
                   </section>
                 )}
                 {t === "today" && <TeacherOverviewFinance />}
+                {t === "today" && <TeacherMessages messages={messages} />}
                 {t === "today" && (
                   <section className="teacher-timetable-panel">
                     <header className="teacher-section-heading">
@@ -222,6 +226,7 @@ export default function Teacher() {
   );
 }
 function AnnouncementTicker({ announcements }: { announcements: Announcement[] }) { const text = announcements.map((item) => `${item.title}: ${item.message}`).join("   •   "); return <div className="learner-announcement" role="status" aria-label="Important announcement"><span>Important</span><div><p>{text}   •   {text}</p></div></div>; }
+function TeacherMessages({ messages }: { messages: PortalNotification[] }) { return <section className="teacher-home-messages"><header><div><p>Messages</p><h2>From your academy</h2></div><span>{messages.length}</span></header>{messages.length ? <ul>{messages.slice(0, 4).map(message => <li key={message.id}><div><b>{message.title}</b><p>{message.message}</p><small>{new Date(message.createdAtUtc).toLocaleString("en-IN")}</small></div><span>{message.channel}</span></li>)}</ul> : <p>No direct messages from your academy.</p>}</section>; }
 
 function TeacherPortalProfile() {
   const router = useRouter();

@@ -168,9 +168,9 @@ export default function GuardiansPage() {
       },
     );
     setSavingId(null);
-    if (!response.ok) return setMessage("The guardian could not be updated.");
+    if (!response.ok) return setMessage("The parent could not be updated.");
     setEditingId(null);
-    setMessage("Guardian updated.");
+    setMessage("Parent updated.");
     await load();
   }
   async function toggleActive(guardian: Guardian) {
@@ -192,7 +192,7 @@ export default function GuardiansPage() {
     );
     setSavingId(null);
     if (!response.ok)
-      return setMessage("The guardian status could not be updated.");
+      return setMessage("The parent status could not be updated.");
     setMessage(
       guardian.isActive ? "Parent marked inactive." : "Parent reactivated.",
     );

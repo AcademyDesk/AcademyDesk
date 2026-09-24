@@ -129,7 +129,7 @@ export default function CommunicationPreferencesPage() {
                 }}
                 placeholder="Select contact type"
                 options={[
-                  { value: "Guardian", label: "Guardian" },
+                  { value: "Guardian", label: "Parent" },
                   { value: "Student", label: "Student" },
                 ]}
               />

@@ -62,9 +62,9 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
     {
         var user = await users.GetUserAsync(User);
         if (user?.AcademyId is null) return Forbid();
-        var recipientId = user.StudentId ?? user.GuardianId;
+        var recipientId = user.StudentId ?? user.GuardianId ?? user.TeacherId;
         if (!recipientId.HasValue) return Forbid();
-        var recipientType = user.StudentId.HasValue ? "Student" : "Guardian";
+        var recipientType = user.StudentId.HasValue ? "Student" : user.TeacherId.HasValue ? "Teacher" : "Guardian";
         var notifications = await db.Notifications.AsNoTracking()
             .Where(x => x.AcademyId == user.AcademyId && x.RecipientId == recipientId && x.RecipientType == recipientType)
             .OrderByDescending(x => x.CreatedAtUtc).Take(100)
@@ -95,8 +95,8 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
     {
         var user = await users.GetUserAsync(User);
         if (user?.AcademyId is null) return Forbid();
-        var recipientId = user.StudentId ?? user.GuardianId;
-        var recipientType = user.StudentId.HasValue ? "Student" : "Guardian";
+        var recipientId = user.StudentId ?? user.GuardianId ?? user.TeacherId;
+        var recipientType = user.StudentId.HasValue ? "Student" : user.TeacherId.HasValue ? "Teacher" : "Guardian";
         if (!recipientId.HasValue) return Forbid();
         var notification = await db.Notifications.SingleOrDefaultAsync(x => x.Id == notificationId && x.AcademyId == user.AcademyId && x.RecipientId == recipientId && x.RecipientType == recipientType, token);
         if (notification is null) return NotFound();

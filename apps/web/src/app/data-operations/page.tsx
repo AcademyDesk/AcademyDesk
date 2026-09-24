@@ -5,7 +5,7 @@ import { academyApi } from "@/lib/api";
 
 type Academy = { id: string };
 type ImportRow = { firstName: string; lastName: string; studentNumber: string | null; email: string | null; phone: string | null; admissionDate: null };
-const exports = [["students", "Student register"], ["guardians", "Guardian register"], ["enrollments", "Enrolment register"], ["invoices", "Invoice ledger"], ["payments", "Payment reconciliation ledger"]] as const;
+const exports = [["students", "Student register"], ["guardians", "Parent register"], ["enrollments", "Enrolment register"], ["invoices", "Invoice ledger"], ["payments", "Payment reconciliation ledger"]] as const;
 
 export default function DataOperations() {
   const [academy, setAcademy] = useState<Academy>(); const [message, setMessage] = useState("Loading data operations…"); const [rows, setRows] = useState<ImportRow[]>([]); const [fileName, setFileName] = useState(""); const [validating, setValidating] = useState(false); const [importing, setImporting] = useState(false);
