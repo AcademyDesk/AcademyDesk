@@ -7,6 +7,7 @@
  */
 export { StandardDateField } from "../standard-date-field";
 export { StandardSelectField } from "../standard-select-field";
+export { StandardTimeField } from "../standard-time-field";
 export { StandardDetailModal, StandardInteractiveTile } from "./interactive";
 
 /** Shared contract for full-month schedule views. */
@@ -15,5 +16,6 @@ export const calendarStandard = {
   requiredViews: ["Month grid", "Month agenda"],
   classDetails: ["Subject", "Time", "Schedule", "Teacher", "Students"],
   classActions: ["Join class", "Open class"],
-  multiStudentDisclosure: "Show or hide the roster when more than one student is assigned.",
+  multiStudentDisclosure:
+    "Show or hide the roster when more than one student is assigned.",
 } as const;

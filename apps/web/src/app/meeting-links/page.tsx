@@ -4,6 +4,7 @@ import { WorkspaceNav } from "@/components/workspace-nav";
 import {
   StandardDateField,
   StandardSelectField,
+  StandardTimeField,
 } from "@/components/design-system/controls";
 import { academyApi } from "@/lib/api";
 type Academy = { id: string; timeZone?: string };
@@ -41,17 +42,11 @@ const providerName: Record<Provider, string> = {
   Zoom: "Zoom",
   Microsoft365: "Microsoft Teams",
 };
-const timeOptions = Array.from({ length: 96 }, (_, index) => {
-  const hour = Math.floor(index / 4);
-  const minute = (index % 4) * 15;
-  const value = `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
-  return {
-    value,
-    label: new Intl.DateTimeFormat("en-IN", { hour: "numeric", minute: "2-digit" }).format(new Date(2000, 0, 1, hour, minute)),
-  };
-});
 const name = (p: Person) =>
   `${p.firstName ?? ""} ${p.lastName ?? ""}`.trim() || "Unnamed";
+
+const hasMeetingUrl = (meetingLink?: string) =>
+  /^https?:\/\//i.test(meetingLink?.trim() ?? "");
 export default function MeetingLinksPage() {
   const [academy, setAcademy] = useState<Academy>();
   const [students, setStudents] = useState<Person[]>([]);
@@ -122,7 +117,8 @@ export default function MeetingLinksPage() {
   const eligibleBatchIds = batches
     .filter(
       (b) =>
-        ["Online", "Hybrid"].includes(b.deliveryMode ?? "") && !b.meetingLink,
+        ["Online", "Hybrid"].includes(b.deliveryMode ?? "") &&
+        !hasMeetingUrl(b.meetingLink),
     )
     .map((b) => b.id);
   const eligibleStudents = students.filter((s) =>
@@ -306,7 +302,12 @@ export default function MeetingLinksPage() {
                   onChange={setDate}
                   required
                 />
-                <StandardSelectField name="start-time" value={time} onChange={setTime} placeholder="Start time" options={timeOptions} />
+                <StandardTimeField
+                  name="start-time"
+                  label="Start time"
+                  value={time}
+                  onChange={setTime}
+                />
                 <StandardSelectField
                   name="duration"
                   value={duration}
