@@ -108,9 +108,6 @@ export default function ActivityPage() {
               options={["Today", "7 days", "30 days"].map((value) => ({ value, label: value }))}
             />
             <StandardDateField name="activity-date" value={activityDate} onChange={setActivityDate} label="Activity date" />
-          </div>
-          <div className="workspace-activity-filter-summary">
-            <span>Use search, record type, or period to narrow the audit trail.</span>
             <button
               onClick={() => {
                 setQuery("");
