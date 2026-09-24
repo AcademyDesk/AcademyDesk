@@ -145,13 +145,16 @@ export default function SalesCampaignsPage() {
                 />
               </label>
               <div className="campaigns-fields-two">
-                <StandardSelectField
-                  name="channel"
-                  value={channel}
-                  onChange={setChannel}
-                  placeholder="Channel"
-                  options={channels.map((value) => ({ value, label: value }))}
-                />
+                <label className="campaigns-control-field">
+                  <span>Channel</span>
+                  <StandardSelectField
+                    name="channel"
+                    value={channel}
+                    onChange={setChannel}
+                    placeholder="Channel"
+                    options={channels.map((value) => ({ value, label: value }))}
+                  />
+                </label>
                 <StandardDateField
                   name="start-date"
                   label="Start date"
@@ -172,13 +175,16 @@ export default function SalesCampaignsPage() {
                     placeholder="₹ Amount"
                   />
                 </label>
-                <StandardSelectField
-                  name="status"
-                  value={status}
-                  onChange={setStatus}
-                  placeholder="Status"
-                  options={statuses.map((value) => ({ value, label: value }))}
-                />
+                <label className="campaigns-control-field">
+                  <span>Status</span>
+                  <StandardSelectField
+                    name="status"
+                    value={status}
+                    onChange={setStatus}
+                    placeholder="Status"
+                    options={statuses.map((value) => ({ value, label: value }))}
+                  />
+                </label>
               </div>
               <button
                 className="enterprise-action-button campaigns-create-button"
