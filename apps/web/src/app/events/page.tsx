@@ -1,4 +1,225 @@
 "use client";
-import {FormEvent,useEffect,useState} from "react";import {WorkspaceNav} from "@/components/workspace-nav";import {academyApi,apiHeaders} from "@/lib/api";
-type Academy={id:string};type Branch={id:string;name:string};type Event={id:string;title:string;type:string;branchId?:string|null;startUtc:string;endUtc:string;venue?:string|null;capacity?:number|null;status:string;notes?:string|null};
-export default function EventsPage(){const[a,setA]=useState<Academy>();const[b,setB]=useState<Branch[]>([]);const[e,setE]=useState<Event[]>([]);const[title,setTitle]=useState("");const[type,setType]=useState("Recital");const[branchId,setBranch]=useState("");const[start,setStart]=useState("");const[end,setEnd]=useState("");const[venue,setVenue]=useState("");const[message,setMessage]=useState("Loading events…");async function load(id?:string){const x=id??a?.id;if(!x)return;const[r1,r2]=await Promise.all([academyApi(`/api/academies/${x}/events`),academyApi(`/api/academies/${x}/branches`)]);if(!r1.ok||!r2.ok)throw new Error();setE(await r1.json());setB(await r2.json());setMessage("");}useEffect(()=>{void(async()=>{try{const r=await academyApi("/api/academies");if(!r.ok)throw new Error();const q:Academy[]=await r.json();if(!q[0])return setMessage("Create your academy first.");setA(q[0]);await load(q[0].id)}catch{setMessage("Events could not be loaded. Apply the music migration and restart the API.")}})()},[]);async function create(x:FormEvent){x.preventDefault();if(!a)return;const r=await academyApi(`/api/academies/${a.id}/events`,{method:"POST",headers:apiHeaders(true),body:JSON.stringify({title,type,branchId:branchId||null,startUtc:new Date(start).toISOString(),endUtc:new Date(end).toISOString(),venue:venue||null,capacity:null,notes:null})});if(!r.ok)return setMessage("Enter a title and valid start/end times.");setTitle("");setStart("");setEnd("");setVenue("");await load()}return <main className="enterprise-settings enterprise-legacy-standard min-h-screen bg-slate-950 text-slate-100"><WorkspaceNav/><div className="mx-auto max-w-5xl px-6 py-10"><p className="text-sm font-semibold uppercase tracking-[.22em] text-cyan-300">Music academy</p><h1 className="mt-3 text-4xl font-semibold">Recitals and events</h1><p className="mt-3 text-slate-300">Plan recitals, workshops, exams, concerts, and masterclasses in one calendar.</p>{message&&<p className="mt-6 rounded-lg border border-amber-700/50 bg-amber-950/40 p-4 text-sm text-amber-100">{message}</p>}<section className="mt-8 grid gap-6 lg:grid-cols-[.8fr_1.2fr]"><form onSubmit={create} className="rounded-2xl border border-slate-800 bg-slate-900 p-6"><h2 className="text-xl font-semibold">Plan event</h2><input value={title} onChange={x=>setTitle(x.target.value)} placeholder="Event title" className="mt-5 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" required/><select value={type} onChange={x=>setType(x.target.value)} className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"><option>Recital</option><option>Workshop</option><option>Exam</option><option>Concert</option><option>Masterclass</option></select><select value={branchId} onChange={x=>setBranch(x.target.value)} className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"><option value="">No branch</option>{b.map(x=><option key={x.id} value={x.id}>{x.name}</option>)}</select><div className="mt-3 grid gap-3"><input type="datetime-local" value={start} onChange={x=>setStart(x.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" required/><input type="datetime-local" value={end} onChange={x=>setEnd(x.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" required/></div><input value={venue} onChange={x=>setVenue(x.target.value)} placeholder="Venue or meeting link" className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"/><button className="mt-5 w-full rounded-lg bg-cyan-400 px-4 py-2.5 font-semibold text-slate-950">Plan event</button></form><section className="rounded-2xl border border-slate-800 bg-slate-900 p-6"><h2 className="text-xl font-semibold">Upcoming events</h2>{e.length===0?<p className="mt-5 text-slate-400">No events planned.</p>:<ul className="mt-4 space-y-3">{e.map(x=><li key={x.id} className="rounded-lg border border-slate-700 bg-slate-950 p-4"><div className="font-medium">{x.title}</div><div className="mt-1 text-sm text-cyan-200">{x.type} · {new Intl.DateTimeFormat("en-IN",{dateStyle:"medium",timeStyle:"short"}).format(new Date(x.startUtc))}</div><div className="mt-1 text-sm text-slate-400">{x.venue||"Venue not set"} · {x.status}</div></li>)}</ul>}</section></section></div></main>}
+
+import { FormEvent, useEffect, useState } from "react";
+import { WorkspaceNav } from "@/components/workspace-nav";
+import {
+  StandardDateField,
+  StandardSelectField,
+  StandardTimeField,
+} from "@/components/design-system/controls";
+import { academyApi, apiHeaders } from "@/lib/api";
+
+type Academy = { id: string };
+type Branch = { id: string; name: string };
+type Event = {
+  id: string;
+  title: string;
+  type: string;
+  branchId?: string | null;
+  startUtc: string;
+  endUtc: string;
+  venue?: string | null;
+  capacity?: number | null;
+  status: string;
+  notes?: string | null;
+};
+const eventTypes = ["Recital", "Workshop", "Exam", "Concert", "Masterclass"];
+export default function EventsPage() {
+  const [academy, setAcademy] = useState<Academy>();
+  const [branches, setBranches] = useState<Branch[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [title, setTitle] = useState("");
+  const [type, setType] = useState("Recital");
+  const [branchId, setBranchId] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [startTime, setStartTime] = useState("10:00");
+  const [endDate, setEndDate] = useState("");
+  const [endTime, setEndTime] = useState("11:00");
+  const [venue, setVenue] = useState("");
+  const [message, setMessage] = useState("Loading events…");
+  async function load(id?: string) {
+    const academyId = id ?? academy?.id;
+    if (!academyId) return;
+    const [eventResponse, branchResponse] = await Promise.all([
+      academyApi(`/api/academies/${academyId}/events`),
+      academyApi(`/api/academies/${academyId}/branches`),
+    ]);
+    if (!eventResponse.ok || !branchResponse.ok) throw new Error();
+    setEvents(await eventResponse.json());
+    setBranches(await branchResponse.json());
+    setMessage("");
+  }
+  useEffect(() => {
+    void (async () => {
+      try {
+        const response = await academyApi("/api/academies");
+        if (!response.ok) throw new Error();
+        const academies: Academy[] = await response.json();
+        if (!academies[0]) return setMessage("Create your academy first.");
+        setAcademy(academies[0]);
+        await load(academies[0].id);
+      } catch {
+        setMessage("Events could not be loaded.");
+      }
+    })();
+  }, []);
+  async function create(event: FormEvent) {
+    event.preventDefault();
+    if (!academy || !startDate || !endDate)
+      return setMessage("Enter a title, start, and end time.");
+    const response = await academyApi(`/api/academies/${academy.id}/events`, {
+      method: "POST",
+      headers: apiHeaders(true),
+      body: JSON.stringify({
+        title,
+        type,
+        branchId: branchId || null,
+        startUtc: new Date(`${startDate}T${startTime}:00`).toISOString(),
+        endUtc: new Date(`${endDate}T${endTime}:00`).toISOString(),
+        venue: venue || null,
+        capacity: null,
+        notes: null,
+      }),
+    });
+    if (!response.ok)
+      return setMessage("Enter a title and valid start/end times.");
+    setTitle("");
+    setStartDate("");
+    setEndDate("");
+    setVenue("");
+    await load();
+  }
+  return (
+    <main className="enterprise-settings events-standard min-h-screen">
+      <WorkspaceNav />
+      <div className="events-content mx-auto max-w-6xl px-6 py-10">
+        <header className="events-heading">
+          <div className="events-title">
+            <span className="events-title-icon" aria-hidden="true">
+              ◷
+            </span>
+            <div>
+              <p>Academy experience</p>
+              <h1>Events</h1>
+            </div>
+          </div>
+        </header>
+        {message && (
+          <p className="enterprise-page-state events-message">{message}</p>
+        )}
+        <section className="events-layout">
+          <form onSubmit={create} className="events-panel">
+            <header className="events-panel-header">
+              <div>
+                <p>Event planning</p>
+                <h2>Plan event</h2>
+              </div>
+            </header>
+            <div className="events-fields">
+              <label>
+                <span>Event title</span>
+                <input
+                  value={title}
+                  onChange={(event) => setTitle(event.target.value)}
+                  placeholder="Event title"
+                  required
+                />
+              </label>
+              <StandardSelectField
+                name="event-type"
+                value={type}
+                onChange={setType}
+                placeholder="Event type"
+                options={eventTypes.map((value) => ({ value, label: value }))}
+              />
+              <StandardSelectField
+                name="branch"
+                value={branchId}
+                onChange={setBranchId}
+                placeholder="No branch"
+                options={branches.map((branch) => ({
+                  value: branch.id,
+                  label: branch.name,
+                }))}
+              />
+              <div className="events-date-time">
+                <StandardDateField
+                  name="start-date"
+                  label="Start date"
+                  value={startDate}
+                  onChange={setStartDate}
+                  required
+                />
+                <StandardTimeField
+                  name="start-time"
+                  label="Start time"
+                  value={startTime}
+                  onChange={setStartTime}
+                />
+              </div>
+              <div className="events-date-time">
+                <StandardDateField
+                  name="end-date"
+                  label="End date"
+                  value={endDate}
+                  onChange={setEndDate}
+                  required
+                />
+                <StandardTimeField
+                  name="end-time"
+                  label="End time"
+                  value={endTime}
+                  onChange={setEndTime}
+                />
+              </div>
+              <label>
+                <span>Venue or meeting link</span>
+                <input
+                  value={venue}
+                  onChange={(event) => setVenue(event.target.value)}
+                  placeholder="Venue or meeting link"
+                />
+              </label>
+              <button className="enterprise-action-button events-action">
+                Plan event
+              </button>
+            </div>
+          </form>
+          <section className="events-panel events-register">
+            <header className="events-panel-header">
+              <div>
+                <p>Event planning</p>
+                <h2>Upcoming events</h2>
+              </div>
+              <span>{events.length} events</span>
+            </header>
+            {events.length === 0 ? (
+              <p className="events-empty">No events planned.</p>
+            ) : (
+              <ul>
+                {events.map((item) => (
+                  <li key={item.id}>
+                    <div>
+                      <b>{item.title}</b>
+                      <small>
+                        {item.type} ·{" "}
+                        {new Intl.DateTimeFormat("en-IN", {
+                          dateStyle: "medium",
+                          timeStyle: "short",
+                          timeZone: "Asia/Kolkata",
+                        }).format(new Date(item.startUtc))}
+                      </small>
+                      <small>
+                        {item.venue || "Venue not set"} · {item.status}
+                      </small>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        </section>
+      </div>
+    </main>
+  );
+}
