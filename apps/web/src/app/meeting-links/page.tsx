@@ -1,6 +1,5 @@
 "use client";
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { WorkspaceNav } from "@/components/workspace-nav";
 import {
   StandardDateField,
   StandardSelectField,
@@ -54,7 +53,7 @@ export default function MeetingLinksPage() {
   const [batches, setBatches] = useState<Batch[]>([]);
   const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
   const [channels, setChannels] = useState<Channel[]>([]);
-  const [meetings, setMeetings] = useState<Meeting[]>([]);
+  const [meetings] = useState<Meeting[]>([]);
   const [provider, setProvider] = useState<Provider>("GoogleWorkspace");
   const [title, setTitle] = useState("");
   const [batchId, setBatchId] = useState("");
@@ -176,16 +175,14 @@ export default function MeetingLinksPage() {
   }
   return (
     <main className="enterprise-settings meeting-links-standard min-h-screen">
-      <WorkspaceNav />
-      <div className="meeting-links-content mx-auto max-w-6xl px-6 py-10">
+      <div className="meeting-links-content">
         <header className="meeting-links-heading">
-          <div>
-            <p>Class &amp; batch</p>
-            <h1>Meeting links</h1>
-            <span>
-              Create controlled online class links and keep their history in one
-              place.
-            </span>
+          <div className="meeting-links-title">
+            <span className="meeting-links-title-icon" aria-hidden="true">↗</span>
+            <div>
+              <p>Class &amp; Batch</p>
+              <h1>Meeting Links</h1>
+            </div>
           </div>
           <div
             className={`meeting-provider-status ${connected ? "is-connected" : ""}`}
@@ -196,6 +193,11 @@ export default function MeetingLinksPage() {
           </div>
         </header>
         {message && <p className="enterprise-page-state mt-6">{message}</p>}
+        <section className="meeting-links-metrics" aria-label="Meeting link summary">
+          <article><span>Eligible classes</span><strong>{eligibleBatchIds.length}</strong><small>Online or Hybrid without a link</small></article>
+          <article><span>Selected invitees</span><strong>{attendees.length}</strong><small>Students and additional guests</small></article>
+          <article><span>Provider</span><strong>{connected ? "Connected" : "Action needed"}</strong><small>{providerName[provider]}</small></article>
+        </section>
         <section className="meeting-links-layout">
           <form onSubmit={submit} className="meeting-links-panel">
             <header>
@@ -393,20 +395,16 @@ export default function MeetingLinksPage() {
             </div>
           </form>
           <aside className="meeting-links-help">
-            <h2>Invitation summary</h2>
-            <p>
-              <b>{attendees.length}</b> email recipient
-              {attendees.length === 1 ? "" : "s"}
-            </p>
-            <p>
-              Eligible students are filtered by delivery mode and existing batch
-              link.
-            </p>
-            <p>
-              Access:{" "}
-              {access === "InviteesOnly" ? "Only invited people" : access}
-            </p>
-            <p>Chat: {chat}</p>
+            <header><p>Ready to create</p><h2>Meeting summary</h2></header>
+            <dl>
+              <div><dt>Provider</dt><dd>{providerName[provider]}</dd></div>
+              <div><dt>Class</dt><dd>{batches.find((item) => item.id === batchId)?.name || "Not selected"}</dd></div>
+              <div><dt>Invitees</dt><dd>{attendees.length} recipient{attendees.length === 1 ? "" : "s"}</dd></div>
+              <div><dt>Access</dt><dd>{access === "InviteesOnly" ? "Invitees only" : access === "Organisation" ? "Organisation + invitees" : "Anyone with link"}</dd></div>
+              <div><dt>Chat</dt><dd>{chat === "Disabled" ? "Disabled" : chat === "HostsOnly" ? "Hosts only" : "Enabled"}</dd></div>
+              <div><dt>Recording</dt><dd>{recording === "Off" ? "Off" : recording === "Auto" ? "Automatic" : "Host decides"}</dd></div>
+            </dl>
+            {!connected && <a href="/communication-settings">Connect provider</a>}
           </aside>
         </section>
         <section className="meeting-history">
