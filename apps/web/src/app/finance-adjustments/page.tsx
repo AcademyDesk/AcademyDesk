@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { academyApi, apiHeaders } from "@/lib/api";
+import { StandardSelectField } from "@/components/design-system/controls";
 
 type Academy = { id: string };
 type Invoice = {
@@ -36,6 +37,8 @@ export default function AdjustmentsPage() {
   const [notice, setNotice] = useState("Loading adjustment register…");
   const [submitting, setSubmitting] = useState(false);
   const [filter, setFilter] = useState("All");
+  const [requestInvoiceId, setRequestInvoiceId] = useState("");
+  const [requestType, setRequestType] = useState("Discount");
 
   async function load(academyId?: string) {
     try {
@@ -93,8 +96,8 @@ export default function AdjustmentsPage() {
           method: "POST",
           headers: apiHeaders(true),
           body: JSON.stringify({
-            invoiceId: data.get("invoiceId"),
-            type: data.get("type"),
+            invoiceId: requestInvoiceId,
+            type: requestType,
             amount: Number(data.get("amount")),
             reason: data.get("reason"),
           }),
@@ -102,6 +105,8 @@ export default function AdjustmentsPage() {
       );
       if (!response.ok) throw new Error();
       form.reset();
+      setRequestInvoiceId("");
+      setRequestType("Discount");
       setNotice(
         "Adjustment submitted for approval and recorded in the finance register.",
       );
@@ -171,24 +176,29 @@ export default function AdjustmentsPage() {
           </p>
           <label className="finance-adjustment-field finance-adjustment-field-first">
             <span>Invoice</span>
-            <select required name="invoiceId" className="field mt-2">
-              <option value="">Select invoice…</option>
-              {invoices.map((invoice) => (
-                <option key={invoice.id} value={invoice.id}>
-                  {invoice.invoiceNumber} · {money(invoice.totalAmount)}
-                </option>
-              ))}
-            </select>
+            <StandardSelectField
+              name="invoiceId"
+              value={requestInvoiceId}
+              onChange={setRequestInvoiceId}
+              placeholder="Select invoice…"
+              options={invoices.map((invoice) => ({ value: invoice.id, label: `${invoice.invoiceNumber} · ${money(invoice.totalAmount)}` }))}
+            />
           </label>
           <label className="finance-adjustment-field">
             <span>Adjustment type</span>
-            <select name="type" className="field mt-2">
-              <option>Discount</option>
-              <option>Scholarship</option>
-              <option>Concession</option>
-              <option>Refund</option>
-              <option>CreditNote</option>
-            </select>
+            <StandardSelectField
+              name="type"
+              value={requestType}
+              onChange={setRequestType}
+              placeholder="Choose adjustment type"
+              options={[
+                { value: "Discount", label: "Discount" },
+                { value: "Scholarship", label: "Scholarship" },
+                { value: "Concession", label: "Concession" },
+                { value: "Refund", label: "Refund" },
+                { value: "CreditNote", label: "Credit note" },
+              ]}
+            />
           </label>
           <label className="finance-adjustment-field">
             <span>Amount</span>
@@ -212,7 +222,7 @@ export default function AdjustmentsPage() {
             />
           </label>
           <button
-            disabled={!academy || submitting}
+            disabled={!academy || !requestInvoiceId || submitting}
             className="enterprise-action-button mt-5 disabled:opacity-60"
           >
             {submitting ? "Submitting…" : "Submit for approval"}
@@ -226,18 +236,20 @@ export default function AdjustmentsPage() {
                 Finance control evidence for every decision.
               </p>
             </div>
-            <select
-              value={filter}
-              onChange={(event) => setFilter(event.target.value)}
-              className="field w-auto"
-            >
-              <option value="All">All ({counts.All})</option>
-              <option value="PendingApproval">
-                Pending ({counts.PendingApproval})
-              </option>
-              <option value="Approved">Approved ({counts.Approved})</option>
-              <option value="Rejected">Rejected ({counts.Rejected})</option>
-            </select>
+            <div className="adjustments-filter">
+              <StandardSelectField
+                name="adjustmentFilter"
+                value={filter}
+                onChange={setFilter}
+                placeholder="Filter requests"
+                options={[
+                  { value: "All", label: `All (${counts.All})` },
+                  { value: "PendingApproval", label: `Pending (${counts.PendingApproval})` },
+                  { value: "Approved", label: `Approved (${counts.Approved})` },
+                  { value: "Rejected", label: `Rejected (${counts.Rejected})` },
+                ]}
+              />
+            </div>
           </div>
           {visible.length === 0 ? (
             <p className="mt-5 rounded border border-dashed border-slate-700 p-4 text-sm text-slate-400">
