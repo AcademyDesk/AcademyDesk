@@ -16,7 +16,7 @@ public sealed class CommunicationSettingsController(
     AcademyDeskDbContext dbContext,
     UserManager<ApplicationUser> userManager) : ControllerBase
 {
-    private static readonly string[] AllowedChannels = ["Email", "WhatsApp"];
+    private static readonly string[] AllowedChannels = ["Email", "WhatsApp", "Meeting"];
     private static readonly string[] AllowedStatuses = ["NotConfigured", "Configured", "Disabled"];
 
     [HttpGet]
@@ -40,7 +40,7 @@ public sealed class CommunicationSettingsController(
     {
         if (!await IsOwner(academyId)) return Forbid();
         var canonicalChannel = AllowedChannels.SingleOrDefault(x => x.Equals(channel, StringComparison.OrdinalIgnoreCase));
-        if (canonicalChannel is null) return BadRequest(new { message = "Channel must be Email or WhatsApp." });
+        if (canonicalChannel is null) return BadRequest(new { message = "Channel must be Email, WhatsApp, or Meeting." });
         if (string.IsNullOrWhiteSpace(request.Provider)) return BadRequest(new { message = "Select a provider." });
         var status = AllowedStatuses.SingleOrDefault(x => x.Equals(request.Status, StringComparison.OrdinalIgnoreCase));
         if (status is null) return BadRequest(new { message = "Status is invalid." });
@@ -48,6 +48,8 @@ public sealed class CommunicationSettingsController(
             return BadRequest(new { message = "A sender email address is required before enabling email." });
         if (canonicalChannel == "WhatsApp" && status == "Configured" && string.IsNullOrWhiteSpace(request.PhoneNumber))
             return BadRequest(new { message = "A dedicated WhatsApp number is required before enabling WhatsApp." });
+        if (canonicalChannel == "Meeting" && status == "Configured" && (string.IsNullOrWhiteSpace(request.SenderAddress) || string.IsNullOrWhiteSpace(request.ExternalAccountReference)))
+            return BadRequest(new { message = "An organizer email and provider application or tenant reference are required before enabling meetings." });
 
         var item = await dbContext.CommunicationChannels.SingleOrDefaultAsync(
             x => x.AcademyId == academyId && x.Channel == canonicalChannel, cancellationToken);

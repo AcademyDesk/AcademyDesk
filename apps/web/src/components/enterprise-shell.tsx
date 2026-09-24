@@ -60,6 +60,7 @@ const navigationGroups: readonly NavigationGroup[] = [
       ["Create class or batch", "/batch-setup"],
       ["Attendance", "/attendance"],
       ["Make-up classes", "/makeup"],
+      ["Meeting links", "/meeting-links"],
     ],
   },
   {
