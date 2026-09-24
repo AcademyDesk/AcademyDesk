@@ -157,7 +157,7 @@ export default function TeacherProfilePage() {
   return (
     <main className="enterprise-settings teacher-standard teacher-profile-standard">
       <header className="teacher-profile-heading">
-        <div className="teacher-profile-title"><span className="teacher-profile-title-icon" aria-hidden="true">◎</span><div><p>Teachers</p><h1>Teacher 360</h1></div></div>
+        <div className="teacher-profile-title"><span className="teacher-profile-title-icon" aria-hidden="true">◎</span><div><p>Teachers</p><h1>360</h1></div></div>
       </header>
       <section className="teacher-profile-toolbar">
         <StandardSelectField
