@@ -33,55 +33,46 @@ const money = (amount: number, currency = "INR") =>
 const modules = [
   [
     "Create & generate invoices",
-    "Issue academy-branded invoices, inspect balances, then print or save them as PDF.",
     "/invoices",
     "Billing",
   ],
   [
     "Payments received",
-    "Record collections against an invoice and keep paid balances current.",
     "/payments",
     "Collections",
   ],
   [
     "Reconciliation",
-    "Match payments to bank or cash evidence before close.",
     "/finance-reconciliation",
     "Control",
   ],
   [
     "Adjustments",
-    "Submit discounts, scholarships, refunds and credit notes for approval.",
     "/finance-adjustments",
     "Approval",
   ],
   [
     "Control centre",
-    "Prioritise overdue fees and decide pending adjustments.",
     "/finance-governance",
     "Governance",
   ],
   [
     "Finance policy",
-    "Configure GST, payment terms and pricing controls.",
     "/finance-policy",
     "Settings",
   ],
   [
     "Outstanding & unpaid",
-    "See unpaid and overdue invoices, then queue follow-up reminders.",
     "/fee-reminders",
     "Automation",
   ],
   [
     "Expenses",
-    "Record operating costs and maintain cash-position visibility.",
     "/expenses",
     "Operations",
   ],
   [
     "Invoice & payslip templates",
-    "Select document layouts and set the academy logo and authorised signature.",
     "/finance-governance",
     "Documents",
   ],
@@ -160,18 +151,10 @@ export default function FinancePage() {
 
   const cards = summary
     ? [
-        ["Gross billed", money(summary.grossBilled), "All issued invoices"],
-        ["Collected", money(summary.collected), "Recorded fee payments"],
-        [
-          "Outstanding",
-          money(summary.outstanding),
-          `${summary.overdueInvoices} overdue invoice${summary.overdueInvoices === 1 ? "" : "s"}`,
-        ],
-        [
-          "Reconciled",
-          money(summary.reconciled),
-          "Evidence matched to payments",
-        ],
+        ["Gross billed", money(summary.grossBilled)],
+        ["Collected", money(summary.collected)],
+        ["Outstanding", money(summary.outstanding)],
+        ["Reconciled", money(summary.reconciled)],
       ]
     : [];
 
@@ -182,10 +165,6 @@ export default function FinancePage() {
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <h2>Finance operations</h2>
-            <span>
-              Create and generate invoices, record payments, track unpaid fees,
-              prepare payouts and manage finance documents from one workspace.
-            </span>
           </div>
           <div className="flex flex-wrap gap-2">
             <Link href="/invoices" className="enterprise-action-button">
@@ -217,11 +196,10 @@ export default function FinancePage() {
         className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
         aria-label="Finance summary"
       >
-        {cards.map(([label, value, detail]) => (
+        {cards.map(([label, value]) => (
           <section key={label} className="surface-panel rounded-xl p-5">
             <p className="text-sm text-slate-400">{label}</p>
             <strong className="mt-2 block text-3xl">{value}</strong>
-            <p className="mt-2 text-sm text-slate-400">{detail}</p>
           </section>
         ))}
       </section>
@@ -230,10 +208,6 @@ export default function FinancePage() {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <h3 className="font-semibold">Collections attention queue</h3>
-              <p className="mt-1 text-sm text-slate-400">
-                Overdue invoices requiring action from finance or an assigned
-                owner.
-              </p>
             </div>
             <Link
               href="/finance-governance"
@@ -287,10 +261,6 @@ export default function FinancePage() {
         </section>
         <section className="surface-panel rounded-xl p-5">
           <h3 className="font-semibold">Finance exports</h3>
-          <p className="mt-1 text-sm text-slate-400">
-            Download operational ledgers for review, accounting and audit
-            evidence.
-          </p>
           <div className="mt-5 grid gap-3">
             <button
               type="button"
@@ -299,11 +269,7 @@ export default function FinancePage() {
               className="rounded border border-slate-700 px-4 py-3 text-left text-sm hover:border-cyan-400 disabled:opacity-60"
             >
               <b className="block">Invoice ledger CSV</b>
-              <span className="text-slate-400">
-                {exporting === "invoices"
-                  ? "Preparing download…"
-                  : "Issued value, adjustments, balance, due date and status"}
-              </span>
+              {exporting === "invoices" && <span className="text-slate-400">Preparing download…</span>}
             </button>
             <button
               type="button"
@@ -312,11 +278,7 @@ export default function FinancePage() {
               className="rounded border border-slate-700 px-4 py-3 text-left text-sm hover:border-cyan-400 disabled:opacity-60"
             >
               <b className="block">Payment ledger CSV</b>
-              <span className="text-slate-400">
-                {exporting === "payments"
-                  ? "Preparing download…"
-                  : "Method, reference, reconciliation evidence and status"}
-              </span>
+              {exporting === "payments" && <span className="text-slate-400">Preparing download…</span>}
             </button>
           </div>
         </section>
@@ -325,9 +287,6 @@ export default function FinancePage() {
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <h3 className="font-semibold">Finance work areas</h3>
-            <p className="mt-1 text-sm text-slate-400">
-              Each area carries its own controls and permission-aware actions.
-            </p>
           </div>
           <Link
             href="/finance-summary"
@@ -337,7 +296,7 @@ export default function FinancePage() {
           </Link>
         </div>
         <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          {modules.map(([title, description, href, label]) => (
+          {modules.map(([title, href, label]) => (
             <Link
               key={`${href}-${label}`}
               href={href}
@@ -347,9 +306,6 @@ export default function FinancePage() {
                 {label}
               </span>
               <h4 className="mt-2 font-semibold">{title}</h4>
-              <p className="mt-2 text-sm leading-5 text-slate-400">
-                {description}
-              </p>
             </Link>
           ))}
         </div>
