@@ -51,7 +51,10 @@ export default function TeachersPage() {
       academyApi(`/api/academies/${id}/branches`, { cache: "no-store" }),
       academyApi(`/api/academies/${id}/batches`, { cache: "no-store" }),
     ]);
-    if (!teacherResponse.ok || !branchResponse.ok || !batchResponse.ok) throw new Error();
+    if (!teacherResponse.ok || !branchResponse.ok || !batchResponse.ok) {
+      const failedResponse = [teacherResponse, branchResponse, batchResponse].find((response) => !response.ok);
+      throw new Error(failedResponse?.status === 401 ? "SESSION_EXPIRED" : "LOAD_FAILED");
+    }
     setTeachers(await teacherResponse.json());
     setBranches(await branchResponse.json());
     setBatches(await batchResponse.json());
@@ -72,9 +75,11 @@ export default function TeachersPage() {
           return setMessage("Create your academy first, then add teachers.");
         setAcademy(academies[0]);
         await load(academies[0].id);
-      } catch {
+      } catch (error) {
         setMessage(
-          "Teachers could not be loaded. Confirm that the API is running on port 5092.",
+          error instanceof Error && error.message === "SESSION_EXPIRED"
+            ? "Your sign-in session has expired. Please sign in again."
+            : "Teachers could not be loaded. Please refresh the page and try again.",
         );
       }
     }
