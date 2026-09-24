@@ -1,14 +1,250 @@
 "use client";
+
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { WorkspaceNav } from "@/components/workspace-nav";
+import { StandardSelectField } from "@/components/design-system/controls";
 import { academyApi, apiHeaders } from "@/lib/api";
-type Academy = { id: string }; type Batch = { id: string; name: string }; type Course = { id: string; name: string; subjectArea?: string }; type Resource = { id: string; title: string; type: string; url: string; batchId?: string; courseId?: string };
+
+type Academy = { id: string };
+type Batch = { id: string; name: string };
+type Course = { id: string; name: string; subjectArea?: string };
+type Resource = {
+  id: string;
+  title: string;
+  type: string;
+  url: string;
+  batchId?: string;
+  courseId?: string;
+};
+const resourceTypes = [
+  "Document",
+  "Book",
+  "SheetMusic",
+  "Audio",
+  "Video",
+  "Link",
+];
 export default function Resources() {
-  const [academy, setAcademy] = useState<Academy>(); const [batches, setBatches] = useState<Batch[]>([]); const [courses, setCourses] = useState<Course[]>([]); const [resources, setResources] = useState<Resource[]>([]);
-  const [title, setTitle] = useState(""); const [url, setUrl] = useState(""); const [type, setType] = useState("Document"); const [course, setCourse] = useState(""); const [batch, setBatch] = useState(""); const [file, setFile] = useState<File | null>(null); const [message, setMessage] = useState("Loading resources…"); const input = useRef<HTMLInputElement>(null);
-  async function load(id?: string) { const academyId = id ?? academy?.id; if (!academyId) return; const [list, batchList, courseList] = await Promise.all([academyApi(`/api/academies/${academyId}/resources`), academyApi(`/api/academies/${academyId}/batches`), academyApi(`/api/academies/${academyId}/courses`)]); if (!list.ok || !batchList.ok || !courseList.ok) throw new Error(); setResources(await list.json()); setBatches(await batchList.json()); setCourses(await courseList.json()); setMessage(""); }
-  useEffect(() => { void (async () => { try { const accounts: Academy[] = await (await academyApi("/api/academies")).json(); setAcademy(accounts[0]); await load(accounts[0].id); } catch { setMessage("Resources could not be loaded."); } })(); }, []);
-  async function create(event: FormEvent) { event.preventDefault(); if (!academy) return; setMessage("Publishing resource…"); let response: Response; if (file) { const body = new FormData(); body.append("file", file); body.append("title", title); body.append("type", type); if (course) body.append("courseId", course); if (batch) body.append("batchId", batch); response = await academyApi(`/api/academies/${academy.id}/resources/upload`, { method: "POST", body }); } else response = await academyApi(`/api/academies/${academy.id}/resources`, { method: "POST", headers: apiHeaders(true), body: JSON.stringify({ title, description: null, type, url, batchId: batch || null, courseId: course || null, isPublished: true }) }); if (!response.ok) { const result = await response.json().catch(() => null); setMessage(result?.message ?? "Provide a title and a link, or upload a file."); return; } setTitle(""); setUrl(""); setFile(null); if (input.current) input.current.value = ""; await load(); }
-  const subject = (id?: string) => courses.find(x => x.id === id)?.name ?? "All subjects"; const audience = (id?: string) => batches.find(x => x.id === id)?.name ?? "All students";
-  return <main className="enterprise-settings enterprise-legacy-standard min-h-screen bg-slate-950 text-slate-100"><WorkspaceNav /><div className="mx-auto max-w-6xl px-6 py-10"><p className="text-sm font-semibold uppercase tracking-[.22em] text-cyan-300">Academy library</p><h1 className="mt-3 text-4xl font-semibold">Learning resources</h1><p className="mt-3 text-slate-300">Upload books and PDFs for a subject. Students see only resources for their enrolled subjects.</p>{message && <p className="mt-6 rounded-lg bg-amber-950/40 p-4 text-amber-100">{message}</p>}<section className="mt-8 grid gap-6 lg:grid-cols-[.8fr_1.2fr]"><form onSubmit={create} className="rounded-2xl bg-slate-900 p-6"><h2 className="text-xl font-semibold">Add subject resource</h2><input value={title} onChange={e => setTitle(e.target.value)} placeholder="Book or PDF title" className="mt-5 w-full rounded-lg bg-slate-950 px-3 py-2" required /><input value={url} disabled={!!file} onChange={e => setUrl(e.target.value)} placeholder="https://… (or upload a file below)" className="mt-3 w-full rounded-lg bg-slate-950 px-3 py-2 disabled:opacity-50" /><input ref={input} type="file" accept=".pdf,.doc,.docx,image/*,audio/*,video/*" onChange={e => { setFile(e.target.files?.[0] ?? null); setUrl(""); }} className="mt-3 block w-full text-sm" /><select value={type} onChange={e => setType(e.target.value)} className="mt-3 w-full rounded-lg bg-slate-950 px-3 py-2"><option>Document</option><option>Book</option><option>SheetMusic</option><option>Audio</option><option>Video</option><option>Link</option></select><select value={course} onChange={e => setCourse(e.target.value)} className="mt-3 w-full rounded-lg bg-slate-950 px-3 py-2"><option value="">All subjects</option>{courses.map(x => <option key={x.id} value={x.id}>{x.name}{x.subjectArea ? ` — ${x.subjectArea}` : ""}</option>)}</select><select value={batch} onChange={e => setBatch(e.target.value)} className="mt-3 w-full rounded-lg bg-slate-950 px-3 py-2"><option value="">All students in the subject</option>{batches.map(x => <option key={x.id} value={x.id}>{x.name}</option>)}</select><button className="mt-5 w-full rounded-lg bg-cyan-400 px-4 py-2 font-semibold text-slate-950">Publish resource</button></form><section className="rounded-2xl bg-slate-900 p-6"><h2 className="text-xl font-semibold">Published library</h2><ul className="mt-4 space-y-3">{resources.map(x => <li key={x.id} className="rounded-lg bg-slate-950 p-4"><a href={x.url} target="_blank" rel="noreferrer" className="font-medium text-cyan-200">{x.title}</a><div className="mt-1 text-sm text-slate-400">{x.type} · {subject(x.courseId)} · {audience(x.batchId)}</div></li>)}</ul></section></section></div></main>;
+  const [academy, setAcademy] = useState<Academy>();
+  const [batches, setBatches] = useState<Batch[]>([]);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [resources, setResources] = useState<Resource[]>([]);
+  const [title, setTitle] = useState("");
+  const [url, setUrl] = useState("");
+  const [type, setType] = useState("Document");
+  const [course, setCourse] = useState("");
+  const [batch, setBatch] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const [message, setMessage] = useState("Loading resources…");
+  const input = useRef<HTMLInputElement>(null);
+  async function load(id?: string) {
+    const academyId = id ?? academy?.id;
+    if (!academyId) return;
+    const [list, batchList, courseList] = await Promise.all([
+      academyApi(`/api/academies/${academyId}/resources`),
+      academyApi(`/api/academies/${academyId}/batches`),
+      academyApi(`/api/academies/${academyId}/courses`),
+    ]);
+    if (!list.ok || !batchList.ok || !courseList.ok) throw new Error();
+    setResources(await list.json());
+    setBatches(await batchList.json());
+    setCourses(await courseList.json());
+    setMessage("");
+  }
+  useEffect(() => {
+    void (async () => {
+      try {
+        const response = await academyApi("/api/academies");
+        const accounts: Academy[] = await response.json();
+        if (!response.ok || !accounts[0]) throw new Error();
+        setAcademy(accounts[0]);
+        await load(accounts[0].id);
+      } catch {
+        setMessage("Resources could not be loaded.");
+      }
+    })();
+  }, []);
+  async function create(event: FormEvent) {
+    event.preventDefault();
+    if (!academy) return;
+    setMessage("Publishing resource…");
+    let response: Response;
+    if (file) {
+      const body = new FormData();
+      body.append("file", file);
+      body.append("title", title);
+      body.append("type", type);
+      if (course) body.append("courseId", course);
+      if (batch) body.append("batchId", batch);
+      response = await academyApi(
+        `/api/academies/${academy.id}/resources/upload`,
+        { method: "POST", body },
+      );
+    } else
+      response = await academyApi(`/api/academies/${academy.id}/resources`, {
+        method: "POST",
+        headers: apiHeaders(true),
+        body: JSON.stringify({
+          title,
+          description: null,
+          type,
+          url,
+          batchId: batch || null,
+          courseId: course || null,
+          isPublished: true,
+        }),
+      });
+    if (!response.ok) {
+      const result = await response.json().catch(() => null);
+      setMessage(
+        result?.message ?? "Provide a title and a link, or upload a file.",
+      );
+      return;
+    }
+    setTitle("");
+    setUrl("");
+    setFile(null);
+    if (input.current) input.current.value = "";
+    await load();
+  }
+  const subject = (id?: string) =>
+    courses.find((value) => value.id === id)?.name ?? "All subjects";
+  const audience = (id?: string) =>
+    batches.find((value) => value.id === id)?.name ?? "All students";
+  return (
+    <main className="enterprise-settings resources-standard min-h-screen">
+      <WorkspaceNav />
+      <div className="resources-content">
+        <header className="standard-workspace-heading">
+          <span className="standard-heading-icon" aria-hidden="true">
+            ▤
+          </span>
+          <div>
+            <p>Academy experience</p>
+            <h1>Learning resources</h1>
+          </div>
+        </header>
+        {message && (
+          <p className="enterprise-page-state" role="status">
+            {message}
+          </p>
+        )}
+        <section className="resources-grid">
+          <form onSubmit={create} className="surface-panel resources-panel">
+            <div className="standard-panel-heading">
+              <p>Library</p>
+              <h2>Add resource</h2>
+            </div>
+            <label>
+              Resource title
+              <input
+                value={title}
+                onChange={(event) => setTitle(event.target.value)}
+                required
+              />
+            </label>
+            <label>
+              Web link
+              <input
+                value={url}
+                disabled={!!file}
+                onChange={(event) => setUrl(event.target.value)}
+                placeholder="https://"
+              />
+            </label>
+            <div className="resource-file">
+              <span>Upload file</span>
+              <input
+                ref={input}
+                type="file"
+                accept=".pdf,.doc,.docx,image/*,audio/*,video/*"
+                onChange={(event) => {
+                  setFile(event.target.files?.[0] ?? null);
+                  setUrl("");
+                }}
+              />
+              <small>{file?.name ?? "No file selected"}</small>
+            </div>
+            <label>
+              Type
+              <StandardSelectField
+                name="type"
+                value={type}
+                onChange={setType}
+                placeholder="Select type"
+                options={resourceTypes.map((value) => ({
+                  value,
+                  label: value === "SheetMusic" ? "Sheet music" : value,
+                }))}
+              />
+            </label>
+            <label>
+              Subject
+              <StandardSelectField
+                name="course"
+                value={course}
+                onChange={setCourse}
+                placeholder="All subjects"
+                options={courses.map((value) => ({
+                  value: value.id,
+                  label: `${value.name}${value.subjectArea ? ` · ${value.subjectArea}` : ""}`,
+                }))}
+              />
+            </label>
+            <label>
+              Audience
+              <StandardSelectField
+                name="batch"
+                value={batch}
+                onChange={setBatch}
+                placeholder="All students in the subject"
+                options={batches.map((value) => ({
+                  value: value.id,
+                  label: value.name,
+                }))}
+              />
+            </label>
+            <button className="enterprise-action-button">
+              Publish resource
+            </button>
+          </form>
+          <section className="surface-panel resources-panel">
+            <div className="standard-panel-heading standard-panel-heading-row">
+              <div>
+                <p>Library</p>
+                <h2>Published resources</h2>
+              </div>
+              <span className="resource-count">{resources.length}</span>
+            </div>
+            {resources.length === 0 ? (
+              <p className="enterprise-settings-empty">
+                No resources have been published yet.
+              </p>
+            ) : (
+              <ul className="resource-list">
+                {resources.map((resource) => (
+                  <li key={resource.id}>
+                    <div>
+                      <a href={resource.url} target="_blank" rel="noreferrer">
+                        {resource.title}
+                      </a>
+                      <span>
+                        {subject(resource.courseId)} ·{" "}
+                        {audience(resource.batchId)}
+                      </span>
+                    </div>
+                    <b>
+                      {resource.type === "SheetMusic"
+                        ? "Sheet music"
+                        : resource.type}
+                    </b>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        </section>
+      </div>
+    </main>
+  );
 }
