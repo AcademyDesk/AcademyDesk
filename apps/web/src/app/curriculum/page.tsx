@@ -1,1 +1,232 @@
-"use client";import{FormEvent,useEffect,useState}from"react";import{academyApi,apiHeaders}from"@/lib/api";type A={id:string};type C={id:string;name:string};type M={id:string;courseId:string;title:string;description?:string;sequence:number;isPublished:boolean};export default function Curriculum(){const[a,setA]=useState<A>();const[c,setC]=useState<C[]>([]);const[m,setM]=useState<M[]>([]);const[course,setCourse]=useState("");const[title,setTitle]=useState("");const[seq,setSeq]=useState("1");const[msg,setMsg]=useState("Loading curriculum governance…");async function load(id?:string){const x=id??a?.id;if(!x)return;const[r1,r2]=await Promise.all([academyApi(`/api/academies/${x}/courses`),academyApi(`/api/academies/${x}/course-modules`)]);if(!r1.ok||!r2.ok)throw Error();const q:C[]=await r1.json();setC(q);setM(await r2.json());if(!course&&q.length)setCourse(q[0].id);setMsg("");}useEffect(()=>{void(async()=>{try{const x:A[]=await(await academyApi("/api/academies")).json();setA(x[0]);await load(x[0].id)}catch{setMsg("Curriculum could not be loaded.")}})()},[]);async function add(e:FormEvent){e.preventDefault();if(!a)return;const r=await academyApi(`/api/academies/${a.id}/course-modules`,{method:"POST",headers:apiHeaders(true),body:JSON.stringify({courseId:course,title,description:null,sequence:Number(seq)})});if(!r.ok)return setMsg("Valid course and module title required.");setTitle("");setSeq(String(Number(seq)+1));setMsg("Module saved as draft for academic review.");await load()}async function publish(x:M){if(!a)return;const r=await academyApi(`/api/academies/${a.id}/course-modules/${x.id}/publication`,{method:"PATCH",headers:apiHeaders(true),body:JSON.stringify({isPublished:!x.isPublished})});if(!r.ok)return setMsg("Publication state could not be updated.");setMsg(x.isPublished?"Module returned to draft.":"Module approved and published.");await load()}const cn=(id:string)=>c.find(x=>x.id===id)?.name??"Course";return <main className="enterprise-settings academic-module"><header className="enterprise-page-header"><p>Academics / curriculum governance</p><h2>Curriculum approval register</h2><span>Create course modules as drafts, review readiness, and publish only approved syllabus content.</span></header>{msg&&<p className="mt-5 text-amber-200">{msg}</p>}<section className="mt-5 grid gap-5 xl:grid-cols-[.8fr_1.2fr]"><form onSubmit={add} className="surface-panel rounded-xl p-5"><h3 className="font-semibold">Create curriculum draft</h3><select value={course} onChange={e=>setCourse(e.target.value)} className="field mt-4">{c.map(x=><option key={x.id} value={x.id}>{x.name}</option>)}</select><input value={title} onChange={e=>setTitle(e.target.value)} placeholder="Module or chapter" className="field mt-3" required/><input type="number" value={seq} onChange={e=>setSeq(e.target.value)} className="field mt-3" min="1"/><button className="mt-4 rounded bg-cyan-400 px-4 py-2 font-semibold text-slate-950">Save draft</button></form><section className="surface-panel rounded-xl p-5"><div className="flex items-center justify-between"><h3 className="font-semibold">Approval controls</h3><span className="text-sm text-slate-400">{m.filter(x=>!x.isPublished).length} drafts awaiting review</span></div><p className="mt-4 text-sm text-slate-400">Published modules are approved for teaching delivery. Draft modules are held back until academic review is complete.</p></section></section><section className="surface-panel mt-5 rounded-xl p-5"><h3 className="font-semibold">Syllabus register</h3><div className="mt-4 overflow-x-auto"><table className="min-w-full text-left text-sm"><thead className="text-slate-400"><tr><th className="pb-3 pr-4">Sequence</th><th className="pb-3 pr-4">Module</th><th className="pb-3 pr-4">Course</th><th className="pb-3 pr-4">State</th><th className="pb-3">Control</th></tr></thead><tbody>{m.map(x=><tr key={x.id} className="border-t border-slate-800"><td className="py-3 pr-4">{x.sequence}</td><td className="py-3 pr-4 font-medium">{x.title}</td><td className="py-3 pr-4">{cn(x.courseId)}</td><td className="py-3 pr-4"><span className={x.isPublished?"text-emerald-300":"text-amber-300"}>{x.isPublished?"Published":"Draft"}</span></td><td className="py-3"><button onClick={()=>void publish(x)} className="text-cyan-300">{x.isPublished?"Return to draft":"Approve & publish"}</button></td></tr>)}</tbody></table>{!m.length&&<p className="py-6 text-slate-400">No curriculum modules yet.</p>}</div></section></main>}
+"use client";
+
+import { FormEvent, useEffect, useState } from "react";
+import { WorkspaceNav } from "@/components/workspace-nav";
+import { StandardSelectField } from "@/components/design-system/controls";
+import { academyApi, apiHeaders } from "@/lib/api";
+
+type Academy = { id: string };
+type Course = { id: string; name: string };
+type Module = {
+  id: string;
+  courseId: string;
+  title: string;
+  description?: string;
+  sequence: number;
+  isPublished: boolean;
+};
+
+export default function Curriculum() {
+  const [academy, setAcademy] = useState<Academy>();
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [modules, setModules] = useState<Module[]>([]);
+  const [courseId, setCourseId] = useState("");
+  const [title, setTitle] = useState("");
+  const [sequence, setSequence] = useState("1");
+  const [message, setMessage] = useState("Loading curriculum governance…");
+  async function load(id?: string) {
+    const academyId = id ?? academy?.id;
+    if (!academyId) return;
+    const [courseResponse, moduleResponse] = await Promise.all([
+      academyApi(`/api/academies/${academyId}/courses`),
+      academyApi(`/api/academies/${academyId}/course-modules`),
+    ]);
+    if (!courseResponse.ok || !moduleResponse.ok) throw Error();
+    const courseRows: Course[] = await courseResponse.json();
+    setCourses(courseRows);
+    setModules(await moduleResponse.json());
+    if (!courseId && courseRows.length) setCourseId(courseRows[0].id);
+    setMessage("");
+  }
+  useEffect(() => {
+    void (async () => {
+      try {
+        const academies: Academy[] = await (
+          await academyApi("/api/academies")
+        ).json();
+        if (!academies[0]) throw Error();
+        setAcademy(academies[0]);
+        await load(academies[0].id);
+      } catch {
+        setMessage("Curriculum could not be loaded.");
+      }
+    })();
+  }, []);
+  async function add(event: FormEvent) {
+    event.preventDefault();
+    if (!academy || !courseId)
+      return setMessage("Select a course and module title.");
+    const response = await academyApi(
+      `/api/academies/${academy.id}/course-modules`,
+      {
+        method: "POST",
+        headers: apiHeaders(true),
+        body: JSON.stringify({
+          courseId,
+          title,
+          description: null,
+          sequence: Number(sequence),
+        }),
+      },
+    );
+    if (!response.ok)
+      return setMessage("Valid course and module title required.");
+    setTitle("");
+    setSequence(String(Number(sequence) + 1));
+    setMessage("Module saved as draft.");
+    await load();
+  }
+  async function publish(module: Module) {
+    if (!academy) return;
+    const response = await academyApi(
+      `/api/academies/${academy.id}/course-modules/${module.id}/publication`,
+      {
+        method: "PATCH",
+        headers: apiHeaders(true),
+        body: JSON.stringify({ isPublished: !module.isPublished }),
+      },
+    );
+    if (!response.ok)
+      return setMessage("Publication state could not be updated.");
+    setMessage(
+      module.isPublished
+        ? "Module returned to draft."
+        : "Module approved and published.",
+    );
+    await load();
+  }
+  const courseName = (id: string) =>
+    courses.find((course) => course.id === id)?.name ?? "Course";
+  return (
+    <main className="enterprise-settings curriculum-standard min-h-screen">
+      <WorkspaceNav />
+      <div className="curriculum-content mx-auto max-w-6xl px-6 py-10">
+        <header className="curriculum-heading">
+          <div className="curriculum-title">
+            <span className="curriculum-title-icon" aria-hidden="true">
+              ♫
+            </span>
+            <div>
+              <p>Academics</p>
+              <h1>Curriculum</h1>
+            </div>
+          </div>
+        </header>
+        {message && (
+          <p className="enterprise-page-state curriculum-message">{message}</p>
+        )}
+        <section className="curriculum-layout">
+          <form onSubmit={add} className="curriculum-panel">
+            <header className="curriculum-panel-header">
+              <div>
+                <p>Curriculum planning</p>
+                <h2>Create module draft</h2>
+              </div>
+            </header>
+            <div className="curriculum-fields">
+              <StandardSelectField
+                name="course"
+                value={courseId}
+                onChange={setCourseId}
+                placeholder="Select course"
+                options={courses.map((course) => ({
+                  value: course.id,
+                  label: course.name,
+                }))}
+              />
+              <label>
+                <span>Module or chapter</span>
+                <input
+                  value={title}
+                  onChange={(event) => setTitle(event.target.value)}
+                  placeholder="Module or chapter"
+                  required
+                />
+              </label>
+              <label>
+                <span>Sequence</span>
+                <input
+                  type="number"
+                  value={sequence}
+                  onChange={(event) => setSequence(event.target.value)}
+                  min="1"
+                />
+              </label>
+              <button className="enterprise-action-button curriculum-action">
+                Save draft
+              </button>
+            </div>
+          </form>
+          <section className="curriculum-panel curriculum-summary-panel">
+            <header className="curriculum-panel-header">
+              <div>
+                <p>Approval controls</p>
+                <h2>Curriculum review</h2>
+              </div>
+            </header>
+            <div>
+              <b>{modules.filter((module) => !module.isPublished).length}</b>
+              <span>drafts awaiting review</span>
+            </div>
+            <div>
+              <b>{modules.filter((module) => module.isPublished).length}</b>
+              <span>published modules</span>
+            </div>
+          </section>
+        </section>
+        <section className="curriculum-panel curriculum-register-panel">
+          <header className="curriculum-panel-header">
+            <div>
+              <p>Curriculum planning</p>
+              <h2>Syllabus register</h2>
+            </div>
+            <span>{modules.length} modules</span>
+          </header>
+          {modules.length === 0 ? (
+            <p className="curriculum-empty">No curriculum modules yet.</p>
+          ) : (
+            <div className="curriculum-table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Sequence</th>
+                    <th>Module</th>
+                    <th>Course</th>
+                    <th>State</th>
+                    <th>Control</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {modules.map((module) => (
+                    <tr key={module.id}>
+                      <td>{module.sequence}</td>
+                      <td>
+                        <b>{module.title}</b>
+                      </td>
+                      <td>{courseName(module.courseId)}</td>
+                      <td>
+                        <span data-published={module.isPublished}>
+                          {module.isPublished ? "Published" : "Draft"}
+                        </span>
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          onClick={() => void publish(module)}
+                        >
+                          {module.isPublished
+                            ? "Return to draft"
+                            : "Approve & publish"}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+      </div>
+    </main>
+  );
+}
