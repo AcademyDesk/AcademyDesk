@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { academyApi } from "@/lib/api";
+import { StandardDetailModal, StandardInteractiveTile } from "@/components/design-system/controls";
 
 type Academy = { id: string; name: string };
 type Summary = {
@@ -17,8 +18,10 @@ type Summary = {
 };
 type Session = { id: string; batchId: string; startUtc: string; deliveryMode: string };
 type Enrollment = { studentId: string; batchId: string; status: string };
-type Student = { id: string; firstName: string; lastName: string };
+type Student = { id: string; firstName: string; lastName: string; isActive: boolean };
 type Batch = { id: string; name: string };
+type FeeArrangement = { amount: number; subjectName: string; isActive: boolean };
+type Invoice = { studentId: string; invoiceNumber: string; totalAmount: number; paidAmount: number };
 
 const money = (value: number) => `₹${value.toLocaleString("en-IN")}`;
 const indiaDay = (value: Date) => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(value);
@@ -31,6 +34,10 @@ export default function StudentOverviewPage() {
   const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
   const [batches, setBatches] = useState<Batch[]>([]);
+  const [subjectFees, setSubjectFees] = useState<Record<string, FeeArrangement[]>>({});
+  const [admissionFees, setAdmissionFees] = useState<Record<string, number>>({});
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [detail, setDetail] = useState<"students" | "fees" | "admission" | "outstanding" | null>(null);
   const [message, setMessage] = useState("Loading student overview…");
 
   useEffect(() => {
@@ -51,8 +58,23 @@ export default function StudentOverviewPage() {
         setSummary(await summaryResponse.json());
         setSessions(sessionResponse.ok ? await sessionResponse.json() : []);
         setEnrollments(enrollmentResponse.ok ? await enrollmentResponse.json() : []);
-        setStudents(studentResponse.ok ? await studentResponse.json() : []);
+        const studentRows: Student[] = studentResponse.ok ? await studentResponse.json() : [];
+        setStudents(studentRows);
         setBatches(batchResponse.ok ? await batchResponse.json() : []);
+        const [invoiceResponse, ...feeResponses] = await Promise.all([
+          academyApi(`/api/academies/${current.id}/invoices`, { cache: "no-store" }),
+          ...studentRows.flatMap((student) => [academyApi(`/api/academies/${current.id}/students/${student.id}/fee-arrangements`, { cache: "no-store" }), academyApi(`/api/academies/${current.id}/students/${student.id}/fee-arrangements/admission-fee`, { cache: "no-store" })]),
+        ]);
+        setInvoices(invoiceResponse.ok ? await invoiceResponse.json() : []);
+        const nextSubjectFees: Record<string, FeeArrangement[]> = {};
+        const nextAdmissionFees: Record<string, number> = {};
+        await Promise.all(studentRows.map(async (student, index) => {
+          const arrangements = feeResponses[index * 2]; const admission = feeResponses[index * 2 + 1];
+          nextSubjectFees[student.id] = arrangements?.ok ? await arrangements.json() : [];
+          const admissionData = admission?.ok ? await admission.json() as { amount?: number | null } : null;
+          nextAdmissionFees[student.id] = admissionData?.amount ?? 0;
+        }));
+        setSubjectFees(nextSubjectFees); setAdmissionFees(nextAdmissionFees);
         setMessage("");
       } catch {
         setMessage("Student overview could not be loaded.");
@@ -71,6 +93,9 @@ export default function StudentOverviewPage() {
   const todayLearners = learnersFor(todaySessions);
   const weekLearners = learnersFor(upcomingSessions);
   const batchName = (id: string) => batches.find((batch) => batch.id === id)?.name ?? "Class";
+  const studentName = (student?: Student) => student ? `${student.firstName} ${student.lastName}` : "Unknown student";
+  const activeStudents = students.filter((student) => student.isActive);
+  const balanceFor = (studentId: string) => invoices.filter((invoice) => invoice.studentId === studentId).reduce((sum, invoice) => sum + Math.max(0, invoice.totalAmount - invoice.paidAmount), 0);
 
   return (
     <main className="enterprise-settings student-overview-standard">
@@ -88,11 +113,15 @@ export default function StudentOverviewPage() {
       {summary ? (
         <>
           <section className="student-overview-kpis" aria-label="Student metrics">
-            <Metric label="Total students" value={summary.totalStudents.toLocaleString("en-IN")} note={`${summary.activeStudents} active · ${summary.inactiveStudents} inactive`} />
-            <Metric label="Total fees" value={money(summary.totalSubjectFees)} note={`${summary.activeSubjectFeeArrangements} active subject fees`} />
-            <Metric label="Total admission fees" value={money(summary.totalAdmissionFees)} note="One-time fees configured" />
-            <Metric label="Outstanding fees" value={money(summary.outstandingFees)} note={`${money(summary.overdueFees)} overdue`} emphasis={summary.overdueFees > 0 ? "warning" : undefined} />
+            <StandardInteractiveTile label="Total students" value={summary.totalStudents.toLocaleString("en-IN")} detail={`${summary.activeStudents} active · ${summary.inactiveStudents} inactive`} onClick={() => setDetail("students")} className="student-overview-kpi" />
+            <StandardInteractiveTile label="Total fees" value={money(summary.totalSubjectFees)} detail={`${summary.activeSubjectFeeArrangements} active subject fees`} onClick={() => setDetail("fees")} className="student-overview-kpi" />
+            <StandardInteractiveTile label="Total admission fees" value={money(summary.totalAdmissionFees)} detail="View admission fee by student" onClick={() => setDetail("admission")} className="student-overview-kpi" />
+            <StandardInteractiveTile label="Outstanding fees" value={money(summary.outstandingFees)} detail={`${money(summary.overdueFees)} overdue`} onClick={() => setDetail("outstanding")} className={`student-overview-kpi ${summary.overdueFees > 0 ? "student-overview-kpi-warning" : ""}`} />
           </section>
+          {detail === "students" && <StandardDetailModal eyebrow="Student overview" title="Students" onClose={() => setDetail(null)}><StudentDetails rows={students.map((student) => [studentName(student), `${student.isActive ? "Active" : "Inactive"} · Total active fees ${money((subjectFees[student.id] ?? []).filter((fee) => fee.isActive).reduce((sum, fee) => sum + fee.amount, 0))}`])} empty="No students found." /></StandardDetailModal>}
+          {detail === "fees" && <StandardDetailModal eyebrow="Student overview" title="Active student fees" onClose={() => setDetail(null)}><StudentDetails rows={activeStudents.flatMap((student) => (subjectFees[student.id] ?? []).filter((fee) => fee.isActive).map((fee) => [studentName(student), `${fee.subjectName} · ${money(fee.amount)}`] as [string, string]))} empty="No active subject fees configured." /></StandardDetailModal>}
+          {detail === "admission" && <StandardDetailModal eyebrow="Student overview" title="Admission fees" onClose={() => setDetail(null)}><StudentDetails rows={students.filter((student) => admissionFees[student.id] > 0).map((student) => [studentName(student), money(admissionFees[student.id])])} empty="No admission fees configured." /></StandardDetailModal>}
+          {detail === "outstanding" && <StandardDetailModal eyebrow="Student overview" title="Outstanding student fees" onClose={() => setDetail(null)}><StudentDetails rows={students.filter((student) => balanceFor(student.id) > 0).map((student) => [studentName(student), money(balanceFor(student.id))])} empty="No student fees are outstanding." /></StandardDetailModal>}
           <section className="student-overview-insights-grid" aria-label="Student delivery insights">
             <Insight title="Students with classes today" value={String(todayLearners.length)} details={todayLearners.length ? todayLearners.slice(0, 4).map((student) => `${student.firstName} ${student.lastName}`) : ["No students scheduled today."]} />
             <Insight title="Today’s class schedule" value={String(todaySessions.length)} details={todaySessions.length ? todaySessions.slice(0, 4).map((session) => `${indiaTime(session.startUtc)} · ${batchName(session.batchId)}`) : ["No classes scheduled today."]} />
@@ -104,9 +133,7 @@ export default function StudentOverviewPage() {
   );
 }
 
-function Metric({ label, value, note, emphasis }: { label: string; value: string; note: string; emphasis?: "warning" }) {
-  return <article className={`student-overview-kpi ${emphasis ? "student-overview-kpi-warning" : ""}`}><span>{label}</span><strong>{value}</strong><small>{note}</small></article>;
-}
 function Insight({ title, value, details }: { title: string; value: string; details: string[] }) {
   return <article className="student-overview-insight"><span>Student delivery</span><div><h3>{title}</h3><strong>{value}</strong></div><ul>{details.map((detail) => <li key={detail}>{detail}</li>)}</ul></article>;
 }
+function StudentDetails({ rows, empty }: { rows: [string, string][]; empty: string }) { return rows.length ? <div className="standard-detail-list">{rows.map(([title, detail], index) => <article key={`${title}-${index}`}><b>{title}</b><small>{detail}</small></article>)}</div> : <p className="standard-detail-empty">{empty}</p>; }

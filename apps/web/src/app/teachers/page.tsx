@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { academyApi, apiHeaders } from "@/lib/api";
-import { StandardSelectField } from "@/components/design-system/controls";
+import { StandardDetailModal, StandardInteractiveTile, StandardSelectField } from "@/components/design-system/controls";
 
 type Academy = { id: string; name: string };
 type Branch = { id: string; name: string };
@@ -18,12 +18,15 @@ type Teacher = {
   branchId?: string | null;
   isActive: boolean;
 };
+type PayrollPayout = { workerName: string; periodLabel: string; netAmount: number; status: string };
 
 export default function TeachersPage() {
   const [academy, setAcademy] = useState<Academy>();
   const [branches, setBranches] = useState<Branch[]>([]);
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [batches, setBatches] = useState<Batch[]>([]);
+  const [payroll, setPayroll] = useState<PayrollPayout[]>([]);
+  const [detail, setDetail] = useState<"active" | "due" | "upcoming" | null>(null);
   const [assignmentTeacherId, setAssignmentTeacherId] = useState("");
   const [assignmentBatchId, setAssignmentBatchId] = useState("");
   const [message, setMessage] = useState("Loading teachers…");
@@ -42,14 +45,17 @@ export default function TeachersPage() {
     new Date().getMonth() + 1,
     1,
   );
+  const pendingPayroll = payroll.filter((payout) => payout.status !== "Paid");
+  const money = (value: number) => `₹${value.toLocaleString("en-IN")}`;
 
   async function load(academyId?: string) {
     const id = academyId ?? academy?.id;
     if (!id) return;
-    const [teacherResponse, branchResponse, batchResponse] = await Promise.all([
+    const [teacherResponse, branchResponse, batchResponse, payrollResponse] = await Promise.all([
       academyApi(`/api/academies/${id}/teachers`, { cache: "no-store" }),
       academyApi(`/api/academies/${id}/branches`, { cache: "no-store" }),
       academyApi(`/api/academies/${id}/batches`, { cache: "no-store" }),
+      academyApi(`/api/academies/${id}/payroll/payouts`, { cache: "no-store" }),
     ]);
     if (!teacherResponse.ok || !batchResponse.ok) {
       const failedResponse = [teacherResponse, batchResponse].find((response) => !response.ok);
@@ -58,6 +64,7 @@ export default function TeachersPage() {
     setTeachers(await teacherResponse.json());
     setBranches(branchResponse.ok ? await branchResponse.json() : []);
     setBatches(await batchResponse.json());
+    setPayroll(payrollResponse.ok ? await payrollResponse.json() : []);
     setMessage("");
   }
 
@@ -192,28 +199,9 @@ export default function TeachersPage() {
         </header>
         {message && <p className="enterprise-page-state">{message}</p>}
         <section className="teacher-management-kpis">
-          <article className="teacher-management-kpi">
-            <span>Active teachers</span>
-            <strong>
-              {activeTeachers.length}
-            </strong>
-          </article>
-          <article className="teacher-management-kpi">
-            <span>Due this cycle</span>
-            <strong>
-              {activeTeachers.length}
-            </strong>
-          </article>
-          <article className="teacher-management-kpi">
-            <span>Next payment cycle</span>
-            <strong className="teacher-management-date">
-              {new Intl.DateTimeFormat("en-IN", {
-                day: "2-digit",
-                month: "short",
-                timeZone: "Asia/Kolkata",
-              }).format(nextPayCycle)}
-            </strong>
-          </article>
+          <StandardInteractiveTile label="Active teachers" value={activeTeachers.length} detail="View active teacher names" onClick={() => setDetail("active")} className="teacher-management-kpi" />
+          <StandardInteractiveTile label="Due this cycle" value={pendingPayroll.length} detail="View teacher payments due" onClick={() => setDetail("due")} className="teacher-management-kpi" />
+          <StandardInteractiveTile label="Next payment cycle" value={new Intl.DateTimeFormat("en-IN", { day: "2-digit", month: "short", timeZone: "Asia/Kolkata" }).format(nextPayCycle)} detail="View upcoming teacher payments" onClick={() => setDetail("upcoming")} className="teacher-management-kpi" />
           <article className="teacher-management-assignment-tile">
             <div className="teacher-management-assignment-heading">
               <span>Assign class / batch</span>
@@ -245,6 +233,9 @@ export default function TeachersPage() {
             </div>
           </article>
         </section>
+        {detail === "active" && <StandardDetailModal eyebrow="Teacher management" title="Active teachers" onClose={() => setDetail(null)}><TeacherPaymentDetails rows={activeTeachers.map((teacher) => [`${teacher.firstName} ${teacher.lastName}`, teacher.specialties || "Subjects not recorded"])} empty="No active teachers." /></StandardDetailModal>}
+        {detail === "due" && <StandardDetailModal eyebrow="Teacher management" title="Teacher payments due" onClose={() => setDetail(null)}><TeacherPaymentDetails rows={pendingPayroll.map((payout) => [payout.workerName, `${payout.periodLabel} · ${money(payout.netAmount)} · ${payout.status}`])} empty="No teacher payments are due." /></StandardDetailModal>}
+        {detail === "upcoming" && <StandardDetailModal eyebrow="Teacher management" title="Upcoming teacher payments" onClose={() => setDetail(null)}><TeacherPaymentDetails rows={pendingPayroll.map((payout) => [payout.workerName, `${payout.periodLabel} · ${money(payout.netAmount)}`])} empty="No upcoming teacher payments." /></StandardDetailModal>}
         <section className="teacher-directory-panel">
             <header className="teacher-directory-header"><div><p>Directory</p><h2>Teaching team</h2></div><span>{teachers.length} records</span></header>
             {teachers.length === 0 ? (
@@ -372,3 +363,4 @@ export default function TeachersPage() {
     </main>
   );
 }
+function TeacherPaymentDetails({ rows, empty }: { rows: [string, string][]; empty: string }) { return rows.length ? <div className="standard-detail-list">{rows.map(([title, detail], index) => <article key={`${title}-${index}`}><b>{title}</b><small>{detail}</small></article>)}</div> : <p className="standard-detail-empty">{empty}</p>; }
