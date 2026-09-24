@@ -207,11 +207,11 @@ export default function CertificatesPage() {
     <main className="enterprise-settings certificates-admin certificates-standard min-h-screen">
       <WorkspaceNav />
       <div className="certificates-content">
-        <header className="standard-workspace-heading">
-          <span className="standard-heading-icon" aria-hidden="true">
+        <header className="certificates-heading">
+          <span className="certificates-title-icon" aria-hidden="true">
             ✦
           </span>
-          <div>
+          <div className="certificates-title">
             <p>Academy experience</p>
             <h1>Certificates</h1>
           </div>
