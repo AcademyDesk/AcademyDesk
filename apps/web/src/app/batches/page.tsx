@@ -261,7 +261,7 @@ export default function BatchesPage() {
               href="/batch-setup"
               className="enterprise-action-button"
             >
-              Create class or batch
+              Create Class / Batch
             </Link>
           </header>
           {message && (
@@ -323,7 +323,7 @@ export default function BatchesPage() {
     <main className="enterprise-settings enterprise-legacy-standard batch-setup-standard min-h-screen bg-slate-950 text-slate-100">
       <WorkspaceNav />
       <div className="batch-setup-content mx-auto max-w-6xl px-6 py-10">
-        <header className="batch-setup-heading"><div className="batch-setup-title"><span className="batch-setup-title-icon" aria-hidden="true">+</span><div><p>Class &amp; batch</p><h1>Create class or batch</h1></div></div></header>
+        <header className="batch-setup-heading"><div className="batch-setup-title"><span className="batch-setup-title-icon" aria-hidden="true">+</span><div><p>Class &amp; batch</p><h1>Create Class / Batch</h1></div></div></header>
         {message && (
           <p className="mt-6 rounded-lg border border-amber-700/50 bg-amber-950/40 p-4 text-sm text-amber-100">
             {message}
@@ -347,7 +347,7 @@ export default function BatchesPage() {
             </section>
             <section className="batch-setup-layout">
               <form onSubmit={createBatch} className="batch-setup-panel">
-                <header className="batch-setup-panel-header"><div><p>Setup</p><h2>Create class or batch</h2></div></header>
+                <header className="batch-setup-panel-header"><div><p>Setup</p><h2>Create Class / Batch</h2></div></header>
                 <div className="batch-setup-form-fields">
                 <StandardSelectField
                   name="course"
