@@ -1,2 +1,179 @@
-"use client";import{useEffect,useState}from"react";import{WorkspaceNav}from"@/components/workspace-nav";import{academyApi,apiHeaders}from"@/lib/api";
-export default function Page(){const[a,setA]=useState<any>(),[l,setL]=useState<any[]>([]),[f,setF]=useState<any>({name:"",holidayDate:"",notes:"",isClosed:true,scope:"Custom"});async function load(x:any){const r=await academyApi(`/api/academies/${x.id}/holidays`);setL(await r.json())}useEffect(()=>{void academyApi('/api/academies').then(async r=>{const x=(await r.json())[0];setA(x);if(x)load(x)})},[]);return <main className="enterprise-settings enterprise-legacy-standard min-h-screen bg-slate-950 text-slate-100"><WorkspaceNav/><div className="mx-auto max-w-5xl p-8"><h1 className="text-3xl font-semibold">Holidays and closures</h1><button onClick={async()=>{await academyApi(`/api/academies/${a.id}/holidays/india-2026-defaults`,{method:"POST",headers:apiHeaders(true)});load(a)}} className="mt-5 rounded bg-cyan-400 p-3 font-semibold text-slate-950">Add official All India government holidays – 2026</button><form onSubmit={async e=>{e.preventDefault();await academyApi(`/api/academies/${a.id}/holidays`,{method:"POST",headers:apiHeaders(true),body:JSON.stringify(f)});load(a)}} className="mt-5 grid gap-2 rounded bg-slate-900 p-4"><input required placeholder="Custom / regional holiday" className="rounded bg-slate-950 p-2" onChange={e=>setF({...f,name:e.target.value})}/><input required type="date" className="rounded bg-slate-950 p-2" onChange={e=>setF({...f,holidayDate:e.target.value})}/><button className="rounded bg-cyan-400 p-2 text-slate-950">Add holiday</button></form><div className="mt-6 space-y-2">{l.map(x=><div key={x.id} className="flex justify-between rounded bg-slate-900 p-3">{x.holidayDate} · {x.name}<button onClick={async()=>{await academyApi(`/api/academies/${a.id}/holidays/${x.id}`,{method:"DELETE",headers:apiHeaders()});load(a)}} className="text-red-300">Remove</button></div>)}</div></div></main>}
+"use client";
+
+import { FormEvent, useEffect, useState } from "react";
+import { WorkspaceNav } from "@/components/workspace-nav";
+import { StandardDateField } from "@/components/design-system/controls";
+import { academyApi, apiHeaders } from "@/lib/api";
+
+type Academy = { id: string };
+type Holiday = { id: string; name: string; holidayDate: string };
+type FormState = {
+  name: string;
+  holidayDate: string;
+  notes: string;
+  isClosed: boolean;
+  scope: string;
+};
+export default function HolidaysPage() {
+  const [academy, setAcademy] = useState<Academy>();
+  const [holidays, setHolidays] = useState<Holiday[]>([]);
+  const [form, setForm] = useState<FormState>({
+    name: "",
+    holidayDate: "",
+    notes: "",
+    isClosed: true,
+    scope: "Custom",
+  });
+  const [message, setMessage] = useState("Loading holidays…");
+  async function load(item?: Academy) {
+    const current = item ?? academy;
+    if (!current) return;
+    const response = await academyApi(`/api/academies/${current.id}/holidays`);
+    if (!response.ok) throw new Error();
+    setHolidays(await response.json());
+    setMessage("");
+  }
+  useEffect(() => {
+    void academyApi("/api/academies")
+      .then(async (response) => {
+        const academies: Academy[] = await response.json();
+        if (!academies[0]) return setMessage("Create an academy first.");
+        setAcademy(academies[0]);
+        await load(academies[0]);
+      })
+      .catch(() => setMessage("Holidays could not be loaded."));
+  }, []);
+  async function addDefaults() {
+    if (!academy) return;
+    const response = await academyApi(
+      `/api/academies/${academy.id}/holidays/india-2026-defaults`,
+      { method: "POST", headers: apiHeaders(true) },
+    );
+    if (!response.ok)
+      return setMessage("Official holidays could not be added.");
+    setMessage("Official India holidays added.");
+    await load();
+  }
+  async function create(event: FormEvent) {
+    event.preventDefault();
+    if (!academy || !form.name || !form.holidayDate) return;
+    const response = await academyApi(`/api/academies/${academy.id}/holidays`, {
+      method: "POST",
+      headers: apiHeaders(true),
+      body: JSON.stringify(form),
+    });
+    if (!response.ok) return setMessage("Holiday could not be added.");
+    setForm({
+      name: "",
+      holidayDate: "",
+      notes: "",
+      isClosed: true,
+      scope: "Custom",
+    });
+    await load();
+  }
+  async function remove(id: string) {
+    if (!academy) return;
+    const response = await academyApi(
+      `/api/academies/${academy.id}/holidays/${id}`,
+      { method: "DELETE", headers: apiHeaders() },
+    );
+    if (!response.ok) return setMessage("Holiday could not be removed.");
+    await load();
+  }
+  return (
+    <main className="enterprise-settings holidays-standard min-h-screen">
+      <WorkspaceNav />
+      <div className="holidays-content mx-auto max-w-5xl px-6 py-10">
+        <header className="holidays-heading">
+          <div className="holidays-title">
+            <span className="holidays-title-icon" aria-hidden="true">
+              ◷
+            </span>
+            <div>
+              <p>Academy experience</p>
+              <h1>Holidays</h1>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => void addDefaults()}
+            disabled={!academy}
+          >
+            Add India holidays 2026
+          </button>
+        </header>
+        {message && (
+          <p className="enterprise-page-state holidays-message">{message}</p>
+        )}
+        <section className="holidays-layout">
+          <form onSubmit={create} className="holidays-panel">
+            <header className="holidays-panel-header">
+              <div>
+                <p>Calendar closure</p>
+                <h2>Add holiday</h2>
+              </div>
+            </header>
+            <div className="holidays-fields">
+              <label>
+                <span>Holiday name</span>
+                <input
+                  required
+                  value={form.name}
+                  onChange={(event) =>
+                    setForm({ ...form, name: event.target.value })
+                  }
+                  placeholder="Custom or regional holiday"
+                />
+              </label>
+              <StandardDateField
+                name="holiday-date"
+                label="Date"
+                value={form.holidayDate}
+                onChange={(holidayDate) => setForm({ ...form, holidayDate })}
+                required
+              />
+              <button className="enterprise-action-button holidays-action">
+                Add holiday
+              </button>
+            </div>
+          </form>
+          <section className="holidays-panel holidays-register">
+            <header className="holidays-panel-header">
+              <div>
+                <p>Calendar closure</p>
+                <h2>Holiday register</h2>
+              </div>
+              <span>{holidays.length} dates</span>
+            </header>
+            {holidays.length === 0 ? (
+              <p className="holidays-empty">No holidays added yet.</p>
+            ) : (
+              <ul>
+                {holidays.map((holiday) => (
+                  <li key={holiday.id}>
+                    <div>
+                      <b>{holiday.name}</b>
+                      <small>
+                        {new Intl.DateTimeFormat("en-IN", {
+                          dateStyle: "medium",
+                          timeZone: "Asia/Kolkata",
+                        }).format(new Date(`${holiday.holidayDate}T12:00:00`))}
+                      </small>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => void remove(holiday.id)}
+                    >
+                      Remove
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        </section>
+      </div>
+    </main>
+  );
+}
