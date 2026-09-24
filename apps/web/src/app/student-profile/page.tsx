@@ -148,7 +148,7 @@ export default function StudentProfilePage() {
           <div><p>Students</p><h1>
           {student
             ? `${student.firstName} ${student.lastName}`
-            : "Student record"}
+            : "360"}
           </h1><span>A connected record for family, enrolment, attendance, finance, learning, and communication.</span></div>
         </div>
       </header>

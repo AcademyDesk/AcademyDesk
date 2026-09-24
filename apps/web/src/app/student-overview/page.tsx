@@ -102,7 +102,7 @@ export default function StudentOverviewPage() {
       <header className="student-overview-heading">
         <div className="student-overview-title">
           <span className="student-overview-title-icon" aria-hidden="true">♙</span>
-          <div><p>Students</p><h1>Student overview</h1><span>{academy?.name ?? "Academy"} student, admission and fee position.</span></div>
+          <div><p>Students</p><h1>Overview</h1><span>{academy?.name ?? "Academy"} student, admission and fee position.</span></div>
         </div>
         <div className="student-overview-actions">
             <Link href="/student-onboarding" className="enterprise-action-button">Add student</Link>
