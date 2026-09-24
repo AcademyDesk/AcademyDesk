@@ -32,6 +32,15 @@ export default function FinanceSummary() {
       }
     })();
   }, []);
+  const netBillable = summary
+    ? Math.max(0, summary.grossBilled - summary.approvedAdjustments)
+    : 0;
+  const collectionRate = netBillable
+    ? Math.min(100, Math.round((summary!.collected / netBillable) * 100))
+    : 0;
+  const awaitingReconciliation = summary
+    ? Math.max(0, summary.collected - summary.reconciled)
+    : 0;
   const cards = summary
     ? [
         { label: "Gross billed", value: money(summary.grossBilled) },
@@ -43,6 +52,12 @@ export default function FinanceSummary() {
         { label: "Outstanding", value: money(summary.outstanding) },
         { label: "Reconciled", value: money(summary.reconciled) },
         { label: "Overdue invoices", value: String(summary.overdueInvoices) },
+        { label: "Net billable", value: money(netBillable) },
+        { label: "Collection rate", value: `${collectionRate}%` },
+        {
+          label: "Awaiting reconciliation",
+          value: money(awaitingReconciliation),
+        },
       ]
     : [];
   return (
