@@ -56,7 +56,7 @@ export function StudentFeeArrangements({
     await load();
   }
   return (
-    <section className="surface-panel rounded-xl p-5">
+    <section className="surface-panel rounded-xl p-5 student-fee-arrangements">
       <header className="flex items-center justify-between">
         <h3 className="font-semibold">Subject fees</h3>
         <span className="text-sm text-slate-400">{items.length} active</span>
@@ -84,7 +84,7 @@ export function StudentFeeArrangements({
       </ul>
       <form
         onSubmit={add}
-        className="mt-4 grid gap-2 sm:grid-cols-[1fr_120px_135px_auto]"
+        className="student-fee-arrangements-form mt-4 grid gap-2"
       >
         <input
           value={subjectName}
@@ -100,19 +100,21 @@ export function StudentFeeArrangements({
           placeholder="Amount"
           required
         />
-        <StandardSelectField
-          name="fee-frequency"
-          value={frequency}
-          onChange={setFrequency}
-          placeholder="Billing frequency"
-          options={[
-            { value: "Monthly", label: "Monthly" },
-            { value: "Quarterly", label: "Quarterly" },
-            { value: "HalfYearly", label: "Half-yearly" },
-            { value: "Annual", label: "Annual" },
-          ]}
-        />
-        <button className="enterprise-action-button">
+        <div className="student-fee-frequency">
+          <StandardSelectField
+            name="fee-frequency"
+            value={frequency}
+            onChange={setFrequency}
+            placeholder="Billing frequency"
+            options={[
+              { value: "Monthly", label: "Monthly" },
+              { value: "Quarterly", label: "Quarterly" },
+              { value: "HalfYearly", label: "Half-yearly" },
+              { value: "Annual", label: "Annual" },
+            ]}
+          />
+        </div>
+        <button className="enterprise-action-button student-fee-add-button">
           Add
         </button>
       </form>
