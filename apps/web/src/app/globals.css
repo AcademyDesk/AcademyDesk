@@ -1550,7 +1550,7 @@ html[data-theme="light"] .field-label { color: #475569; }
   border-top-left-radius: 11px;
   border-top-right-radius: 11px;
 }
-.enterprise-workspace main [class*="-panel"]:not(.surface-panel) > header:first-child {
+.enterprise-workspace main :is([class*="-panel"], [class*="-card"]):not(.surface-panel) > header:first-child {
   border-top-left-radius: 15px;
   border-top-right-radius: 15px;
 }
