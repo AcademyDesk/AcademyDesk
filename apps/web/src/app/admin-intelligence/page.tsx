@@ -1,169 +1,18 @@
 "use client";
+
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { academyApi } from "@/lib/api";
-type A = { id: string };
-type D = {
-  activeEnrolments: number;
-  attendanceRisk: {
-    studentId: string;
-    records: number;
-    attendanceRate: number;
-  }[];
-  occupancy: {
-    id: string;
-    name: string;
-    activeEnrolments: number;
-    waitlisted: number;
-    capacity: number;
-    pressure: number;
-  }[];
-  collections: {
-    invoiceNumber: string;
-    totalAmount: number;
-    dueDate: string;
-    daysOverdue: number;
-  }[];
-  workload: {
-    teacherId: string;
-    teacherName: string;
-    scheduledHours: number;
-    sessions: number;
-  }[];
-};
+
+type Academy = { id: string };
+type Intelligence = { activeEnrolments: number; attendanceRisk: { studentId: string; records: number; attendanceRate: number }[]; occupancy: { id: string; name: string; activeEnrolments: number; waitlisted: number; capacity: number; pressure: number }[]; collections: { invoiceNumber: string; totalAmount: number; dueDate: string; daysOverdue: number }[]; workload: { teacherId: string; teacherName: string; scheduledHours: number; sessions: number }[] };
+const money = (amount: number) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(amount);
+
 export default function Intelligence() {
-  const [d, setD] = useState<D>();
-  const [m, setM] = useState("Loading operational intelligence…");
-  useEffect(() => {
-    void (async () => {
-      try {
-        const a: A[] = await (await academyApi("/api/academies")).json();
-        if (!a[0]) throw Error();
-        setD(
-          await (
-            await academyApi(`/api/academies/${a[0].id}/admin-intelligence`)
-          ).json(),
-        );
-        setM("");
-      } catch {
-        setM("Operational intelligence could not be loaded.");
-      }
-    })();
-  }, []);
-  return (
-    <main className="enterprise-settings">
-      <header className="enterprise-page-header">
-        <p>Administration / intelligence</p>
-        <h2>Admin intelligence</h2>
-        <span>
-          Decision signals for intervention, capacity, collections and delivery.
-        </span>
-      </header>
-      {m && <p className="mt-5 text-amber-200">{m}</p>}
-      {d && (
-        <>
-          <section className="mt-5 grid gap-5 md:grid-cols-4">
-            <Card t="Active enrolments" v={String(d.activeEnrolments)} />
-            <Card t="Attendance risks" v={String(d.attendanceRisk.length)} />
-            <Card
-              t="Capacity alerts"
-              v={String(d.occupancy.filter((x) => x.pressure >= 90).length)}
-            />
-            <Card t="Overdue invoices" v={String(d.collections.length)} />
-          </section>
-          <section className="mt-5 grid gap-5 xl:grid-cols-2">
-            <Panel t="Attendance intervention queue">
-              {d.attendanceRisk.length ? (
-                d.attendanceRisk.map((x) => (
-                  <p
-                    key={x.studentId}
-                    className="mt-3 rounded border border-amber-700/60 p-3"
-                  >
-                    <b>{x.attendanceRate}% attendance</b>
-                    <span className="float-right">{x.records} records</span>
-                    <br />
-                    <Link
-                      href={`/student-profile?id=${x.studentId}`}
-                      className="text-sm text-cyan-300"
-                    >
-                      Student record
-                    </Link>
-                  </p>
-                ))
-              ) : (
-                <p className="mt-4 text-slate-400">
-                  No attendance-risk learners.
-                </p>
-              )}
-            </Panel>
-            <Panel t="Batch capacity pressure">
-              {d.occupancy.map((x) => (
-                <p
-                  key={x.id}
-                  className="mt-3 rounded border border-slate-700 p-3"
-                >
-                  <b>{x.name}</b>
-                  <span className="float-right text-cyan-300">
-                    {x.pressure}%
-                  </span>
-                  <br />
-                  <small className="text-slate-400">
-                    {x.activeEnrolments} active / {x.capacity} capacity
-                  </small>
-                </p>
-              ))}
-            </Panel>
-          </section>
-          <section className="mt-5 grid gap-5 xl:grid-cols-2">
-            <Panel t="Collections ageing">
-              {d.collections.map((x) => (
-                <p
-                  key={x.invoiceNumber}
-                  className="mt-3 rounded border border-slate-700 p-3"
-                >
-                  <b>{x.invoiceNumber}</b>
-                  <span className="float-right text-amber-300">
-                    {x.daysOverdue} days
-                  </span>
-                  <br />
-                  <small className="text-slate-400">
-                    ₹{x.totalAmount} · due {x.dueDate}
-                  </small>
-                </p>
-              ))}
-            </Panel>
-            <Panel t="Teacher workload">
-              {d.workload.map((x) => (
-                <p
-                  key={x.teacherId}
-                  className="mt-3 border-b border-slate-800 pb-3"
-                >
-                  Teacher {x.teacherId.slice(0, 8)}
-                  <span className="float-right">
-                    {x.scheduledHours} hrs · {x.sessions} sessions
-                  </span>
-                </p>
-              ))}
-            </Panel>
-          </section>
-        </>
-      )}
-    </main>
-  );
+  const [data, setData] = useState<Intelligence>(); const [message, setMessage] = useState("Loading operational intelligence…");
+  useEffect(() => { void (async () => { try { const academyResponse = await academyApi("/api/academies"); if (!academyResponse.ok) throw Error(); const academies: Academy[] = await academyResponse.json(); if (!academies[0]) throw Error(); const response = await academyApi(`/api/academies/${academies[0].id}/admin-intelligence`); if (!response.ok) throw Error(); setData(await response.json()); setMessage(""); } catch { setMessage("Operational intelligence could not be loaded."); } })(); }, []);
+  const capacityAlerts = data?.occupancy.filter(item => item.pressure >= 90).length ?? 0;
+  return <main className="enterprise-settings intelligence-standard"><header className="intelligence-heading"><span className="intelligence-title-icon" aria-hidden="true">◈</span><div><p>Administration</p><h1>Admin intelligence</h1></div></header>{message && <p className="intelligence-notice" role="status">{message}</p>}{data && <><section className="intelligence-kpis"><article><span>Active enrolments</span><b>{data.activeEnrolments}</b><small>Students currently enrolled in delivery.</small></article><article><span>Attendance risks</span><b>{data.attendanceRisk.length}</b><small>Learners needing attendance attention.</small></article><article><span>Capacity alerts</span><b>{capacityAlerts}</b><small>Batches at or above 90% capacity.</small></article><article><span>Overdue invoices</span><b>{data.collections.length}</b><small>Collections requiring follow-up.</small></article></section><section className="intelligence-layout"><Panel eyebrow="Intervention queue" title="Attendance intervention"><ul>{data.attendanceRisk.length ? data.attendanceRisk.map(item => <li key={item.studentId}><div><b>{item.attendanceRate}% attendance</b><small>{item.records} attendance records</small></div><Link href={`/student-profile?id=${item.studentId}`}>View student <span aria-hidden="true">→</span></Link></li>) : <Empty text="No attendance-risk learners." />}</ul></Panel><Panel eyebrow="Capacity" title="Batch capacity pressure"><ul>{data.occupancy.length ? data.occupancy.map(item => <li key={item.id}><div><b>{item.name}</b><small>{item.activeEnrolments} active / {item.capacity} capacity{item.waitlisted ? ` · ${item.waitlisted} waitlisted` : ""}</small></div><strong data-risk={item.pressure >= 90}>{item.pressure}%</strong></li>) : <Empty text="No batch-capacity information is available." />}</ul></Panel><Panel eyebrow="Collections" title="Collections ageing"><ul>{data.collections.length ? data.collections.map(item => <li key={item.invoiceNumber}><div><b>{item.invoiceNumber}</b><small>{money(item.totalAmount)} · due {item.dueDate}</small></div><strong data-risk="true">{item.daysOverdue} days</strong></li>) : <Empty text="No overdue invoices." />}</ul></Panel><Panel eyebrow="Delivery" title="Teacher workload"><ul>{data.workload.length ? data.workload.map(item => <li key={item.teacherId}><div><b>{item.teacherName || `Teacher ${item.teacherId.slice(0, 8)}`}</b><small>Scheduled delivery load</small></div><strong>{item.scheduledHours} hrs<small>{item.sessions} sessions</small></strong></li>) : <Empty text="No teacher workload is available." />}</ul></Panel></section></>}</main>;
 }
-function Card(p: { t: string; v: string }) {
-  return (
-    <section className="surface-panel rounded-xl p-5">
-      <p className="text-sm text-slate-400">{p.t}</p>
-      <b className="mt-2 block text-3xl">{p.v}</b>
-    </section>
-  );
-}
-function Panel(p: { t: string; children: React.ReactNode }) {
-  return (
-    <section className="surface-panel rounded-xl p-5">
-      <h3 className="font-semibold">{p.t}</h3>
-      {p.children}
-    </section>
-  );
-}
+function Panel({ eyebrow, title, children }: { eyebrow: string; title: string; children: React.ReactNode }) { return <section className="intelligence-panel"><header><p>{eyebrow}</p><h2>{title}</h2></header>{children}</section>; }
+function Empty({ text }: { text: string }) { return <p className="intelligence-empty">{text}</p>; }
