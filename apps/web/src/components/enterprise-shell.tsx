@@ -35,10 +35,10 @@ const navigationGroups: readonly NavigationGroup[] = [
     icon: "♙",
     links: [
       ["Overview", "/student-overview"],
-      ["Student onboarding", "/student-onboarding"],
-      ["Student management", "/students"],
-      ["Student fee details", "/student-fees"],
-      ["Student 360", "/student-management"],
+      ["Onboarding", "/student-onboarding"],
+      ["Management", "/students"],
+      ["Fee Details", "/student-fees"],
+      ["360", "/student-management"],
     ],
   },
   {
