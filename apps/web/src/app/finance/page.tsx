@@ -188,10 +188,7 @@ export default function FinancePage() {
             </span>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Link
-              href="/invoices"
-              className="enterprise-action-button"
-            >
+            <Link href="/invoices" className="enterprise-action-button">
               Issue invoice
             </Link>
             <Link
@@ -342,7 +339,7 @@ export default function FinancePage() {
         <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           {modules.map(([title, description, href, label]) => (
             <Link
-              key={href}
+              key={`${href}-${label}`}
               href={href}
               className="surface-panel rounded-xl p-4 transition hover:border-cyan-400"
             >
