@@ -155,7 +155,10 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
             .Join(db.Batches.AsNoTracking(), session => session.BatchId, batch => batch.Id,
                 (session, batch) => new PortalSession(session.Id, batch.Name, session.StartUtc, session.EndUtc, session.DeliveryMode, session.RoomName, batch.MeetingLink, session.Status))
             .ToListAsync(token);
-        var assignments = await db.Assignments.AsNoTracking().Where(x => x.AcademyId == user.AcademyId && batchIds.Contains(x.BatchId) && x.IsPublished).OrderBy(x => x.DueAtUtc).Take(30).Select(x => new PortalAssignment(x.Id, x.Title, x.Type, x.DueAtUtc)).ToListAsync(token);
+        var assignments = await db.Assignments.AsNoTracking()
+            .Where(x => x.AcademyId == user.AcademyId && batchIds.Contains(x.BatchId) && x.IsPublished && (!x.StudentId.HasValue || x.StudentId == studentId))
+            .OrderBy(x => x.DueAtUtc).Take(30)
+            .Select(x => new PortalAssignment(x.Id, x.Title, x.Description, x.Type, x.DueAtUtc)).ToListAsync(token);
         var attendance = await db.AttendanceRecords.AsNoTracking()
             .Where(x => x.AcademyId == user.AcademyId && x.StudentId == studentId)
             .Join(db.ClassSessions.AsNoTracking(), a => a.ClassSessionId, s => s.Id,
@@ -229,6 +232,9 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
         var user = await users.GetUserAsync(User); if (user?.AcademyId is null) return Forbid();
         if (!await CanAccessStudent(user, studentId, token) || (user.GuardianId.HasValue && !(await ParentAccess(user, studentId, token))!.CanViewAcademicProgress)) return Forbid();
         var assignment = await db.Assignments.SingleOrDefaultAsync(x => x.Id == assignmentId && x.AcademyId == user.AcademyId && x.IsPublished, token); if (assignment is null) return NotFound();
+        var isAssigned = (!assignment.StudentId.HasValue || assignment.StudentId == studentId)
+            && await db.Enrollments.AnyAsync(x => x.AcademyId == user.AcademyId && x.StudentId == studentId && x.BatchId == assignment.BatchId && x.Status == "Active", token);
+        if (!isAssigned) return Forbid();
         var item = await db.AssignmentSubmissions.SingleOrDefaultAsync(x => x.AcademyId == user.AcademyId && x.AssignmentId == assignmentId && x.StudentId == studentId, token);
         if (item is null) { item = new AcademyDesk.Api.Domain.Entities.AssignmentSubmission { AcademyId = user.AcademyId.Value, AssignmentId = assignmentId, StudentId = studentId }; db.AssignmentSubmissions.Add(item); }
         if (string.IsNullOrWhiteSpace(request.ResponseText) && request.File is null) return BadRequest(new { message = "Write a response or attach a practice recording, photo, or file." });
@@ -248,7 +254,11 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
             attachment = $"/uploads/student-submissions/{fileName}";
         }
         item.ResponseText = string.Join("\n", new[] { request.ResponseText?.Trim(), attachment is null ? null : $"Attachment: {attachment}" }.Where(x => !string.IsNullOrWhiteSpace(x)));
-        item.Status = "Submitted"; item.SubmittedAtUtc = DateTime.UtcNow; item.TeacherFeedback = null; await db.SaveChangesAsync(token); return Ok(item);
+        item.Status = "Submitted"; item.SubmittedAtUtc = DateTime.UtcNow; item.TeacherFeedback = null;
+        var teacherId = await db.Batches.AsNoTracking().Where(x => x.Id == assignment.BatchId).Select(x => x.TeacherId).SingleOrDefaultAsync(token);
+        if (teacherId.HasValue)
+            db.Notifications.Add(new Notification { AcademyId = user.AcademyId.Value, RecipientId = teacherId, RecipientType = "Teacher", Title = "Homework submitted", Message = $"A student submitted {assignment.Title} for review.", Channel = "InApp", Status = "Queued" });
+        await db.SaveChangesAsync(token); return Ok(item);
     }
 
     [HttpGet("students/{studentId:guid}/invoices/{invoiceId:guid}/download")]
@@ -393,7 +403,7 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
 public sealed record PortalStudentDetails(string Name, string? Email, string? Phone, string FirstName, string LastName, string? PreferredName, string? Gender, DateOnly? DateOfBirth, string? AddressLine1, string? City, string? State, string? PostalCode, string? EmergencyContactName, string? EmergencyContactPhone, IReadOnlyList<PortalBatch> Batches, IReadOnlyList<PortalSession> Schedule, IReadOnlyList<PortalAssignment> Assignments, IReadOnlyList<PortalAttendance> Attendance, PortalAttendanceSummary AttendanceSummary, IReadOnlyList<PortalMusicProgress> Music, IReadOnlyList<PortalResource> Resources, IReadOnlyList<PortalPracticeLog> PracticeLogs, PortalPracticeSummary PracticeSummary, IReadOnlyList<PortalLessonPlan> LessonPlans, IReadOnlyList<PortalCourseModule> Modules, IReadOnlyList<PortalCertificate> Certificates, IReadOnlyList<PortalInvoice> Invoices, IReadOnlyList<PortalAssessmentResult> AssessmentResults, IReadOnlyList<PortalClassHistory> ClassHistory, IReadOnlyList<PortalCycleProgress> CycleProgress);
 public sealed record PortalBatch(Guid Id, string Name);
 public sealed record PortalSession(Guid Id, string BatchName, DateTime StartUtc, DateTime EndUtc, string DeliveryMode, string? RoomName, string? MeetingLink, string Status);
-public sealed record PortalAssignment(Guid Id, string Title, string Type, DateTime? DueAtUtc);
+public sealed record PortalAssignment(Guid Id, string Title, string? Description, string Type, DateTime? DueAtUtc);
 public sealed record PortalAttendance(DateTime StartUtc, string Status);
 public sealed record PortalAttendanceSummary(int Total, int Present, int Absent, int Late, int Other);
 public sealed record PortalMusicProgress(string Title, string Status, DateOnly? TargetDate);

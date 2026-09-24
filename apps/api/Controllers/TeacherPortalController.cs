@@ -409,6 +409,8 @@ public sealed class TeacherPortalController(
         result ??= new AssessmentResult { AcademyId = user.AcademyId.Value, AssessmentId = assessmentId, StudentId = request.StudentId };
         result.Score = request.Score; result.Grade = request.Grade?.Trim(); result.Remarks = request.Remarks?.Trim(); result.IsPublished = request.IsPublished;
         if (isNew) dbContext.AssessmentResults.Add(result);
+        if (result.IsPublished)
+            dbContext.Notifications.Add(new Notification { AcademyId = user.AcademyId.Value, RecipientId = result.StudentId, RecipientType = "Student", Title = "Assessment result published", Message = $"Your result for {assessment.Title} is available in your learning progress.", Channel = "InApp", Status = "Queued" });
         await dbContext.SaveChangesAsync(cancellationToken);
         var student = await dbContext.Students.AsNoTracking().SingleAsync(x => x.Id == result.StudentId, cancellationToken);
         return Ok(new TeacherAssessmentResultSummary(result.Id, result.StudentId, student.FirstName + " " + student.LastName, result.Score, result.Grade, result.Remarks, result.IsPublished));

@@ -42,7 +42,7 @@ type D = {
     roomName?: string;
     meetingLink?: string;
   }[];
-  assignments: { id: string; title: string; type: string; dueAtUtc?: string }[];
+  assignments: { id: string; title: string; description?: string; type: string; dueAtUtc?: string }[];
   attendanceSummary: { total: number; present: number; late: number };
   practiceSummary: { logCount: number; totalMinutes: number };
   practiceLogs: {
@@ -554,7 +554,7 @@ function Assignment({
   refresh,
 }: {
   id: string;
-  x: { id: string; title: string; type: string };
+  x: { id: string; title: string; description?: string; type: string };
   refresh: () => Promise<void>;
 }) {
   const [v, setV] = useState("");
@@ -580,6 +580,7 @@ function Assignment({
     <article className="learner-assignment">
       <b>{x.title}</b>
       <small>{x.type}</small>
+      {x.description && <p>{x.description}</p>}
       <form onSubmit={go}>
         <textarea
           value={v}
