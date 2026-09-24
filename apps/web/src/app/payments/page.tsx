@@ -33,8 +33,10 @@ export default function PaymentsPage() {
   useEffect(() => { async function initialise() { try { const response = await academyApi("/api/academies", { cache: "no-store" }); if (response.status === 401) return setMessage("Please sign in before recording payments."); if (!response.ok) throw new Error(); const academies: Academy[] = await response.json(); if (!academies[0]) return setMessage("Create your academy first."); setAcademy(academies[0]); await load(academies[0].id); } catch { setMessage("Payments could not be loaded. Confirm the API is running on port 5092."); } } void initialise(); }, []);
 
   const paidByInvoice = useMemo(() => payments.reduce<Record<string, number>>((totals, payment) => ({ ...totals, [payment.invoiceId]: (totals[payment.invoiceId] ?? 0) + (payment.status === "Completed" ? payment.amount : 0) }), {}), [payments]);
+  const balance = (invoice: Invoice) => invoice.totalAmount - (paidByInvoice[invoice.id] ?? 0);
   const selectedInvoice = invoices.find((invoice) => invoice.id === invoiceId);
   const selectedBalance = selectedInvoice ? selectedInvoice.totalAmount - (paidByInvoice[selectedInvoice.id] ?? 0) : 0;
+  const paymentTotals = useMemo(() => ({ collected: payments.filter((payment) => payment.status === "Completed").reduce((total, payment) => total + payment.amount, 0), open: invoices.filter((invoice) => balance(invoice) > 0).length, outstanding: invoices.reduce((total, invoice) => total + Math.max(0, balance(invoice)), 0) }), [invoices, payments, paidByInvoice]);
 
   function selectInvoice(id: string) {
     setInvoiceId(id);
@@ -51,14 +53,14 @@ export default function PaymentsPage() {
   }
 
   const studentName = (id: string) => { const student = students.find((item) => item.id === id); return student ? `${student.firstName} ${student.lastName}` : "Unknown student"; };
-  const balance = (invoice: Invoice) => invoice.totalAmount - (paidByInvoice[invoice.id] ?? 0);
 
   return <main className="enterprise-settings finance-module payments-standard">
     <header className="enterprise-page-header"><p>Finance / payments</p><h2>Payments and balances</h2><span>Record payments against invoices while keeping balances and invoice status up to date.</span></header>
     {message && <p className="enterprise-settings-empty mt-5">{message}</p>}
+    <section className="payments-kpis"><article><span>Payments recorded</span><strong>{payments.length}</strong></article><article><span>Collected</span><strong>{money(paymentTotals.collected)}</strong></article><article><span>Open balances</span><strong>{paymentTotals.open}</strong></article><article><span>Outstanding</span><strong>{money(paymentTotals.outstanding)}</strong></article></section>
     <section className="payments-layout"><form onSubmit={recordPayment} className="surface-panel payments-create"><header><p>Record</p><h3>Payment received</h3></header><div className="payments-fields">
       <select value={invoiceId} onChange={(event) => selectInvoice(event.target.value)} className="field" required><option value="">Select invoice</option>{invoices.filter((invoice) => balance(invoice) > 0).map((invoice) => <option key={invoice.id} value={invoice.id}>{invoice.invoiceNumber} · {studentName(invoice.studentId)} · Balance {money(balance(invoice), invoice.currency)}</option>)}</select>
-      {selectedInvoice && <p className="text-sm text-cyan-200">Remaining balance: {money(selectedBalance, selectedInvoice.currency)}</p>}
+      {selectedInvoice && <article className="payments-selected"><span>Selected invoice</span><b>{selectedInvoice.invoiceNumber}</b><small>{studentName(selectedInvoice.studentId)} · Balance {money(selectedBalance, selectedInvoice.currency)}</small></article>}
       <input type="number" min="0.01" max={selectedBalance || undefined} step="0.01" value={amount} onChange={(event) => setAmount(event.target.value)} placeholder="Payment amount" className="field" required />
       <select value={method} onChange={(event) => setMethod(event.target.value)} className="field"><option>UPI</option><option>Cash</option><option>BankTransfer</option><option>Card</option><option>Cheque</option><option>Offline</option></select>
       <input value={reference} onChange={(event) => setReference(event.target.value)} placeholder="UPI, cheque, or receipt reference (optional)" className="field" />
