@@ -45,6 +45,28 @@ public sealed class PlatformControlController(AcademyDeskDbContext db, UserManag
         db.Notifications.Add(notification); await Audit("Academy admin announcement published", "Notification", notification.Id, new { request.AcademyId, Audience = "Admin", request.DisplayHours }, token); await db.SaveChangesAsync(token); return Ok(new { notification.Id });
     }
 
+    [HttpGet("announcements")]
+    public async Task<ActionResult> ListAnnouncements(CancellationToken token)
+    {
+        if (!await IsPlatformOwner()) return Forbid();
+        var rows = await db.Notifications.AsNoTracking()
+            .Where(x => x.RecipientType == "Academy" && x.RecipientId == null)
+            .Join(db.Academies.AsNoTracking(), notification => notification.AcademyId, academy => academy.Id, (notification, academy) => new { notification, academy.Name })
+            .OrderByDescending(x => x.notification.CreatedAtUtc)
+            .Take(100)
+            .ToListAsync(token);
+        return Ok(rows.Where(x => HasAdminAudience(x.notification.VariablesJson)).Select(x => new
+        {
+            x.notification.Id,
+            x.notification.AcademyId,
+            AcademyName = x.Name,
+            x.notification.Title,
+            x.notification.Message,
+            x.notification.CreatedAtUtc,
+            ExpiresAtUtc = ReadAnnouncementExpiry(x.notification.VariablesJson)
+        }));
+    }
+
     [HttpGet("settings")]
     public async Task<ActionResult<PlatformSettings>> GetSettings(CancellationToken token)
     {
@@ -168,6 +190,18 @@ public sealed class PlatformControlController(AcademyDeskDbContext db, UserManag
         return settings;
     }
     private async Task<bool> IsPlatformOwner() { var user = await users.GetUserAsync(User); return user?.IsPlatformOwner == true; }
+    private static bool HasAdminAudience(string? variablesJson)
+    {
+        if (string.IsNullOrWhiteSpace(variablesJson)) return false;
+        try { using var document = JsonDocument.Parse(variablesJson); return document.RootElement.TryGetProperty("audiences", out var audience) && audience.GetString()?.Contains("Admin", StringComparison.OrdinalIgnoreCase) == true; }
+        catch (JsonException) { return false; }
+    }
+    private static string? ReadAnnouncementExpiry(string? variablesJson)
+    {
+        if (string.IsNullOrWhiteSpace(variablesJson)) return null;
+        try { using var document = JsonDocument.Parse(variablesJson); return document.RootElement.TryGetProperty("expiresAtUtc", out var expiry) ? expiry.GetString() : null; }
+        catch (JsonException) { return null; }
+    }
     private async Task Audit(string action, string entityType, Guid? entityId, object metadata, CancellationToken token) { var user = await users.GetUserAsync(User); db.PlatformAuditEntries.Add(new PlatformAuditEntry { ActorUserId = user?.Id, ActorName = user?.DisplayName ?? "System", Action = action, EntityType = entityType, EntityId = entityId, MetadataJson = JsonSerializer.Serialize(metadata) }); await Task.CompletedTask; }
 }
 

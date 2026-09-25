@@ -68,11 +68,13 @@ type Health = {
   maintenanceMode: boolean;
   statusMessage?: string;
 };
+type Announcement = { id: string; academyId: string; academyName: string; title: string; message: string; createdAtUtc: string; expiresAtUtc?: string | null };
 type OwnerSession = { displayName: string; email?: string | null; phoneNumber?: string | null; profileImageUrl?: string | null; roles: string[] };
 type AdminModal = "all" | "active" | "inactive" | "academies" | null;
 type TenantModal = "all" | "active" | "trial" | "attention" | null;
 type InvoiceModal = "all" | "open" | "overdue" | "paid" | null;
 type CaseModal = "all" | "open" | "urgent" | "resolved" | null;
+type AnnouncementModal = "active" | "recent" | null;
 
 const platformLinks = [
   { label: "Overview", icon: "▦", href: "/platform" },
@@ -135,6 +137,7 @@ export default function PlatformControlPage() {
   const [audit, setAudit] = useState<Audit[]>([]);
   const [settings, setSettings] = useState<Settings>();
   const [health, setHealth] = useState<Health>();
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [owner, setOwner] = useState<OwnerSession>();
   const [selectedAcademy, setSelectedAcademy] = useState("");
   const [tenantPlan, setTenantPlan] = useState("");
@@ -144,6 +147,7 @@ export default function PlatformControlPage() {
   const [tenantModal, setTenantModal] = useState<TenantModal>(null);
   const [invoiceModal, setInvoiceModal] = useState<InvoiceModal>(null);
   const [caseModal, setCaseModal] = useState<CaseModal>(null);
+  const [announcementModal, setAnnouncementModal] = useState<AnnouncementModal>(null);
   const [invoiceAcademyId, setInvoiceAcademyId] = useState("");
   const [invoiceCurrency, setInvoiceCurrency] = useState("INR");
   const [invoicePeriodStart, setInvoicePeriodStart] = useState("");
@@ -153,12 +157,14 @@ export default function PlatformControlPage() {
   const [supportAcademyId, setSupportAcademyId] = useState("");
   const [supportPriority, setSupportPriority] = useState("Normal");
   const [caseStatuses, setCaseStatuses] = useState<Record<string, string>>({});
+  const [announcementAcademyId, setAnnouncementAcademyId] = useState("");
+  const [announcementHours, setAnnouncementHours] = useState("24");
   const [message, setMessage] = useState("Loading platform controls…");
   const [busy, setBusy] = useState(false);
   const profileImageInput = useRef<HTMLInputElement>(null);
 
   async function load() {
-    const [a, ad, c, i, s, au, h, ownerResponse] = await Promise.all([
+    const [a, ad, c, i, s, au, h, ownerResponse, announcementResponse] = await Promise.all([
       academyApi("/api/platform/academies"),
       academyApi("/api/platform/admins"),
       academyApi("/api/platform/support-cases"),
@@ -167,6 +173,7 @@ export default function PlatformControlPage() {
       academyApi("/api/platform/audit"),
       academyApi("/api/platform/health"),
       academyApi("/api/auth/session"),
+      academyApi("/api/platform/announcements"),
     ]);
     if (!a.ok) throw new Error("Platform Owner access is required.");
     const academyRows = await a.json();
@@ -179,6 +186,7 @@ export default function PlatformControlPage() {
     if (au.ok) setAudit(await au.json());
     if (h.ok) setHealth(await h.json());
     if (ownerResponse.ok) setOwner(await ownerResponse.json());
+    if (announcementResponse.ok) setAnnouncements(await announcementResponse.json());
     setMessage("");
   }
   useEffect(() => {
@@ -204,6 +212,10 @@ export default function PlatformControlPage() {
   const resolvedCases = cases.filter((item) => ["Resolved", "Closed"].includes(item.status));
   const caseModalTitle = caseModal === "open" ? "Open support cases" : caseModal === "urgent" ? "High-priority support cases" : caseModal === "resolved" ? "Resolved support cases" : "All support cases";
   const caseModalRecords = caseModal === "open" ? openCases : caseModal === "urgent" ? urgentCases : caseModal === "resolved" ? resolvedCases : cases;
+  const currentTime = Date.now();
+  const activeAnnouncements = announcements.filter((item) => item.expiresAtUtc && new Date(item.expiresAtUtc).getTime() > currentTime);
+  const announcementModalTitle = announcementModal === "active" ? "Active announcements" : "Recent announcements";
+  const announcementModalRecords = announcementModal === "active" ? activeAnnouncements : announcements;
   const controlIcon = tab === "Admins" ? "♙" : tab === "Billing" ? "₹" : tab === "Support" ? "?" : tab === "Announcements" ? "!" : tab === "Settings" ? "⚙" : tab === "Audit & health" ? "✓" : "◫";
   useEffect(() => {
     setTenantPlan(selected?.subscriptionPlan ?? "");
@@ -377,7 +389,7 @@ export default function PlatformControlPage() {
   }
   async function publishAnnouncement(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); const form = new FormData(event.currentTarget); setBusy(true);
-    try { const response = await academyApi("/api/platform/announcements", { method: "POST", headers: apiHeaders(true), body: JSON.stringify({ academyId: form.get("academyId"), title: form.get("title"), message: form.get("body"), displayHours: Number(form.get("hours")) }) }); if (!response.ok) { const error = await response.json().catch(() => null); throw new Error(error?.message ?? "Announcement could not be published."); } event.currentTarget.reset(); setMessage("Academy admin announcement is now live."); } catch (error) { setMessage(error instanceof Error ? error.message : "Announcement could not be published."); } finally { setBusy(false); }
+    try { const response = await academyApi("/api/platform/announcements", { method: "POST", headers: apiHeaders(true), body: JSON.stringify({ academyId: form.get("academyId"), title: form.get("title"), message: form.get("body"), displayHours: Number(form.get("hours")) }) }); if (!response.ok) { const error = await response.json().catch(() => null); throw new Error(error?.message ?? "Announcement could not be published."); } event.currentTarget.reset(); setAnnouncementAcademyId(""); setAnnouncementHours("24"); await load(); setMessage("Academy admin announcement is now live."); } catch (error) { setMessage(error instanceof Error ? error.message : "Announcement could not be published."); } finally { setBusy(false); }
   }
   function signOut() {
     clearPortalTokens();
@@ -507,7 +519,30 @@ export default function PlatformControlPage() {
               {tenantModal && <div className="platform-modal-backdrop" role="presentation"><article className="platform-modal platform-tenant-modal" role="dialog" aria-modal="true" aria-labelledby="tenant-modal-title"><header><div><p>Tenant register</p><h3 id="tenant-modal-title">{tenantModalTitle}</h3></div><button type="button" aria-label="Close tenant details" onClick={() => setTenantModal(null)}>×</button></header>{tenantModalRecords.length ? <ul>{tenantModalRecords.map((academy) => <li key={academy.id}><span>{academy.name.slice(0, 1).toUpperCase()}</span><div><b>{academy.name}</b><small>{academy.subscriptionPlan} plan · {academy.studentLimit} students · {academy.staffLimit} staff</small></div><em data-status={academy.subscriptionStatus.toLowerCase().replaceAll(" ", "-")}>{academy.subscriptionStatus}</em></li>)}</ul> : <p className="platform-tenant-empty">No tenants match this view.</p>}</article></div>}
             </>
           )}
-          {tab === "Announcements" && <section className="mt-6 max-w-2xl rounded-xl border border-slate-800 bg-slate-900 p-5"><h2 className="font-semibold">Academy admin announcement</h2><p className="mt-2 text-sm text-slate-400">This banner is shown only to academy administrators. It automatically disappears when its display time ends.</p><form onSubmit={publishAnnouncement} className="mt-5 grid gap-3"><select name="academyId" className="rounded border border-slate-700 bg-slate-950 p-2" required>{academies.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select><input name="title" placeholder="Announcement title" className="rounded border border-slate-700 bg-slate-950 p-2" required /><textarea name="body" placeholder="Important message" className="min-h-28 rounded border border-slate-700 bg-slate-950 p-2" required /><input name="hours" type="number" min="1" max="168" defaultValue="24" className="rounded border border-slate-700 bg-slate-950 p-2" required /><button disabled={busy} className="rounded bg-cyan-400 px-4 py-2 font-semibold text-slate-950 disabled:opacity-60">Publish admin announcement</button></form></section>}
+          {tab === "Announcements" && <>
+            <section className="platform-announcement-kpis" aria-label="Announcement summary">
+              <button type="button" onClick={() => setAnnouncementModal("active")}><span>Active</span><b>{activeAnnouncements.length}</b><small>Currently shown to academy admins</small></button>
+              <button type="button" onClick={() => setAnnouncementModal("recent")}><span>Recent</span><b>{announcements.length}</b><small>Published platform messages</small></button>
+            </section>
+            <section className="platform-announcement-layout">
+              <form onSubmit={publishAnnouncement} className="platform-announcement-panel platform-announcement-editor">
+                <header className="platform-control-panel-header"><div><p>Publish</p><h2>Academy admin announcement</h2></div></header>
+                <div className="platform-announcement-fields">
+                  <label className="platform-announcement-wide"><span>Academy</span><StandardSelectField name="academyId" value={announcementAcademyId} onChange={setAnnouncementAcademyId} placeholder="Select academy" options={academies.map((academy) => ({ value: academy.id, label: academy.name }))} /></label>
+                  <label className="platform-announcement-wide"><span>Banner title</span><input name="title" required placeholder="Short, clear announcement title" /></label>
+                  <label className="platform-announcement-wide"><span>Message</span><textarea name="body" required rows={4} placeholder="Write the announcement shown in the academy admin portal" /></label>
+                  <label><span>Display duration</span><StandardSelectField name="hours" value={announcementHours} onChange={setAnnouncementHours} placeholder="Select duration" options={[["1", "1 hour"], ["4", "4 hours"], ["8", "8 hours"], ["24", "24 hours"], ["48", "2 days"], ["72", "3 days"], ["168", "7 days"]].map(([value, label]) => ({ value, label }))} /></label>
+                  <div className="platform-announcement-audience"><b>Audience</b><span>Academy administrators</span></div>
+                  <button disabled={busy || !announcementAcademyId} className="enterprise-action-button platform-announcement-action">{busy ? "Publishing…" : "Publish announcement"}</button>
+                </div>
+              </form>
+              <section className="platform-announcement-panel platform-announcement-register">
+                <header className="platform-control-panel-header"><div><p>Message register</p><h2>Active and recent messages</h2></div></header>
+                {announcements.length ? <ul>{announcements.slice(0, 12).map((item) => { const active = Boolean(item.expiresAtUtc && new Date(item.expiresAtUtc).getTime() > currentTime); return <li key={item.id}><span>!</span><div><b>{item.title}</b><small>{item.academyName} · Ends {item.expiresAtUtc ? new Intl.DateTimeFormat("en-IN", { day: "2-digit", month: "short", hour: "numeric", minute: "2-digit" }).format(new Date(item.expiresAtUtc)) : "not set"}</small></div><em data-active={active}>{active ? "Active" : "Ended"}</em></li>; })}</ul> : <p className="platform-announcement-empty">No announcements have been published yet.</p>}
+              </section>
+            </section>
+            {announcementModal && <div className="platform-modal-backdrop" role="presentation"><article className="platform-modal platform-announcement-modal" role="dialog" aria-modal="true" aria-labelledby="announcement-modal-title"><header><div><p>Platform announcements</p><h3 id="announcement-modal-title">{announcementModalTitle}</h3></div><button type="button" aria-label="Close announcement details" onClick={() => setAnnouncementModal(null)}>×</button></header>{announcementModalRecords.length ? <ul>{announcementModalRecords.map((item) => { const active = Boolean(item.expiresAtUtc && new Date(item.expiresAtUtc).getTime() > currentTime); return <li key={item.id}><span>!</span><div><b>{item.title}</b><small>{item.academyName} · {item.message}</small></div><em data-active={active}>{active ? "Active" : "Ended"}</em></li>; })}</ul> : <p className="platform-announcement-empty">No announcements match this view.</p>}</article></div>}
+          </>}
           {tab === "Admins" && (
             <>
               <section className="platform-admin-kpis" aria-label="Academy administrator summary">
