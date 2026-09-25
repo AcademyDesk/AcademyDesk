@@ -421,7 +421,7 @@ export default function PlatformControlPage() {
         </header>
         <div className="platform-content platform-control-content">
           <header className="platform-control-heading">
-            <span className="platform-control-icon" aria-hidden="true">◫</span>
+            <span className="platform-control-icon" aria-hidden="true"><i>✦</i></span>
             <div>
               <p>Platform owner</p>
               <h1 className="platform-workspace-title">{tab === "Tenants" ? "Tenant management" : tab}</h1>
