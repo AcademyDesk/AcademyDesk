@@ -4,6 +4,7 @@ import Link from "next/link";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { StandardDateField, StandardSelectField } from "@/components/design-system/controls";
 import { academyApi, apiHeaders, apiUrl, clearPortalTokens } from "@/lib/api";
 
 type Academy = {
@@ -132,6 +133,9 @@ export default function PlatformControlPage() {
   const [health, setHealth] = useState<Health>();
   const [owner, setOwner] = useState<OwnerSession>();
   const [selectedAcademy, setSelectedAcademy] = useState("");
+  const [tenantPlan, setTenantPlan] = useState("");
+  const [tenantStatus, setTenantStatus] = useState("");
+  const [tenantEndsAt, setTenantEndsAt] = useState("");
   const [message, setMessage] = useState("Loading platform controls…");
   const [busy, setBusy] = useState(false);
   const profileImageInput = useRef<HTMLInputElement>(null);
@@ -164,6 +168,11 @@ export default function PlatformControlPage() {
     void load().catch((error) => setMessage(error.message));
   }, []);
   const selected = academies.find((academy) => academy.id === selectedAcademy);
+  useEffect(() => {
+    setTenantPlan(selected?.subscriptionPlan ?? "");
+    setTenantStatus(selected?.subscriptionStatus ?? "");
+    setTenantEndsAt(selected?.subscriptionEndsAtUtc?.slice(0, 10) ?? "");
+  }, [selected]);
   async function saveTenant(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!selected) return;
@@ -172,9 +181,9 @@ export default function PlatformControlPage() {
       `/api/platform/academies/${selected.id}/configuration`,
       "PUT",
       {
-        subscriptionPlan: form.get("plan"),
-        subscriptionStatus: form.get("status"),
-        subscriptionEndsAtUtc: form.get("endsAt") || null,
+        subscriptionPlan: tenantPlan,
+        subscriptionStatus: tenantStatus,
+        subscriptionEndsAtUtc: tenantEndsAt || null,
       },
       "Tenant configuration saved.",
     );
@@ -408,9 +417,11 @@ export default function PlatformControlPage() {
         </header>
         <div className="platform-content platform-control-content">
           <header className="platform-control-heading">
-            <p>Platform / control centre</p>
-            <h1 className="platform-workspace-title">{tab}</h1>
-            <span>Manage tenant configuration, support, billing and platform operations with controlled access.</span>
+            <span className="platform-control-icon" aria-hidden="true">◫</span>
+            <div>
+              <p>Platform owner</p>
+              <h1 className="platform-workspace-title">{tab === "Tenants" ? "Tenant management" : tab}</h1>
+            </div>
           </header>
           {message && (
             <p className="mt-4 rounded-lg border border-slate-700 bg-slate-900 p-3 text-sm text-slate-300">
@@ -420,58 +431,31 @@ export default function PlatformControlPage() {
           {tab === "Tenants" && (
             <section className="mt-6 grid gap-5 lg:grid-cols-[1fr_.9fr]">
               <section className="rounded-xl border border-slate-800 bg-slate-900 p-5">
-                <h2 className="font-semibold">Tenant configuration</h2>
-                <select
-                  className="mt-4 w-full rounded border border-slate-700 bg-slate-950 p-2"
-                  value={selectedAcademy}
-                  onChange={(event) => setSelectedAcademy(event.target.value)}
-                >
-                  {academies.map((academy) => (
-                    <option value={academy.id} key={academy.id}>
-                      {academy.name}
-                    </option>
-                  ))}
-                </select>
+                <header className="platform-control-panel-header"><div><p>Tenant settings</p><h2>Tenant configuration</h2></div></header>
+                <div className="platform-tenant-fields">
+                  <label><span>Academy</span><StandardSelectField name="academy" value={selectedAcademy} onChange={setSelectedAcademy} placeholder="Select academy" options={academies.map((academy) => ({ value: academy.id, label: academy.name }))} /></label>
+                </div>
                 {selected && (
                   <form
                     onSubmit={saveTenant}
-                    className="mt-4 grid gap-3 sm:grid-cols-2"
+                    className="platform-tenant-fields"
                   >
                     <label>
-                      Plan
-                      <select
-                        name="plan"
-                        defaultValue={selected.subscriptionPlan}
-                        className="mt-1 w-full rounded border border-slate-700 bg-slate-950 p-2"
-                      >
-                        <option>Trial</option>
-                        <option>Launch</option>
-                        <option>Growth</option>
-                        <option>Professional</option>
-                        <option>Enterprise</option>
-                      </select>
+                      <span>Subscription plan</span>
+                      <StandardSelectField name="plan" value={tenantPlan} onChange={setTenantPlan} placeholder="Choose plan" options={["Trial", "Launch", "Growth", "Professional", "Enterprise"].map((value) => ({ value, label: value }))} />
                     </label>
                     <label>
-                      Status
-                      <select
-                        name="status"
-                        defaultValue={selected.subscriptionStatus}
-                        className="mt-1 w-full rounded border border-slate-700 bg-slate-950 p-2"
-                      >
-                        <option>Trial</option>
-                        <option>Active</option>
-                        <option>Past due</option>
-                        <option>Cancelled</option>
-                      </select>
+                      <span>Subscription status</span>
+                      <StandardSelectField name="status" value={tenantStatus} onChange={setTenantStatus} placeholder="Choose status" options={["Trial", "Active", "Past due", "Cancelled"].map((value) => ({ value, label: value }))} />
                     </label>
-                    <section className="sm:col-span-2 rounded border border-cyan-800/60 bg-cyan-950/20 p-3 text-sm text-slate-300">
+                    <StandardDateField name="endsAt" value={tenantEndsAt} onChange={setTenantEndsAt} label="Subscription end date" />
+                    <section className="platform-tenant-access">
                       <b className="text-cyan-200">Plan-managed access</b>
-                      <p className="mt-1">Selecting a plan automatically applies its student and staff limits, plus the included modules. Academy admins cannot change these entitlements.</p>
-                      <p className="mt-2 text-cyan-100">Current allowance: {selected.studentLimit} students · {selected.staffLimit} staff</p>
+                      <p>Current allowance: {selected.studentLimit} students · {selected.staffLimit} staff</p>
                     </section>
                     <button
                       disabled={busy}
-                      className="rounded bg-cyan-400 px-4 py-2 font-semibold text-slate-950 sm:col-span-2"
+                      className="enterprise-action-button platform-tenant-action"
                     >
                       Save tenant configuration
                     </button>
