@@ -171,6 +171,8 @@ export default function PlatformControlPage() {
   const activeTenants = academies.filter((academy) => academy.subscriptionStatus === "Active").length;
   const trialTenants = academies.filter((academy) => academy.subscriptionStatus === "Trial").length;
   const attentionTenants = academies.filter((academy) => ["Past due", "Cancelled"].includes(academy.subscriptionStatus)).length;
+  const activeAdmins = admins.filter((admin) => admin.isActive).length;
+  const adminAcademies = new Set(admins.map((admin) => admin.academyName).filter(Boolean)).size;
   useEffect(() => {
     setTenantPlan(selected?.subscriptionPlan ?? "");
     setTenantStatus(selected?.subscriptionStatus ?? "");
@@ -351,6 +353,7 @@ export default function PlatformControlPage() {
 
   function selectWorkspace(nextTab: (typeof platformControlTabs)[number]) {
     setTab(nextTab);
+    router.replace(`/platform/control?tab=${encodeURIComponent(nextTab)}`, { scroll: false });
     document
       .querySelector<HTMLElement>(".platform-control-content")
       ?.scrollTo({ top: 0 });
@@ -427,7 +430,7 @@ export default function PlatformControlPage() {
             <span className="platform-control-icon" aria-hidden="true">◫</span>
             <div>
               <p>Platform owner</p>
-              <h1 className="platform-workspace-title">{tab === "Tenants" ? "Tenant management" : tab}</h1>
+              <h1 className="platform-workspace-title">{tab === "Tenants" ? "Tenant management" : tab === "Admins" ? "Academy admins" : tab}</h1>
             </div>
           </header>
           {message && (
@@ -466,51 +469,44 @@ export default function PlatformControlPage() {
           )}
           {tab === "Announcements" && <section className="mt-6 max-w-2xl rounded-xl border border-slate-800 bg-slate-900 p-5"><h2 className="font-semibold">Academy admin announcement</h2><p className="mt-2 text-sm text-slate-400">This banner is shown only to academy administrators. It automatically disappears when its display time ends.</p><form onSubmit={publishAnnouncement} className="mt-5 grid gap-3"><select name="academyId" className="rounded border border-slate-700 bg-slate-950 p-2" required>{academies.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select><input name="title" placeholder="Announcement title" className="rounded border border-slate-700 bg-slate-950 p-2" required /><textarea name="body" placeholder="Important message" className="min-h-28 rounded border border-slate-700 bg-slate-950 p-2" required /><input name="hours" type="number" min="1" max="168" defaultValue="24" className="rounded border border-slate-700 bg-slate-950 p-2" required /><button disabled={busy} className="rounded bg-cyan-400 px-4 py-2 font-semibold text-slate-950 disabled:opacity-60">Publish admin announcement</button></form></section>}
           {tab === "Admins" && (
-            <section className="mt-6 rounded-xl border border-slate-800 bg-slate-900 p-5">
-              <h2 className="font-semibold">Academy administrators</h2>
-              <div className="mt-4 overflow-auto">
-                <table className="w-full text-left text-sm">
+            <>
+              <section className="platform-admin-kpis" aria-label="Academy administrator summary">
+                <article><span>Total administrators</span><b>{admins.length}</b><small>Accounts with academy administration access</small></article>
+                <article><span>Active</span><b>{activeAdmins}</b><small>Administrators currently able to sign in</small></article>
+                <article><span>Deactivated</span><b>{admins.length - activeAdmins}</b><small>Accounts retained without sign-in access</small></article>
+                <article><span>Academies covered</span><b>{adminAcademies}</b><small>Academies with an assigned administrator</small></article>
+              </section>
+              <section className="platform-admin-panel">
+                <header className="platform-control-panel-header"><div><p>Access register</p><h2>Academy administrators</h2></div><span>{admins.length} total</span></header>
+                <div className="platform-admin-table-wrap">
+                  <table>
                   <thead className="text-slate-400">
                     <tr>
-                      <th className="p-2">Administrator</th>
-                      <th className="p-2">Academy</th>
-                      <th className="p-2">Status</th>
-                      <th className="p-2"></th>
+                      <th>Administrator</th>
+                      <th>Academy</th>
+                      <th>Access status</th>
+                      <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {admins.map((admin) => (
-                      <tr key={admin.id} className="border-t border-slate-800">
-                        <td className="p-2">
+                    {admins.length ? admins.map((admin) => (
+                      <tr key={admin.id}>
+                        <td>
                           <b>{admin.displayName}</b>
-                          <small className="block text-slate-400">
-                            {admin.email}
-                          </small>
+                          <small>{admin.email}</small>
                         </td>
-                        <td className="p-2">{admin.academyName}</td>
-                        <td className="p-2">
-                          {admin.isActive ? "Active" : "Deactivated"}
-                        </td>
-                        <td className="p-2">
-                          <button
-                            onClick={() => void adminActive(admin)}
-                            className="mr-2 text-cyan-300"
-                          >
+                        <td>{admin.academyName || "Unassigned"}</td>
+                        <td><span className="platform-admin-status" data-active={admin.isActive}>{admin.isActive ? "Active" : "Deactivated"}</span></td>
+                        <td><div className="platform-admin-actions"><button type="button" onClick={() => void adminActive(admin)} disabled={busy}>
                             {admin.isActive ? "Deactivate" : "Activate"}
-                          </button>
-                          <button
-                            onClick={() => void adminPassword(admin)}
-                            className="text-cyan-300"
-                          >
-                            Reset password
-                          </button>
-                        </td>
+                          </button><button type="button" onClick={() => void adminPassword(admin)} disabled={busy}>Reset password</button></div></td>
                       </tr>
-                    ))}
+                    )) : <tr><td colSpan={4} className="platform-admin-empty">No academy administrator accounts have been created yet.</td></tr>}
                   </tbody>
                 </table>
               </div>
-            </section>
+              </section>
+            </>
           )}
           {tab === "Billing" && (
             <section className="mt-6 grid gap-5 lg:grid-cols-[.8fr_1.2fr]">
