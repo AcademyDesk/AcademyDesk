@@ -248,7 +248,7 @@ export default function PlatformPage() {
         <div className="platform-content">
           <section id="overview" className="platform-heading">
             <div className="platform-title-group">
-              <span className="platform-title-icon" aria-hidden="true"><i>✦</i></span>
+              <span className="platform-title-icon" aria-hidden="true">◈</span>
               <div>
                 <p className="platform-page-eyebrow">Platform owner</p>
                 <h1 className="platform-workspace-title">Overview</h1>
