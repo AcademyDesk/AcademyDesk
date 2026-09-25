@@ -69,6 +69,11 @@ type Health = {
   statusMessage?: string;
 };
 type Announcement = { id: string; academyId: string; academyName: string; title: string; message: string; createdAtUtc: string; expiresAtUtc?: string | null };
+type TenantProfile = {
+  status: string; currentSection: string; primaryContactName?: string; primaryContactRole?: string; primaryContactEmail?: string; primaryContactPhone?: string;
+  businessType?: string; operatingSince?: string; website?: string; branchSummary?: string; financeModel?: string; billingFrequency?: string; paymentCollectionMethods?: string; teacherPaymentModels?: string;
+  teacherCount?: number; studentCount?: number; subjectCount?: number; subjectTypes?: string; deliveryModes?: string; classRatios?: string; batchAndClassSetup?: string; operationalNotes?: string; documentsJson?: string;
+};
 type OwnerSession = { displayName: string; email?: string | null; phoneNumber?: string | null; profileImageUrl?: string | null; roles: string[] };
 type AdminModal = "all" | "active" | "inactive" | "academies" | null;
 type TenantModal = "all" | "active" | "trial" | "attention" | null;
@@ -166,6 +171,8 @@ export default function PlatformControlPage() {
   const [announcementAcademyId, setAnnouncementAcademyId] = useState("");
   const [announcementHours, setAnnouncementHours] = useState("24");
   const [settingsCurrency, setSettingsCurrency] = useState("");
+  const [tenantProfile, setTenantProfile] = useState<TenantProfile>();
+  const [onboardingSection, setOnboardingSection] = useState("Personal");
   const [message, setMessage] = useState("Loading platform controls…");
   const [busy, setBusy] = useState(false);
   const profileImageInput = useRef<HTMLInputElement>(null);
@@ -237,6 +244,10 @@ export default function PlatformControlPage() {
     setTenantEndsAt(selected?.subscriptionEndsAtUtc?.slice(0, 10) ?? "");
   }, [selected]);
   useEffect(() => { setSettingsCurrency(settings?.defaultCurrency ?? ""); }, [settings]);
+  useEffect(() => {
+    if (!selectedAcademy) { setTenantProfile(undefined); return; }
+    void academyApi(`/api/platform/academies/${selectedAcademy}/onboarding`).then(async (response) => setTenantProfile(response.ok ? await response.json() : undefined));
+  }, [selectedAcademy]);
   async function saveTenant(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!selected) return;
@@ -287,6 +298,21 @@ export default function PlatformControlPage() {
     event.currentTarget.reset();
     setSupportAcademyId("");
     setSupportPriority("Normal");
+  }
+  async function saveTenantOnboarding(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!selectedAcademy) return;
+    const form = new FormData(event.currentTarget);
+    const field = (name: string) => String(form.get(name) || "") || null;
+    const number = (name: string) => { const value = field(name); return value ? Number(value) : null; };
+    setBusy(true); setMessage("");
+    try {
+      const response = await academyApi(`/api/platform/academies/${selectedAcademy}/onboarding`, { method: "PUT", headers: apiHeaders(true), body: JSON.stringify({
+        status: "InProgress", currentSection: onboardingSection, primaryContactName: field("primaryContactName"), primaryContactRole: field("primaryContactRole"), primaryContactEmail: field("primaryContactEmail"), primaryContactPhone: field("primaryContactPhone"), businessType: field("businessType"), operatingSince: field("operatingSince"), website: field("website"), branchSummary: field("branchSummary"), financeModel: field("financeModel"), billingFrequency: field("billingFrequency"), paymentCollectionMethods: field("paymentCollectionMethods"), teacherPaymentModels: field("teacherPaymentModels"), teacherCount: number("teacherCount"), studentCount: number("studentCount"), subjectCount: number("subjectCount"), subjectTypes: field("subjectTypes"), deliveryModes: field("deliveryModes"), classRatios: field("classRatios"), batchAndClassSetup: field("batchAndClassSetup"), operationalNotes: field("operationalNotes"), documentsJson: field("documentsJson") || "[]"
+      }) });
+      const payload = await response.json().catch(() => null); if (!response.ok) throw new Error(payload?.message ?? "Tenant information could not be saved.");
+      setTenantProfile(payload); setMessage("Tenant discovery information saved.");
+    } catch (error) { setMessage(error instanceof Error ? error.message : "Tenant information could not be saved."); } finally { setBusy(false); }
   }
   async function createInvoice(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -504,6 +530,17 @@ export default function PlatformControlPage() {
               {message}
             </p>
           )}
+          {tab === "Tenant onboarding" && <section className="tenant-intake-layout">
+            <aside className="tenant-intake-nav"><p>Discovery intake</p>{["Personal", "Business", "Finance", "Delivery & classes", "Team & subjects", "Documents & notes"].map((section) => <button key={section} type="button" data-active={onboardingSection === section} onClick={() => setOnboardingSection(section)}>{section}</button>)}</aside>
+            <form onSubmit={saveTenantOnboarding} className="tenant-intake-panel"><header className="platform-control-panel-header"><div><p>Tenant onboarding</p><h2>{onboardingSection}</h2></div></header><div className="tenant-intake-fields"><label className="tenant-intake-wide"><span>Academy</span><StandardSelectField name="academy" value={selectedAcademy} onChange={setSelectedAcademy} placeholder="Select academy" options={academies.map((academy) => ({ value: academy.id, label: academy.name }))} /></label>
+              {onboardingSection === "Personal" && <div><label><span>Primary contact</span><input name="primaryContactName" defaultValue={tenantProfile?.primaryContactName || ""}/></label><label><span>Role</span><input name="primaryContactRole" defaultValue={tenantProfile?.primaryContactRole || ""}/></label><label><span>Email</span><input name="primaryContactEmail" type="email" defaultValue={tenantProfile?.primaryContactEmail || ""}/></label><label><span>Phone</span><input name="primaryContactPhone" defaultValue={tenantProfile?.primaryContactPhone || ""}/></label></div>}
+              {onboardingSection === "Business" && <div><label><span>Business type</span><input name="businessType" defaultValue={tenantProfile?.businessType || ""} placeholder="Music academy, tuition centre, school…"/></label><label><span>Operating since</span><input name="operatingSince" defaultValue={tenantProfile?.operatingSince || ""}/></label><label><span>Website or social link</span><input name="website" defaultValue={tenantProfile?.website || ""}/></label><label><span>Branches / locations</span><input name="branchSummary" defaultValue={tenantProfile?.branchSummary || ""}/></label></div>}
+              {onboardingSection === "Finance" && <div><label><span>Fee model</span><input name="financeModel" defaultValue={tenantProfile?.financeModel || ""} placeholder="Monthly, package, term…"/></label><label><span>Billing frequency</span><input name="billingFrequency" defaultValue={tenantProfile?.billingFrequency || ""}/></label><label className="tenant-intake-wide"><span>Collection methods</span><input name="paymentCollectionMethods" defaultValue={tenantProfile?.paymentCollectionMethods || ""} placeholder="Cash, bank transfer, card, UPI…"/></label><label className="tenant-intake-wide"><span>Teacher payment models</span><input name="teacherPaymentModels" defaultValue={tenantProfile?.teacherPaymentModels || ""} placeholder="Monthly, quarterly, hourly, per session…"/></label></div>}
+              {onboardingSection === "Delivery & classes" && <div><label><span>Class delivery modes</span><input name="deliveryModes" defaultValue={tenantProfile?.deliveryModes || ""} placeholder="Online, offline, hybrid"/></label><label><span>Typical class ratios</span><input name="classRatios" defaultValue={tenantProfile?.classRatios || ""} placeholder="1:1, 1:3, 1:10…"/></label><label className="tenant-intake-wide"><span>Batch and class setup</span><textarea name="batchAndClassSetup" rows={4} defaultValue={tenantProfile?.batchAndClassSetup || ""}/></label></div>}
+              {onboardingSection === "Team & subjects" && <div><label><span>Total teachers</span><input name="teacherCount" type="number" min="0" defaultValue={tenantProfile?.teacherCount ?? ""}/></label><label><span>Total students</span><input name="studentCount" type="number" min="0" defaultValue={tenantProfile?.studentCount ?? ""}/></label><label><span>Total subjects</span><input name="subjectCount" type="number" min="0" defaultValue={tenantProfile?.subjectCount ?? ""}/></label><label><span>Subject types</span><input name="subjectTypes" defaultValue={tenantProfile?.subjectTypes || ""} placeholder="Piano, vocal, maths…"/></label></div>}
+              {onboardingSection === "Documents & notes" && <div><label className="tenant-intake-wide"><span>Documents register</span><textarea name="documentsJson" rows={4} defaultValue={tenantProfile?.documentsJson || "[]"} placeholder="List documents or secure reference links"/></label><label className="tenant-intake-wide"><span>Operational notes</span><textarea name="operationalNotes" rows={5} defaultValue={tenantProfile?.operationalNotes || ""}/></label></div>}
+              <button disabled={busy || !selectedAcademy} className="enterprise-action-button tenant-intake-wide">{busy ? "Saving…" : "Save tenant information"}</button></div></form></section>}
+          {tab === "Tenant information" && <section className="tenant-information-panel"><header className="platform-control-panel-header"><div><p>Owner record</p><h2>Tenant information</h2></div></header><div className="tenant-intake-fields"><label className="tenant-intake-wide"><span>Academy</span><StandardSelectField name="academy" value={selectedAcademy} onChange={setSelectedAcademy} placeholder="Select academy" options={academies.map((academy) => ({ value: academy.id, label: academy.name }))} /></label>{tenantProfile ? <><section className="tenant-information-grid"><div><b>Contact</b><span>{tenantProfile.primaryContactName || "Not recorded"}</span><small>{tenantProfile.primaryContactEmail || tenantProfile.primaryContactPhone || ""}</small></div><div><b>Business</b><span>{tenantProfile.businessType || "Not recorded"}</span><small>{tenantProfile.branchSummary || ""}</small></div><div><b>Operations</b><span>{tenantProfile.deliveryModes || "Not recorded"}</span><small>{tenantProfile.classRatios || ""}</small></div><div><b>Team</b><span>{tenantProfile.teacherCount ?? 0} teachers · {tenantProfile.studentCount ?? 0} students</span><small>{tenantProfile.subjectTypes || ""}</small></div></section><section className="tenant-information-notes"><b>Finance and teacher payments</b><p>{tenantProfile.financeModel || "Not recorded"} · {tenantProfile.teacherPaymentModels || "Not recorded"}</p><b>Operational notes</b><p>{tenantProfile.operationalNotes || "Not recorded"}</p></section></> : <p className="platform-tenant-empty">No discovery information has been saved for this tenant yet.</p>}</div></section>}
           {tab === "Tenants" && (
             <>
               <section className="platform-tenant-kpis" aria-label="Tenant management summary">
@@ -534,7 +571,7 @@ export default function PlatformControlPage() {
               {tenantModal && <div className="platform-modal-backdrop" role="presentation"><article className="platform-modal platform-tenant-modal" role="dialog" aria-modal="true" aria-labelledby="tenant-modal-title"><header><div><p>Tenant register</p><h3 id="tenant-modal-title">{tenantModalTitle}</h3></div><button type="button" aria-label="Close tenant details" onClick={() => setTenantModal(null)}>×</button></header>{tenantModalRecords.length ? <ul>{tenantModalRecords.map((academy) => <li key={academy.id}><span>{academy.name.slice(0, 1).toUpperCase()}</span><div><b>{academy.name}</b><small>{academy.subscriptionPlan} plan · {academy.studentLimit} students · {academy.staffLimit} staff</small></div><em data-status={academy.subscriptionStatus.toLowerCase().replaceAll(" ", "-")}>{academy.subscriptionStatus}</em></li>)}</ul> : <p className="platform-tenant-empty">No tenants match this view.</p>}</article></div>}
             </>
           )}
-          {tab === "Announcements" && <>
+          {tab === "Announcements" && <div>
             <section className="platform-announcement-kpis" aria-label="Announcement summary">
               <button type="button" onClick={() => setAnnouncementModal("active")}><span>Active</span><b>{activeAnnouncements.length}</b><small>Currently shown to academy admins</small></button>
               <button type="button" onClick={() => setAnnouncementModal("recent")}><span>Recent</span><b>{announcements.length}</b><small>Published platform messages</small></button>
@@ -557,7 +594,7 @@ export default function PlatformControlPage() {
               </section>
             </section>
             {announcementModal && <div className="platform-modal-backdrop" role="presentation"><article className="platform-modal platform-announcement-modal" role="dialog" aria-modal="true" aria-labelledby="announcement-modal-title"><header><div><p>Platform announcements</p><h3 id="announcement-modal-title">{announcementModalTitle}</h3></div><button type="button" aria-label="Close announcement details" onClick={() => setAnnouncementModal(null)}>×</button></header>{announcementModalRecords.length ? <ul>{announcementModalRecords.map((item) => { const active = Boolean(item.expiresAtUtc && new Date(item.expiresAtUtc).getTime() > currentTime); return <li key={item.id}><span>!</span><div><b>{item.title}</b><small>{item.academyName} · {item.message}</small></div><em data-active={active}>{active ? "Active" : "Ended"}</em></li>; })}</ul> : <p className="platform-announcement-empty">No announcements match this view.</p>}</article></div>}
-          </>}
+          </div>}
           {tab === "Admins" && (
             <>
               <section className="platform-admin-kpis" aria-label="Academy administrator summary">

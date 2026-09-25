@@ -26,5 +26,4 @@ public sealed class TenantOnboardingProfile : AcademyEntity
     public string? BatchAndClassSetup { get; set; }
     public string? OperationalNotes { get; set; }
     public string? DocumentsJson { get; set; } = "[]";
-    public DateTime UpdatedAtUtc { get; set; } = DateTime.UtcNow;
 }
