@@ -3137,6 +3137,113 @@ namespace AcademyDesk.Api.Migrations
                     b.ToTable("Teachers");
                 });
 
+            modelBuilder.Entity("AcademyDesk.Api.Domain.Entities.TenantOnboardingProfile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AcademyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("BatchAndClassSetup")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("BillingFrequency")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<string>("BranchSummary")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("BusinessType")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<string>("ClassRatios")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CurrentSection")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<string>("DeliveryModes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DocumentsJson")
+                        .HasMaxLength(8000)
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FinanceModel")
+                        .HasMaxLength(160)
+                        .HasColumnType("nvarchar(160)");
+
+                    b.Property<string>("OperatingSince")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("OperationalNotes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PaymentCollectionMethods")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PrimaryContactEmail")
+                        .HasMaxLength(320)
+                        .HasColumnType("nvarchar(320)");
+
+                    b.Property<string>("PrimaryContactName")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("PrimaryContactPhone")
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<string>("PrimaryContactRole")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<int?>("StudentCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SubjectCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SubjectTypes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("TeacherCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TeacherPaymentModels")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Website")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AcademyId")
+                        .IsUnique();
+
+                    b.ToTable("TenantOnboardingProfiles");
+                });
+
             modelBuilder.Entity("AcademyDesk.Api.Domain.Entities.TrialClassBooking", b =>
                 {
                     b.Property<Guid>("Id")
