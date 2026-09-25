@@ -140,7 +140,7 @@ public sealed class PlatformControlController(AcademyDeskDbContext db, UserManag
     public async Task<ActionResult> ListSupportCases(CancellationToken token)
     {
         if (!await IsPlatformOwner()) return Forbid();
-        return Ok(await (from item in db.PlatformSupportCases.AsNoTracking() join academy in db.Academies.AsNoTracking() on item.AcademyId equals academy.Id orderby item.CreatedAtUtc descending select new { item.Id, item.AcademyId, AcademyName = academy.Name, item.Subject, item.Priority, item.Status, item.Description, item.CreatedAtUtc, item.ResolvedAtUtc }).ToListAsync(token));
+        return Ok(await (from item in db.PlatformSupportCases.AsNoTracking() join academy in db.Academies.AsNoTracking() on item.AcademyId equals academy.Id orderby item.CreatedAtUtc descending select new { item.Id, item.AcademyId, AcademyName = academy.Name, item.Subject, item.Priority, item.Status, item.Description, item.AcademyResponse, item.CreatedAtUtc, item.AcademyRespondedAtUtc, item.ResolvedAtUtc }).ToListAsync(token));
     }
 
     [HttpPost("support-cases")]
@@ -163,7 +163,7 @@ public sealed class PlatformControlController(AcademyDeskDbContext db, UserManag
     public async Task<ActionResult> ListInvoices(CancellationToken token)
     {
         if (!await IsPlatformOwner()) return Forbid();
-        return Ok(await (from invoice in db.PlatformBillingInvoices.AsNoTracking() join academy in db.Academies.AsNoTracking() on invoice.AcademyId equals academy.Id orderby invoice.DueDate descending select new { invoice.Id, invoice.AcademyId, AcademyName = academy.Name, invoice.InvoiceNumber, invoice.Amount, invoice.Currency, invoice.Status, invoice.PeriodStart, invoice.PeriodEnd, invoice.DueDate, invoice.PaidAtUtc }).ToListAsync(token));
+        return Ok(await (from invoice in db.PlatformBillingInvoices.AsNoTracking() join academy in db.Academies.AsNoTracking() on invoice.AcademyId equals academy.Id orderby invoice.DueDate descending select new { invoice.Id, invoice.AcademyId, AcademyName = academy.Name, invoice.InvoiceNumber, invoice.Amount, invoice.Currency, invoice.Status, invoice.PeriodStart, invoice.PeriodEnd, invoice.DueDate, invoice.PaidAtUtc, invoice.PaymentReference, invoice.PaymentSubmittedAtUtc }).ToListAsync(token));
     }
 
     [HttpPost("billing-invoices")]

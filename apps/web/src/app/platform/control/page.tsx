@@ -32,6 +32,8 @@ type Case = {
   priority: string;
   status: string;
   description?: string;
+  academyResponse?: string | null;
+  academyRespondedAtUtc?: string | null;
   createdAtUtc: string;
 };
 type Invoice = {
@@ -43,6 +45,8 @@ type Invoice = {
   currency: string;
   status: string;
   dueDate: string;
+  paymentReference?: string | null;
+  paymentSubmittedAtUtc?: string | null;
 };
 type Settings = {
   platformName: string;
@@ -701,7 +705,7 @@ export default function PlatformControlPage() {
                 </form>
                 <section className="platform-billing-panel platform-invoice-register">
                   <header className="platform-control-panel-header"><div><p>Invoice register</p><h2>Platform invoices</h2></div></header>
-                  {invoices.length ? <ul>{invoices.map((item) => <li key={item.id}><div className="platform-invoice-copy"><b>{item.invoiceNumber}</b><small>{item.academyName} · Due {new Intl.DateTimeFormat("en-IN", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(`${item.dueDate}T12:00:00`))}</small></div><strong>{item.currency} {item.amount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong><div className="platform-invoice-status"><span data-status={item.status.toLowerCase()}>{item.status}</span><StandardSelectField name={`invoice-status-${item.id}`} value={invoiceStatuses[item.id] ?? item.status} onChange={(value) => { setInvoiceStatuses((current) => ({ ...current, [item.id]: value })); void updateInvoice(item, value); }} placeholder="Update status" options={["Draft", "Issued", "Overdue", "Paid", "Void"].map((value) => ({ value, label: value }))} disabled={busy} /></div></li>)}</ul> : <p className="platform-billing-empty">No platform invoices have been created yet.</p>}
+                  {invoices.length ? <ul>{invoices.map((item) => <li key={item.id}><div className="platform-invoice-copy"><b>{item.invoiceNumber}</b><small>{item.academyName} · Due {new Intl.DateTimeFormat("en-IN", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(`${item.dueDate}T12:00:00`))}{item.paymentReference ? ` · Payment ref: ${item.paymentReference}` : ""}</small></div><strong>{item.currency} {item.amount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong><div className="platform-invoice-status"><span data-status={item.status.toLowerCase()}>{item.status}</span><StandardSelectField name={`invoice-status-${item.id}`} value={invoiceStatuses[item.id] ?? item.status} onChange={(value) => { setInvoiceStatuses((current) => ({ ...current, [item.id]: value })); void updateInvoice(item, value); }} placeholder="Update status" options={["Draft", "Issued", "Payment submitted", "Overdue", "Paid", "Void"].map((value) => ({ value, label: value }))} disabled={busy} /></div></li>)}</ul> : <p className="platform-billing-empty">No platform invoices have been created yet.</p>}
                 </section>
               </section>
               {invoiceModal && <div className="platform-modal-backdrop" role="presentation"><article className="platform-modal platform-invoice-modal" role="dialog" aria-modal="true" aria-labelledby="invoice-modal-title"><header><div><p>Platform billing</p><h3 id="invoice-modal-title">{invoiceModalTitle}</h3></div><button type="button" aria-label="Close invoice details" onClick={() => setInvoiceModal(null)}>×</button></header>{invoiceModalRecords.length ? <ul>{invoiceModalRecords.map((item) => <li key={item.id}><span>₹</span><div><b>{item.invoiceNumber}</b><small>{item.academyName} · Due {new Intl.DateTimeFormat("en-IN", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(`${item.dueDate}T12:00:00`))}</small></div><strong>{item.currency} {item.amount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong><em data-status={item.status.toLowerCase()}>{item.status}</em></li>)}</ul> : <p className="platform-billing-empty">No invoices match this view.</p>}</article></div>}
@@ -728,7 +732,7 @@ export default function PlatformControlPage() {
                 </form>
                 <section className="platform-support-panel platform-case-register">
                   <header className="platform-control-panel-header"><div><p>Case register</p><h2>Support cases</h2></div></header>
-                  {cases.length ? <ul>{cases.map((item) => <li key={item.id}><div className="platform-case-copy"><b>{item.subject}</b><small>{item.academyName} · {item.description || "No additional details"}</small></div><div className="platform-case-meta"><span data-priority={item.priority.toLowerCase()}>{item.priority}</span><StandardSelectField name={`case-status-${item.id}`} value={caseStatuses[item.id] ?? item.status} onChange={(value) => { setCaseStatuses((current) => ({ ...current, [item.id]: value })); void updateCase(item, value); }} placeholder="Update status" options={["Open", "In progress", "Resolved", "Closed"].map((value) => ({ value, label: value }))} disabled={busy} /></div></li>)}</ul> : <p className="platform-support-empty">No support cases have been created yet.</p>}
+                  {cases.length ? <ul>{cases.map((item) => <li key={item.id}><div className="platform-case-copy"><b>{item.subject}</b><small>{item.academyName} · {item.description || "No additional details"}{item.academyResponse ? ` · Academy reply: ${item.academyResponse}` : ""}</small></div><div className="platform-case-meta"><span data-priority={item.priority.toLowerCase()}>{item.priority}</span><StandardSelectField name={`case-status-${item.id}`} value={caseStatuses[item.id] ?? item.status} onChange={(value) => { setCaseStatuses((current) => ({ ...current, [item.id]: value })); void updateCase(item, value); }} placeholder="Update status" options={["Open", "In progress", "Resolved", "Closed"].map((value) => ({ value, label: value }))} disabled={busy} /></div></li>)}</ul> : <p className="platform-support-empty">No support cases have been created yet.</p>}
                 </section>
               </section>
               {caseModal && <div className="platform-modal-backdrop" role="presentation"><article className="platform-modal platform-case-modal" role="dialog" aria-modal="true" aria-labelledby="case-modal-title"><header><div><p>Platform support</p><h3 id="case-modal-title">{caseModalTitle}</h3></div><button type="button" aria-label="Close support case details" onClick={() => setCaseModal(null)}>×</button></header>{caseModalRecords.length ? <ul>{caseModalRecords.map((item) => <li key={item.id}><span>?</span><div><b>{item.subject}</b><small>{item.academyName} · {item.priority} priority</small></div><em data-status={item.status.toLowerCase().replaceAll(" ", "-")}>{item.status}</em></li>)}</ul> : <p className="platform-support-empty">No support cases match this view.</p>}</article></div>}

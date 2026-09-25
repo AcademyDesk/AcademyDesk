@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Identity;
+using AcademyDesk.Api.Domain.Entities;
 
 namespace AcademyDesk.Api.Security;
 
@@ -64,7 +65,7 @@ public sealed class AcademyAccessFilter(UserManager<ApplicationUser> userManager
             await userManager.IsInRoleAsync(user, "AcademyAdmin");
         if (isAdministrator)
         {
-            await next();
+            await ExecuteAndAuditAsync(context, next, user, academyId);
             return;
         }
 
@@ -84,10 +85,33 @@ public sealed class AcademyAccessFilter(UserManager<ApplicationUser> userManager
         foreach (var json in grants) foreach (var permission in JsonSerializer.Deserialize<string[]>(json) ?? []) granted.Add(permission);
         if (required.All(granted.Contains))
         {
-            await next();
+            await ExecuteAndAuditAsync(context, next, user, academyId);
             return;
         }
 
         context.Result = new ForbidResult();
+    }
+
+    private async Task ExecuteAndAuditAsync(ActionExecutingContext context, ActionExecutionDelegate next, ApplicationUser user, Guid academyId)
+    {
+        var executed = await next();
+        if (executed.Canceled || executed.Exception is not null || context.HttpContext.Response.StatusCode >= StatusCodes.Status400BadRequest) return;
+
+        var method = context.HttpContext.Request.Method;
+        if (HttpMethods.IsGet(method) || HttpMethods.IsHead(method) || HttpMethods.IsOptions(method)) return;
+
+        var controller = context.Controller.GetType().Name.Replace("Controller", string.Empty, StringComparison.Ordinal);
+        if (string.Equals(controller, "AuditLogs", StringComparison.Ordinal)) return;
+
+        academyDb.AuditLogs.Add(new AuditLog
+        {
+            AcademyId = academyId,
+            ActorUserId = user.Id,
+            Action = $"{method} {controller}",
+            EntityType = controller,
+            MetadataJson = JsonSerializer.Serialize(new { Route = context.HttpContext.Request.Path.Value, Action = context.ActionDescriptor.DisplayName }),
+            IpAddress = context.HttpContext.Connection.RemoteIpAddress?.ToString()
+        });
+        await academyDb.SaveChangesAsync(context.HttpContext.RequestAborted);
     }
 }

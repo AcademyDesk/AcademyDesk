@@ -11,4 +11,6 @@ public sealed class PlatformBillingInvoice : EntityBase
     public DateOnly PeriodEnd { get; set; }
     public DateOnly DueDate { get; set; }
     public DateTime? PaidAtUtc { get; set; }
+    public string? PaymentReference { get; set; }
+    public DateTime? PaymentSubmittedAtUtc { get; set; }
 }

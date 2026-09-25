@@ -134,6 +134,7 @@ const navigationGroups: readonly NavigationGroup[] = [
 
 const administrationNavigation: readonly NavigationItem[] = [
   ["Academy control", "/admin/control"],
+  ["Platform billing & support", "/platform-services"],
   ["Admin intelligence", "/admin-intelligence"],
   ["Data operations", "/data-operations"],
   ["Work queue", "/work-queue"],
