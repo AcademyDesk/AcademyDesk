@@ -487,7 +487,7 @@ export default function PlatformControlPage() {
                 <button type="button" onClick={() => setAdminModal("academies")}><span>Academies covered</span><b>{adminAcademies}</b><small>Academies with an assigned administrator</small></button>
               </section>
               <section className="platform-admin-panel">
-                <header className="platform-control-panel-header"><div><p>Access register</p><h2>Academy administrators</h2></div><span>{admins.length} total</span></header>
+                <header className="platform-control-panel-header"><div><p>Access register</p><h2>Academy administrators</h2></div></header>
                 <div className="platform-admin-table-wrap">
                   <table>
                   <thead className="text-slate-400">
@@ -502,8 +502,7 @@ export default function PlatformControlPage() {
                     {admins.length ? admins.map((admin) => (
                       <tr key={admin.id}>
                         <td>
-                          <b>{admin.displayName}</b>
-                          <small>{admin.email}</small>
+                          <div className="platform-admin-identity"><span aria-hidden="true">{admin.displayName.slice(0, 1).toUpperCase()}</span><div><b>{admin.displayName}</b><small>{admin.email}</small></div></div>
                         </td>
                         <td>{admin.academyName || "Unassigned"}</td>
                         <td><span className="platform-admin-status" data-active={admin.isActive}>{admin.isActive ? "Active" : "Deactivated"}</span></td>
