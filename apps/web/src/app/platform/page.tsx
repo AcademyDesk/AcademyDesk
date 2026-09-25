@@ -52,6 +52,7 @@ const platformLinks = [
   { label: "Academy admins", icon: "♙", href: "/platform/control?tab=Admins" },
   { label: "Billing", icon: "₹", href: "/platform/control?tab=Billing" },
   { label: "Support", icon: "?", href: "/platform/control?tab=Support" },
+  { label: "Activity logs", icon: "☷", href: "/platform/control?tab=Activity%20logs" },
   { label: "Settings", icon: "⚙", href: "/platform/control?tab=Settings" },
   {
     label: "Audit & health",
