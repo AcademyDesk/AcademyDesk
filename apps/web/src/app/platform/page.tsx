@@ -232,6 +232,7 @@ export default function PlatformPage() {
             <details className="platform-profile enterprise-profile">
               <summary className="enterprise-profile-trigger" aria-label="Open Platform Owner profile menu">
                 {owner?.profileImageUrl ? <img className="platform-avatar-image" src={`${apiUrl}${owner.profileImageUrl}`} alt="Profile"/> : <span className="platform-avatar">{owner?.displayName?.[0]?.toUpperCase() || "S"}</span>}
+                <span className="platform-topbar-owner-copy"><b>{owner?.displayName || "Platform Owner"}</b><small>Platform Owner</small></span>
               </summary>
               <div className="platform-profile-menu">
                 <strong>{owner?.displayName || "Platform Owner"}</strong>
@@ -249,7 +250,7 @@ export default function PlatformPage() {
             <div className="platform-title-group">
               <span className="platform-title-icon" aria-hidden="true">◈</span>
               <div>
-                <p className="platform-page-eyebrow">{owner?.displayName || "Platform owner"}</p>
+                <p className="platform-page-eyebrow">Platform owner</p>
                 <h1 className="platform-workspace-title">Overview</h1>
               </div>
             </div>

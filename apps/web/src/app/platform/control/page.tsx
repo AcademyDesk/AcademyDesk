@@ -404,6 +404,7 @@ export default function PlatformControlPage() {
             <details className="platform-profile enterprise-profile">
               <summary className="enterprise-profile-trigger" aria-label="Open Platform Owner profile menu">
                 {owner?.profileImageUrl ? <img className="platform-avatar-image" src={`${apiUrl}${owner.profileImageUrl}`} alt="Profile"/> : <span className="platform-avatar">{owner?.displayName?.[0]?.toUpperCase() || "S"}</span>}
+                <span className="platform-topbar-owner-copy"><b>{owner?.displayName || "Platform Owner"}</b><small>Platform Owner</small></span>
               </summary>
               <div className="platform-profile-menu">
                 <strong>{owner?.displayName || "Platform Owner"}</strong>
