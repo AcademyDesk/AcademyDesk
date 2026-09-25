@@ -37,6 +37,7 @@ type PlatformHealth = {
   communicationProviders: string;
   maintenanceMode: boolean;
 };
+type OverviewModal = "academies" | "activeAcademies" | "learners" | "support" | "billed" | "collected" | "outstanding" | null;
 type OwnerSession = { displayName: string; email?: string | null; profileImageUrl?: string | null };
 
 const platformLinks = [
@@ -69,6 +70,7 @@ export default function PlatformPage() {
   const [adminDisplayName, setAdminDisplayName] = useState("");
   const [password, setPassword] = useState("");
   const [onboardingOpen, setOnboardingOpen] = useState(false);
+  const [overviewModal, setOverviewModal] = useState<OverviewModal>(null);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<Notice>({
     text: "Loading academy portfolio…",
@@ -91,6 +93,16 @@ export default function PlatformPage() {
     (total, academy) => total + academy.students,
     0,
   );
+  const overviewTiles = [
+    { key: "academies" as const, label: "Total academies", value: academies.length, detail: "Academies in the platform portfolio" },
+    { key: "activeAcademies" as const, label: "Active academies", value: activeAcademies.length, detail: "Academies currently able to operate" },
+    { key: "learners" as const, label: "Active learners", value: totalStudents, detail: "Learners across all academies" },
+    { key: "support" as const, label: "Open support", value: overview?.openSupportCases ?? 0, detail: "Support cases needing attention" },
+    { key: "billed" as const, label: "Platform billed", value: money(overview?.totalBilled ?? 0), detail: "Issued platform invoices", className: "platform-finance-kpi" },
+    { key: "collected" as const, label: "Collected", value: money(overview?.collectedBilling ?? 0), detail: "Paid platform invoices", className: "platform-finance-kpi collected" },
+    { key: "outstanding" as const, label: "Outstanding", value: money(overview?.outstandingBilling ?? 0), detail: `${overview?.overdueInvoices ?? 0} overdue invoice${overview?.overdueInvoices === 1 ? "" : "s"}`, className: "platform-finance-kpi outstanding" },
+  ];
+  const selectedOverviewTile = overviewTiles.find((tile) => tile.key === overviewModal);
 
   async function load() {
     const [response, overviewResponse, healthResponse, ownerResponse] = await Promise.all([
@@ -271,37 +283,7 @@ export default function PlatformPage() {
             className="platform-kpis"
             aria-label="Platform portfolio summary"
           >
-            <article>
-              <span>Total academies</span>
-              <strong>{academies.length}</strong>
-            </article>
-            <article>
-              <span>Active academies</span>
-              <strong>{activeAcademies.length}</strong>
-            </article>
-            <article>
-              <span>Active learners</span>
-              <strong>{totalStudents}</strong>
-            </article>
-            <article>
-              <span>Open support</span>
-              <strong>{overview?.openSupportCases ?? 0}</strong>
-            </article>
-            <article className="platform-finance-kpi">
-              <span>Platform billed</span>
-              <strong>{money(overview?.totalBilled ?? 0)}</strong>
-              <small>Issued platform invoices</small>
-            </article>
-            <article className="platform-finance-kpi collected">
-              <span>Collected</span>
-              <strong>{money(overview?.collectedBilling ?? 0)}</strong>
-              <small>Paid platform invoices</small>
-            </article>
-            <article className="platform-finance-kpi outstanding">
-              <span>Outstanding</span>
-              <strong>{money(overview?.outstandingBilling ?? 0)}</strong>
-              <small>{overview?.overdueInvoices ?? 0} overdue invoice{overview?.overdueInvoices === 1 ? "" : "s"}</small>
-            </article>
+            {overviewTiles.map((tile) => <button key={tile.key} type="button" className={tile.className} onClick={() => setOverviewModal(tile.key)} aria-haspopup="dialog"><span>{tile.label}</span><strong>{tile.value}</strong><small>{tile.detail}</small></button>)}
           </section>
           <section className="platform-main-grid">
             <article
@@ -378,6 +360,14 @@ export default function PlatformPage() {
               </div>
             </article>
           </section>
+          {overviewModal && selectedOverviewTile && (
+            <div className="platform-modal-backdrop" role="presentation" onMouseDown={() => setOverviewModal(null)}>
+              <article className="platform-modal platform-overview-modal" role="dialog" aria-modal="true" aria-labelledby="overview-tile-title" onMouseDown={(event) => event.stopPropagation()}>
+                <header><div><p>{selectedOverviewTile.label}</p><h3 id="overview-tile-title">{selectedOverviewTile.value}</h3></div><button type="button" aria-label="Close detail" onClick={() => setOverviewModal(null)}>×</button></header>
+                {(["academies", "activeAcademies", "learners"] as const).includes(overviewModal as "academies" | "activeAcademies" | "learners") ? <ul className="platform-overview-detail-list">{(overviewModal === "activeAcademies" ? activeAcademies : academies).map((academy) => <li key={academy.id}><div><b>{academy.name}</b><small>{academy.branches} branch{academy.branches === 1 ? "" : "es"} · {academy.students} learner{academy.students === 1 ? "" : "s"}</small></div><span className={academy.isActive ? "platform-status active" : "platform-status"}>{academy.isActive ? "Active" : "Inactive"}</span></li>)}{!academies.length && <li><small>No academies recorded yet.</small></li>}</ul> : <div className="platform-overview-detail-summary"><p>{selectedOverviewTile.detail}</p>{overviewModal === "support" && <Link href="/platform/control?tab=Support" onClick={() => setOverviewModal(null)}>Open Support</Link>}{(["billed", "collected", "outstanding"] as const).includes(overviewModal as "billed" | "collected" | "outstanding") && <Link href="/platform/control?tab=Billing" onClick={() => setOverviewModal(null)}>Open Billing</Link>}</div>}
+              </article>
+            </div>
+          )}
           {onboardingOpen && (
             <div className="platform-modal-backdrop" role="presentation">
               <article
