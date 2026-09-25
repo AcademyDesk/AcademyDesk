@@ -68,6 +68,7 @@ type Health = {
   maintenanceMode: boolean;
   statusMessage?: string;
 };
+type ActivityLog = { id: string; scope: string; actorName: string; academyName?: string | null; action: string; entityType: string; occurredAtUtc: string };
 type Announcement = { id: string; academyId: string; academyName: string; title: string; message: string; createdAtUtc: string; expiresAtUtc?: string | null };
 type TenantProfile = {
   status: string; currentSection: string; primaryContactName?: string; primaryContactRole?: string; primaryContactEmail?: string; primaryContactPhone?: string; country?: string; state?: string; city?: string; postalCode?: string; addressLine1?: string; addressLine2?: string;
@@ -111,6 +112,7 @@ const platformLinks = [
     tab: "Support",
   },
   { label: "Announcements", icon: "!", href: "/platform/control?tab=Announcements", tab: "Announcements" },
+  { label: "Activity logs", icon: "☷", href: "/platform/control?tab=Activity%20logs", tab: "Activity logs" },
   {
     label: "Settings",
     icon: "⚙",
@@ -133,6 +135,7 @@ const platformControlTabs = [
   "Billing",
   "Support",
   "Announcements",
+  "Activity logs",
   "Settings",
   "Audit & health",
 ];
@@ -145,6 +148,10 @@ export default function PlatformControlPage() {
   const [cases, setCases] = useState<Case[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [audit, setAudit] = useState<Audit[]>([]);
+  const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
+  const [activityScope, setActivityScope] = useState("All");
+  const [activityFrom, setActivityFrom] = useState("");
+  const [activityTo, setActivityTo] = useState("");
   const [settings, setSettings] = useState<Settings>();
   const [health, setHealth] = useState<Health>();
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
@@ -206,6 +213,23 @@ export default function PlatformControlPage() {
   useEffect(() => {
     void load().catch((error) => setMessage(error.message));
   }, []);
+  async function loadActivityLogs() {
+    const query = new URLSearchParams();
+    if (activityScope !== "All") query.set("scope", activityScope === "Platform owner" ? "PlatformOwner" : "AcademyAdmin");
+    if (activityFrom) query.set("fromUtc", new Date(`${activityFrom}T00:00:00`).toISOString());
+    if (activityTo) { const end = new Date(`${activityTo}T00:00:00`); end.setDate(end.getDate() + 1); query.set("toUtc", end.toISOString()); }
+    const response = await academyApi(`/api/platform/activity-logs?${query.toString()}`);
+    if (!response.ok) throw new Error("Activity logs could not be loaded.");
+    setActivityLogs(await response.json());
+  }
+  async function deleteActivityLogs() {
+    if (!activityFrom || !activityTo) { setMessage("Choose both start and end dates before deleting logs."); return; }
+    if (!window.confirm("Delete the selected activity logs permanently?")) return;
+    const end = new Date(`${activityTo}T00:00:00`); end.setDate(end.getDate() + 1);
+    const response = await academyApi("/api/platform/activity-logs", { method: "DELETE", headers: apiHeaders(true), body: JSON.stringify({ fromUtc: new Date(`${activityFrom}T00:00:00`).toISOString(), toUtc: end.toISOString(), scope: activityScope === "All" ? null : activityScope === "Platform owner" ? "PlatformOwner" : "AcademyAdmin" }) });
+    const payload = await response.json().catch(() => null); if (!response.ok) throw new Error(payload?.message ?? "Logs could not be deleted.");
+    setMessage(`${payload.deleted} activity log${payload.deleted === 1 ? "" : "s"} deleted.`); await loadActivityLogs();
+  }
   const selected = academies.find((academy) => academy.id === selectedAcademy);
   const activeTenants = academies.filter((academy) => academy.subscriptionStatus === "Active").length;
   const trialTenants = academies.filter((academy) => academy.subscriptionStatus === "Trial").length;
@@ -237,13 +261,14 @@ export default function PlatformControlPage() {
     { key: "communications" as const, label: "Communication providers", value: health?.communicationProviders ?? "Checking" },
   ];
   const selectedHealthDetail = healthDetails.find((item) => item.key === healthModal);
-  const controlIcon = tab === "Tenant onboarding" ? "✦" : tab === "Tenant information" ? "ⓘ" : tab === "Admins" ? "♙" : tab === "Billing" ? "₹" : tab === "Support" ? "?" : tab === "Announcements" ? "!" : tab === "Settings" ? "⚙" : tab === "Audit & health" ? "✓" : "◫";
+  const controlIcon = tab === "Tenant onboarding" ? "✦" : tab === "Tenant information" ? "ⓘ" : tab === "Admins" ? "♙" : tab === "Billing" ? "₹" : tab === "Support" ? "?" : tab === "Announcements" ? "!" : tab === "Activity logs" ? "☷" : tab === "Settings" ? "⚙" : tab === "Audit & health" ? "✓" : "◫";
   useEffect(() => {
     setTenantPlan(selected?.subscriptionPlan ?? "");
     setTenantStatus(selected?.subscriptionStatus ?? "");
     setTenantEndsAt(selected?.subscriptionEndsAtUtc?.slice(0, 10) ?? "");
   }, [selected]);
   useEffect(() => { setSettingsCurrency(settings?.defaultCurrency ?? ""); }, [settings]);
+  useEffect(() => { if (tab === "Activity logs") void loadActivityLogs().catch((error) => setMessage(error.message)); }, [tab]);
   useEffect(() => {
     if (!selectedAcademy) { setTenantProfile(undefined); return; }
     void academyApi(`/api/platform/academies/${selectedAcademy}/onboarding`)
@@ -588,8 +613,8 @@ export default function PlatformControlPage() {
           )}
           {tab === "Announcements" && <div>
             <section className="platform-announcement-kpis" aria-label="Announcement summary">
-              <button type="button" onClick={() => setAnnouncementModal("active")}><span>Active</span><b>{activeAnnouncements.length}</b><small>Currently shown to academy admins</small></button>
-              <button type="button" onClick={() => setAnnouncementModal("recent")}><span>Recent</span><b>{announcements.length}</b><small>Published platform messages</small></button>
+              <button type="button" onClick={() => setAnnouncementModal("active")}><span>Active</span><b>{activeAnnouncements.length}</b></button>
+              <button type="button" onClick={() => setAnnouncementModal("recent")}><span>Recent</span><b>{announcements.length}</b></button>
             </section>
             <section className="platform-announcement-layout">
               <form onSubmit={publishAnnouncement} className="platform-announcement-panel platform-announcement-editor">
@@ -653,9 +678,9 @@ export default function PlatformControlPage() {
           {tab === "Billing" && (
             <>
               <section className="platform-billing-kpis" aria-label="Platform billing summary">
-                <button type="button" onClick={() => setInvoiceModal("all")}><span>All invoices</span><b>{invoices.length}</b><small>Platform billing records</small></button>
-                <button type="button" onClick={() => setInvoiceModal("open")}><span>Open invoices</span><b>{openInvoices.length}</b><small>Awaiting collection or review</small></button>
-                <button type="button" onClick={() => setInvoiceModal("overdue")}><span>Overdue</span><b>{overdueInvoices.length}</b><small>Invoices requiring follow-up</small></button>
+                <button type="button" onClick={() => setInvoiceModal("all")}><span>All invoices</span><b>{invoices.length}</b></button>
+                <button type="button" onClick={() => setInvoiceModal("open")}><span>Open invoices</span><b>{openInvoices.length}</b></button>
+                <button type="button" onClick={() => setInvoiceModal("overdue")}><span>Overdue</span><b>{overdueInvoices.length}</b></button>
                 <button type="button" onClick={() => setInvoiceModal("paid")}><span>Paid</span><b>{paidInvoices.length}</b><small>Collections recorded</small></button>
               </section>
               <section className="platform-billing-layout">
@@ -683,9 +708,9 @@ export default function PlatformControlPage() {
           {tab === "Support" && (
             <>
               <section className="platform-support-kpis" aria-label="Support case summary">
-                <button type="button" onClick={() => setCaseModal("all")}><span>All cases</span><b>{cases.length}</b><small>Platform support records</small></button>
-                <button type="button" onClick={() => setCaseModal("open")}><span>Open cases</span><b>{openCases.length}</b><small>Awaiting resolution</small></button>
-                <button type="button" onClick={() => setCaseModal("urgent")}><span>High priority</span><b>{urgentCases.length}</b><small>High or urgent cases</small></button>
+                <button type="button" onClick={() => setCaseModal("all")}><span>All cases</span><b>{cases.length}</b></button>
+                <button type="button" onClick={() => setCaseModal("open")}><span>Open cases</span><b>{openCases.length}</b></button>
+                <button type="button" onClick={() => setCaseModal("urgent")}><span>High priority</span><b>{urgentCases.length}</b></button>
                 <button type="button" onClick={() => setCaseModal("resolved")}><span>Resolved</span><b>{resolvedCases.length}</b><small>Closed support work</small></button>
               </section>
               <section className="platform-support-layout">
@@ -737,6 +762,7 @@ export default function PlatformControlPage() {
               </form>
             </section>
           )}
+          {tab === "Activity logs" && <section className="platform-activity-panel"><header className="platform-control-panel-header"><div><p>Operations register</p><h2>Admin and Platform Owner activity</h2></div></header><div className="platform-activity-filters"><label><span>Scope</span><select value={activityScope} onChange={(event) => setActivityScope(event.target.value)}><option>All</option><option>Platform owner</option><option>Academy admin</option></select></label><label><span>From</span><input type="date" value={activityFrom} onChange={(event) => setActivityFrom(event.target.value)}/></label><label><span>To</span><input type="date" value={activityTo} onChange={(event) => setActivityTo(event.target.value)}/></label><button type="button" className="enterprise-secondary-button" onClick={() => void loadActivityLogs().catch((error) => setMessage(error.message))}>Apply filter</button><button type="button" className="enterprise-danger-button" disabled={!activityFrom || !activityTo} onClick={() => void deleteActivityLogs().catch((error) => setMessage(error.message))}>Delete selected period</button></div>{activityLogs.length ? <ul className="platform-activity-list">{activityLogs.map((item) => <li key={item.id}><span>{item.scope}</span><div><b>{item.action}</b><small>{item.actorName} · {item.academyName || "Platform"} · {item.entityType}</small></div><time>{new Intl.DateTimeFormat("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" }).format(new Date(item.occurredAtUtc))}</time></li>)}</ul> : <p className="platform-health-empty">No activity matches these filters.</p>}</section>}
           {tab === "Audit & health" && (
             <>
               <section className="platform-health-kpis" aria-label="Operational health summary">

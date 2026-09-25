@@ -184,6 +184,43 @@ public sealed class PlatformControlController(AcademyDeskDbContext db, UserManag
     [HttpGet("audit")]
     public async Task<ActionResult> AuditLog(CancellationToken token) { if (!await IsPlatformOwner()) return Forbid(); return Ok(await db.PlatformAuditEntries.AsNoTracking().OrderByDescending(x => x.OccurredAtUtc).Take(250).ToListAsync(token)); }
 
+    [HttpGet("activity-logs")]
+    public async Task<ActionResult> ActivityLogs(string? scope, DateTime? fromUtc, DateTime? toUtc, CancellationToken token)
+    {
+        if (!await IsPlatformOwner()) return Forbid();
+        var includePlatform = !string.Equals(scope, "AcademyAdmin", StringComparison.OrdinalIgnoreCase);
+        var includeAdmin = !string.Equals(scope, "PlatformOwner", StringComparison.OrdinalIgnoreCase);
+        var platformQuery = db.PlatformAuditEntries.AsNoTracking().AsQueryable();
+        var adminQuery = db.AuditLogs.AsNoTracking().AsQueryable();
+        if (fromUtc.HasValue) { platformQuery = platformQuery.Where(x => x.OccurredAtUtc >= fromUtc); adminQuery = adminQuery.Where(x => x.OccurredAtUtc >= fromUtc); }
+        if (toUtc.HasValue) { platformQuery = platformQuery.Where(x => x.OccurredAtUtc < toUtc); adminQuery = adminQuery.Where(x => x.OccurredAtUtc < toUtc); }
+        var platform = includePlatform ? await platformQuery.OrderByDescending(x => x.OccurredAtUtc).Take(500).ToListAsync(token) : [];
+        var admin = includeAdmin ? await adminQuery.OrderByDescending(x => x.OccurredAtUtc).Take(500).ToListAsync(token) : [];
+        var actorIds = admin.Where(x => x.ActorUserId.HasValue).Select(x => x.ActorUserId!.Value).Distinct().ToList();
+        var actors = actorIds.Count == 0 ? new Dictionary<Guid, string>() : await users.Users.Where(x => actorIds.Contains(x.Id)).ToDictionaryAsync(x => x.Id, x => x.DisplayName ?? x.UserName ?? "Academy admin", token);
+        var academyIds = admin.Select(x => x.AcademyId).Distinct().ToList();
+        var academyNames = await db.Academies.Where(x => academyIds.Contains(x.Id)).ToDictionaryAsync(x => x.Id, x => x.Name, token);
+        var rows = platform.Select(x => new { Id = $"platform:{x.Id}", Scope = "Platform owner", x.ActorName, AcademyName = (string?)null, x.Action, x.EntityType, x.OccurredAtUtc })
+            .Concat(admin.Select(x => new { Id = $"admin:{x.Id}", Scope = "Academy admin", ActorName = x.ActorUserId.HasValue && actors.TryGetValue(x.ActorUserId.Value, out var name) ? name : "Academy admin", AcademyName = academyNames.TryGetValue(x.AcademyId, out var academyName) ? academyName : null, x.Action, x.EntityType, x.OccurredAtUtc }))
+            .OrderByDescending(x => x.OccurredAtUtc).Take(500);
+        return Ok(rows);
+    }
+
+    [HttpDelete("activity-logs")]
+    public async Task<ActionResult> DeleteActivityLogs(DeleteActivityLogsRequest request, CancellationToken token)
+    {
+        if (!await IsPlatformOwner()) return Forbid();
+        if (request.ToUtc <= request.FromUtc) return BadRequest(new { message = "Choose a valid start and end date." });
+        var includePlatform = !string.Equals(request.Scope, "AcademyAdmin", StringComparison.OrdinalIgnoreCase);
+        var includeAdmin = !string.Equals(request.Scope, "PlatformOwner", StringComparison.OrdinalIgnoreCase);
+        var platform = includePlatform ? await db.PlatformAuditEntries.Where(x => x.OccurredAtUtc >= request.FromUtc && x.OccurredAtUtc < request.ToUtc).ToListAsync(token) : [];
+        var admin = includeAdmin ? await db.AuditLogs.Where(x => x.OccurredAtUtc >= request.FromUtc && x.OccurredAtUtc < request.ToUtc).ToListAsync(token) : [];
+        db.PlatformAuditEntries.RemoveRange(platform); db.AuditLogs.RemoveRange(admin);
+        await Audit("Activity logs deleted", "ActivityLog", null, new { request.Scope, request.FromUtc, request.ToUtc, PlatformLogs = platform.Count, AdminLogs = admin.Count }, token);
+        await db.SaveChangesAsync(token);
+        return Ok(new { deleted = platform.Count + admin.Count });
+    }
+
     [HttpGet("health")]
     public async Task<ActionResult> Health(CancellationToken token)
     {
@@ -230,6 +267,7 @@ public sealed class PlatformControlController(AcademyDeskDbContext db, UserManag
 }
 
 public sealed record UpdatePlatformSettingsRequest(string PlatformName, string? SupportEmail, string? DefaultCurrency, int DefaultTrialDays, int DataRetentionDays, bool MaintenanceMode, string? StatusMessage);
+public sealed record DeleteActivityLogsRequest(DateTime FromUtc, DateTime ToUtc, string? Scope);
 public sealed record CreatePlatformAnnouncementRequest(Guid AcademyId, string Title, string Message, int DisplayHours);
 public sealed record TenantOnboardingRequest(string? Status, string? CurrentSection, string? PrimaryContactName, string? PrimaryContactRole, string? PrimaryContactEmail, string? PrimaryContactPhone, string? Country, string? State, string? City, string? PostalCode, string? AddressLine1, string? AddressLine2, string? BusinessType, string? OperatingSince, string? Website, string? BranchSummary, string? FinanceModel, string? BillingFrequency, string? PaymentCollectionMethods, string? TeacherPaymentModels, int? TeacherCount, int? StudentCount, int? SubjectCount, string? SubjectTypes, string? DeliveryModes, string? ClassRatios, string? BatchAndClassSetup, string? OperationalNotes, string? DocumentsJson);
 public sealed record SetPlatformAdminActiveRequest(bool IsActive);
