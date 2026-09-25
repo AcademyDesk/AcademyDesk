@@ -72,6 +72,7 @@ type OwnerSession = { displayName: string; email?: string | null; phoneNumber?: 
 type AdminModal = "all" | "active" | "inactive" | "academies" | null;
 type TenantModal = "all" | "active" | "trial" | "attention" | null;
 type InvoiceModal = "all" | "open" | "overdue" | "paid" | null;
+type CaseModal = "all" | "open" | "urgent" | "resolved" | null;
 
 const platformLinks = [
   { label: "Overview", icon: "▦", href: "/platform" },
@@ -142,12 +143,16 @@ export default function PlatformControlPage() {
   const [adminModal, setAdminModal] = useState<AdminModal>(null);
   const [tenantModal, setTenantModal] = useState<TenantModal>(null);
   const [invoiceModal, setInvoiceModal] = useState<InvoiceModal>(null);
+  const [caseModal, setCaseModal] = useState<CaseModal>(null);
   const [invoiceAcademyId, setInvoiceAcademyId] = useState("");
   const [invoiceCurrency, setInvoiceCurrency] = useState("INR");
   const [invoicePeriodStart, setInvoicePeriodStart] = useState("");
   const [invoicePeriodEnd, setInvoicePeriodEnd] = useState("");
   const [invoiceDueDate, setInvoiceDueDate] = useState("");
   const [invoiceStatuses, setInvoiceStatuses] = useState<Record<string, string>>({});
+  const [supportAcademyId, setSupportAcademyId] = useState("");
+  const [supportPriority, setSupportPriority] = useState("Normal");
+  const [caseStatuses, setCaseStatuses] = useState<Record<string, string>>({});
   const [message, setMessage] = useState("Loading platform controls…");
   const [busy, setBusy] = useState(false);
   const profileImageInput = useRef<HTMLInputElement>(null);
@@ -194,6 +199,11 @@ export default function PlatformControlPage() {
   const paidInvoices = invoices.filter((invoice) => invoice.status === "Paid");
   const invoiceModalTitle = invoiceModal === "open" ? "Open platform invoices" : invoiceModal === "overdue" ? "Overdue platform invoices" : invoiceModal === "paid" ? "Paid platform invoices" : "All platform invoices";
   const invoiceModalRecords = invoiceModal === "open" ? openInvoices : invoiceModal === "overdue" ? overdueInvoices : invoiceModal === "paid" ? paidInvoices : invoices;
+  const openCases = cases.filter((item) => !["Resolved", "Closed"].includes(item.status));
+  const urgentCases = cases.filter((item) => ["High", "Urgent"].includes(item.priority) && !["Resolved", "Closed"].includes(item.status));
+  const resolvedCases = cases.filter((item) => ["Resolved", "Closed"].includes(item.status));
+  const caseModalTitle = caseModal === "open" ? "Open support cases" : caseModal === "urgent" ? "High-priority support cases" : caseModal === "resolved" ? "Resolved support cases" : "All support cases";
+  const caseModalRecords = caseModal === "open" ? openCases : caseModal === "urgent" ? urgentCases : caseModal === "resolved" ? resolvedCases : cases;
   const controlIcon = tab === "Admins" ? "♙" : tab === "Billing" ? "₹" : tab === "Support" ? "?" : tab === "Announcements" ? "!" : tab === "Settings" ? "⚙" : tab === "Audit & health" ? "✓" : "◫";
   useEffect(() => {
     setTenantPlan(selected?.subscriptionPlan ?? "");
@@ -248,6 +258,8 @@ export default function PlatformControlPage() {
       "Support case created.",
     );
     event.currentTarget.reset();
+    setSupportAcademyId("");
+    setSupportPriority("Normal");
   }
   async function createInvoice(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -567,72 +579,31 @@ export default function PlatformControlPage() {
             </>
           )}
           {tab === "Support" && (
-            <section className="mt-6 grid gap-5 lg:grid-cols-[.8fr_1.2fr]">
-              <form
-                onSubmit={createCase}
-                className="rounded-xl border border-slate-800 bg-slate-900 p-5"
-              >
-                <h2 className="font-semibold">Open support case</h2>
-                <FieldSelect
-                  name="academyId"
-                  label="Academy"
-                  items={academies.map((a) => [a.id, a.name])}
-                />
-                <Field name="subject" label="Subject" />
-                <FieldSelect
-                  name="priority"
-                  label="Priority"
-                  items={[
-                    ["Low", "Low"],
-                    ["Normal", "Normal"],
-                    ["High", "High"],
-                    ["Urgent", "Urgent"],
-                  ]}
-                />
-                <label className="mt-3 block text-sm text-slate-300">
-                  Description
-                  <textarea
-                    name="description"
-                    className="mt-1 w-full rounded border border-slate-700 bg-slate-950 p-2"
-                    rows={4}
-                  />
-                </label>
-                <button
-                  disabled={busy}
-                  className="mt-4 w-full rounded bg-cyan-400 p-2 font-semibold text-slate-950"
-                >
-                  Create case
-                </button>
-              </form>
-              <RecordList
-                title="Support cases"
-                records={cases.map((item) => (
-                  <div
-                    key={item.id}
-                    className="rounded border border-slate-700 bg-slate-950 p-3"
-                  >
-                    <b>{item.subject}</b>
-                    <span className="float-right text-cyan-300">
-                      {item.priority}
-                    </span>
-                    <p className="mt-1 text-sm text-slate-400">
-                      {item.academyName} ·{" "}
-                      {item.description || "No description"}
-                    </p>
-                    <select
-                      value={item.status}
-                      onChange={(e) => void updateCase(item, e.target.value)}
-                      className="mt-2 rounded border border-slate-700 bg-slate-900 p-1 text-xs"
-                    >
-                      <option>Open</option>
-                      <option>In progress</option>
-                      <option>Resolved</option>
-                      <option>Closed</option>
-                    </select>
+            <>
+              <section className="platform-support-kpis" aria-label="Support case summary">
+                <button type="button" onClick={() => setCaseModal("all")}><span>All cases</span><b>{cases.length}</b><small>Platform support records</small></button>
+                <button type="button" onClick={() => setCaseModal("open")}><span>Open cases</span><b>{openCases.length}</b><small>Awaiting resolution</small></button>
+                <button type="button" onClick={() => setCaseModal("urgent")}><span>High priority</span><b>{urgentCases.length}</b><small>High or urgent cases</small></button>
+                <button type="button" onClick={() => setCaseModal("resolved")}><span>Resolved</span><b>{resolvedCases.length}</b><small>Closed support work</small></button>
+              </section>
+              <section className="platform-support-layout">
+                <form onSubmit={createCase} className="platform-support-panel platform-support-editor">
+                  <header className="platform-control-panel-header"><div><p>Create</p><h2>Open support case</h2></div></header>
+                  <div className="platform-support-fields">
+                    <label className="platform-support-wide"><span>Academy</span><StandardSelectField name="academyId" value={supportAcademyId} onChange={setSupportAcademyId} placeholder="Select academy" options={academies.map((academy) => ({ value: academy.id, label: academy.name }))} /></label>
+                    <label><span>Subject</span><input name="subject" required placeholder="Brief case title" /></label>
+                    <label><span>Priority</span><StandardSelectField name="priority" value={supportPriority} onChange={setSupportPriority} placeholder="Select priority" options={["Low", "Normal", "High", "Urgent"].map((value) => ({ value, label: value }))} /></label>
+                    <label className="platform-support-wide"><span>Details</span><textarea name="description" rows={4} placeholder="Describe the issue or requested help" /></label>
+                    <button disabled={busy || !supportAcademyId} className="enterprise-action-button platform-support-action">{busy ? "Creating…" : "Create support case"}</button>
                   </div>
-                ))}
-              />
-            </section>
+                </form>
+                <section className="platform-support-panel platform-case-register">
+                  <header className="platform-control-panel-header"><div><p>Case register</p><h2>Support cases</h2></div></header>
+                  {cases.length ? <ul>{cases.map((item) => <li key={item.id}><div className="platform-case-copy"><b>{item.subject}</b><small>{item.academyName} · {item.description || "No additional details"}</small></div><div className="platform-case-meta"><span data-priority={item.priority.toLowerCase()}>{item.priority}</span><StandardSelectField name={`case-status-${item.id}`} value={caseStatuses[item.id] ?? item.status} onChange={(value) => { setCaseStatuses((current) => ({ ...current, [item.id]: value })); void updateCase(item, value); }} placeholder="Update status" options={["Open", "In progress", "Resolved", "Closed"].map((value) => ({ value, label: value }))} disabled={busy} /></div></li>)}</ul> : <p className="platform-support-empty">No support cases have been created yet.</p>}
+                </section>
+              </section>
+              {caseModal && <div className="platform-modal-backdrop" role="presentation"><article className="platform-modal platform-case-modal" role="dialog" aria-modal="true" aria-labelledby="case-modal-title"><header><div><p>Platform support</p><h3 id="case-modal-title">{caseModalTitle}</h3></div><button type="button" aria-label="Close support case details" onClick={() => setCaseModal(null)}>×</button></header>{caseModalRecords.length ? <ul>{caseModalRecords.map((item) => <li key={item.id}><span>?</span><div><b>{item.subject}</b><small>{item.academyName} · {item.priority} priority</small></div><em data-status={item.status.toLowerCase().replaceAll(" ", "-")}>{item.status}</em></li>)}</ul> : <p className="platform-support-empty">No support cases match this view.</p>}</article></div>}
+            </>
           )}
           {tab === "Settings" && settings && (
             <section className="mt-6 grid gap-5 xl:grid-cols-[.9fr_1.1fr]">
