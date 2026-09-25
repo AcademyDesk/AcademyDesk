@@ -75,6 +75,7 @@ type TenantModal = "all" | "active" | "trial" | "attention" | null;
 type InvoiceModal = "all" | "open" | "overdue" | "paid" | null;
 type CaseModal = "all" | "open" | "urgent" | "resolved" | null;
 type AnnouncementModal = "active" | "recent" | null;
+type HealthModal = "api" | "database" | "jobs" | "communications" | null;
 
 const platformLinks = [
   { label: "Overview", icon: "▦", href: "/platform" },
@@ -148,6 +149,7 @@ export default function PlatformControlPage() {
   const [invoiceModal, setInvoiceModal] = useState<InvoiceModal>(null);
   const [caseModal, setCaseModal] = useState<CaseModal>(null);
   const [announcementModal, setAnnouncementModal] = useState<AnnouncementModal>(null);
+  const [healthModal, setHealthModal] = useState<HealthModal>(null);
   const [invoiceAcademyId, setInvoiceAcademyId] = useState("");
   const [invoiceCurrency, setInvoiceCurrency] = useState("INR");
   const [invoicePeriodStart, setInvoicePeriodStart] = useState("");
@@ -217,6 +219,13 @@ export default function PlatformControlPage() {
   const activeAnnouncements = announcements.filter((item) => item.expiresAtUtc && new Date(item.expiresAtUtc).getTime() > currentTime);
   const announcementModalTitle = announcementModal === "active" ? "Active announcements" : "Recent announcements";
   const announcementModalRecords = announcementModal === "active" ? activeAnnouncements : announcements;
+  const healthDetails = [
+    { key: "api" as const, label: "API", value: health?.api ?? "Checking" },
+    { key: "database" as const, label: "Database", value: health?.database ?? "Checking" },
+    { key: "jobs" as const, label: "Background jobs", value: health?.backgroundJobs ?? "Checking" },
+    { key: "communications" as const, label: "Communication providers", value: health?.communicationProviders ?? "Checking" },
+  ];
+  const selectedHealthDetail = healthDetails.find((item) => item.key === healthModal);
   const controlIcon = tab === "Admins" ? "♙" : tab === "Billing" ? "₹" : tab === "Support" ? "?" : tab === "Announcements" ? "!" : tab === "Settings" ? "⚙" : tab === "Audit & health" ? "✓" : "◫";
   useEffect(() => {
     setTenantPlan(selected?.subscriptionPlan ?? "");
@@ -673,44 +682,22 @@ export default function PlatformControlPage() {
             </section>
           )}
           {tab === "Audit & health" && (
-            <section className="mt-6 grid gap-5 lg:grid-cols-2">
-              <section className="rounded-xl border border-slate-800 bg-slate-900 p-5">
-                <h2 className="font-semibold">Operational health</h2>
-                <dl className="mt-4 space-y-3 text-sm">
-                  <div>
-                    <dt className="text-slate-400">API</dt>
-                    <dd>{health?.api ?? "Checking"}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-slate-400">Database</dt>
-                    <dd>{health?.database ?? "Checking"}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-slate-400">Background jobs</dt>
-                    <dd>{health?.backgroundJobs ?? "Checking"}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-slate-400">Communication providers</dt>
-                    <dd>{health?.communicationProviders ?? "Checking"}</dd>
-                  </div>
-                </dl>
+            <>
+              <section className="platform-health-kpis" aria-label="Operational health summary">
+                {healthDetails.map((item) => <button key={item.key} type="button" onClick={() => setHealthModal(item.key)}><span>{item.label}</span><b data-health={item.value.toLowerCase()}>{item.value}</b><small>Open service detail</small></button>)}
               </section>
-              <RecordList
-                title="Platform audit history"
-                records={audit.map((item) => (
-                  <div
-                    key={item.id}
-                    className="border-b border-slate-800 py-3 text-sm"
-                  >
-                    <b>{item.action}</b>
-                    <p className="mt-1 text-slate-400">
-                      {item.actorName} · {item.entityType} ·{" "}
-                      {new Date(item.occurredAtUtc).toLocaleString()}
-                    </p>
-                  </div>
-                ))}
-              />
-            </section>
+              <section className="platform-health-layout">
+                <section className="platform-health-panel">
+                  <header className="platform-control-panel-header"><div><p>Service status</p><h2>Operational health</h2></div></header>
+                  <ul>{healthDetails.map((item) => <li key={item.key}><span data-health={item.value.toLowerCase()}></span><div><b>{item.label}</b><small>Platform service check</small></div><em data-health={item.value.toLowerCase()}>{item.value}</em></li>)}</ul>
+                </section>
+                <section className="platform-health-panel platform-audit-register">
+                  <header className="platform-control-panel-header"><div><p>Activity register</p><h2>Platform audit history</h2></div></header>
+                  {audit.length ? <ul>{audit.map((item) => <li key={item.id}><span>{item.actorName.slice(0, 1).toUpperCase()}</span><div><b>{item.action}</b><small>{item.actorName} · {item.entityType} · {new Intl.DateTimeFormat("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" }).format(new Date(item.occurredAtUtc))}</small></div></li>)}</ul> : <p className="platform-health-empty">No audit activity has been recorded yet.</p>}
+                </section>
+              </section>
+              {healthModal && selectedHealthDetail && <div className="platform-modal-backdrop" role="presentation"><article className="platform-modal platform-health-modal" role="dialog" aria-modal="true" aria-labelledby="health-modal-title"><header><div><p>Operational health</p><h3 id="health-modal-title">{selectedHealthDetail.label}</h3></div><button type="button" aria-label="Close service details" onClick={() => setHealthModal(null)}>×</button></header><div><span data-health={selectedHealthDetail.value.toLowerCase()}></span><b>{selectedHealthDetail.value}</b><p>This service is currently reporting its latest platform status.</p></div></article></div>}
+            </>
           )}
         </div>
       </section>
