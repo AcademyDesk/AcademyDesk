@@ -3120,14 +3120,17 @@ html[data-theme="light"] .field-label { color: #475569; }
 }
 .platform-heading {
   display: flex;
-  align-items: end;
+  align-items: center;
   justify-content: space-between;
   gap: 20px;
+  min-height: 74px;
 }
-.platform-heading h2,
+.platform-heading h1,
 .platform-heading p {
   margin: 0;
 }
+.platform-title-group { display:flex; align-items:center; gap:16px; min-width:0; }
+.platform-title-icon { display:grid; width:56px; height:56px; flex:0 0 56px; place-items:center; border-radius:15px; background:var(--ad-accent); box-shadow:0 12px 22px color-mix(in srgb,var(--ad-accent) 24%,transparent); color:#fff; font-size:1.35rem; font-weight:850; }
 .platform-workspace-title {
   margin: 0;
   color: var(--ad-text);
@@ -3137,8 +3140,8 @@ html[data-theme="light"] .field-label { color: #475569; }
   letter-spacing: var(--ad-page-title-tracking);
   line-height: var(--ad-page-title-line-height);
 }
-.platform-page-eyebrow,.platform-control-heading > p { margin:0 0 8px; color:var(--ad-accent); font-size:.7rem; font-weight:820; letter-spacing:.13em; text-transform:uppercase; }
-.platform-heading > div > span,.platform-control-heading > span { display:block; max-width:720px; margin-top:10px; color:var(--ad-text-muted); font-size:.88rem; line-height:1.55; }
+.platform-page-eyebrow,.platform-control-heading > p { margin:0 0 5px; color:var(--ad-accent); font-size:.7rem; font-weight:850; letter-spacing:.14em; text-transform:uppercase; }
+.platform-control-heading > span { display:block; max-width:720px; margin-top:10px; color:var(--ad-text-muted); font-size:.88rem; line-height:1.55; }
 .platform-control-heading { margin:0; }
 .platform-control-heading h1 { margin:0; }
 .platform-control-content h2 {
@@ -3224,11 +3227,6 @@ html[data-theme="light"] .field-label { color: #475569; }
 .platform-owner-form > button:hover:not(:disabled),.platform-password-form > button:hover:not(:disabled) { background:var(--ad-action-hover); transform:translateY(-1px); }
 .platform-owner-form > button:focus-visible,.platform-password-form > button:focus-visible,.platform-owner-photo:focus-visible { outline:3px solid color-mix(in srgb,var(--ad-accent) 55%,transparent); outline-offset:2px; }
 .platform-owner-form > button:disabled,.platform-password-form > button:disabled,.platform-owner-photo:disabled { cursor:not-allowed; opacity:.58; box-shadow:none; transform:none; }
-.platform-heading p {
-  margin-top: 7px;
-  color: var(--ad-text-muted);
-  font-size: clamp(0.83rem, 0.88vw, 1rem);
-}
 .platform-kpis {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -3236,7 +3234,7 @@ html[data-theme="light"] .field-label { color: #475569; }
 }
 .platform-kpis article {
   display: grid;
-  min-height: 94px;
+  min-height: 112px;
   align-content: center;
   padding: 16px 18px;
   border: 1px solid var(--ad-border);
@@ -3250,11 +3248,14 @@ html[data-theme="light"] .field-label { color: #475569; }
   display: block;
 }
 .platform-kpis span {
-  color: var(--ad-text-muted);
-  font-size: 0.78rem;
+  color: var(--ad-accent);
+  font-size: 0.68rem;
+  font-weight: 850;
+  letter-spacing: .11em;
+  text-transform: uppercase;
 }
 .platform-kpis strong {
-  margin-top: 8px;
+  margin-top: 12px;
   color: var(--ad-text);
   font-size: clamp(1.65rem, 1.82vw, 2.25rem);
   letter-spacing: -0.05em;
@@ -3265,8 +3266,8 @@ html[data-theme="light"] .field-label { color: #475569; }
 .platform-finance-kpi.collected::after { background:var(--ad-success); }
 .platform-finance-kpi.outstanding::after { background:var(--ad-warning); }
 .platform-kpis small {
-  margin-top: 8px;
-  color: var(--ad-success);
+  margin-top: 6px;
+  color: var(--ad-text-muted);
   font-size: 0.73rem;
 }
 .platform-main-grid {
@@ -3283,6 +3284,7 @@ html[data-theme="light"] .field-label { color: #475569; }
   border: 1px solid var(--ad-border);
   border-radius: 15px;
   background: var(--ad-surface);
+  box-shadow: 0 8px 22px color-mix(in srgb,var(--ad-text) 5%,transparent);
 }
 .platform-portfolio { display:flex; height:100%; flex-direction:column; }
 .platform-panel > header {
@@ -3292,6 +3294,8 @@ html[data-theme="light"] .field-label { color: #475569; }
   gap: 14px;
   padding: 17px 20px;
   border-bottom: 1px solid var(--ad-border);
+  border-radius: 14px 14px 0 0;
+  background: linear-gradient(105deg,color-mix(in srgb,var(--ad-accent) 10%,var(--ad-surface)),var(--ad-surface) 72%);
 }
 .platform-panel h3,
 .platform-panel p {
@@ -3299,7 +3303,8 @@ html[data-theme="light"] .field-label { color: #475569; }
 }
 .platform-panel h3 {
   color: var(--ad-text);
-  font-size: 1rem;
+  font-size: 1.05rem;
+  font-weight: 760;
 }
 .platform-panel p {
   margin-top: 4px;
@@ -3370,13 +3375,16 @@ html[data-theme="light"] .field-label { color: #475569; }
 }
 .platform-status {
   display: inline-flex;
+  align-items: center;
+  gap: 6px;
   padding: 4px 8px;
-  border-radius: 999px;
+  border-radius: 7px;
   background: color-mix(in srgb, var(--ad-warning) 15%, var(--ad-surface));
   color: var(--ad-warning);
   font-size: 0.7rem;
   font-weight: 700;
 }
+.platform-status::before { content:""; width:6px; height:6px; border-radius:999px; background:currentColor; }
 .platform-status.active {
   background: color-mix(in srgb, var(--ad-success) 15%, var(--ad-surface));
   color: var(--ad-success);
@@ -4596,6 +4604,12 @@ html[data-theme="light"] .field-label { color: #475569; }
   .platform-heading {
     align-items: flex-start;
     flex-direction: column;
+  }
+  .platform-title-icon {
+    width: 46px;
+    height: 46px;
+    flex-basis: 46px;
+    border-radius: 13px;
   }
   .platform-kpis,
   .platform-main-grid,
