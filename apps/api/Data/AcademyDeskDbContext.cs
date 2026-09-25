@@ -62,6 +62,7 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
     public DbSet<PlatformAuditEntry> PlatformAuditEntries => Set<PlatformAuditEntry>();
     public DbSet<PlatformSupportCase> PlatformSupportCases => Set<PlatformSupportCase>();
     public DbSet<PlatformBillingInvoice> PlatformBillingInvoices => Set<PlatformBillingInvoice>();
+    public DbSet<TenantOnboardingProfile> TenantOnboardingProfiles => Set<TenantOnboardingProfile>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -78,6 +79,24 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
             entity.Property(x => x.StudentLimit).HasDefaultValue(100);
             entity.Property(x => x.StaffLimit).HasDefaultValue(10);
             entity.Property(x => x.EnabledModulesJson).HasMaxLength(2000).HasDefaultValue("[\"Core\"]").IsRequired();
+        });
+
+        modelBuilder.Entity<TenantOnboardingProfile>(entity =>
+        {
+            entity.HasIndex(x => x.AcademyId).IsUnique();
+            entity.Property(x => x.Status).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.CurrentSection).HasMaxLength(40).IsRequired();
+            entity.Property(x => x.PrimaryContactName).HasMaxLength(200);
+            entity.Property(x => x.PrimaryContactRole).HasMaxLength(120);
+            entity.Property(x => x.PrimaryContactEmail).HasMaxLength(320);
+            entity.Property(x => x.PrimaryContactPhone).HasMaxLength(40);
+            entity.Property(x => x.BusinessType).HasMaxLength(120);
+            entity.Property(x => x.OperatingSince).HasMaxLength(20);
+            entity.Property(x => x.Website).HasMaxLength(500);
+            entity.Property(x => x.FinanceModel).HasMaxLength(160);
+            entity.Property(x => x.BillingFrequency).HasMaxLength(120);
+            entity.Property(x => x.TeacherPaymentModels).HasMaxLength(300);
+            entity.Property(x => x.DocumentsJson).HasMaxLength(8000);
         });
 
         modelBuilder.Entity<Branch>(entity =>

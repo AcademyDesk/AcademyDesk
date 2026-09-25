@@ -46,6 +46,8 @@ const platformLinks = [
     icon: "◫",
     href: "/platform/control?tab=Tenants",
   },
+  { label: "Tenant onboarding", icon: "✦", href: "/platform/control?tab=Tenant%20onboarding" },
+  { label: "Tenant information", icon: "ⓘ", href: "/platform/control?tab=Tenant%20information" },
   { label: "Academy admins", icon: "♙", href: "/platform/control?tab=Admins" },
   { label: "Billing", icon: "₹", href: "/platform/control?tab=Billing" },
   { label: "Support", icon: "?", href: "/platform/control?tab=Support" },

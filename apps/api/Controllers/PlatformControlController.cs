@@ -67,6 +67,30 @@ public sealed class PlatformControlController(AcademyDeskDbContext db, UserManag
         }));
     }
 
+    [HttpGet("academies/{academyId:guid}/onboarding")]
+    public async Task<ActionResult> GetTenantOnboarding(Guid academyId, CancellationToken token)
+    {
+        if (!await IsPlatformOwner()) return Forbid();
+        if (!await db.Academies.AnyAsync(x => x.Id == academyId, token)) return NotFound();
+        return Ok(await db.TenantOnboardingProfiles.AsNoTracking().SingleOrDefaultAsync(x => x.AcademyId == academyId, token));
+    }
+
+    [HttpPut("academies/{academyId:guid}/onboarding")]
+    public async Task<ActionResult> SaveTenantOnboarding(Guid academyId, TenantOnboardingRequest request, CancellationToken token)
+    {
+        if (!await IsPlatformOwner()) return Forbid();
+        if (!await db.Academies.AnyAsync(x => x.Id == academyId, token)) return NotFound();
+        var profile = await db.TenantOnboardingProfiles.SingleOrDefaultAsync(x => x.AcademyId == academyId, token);
+        if (profile is null) { profile = new TenantOnboardingProfile { AcademyId = academyId }; db.TenantOnboardingProfiles.Add(profile); }
+        profile.Status = string.IsNullOrWhiteSpace(request.Status) ? "InProgress" : request.Status.Trim();
+        profile.CurrentSection = string.IsNullOrWhiteSpace(request.CurrentSection) ? "Personal" : request.CurrentSection.Trim();
+        profile.PrimaryContactName = request.PrimaryContactName?.Trim(); profile.PrimaryContactRole = request.PrimaryContactRole?.Trim(); profile.PrimaryContactEmail = request.PrimaryContactEmail?.Trim(); profile.PrimaryContactPhone = request.PrimaryContactPhone?.Trim();
+        profile.BusinessType = request.BusinessType?.Trim(); profile.OperatingSince = request.OperatingSince?.Trim(); profile.Website = request.Website?.Trim(); profile.BranchSummary = request.BranchSummary?.Trim();
+        profile.FinanceModel = request.FinanceModel?.Trim(); profile.BillingFrequency = request.BillingFrequency?.Trim(); profile.PaymentCollectionMethods = request.PaymentCollectionMethods?.Trim(); profile.TeacherPaymentModels = request.TeacherPaymentModels?.Trim();
+        profile.TeacherCount = request.TeacherCount; profile.StudentCount = request.StudentCount; profile.SubjectCount = request.SubjectCount; profile.SubjectTypes = request.SubjectTypes?.Trim(); profile.DeliveryModes = request.DeliveryModes?.Trim(); profile.ClassRatios = request.ClassRatios?.Trim(); profile.BatchAndClassSetup = request.BatchAndClassSetup?.Trim(); profile.OperationalNotes = request.OperationalNotes?.Trim(); profile.DocumentsJson = string.IsNullOrWhiteSpace(request.DocumentsJson) ? "[]" : request.DocumentsJson; profile.UpdatedAtUtc = DateTime.UtcNow;
+        await Audit("Tenant onboarding profile saved", "TenantOnboardingProfile", profile.Id, new { academyId, profile.Status, profile.CurrentSection }, token); await db.SaveChangesAsync(token); return Ok(profile);
+    }
+
     [HttpGet("settings")]
     public async Task<ActionResult<PlatformSettings>> GetSettings(CancellationToken token)
     {
@@ -207,6 +231,7 @@ public sealed class PlatformControlController(AcademyDeskDbContext db, UserManag
 
 public sealed record UpdatePlatformSettingsRequest(string PlatformName, string? SupportEmail, string? DefaultCurrency, int DefaultTrialDays, int DataRetentionDays, bool MaintenanceMode, string? StatusMessage);
 public sealed record CreatePlatformAnnouncementRequest(Guid AcademyId, string Title, string Message, int DisplayHours);
+public sealed record TenantOnboardingRequest(string? Status, string? CurrentSection, string? PrimaryContactName, string? PrimaryContactRole, string? PrimaryContactEmail, string? PrimaryContactPhone, string? BusinessType, string? OperatingSince, string? Website, string? BranchSummary, string? FinanceModel, string? BillingFrequency, string? PaymentCollectionMethods, string? TeacherPaymentModels, int? TeacherCount, int? StudentCount, int? SubjectCount, string? SubjectTypes, string? DeliveryModes, string? ClassRatios, string? BatchAndClassSetup, string? OperationalNotes, string? DocumentsJson);
 public sealed record SetPlatformAdminActiveRequest(bool IsActive);
 public sealed record ResetPlatformAdminPasswordRequest(string NewPassword);
 public sealed record CreatePlatformSupportCaseRequest(Guid AcademyId, string Subject, string? Priority, string? Description);

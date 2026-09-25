@@ -85,6 +85,8 @@ const platformLinks = [
     href: "/platform/control?tab=Tenants",
     tab: "Tenants",
   },
+  { label: "Tenant onboarding", icon: "✦", href: "/platform/control?tab=Tenant%20onboarding", tab: "Tenant onboarding" },
+  { label: "Tenant information", icon: "ⓘ", href: "/platform/control?tab=Tenant%20information", tab: "Tenant information" },
   {
     label: "Academy admins",
     icon: "♙",
@@ -120,6 +122,8 @@ const platformLinks = [
 
 const platformControlTabs = [
   "Tenants",
+  "Tenant onboarding",
+  "Tenant information",
   "Admins",
   "Billing",
   "Support",
@@ -226,7 +230,7 @@ export default function PlatformControlPage() {
     { key: "communications" as const, label: "Communication providers", value: health?.communicationProviders ?? "Checking" },
   ];
   const selectedHealthDetail = healthDetails.find((item) => item.key === healthModal);
-  const controlIcon = tab === "Admins" ? "♙" : tab === "Billing" ? "₹" : tab === "Support" ? "?" : tab === "Announcements" ? "!" : tab === "Settings" ? "⚙" : tab === "Audit & health" ? "✓" : "◫";
+  const controlIcon = tab === "Tenant onboarding" ? "✦" : tab === "Tenant information" ? "ⓘ" : tab === "Admins" ? "♙" : tab === "Billing" ? "₹" : tab === "Support" ? "?" : tab === "Announcements" ? "!" : tab === "Settings" ? "⚙" : tab === "Audit & health" ? "✓" : "◫";
   useEffect(() => {
     setTenantPlan(selected?.subscriptionPlan ?? "");
     setTenantStatus(selected?.subscriptionStatus ?? "");
