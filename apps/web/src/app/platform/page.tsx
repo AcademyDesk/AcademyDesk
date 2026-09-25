@@ -249,7 +249,7 @@ export default function PlatformPage() {
             <div className="platform-title-group">
               <span className="platform-title-icon" aria-hidden="true">◈</span>
               <div>
-                <p className="platform-page-eyebrow">Platform owner</p>
+                <p className="platform-page-eyebrow">{owner?.displayName || "Platform owner"}</p>
                 <h1 className="platform-workspace-title">Overview</h1>
               </div>
             </div>
