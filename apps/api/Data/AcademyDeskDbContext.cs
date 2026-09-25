@@ -90,6 +90,12 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
             entity.Property(x => x.PrimaryContactRole).HasMaxLength(120);
             entity.Property(x => x.PrimaryContactEmail).HasMaxLength(320);
             entity.Property(x => x.PrimaryContactPhone).HasMaxLength(40);
+            entity.Property(x => x.Country).HasMaxLength(120);
+            entity.Property(x => x.State).HasMaxLength(120);
+            entity.Property(x => x.City).HasMaxLength(120);
+            entity.Property(x => x.PostalCode).HasMaxLength(24);
+            entity.Property(x => x.AddressLine1).HasMaxLength(300);
+            entity.Property(x => x.AddressLine2).HasMaxLength(300);
             entity.Property(x => x.BusinessType).HasMaxLength(120);
             entity.Property(x => x.OperatingSince).HasMaxLength(20);
             entity.Property(x => x.Website).HasMaxLength(500);

@@ -9,6 +9,12 @@ public sealed class TenantOnboardingProfile : AcademyEntity
     public string? PrimaryContactRole { get; set; }
     public string? PrimaryContactEmail { get; set; }
     public string? PrimaryContactPhone { get; set; }
+    public string? Country { get; set; }
+    public string? State { get; set; }
+    public string? City { get; set; }
+    public string? PostalCode { get; set; }
+    public string? AddressLine1 { get; set; }
+    public string? AddressLine2 { get; set; }
     public string? BusinessType { get; set; }
     public string? OperatingSince { get; set; }
     public string? Website { get; set; }
