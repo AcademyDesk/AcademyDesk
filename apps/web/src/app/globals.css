@@ -2970,8 +2970,9 @@ html[data-theme="light"] .field-label { color: #475569; }
   background: color-mix(in srgb, var(--ad-surface) 46%, transparent);
   backdrop-filter: none;
 }
-.platform-topbar::after { left:clamp(28px,4vw,76px); right:auto; bottom:16px; width:76px; height:3px; background:linear-gradient(90deg,var(--ad-accent),transparent); opacity:.75; }
-.platform-topbar-context { display:grid; min-width:0; gap:2px; padding-left:clamp(28px,4vw,76px); }
+.platform-topbar::after { display:none; }
+.platform-topbar-context { position:relative; display:grid; min-width:0; align-self:stretch; align-content:center; gap:3px; margin-left:calc(clamp(28px,4vw,76px) - clamp(22px,2vw,40px)); padding:0 0 15px; }
+.platform-topbar-context::after { content:""; position:absolute; bottom:0; left:0; width:118px; height:3px; border-radius:99px; background:linear-gradient(90deg,var(--ad-accent),transparent); opacity:.75; }
 .platform-topbar-context span { color:var(--ad-accent); font-size:.64rem; font-weight:850; letter-spacing:.13em; text-transform:uppercase; }
 .platform-topbar-context strong { overflow:hidden; color:var(--ad-text); font-size:.82rem; font-weight:760; text-overflow:ellipsis; white-space:nowrap; }
 .platform-avatar {
