@@ -3249,7 +3249,9 @@ html[data-theme="light"] .field-label { color: #475569; }
 .platform-tenant-action { grid-column:1/-1; justify-content:center; min-height:42px; }
 .platform-tenant-empty { margin:0; padding:36px 20px; color:var(--ad-text-muted); font-size:.82rem; text-align:center; }
 .platform-admin-kpis { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; margin-top:20px; }
-.platform-admin-kpis article { min-height:112px; padding:16px 18px; border:1px solid var(--ad-border); border-radius:15px; background:var(--ad-surface); box-shadow:0 8px 22px color-mix(in srgb,var(--ad-text) 5%,transparent); }
+.platform-admin-kpis button { display:block; min-height:112px; padding:16px 18px; border:1px solid var(--ad-border); border-radius:15px; background:var(--ad-surface); box-shadow:0 8px 22px color-mix(in srgb,var(--ad-text) 5%,transparent); color:inherit; cursor:pointer; font:inherit; text-align:left; }
+.platform-admin-kpis button:hover { border-color:color-mix(in srgb,var(--ad-accent) 55%,var(--ad-border)); background:var(--ad-accent-soft); transform:translateY(-1px); }
+.platform-admin-kpis button:focus-visible { outline:3px solid color-mix(in srgb,var(--ad-accent) 45%,transparent); outline-offset:2px; }
 .platform-admin-kpis span { display:block; color:var(--ad-accent); font-size:.68rem; font-weight:850; letter-spacing:.11em; text-transform:uppercase; }
 .platform-admin-kpis b { display:block; margin-top:12px; color:var(--ad-text); font-size:1.55rem; font-weight:760; letter-spacing:-.04em; }
 .platform-admin-kpis small { display:block; margin-top:5px; color:var(--ad-text-muted); font-size:.7rem; }
@@ -3272,6 +3274,20 @@ html[data-theme="light"] .field-label { color: #475569; }
 .platform-admin-actions button:hover:not(:disabled) { border-color:var(--ad-accent); background:var(--ad-accent-soft); }
 .platform-admin-actions button:disabled { cursor:wait; opacity:.58; }
 .platform-admin-empty { padding:36px 0!important; color:var(--ad-text-muted)!important; text-align:center; }
+.platform-admin-modal { width:min(100%,620px); padding:0; }
+.platform-admin-modal>header { align-items:center; margin:0; padding:18px 20px; border-bottom:1px solid var(--ad-border); border-radius:15px 15px 0 0; background:linear-gradient(105deg,color-mix(in srgb,var(--ad-accent) 10%,var(--ad-surface)),var(--ad-surface) 72%); }
+.platform-admin-modal>header p { margin:0 0 5px; color:var(--ad-accent); font-size:.7rem; font-weight:850; letter-spacing:.14em; text-transform:uppercase; }
+.platform-admin-modal>header h3 { margin:0; color:var(--ad-text); font-size:1.05rem; font-weight:760; }
+.platform-admin-modal>header>button { flex:0 0 auto; }
+.platform-admin-modal ul { display:grid; gap:0; margin:0; padding:0 20px; list-style:none; }
+.platform-admin-modal li { display:grid; grid-template-columns:38px minmax(0,1fr) auto; align-items:center; gap:11px; padding:14px 0; border-bottom:1px solid var(--ad-border); }
+.platform-admin-modal li:last-child { border-bottom:0; }
+.platform-admin-modal li>span { display:grid; width:38px; height:38px; place-items:center; border-radius:11px; background:var(--ad-accent); color:#fff; font-size:.84rem; font-weight:850; }
+.platform-admin-modal li b,.platform-admin-modal li small { display:block; }
+.platform-admin-modal li b { color:var(--ad-text); font-size:.84rem; font-weight:760; }
+.platform-admin-modal li small { margin-top:4px; overflow:hidden; color:var(--ad-text-muted); font-size:.7rem; text-overflow:ellipsis; white-space:nowrap; }
+.platform-admin-modal li em { padding:4px 7px; border-radius:7px; background:color-mix(in srgb,var(--ad-danger) 12%,transparent); color:var(--ad-danger); font-size:.66rem; font-style:normal; font-weight:760; }
+.platform-admin-modal li em[data-active=true] { background:color-mix(in srgb,var(--ad-success) 14%,transparent); color:var(--ad-success); }
 .platform-settings-intro { margin:6px 0 2px; color:var(--ad-text-muted); font-size:.8rem; line-height:1.5; }
 .platform-owner-profile { display:flex; align-items:center; gap:14px; padding-bottom:18px; border-bottom:1px solid var(--ad-border); }
 .platform-owner-profile h2,.platform-owner-profile p { margin:0; }

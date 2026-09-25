@@ -69,6 +69,7 @@ type Health = {
   statusMessage?: string;
 };
 type OwnerSession = { displayName: string; email?: string | null; phoneNumber?: string | null; profileImageUrl?: string | null; roles: string[] };
+type AdminModal = "all" | "active" | "inactive" | "academies" | null;
 
 const platformLinks = [
   { label: "Overview", icon: "▦", href: "/platform" },
@@ -136,6 +137,7 @@ export default function PlatformControlPage() {
   const [tenantPlan, setTenantPlan] = useState("");
   const [tenantStatus, setTenantStatus] = useState("");
   const [tenantEndsAt, setTenantEndsAt] = useState("");
+  const [adminModal, setAdminModal] = useState<AdminModal>(null);
   const [message, setMessage] = useState("Loading platform controls…");
   const [busy, setBusy] = useState(false);
   const profileImageInput = useRef<HTMLInputElement>(null);
@@ -173,6 +175,9 @@ export default function PlatformControlPage() {
   const attentionTenants = academies.filter((academy) => ["Past due", "Cancelled"].includes(academy.subscriptionStatus)).length;
   const activeAdmins = admins.filter((admin) => admin.isActive).length;
   const adminAcademies = new Set(admins.map((admin) => admin.academyName).filter(Boolean)).size;
+  const adminModalTitle = adminModal === "active" ? "Active academy administrators" : adminModal === "inactive" ? "Deactivated academy administrators" : adminModal === "academies" ? "Academies with administrator access" : "All academy administrators";
+  const adminModalRecords = adminModal === "active" ? admins.filter((admin) => admin.isActive) : adminModal === "inactive" ? admins.filter((admin) => !admin.isActive) : admins;
+  const controlIcon = tab === "Admins" ? "♙" : tab === "Billing" ? "₹" : tab === "Support" ? "?" : tab === "Announcements" ? "!" : tab === "Settings" ? "⚙" : tab === "Audit & health" ? "✓" : "◫";
   useEffect(() => {
     setTenantPlan(selected?.subscriptionPlan ?? "");
     setTenantStatus(selected?.subscriptionStatus ?? "");
@@ -427,7 +432,7 @@ export default function PlatformControlPage() {
         </header>
         <div className="platform-content platform-control-content">
           <header className="platform-control-heading">
-            <span className="platform-control-icon" aria-hidden="true">◫</span>
+            <span className="platform-control-icon" aria-hidden="true">{controlIcon}</span>
             <div>
               <p>Platform owner</p>
               <h1 className="platform-workspace-title">{tab === "Tenants" ? "Tenant management" : tab === "Admins" ? "Academy admins" : tab}</h1>
@@ -471,10 +476,10 @@ export default function PlatformControlPage() {
           {tab === "Admins" && (
             <>
               <section className="platform-admin-kpis" aria-label="Academy administrator summary">
-                <article><span>Total administrators</span><b>{admins.length}</b><small>Accounts with academy administration access</small></article>
-                <article><span>Active</span><b>{activeAdmins}</b><small>Administrators currently able to sign in</small></article>
-                <article><span>Deactivated</span><b>{admins.length - activeAdmins}</b><small>Accounts retained without sign-in access</small></article>
-                <article><span>Academies covered</span><b>{adminAcademies}</b><small>Academies with an assigned administrator</small></article>
+                <button type="button" onClick={() => setAdminModal("all")}><span>Total administrators</span><b>{admins.length}</b><small>Accounts with academy administration access</small></button>
+                <button type="button" onClick={() => setAdminModal("active")}><span>Active</span><b>{activeAdmins}</b><small>Administrators currently able to sign in</small></button>
+                <button type="button" onClick={() => setAdminModal("inactive")}><span>Deactivated</span><b>{admins.length - activeAdmins}</b><small>Accounts retained without sign-in access</small></button>
+                <button type="button" onClick={() => setAdminModal("academies")}><span>Academies covered</span><b>{adminAcademies}</b><small>Academies with an assigned administrator</small></button>
               </section>
               <section className="platform-admin-panel">
                 <header className="platform-control-panel-header"><div><p>Access register</p><h2>Academy administrators</h2></div><span>{admins.length} total</span></header>
@@ -506,6 +511,7 @@ export default function PlatformControlPage() {
                 </table>
               </div>
               </section>
+              {adminModal && <div className="platform-modal-backdrop" role="presentation"><article className="platform-modal platform-admin-modal" role="dialog" aria-modal="true" aria-labelledby="admin-modal-title"><header><div><p>Academy administrators</p><h3 id="admin-modal-title">{adminModalTitle}</h3></div><button type="button" aria-label="Close administrator details" onClick={() => setAdminModal(null)}>×</button></header>{adminModalRecords.length ? <ul>{adminModalRecords.map((admin) => <li key={admin.id}><span>{admin.displayName.slice(0, 1).toUpperCase()}</span><div><b>{admin.displayName}</b><small>{admin.email} · {admin.academyName || "Unassigned academy"}</small></div><em data-active={admin.isActive}>{admin.isActive ? "Active" : "Deactivated"}</em></li>)}</ul> : <p className="platform-admin-empty">No administrator accounts match this view.</p>}</article></div>}
             </>
           )}
           {tab === "Billing" && (
