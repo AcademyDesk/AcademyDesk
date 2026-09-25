@@ -71,6 +71,7 @@ type Health = {
 type OwnerSession = { displayName: string; email?: string | null; phoneNumber?: string | null; profileImageUrl?: string | null; roles: string[] };
 type AdminModal = "all" | "active" | "inactive" | "academies" | null;
 type TenantModal = "all" | "active" | "trial" | "attention" | null;
+type InvoiceModal = "all" | "open" | "overdue" | "paid" | null;
 
 const platformLinks = [
   { label: "Overview", icon: "▦", href: "/platform" },
@@ -140,6 +141,13 @@ export default function PlatformControlPage() {
   const [tenantEndsAt, setTenantEndsAt] = useState("");
   const [adminModal, setAdminModal] = useState<AdminModal>(null);
   const [tenantModal, setTenantModal] = useState<TenantModal>(null);
+  const [invoiceModal, setInvoiceModal] = useState<InvoiceModal>(null);
+  const [invoiceAcademyId, setInvoiceAcademyId] = useState("");
+  const [invoiceCurrency, setInvoiceCurrency] = useState("INR");
+  const [invoicePeriodStart, setInvoicePeriodStart] = useState("");
+  const [invoicePeriodEnd, setInvoicePeriodEnd] = useState("");
+  const [invoiceDueDate, setInvoiceDueDate] = useState("");
+  const [invoiceStatuses, setInvoiceStatuses] = useState<Record<string, string>>({});
   const [message, setMessage] = useState("Loading platform controls…");
   const [busy, setBusy] = useState(false);
   const profileImageInput = useRef<HTMLInputElement>(null);
@@ -181,6 +189,11 @@ export default function PlatformControlPage() {
   const adminAcademies = new Set(admins.map((admin) => admin.academyName).filter(Boolean)).size;
   const adminModalTitle = adminModal === "active" ? "Active academy administrators" : adminModal === "inactive" ? "Deactivated academy administrators" : adminModal === "academies" ? "Academies with administrator access" : "All academy administrators";
   const adminModalRecords = adminModal === "active" ? admins.filter((admin) => admin.isActive) : adminModal === "inactive" ? admins.filter((admin) => !admin.isActive) : admins;
+  const openInvoices = invoices.filter((invoice) => !["Paid", "Void"].includes(invoice.status));
+  const overdueInvoices = invoices.filter((invoice) => invoice.status === "Overdue");
+  const paidInvoices = invoices.filter((invoice) => invoice.status === "Paid");
+  const invoiceModalTitle = invoiceModal === "open" ? "Open platform invoices" : invoiceModal === "overdue" ? "Overdue platform invoices" : invoiceModal === "paid" ? "Paid platform invoices" : "All platform invoices";
+  const invoiceModalRecords = invoiceModal === "open" ? openInvoices : invoiceModal === "overdue" ? overdueInvoices : invoiceModal === "paid" ? paidInvoices : invoices;
   const controlIcon = tab === "Admins" ? "♙" : tab === "Billing" ? "₹" : tab === "Support" ? "?" : tab === "Announcements" ? "!" : tab === "Settings" ? "⚙" : tab === "Audit & health" ? "✓" : "◫";
   useEffect(() => {
     setTenantPlan(selected?.subscriptionPlan ?? "");
@@ -254,6 +267,11 @@ export default function PlatformControlPage() {
       "Platform invoice created.",
     );
     event.currentTarget.reset();
+    setInvoiceAcademyId("");
+    setInvoiceCurrency("INR");
+    setInvoicePeriodStart("");
+    setInvoicePeriodEnd("");
+    setInvoiceDueDate("");
   }
   async function request(
     path: string,
@@ -519,60 +537,34 @@ export default function PlatformControlPage() {
             </>
           )}
           {tab === "Billing" && (
-            <section className="mt-6 grid gap-5 lg:grid-cols-[.8fr_1.2fr]">
-              <form
-                onSubmit={createInvoice}
-                className="rounded-xl border border-slate-800 bg-slate-900 p-5"
-              >
-                <h2 className="font-semibold">Create platform invoice</h2>
-                <FieldSelect
-                  name="academyId"
-                  label="Academy"
-                  items={academies.map((a) => [a.id, a.name])}
-                />
-                <Field name="invoiceNumber" label="Invoice number" />
-                <Field name="amount" label="Amount" type="number" />
-                <Field name="currency" label="Currency" value="INR" />
-                <Field name="periodStart" label="Period start" type="date" />
-                <Field name="periodEnd" label="Period end" type="date" />
-                <Field name="dueDate" label="Due date" type="date" />
-                <button
-                  disabled={busy}
-                  className="mt-4 w-full rounded bg-cyan-400 p-2 font-semibold text-slate-950"
-                >
-                  Create invoice
-                </button>
-              </form>
-              <RecordList
-                title="Platform invoices"
-                records={invoices.map((item) => (
-                  <div
-                    key={item.id}
-                    className="rounded border border-slate-700 bg-slate-950 p-3"
-                  >
-                    <b>{item.invoiceNumber}</b> · {item.academyName}
-                    <span className="float-right">
-                      {item.currency} {item.amount}
-                    </span>
-                    <div className="mt-2">
-                      <select
-                        value={item.status}
-                        onChange={(e) =>
-                          void updateInvoice(item, e.target.value)
-                        }
-                        className="rounded border border-slate-700 bg-slate-900 p-1 text-xs"
-                      >
-                        <option>Draft</option>
-                        <option>Issued</option>
-                        <option>Overdue</option>
-                        <option>Paid</option>
-                        <option>Void</option>
-                      </select>
-                    </div>
+            <>
+              <section className="platform-billing-kpis" aria-label="Platform billing summary">
+                <button type="button" onClick={() => setInvoiceModal("all")}><span>All invoices</span><b>{invoices.length}</b><small>Platform billing records</small></button>
+                <button type="button" onClick={() => setInvoiceModal("open")}><span>Open invoices</span><b>{openInvoices.length}</b><small>Awaiting collection or review</small></button>
+                <button type="button" onClick={() => setInvoiceModal("overdue")}><span>Overdue</span><b>{overdueInvoices.length}</b><small>Invoices requiring follow-up</small></button>
+                <button type="button" onClick={() => setInvoiceModal("paid")}><span>Paid</span><b>{paidInvoices.length}</b><small>Collections recorded</small></button>
+              </section>
+              <section className="platform-billing-layout">
+                <form onSubmit={createInvoice} className="platform-billing-panel platform-billing-editor">
+                  <header className="platform-control-panel-header"><div><p>Create</p><h2>New platform invoice</h2></div></header>
+                  <div className="platform-billing-fields">
+                    <label className="platform-billing-wide"><span>Academy</span><StandardSelectField name="academyId" value={invoiceAcademyId} onChange={setInvoiceAcademyId} placeholder="Select academy" options={academies.map((academy) => ({ value: academy.id, label: academy.name }))} /></label>
+                    <label><span>Invoice number</span><input name="invoiceNumber" required placeholder="e.g. PLT-2026-001" /></label>
+                    <label><span>Amount</span><input name="amount" type="number" min="0" step="0.01" required placeholder="0.00" /></label>
+                    <label><span>Currency</span><StandardSelectField name="currency" value={invoiceCurrency} onChange={setInvoiceCurrency} placeholder="Select currency" options={["INR", "USD", "GBP", "EUR"].map((value) => ({ value, label: value }))} /></label>
+                    <StandardDateField name="periodStart" value={invoicePeriodStart} onChange={setInvoicePeriodStart} label="Period start" required />
+                    <StandardDateField name="periodEnd" value={invoicePeriodEnd} onChange={setInvoicePeriodEnd} label="Period end" required />
+                    <StandardDateField name="dueDate" value={invoiceDueDate} onChange={setInvoiceDueDate} label="Due date" required />
+                    <button disabled={busy || !invoiceAcademyId || !invoicePeriodStart || !invoicePeriodEnd || !invoiceDueDate} className="enterprise-action-button platform-billing-action">{busy ? "Creating…" : "Create invoice"}</button>
                   </div>
-                ))}
-              />
-            </section>
+                </form>
+                <section className="platform-billing-panel platform-invoice-register">
+                  <header className="platform-control-panel-header"><div><p>Invoice register</p><h2>Platform invoices</h2></div></header>
+                  {invoices.length ? <ul>{invoices.map((item) => <li key={item.id}><div className="platform-invoice-copy"><b>{item.invoiceNumber}</b><small>{item.academyName} · Due {new Intl.DateTimeFormat("en-IN", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(`${item.dueDate}T12:00:00`))}</small></div><strong>{item.currency} {item.amount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong><div className="platform-invoice-status"><span data-status={item.status.toLowerCase()}>{item.status}</span><StandardSelectField name={`invoice-status-${item.id}`} value={invoiceStatuses[item.id] ?? item.status} onChange={(value) => { setInvoiceStatuses((current) => ({ ...current, [item.id]: value })); void updateInvoice(item, value); }} placeholder="Update status" options={["Draft", "Issued", "Overdue", "Paid", "Void"].map((value) => ({ value, label: value }))} disabled={busy} /></div></li>)}</ul> : <p className="platform-billing-empty">No platform invoices have been created yet.</p>}
+                </section>
+              </section>
+              {invoiceModal && <div className="platform-modal-backdrop" role="presentation"><article className="platform-modal platform-invoice-modal" role="dialog" aria-modal="true" aria-labelledby="invoice-modal-title"><header><div><p>Platform billing</p><h3 id="invoice-modal-title">{invoiceModalTitle}</h3></div><button type="button" aria-label="Close invoice details" onClick={() => setInvoiceModal(null)}>×</button></header>{invoiceModalRecords.length ? <ul>{invoiceModalRecords.map((item) => <li key={item.id}><span>₹</span><div><b>{item.invoiceNumber}</b><small>{item.academyName} · Due {new Intl.DateTimeFormat("en-IN", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(`${item.dueDate}T12:00:00`))}</small></div><strong>{item.currency} {item.amount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong><em data-status={item.status.toLowerCase()}>{item.status}</em></li>)}</ul> : <p className="platform-billing-empty">No invoices match this view.</p>}</article></div>}
+            </>
           )}
           {tab === "Support" && (
             <section className="mt-6 grid gap-5 lg:grid-cols-[.8fr_1.2fr]">
