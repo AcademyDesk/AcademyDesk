@@ -168,6 +168,9 @@ export default function PlatformControlPage() {
     void load().catch((error) => setMessage(error.message));
   }, []);
   const selected = academies.find((academy) => academy.id === selectedAcademy);
+  const activeTenants = academies.filter((academy) => academy.subscriptionStatus === "Active").length;
+  const trialTenants = academies.filter((academy) => academy.subscriptionStatus === "Trial").length;
+  const attentionTenants = academies.filter((academy) => ["Past due", "Cancelled"].includes(academy.subscriptionStatus)).length;
   useEffect(() => {
     setTenantPlan(selected?.subscriptionPlan ?? "");
     setTenantStatus(selected?.subscriptionStatus ?? "");
@@ -430,61 +433,33 @@ export default function PlatformControlPage() {
             </p>
           )}
           {tab === "Tenants" && (
-            <section className="mt-6 grid gap-5 lg:grid-cols-[1fr_.9fr]">
-              <section className="rounded-xl border border-slate-800 bg-slate-900 p-5">
-                <header className="platform-control-panel-header"><div><p>Tenant settings</p><h2>Tenant configuration</h2></div></header>
-                <div className="platform-tenant-fields">
-                  <label><span>Academy</span><StandardSelectField name="academy" value={selectedAcademy} onChange={setSelectedAcademy} placeholder="Select academy" options={academies.map((academy) => ({ value: academy.id, label: academy.name }))} /></label>
-                </div>
-                {selected && (
-                  <form
-                    onSubmit={saveTenant}
-                    className="platform-tenant-fields"
-                  >
-                    <label>
-                      <span>Subscription plan</span>
-                      <StandardSelectField name="plan" value={tenantPlan} onChange={setTenantPlan} placeholder="Choose plan" options={["Trial", "Launch", "Growth", "Professional", "Enterprise"].map((value) => ({ value, label: value }))} />
-                    </label>
-                    <label>
-                      <span>Subscription status</span>
-                      <StandardSelectField name="status" value={tenantStatus} onChange={setTenantStatus} placeholder="Choose status" options={["Trial", "Active", "Past due", "Cancelled"].map((value) => ({ value, label: value }))} />
-                    </label>
+            <>
+              <section className="platform-tenant-kpis" aria-label="Tenant management summary">
+                <article><span>Total tenants</span><b>{academies.length}</b><small>Academies on this platform</small></article>
+                <article><span>Active</span><b>{activeTenants}</b><small>Paid or enabled tenants</small></article>
+                <article><span>Trial</span><b>{trialTenants}</b><small>Tenants evaluating the platform</small></article>
+                <article><span>Needs attention</span><b>{attentionTenants}</b><small>Past due or cancelled subscriptions</small></article>
+              </section>
+              <section className="platform-tenant-layout">
+                <section className="platform-tenant-panel platform-tenant-register">
+                  <header className="platform-control-panel-header"><div><p>Tenant register</p><h2>Academies</h2></div><span>{academies.length} total</span></header>
+                  {academies.length ? <ul>{academies.map((academy) => <li key={academy.id}><button type="button" data-selected={academy.id === selectedAcademy} onClick={() => setSelectedAcademy(academy.id)}><span className="platform-tenant-logo">{academy.name.slice(0, 1).toUpperCase()}</span><span className="platform-tenant-register-copy"><b>{academy.name}</b><small>{academy.subscriptionPlan} plan · {academy.studentLimit} students · {academy.staffLimit} staff</small></span><em data-status={academy.subscriptionStatus.toLowerCase().replaceAll(" ", "-")}>{academy.subscriptionStatus}</em></button></li>)}</ul> : <p className="platform-tenant-empty">No tenants have been created yet.</p>}
+                </section>
+                <section className="platform-tenant-panel platform-tenant-editor">
+                  <header className="platform-control-panel-header"><div><p>Selected tenant</p><h2>{selected?.name || "Tenant configuration"}</h2></div></header>
+                  <div className="platform-tenant-fields">
+                    <label className="platform-tenant-wide"><span>Academy</span><StandardSelectField name="academy" value={selectedAcademy} onChange={setSelectedAcademy} placeholder="Select academy" options={academies.map((academy) => ({ value: academy.id, label: academy.name }))} /></label>
+                  </div>
+                  {selected ? <form onSubmit={saveTenant} className="platform-tenant-fields">
+                    <label><span>Subscription plan</span><StandardSelectField name="plan" value={tenantPlan} onChange={setTenantPlan} placeholder="Choose plan" options={["Trial", "Launch", "Growth", "Professional", "Enterprise"].map((value) => ({ value, label: value }))} /></label>
+                    <label><span>Subscription status</span><StandardSelectField name="status" value={tenantStatus} onChange={setTenantStatus} placeholder="Choose status" options={["Trial", "Active", "Past due", "Cancelled"].map((value) => ({ value, label: value }))} /></label>
                     <StandardDateField name="endsAt" value={tenantEndsAt} onChange={setTenantEndsAt} label="Subscription end date" />
-                    <section className="platform-tenant-access">
-                      <b className="text-cyan-200">Plan-managed access</b>
-                      <p>Current allowance: {selected.studentLimit} students · {selected.staffLimit} staff</p>
-                    </section>
-                    <button
-                      disabled={busy}
-                      className="enterprise-action-button platform-tenant-action"
-                    >
-                      Save tenant configuration
-                    </button>
-                  </form>
-                )}
+                    <section className="platform-tenant-access"><b>Plan-managed capacity</b><div><span><strong>{selected.studentLimit}</strong> Students</span><span><strong>{selected.staffLimit}</strong> Staff</span></div></section>
+                    <button disabled={busy} className="enterprise-action-button platform-tenant-action">{busy ? "Saving…" : "Save tenant configuration"}</button>
+                  </form> : <p className="platform-tenant-empty">Select an academy to configure its subscription.</p>}
+                </section>
               </section>
-              <section className="rounded-xl border border-slate-800 bg-slate-900 p-5">
-                <h2 className="font-semibold">Subscription controls</h2>
-                <ul className="mt-4 space-y-3 text-sm text-slate-300">
-                  {academies.map((academy) => (
-                    <li
-                      key={academy.id}
-                      className="rounded border border-slate-700 bg-slate-950 p-3"
-                    >
-                      <b>{academy.name}</b>
-                      <span className="ml-2 text-cyan-300">
-                        {academy.subscriptionPlan} ·{" "}
-                        {academy.subscriptionStatus}
-                      </span>
-                      <p className="mt-1 text-slate-400">
-                        {academy.studentLimit} learners · {academy.staffLimit}{" "}
-                        staff
-                      </p>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            </section>
+            </>
           )}
           {tab === "Announcements" && <section className="mt-6 max-w-2xl rounded-xl border border-slate-800 bg-slate-900 p-5"><h2 className="font-semibold">Academy admin announcement</h2><p className="mt-2 text-sm text-slate-400">This banner is shown only to academy administrators. It automatically disappears when its display time ends.</p><form onSubmit={publishAnnouncement} className="mt-5 grid gap-3"><select name="academyId" className="rounded border border-slate-700 bg-slate-950 p-2" required>{academies.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select><input name="title" placeholder="Announcement title" className="rounded border border-slate-700 bg-slate-950 p-2" required /><textarea name="body" placeholder="Important message" className="min-h-28 rounded border border-slate-700 bg-slate-950 p-2" required /><input name="hours" type="number" min="1" max="168" defaultValue="24" className="rounded border border-slate-700 bg-slate-950 p-2" required /><button disabled={busy} className="rounded bg-cyan-400 px-4 py-2 font-semibold text-slate-950 disabled:opacity-60">Publish admin announcement</button></form></section>}
           {tab === "Admins" && (
