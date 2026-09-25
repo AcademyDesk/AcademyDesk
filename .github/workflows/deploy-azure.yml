@@ -1,0 +1,44 @@
+name: Deploy AcademyDesk to Azure
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - uses: azure/docker-login@v2
+        with:
+          login-server: ${{ secrets.AZURE_REGISTRY_LOGIN_SERVER }}
+          username: ${{ secrets.AZURE_REGISTRY_USERNAME }}
+          password: ${{ secrets.AZURE_REGISTRY_PASSWORD }}
+      - name: Build and push API image
+        run: |
+          docker build -f apps/api/Dockerfile -t ${{ secrets.AZURE_REGISTRY_LOGIN_SERVER }}/academydesk-api:${{ github.sha }} .
+          docker push ${{ secrets.AZURE_REGISTRY_LOGIN_SERVER }}/academydesk-api:${{ github.sha }}
+      - name: Build and push web image
+        run: |
+          docker build -f apps/web/Dockerfile --build-arg NEXT_PUBLIC_API_URL=${{ vars.PRODUCTION_API_URL }} -t ${{ secrets.AZURE_REGISTRY_LOGIN_SERVER }}/academydesk-web:${{ github.sha }} .
+          docker push ${{ secrets.AZURE_REGISTRY_LOGIN_SERVER }}/academydesk-web:${{ github.sha }}
+      - name: Deploy API container app
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          containerAppName: ${{ vars.AZURE_API_CONTAINER_APP }}
+          resourceGroup: ${{ vars.AZURE_RESOURCE_GROUP }}
+          imageToDeploy: ${{ secrets.AZURE_REGISTRY_LOGIN_SERVER }}/academydesk-api:${{ github.sha }}
+      - name: Deploy web container app
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          containerAppName: ${{ vars.AZURE_WEB_CONTAINER_APP }}
+          resourceGroup: ${{ vars.AZURE_RESOURCE_GROUP }}
+          imageToDeploy: ${{ secrets.AZURE_REGISTRY_LOGIN_SERVER }}/academydesk-web:${{ github.sha }}
