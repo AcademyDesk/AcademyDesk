@@ -159,6 +159,7 @@ export default function PlatformControlPage() {
   const [caseStatuses, setCaseStatuses] = useState<Record<string, string>>({});
   const [announcementAcademyId, setAnnouncementAcademyId] = useState("");
   const [announcementHours, setAnnouncementHours] = useState("24");
+  const [settingsCurrency, setSettingsCurrency] = useState("");
   const [message, setMessage] = useState("Loading platform controls…");
   const [busy, setBusy] = useState(false);
   const profileImageInput = useRef<HTMLInputElement>(null);
@@ -222,6 +223,7 @@ export default function PlatformControlPage() {
     setTenantStatus(selected?.subscriptionStatus ?? "");
     setTenantEndsAt(selected?.subscriptionEndsAtUtc?.slice(0, 10) ?? "");
   }, [selected]);
+  useEffect(() => { setSettingsCurrency(settings?.defaultCurrency ?? ""); }, [settings]);
   async function saveTenant(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!selected) return;
@@ -641,9 +643,10 @@ export default function PlatformControlPage() {
             </>
           )}
           {tab === "Settings" && settings && (
-            <section className="mt-6 grid gap-5 xl:grid-cols-[.9fr_1.1fr]">
-              <section className="platform-owner-settings rounded-xl border border-slate-800 bg-slate-900 p-5">
-                <div className="platform-owner-profile"><button type="button" className="platform-owner-photo" onClick={() => profileImageInput.current?.click()} disabled={busy}>{owner?.profileImageUrl ? <img src={`${apiUrl}${owner.profileImageUrl}`} alt="Owner profile"/> : <span>{owner?.displayName?.[0]?.toUpperCase() || "S"}</span>}<i aria-hidden="true">⌁</i></button><div><h2 className="font-semibold">My owner account</h2><p>Personal identity, security and sign-in details for this Platform Owner.</p></div></div>
+            <section className="platform-settings-layout">
+              <section className="platform-settings-panel platform-owner-settings">
+                <header className="platform-control-panel-header"><div><p>Owner account</p><h2>Profile and security</h2></div></header>
+                <div className="platform-owner-profile"><button type="button" className="platform-owner-photo" onClick={() => profileImageInput.current?.click()} disabled={busy}>{owner?.profileImageUrl ? <img src={`${apiUrl}${owner.profileImageUrl}`} alt="Owner profile"/> : <span>{owner?.displayName?.[0]?.toUpperCase() || "S"}</span>}<i aria-hidden="true">⌁</i></button><div><b>{owner?.displayName || "Platform Owner"}</b><span>Platform Owner</span></div></div>
                 <input ref={profileImageInput} className="sr-only" type="file" accept="image/jpeg,image/png,image/webp" onChange={uploadOwnerImage}/>
                 <form onSubmit={saveOwnerProfile} className="platform-owner-form">
                   <label>Display name<input name="displayName" defaultValue={owner?.displayName || ""} required/></label>
@@ -654,61 +657,18 @@ export default function PlatformControlPage() {
                 </form>
                 <form onSubmit={changeOwnerPassword} className="platform-password-form"><h3>Change password</h3><p>Use your current password to set a new one.</p><label>Current password<input name="currentPassword" type="password" autoComplete="current-password" required/></label><label>New password<input name="newPassword" type="password" autoComplete="new-password" minLength={6} required/></label><label>Confirm new password<input name="confirmPassword" type="password" autoComplete="new-password" minLength={6} required/></label><button disabled={busy}>Update password</button></form>
               </section>
-              <form
-                onSubmit={saveSettings}
-                className="rounded-xl border border-slate-800 bg-slate-900 p-5"
-              >
-              <h2 className="font-semibold">Platform settings and retention</h2><p className="platform-settings-intro">Set the defaults that apply when new academies are provisioned.</p>
-              <Field
-                name="platformName"
-                label="Platform name"
-                value={settings.platformName}
-              />
-              <Field
-                name="supportEmail"
-                label="Support email"
-                value={settings.supportEmail || ""}
-              />
-              <Field
-                name="currency"
-                label="Default currency"
-                value={settings.defaultCurrency}
-              />
-              <Field
-                name="trialDays"
-                label="Default trial days"
-                type="number"
-                value={settings.defaultTrialDays}
-              />
-              <Field
-                name="retentionDays"
-                label="Data retention days"
-                type="number"
-                value={settings.dataRetentionDays}
-              />
-              <label className="mt-3 flex gap-2 text-sm">
-                <input
-                  name="maintenanceMode"
-                  type="checkbox"
-                  defaultChecked={settings.maintenanceMode}
-                />{" "}
-                Maintenance mode
-              </label>
-              <label className="mt-3 block text-sm text-slate-300">
-                Status message
-                <textarea
-                  name="statusMessage"
-                  defaultValue={settings.statusMessage || ""}
-                  className="mt-1 w-full rounded border border-slate-700 bg-slate-950 p-2"
-                  rows={3}
-                />
-              </label>
-              <button
-                disabled={busy}
-                className="mt-4 rounded bg-cyan-400 px-4 py-2 font-semibold text-slate-950"
-              >
-                Save platform settings
-              </button>
+              <form onSubmit={saveSettings} className="platform-settings-panel platform-settings-editor">
+                <header className="platform-control-panel-header"><div><p>Platform defaults</p><h2>Platform settings and retention</h2></div></header>
+                <div className="platform-settings-fields">
+                  <label className="platform-settings-wide"><span>Platform name</span><input name="platformName" defaultValue={settings.platformName} required /></label>
+                  <label className="platform-settings-wide"><span>Support email</span><input name="supportEmail" type="email" defaultValue={settings.supportEmail || ""} /></label>
+                  <label><span>Default currency</span><StandardSelectField name="currency" value={settingsCurrency} onChange={setSettingsCurrency} placeholder="Select currency" options={["INR", "USD", "GBP", "EUR"].map((value) => ({ value, label: value }))} /></label>
+                  <label><span>Default trial days</span><input name="trialDays" type="number" min="1" defaultValue={settings.defaultTrialDays} required /></label>
+                  <label><span>Data retention days</span><input name="retentionDays" type="number" min="30" defaultValue={settings.dataRetentionDays} required /></label>
+                  <label className="platform-maintenance-toggle"><input name="maintenanceMode" type="checkbox" defaultChecked={settings.maintenanceMode} /><span><b>Maintenance mode</b><small>Temporarily restrict platform access</small></span></label>
+                  <label className="platform-settings-wide"><span>Status message</span><textarea name="statusMessage" defaultValue={settings.statusMessage || ""} rows={3} placeholder="Optional maintenance or service status message" /></label>
+                  <button disabled={busy} className="enterprise-action-button platform-settings-action">{busy ? "Saving…" : "Save platform settings"}</button>
+                </div>
               </form>
             </section>
           )}
