@@ -740,7 +740,7 @@ export default function PlatformControlPage() {
           {tab === "Audit & health" && (
             <>
               <section className="platform-health-kpis" aria-label="Operational health summary">
-                {healthDetails.map((item) => <button key={item.key} type="button" onClick={() => setHealthModal(item.key)}><span>{item.label}</span><b data-health={item.value.toLowerCase()}>{item.value}</b><small>Open service detail</small></button>)}
+                {healthDetails.map((item) => <button key={item.key} type="button" onClick={() => setHealthModal(item.key)}><span>{item.label}</span><b data-health={item.value.toLowerCase()}>{item.value}</b></button>)}
               </section>
               <section className="platform-health-layout">
                 <section className="platform-health-panel">
