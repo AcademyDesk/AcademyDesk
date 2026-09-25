@@ -211,7 +211,10 @@ export default function PlatformPage() {
       </aside>
       <section className="enterprise-workspace platform-workspace">
         <header className="enterprise-topbar platform-topbar">
-          <div className="platform-topbar-context" aria-hidden="true" />
+          <div className="platform-topbar-context">
+            <span>Platform Owner</span>
+            <strong>{owner?.displayName || "Platform Owner"}</strong>
+          </div>
           <div className="enterprise-utilities">
             <button
               type="button"
