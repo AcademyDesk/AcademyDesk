@@ -70,6 +70,7 @@ type Health = {
 };
 type OwnerSession = { displayName: string; email?: string | null; phoneNumber?: string | null; profileImageUrl?: string | null; roles: string[] };
 type AdminModal = "all" | "active" | "inactive" | "academies" | null;
+type TenantModal = "all" | "active" | "trial" | "attention" | null;
 
 const platformLinks = [
   { label: "Overview", icon: "▦", href: "/platform" },
@@ -138,6 +139,7 @@ export default function PlatformControlPage() {
   const [tenantStatus, setTenantStatus] = useState("");
   const [tenantEndsAt, setTenantEndsAt] = useState("");
   const [adminModal, setAdminModal] = useState<AdminModal>(null);
+  const [tenantModal, setTenantModal] = useState<TenantModal>(null);
   const [message, setMessage] = useState("Loading platform controls…");
   const [busy, setBusy] = useState(false);
   const profileImageInput = useRef<HTMLInputElement>(null);
@@ -173,6 +175,8 @@ export default function PlatformControlPage() {
   const activeTenants = academies.filter((academy) => academy.subscriptionStatus === "Active").length;
   const trialTenants = academies.filter((academy) => academy.subscriptionStatus === "Trial").length;
   const attentionTenants = academies.filter((academy) => ["Past due", "Cancelled"].includes(academy.subscriptionStatus)).length;
+  const tenantModalTitle = tenantModal === "active" ? "Active tenants" : tenantModal === "trial" ? "Trial tenants" : tenantModal === "attention" ? "Tenants needing attention" : "All tenants";
+  const tenantModalRecords = tenantModal === "active" ? academies.filter((academy) => academy.subscriptionStatus === "Active") : tenantModal === "trial" ? academies.filter((academy) => academy.subscriptionStatus === "Trial") : tenantModal === "attention" ? academies.filter((academy) => ["Past due", "Cancelled"].includes(academy.subscriptionStatus)) : academies;
   const activeAdmins = admins.filter((admin) => admin.isActive).length;
   const adminAcademies = new Set(admins.map((admin) => admin.academyName).filter(Boolean)).size;
   const adminModalTitle = adminModal === "active" ? "Active academy administrators" : adminModal === "inactive" ? "Deactivated academy administrators" : adminModal === "academies" ? "Academies with administrator access" : "All academy administrators";
@@ -446,14 +450,14 @@ export default function PlatformControlPage() {
           {tab === "Tenants" && (
             <>
               <section className="platform-tenant-kpis" aria-label="Tenant management summary">
-                <article><span>Total tenants</span><b>{academies.length}</b><small>Academies on this platform</small></article>
-                <article><span>Active</span><b>{activeTenants}</b><small>Paid or enabled tenants</small></article>
-                <article><span>Trial</span><b>{trialTenants}</b><small>Tenants evaluating the platform</small></article>
-                <article><span>Needs attention</span><b>{attentionTenants}</b><small>Past due or cancelled subscriptions</small></article>
+                <button type="button" onClick={() => setTenantModal("all")}><span>Total tenants</span><b>{academies.length}</b><small>Academies on this platform</small></button>
+                <button type="button" onClick={() => setTenantModal("active")}><span>Active</span><b>{activeTenants}</b><small>Paid or enabled tenants</small></button>
+                <button type="button" onClick={() => setTenantModal("trial")}><span>Trial</span><b>{trialTenants}</b><small>Tenants evaluating the platform</small></button>
+                <button type="button" onClick={() => setTenantModal("attention")}><span>Needs attention</span><b>{attentionTenants}</b><small>Past due or cancelled subscriptions</small></button>
               </section>
               <section className="platform-tenant-layout">
                 <section className="platform-tenant-panel platform-tenant-register">
-                  <header className="platform-control-panel-header"><div><p>Tenant register</p><h2>Academies</h2></div><span>{academies.length} total</span></header>
+                  <header className="platform-control-panel-header"><div><p>Tenant register</p><h2>Academies</h2></div></header>
                   {academies.length ? <ul>{academies.map((academy) => <li key={academy.id}><button type="button" data-selected={academy.id === selectedAcademy} onClick={() => setSelectedAcademy(academy.id)}><span className="platform-tenant-logo">{academy.name.slice(0, 1).toUpperCase()}</span><span className="platform-tenant-register-copy"><b>{academy.name}</b><small>{academy.subscriptionPlan} plan · {academy.studentLimit} students · {academy.staffLimit} staff</small></span><em data-status={academy.subscriptionStatus.toLowerCase().replaceAll(" ", "-")}>{academy.subscriptionStatus}</em></button></li>)}</ul> : <p className="platform-tenant-empty">No tenants have been created yet.</p>}
                 </section>
                 <section className="platform-tenant-panel platform-tenant-editor">
@@ -470,6 +474,7 @@ export default function PlatformControlPage() {
                   </form> : <p className="platform-tenant-empty">Select an academy to configure its subscription.</p>}
                 </section>
               </section>
+              {tenantModal && <div className="platform-modal-backdrop" role="presentation"><article className="platform-modal platform-tenant-modal" role="dialog" aria-modal="true" aria-labelledby="tenant-modal-title"><header><div><p>Tenant register</p><h3 id="tenant-modal-title">{tenantModalTitle}</h3></div><button type="button" aria-label="Close tenant details" onClick={() => setTenantModal(null)}>×</button></header>{tenantModalRecords.length ? <ul>{tenantModalRecords.map((academy) => <li key={academy.id}><span>{academy.name.slice(0, 1).toUpperCase()}</span><div><b>{academy.name}</b><small>{academy.subscriptionPlan} plan · {academy.studentLimit} students · {academy.staffLimit} staff</small></div><em data-status={academy.subscriptionStatus.toLowerCase().replaceAll(" ", "-")}>{academy.subscriptionStatus}</em></li>)}</ul> : <p className="platform-tenant-empty">No tenants match this view.</p>}</article></div>}
             </>
           )}
           {tab === "Announcements" && <section className="mt-6 max-w-2xl rounded-xl border border-slate-800 bg-slate-900 p-5"><h2 className="font-semibold">Academy admin announcement</h2><p className="mt-2 text-sm text-slate-400">This banner is shown only to academy administrators. It automatically disappears when its display time ends.</p><form onSubmit={publishAnnouncement} className="mt-5 grid gap-3"><select name="academyId" className="rounded border border-slate-700 bg-slate-950 p-2" required>{academies.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select><input name="title" placeholder="Announcement title" className="rounded border border-slate-700 bg-slate-950 p-2" required /><textarea name="body" placeholder="Important message" className="min-h-28 rounded border border-slate-700 bg-slate-950 p-2" required /><input name="hours" type="number" min="1" max="168" defaultValue="24" className="rounded border border-slate-700 bg-slate-950 p-2" required /><button disabled={busy} className="rounded bg-cyan-400 px-4 py-2 font-semibold text-slate-950 disabled:opacity-60">Publish admin announcement</button></form></section>}
