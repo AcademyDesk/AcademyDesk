@@ -613,10 +613,10 @@ export default function PlatformControlPage() {
           {tab === "Admins" && (
             <>
               <section className="platform-admin-kpis" aria-label="Academy administrator summary">
-                <button type="button" onClick={() => setAdminModal("all")}><span>Total administrators</span><b>{admins.length}</b><small>Accounts with academy administration access</small></button>
-                <button type="button" onClick={() => setAdminModal("active")}><span>Active</span><b>{activeAdmins}</b><small>Administrators currently able to sign in</small></button>
-                <button type="button" onClick={() => setAdminModal("inactive")}><span>Deactivated</span><b>{admins.length - activeAdmins}</b><small>Accounts retained without sign-in access</small></button>
-                <button type="button" onClick={() => setAdminModal("academies")}><span>Academies covered</span><b>{adminAcademies}</b><small>Academies with an assigned administrator</small></button>
+                <button type="button" onClick={() => setAdminModal("all")}><span>Total administrators</span><b>{admins.length}</b></button>
+                <button type="button" onClick={() => setAdminModal("active")}><span>Active</span><b>{activeAdmins}</b></button>
+                <button type="button" onClick={() => setAdminModal("inactive")}><span>Deactivated</span><b>{admins.length - activeAdmins}</b></button>
+                <button type="button" onClick={() => setAdminModal("academies")}><span>Academies covered</span><b>{adminAcademies}</b></button>
               </section>
               <section className="platform-admin-panel">
                 <header className="platform-control-panel-header"><div><p>Access register</p><h2>Academy administrators</h2></div></header>
