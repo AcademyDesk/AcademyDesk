@@ -246,7 +246,13 @@ export default function PlatformControlPage() {
   useEffect(() => { setSettingsCurrency(settings?.defaultCurrency ?? ""); }, [settings]);
   useEffect(() => {
     if (!selectedAcademy) { setTenantProfile(undefined); return; }
-    void academyApi(`/api/platform/academies/${selectedAcademy}/onboarding`).then(async (response) => setTenantProfile(response.ok ? await response.json() : undefined));
+    void academyApi(`/api/platform/academies/${selectedAcademy}/onboarding`)
+      .then(async (response) => {
+        if (!response.ok) { setTenantProfile(undefined); return; }
+        const body = await response.text();
+        setTenantProfile(body ? JSON.parse(body) : undefined);
+      })
+      .catch(() => setTenantProfile(undefined));
   }, [selectedAcademy]);
   async function saveTenant(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
