@@ -31,7 +31,8 @@ jobs:
         run: |
           az containerapp registry set --name ${{ vars.AZURE_API_CONTAINER_APP }} --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} --server "$REGISTRY" --identity system
           az containerapp secret set --name ${{ vars.AZURE_API_CONTAINER_APP }} --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} --secrets "sql-connection=$SQL_CONNECTION_STRING"
-          az containerapp update --name ${{ vars.AZURE_API_CONTAINER_APP }} --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} --ingress external --target-port 8080 --cpu 0.5 --memory 1.0Gi --min-replicas 1 --max-replicas 3 --set-env-vars "ConnectionStrings__DefaultConnection=secretref:sql-connection" "Cors__AllowedOrigins__0=$WEB_APP_ORIGIN" "Database__ApplyMigrationsOnStartup=true"
+          az containerapp ingress enable --name ${{ vars.AZURE_API_CONTAINER_APP }} --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} --type external --target-port 8080
+          az containerapp update --name ${{ vars.AZURE_API_CONTAINER_APP }} --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} --cpu 0.5 --memory 1.0Gi --min-replicas 1 --max-replicas 3 --set-env-vars "ConnectionStrings__DefaultConnection=secretref:sql-connection" "Cors__AllowedOrigins__0=$WEB_APP_ORIGIN" "Database__ApplyMigrationsOnStartup=true"
       - name: Deploy API container app
         uses: azure/container-apps-deploy-action@v2
         with:
