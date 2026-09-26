@@ -45,6 +45,15 @@ builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
+// Azure SQL starts empty for a new tenant environment. The deployment enables this
+// explicitly so the first API revision prepares both application and identity data.
+if (builder.Configuration.GetValue<bool>("Database:ApplyMigrationsOnStartup"))
+{
+    using var scope = app.Services.CreateScope();
+    await scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>().Database.MigrateAsync();
+    await scope.ServiceProvider.GetRequiredService<IdentityDbContext>().Database.MigrateAsync();
+}
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
