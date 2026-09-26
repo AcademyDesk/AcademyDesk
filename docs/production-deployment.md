@@ -19,6 +19,7 @@ Create a GitHub environment named `production`. Add these secrets:
 - `AZURE_CREDENTIALS`
 - `AZURE_STATIC_WEB_APPS_API_TOKEN`
 - `AZURE_SQL_CONNECTION_STRING`
+- `PLATFORM_OWNER_PASSWORD` — only used to create the first Platform Owner account; keep it private.
 
 Add these environment variables:
 
@@ -28,6 +29,8 @@ Add these environment variables:
 - `AZURE_API_CONTAINER_APP`
 - `PRODUCTION_API_URL`
 - `WEB_APP_ORIGIN`
+- `PLATFORM_OWNER_EMAIL`
+- `PLATFORM_OWNER_NAME`
 
 The checked-in workflow at `.github/workflows/deploy-azure.yml` builds the API container, exports the static web portal, and deploys both after a push to `main`. It keeps one API replica ready, allows it to scale to three replicas, and configures its database connection as a Container App secret.
 

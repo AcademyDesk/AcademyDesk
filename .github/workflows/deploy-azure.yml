@@ -33,6 +33,18 @@ jobs:
           az containerapp secret set --name ${{ vars.AZURE_API_CONTAINER_APP }} --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} --secrets "sql-connection=$SQL_CONNECTION_STRING"
           az containerapp ingress enable --name ${{ vars.AZURE_API_CONTAINER_APP }} --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} --type external --target-port 8080
           az containerapp update --name ${{ vars.AZURE_API_CONTAINER_APP }} --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} --cpu 0.5 --memory 1.0Gi --min-replicas 1 --max-replicas 3 --set-env-vars "ConnectionStrings__DefaultConnection=secretref:sql-connection" "Cors__AllowedOrigins__0=$WEB_APP_ORIGIN" "Database__ApplyMigrationsOnStartup=true"
+      - name: Configure initial Platform Owner when provided
+        env:
+          PLATFORM_OWNER_EMAIL: ${{ vars.PLATFORM_OWNER_EMAIL }}
+          PLATFORM_OWNER_NAME: ${{ vars.PLATFORM_OWNER_NAME }}
+          PLATFORM_OWNER_PASSWORD: ${{ secrets.PLATFORM_OWNER_PASSWORD }}
+        run: |
+          if [ -z "$PLATFORM_OWNER_EMAIL" ] || [ -z "$PLATFORM_OWNER_PASSWORD" ]; then
+            echo "Platform Owner bootstrap is not configured yet."
+            exit 0
+          fi
+          az containerapp secret set --name ${{ vars.AZURE_API_CONTAINER_APP }} --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} --secrets "owner-password=$PLATFORM_OWNER_PASSWORD"
+          az containerapp update --name ${{ vars.AZURE_API_CONTAINER_APP }} --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} --set-env-vars "Bootstrap__PlatformOwnerEmail=$PLATFORM_OWNER_EMAIL" "Bootstrap__PlatformOwnerDisplayName=$PLATFORM_OWNER_NAME" "Bootstrap__PlatformOwnerPassword=secretref:owner-password"
       - name: Deploy API container app
         uses: azure/container-apps-deploy-action@v2
         with:
