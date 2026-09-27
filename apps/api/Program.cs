@@ -2,6 +2,8 @@ using AcademyDesk.Api.Data;
 using AcademyDesk.Api.Domain.Identity;
 using AcademyDesk.Api.Security;
 using AcademyDesk.Api.Infrastructure;
+using Microsoft.AspNetCore.Authentication.BearerToken;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.HttpOverrides;
 using System.Threading.RateLimiting;
@@ -40,6 +42,14 @@ builder.Services.AddDbContext<IdentityDbContext>(options =>
 builder.Services.AddIdentityApiEndpoints<ApplicationUser>()
     .AddRoles<ApplicationRole>()
     .AddEntityFrameworkStores<IdentityDbContext>();
+// Platform, admin, teacher, and family portals are operated throughout a working day.
+// Keep the short-lived access token secure while allowing the client to renew it for a
+// reasonable remembered-session period without repeatedly asking users to sign in.
+builder.Services.Configure<BearerTokenOptions>(IdentityConstants.BearerScheme, options =>
+{
+    options.BearerTokenExpiration = TimeSpan.FromHours(8);
+    options.RefreshTokenExpiration = TimeSpan.FromDays(30);
+});
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
