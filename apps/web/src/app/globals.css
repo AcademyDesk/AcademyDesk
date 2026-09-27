@@ -5211,6 +5211,102 @@ html[data-theme="light"] .field-label { color: #475569; }
 .reminders-rebuilt>header>div>p,.reminders-panel>header p{margin:0 0 5px!important;color:var(--ad-accent)!important;font-size:.7rem!important;font-weight:850!important;letter-spacing:.14em!important;text-transform:uppercase}.reminders-rebuilt>header h1{margin:0!important;color:var(--ad-text)!important;font-size:var(--ad-page-title-size)!important;font-weight:var(--ad-page-title-weight)!important;letter-spacing:var(--ad-page-title-tracking)!important;line-height:var(--ad-page-title-line-height)!important}.reminders-kpis article{min-height:108px;padding:16px 18px!important;box-shadow:0 8px 22px color-mix(in srgb,var(--ad-text) 5%,transparent)}.reminders-kpis article span{display:block;color:var(--ad-accent)!important;font-size:.68rem!important;font-weight:850!important;letter-spacing:.11em!important;text-transform:uppercase}.reminders-kpis b{margin-top:15px!important;color:var(--ad-text)!important;font-size:1.65rem!important;font-weight:760!important;letter-spacing:-.04em}.reminders-panel,.reminders-history{padding:0!important;box-shadow:0 8px 22px color-mix(in srgb,var(--ad-text) 5%,transparent)}.reminders-panel>header{align-items:center;padding:18px 20px!important;border-bottom:1px solid var(--ad-border);border-radius:15px 15px 0 0;background:linear-gradient(105deg,color-mix(in srgb,var(--ad-accent) 10%,var(--ad-surface)),var(--ad-surface) 72%)}.reminders-panel>header h2,.reminders-history h2{margin:0;color:var(--ad-text);font-size:1.05rem;font-weight:750}.reminders-panel>header>button{min-height:36px;padding:7px 11px!important;border-color:var(--ad-border-strong)!important;background:var(--ad-action)!important;color:var(--ad-action-text)!important;font-size:.74rem;font-weight:750}.reminders-filters{padding:14px 20px!important;border-bottom:1px solid var(--ad-border)}.reminders-filters button{min-height:32px;padding:6px 10px!important;border-color:var(--ad-border)!important;background:var(--ad-surface)!important;color:var(--ad-text-muted)!important;font-size:.72rem;font-weight:750}.reminders-filters button[data-active=true]{border-color:var(--ad-accent)!important;background:var(--ad-accent-soft)!important;color:var(--ad-accent)!important}.reminders-panel ul{padding:0 20px 20px!important}.reminders-panel li{gap:16px!important;padding:14px 0!important}.reminders-panel li>b{color:var(--ad-text);font-size:.88rem;font-weight:760}.reminders-panel li strong{color:var(--ad-text);font-size:.9rem}.reminders-panel li>button{min-height:32px;padding:6px 10px!important;font-size:.72rem;font-weight:750}.reminders-history{margin-top:18px!important;padding:18px 20px!important}.reminders-history p{color:var(--ad-text-muted);font-size:.8rem}@media(max-width:640px){.reminders-rebuilt{padding:22px 16px}.reminders-rebuilt>header>span{width:46px;height:46px;border-radius:13px}.reminders-panel>header{align-items:flex-start;flex-direction:column}.reminders-filters,.reminders-panel ul{padding-inline:14px!important}}
 .payments-standard .enterprise-page-header h2:before{box-shadow:0 12px 22px color-mix(in srgb,var(--ad-accent) 24%,transparent)}
 
+/* Tenant information is a read-only business profile, not a form. Keep each fact
+   labelled and compact so a Platform Owner can assess an academy at a glance. */
+.tenant-information-fields { gap:20px; }
+.tenant-information-grid,
+.tenant-information-detail-grid {
+  grid-column:1/-1;
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:16px;
+}
+.tenant-information-grid > article,
+.tenant-information-detail-grid > article {
+  min-width:0;
+  overflow:hidden;
+  border:1px solid var(--ad-border);
+  border-radius:14px;
+  background:var(--ad-surface);
+  box-shadow:0 7px 18px color-mix(in srgb,var(--ad-text) 5%,transparent);
+}
+.tenant-information-grid > article > header,
+.tenant-information-detail-grid > article > header {
+  padding:12px 16px;
+  border-bottom:1px solid var(--ad-border);
+  background:linear-gradient(105deg,color-mix(in srgb,var(--ad-accent) 10%,var(--ad-surface)),var(--ad-surface) 72%);
+}
+.tenant-information-grid > article > header span,
+.tenant-information-detail-grid > article > header span {
+  color:var(--ad-accent);
+  font-size:.72rem;
+  font-weight:850;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+}
+.tenant-information-grid dl,
+.tenant-information-detail-grid dl { margin:0; padding:4px 16px 10px; }
+.tenant-information-grid dl > div,
+.tenant-information-detail-grid dl > div {
+  display:grid;
+  grid-template-columns:minmax(104px,.72fr) minmax(0,1.28fr);
+  gap:12px;
+  padding:10px 0;
+  border-bottom:1px solid var(--ad-border);
+}
+.tenant-information-grid dl > div:last-child,
+.tenant-information-detail-grid dl > div:last-child { border-bottom:0; }
+.tenant-information-grid dt,
+.tenant-information-detail-grid dt {
+  color:var(--ad-text-muted);
+  font-size:.73rem;
+  font-weight:650;
+}
+.tenant-information-grid dd,
+.tenant-information-detail-grid dd {
+  min-width:0;
+  margin:0;
+  overflow-wrap:anywhere;
+  color:var(--ad-text);
+  font-size:.78rem;
+  font-weight:720;
+  line-height:1.4;
+}
+.tenant-stat-row {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:8px;
+  margin:8px 16px 12px;
+}
+.tenant-stat-row span {
+  display:grid;
+  gap:3px;
+  padding:9px 8px;
+  border-radius:9px;
+  background:var(--ad-accent-soft);
+  color:var(--ad-text-muted);
+  font-size:.66rem;
+  font-weight:700;
+  text-align:center;
+}
+.tenant-stat-row b { color:var(--ad-accent); font-size:1rem; }
+.tenant-subject-list,
+.tenant-information-detail-grid > article > p {
+  margin:0;
+  padding:13px 16px 16px;
+  overflow-wrap:anywhere;
+  color:var(--ad-text-muted);
+  font-size:.78rem;
+  line-height:1.5;
+  white-space:pre-wrap;
+}
+@media (max-width:760px) {
+  .tenant-information-grid,
+  .tenant-information-detail-grid { grid-template-columns:1fr; gap:12px; }
+  .tenant-information-grid dl > div,
+  .tenant-information-detail-grid dl > div { grid-template-columns:1fr; gap:4px; }
+}
+
 /* Platform Owner mobile navigation — the desktop sidebar is intentionally hidden below
    900px, so expose every workspace through a compact, touch-friendly rail instead. */
 .platform-mobile-nav { display:none; }
