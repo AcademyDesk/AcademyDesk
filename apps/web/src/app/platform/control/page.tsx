@@ -604,6 +604,18 @@ export default function PlatformControlPage() {
             </details>
           </div>
         </header>
+        <nav className="platform-mobile-nav" aria-label="Platform navigation">
+          {platformLinks.map((item) => (
+            <Link
+              href={item.href}
+              key={item.label}
+              aria-current={("tab" in item ? item.tab === tab : false) ? "page" : undefined}
+            >
+              <i aria-hidden="true">{item.icon}</i>
+              <span>{item.label}</span>
+            </Link>
+          ))}
+        </nav>
         <div className="platform-content platform-control-content">
           <header className="platform-control-heading">
             <span className="platform-control-icon" aria-hidden="true">{controlIcon}</span>

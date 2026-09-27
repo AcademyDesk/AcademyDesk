@@ -5211,6 +5211,50 @@ html[data-theme="light"] .field-label { color: #475569; }
 .reminders-rebuilt>header>div>p,.reminders-panel>header p{margin:0 0 5px!important;color:var(--ad-accent)!important;font-size:.7rem!important;font-weight:850!important;letter-spacing:.14em!important;text-transform:uppercase}.reminders-rebuilt>header h1{margin:0!important;color:var(--ad-text)!important;font-size:var(--ad-page-title-size)!important;font-weight:var(--ad-page-title-weight)!important;letter-spacing:var(--ad-page-title-tracking)!important;line-height:var(--ad-page-title-line-height)!important}.reminders-kpis article{min-height:108px;padding:16px 18px!important;box-shadow:0 8px 22px color-mix(in srgb,var(--ad-text) 5%,transparent)}.reminders-kpis article span{display:block;color:var(--ad-accent)!important;font-size:.68rem!important;font-weight:850!important;letter-spacing:.11em!important;text-transform:uppercase}.reminders-kpis b{margin-top:15px!important;color:var(--ad-text)!important;font-size:1.65rem!important;font-weight:760!important;letter-spacing:-.04em}.reminders-panel,.reminders-history{padding:0!important;box-shadow:0 8px 22px color-mix(in srgb,var(--ad-text) 5%,transparent)}.reminders-panel>header{align-items:center;padding:18px 20px!important;border-bottom:1px solid var(--ad-border);border-radius:15px 15px 0 0;background:linear-gradient(105deg,color-mix(in srgb,var(--ad-accent) 10%,var(--ad-surface)),var(--ad-surface) 72%)}.reminders-panel>header h2,.reminders-history h2{margin:0;color:var(--ad-text);font-size:1.05rem;font-weight:750}.reminders-panel>header>button{min-height:36px;padding:7px 11px!important;border-color:var(--ad-border-strong)!important;background:var(--ad-action)!important;color:var(--ad-action-text)!important;font-size:.74rem;font-weight:750}.reminders-filters{padding:14px 20px!important;border-bottom:1px solid var(--ad-border)}.reminders-filters button{min-height:32px;padding:6px 10px!important;border-color:var(--ad-border)!important;background:var(--ad-surface)!important;color:var(--ad-text-muted)!important;font-size:.72rem;font-weight:750}.reminders-filters button[data-active=true]{border-color:var(--ad-accent)!important;background:var(--ad-accent-soft)!important;color:var(--ad-accent)!important}.reminders-panel ul{padding:0 20px 20px!important}.reminders-panel li{gap:16px!important;padding:14px 0!important}.reminders-panel li>b{color:var(--ad-text);font-size:.88rem;font-weight:760}.reminders-panel li strong{color:var(--ad-text);font-size:.9rem}.reminders-panel li>button{min-height:32px;padding:6px 10px!important;font-size:.72rem;font-weight:750}.reminders-history{margin-top:18px!important;padding:18px 20px!important}.reminders-history p{color:var(--ad-text-muted);font-size:.8rem}@media(max-width:640px){.reminders-rebuilt{padding:22px 16px}.reminders-rebuilt>header>span{width:46px;height:46px;border-radius:13px}.reminders-panel>header{align-items:flex-start;flex-direction:column}.reminders-filters,.reminders-panel ul{padding-inline:14px!important}}
 .payments-standard .enterprise-page-header h2:before{box-shadow:0 12px 22px color-mix(in srgb,var(--ad-accent) 24%,transparent)}
 
+/* Platform Owner mobile navigation — the desktop sidebar is intentionally hidden below
+   900px, so expose every workspace through a compact, touch-friendly rail instead. */
+.platform-mobile-nav { display:none; }
+@media (max-width:900px) {
+  .platform-mobile-nav {
+    display:flex;
+    gap:8px;
+    overflow-x:auto;
+    overscroll-behavior-x:contain;
+    padding:10px max(16px, env(safe-area-inset-left)) 12px;
+    border-bottom:1px solid var(--ad-border);
+    background:var(--ad-surface);
+    scrollbar-width:thin;
+    -webkit-overflow-scrolling:touch;
+  }
+  .platform-mobile-nav a {
+    display:inline-flex;
+    min-height:44px;
+    flex:0 0 auto;
+    align-items:center;
+    gap:7px;
+    padding:0 12px;
+    border:1px solid var(--ad-border);
+    border-radius:10px;
+    background:var(--ad-surface-subtle);
+    color:var(--ad-text-muted);
+    font-size:.76rem;
+    font-weight:750;
+    text-decoration:none;
+    white-space:nowrap;
+  }
+  .platform-mobile-nav a[aria-current="page"] {
+    border-color:color-mix(in srgb,var(--ad-accent) 48%,var(--ad-border));
+    background:var(--ad-accent-soft);
+    color:var(--ad-accent);
+  }
+  .platform-mobile-nav i { color:currentColor; font-size:1rem; font-style:normal; }
+  .platform-content {
+    padding-right:max(16px, env(safe-area-inset-right));
+    padding-bottom:max(42px, env(safe-area-inset-bottom));
+    padding-left:max(16px, env(safe-area-inset-left));
+  }
+}
+
 /* Admin portal — keep pages concise.  These are instructional helper sentences only;
    system feedback, validation, field labels, records and meaningful empty states remain visible. */
 .enterprise-settings .enterprise-page-header > span,
