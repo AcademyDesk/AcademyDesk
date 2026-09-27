@@ -362,7 +362,13 @@ export default function PlatformControlPage() {
       const response = await academyApi(`/api/platform/academies/${selectedAcademy}/onboarding`, { method: "PUT", headers: apiHeaders(true), body: JSON.stringify({
         status: "InProgress", currentSection: onboardingSection, primaryContactName: field("primaryContactName", tenantProfile?.primaryContactName), primaryContactRole: field("primaryContactRole", tenantProfile?.primaryContactRole), primaryContactEmail: field("primaryContactEmail", tenantProfile?.primaryContactEmail), primaryContactPhone: field("primaryContactPhone", tenantProfile?.primaryContactPhone), country: field("country", tenantProfile?.country), state: field("state", tenantProfile?.state), city: field("city", tenantProfile?.city), postalCode: field("postalCode", tenantProfile?.postalCode), addressLine1: field("addressLine1", tenantProfile?.addressLine1), addressLine2: field("addressLine2", tenantProfile?.addressLine2), businessType: field("businessType", tenantProfile?.businessType), operatingSince: field("operatingSince", tenantProfile?.operatingSince), website: field("website", tenantProfile?.website), branchSummary: field("branchSummary", tenantProfile?.branchSummary), financeModel: field("financeModel", tenantProfile?.financeModel), billingFrequency: field("billingFrequency", tenantProfile?.billingFrequency), paymentCollectionMethods: field("paymentCollectionMethods", tenantProfile?.paymentCollectionMethods), teacherPaymentModels: field("teacherPaymentModels", tenantProfile?.teacherPaymentModels), teacherCount: number("teacherCount", tenantProfile?.teacherCount), studentCount: number("studentCount", tenantProfile?.studentCount), subjectCount: number("subjectCount", tenantProfile?.subjectCount), subjectTypes: field("subjectTypes", tenantProfile?.subjectTypes), deliveryModes: field("deliveryModes", tenantProfile?.deliveryModes), classRatios: field("classRatios", tenantProfile?.classRatios), batchAndClassSetup: field("batchAndClassSetup", tenantProfile?.batchAndClassSetup), operationalNotes: field("operationalNotes", tenantProfile?.operationalNotes), documentsJson: field("documentsJson", tenantProfile?.documentsJson) || "[]"
       }) });
-      const payload = await response.json().catch(() => null); if (!response.ok) throw new Error(payload?.message ?? "Tenant information could not be saved.");
+      if (response.status === 401 || response.status === 403) {
+        clearPortalTokens();
+        router.replace("/login?returnTo=/platform/control?tab=Tenant%20onboarding");
+        throw new Error("Your Platform Owner session has expired. Please sign in again.");
+      }
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(payload?.message ?? (response.status === 429 ? "Too many requests were made. Please wait a minute and save again." : "Tenant information could not be saved. Please try again."));
       setTenantProfile(payload); setMessage("Tenant discovery information saved.");
     } catch (error) { setMessage(error instanceof Error ? error.message : "Tenant information could not be saved."); } finally { setBusy(false); }
   }
@@ -395,6 +401,11 @@ export default function PlatformControlPage() {
         })
       });
       const detailsPayload = await detailsResponse.json().catch(() => null);
+      if (detailsResponse.status === 401 || detailsResponse.status === 403) {
+        clearPortalTokens();
+        router.replace("/login?returnTo=/platform/control?tab=Tenant%20onboarding");
+        throw new Error("The academy was created, but your Platform Owner session expired before the tenant information could be saved. Please sign in again and complete the tenant record.");
+      }
       if (!detailsResponse.ok) throw new Error(detailsPayload?.message ?? "The academy was created, but the tenant information could not be saved.");
       setTenantProfile(detailsPayload); setStartingTenant(false); setSelectedAcademy(payload.id); await load(); setMessage("Academy, Academy Admin, and tenant information have been saved.");
     } catch (error) { setMessage(error instanceof Error ? error.message : "The academy could not be created."); } finally { setBusy(false); }
