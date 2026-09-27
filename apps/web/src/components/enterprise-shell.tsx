@@ -256,7 +256,23 @@ export function EnterpriseShell({
       })
       .catch(() => undefined);
   }, []);
-  useEffect(() => { void academyApi("/api/portal/announcements", { cache: "no-store" }).then(async response => { if (response.ok) setAnnouncements(await response.json()); }).catch(() => undefined); }, []);
+  useEffect(() => {
+    let mounted = true;
+    const loadAnnouncements = async () => {
+      const response = await academyApi("/api/portal/announcements", { cache: "no-store" }).catch(() => undefined);
+      if (!mounted || !response?.ok) return;
+      const next = await response.json().catch(() => null);
+      if (mounted && Array.isArray(next)) setAnnouncements(next);
+    };
+    void loadAnnouncements();
+    const interval = window.setInterval(() => void loadAnnouncements(), 30_000);
+    window.addEventListener("focus", loadAnnouncements);
+    return () => {
+      mounted = false;
+      window.clearInterval(interval);
+      window.removeEventListener("focus", loadAnnouncements);
+    };
+  }, []);
 
   const enabledModules = useMemo(() => {
     try {
