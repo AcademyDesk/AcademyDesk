@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { academyApi, apiHeaders, apiUrl, clearPortalTokens } from "@/lib/api";
@@ -47,9 +47,9 @@ const platformLinks = [
     icon: "◫",
     href: "/platform/control?tab=Tenants",
   },
-  { label: "Tenant onboarding", icon: "✦", href: "/platform/control?tab=Tenant%20onboarding" },
-  { label: "Tenant information", icon: "ⓘ", href: "/platform/control?tab=Tenant%20information" },
-  { label: "Academy admins", icon: "♙", href: "/platform/control?tab=Admins" },
+  { label: "Tenant Onboarding", icon: "✦", href: "/platform/control?tab=Tenant%20onboarding" },
+  { label: "Tenant Information", icon: "ⓘ", href: "/platform/control?tab=Tenant%20information" },
+  { label: "Academy Admins", icon: "♙", href: "/platform/control?tab=Admins" },
   { label: "Billing", icon: "₹", href: "/platform/control?tab=Billing" },
   { label: "Support", icon: "?", href: "/platform/control?tab=Support" },
   { label: "Activity logs", icon: "☷", href: "/platform/control?tab=Activity%20logs" },
@@ -65,12 +65,6 @@ export default function PlatformPage() {
   const router = useRouter();
   const [academies, setAcademies] = useState<Academy[]>([]);
   const [query, setQuery] = useState("");
-  const [academyName, setAcademyName] = useState("");
-  const [legalName, setLegalName] = useState("");
-  const [adminUserName, setAdminUserName] = useState("");
-  const [adminDisplayName, setAdminDisplayName] = useState("");
-  const [password, setPassword] = useState("");
-  const [onboardingOpen, setOnboardingOpen] = useState(false);
   const [overviewModal, setOverviewModal] = useState<OverviewModal>(null);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<Notice>({
@@ -124,54 +118,6 @@ export default function PlatformPage() {
       setNotice({ text: error.message, tone: "error" }),
     );
   }, []);
-  async function onboard(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setBusy(true);
-    setNotice({
-      text: "Creating academy and its initial administrator…",
-      tone: "neutral",
-    });
-    try {
-      const response = await academyApi("/api/platform/academies", {
-        method: "POST",
-        headers: apiHeaders(true),
-        body: JSON.stringify({
-          academyName,
-          legalName: legalName || null,
-          adminUserName,
-          adminDisplayName: adminDisplayName || null,
-          password,
-          countryCode: "IN",
-          timeZone: "Asia/Kolkata",
-        }),
-      });
-      const payload = await response.json().catch(() => null);
-      if (!response.ok)
-        throw new Error(
-          payload?.message ?? "Academy onboarding could not be completed.",
-        );
-      setAcademyName("");
-      setLegalName("");
-      setAdminUserName("");
-      setAdminDisplayName("");
-      setOnboardingOpen(false);
-      await load();
-      setNotice({
-        text: `${payload.name} is ready. Its Academy Admin can sign in now.`,
-        tone: "success",
-      });
-    } catch (error) {
-      setNotice({
-        text:
-          error instanceof Error
-            ? error.message
-            : "Academy onboarding could not be completed.",
-        tone: "error",
-      });
-    } finally {
-      setBusy(false);
-    }
-  }
   async function setStatus(academy: Academy) {
     setBusy(true);
     try {
@@ -272,13 +218,12 @@ export default function PlatformPage() {
                 <h1 className="platform-workspace-title">Overview</h1>
               </div>
             </div>
-            <button
-              type="button"
+            <Link
               className="enterprise-primary-action"
-              onClick={() => setOnboardingOpen(true)}
+              href="/platform/control?tab=Tenant%20onboarding&start=true"
             >
               ＋ Onboard academy
-            </button>
+            </Link>
           </section>
           <section
             className="platform-kpis"
@@ -366,73 +311,6 @@ export default function PlatformPage() {
               <article className="platform-modal platform-overview-modal" role="dialog" aria-modal="true" aria-labelledby="overview-tile-title" onMouseDown={(event) => event.stopPropagation()}>
                 <header><div><p>{selectedOverviewTile.label}</p><h3 id="overview-tile-title">{selectedOverviewTile.value}</h3></div><button type="button" aria-label="Close detail" onClick={() => setOverviewModal(null)}>×</button></header>
                 {(["academies", "activeAcademies", "learners"] as const).includes(overviewModal as "academies" | "activeAcademies" | "learners") ? <ul className="platform-overview-detail-list">{(overviewModal === "activeAcademies" ? activeAcademies : academies).map((academy) => <li key={academy.id}><div><b>{academy.name}</b><small>{academy.branches} branch{academy.branches === 1 ? "" : "es"} · {academy.students} learner{academy.students === 1 ? "" : "s"}</small></div><span className={academy.isActive ? "platform-status active" : "platform-status"}>{academy.isActive ? "Active" : "Inactive"}</span></li>)}{!academies.length && <li><small>No academies recorded yet.</small></li>}</ul> : <div className="platform-overview-detail-summary"><p>{selectedOverviewTile.detail}</p>{overviewModal === "support" && <Link href="/platform/control?tab=Support" onClick={() => setOverviewModal(null)}>Open Support</Link>}{(["billed", "collected", "outstanding"] as const).includes(overviewModal as "billed" | "collected" | "outstanding") && <Link href="/platform/control?tab=Billing" onClick={() => setOverviewModal(null)}>Open Billing</Link>}</div>}
-              </article>
-            </div>
-          )}
-          {onboardingOpen && (
-            <div className="platform-modal-backdrop" role="presentation">
-              <article
-                className="platform-modal"
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="onboard-title"
-              >
-                <header>
-                  <h3 id="onboard-title">Onboard academy</h3>
-                  <button
-                    type="button"
-                    aria-label="Close onboarding"
-                    onClick={() => setOnboardingOpen(false)}
-                  >
-                    ×
-                  </button>
-                </header>
-                <form onSubmit={onboard}>
-                  <label>
-                    Academy name
-                    <input
-                      value={academyName}
-                      onChange={(event) => setAcademyName(event.target.value)}
-                      required
-                    />
-                  </label>
-                  <label>
-                    Legal business name <em>Optional</em>
-                    <input
-                      value={legalName}
-                      onChange={(event) => setLegalName(event.target.value)}
-                    />
-                  </label>
-                  <label>
-                    Admin user name
-                    <input
-                      value={adminUserName}
-                      onChange={(event) => setAdminUserName(event.target.value)}
-                      required
-                    />
-                  </label>
-                  <label>
-                    Admin display name <em>Optional</em>
-                    <input
-                      value={adminDisplayName}
-                      onChange={(event) =>
-                        setAdminDisplayName(event.target.value)
-                      }
-                    />
-                  </label>
-                  <label>
-                    Temporary password
-                    <input
-                      type="password"
-                      value={password}
-                      onChange={(event) => setPassword(event.target.value)}
-                      required
-                    />
-                  </label>
-                  <button className="platform-submit" disabled={busy}>
-                    {busy ? "Working…" : "Create academy and admin"}
-                  </button>
-                </form>
               </article>
             </div>
           )}

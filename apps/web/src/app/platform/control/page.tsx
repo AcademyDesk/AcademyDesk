@@ -95,10 +95,10 @@ const platformLinks = [
     href: "/platform/control?tab=Tenants",
     tab: "Tenants",
   },
-  { label: "Tenant onboarding", icon: "✦", href: "/platform/control?tab=Tenant%20onboarding", tab: "Tenant onboarding" },
-  { label: "Tenant information", icon: "ⓘ", href: "/platform/control?tab=Tenant%20information", tab: "Tenant information" },
+  { label: "Tenant Onboarding", icon: "✦", href: "/platform/control?tab=Tenant%20onboarding", tab: "Tenant onboarding" },
+  { label: "Tenant Information", icon: "ⓘ", href: "/platform/control?tab=Tenant%20information", tab: "Tenant information" },
   {
-    label: "Academy admins",
+    label: "Academy Admins",
     icon: "♙",
     href: "/platform/control?tab=Admins",
     tab: "Admins",
@@ -186,6 +186,7 @@ export default function PlatformControlPage() {
   const [settingsCurrency, setSettingsCurrency] = useState("");
   const [tenantProfile, setTenantProfile] = useState<TenantProfile>();
   const [onboardingSection, setOnboardingSection] = useState("Personal");
+  const [startingTenant, setStartingTenant] = useState(false);
   const [message, setMessage] = useState("Loading platform controls…");
   const [busy, setBusy] = useState(false);
   const profileImageInput = useRef<HTMLInputElement>(null);
@@ -276,7 +277,8 @@ export default function PlatformControlPage() {
   useEffect(() => { setSettingsCurrency(settings?.defaultCurrency ?? ""); }, [settings]);
   useEffect(() => { if (tab === "Activity logs") void loadActivityLogs().catch((error) => setMessage(error.message)); }, [tab, activityScope, activityFrom, activityTo]);
   useEffect(() => {
-    if (!selectedAcademy) { setTenantProfile(undefined); return; }
+    setTenantProfile(undefined);
+    if (!selectedAcademy) return;
     void academyApi(`/api/platform/academies/${selectedAcademy}/onboarding`)
       .then(async (response) => {
         if (!response.ok) { setTenantProfile(undefined); return; }
@@ -359,6 +361,19 @@ export default function PlatformControlPage() {
       const payload = await response.json().catch(() => null); if (!response.ok) throw new Error(payload?.message ?? "Tenant information could not be saved.");
       setTenantProfile(payload); setMessage("Tenant discovery information saved.");
     } catch (error) { setMessage(error instanceof Error ? error.message : "Tenant information could not be saved."); } finally { setBusy(false); }
+  }
+  async function createTenantFromOnboarding(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    setBusy(true); setMessage("");
+    try {
+      const response = await academyApi("/api/platform/academies", { method: "POST", headers: apiHeaders(true), body: JSON.stringify({
+        academyName: form.get("academyName"), legalName: form.get("legalName") || null, adminUserName: form.get("adminUserName"), adminDisplayName: form.get("adminDisplayName") || null, password: form.get("password"), countryCode: "IN", timeZone: "Asia/Kolkata"
+      }) });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(payload?.message ?? "The academy could not be created.");
+      setStartingTenant(false); setSelectedAcademy(payload.id); await load(); setMessage("Academy and Academy Admin created. Continue with the tenant discovery details below.");
+    } catch (error) { setMessage(error instanceof Error ? error.message : "The academy could not be created."); } finally { setBusy(false); }
   }
   async function createInvoice(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -485,12 +500,14 @@ export default function PlatformControlPage() {
 
   useEffect(() => {
     const requestedTab = new URLSearchParams(window.location.search).get("tab");
+    setStartingTenant(new URLSearchParams(window.location.search).get("start") === "true");
     if (requestedTab && platformControlTabs.includes(requestedTab))
       setTab(requestedTab);
   }, []);
 
   function selectWorkspace(nextTab: (typeof platformControlTabs)[number]) {
     setTab(nextTab);
+    setStartingTenant(false);
     router.replace(`/platform/control?tab=${encodeURIComponent(nextTab)}`, { scroll: false });
     document
       .querySelector<HTMLElement>(".platform-control-content")
@@ -568,7 +585,7 @@ export default function PlatformControlPage() {
             <span className="platform-control-icon" aria-hidden="true">{controlIcon}</span>
             <div>
               <p>Platform owner</p>
-              <h1 className="platform-workspace-title">{tab === "Tenants" ? "Tenant management" : tab === "Admins" ? "Academy admins" : tab}</h1>
+              <h1 className="platform-workspace-title">{tab === "Tenants" ? "Tenant management" : tab === "Tenant onboarding" ? "Tenant Onboarding" : tab === "Tenant information" ? "Tenant Information" : tab === "Admins" ? "Academy Admins" : tab}</h1>
             </div>
           </header>
           {message && (
@@ -578,14 +595,14 @@ export default function PlatformControlPage() {
           )}
           {tab === "Tenant onboarding" && <section className="tenant-intake-layout">
             <aside className="tenant-intake-nav"><p>Discovery intake</p>{["Personal", "Business", "Finance", "Delivery & classes", "Team & subjects", "Documents & notes"].map((section) => <button key={section} type="button" data-active={onboardingSection === section} onClick={() => setOnboardingSection(section)}>{section}</button>)}</aside>
-            <form onSubmit={saveTenantOnboarding} className="tenant-intake-panel"><div className="tenant-intake-fields"><label className="tenant-intake-wide"><span>Academy</span><StandardSelectField name="academy" value={selectedAcademy} onChange={setSelectedAcademy} placeholder="Select academy" options={academies.map((academy) => ({ value: academy.id, label: academy.name }))} /></label>
+            {startingTenant || !academies.length ? <form onSubmit={createTenantFromOnboarding} className="tenant-intake-panel"><div className="tenant-intake-fields"><header className="tenant-intake-wide"><p>Tenant setup</p><h2>Create the academy and its first Academy Admin</h2></header><label className="tenant-intake-wide"><span>Academy name</span><input name="academyName" required /></label><label className="tenant-intake-wide"><span>Legal business name</span><input name="legalName" /></label><label><span>Academy Admin email</span><input name="adminUserName" type="email" required /></label><label><span>Academy Admin display name</span><input name="adminDisplayName" /></label><label className="tenant-intake-wide"><span>Temporary Academy Admin password</span><input name="password" type="password" minLength={8} required /></label><button disabled={busy} className="enterprise-action-button tenant-intake-wide">{busy ? "Creating…" : "Create academy and continue"}</button></div></form> : <form key={`${selectedAcademy}-${onboardingSection}-${JSON.stringify(tenantProfile)}`} onSubmit={saveTenantOnboarding} className="tenant-intake-panel"><div className="tenant-intake-fields"><label className="tenant-intake-wide"><span>Academy</span><StandardSelectField name="academy" value={selectedAcademy} onChange={setSelectedAcademy} placeholder="Select academy" options={academies.map((academy) => ({ value: academy.id, label: academy.name }))} /></label>
               {onboardingSection === "Personal" && <div><label><span>Primary contact</span><input name="primaryContactName" defaultValue={tenantProfile?.primaryContactName || ""}/></label><label><span>Role</span><input name="primaryContactRole" defaultValue={tenantProfile?.primaryContactRole || ""}/></label><label><span>Email</span><input name="primaryContactEmail" type="email" defaultValue={tenantProfile?.primaryContactEmail || ""}/></label><label><span>Phone</span><input name="primaryContactPhone" defaultValue={tenantProfile?.primaryContactPhone || ""}/></label><label><span>Country</span><input name="country" autoComplete="country-name" defaultValue={tenantProfile?.country || ""}/></label><label><span>State / province</span><input name="state" autoComplete="address-level1" defaultValue={tenantProfile?.state || ""}/></label><label><span>City</span><input name="city" autoComplete="address-level2" defaultValue={tenantProfile?.city || ""}/></label><label><span>PIN / postcode</span><input name="postalCode" autoComplete="postal-code" defaultValue={tenantProfile?.postalCode || ""}/></label><label className="tenant-intake-wide"><span>Address line 1</span><input name="addressLine1" autoComplete="address-line1" defaultValue={tenantProfile?.addressLine1 || ""}/></label><label className="tenant-intake-wide"><span>Address line 2</span><input name="addressLine2" autoComplete="address-line2" defaultValue={tenantProfile?.addressLine2 || ""}/></label></div>}
               {onboardingSection === "Business" && <div><label><span>Business type</span><input name="businessType" defaultValue={tenantProfile?.businessType || ""} placeholder="Music academy, tuition centre, school…"/></label><label><span>Operating since</span><input name="operatingSince" defaultValue={tenantProfile?.operatingSince || ""}/></label><label><span>Website or social link</span><input name="website" defaultValue={tenantProfile?.website || ""}/></label><label><span>Branches / locations</span><input name="branchSummary" defaultValue={tenantProfile?.branchSummary || ""}/></label></div>}
               {onboardingSection === "Finance" && <div><label><span>Fee model</span><input name="financeModel" defaultValue={tenantProfile?.financeModel || ""} placeholder="Monthly, package, term…"/></label><label><span>Billing frequency</span><input name="billingFrequency" defaultValue={tenantProfile?.billingFrequency || ""}/></label><label className="tenant-intake-wide"><span>Collection methods</span><input name="paymentCollectionMethods" defaultValue={tenantProfile?.paymentCollectionMethods || ""} placeholder="Cash, bank transfer, card, UPI…"/></label><label className="tenant-intake-wide"><span>Teacher payment models</span><input name="teacherPaymentModels" defaultValue={tenantProfile?.teacherPaymentModels || ""} placeholder="Monthly, quarterly, hourly, per session…"/></label></div>}
               {onboardingSection === "Delivery & classes" && <div><label><span>Class delivery modes</span><input name="deliveryModes" defaultValue={tenantProfile?.deliveryModes || ""} placeholder="Online, offline, hybrid"/></label><label><span>Typical class ratios</span><input name="classRatios" defaultValue={tenantProfile?.classRatios || ""} placeholder="1:1, 1:3, 1:10…"/></label><label className="tenant-intake-wide"><span>Batch and class setup</span><textarea name="batchAndClassSetup" rows={4} defaultValue={tenantProfile?.batchAndClassSetup || ""}/></label></div>}
               {onboardingSection === "Team & subjects" && <div><label><span>Total teachers</span><input name="teacherCount" type="number" min="0" defaultValue={tenantProfile?.teacherCount ?? ""}/></label><label><span>Total students</span><input name="studentCount" type="number" min="0" defaultValue={tenantProfile?.studentCount ?? ""}/></label><label><span>Total subjects</span><input name="subjectCount" type="number" min="0" defaultValue={tenantProfile?.subjectCount ?? ""}/></label><label><span>Subject types</span><input name="subjectTypes" defaultValue={tenantProfile?.subjectTypes || ""} placeholder="Piano, vocal, maths…"/></label></div>}
               {onboardingSection === "Documents & notes" && <div><label className="tenant-intake-wide"><span>Documents register</span><textarea name="documentsJson" rows={4} defaultValue={tenantProfile?.documentsJson || "[]"} placeholder="List documents or secure reference links"/></label><label className="tenant-intake-wide"><span>Operational notes</span><textarea name="operationalNotes" rows={5} defaultValue={tenantProfile?.operationalNotes || ""}/></label></div>}
-              <button disabled={busy || !selectedAcademy} className="enterprise-action-button tenant-intake-wide">{busy ? "Saving…" : "Save tenant information"}</button></div></form></section>}
+              <button disabled={busy || !selectedAcademy} className="enterprise-action-button tenant-intake-wide">{busy ? "Saving…" : `Save ${onboardingSection} details`}</button></div></form>}</section>}
           {tab === "Tenant information" && <section className="tenant-information-panel"><header className="platform-control-panel-header"><div><p>Owner record</p><h2>Tenant information</h2></div>{selectedAcademy && <button type="button" className="enterprise-secondary-button" onClick={() => { setOnboardingSection("Personal"); selectWorkspace("Tenant onboarding"); }}>Edit information</button>}</header><div className="tenant-intake-fields"><label className="tenant-intake-wide"><span>Academy</span><StandardSelectField name="academy" value={selectedAcademy} onChange={setSelectedAcademy} placeholder="Select academy" options={academies.map((academy) => ({ value: academy.id, label: academy.name }))} /></label>{tenantProfile ? <><section className="tenant-information-grid"><div><b>Contact</b><span>{tenantProfile.primaryContactName || "Not recorded"}</span><small>{tenantProfile.primaryContactRole || ""} {tenantProfile.primaryContactEmail || tenantProfile.primaryContactPhone || ""}</small></div><div><b>Business</b><span>{tenantProfile.businessType || "Not recorded"}</span><small>{tenantProfile.branchSummary || tenantProfile.website || ""}</small></div><div><b>Address</b><span>{[tenantProfile.addressLine1, tenantProfile.addressLine2].filter(Boolean).join(", ") || "Not recorded"}</span><small>{[tenantProfile.city, tenantProfile.state, tenantProfile.postalCode, tenantProfile.country].filter(Boolean).join(" · ")}</small></div><div><b>Operations</b><span>{tenantProfile.deliveryModes || "Not recorded"}</span><small>{tenantProfile.classRatios || ""}</small></div><div><b>Team and subjects</b><span>{tenantProfile.teacherCount ?? 0} teachers · {tenantProfile.studentCount ?? 0} students · {tenantProfile.subjectCount ?? 0} subjects</span><small>{tenantProfile.subjectTypes || ""}</small></div></section><section className="tenant-information-notes"><b>Finance and teacher payments</b><p>{tenantProfile.financeModel || "Not recorded"} · {tenantProfile.billingFrequency || "Billing frequency not recorded"} · {tenantProfile.paymentCollectionMethods || "Collection methods not recorded"} · {tenantProfile.teacherPaymentModels || "Teacher payment model not recorded"}</p><b>Classes and batches</b><p>{tenantProfile.batchAndClassSetup || "Not recorded"}</p><b>Documents register</b><p>{tenantProfile.documentsJson || "No documents recorded"}</p><b>Operational notes</b><p>{tenantProfile.operationalNotes || "Not recorded"}</p></section></> : <p className="platform-tenant-empty">No discovery information has been saved for this tenant yet.</p>}</div></section>}
           {tab === "Tenants" && (
             <>
