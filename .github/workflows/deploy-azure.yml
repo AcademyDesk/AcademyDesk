@@ -8,6 +8,12 @@ on:
 permissions:
   contents: read
 
+# Azure Container Apps accepts one configuration update at a time. Queue commits
+# rather than letting two GitHub runs race to update the production application.
+concurrency:
+  group: academydesk-production-deploy
+  cancel-in-progress: false
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
