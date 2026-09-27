@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { StandardDateField, StandardSelectField } from "@/components/design-system/controls";
 import { academyApi, apiHeaders, apiUrl, clearPortalTokens } from "@/lib/api";
@@ -146,6 +146,7 @@ const platformControlTabs = [
 
 export default function PlatformControlPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [tab, setTab] = useState("Tenants");
   const [academies, setAcademies] = useState<Academy[]>([]);
   const [admins, setAdmins] = useState<Admin[]>([]);
@@ -534,11 +535,11 @@ export default function PlatformControlPage() {
   }
 
   useEffect(() => {
-    const requestedTab = new URLSearchParams(window.location.search).get("tab");
-    setStartingTenant(new URLSearchParams(window.location.search).get("start") === "true");
+    const requestedTab = searchParams.get("tab");
+    setStartingTenant(searchParams.get("start") === "true");
     if (requestedTab && platformControlTabs.includes(requestedTab))
       setTab(requestedTab);
-  }, []);
+  }, [searchParams]);
 
   function selectWorkspace(nextTab: (typeof platformControlTabs)[number]) {
     setTab(nextTab);

@@ -138,6 +138,7 @@ export default function CalendarPage() {
   );
   const [filter, setFilter] = useState<"All" | CalendarItem["type"]>("All");
   const [message, setMessage] = useState("Loading calendar…");
+  const [agendaExpanded, setAgendaExpanded] = useState(true);
   useEffect(() => {
     void (async () => {
       try {
@@ -353,12 +354,22 @@ export default function CalendarPage() {
         <section className="workspace-calendar-agenda">
           <header className="workspace-calendar-agenda-header">
             <div><p>Schedule list</p><h2>Month agenda</h2></div>
-            <span>
-              {agenda.length} items
-            </span>
+            <div className="workspace-calendar-agenda-header-actions">
+              <span>{agenda.length} items</span>
+              <button
+                type="button"
+                className="workspace-calendar-agenda-toggle"
+                aria-expanded={agendaExpanded}
+                aria-controls="calendar-month-agenda-list"
+                onClick={() => setAgendaExpanded((expanded) => !expanded)}
+              >
+                {agendaExpanded ? "Collapse" : "Expand"}
+                <i aria-hidden="true">{agendaExpanded ? "⌃" : "⌄"}</i>
+              </button>
+            </div>
           </header>
-          {agenda.length ? (
-            <ul className="workspace-calendar-agenda-list">
+          {agendaExpanded && (agenda.length ? (
+            <ul id="calendar-month-agenda-list" className="workspace-calendar-agenda-list">
               {agenda.map((item) => (
                 <AgendaItem
                   key={`agenda-${item.type}-${item.id}`}
@@ -367,10 +378,10 @@ export default function CalendarPage() {
               ))}
             </ul>
           ) : (
-            <p className="py-8 text-center text-sm text-slate-400">
+            <p id="calendar-month-agenda-list" className="py-8 text-center text-sm text-slate-400">
               No calendar items for this view.
             </p>
-          )}
+          ))}
         </section>
     </main>
   );

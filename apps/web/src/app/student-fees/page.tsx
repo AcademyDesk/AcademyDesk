@@ -71,20 +71,18 @@ export default function StudentFeesPage() {
       </header>
       {message ? <p className="enterprise-page-state student-fees-message">{message}</p> : null}
       {academy ? (
-        <section className="student-fees-layout">
-          <section className="student-fees-student-panel">
-            <header className="student-fees-panel-header"><div><p>Student</p><h3>Select student</h3></div></header>
-            <div className="field-label mt-4">
-              <StandardSelectField
-                name="fee-student"
-                value={studentId}
-                onChange={setStudentId}
-                placeholder="Select student"
-                options={students.map((student) => ({ value: student.id, label: `${student.firstName} ${student.lastName}${student.isActive ? "" : " (Inactive)"}` }))}
-              />
-            </div>
-            {!students.length ? <p className="enterprise-settings-empty mt-4">No students are available yet.</p> : null}
+        <>
+          <section className="student-fees-toolbar">
+            <StandardSelectField
+              name="fee-student"
+              value={studentId}
+              onChange={setStudentId}
+              placeholder="Select student"
+              options={students.map((student) => ({ value: student.id, label: `${student.firstName} ${student.lastName}${student.isActive ? "" : " (Inactive)"}` }))}
+            />
           </section>
+          {!students.length ? <p className="enterprise-settings-empty student-fees-empty">No students are available yet.</p> : null}
+          <section className="student-fees-layout">
           {studentId ? (
             <div className="student-fees-workspace">
               <form onSubmit={saveAdmissionFee} className="student-fees-panel">
@@ -104,7 +102,8 @@ export default function StudentFeesPage() {
               <StudentFeeArrangements academyId={academy.id} studentId={studentId} />
             </div>
           ) : null}
-        </section>
+          </section>
+        </>
       ) : null}
     </main>
   );

@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import type { CSSProperties } from "react";
 
 type StandardTimeFieldProps = {
   name: string;
@@ -35,7 +37,9 @@ export function StandardTimeField({
   intervalMinutes = 15,
 }: StandardTimeFieldProps) {
   const [open, setOpen] = useState(false);
+  const [popoverStyle, setPopoverStyle] = useState<CSSProperties>();
   const ref = useRef<HTMLDivElement>(null);
+  const popoverRef = useRef<HTMLElement>(null);
   const { hour, minute } = parts(value);
   const isPm = hour >= 12;
   const currentHour = hour % 12 || 12;
@@ -45,8 +49,39 @@ export function StandardTimeField({
   );
 
   useEffect(() => {
+    if (!open) return;
+    const updatePosition = () => {
+      const trigger = ref.current?.querySelector(".standard-time-trigger");
+      if (!(trigger instanceof HTMLElement)) return;
+      const rect = trigger.getBoundingClientRect();
+      const availableBelow = window.innerHeight - rect.bottom - 12;
+      const height = Math.min(330, Math.max(220, availableBelow));
+      const openAbove = availableBelow < 250 && rect.top > availableBelow;
+      setPopoverStyle({
+        position: "fixed",
+        zIndex: 10000,
+        left: rect.left,
+        top: openAbove ? Math.max(8, rect.top - height - 8) : rect.bottom + 8,
+        width: Math.min(360, Math.max(280, rect.width)),
+        maxHeight: height,
+      });
+    };
+    updatePosition();
+    window.addEventListener("resize", updatePosition);
+    window.addEventListener("scroll", updatePosition, true);
+    return () => {
+      window.removeEventListener("resize", updatePosition);
+      window.removeEventListener("scroll", updatePosition, true);
+    };
+  }, [open]);
+
+  useEffect(() => {
     const close = (event: MouseEvent) => {
-      if (ref.current && !ref.current.contains(event.target as Node))
+      if (
+        ref.current &&
+        !ref.current.contains(event.target as Node) &&
+        !popoverRef.current?.contains(event.target as Node)
+      )
         setOpen(false);
     };
     document.addEventListener("mousedown", close);
@@ -73,11 +108,13 @@ export function StandardTimeField({
         <span>{readableTime(value)}</span>
         <i aria-hidden="true">◷</i>
       </button>
-      {open && (
+      {open && popoverStyle && typeof document !== "undefined" && createPortal(
         <section
+          ref={popoverRef}
           className="standard-time-popover"
           role="dialog"
           aria-label={`${label} picker`}
+          style={popoverStyle}
         >
           <div>
             <span>Hour</span>
@@ -131,7 +168,8 @@ export function StandardTimeField({
               ))}
             </div>
           </div>
-        </section>
+        </section>,
+        document.body,
       )}
     </div>
   );

@@ -33,19 +33,16 @@ export default function TeacherPaymentsPage() {
         <div className="teacher-payments-title"><span className="teacher-payments-title-icon" aria-hidden="true">₹</span><div><p>Teachers</p><h1>Payment Details</h1></div></div>
       </header>
       {message && <p className="enterprise-page-state teacher-payments-message">{message}</p>}
+      <section className="teacher-payments-toolbar">
+        <StandardSelectField
+          name="payment-teacher"
+          value={teacherId}
+          onChange={(value) => void select(value)}
+          placeholder="Select teacher"
+          options={teachers.map((teacher) => ({ value: teacher.id, label: `${teacher.firstName} ${teacher.lastName}${teacher.isActive ? "" : " (Inactive)"}` }))}
+        />
+      </section>
       <section className="teacher-payments-layout">
-        <section className="teacher-payments-teacher-panel">
-          <header className="teacher-payments-panel-header"><div><p>Teacher</p><h2>Select teacher</h2></div></header>
-          <div className="teacher-payments-selector">
-            <StandardSelectField
-              name="payment-teacher"
-              value={teacherId}
-              onChange={(value) => void select(value)}
-              placeholder="Select teacher"
-              options={teachers.map((teacher) => ({ value: teacher.id, label: `${teacher.firstName} ${teacher.lastName}${teacher.isActive ? "" : " (Inactive)"}` }))}
-            />
-          </div>
-        </section>
         {teacherId && <form onSubmit={save} className="teacher-payments-panel">
           <header className="teacher-payments-panel-header"><div><p>Compensation</p><h2>Payment arrangement</h2></div><button disabled={saving} className="enterprise-action-button">{saving ? "Saving…" : "Save payment details"}</button></header>
           <div className="teacher-payments-fields">

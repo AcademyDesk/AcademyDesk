@@ -1,9 +1,13 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useTheme } from "@/components/theme-provider";
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => setHydrated(true), []);
 
   return (
     <div className="theme-toggle" role="group" aria-label="Color theme">
@@ -11,7 +15,7 @@ export function ThemeToggle() {
         type="button"
         title="Use light theme"
         aria-label="Use light theme"
-        aria-pressed={theme === "light"}
+        aria-pressed={hydrated ? theme === "light" : undefined}
         onClick={() => setTheme("light")}
       >
         <span aria-hidden="true">☼</span> Light
@@ -20,7 +24,7 @@ export function ThemeToggle() {
         type="button"
         title="Use dark theme"
         aria-label="Use dark theme"
-        aria-pressed={theme === "dark"}
+        aria-pressed={hydrated ? theme === "dark" : undefined}
         onClick={() => setTheme("dark")}
       >
         <span aria-hidden="true">◐</span> Dark

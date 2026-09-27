@@ -200,6 +200,7 @@ export function EnterpriseShell({
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
   const notificationsRef = useRef<HTMLDivElement>(null);
+  const mobileWorkspaceNavRef = useRef<HTMLElement>(null);
   const profileImageInputRef = useRef<HTMLInputElement>(null);
   const financeOnly =
     account?.roles.includes("FinanceUser") &&
@@ -304,6 +305,23 @@ export function EnterpriseShell({
     );
   }
 
+  const currentNavigationLabel = (() => {
+    for (const group of activeNavigationGroups) {
+      for (const item of group.links ?? []) {
+        if (isNavigationActive(item[1])) return item[0];
+      }
+      for (const section of group.sections ?? []) {
+        for (const item of section.links) {
+          if (isNavigationActive(item[1])) return item[0];
+        }
+      }
+    }
+    for (const item of activeAdministrationNavigation) {
+      if (isNavigationActive(item[1])) return item[0];
+    }
+    return "Browse workspace";
+  })();
+
   function LockedNavigationItem({ item }: { item: NavigationItem }) {
     const [label, href] = item;
     const included = moduleIncluded(href);
@@ -338,6 +356,10 @@ export function EnterpriseShell({
 
   useEffect(() => setProfileOpen(false), [pathname]);
   useEffect(() => setNotificationsOpen(false), [pathname]);
+  useEffect(() => {
+    const menu = mobileWorkspaceNavRef.current?.querySelector("details");
+    if (menu) menu.open = false;
+  }, [pathname, searchParams]);
 
   async function uploadProfileImage(event: React.ChangeEvent<HTMLInputElement>) {
     const image = event.target.files?.[0];
@@ -511,10 +533,20 @@ export function EnterpriseShell({
               </div>
             )}
           </header>
-          <nav className="enterprise-mobile-workspace-nav" aria-label="Academy workspace navigation">
+          <nav
+            ref={mobileWorkspaceNavRef}
+            className="enterprise-mobile-workspace-nav"
+            aria-label="Academy workspace navigation"
+            onClick={(event) => {
+              const target = event.target as HTMLElement;
+              if (!target.closest("a, button")) return;
+              const menu = mobileWorkspaceNavRef.current?.querySelector("details");
+              if (menu) menu.open = false;
+            }}
+          >
             <details>
               <summary>
-                <span>Browse workspace</span>
+                <span>{currentNavigationLabel}</span>
                 <b aria-hidden="true">⌄</b>
               </summary>
               <div className="enterprise-mobile-workspace-menu">

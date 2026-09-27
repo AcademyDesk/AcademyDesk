@@ -44,6 +44,8 @@ export default function StudentOverviewPage() {
     void (async () => {
       try {
         const academies = await academyApi("/api/academies", { cache: "no-store" });
+        if (academies.status === 401) throw new Error("SESSION_EXPIRED");
+        if (!academies.ok) throw new Error("ACADEMIES_UNAVAILABLE");
         const current = (await academies.json())[0] as Academy | undefined;
         if (!current) return setMessage("Create an academy before viewing student operations.");
         setAcademy(current);
@@ -54,30 +56,41 @@ export default function StudentOverviewPage() {
           academyApi(`/api/academies/${current.id}/students`, { cache: "no-store" }),
           academyApi(`/api/academies/${current.id}/batches`, { cache: "no-store" }),
         ]);
-        if (!summaryResponse.ok) throw new Error();
+        if (summaryResponse.status === 401) throw new Error("SESSION_EXPIRED");
+        if (!summaryResponse.ok) throw new Error("SUMMARY_UNAVAILABLE");
         setSummary(await summaryResponse.json());
         setSessions(sessionResponse.ok ? await sessionResponse.json() : []);
         setEnrollments(enrollmentResponse.ok ? await enrollmentResponse.json() : []);
         const studentRows: Student[] = studentResponse.ok ? await studentResponse.json() : [];
         setStudents(studentRows);
         setBatches(batchResponse.ok ? await batchResponse.json() : []);
-        const [invoiceResponse, ...feeResponses] = await Promise.all([
-          academyApi(`/api/academies/${current.id}/invoices`, { cache: "no-store" }),
-          ...studentRows.flatMap((student) => [academyApi(`/api/academies/${current.id}/students/${student.id}/fee-arrangements`, { cache: "no-store" }), academyApi(`/api/academies/${current.id}/students/${student.id}/fee-arrangements/admission-fee`, { cache: "no-store" })]),
-        ]);
-        setInvoices(invoiceResponse.ok ? await invoiceResponse.json() : []);
-        const nextSubjectFees: Record<string, FeeArrangement[]> = {};
-        const nextAdmissionFees: Record<string, number> = {};
-        await Promise.all(studentRows.map(async (student, index) => {
-          const arrangements = feeResponses[index * 2]; const admission = feeResponses[index * 2 + 1];
-          nextSubjectFees[student.id] = arrangements?.ok ? await arrangements.json() : [];
-          const admissionData = admission?.ok ? await admission.json() as { amount?: number | null } : null;
-          nextAdmissionFees[student.id] = admissionData?.amount ?? 0;
-        }));
-        setSubjectFees(nextSubjectFees); setAdmissionFees(nextAdmissionFees);
+        // Render the overview as soon as the core records are available. Fee and
+        // invoice details are supplementary and must not block the page shell.
         setMessage("");
-      } catch {
-        setMessage("Student overview could not be loaded.");
+        void (async () => {
+          try {
+            const [invoiceResponse, ...feeResponses] = await Promise.all([
+              academyApi(`/api/academies/${current.id}/invoices`, { cache: "no-store" }),
+              ...studentRows.flatMap((student) => [academyApi(`/api/academies/${current.id}/students/${student.id}/fee-arrangements`, { cache: "no-store" }), academyApi(`/api/academies/${current.id}/students/${student.id}/fee-arrangements/admission-fee`, { cache: "no-store" })]),
+            ]);
+            setInvoices(invoiceResponse.ok ? await invoiceResponse.json() : []);
+            const nextSubjectFees: Record<string, FeeArrangement[]> = {};
+            const nextAdmissionFees: Record<string, number> = {};
+            await Promise.all(studentRows.map(async (student, index) => {
+              const arrangements = feeResponses[index * 2]; const admission = feeResponses[index * 2 + 1];
+              nextSubjectFees[student.id] = arrangements?.ok ? await arrangements.json() : [];
+              const admissionData = admission?.ok ? await admission.json() as { amount?: number | null } : null;
+              nextAdmissionFees[student.id] = admissionData?.amount ?? 0;
+            }));
+            setSubjectFees(nextSubjectFees); setAdmissionFees(nextAdmissionFees);
+          } catch {
+            // The core overview remains useful even when optional finance data is unavailable.
+          }
+        })();
+      } catch (error) {
+        setMessage(error instanceof Error && error.message === "SESSION_EXPIRED"
+          ? "Your session has expired. Sign in again to view student operations."
+          : "Student overview could not be loaded.");
       }
     })();
   }, []);

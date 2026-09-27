@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { WorkspaceNav } from "@/components/workspace-nav";
-import { StandardDateField, StandardSelectField } from "@/components/design-system/controls";
+import { StandardDateField, StandardSelectField, StandardTimeField } from "@/components/design-system/controls";
 import { academyApi, apiHeaders } from "@/lib/api";
 
 type Academy = { id: string };
@@ -31,7 +31,7 @@ export default function MakeupPage() {
       <StandardSelectField name="batch" value={batchId} onChange={setBatchId} placeholder="Select class or batch" options={batches.map((item) => ({ value: item.id, label: name(batches, item.id) }))} />
       <StandardSelectField name="teacher" value={teacherId} onChange={setTeacherId} placeholder="Use class teacher" options={teachers.map((item) => ({ value: item.id, label: name(teachers, item.id) }))} />
       <StandardSelectField name="scheduling-mode" value={mode} onChange={(value) => setMode(value as "Manual" | "NextScheduled")} placeholder="Scheduling method" options={[{ value: "Manual", label: "Choose date and time" }, { value: "NextScheduled", label: "Use next scheduled class" }]} />
-      {mode === "Manual" ? <div className="makeup-date-time"><StandardDateField name="makeup-date" label="Make-up date" value={start.slice(0, 10)} onChange={setDate} required /><label><span>Time (IST)</span><input type="time" value={start.slice(11)} onChange={(event) => setStart(`${start.slice(0, 10) || new Date().toISOString().slice(0, 10)}T${event.target.value}`)} required /></label></div> : <p className="makeup-next-session">The next scheduled class will be used.</p>}
+      {mode === "Manual" ? <div className="makeup-date-time"><StandardDateField name="makeup-date" label="Make-up date" value={start.slice(0, 10)} onChange={setDate} required /><StandardTimeField name="makeup-time" label="Time (IST)" value={start.slice(11, 16) || "09:00"} onChange={(time) => setStart(`${start.slice(0, 10) || new Date().toISOString().slice(0, 10)}T${time}`)} intervalMinutes={15} /></div> : <p className="makeup-next-session">The next scheduled class will be used.</p>}
       <StandardSelectField name="delivery-mode" value={deliveryMode} onChange={setDeliveryMode} placeholder="Delivery mode" options={[{ value: "Offline", label: "Offline" }, { value: "Online", label: "Online" }, { value: "Hybrid", label: "Hybrid" }]} />
       {mode === "Manual" && deliveryMode === "Offline" && <input value={venue} onChange={(event) => setVenue(event.target.value)} placeholder="Room or venue (optional)" />}
       {mode === "Manual" && ["Online", "Hybrid"].includes(deliveryMode) && <input value={meetingLink} onChange={(event) => setMeetingLink(event.target.value)} placeholder="Meeting link" required />}

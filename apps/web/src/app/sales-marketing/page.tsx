@@ -4,6 +4,10 @@ import Link from "next/link";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { WorkspaceNav } from "@/components/workspace-nav";
+import {
+  StandardDetailModal,
+  StandardInteractiveTile,
+} from "@/components/design-system/controls";
 import { academyApi } from "@/lib/api";
 
 type Academy = { id: string };
@@ -30,6 +34,7 @@ function SalesMarketingContent() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [message, setMessage] = useState("Loading sales data…");
   const searchParams = useSearchParams();
+  const [tileDetail, setTileDetail] = useState<string | null>(null);
   const candidate = searchParams.get("view") as View | null;
   const view: View = candidate && candidate in titles ? candidate : "overview";
 
@@ -84,11 +89,11 @@ function SalesMarketingContent() {
   const trialBooked = leads.filter((lead) => lead.stage === "TrialBooked");
   const contact = (lead: Lead) =>
     lead.email || lead.phone || "No contact details";
-  const leadTiles = [
-    ["Leads", leads.length, "/leads"],
-    ["Follow-ups due", due.length, "/sales-marketing?view=follow-ups"],
-    ["Trial bookings", trialBooked.length, "/trial-bookings"],
-    ["Converted", converted.length, "/sales-marketing?view=conversion"],
+  const leadTiles: [string, number, string, string][] = [
+    ["Leads", leads.length, "/leads", "View every lead in the pipeline"],
+    ["Follow-ups due", due.length, "/sales-marketing?view=follow-ups", "Review conversations that need attention"],
+    ["Trial bookings", trialBooked.length, "/trial-bookings", "Review scheduled trial classes"],
+    ["Converted", converted.length, "/sales-marketing?view=conversion", "Review converted enquiries"],
   ];
 
   const leadCards = (
@@ -145,15 +150,15 @@ function SalesMarketingContent() {
         {view === "overview" && (
           <>
             <section className="sales-tile-grid">
-              {leadTiles.map(([name, value, href]) => (
-                <Link
+              {leadTiles.map(([name, value, href, detail]) => (
+                <StandardInteractiveTile
                   key={String(name)}
-                  href={String(href)}
+                  label={name}
+                  value={value}
+                  detail={detail}
+                  onClick={() => setTileDetail(name)}
                   className="sales-tile"
-                >
-                  <span>{name}</span>
-                  <strong>{value}</strong>
-                </Link>
+                />
               ))}
             </section>
             <section className="sales-panel sales-sources-panel">
@@ -199,19 +204,24 @@ function SalesMarketingContent() {
           <>
             <section className="sales-tile-grid sales-tile-grid-three">
               {[
-                ["Total leads", leads.length],
-                ["Converted", converted.length],
+                ["Total leads", leads.length, "All enquiries currently in the pipeline"],
+                ["Converted", converted.length, "Enquiries that became students"],
                 [
                   "Conversion rate",
                   leads.length
                     ? `${Math.round((converted.length / leads.length) * 100)}%`
                     : "0%",
+                  "Converted enquiries as a share of total leads",
                 ],
-              ].map(([name, value]) => (
-                <div key={String(name)} className="sales-tile">
-                  <span>{name}</span>
-                  <strong>{value}</strong>
-                </div>
+              ].map(([name, value, detail]) => (
+                <StandardInteractiveTile
+                  key={String(name)}
+                  label={String(name)}
+                  value={String(value)}
+                  detail={String(detail)}
+                  onClick={() => setTileDetail(String(name))}
+                  className="sales-tile"
+                />
               ))}
             </section>
             <section className="sales-panel sales-full-panel">
@@ -244,6 +254,56 @@ function SalesMarketingContent() {
               "No referral leads recorded yet.",
             )}
           </section>
+        )}
+        {tileDetail && (
+          <StandardDetailModal
+            eyebrow="Sales & marketing"
+            title={tileDetail}
+            onClose={() => setTileDetail(null)}
+          >
+            {tileDetail === "Conversion rate" ? (
+              <p className="sales-copy">
+                {converted.length} of {leads.length} leads have converted
+                {leads.length ? ` (${Math.round((converted.length / leads.length) * 100)}%).` : "."}
+              </p>
+            ) : (
+              <div className="standard-detail-list">
+                {(tileDetail === "Leads" || tileDetail === "Total leads"
+                  ? leads
+                  : tileDetail === "Follow-ups due"
+                    ? due
+                    : tileDetail === "Trial bookings"
+                      ? trialBooked
+                      : converted
+                ).length ? (
+                  (tileDetail === "Leads" || tileDetail === "Total leads"
+                    ? leads
+                    : tileDetail === "Follow-ups due"
+                      ? due
+                      : tileDetail === "Trial bookings"
+                        ? trialBooked
+                        : converted
+                  ).map((lead) => (
+                    <div key={lead.id}>
+                      <b>{lead.fullName}</b>
+                      <span>{lead.stage} · {contact(lead)}</span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="standard-detail-empty">No matching leads recorded yet.</p>
+                )}
+              </div>
+            )}
+            <div className="sales-tile-modal-actions">
+              <Link
+                href={tileDetail === "Leads" || tileDetail === "Total leads" ? "/leads" : tileDetail === "Trial bookings" ? "/trial-bookings" : "/sales-marketing?view=conversion"}
+                className="enterprise-action-button enterprise-action-button-secondary"
+                onClick={() => setTileDetail(null)}
+              >
+                Open details
+              </Link>
+            </div>
+          </StandardDetailModal>
         )}
       </div>
     </main>
