@@ -3596,6 +3596,12 @@ html[data-theme="light"] .field-label { color: #475569; }
   font-size: 0.73rem;
 }
 .platform-overview-modal { width:min(100% - 32px,620px); }
+.platform-onboarding-modal { width:min(100% - 32px,720px); }
+.platform-onboarding-modal header p { margin:0 0 4px; color:var(--ad-accent); font-size:.7rem; font-weight:850; letter-spacing:.1em; text-transform:uppercase; }
+.platform-onboarding-form { grid-template-columns:repeat(2,minmax(0,1fr)); }
+.platform-onboarding-wide { grid-column:1/-1; }
+.platform-onboarding-form > p { margin:0; color:var(--ad-text-muted); font-size:.77rem; line-height:1.45; }
+@media(max-width:640px) { .platform-onboarding-form { grid-template-columns:1fr; }.platform-onboarding-wide { grid-column:auto; } }
 .platform-overview-modal header p { margin:0 0 4px; color:var(--ad-accent); font-size:.7rem; font-weight:850; letter-spacing:.1em; text-transform:uppercase; }
 .platform-overview-modal header h3 { font-size:1.35rem; }
 .platform-overview-detail-list { display:grid; gap:0; margin:0; padding:0; list-style:none; border-top:1px solid var(--ad-border); }

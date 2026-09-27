@@ -1,13 +1,14 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { PortalWorkspace, savePortalTokens } from "@/lib/api";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5092";
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -41,8 +42,12 @@ export default function LoginPage() {
             ? "Portal"
             : "AcademyAdmin";
       savePortalTokens(workspace, tokens.accessToken, tokens.refreshToken);
+      const requestedReturn = searchParams.get("returnTo");
+      const safeReturn = requestedReturn?.startsWith("/") && !requestedReturn.startsWith("//") ? requestedReturn : null;
       router.push(
-        session?.workspace === "Platform"
+        safeReturn && session?.workspace === "Platform"
+          ? safeReturn
+          : session?.workspace === "Platform"
           ? "/platform"
           : session?.workspace === "Teacher"
             ? "/teacher"

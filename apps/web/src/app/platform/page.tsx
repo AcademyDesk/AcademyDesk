@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { academyApi, apiHeaders, apiUrl, clearPortalTokens } from "@/lib/api";
@@ -66,6 +66,12 @@ export default function PlatformPage() {
   const [academies, setAcademies] = useState<Academy[]>([]);
   const [query, setQuery] = useState("");
   const [overviewModal, setOverviewModal] = useState<OverviewModal>(null);
+  const [onboardingOpen, setOnboardingOpen] = useState(false);
+  const [academyName, setAcademyName] = useState("");
+  const [legalName, setLegalName] = useState("");
+  const [adminUserName, setAdminUserName] = useState("");
+  const [adminDisplayName, setAdminDisplayName] = useState("");
+  const [temporaryPassword, setTemporaryPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<Notice>({
     text: "Loading academy portfolio…",
@@ -106,7 +112,11 @@ export default function PlatformPage() {
       academyApi("/api/platform/health", { cache: "no-store" }),
       academyApi("/api/auth/session", { cache: "no-store" }),
     ]);
-    if (!response.ok) throw new Error("Platform Owner access is required.");
+    if (response.status === 401 || response.status === 403) {
+      router.replace("/login?returnTo=/platform");
+      return;
+    }
+    if (!response.ok) throw new Error("The Platform Owner dashboard could not be loaded.");
     setAcademies(await response.json());
     if (overviewResponse.ok) setOverview(await overviewResponse.json());
     if (healthResponse.ok) setHealth(await healthResponse.json());
@@ -143,6 +153,24 @@ export default function PlatformPage() {
     } finally {
       setBusy(false);
     }
+  }
+  async function onboardAcademy(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setBusy(true);
+    try {
+      const response = await academyApi("/api/platform/academies", {
+        method: "POST",
+        headers: apiHeaders(true),
+        body: JSON.stringify({ academyName, legalName: legalName || null, adminUserName, adminDisplayName: adminDisplayName || null, password: temporaryPassword, countryCode: "IN", timeZone: "Asia/Kolkata" }),
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(payload?.message ?? "The academy could not be created.");
+      setOnboardingOpen(false); setAcademyName(""); setLegalName(""); setAdminUserName(""); setAdminDisplayName(""); setTemporaryPassword("");
+      await load();
+      setNotice({ text: "Academy and Academy Admin created. Complete the discovery information in Tenant Onboarding.", tone: "success" });
+    } catch (error) {
+      setNotice({ text: error instanceof Error ? error.message : "The academy could not be created.", tone: "error" });
+    } finally { setBusy(false); }
   }
   function signOut() {
     clearPortalTokens();
@@ -218,12 +246,9 @@ export default function PlatformPage() {
                 <h1 className="platform-workspace-title">Overview</h1>
               </div>
             </div>
-            <Link
-              className="enterprise-primary-action"
-              href="/platform/control?tab=Tenant%20onboarding&start=true"
-            >
+            <button type="button" className="enterprise-primary-action" onClick={() => setOnboardingOpen(true)}>
               ＋ Onboard academy
-            </Link>
+            </button>
           </section>
           <section
             className="platform-kpis"
@@ -311,6 +336,22 @@ export default function PlatformPage() {
               <article className="platform-modal platform-overview-modal" role="dialog" aria-modal="true" aria-labelledby="overview-tile-title" onMouseDown={(event) => event.stopPropagation()}>
                 <header><div><p>{selectedOverviewTile.label}</p><h3 id="overview-tile-title">{selectedOverviewTile.value}</h3></div><button type="button" aria-label="Close detail" onClick={() => setOverviewModal(null)}>×</button></header>
                 {(["academies", "activeAcademies", "learners"] as const).includes(overviewModal as "academies" | "activeAcademies" | "learners") ? <ul className="platform-overview-detail-list">{(overviewModal === "activeAcademies" ? activeAcademies : academies).map((academy) => <li key={academy.id}><div><b>{academy.name}</b><small>{academy.branches} branch{academy.branches === 1 ? "" : "es"} · {academy.students} learner{academy.students === 1 ? "" : "s"}</small></div><span className={academy.isActive ? "platform-status active" : "platform-status"}>{academy.isActive ? "Active" : "Inactive"}</span></li>)}{!academies.length && <li><small>No academies recorded yet.</small></li>}</ul> : <div className="platform-overview-detail-summary"><p>{selectedOverviewTile.detail}</p>{overviewModal === "support" && <Link href="/platform/control?tab=Support" onClick={() => setOverviewModal(null)}>Open Support</Link>}{(["billed", "collected", "outstanding"] as const).includes(overviewModal as "billed" | "collected" | "outstanding") && <Link href="/platform/control?tab=Billing" onClick={() => setOverviewModal(null)}>Open Billing</Link>}</div>}
+              </article>
+            </div>
+          )}
+          {onboardingOpen && (
+            <div className="platform-modal-backdrop" role="presentation" onMouseDown={() => !busy && setOnboardingOpen(false)}>
+              <article className="platform-modal platform-onboarding-modal" role="dialog" aria-modal="true" aria-labelledby="onboard-academy-title" onMouseDown={(event) => event.stopPropagation()}>
+                <header><div><p>Tenant setup</p><h3 id="onboard-academy-title">Onboard academy</h3></div><button type="button" aria-label="Close onboarding" disabled={busy} onClick={() => setOnboardingOpen(false)}>×</button></header>
+                <form onSubmit={onboardAcademy} className="platform-onboarding-form">
+                  <label><span>Academy name</span><input value={academyName} onChange={(event) => setAcademyName(event.target.value)} required /></label>
+                  <label><span>Legal business name</span><input value={legalName} onChange={(event) => setLegalName(event.target.value)} /></label>
+                  <label><span>Academy Admin email</span><input value={adminUserName} onChange={(event) => setAdminUserName(event.target.value)} type="email" required /></label>
+                  <label><span>Academy Admin display name</span><input value={adminDisplayName} onChange={(event) => setAdminDisplayName(event.target.value)} /></label>
+                  <label className="platform-onboarding-wide"><span>Temporary Academy Admin password</span><input value={temporaryPassword} onChange={(event) => setTemporaryPassword(event.target.value)} type="password" minLength={8} required /></label>
+                  <p className="platform-onboarding-wide">You can add the tenant’s business, finance, delivery, team, and document information afterwards in Tenant Onboarding.</p>
+                  <button className="enterprise-action-button platform-onboarding-wide" disabled={busy}>{busy ? "Creating…" : "Create academy"}</button>
+                </form>
               </article>
             </div>
           )}

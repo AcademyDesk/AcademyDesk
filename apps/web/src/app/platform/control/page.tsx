@@ -203,7 +203,11 @@ export default function PlatformControlPage() {
       academyApi("/api/auth/session"),
       academyApi("/api/platform/announcements"),
     ]);
-    if (!a.ok) throw new Error("Platform Owner access is required.");
+    if (a.status === 401 || a.status === 403) {
+      router.replace("/login?returnTo=/platform/control");
+      return;
+    }
+    if (!a.ok) throw new Error("The Platform Owner controls could not be loaded.");
     const academyRows = await a.json();
     setAcademies(academyRows);
     setSelectedAcademy((current) => current || academyRows[0]?.id || "");
