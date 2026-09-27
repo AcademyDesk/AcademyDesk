@@ -5312,6 +5312,10 @@ html[data-theme="light"] .field-label { color: #475569; }
 .platform-mobile-nav { display:none; }
 .enterprise-mobile-workspace-nav { display:none; }
 @media (max-width:900px) {
+  .enterprise-topbar { gap:12px; padding:14px 18px; }
+  .enterprise-admin-context { min-width:0; margin-left:0; }
+  .enterprise-admin-context strong { max-width:min(42vw,280px); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .enterprise-utilities { flex:0 0 auto; gap:6px; }
   .enterprise-workspace:has(.enterprise-dashboard),
   .enterprise-dashboard { overflow:visible; }
   .platform-mobile-nav {
@@ -5443,6 +5447,108 @@ html[data-theme="light"] .field-label { color: #475569; }
   .enterprise-dashboard-heading h2 { font-size:1.4rem; }
   .enterprise-dashboard-heading h2::before { display:none; }
   .enterprise-dashboard-heading .enterprise-primary-action { min-height:42px; padding:9px 11px; font-size:.74rem; white-space:nowrap; }
+}
+
+/* Cross-portal mobile hardening. Keep every portal inside the viewport while
+   allowing intentional horizontal rails (such as platform navigation) to scroll. */
+@media (max-width:900px) {
+  .platform-shell,
+  .teacher-portal-shell,
+  .learner-portal-shell,
+  .enterprise-app-shell,
+  .enterprise-workspace {
+    min-width:0;
+    max-width:100%;
+  }
+  .platform-workspace,
+  .teacher-portal-workspace,
+  .learner-portal-workspace {
+    min-width:0;
+  }
+  .platform-topbar-context,
+  .teacher-portal-context,
+  .learner-portal-shell .enterprise-topbar > div:first-child {
+    min-width:0;
+    max-width:100%;
+  }
+  .platform-topbar-owner-copy { min-width:0; }
+  .platform-topbar-owner-copy b { max-width:min(36vw,180px); }
+  .teacher-portal-context strong,
+  .learner-portal-shell .enterprise-topbar > div:first-child strong {
+    display:block;
+    max-width:min(44vw,280px);
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .platform-modal-backdrop { padding:16px; }
+  .platform-modal { max-height:calc(100dvh - 32px); overflow:auto; }
+  .platform-modal > header { position:sticky; top:0; z-index:1; }
+}
+
+@media (max-width:640px) {
+  .platform-topbar-context { margin-left:0; padding-bottom:10px; }
+  .platform-topbar-owner-copy { display:none; }
+  .platform-profile .enterprise-profile-trigger { width:46px; padding:4px; }
+  .platform-invoice-register li,
+  .platform-case-register li,
+  .platform-announcement-register li {
+    grid-template-columns:38px minmax(0,1fr);
+    align-items:start;
+  }
+  .platform-invoice-register li > strong,
+  .platform-invoice-status,
+  .platform-case-meta,
+  .platform-announcement-register li > em {
+    grid-column:2;
+    justify-self:start;
+    margin-top:7px;
+  }
+  .platform-invoice-status { width:100%; grid-template-columns:auto minmax(0,1fr); }
+  .platform-invoice-modal li,
+  .platform-case-modal li,
+  .platform-announcement-modal li {
+    grid-template-columns:38px minmax(0,1fr);
+    align-items:start;
+  }
+  .platform-invoice-modal li > strong,
+  .platform-invoice-modal li > em,
+  .platform-case-modal li > em,
+  .platform-announcement-modal li > em {
+    grid-column:2;
+    justify-self:start;
+    margin-top:7px;
+  }
+  .teacher-portal-context strong,
+  .learner-portal-shell .enterprise-topbar > div:first-child strong { max-width:38vw; }
+  .teacher-history-filter { align-items:stretch; flex-direction:column; }
+  .teacher-history-filter label,
+  .teacher-history-filter input,
+  .teacher-history-filter button { width:100%; box-sizing:border-box; }
+  .teacher-timetable-row { grid-template-columns:1fr; gap:9px; }
+  .teacher-timetable-row time { min-height:44px; grid-template-columns:32px 1fr; }
+  .teacher-action-panel > header { align-items:flex-start; min-height:0; padding:13px 15px; }
+  .learner-portal-shell .enterprise-topbar,
+  .teacher-portal-shell .enterprise-topbar { gap:8px; padding-inline:16px; }
+  .learner-portal-shell .enterprise-utilities,
+  .teacher-portal-shell .enterprise-utilities { flex:0 0 auto; gap:6px; }
+  .learner-portal-content,
+  .teacher-portal-content { min-width:0; }
+}
+
+@media (max-width:400px) {
+  .platform-content { padding-inline:14px; }
+  .platform-kpis,
+  .platform-tenant-kpis,
+  .platform-admin-kpis,
+  .platform-billing-kpis,
+  .platform-support-kpis,
+  .platform-health-kpis { grid-template-columns:1fr; }
+  .platform-mobile-nav { padding-inline:12px; }
+  .learner-kpis { grid-template-columns:1fr; }
+  .learner-content { padding-inline:14px; }
+  .learner-portal-shell .enterprise-topbar > div:first-child strong,
+  .teacher-portal-context strong { max-width:30vw; }
 }
 
 /* Admin portal — keep pages concise.  These are instructional helper sentences only;
