@@ -90,7 +90,7 @@ type HealthModal = "api" | "database" | "jobs" | "communications" | null;
 const platformLinks = [
   { label: "Overview", icon: "▦", href: "/platform" },
   {
-    label: "Tenant management",
+    label: "Tenant Management",
     icon: "◫",
     href: "/platform/control?tab=Tenants",
     tab: "Tenants",
@@ -609,7 +609,7 @@ export default function PlatformControlPage() {
             <span className="platform-control-icon" aria-hidden="true">{controlIcon}</span>
             <div>
               <p>Platform owner</p>
-              <h1 className="platform-workspace-title">{tab === "Tenants" ? "Tenant management" : tab === "Tenant onboarding" ? "Tenant Onboarding" : tab === "Tenant information" ? "Tenant Information" : tab === "Admins" ? "Academy Admins" : tab}</h1>
+              <h1 className="platform-workspace-title">{tab === "Tenants" ? "Tenant Management" : tab === "Tenant onboarding" ? "Tenant Onboarding" : tab === "Tenant information" ? "Tenant Information" : tab === "Admins" ? "Academy Admins" : tab}</h1>
             </div>
           </header>
           {message && (
@@ -636,7 +636,7 @@ export default function PlatformControlPage() {
           {tab === "Tenant information" && <section className="tenant-information-panel"><header className="platform-control-panel-header"><div><p>Owner record</p><h2>Tenant information</h2></div>{selectedAcademy && <button type="button" className="enterprise-secondary-button" onClick={() => { setOnboardingSection("Personal"); selectWorkspace("Tenant onboarding"); }}>Edit information</button>}</header><div className="tenant-intake-fields"><label className="tenant-intake-wide"><span>Academy</span><StandardSelectField name="academy" value={selectedAcademy} onChange={setSelectedAcademy} placeholder="Select academy" options={academies.map((academy) => ({ value: academy.id, label: academy.name }))} /></label>{tenantProfile ? <><section className="tenant-information-grid"><div><b>Contact</b><span>{tenantProfile.primaryContactName || "Not recorded"}</span><small>{tenantProfile.primaryContactRole || ""} {tenantProfile.primaryContactEmail || tenantProfile.primaryContactPhone || ""}</small></div><div><b>Business</b><span>{tenantProfile.businessType || "Not recorded"}</span><small>{tenantProfile.branchSummary || tenantProfile.website || ""}</small></div><div><b>Address</b><span>{[tenantProfile.addressLine1, tenantProfile.addressLine2].filter(Boolean).join(", ") || "Not recorded"}</span><small>{[tenantProfile.city, tenantProfile.state, tenantProfile.postalCode, tenantProfile.country].filter(Boolean).join(" · ")}</small></div><div><b>Operations</b><span>{tenantProfile.deliveryModes || "Not recorded"}</span><small>{tenantProfile.classRatios || ""}</small></div><div><b>Team and subjects</b><span>{tenantProfile.teacherCount ?? 0} teachers · {tenantProfile.studentCount ?? 0} students · {tenantProfile.subjectCount ?? 0} subjects</span><small>{tenantProfile.subjectTypes || ""}</small></div></section><section className="tenant-information-notes"><b>Finance and teacher payments</b><p>{tenantProfile.financeModel || "Not recorded"} · {tenantProfile.billingFrequency || "Billing frequency not recorded"} · {tenantProfile.paymentCollectionMethods || "Collection methods not recorded"} · {tenantProfile.teacherPaymentModels || "Teacher payment model not recorded"}</p><b>Classes and batches</b><p>{tenantProfile.batchAndClassSetup || "Not recorded"}</p><b>Documents register</b><p>{tenantProfile.documentsJson || "No documents recorded"}</p><b>Operational notes</b><p>{tenantProfile.operationalNotes || "Not recorded"}</p></section></> : <p className="platform-tenant-empty">No discovery information has been saved for this tenant yet.</p>}</div></section>}
           {tab === "Tenants" && (
             <>
-              <section className="platform-tenant-kpis" aria-label="Tenant management summary">
+              <section className="platform-tenant-kpis" aria-label="Tenant Management summary">
                 <button type="button" onClick={() => setTenantModal("all")}><span>Total tenants</span><b>{academies.length}</b><small>Academies on this platform</small></button>
                 <button type="button" onClick={() => setTenantModal("active")}><span>Active</span><b>{activeTenants}</b><small>Paid or enabled tenants</small></button>
                 <button type="button" onClick={() => setTenantModal("trial")}><span>Trial</span><b>{trialTenants}</b><small>Tenants evaluating the platform</small></button>

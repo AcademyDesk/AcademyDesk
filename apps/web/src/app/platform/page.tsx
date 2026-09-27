@@ -43,7 +43,7 @@ type OwnerSession = { displayName: string; email?: string | null; profileImageUr
 const platformLinks = [
   { label: "Overview", icon: "▦", href: "/platform" },
   {
-    label: "Tenant management",
+    label: "Tenant Management",
     icon: "◫",
     href: "/platform/control?tab=Tenants",
   },
