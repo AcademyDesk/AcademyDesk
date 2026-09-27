@@ -21,25 +21,41 @@ public sealed class StudentOnboardingController(AcademyDeskDbContext db, UserMan
         if (string.IsNullOrWhiteSpace(request.StudentFirstName) || string.IsNullOrWhiteSpace(request.StudentLastName) || request.DateOfBirth is null) return BadRequest(new { message = "Student name and date of birth are required." });
         if (request.DateOfBirth > DateOnly.FromDateTime(DateTime.UtcNow)) return BadRequest(new { message = "Date of birth cannot be in the future." });
         var isMinor = request.DateOfBirth.Value.AddYears(18) > DateOnly.FromDateTime(DateTime.UtcNow);
+        var hasParentDetails = new[] { request.ParentFirstName, request.ParentLastName, request.ParentEmail, request.ParentPhone, request.ParentAddressLine1, request.ParentCity }
+            .Any(value => !string.IsNullOrWhiteSpace(value));
         if (isMinor && (string.IsNullOrWhiteSpace(request.ParentFirstName) || string.IsNullOrWhiteSpace(request.ParentLastName) || string.IsNullOrWhiteSpace(request.ParentEmail))) return BadRequest(new { message = "A parent name and email are required for a minor student." });
-        await using var transaction = await db.Database.BeginTransactionAsync(token);
-        var student = new Student { AcademyId = academyId, FirstName = request.StudentFirstName.Trim(), LastName = request.StudentLastName.Trim(), StudentNumber = request.StudentNumber?.Trim(), PreferredName = request.PreferredName?.Trim(), Gender = request.Gender?.Trim(), DateOfBirth = request.DateOfBirth, AdmissionDate = request.AdmissionDate ?? DateOnly.FromDateTime(DateTime.UtcNow), Email = request.StudentEmail?.Trim(), Phone = request.StudentPhone?.Trim(), AddressLine1 = request.StudentAddressLine1?.Trim(), City = request.StudentCity?.Trim(), State = request.StudentState?.Trim(), PostalCode = request.StudentPostalCode?.Trim(), EmergencyContactName = request.EmergencyContactName?.Trim(), EmergencyContactPhone = request.EmergencyContactPhone?.Trim(), MedicalOrAccessibilityNotes = request.MedicalOrAccessibilityNotes?.Trim(), BranchId = request.BranchId };
-        db.Students.Add(student);
-        Guardian? parent = null;
-        if (!string.IsNullOrWhiteSpace(request.ParentFirstName))
+        if (hasParentDetails && (string.IsNullOrWhiteSpace(request.ParentFirstName) || string.IsNullOrWhiteSpace(request.ParentLastName)))
+            return BadRequest(new { message = "Enter both the parent first name and last name, or clear the optional parent details." });
+
+        try
         {
-            parent = new Guardian { AcademyId = academyId, FirstName = request.ParentFirstName.Trim(), LastName = request.ParentLastName!.Trim(), Email = request.ParentEmail?.Trim(), Phone = request.ParentPhone?.Trim(), AddressLine1 = request.ParentAddressLine1?.Trim(), City = request.ParentCity?.Trim() };
-            db.Guardians.Add(parent);
+            await using var transaction = await db.Database.BeginTransactionAsync(token);
+            var student = new Student { AcademyId = academyId, FirstName = request.StudentFirstName.Trim(), LastName = request.StudentLastName.Trim(), StudentNumber = request.StudentNumber?.Trim(), PreferredName = request.PreferredName?.Trim(), Gender = request.Gender?.Trim(), DateOfBirth = request.DateOfBirth, AdmissionDate = request.AdmissionDate ?? DateOnly.FromDateTime(DateTime.UtcNow), Email = request.StudentEmail?.Trim(), Phone = request.StudentPhone?.Trim(), AddressLine1 = request.StudentAddressLine1?.Trim(), City = request.StudentCity?.Trim(), State = request.StudentState?.Trim(), PostalCode = request.StudentPostalCode?.Trim(), EmergencyContactName = request.EmergencyContactName?.Trim(), EmergencyContactPhone = request.EmergencyContactPhone?.Trim(), MedicalOrAccessibilityNotes = request.MedicalOrAccessibilityNotes?.Trim(), BranchId = request.BranchId };
+            db.Students.Add(student);
+            Guardian? parent = null;
+            if (hasParentDetails)
+            {
+                parent = new Guardian { AcademyId = academyId, FirstName = request.ParentFirstName!.Trim(), LastName = request.ParentLastName!.Trim(), Email = request.ParentEmail?.Trim(), Phone = request.ParentPhone?.Trim(), AddressLine1 = request.ParentAddressLine1?.Trim(), City = request.ParentCity?.Trim() };
+                db.Guardians.Add(parent);
+            }
+            await db.SaveChangesAsync(token);
+            if (parent is not null) { var parentAccess = isMinor || request.AllowParentPortalAccess; db.StudentGuardians.Add(new StudentGuardian { AcademyId = academyId, StudentId = student.Id, GuardianId = parent.Id, Relationship = string.IsNullOrWhiteSpace(request.Relationship) ? "Parent" : request.Relationship.Trim(), IsPrimary = true, CanAccessPortal = parentAccess, CanViewAcademicProgress = parentAccess && request.AllowAcademicProgress, CanViewFinance = parentAccess && request.AllowFinance, CanViewDocuments = parentAccess && request.AllowDocuments, CanManageLeave = parentAccess && request.AllowLeave, AccessGrantedAtUtc = parentAccess ? DateTime.UtcNow : null }); }
+            await db.SaveChangesAsync(token);
+            if (!await roles.RoleExistsAsync("Student")) await roles.CreateAsync(new ApplicationRole { Name = "Student" });
+            if (!await roles.RoleExistsAsync("Guardian")) await roles.CreateAsync(new ApplicationRole { Name = "Guardian" });
+            if (!string.IsNullOrWhiteSpace(request.StudentUserName) && !string.IsNullOrWhiteSpace(request.StudentTemporaryPassword)) await CreateAccount(request.StudentUserName, request.StudentEmail ?? $"{request.StudentUserName}@academydesk.local", request.StudentTemporaryPassword, student.FirstName + " " + student.LastName, academyId, "Student", student.Id, null, token);
+            if (parent is not null && !string.IsNullOrWhiteSpace(request.ParentUserName) && !string.IsNullOrWhiteSpace(request.ParentTemporaryPassword)) await CreateAccount(request.ParentUserName, parent.Email!, request.ParentTemporaryPassword, parent.FirstName + " " + parent.LastName, academyId, "Guardian", null, parent.Id, token);
+            await transaction.CommitAsync(token);
+            return Ok(new { student.Id, student.FirstName, student.LastName, IsMinor = isMinor, ParentId = parent?.Id, StudentAccountCreated = !string.IsNullOrWhiteSpace(request.StudentUserName), ParentAccountCreated = parent is not null && !string.IsNullOrWhiteSpace(request.ParentUserName) });
         }
-        await db.SaveChangesAsync(token);
-        if (parent is not null) { var parentAccess = isMinor || request.AllowParentPortalAccess; db.StudentGuardians.Add(new StudentGuardian { AcademyId = academyId, StudentId = student.Id, GuardianId = parent.Id, Relationship = string.IsNullOrWhiteSpace(request.Relationship) ? "Parent" : request.Relationship.Trim(), IsPrimary = true, CanAccessPortal = parentAccess, CanViewAcademicProgress = parentAccess && request.AllowAcademicProgress, CanViewFinance = parentAccess && request.AllowFinance, CanViewDocuments = parentAccess && request.AllowDocuments, CanManageLeave = parentAccess && request.AllowLeave, AccessGrantedAtUtc = parentAccess ? DateTime.UtcNow : null }); }
-        await db.SaveChangesAsync(token);
-        if (!await roles.RoleExistsAsync("Student")) await roles.CreateAsync(new ApplicationRole { Name = "Student" });
-        if (!await roles.RoleExistsAsync("Guardian")) await roles.CreateAsync(new ApplicationRole { Name = "Guardian" });
-        if (!string.IsNullOrWhiteSpace(request.StudentUserName) && !string.IsNullOrWhiteSpace(request.StudentTemporaryPassword)) await CreateAccount(request.StudentUserName, request.StudentEmail ?? $"{request.StudentUserName}@academydesk.local", request.StudentTemporaryPassword, student.FirstName + " " + student.LastName, academyId, "Student", student.Id, null, token);
-        if (parent is not null && !string.IsNullOrWhiteSpace(request.ParentUserName) && !string.IsNullOrWhiteSpace(request.ParentTemporaryPassword)) await CreateAccount(request.ParentUserName, parent.Email!, request.ParentTemporaryPassword, parent.FirstName + " " + parent.LastName, academyId, "Guardian", null, parent.Id, token);
-        await transaction.CommitAsync(token);
-        return Ok(new { student.Id, student.FirstName, student.LastName, IsMinor = isMinor, ParentId = parent?.Id, StudentAccountCreated = !string.IsNullOrWhiteSpace(request.StudentUserName), ParentAccountCreated = parent is not null && !string.IsNullOrWhiteSpace(request.ParentUserName) });
+        catch (DbUpdateException)
+        {
+            return BadRequest(new { message = "Student onboarding could not be saved. Check that the student number is unique and the entered values are valid." });
+        }
+        catch (InvalidOperationException exception)
+        {
+            return BadRequest(new { message = exception.Message });
+        }
     }
 
     private async Task CreateAccount(string userName, string email, string password, string displayName, Guid academyId, string role, Guid? studentId, Guid? parentId, CancellationToken token)
