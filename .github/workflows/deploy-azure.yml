@@ -2,8 +2,6 @@ name: Deploy AcademyDesk to Azure
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
 
 permissions:
   contents: read
