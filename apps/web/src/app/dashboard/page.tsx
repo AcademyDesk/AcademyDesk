@@ -181,7 +181,7 @@ export default function DashboardPage() {
             {greeting()}, {session?.displayName || "there"}
           </h2>
         </div>
-        <Link href="/students" className="enterprise-primary-action">
+        <Link href="/student-onboarding" className="enterprise-primary-action">
           <span aria-hidden="true">+</span> Add student
         </Link>
       </section>
