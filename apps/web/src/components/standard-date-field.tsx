@@ -19,10 +19,12 @@ const readableDate = (value: string) => value ? new Intl.DateTimeFormat("en-IN",
 
 export function StandardDateField({ name, value, onChange, label, required }: StandardDateFieldProps) {
   const selected = value ? new Date(`${value}T12:00:00`) : undefined;
-  const [month, setMonth] = useState(() => selected ?? new Date());
+  const [month, setMonth] = useState(() => selected ?? new Date(2000, 0, 1));
+  const [todayKey, setTodayKey] = useState("");
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLLabelElement>(null);
   useEffect(() => { if (selected) setMonth(selected); }, [value]);
+  useEffect(() => { setTodayKey(isoDate(new Date())); }, []);
   useEffect(() => {
     const close = (event: MouseEvent) => { if (ref.current && !ref.current.contains(event.target as Node)) setOpen(false); };
     document.addEventListener("mousedown", close);
@@ -39,13 +41,13 @@ export function StandardDateField({ name, value, onChange, label, required }: St
   return <label className="standard-date-field" ref={ref}>
     <span>{label}</span>
     <input type="hidden" name={name} value={value} />
-    <button type="button" className="standard-date-trigger" aria-expanded={open} aria-haspopup="dialog" onClick={() => setOpen(current => !current)}>
+    <button type="button" className="standard-date-trigger" aria-expanded={open} aria-haspopup="dialog" onClick={() => { if (!open && !value && month.getFullYear() === 2000) setMonth(new Date()); setOpen(current => !current); }}>
       <span data-empty={!value}>{readableDate(value)}</span><i aria-hidden="true">▣</i>
     </button>
     {open && <section className="standard-date-popover" role="dialog" aria-label={`${label} calendar`}>
       <header><button type="button" aria-label="Previous month" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))}>‹</button><div className="standard-date-selectors"><select aria-label="Select month" value={month.getMonth()} onChange={event => setCalendarMonth(Number(event.target.value))}>{monthNames.map((monthName, index) => <option key={monthName} value={index}>{monthName}</option>)}</select><select aria-label="Select year" value={month.getFullYear()} onChange={event => setCalendarYear(Number(event.target.value))}>{yearOptions.map(year => <option key={year} value={year}>{year}</option>)}</select></div><button type="button" aria-label="Next month" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))}>›</button></header>
       <div className="standard-date-weekdays">{["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(day => <span key={day}>{day}</span>)}</div>
-      <div className="standard-date-days">{days.map(day => { const isCurrentMonth = day.getMonth() === month.getMonth(); const isSelected = value === isoDate(day); const isToday = isoDate(day) === isoDate(new Date()); return <button key={day.toISOString()} type="button" data-current={isCurrentMonth} data-selected={isSelected} data-today={isToday} onClick={() => { onChange(isoDate(day)); setOpen(false); }}>{day.getDate()}</button>; })}</div>
+      <div className="standard-date-days">{days.map(day => { const isCurrentMonth = day.getMonth() === month.getMonth(); const isSelected = value === isoDate(day); const isToday = Boolean(todayKey) && isoDate(day) === todayKey; return <button key={day.toISOString()} type="button" data-current={isCurrentMonth} data-selected={isSelected} data-today={isToday} onClick={() => { onChange(isoDate(day)); setOpen(false); }}>{day.getDate()}</button>; })}</div>
       <footer><button type="button" onClick={() => { onChange(""); setOpen(false); }} disabled={required}>Clear</button><button type="button" onClick={() => { const today = new Date(); onChange(isoDate(today)); setMonth(today); setOpen(false); }}>Today</button></footer>
     </section>}
   </label>;
