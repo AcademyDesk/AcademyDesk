@@ -5310,6 +5310,7 @@ html[data-theme="light"] .field-label { color: #475569; }
 /* Platform Owner mobile navigation — the desktop sidebar is intentionally hidden below
    900px, so expose every workspace through a compact, touch-friendly rail instead. */
 .platform-mobile-nav { display:none; }
+.enterprise-mobile-workspace-nav { display:none; }
 @media (max-width:900px) {
   .platform-mobile-nav {
     display:flex;
@@ -5349,6 +5350,79 @@ html[data-theme="light"] .field-label { color: #475569; }
     padding-bottom:max(42px, env(safe-area-inset-bottom));
     padding-left:max(16px, env(safe-area-inset-left));
   }
+  .enterprise-mobile-workspace-nav {
+    display:block;
+    position:relative;
+    z-index:45;
+    padding:10px max(16px, env(safe-area-inset-left));
+    border-bottom:1px solid var(--ad-border);
+    background:var(--ad-surface);
+  }
+  .enterprise-mobile-workspace-nav details { position:relative; }
+  .enterprise-mobile-workspace-nav summary {
+    display:flex;
+    min-height:44px;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:0 13px;
+    border:1px solid var(--ad-border-strong);
+    border-radius:10px;
+    background:var(--ad-surface-subtle);
+    color:var(--ad-text);
+    cursor:pointer;
+    font-size:.8rem;
+    font-weight:780;
+    list-style:none;
+  }
+  .enterprise-mobile-workspace-nav summary::-webkit-details-marker { display:none; }
+  .enterprise-mobile-workspace-nav summary b { color:var(--ad-accent); font-size:1rem; transition:transform .16s ease; }
+  .enterprise-mobile-workspace-nav details[open] summary b { transform:rotate(180deg); }
+  .enterprise-mobile-workspace-menu {
+    display:grid;
+    gap:14px;
+    max-height:min(70dvh,560px);
+    overflow-y:auto;
+    margin-top:8px;
+    padding:14px;
+    border:1px solid var(--ad-border);
+    border-radius:12px;
+    background:var(--ad-surface);
+    box-shadow:0 18px 40px color-mix(in srgb,var(--ad-text) 18%,transparent);
+  }
+  .enterprise-mobile-workspace-menu section { display:grid; gap:3px; }
+  .enterprise-mobile-workspace-menu h2 {
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin:5px 0 4px;
+    color:var(--ad-text);
+    font-size:.82rem;
+    font-weight:780;
+  }
+  .enterprise-mobile-workspace-menu h2 i { color:var(--ad-accent); font-size:1rem; font-style:normal; }
+  .enterprise-mobile-workspace-menu a,
+  .enterprise-mobile-workspace-menu .enterprise-locked-link {
+    display:flex;
+    width:100%;
+    min-height:42px;
+    align-items:center;
+    justify-content:space-between;
+    padding:9px 11px;
+    border:0;
+    border-radius:8px;
+    background:transparent;
+    color:var(--ad-text-muted);
+    font:inherit;
+    font-size:.78rem;
+    font-weight:650;
+    text-align:left;
+    text-decoration:none;
+  }
+  .enterprise-mobile-workspace-menu a[data-active="true"] { background:var(--ad-accent-soft); color:var(--ad-accent); font-weight:780; }
+  .enterprise-mobile-workspace-menu .enterprise-locked-link { cursor:pointer; opacity:.65; }
+  .enterprise-mobile-workspace-subgroup { display:grid; gap:3px; margin:2px 0 4px; }
+  .enterprise-mobile-workspace-subgroup > p { margin:7px 11px 2px; color:var(--ad-text-subtle); font-size:.65rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
 }
 
 /* Admin portal — keep pages concise.  These are instructional helper sentences only;

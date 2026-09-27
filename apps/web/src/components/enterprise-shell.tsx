@@ -495,6 +495,32 @@ export function EnterpriseShell({
               </div>
             )}
           </header>
+          <nav className="enterprise-mobile-workspace-nav" aria-label="Academy workspace navigation">
+            <details>
+              <summary>
+                <span>Browse workspace</span>
+                <b aria-hidden="true">⌄</b>
+              </summary>
+              <div className="enterprise-mobile-workspace-menu">
+                {activeNavigationGroups.map((group) => (
+                  <section key={group.label}>
+                    <h2><i aria-hidden="true">{group.icon}</i>{group.label}</h2>
+                    {group.sections?.map((section) => (
+                      <div className="enterprise-mobile-workspace-subgroup" key={section.label}>
+                        <p>{section.label}</p>
+                        {section.links.map((item) => <LockedNavigationItem key={item[1]} item={item} />)}
+                      </div>
+                    ))}
+                    {(group.links ?? []).map((item) => <LockedNavigationItem key={item[1]} item={item} />)}
+                  </section>
+                ))}
+                {activeAdministrationNavigation.length > 0 && <section>
+                  <h2><i aria-hidden="true">⚙</i>Administration</h2>
+                  {activeAdministrationNavigation.map((item) => <LockedNavigationItem key={item[1]} item={item} />)}
+                </section>}
+              </div>
+            </details>
+          </nav>
           {announcements.length > 0 && <div className="learner-announcement enterprise-admin-announcement" role="status"><span>Important</span><div><p>{announcements.map(item => `${item.title}: ${item.message}`).join("   •   ")}   •   {announcements.map(item => `${item.title}: ${item.message}`).join("   •   ")}</p></div></div>}
           <div className={currentModuleIncluded ? undefined : "enterprise-locked-content"} aria-disabled={!currentModuleIncluded}>
             {children}
