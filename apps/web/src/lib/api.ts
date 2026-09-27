@@ -41,6 +41,12 @@ export function portalAccessToken(workspace = currentWorkspace()) {
     ?? (workspace === "AcademyAdmin" ? window.localStorage.getItem("academydesk.accessToken") : null);
 }
 
+function portalRefreshToken(workspace = currentWorkspace()) {
+  if (typeof window === "undefined") return null;
+  return window.localStorage.getItem(tokenKey("refreshToken", workspace))
+    ?? (workspace === "AcademyAdmin" ? window.localStorage.getItem("academydesk.refreshToken") : null);
+}
+
 export function apiHeaders(json = false): Record<string, string> {
   const token = portalAccessToken();
 
@@ -50,9 +56,25 @@ export function apiHeaders(json = false): Record<string, string> {
   };
 }
 
-export function academyApi(path: string, init: RequestInit = {}) {
-  return fetch(`${apiUrl}${path}`, {
+export async function academyApi(path: string, init: RequestInit = {}) {
+  const request = (token = portalAccessToken()) => fetch(`${apiUrl}${path}`, {
     ...init,
-    headers: { ...apiHeaders(), ...init.headers },
+    headers: { ...apiHeaders(), ...(token ? { Authorization: `Bearer ${token}` } : {}), ...init.headers },
   });
+  const response = await request();
+  if (response.status !== 401 || path.startsWith("/api/auth/refresh")) return response;
+
+  const workspace = currentWorkspace();
+  const refreshToken = portalRefreshToken(workspace);
+  if (!refreshToken) return response;
+  const refreshed = await fetch(`${apiUrl}/api/auth/refresh`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ refreshToken }),
+  }).catch(() => null);
+  if (!refreshed?.ok) return response;
+  const tokens = await refreshed.json().catch(() => null);
+  if (!tokens?.accessToken) return response;
+  savePortalTokens(workspace, tokens.accessToken, tokens.refreshToken);
+  return request(tokens.accessToken);
 }
