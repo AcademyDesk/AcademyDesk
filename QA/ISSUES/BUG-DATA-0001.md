@@ -13,7 +13,7 @@
 | Screen / route | /payments; /finance-reconciliation; /portal |
 | API | POST payments; PATCH payments/{id}/reconcile; GET portal/students/{id} |
 | Environment | Two fresh local run-owned Docker SQL/TestServer fixtures; production state not inferred |
-| Device/viewport | NOT RUN; use QA/06_DEVICE_VIEWPORT_MATRIX.md where UI applies |
+| Device/viewport | Real browser desktop and emulated 390×844 PASS locally; physical Android/iOS NOT RUN |
 | Baseline | 20bb6047f9edf733ac8e2a226621cc582ec54b3c + pre-existing student UI diff |
 | Discovery test / review ID | FINANCE-RULE-001 |
 | Evidence classification | Static trace confirmed by real authenticated HTTP and fresh SQL snapshots |
@@ -36,6 +36,8 @@
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
 ## Concurrent collection — 2026-10-03
+
+[Live Payments browser check](../REPORTS/PHASE_2B_PAYMENTS_BROWSER_CHECK.md): signed-in `/payments` against isolated synthetic SQL showed Reconciled 600/balance 400, accepted exact 400 with success and refreshed Paid/0, then showed the exact balance error and no duplicate when a selected invoice became paid in another client. Direct route/refresh, mobile emulation and final two-row SQL invariant passed. This does not replace physical device, all role/fault and release gates. Issue remains OPEN.
 
 [Additional adjusted-race coverage](../REPORTS/PHASE_2B_P0_CONTINUATION.md): on a 1000 invoice with an approved 200 discount and Reconciled 600, simultaneous 200+200 payment requests produced one 201 and one 400 with the exact balance message in all five fresh SQL/HTTP pairs. Collected stayed 800, with two payment rows, Paid status and one intact approved adjustment. The original unadjusted five-pair case reran 5/5. This does not exercise concurrent adjustment *approval* versus payment or replace live browser/device checks; issue remains OPEN.
 

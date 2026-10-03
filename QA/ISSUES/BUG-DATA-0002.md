@@ -13,7 +13,7 @@
 | Screen / route | /payments; /finance-adjustments |
 | API | POST payments |
 | Environment | Two fresh local run-owned Docker SQL/TestServer fixtures; production state not inferred |
-| Device/viewport | NOT RUN; use QA/06_DEVICE_VIEWPORT_MATRIX.md where UI applies |
+| Device/viewport | Real browser desktop and emulated 390×844 PASS locally; physical Android/iOS NOT RUN |
 | Baseline | 20bb6047f9edf733ac8e2a226621cc582ec54b3c + pre-existing student UI diff |
 | Discovery test / review ID | FINANCE-RULE-002 |
 | Evidence classification | Static trace confirmed by real authenticated HTTP and fresh SQL snapshots |
@@ -36,6 +36,8 @@
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
 ## Latest consumer repair checkpoint — 2026-10-01
+
+2026-10-03 [Live Payments browser check](../REPORTS/PHASE_2B_PAYMENTS_BROWSER_CHECK.md): an approved 200 discount on gross 1000 and Reconciled 600 displayed a 200 balance with 800 due; a stale 200 browser submit after another client paid returned the exact balance error, refreshed to Paid/0, and final isolated SQL asserted exactly two rows and collected 800. Approval-versus-collection concurrency, physical devices and broader gates remain OPEN.
 
 2026-10-03 [P0 continuation](../REPORTS/PHASE_2B_P0_CONTINUATION.md): a new real SQL/Identity/HTTP five-pair race with the adjustment approved *before* collection passes 5/5. It verifies the existing invoice lock also protects the reduced collectible balance from two simultaneous payments. It does not establish policy or safety for an approval racing a payment; that remains OPEN.
 

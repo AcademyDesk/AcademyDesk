@@ -2,6 +2,8 @@
 
 ## Current state
 
+Latest local checkpoint (2026-10-03): [Payments browser/SQL check](QA/REPORTS/PHASE_2B_PAYMENTS_BROWSER_CHECK.md) on `codex/enterprise-p0-continuation`. Synthetic loopback browser and disposable SQL passed the Reconciled/adjusted balances, exact collection, stale-balance rejection, mobile emulation and final two-row ledger assertions. `apps/web/src/app/payments/page.tsx` now gives durable success/error feedback and describes the adjusted amount; a new QA browser fixture is added. TypeScript and harness build pass. Changes are local in this worktree only; do not merge/push/deploy yet. BUG-DATA-0001/0002 remain OPEN for physical devices and broader gates; BUG-DATA-0010 still needs reconcile/void and restoration-policy work. Next engineering slice: P0 reconcile-versus-void concurrency/policy, with Sol High.
+
 | | |
 | --- | --- |
 | Project | Academy Desk |
