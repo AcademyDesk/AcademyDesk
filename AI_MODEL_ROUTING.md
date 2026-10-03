@@ -6,7 +6,7 @@ GitHub is the single source of truth for accepted application changes. Azure is 
 
 ## Codex / Sol High
 
-Default senior engineering escalation model.
+Current primary senior engineering owner for Academy Desk enterprise application completion. Keep ownership of high-risk decisions and continuation; use lower-cost tools selectively without handing routine ownership back to Grok 4.7.
 
 Use for:
 
@@ -42,7 +42,7 @@ Use for:
 
 ## Cursor
 
-Cursor is a main implementation environment.
+Cursor is a selective IDE, routine-implementation and browser-validation environment under the current Sol High engineering handoff. Prefer Composer 2.5 for bounded routine work. It does not own the remaining enterprise program.
 
 Use for:
 

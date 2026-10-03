@@ -4,7 +4,7 @@
 | --- | --- |
 | Status | OPEN / FIX-IN-PROGRESS (local guard/status and consumer repair) |
 | Confirmation status | RUNTIME-REPRODUCED |
-| Final verification | Local guard and consumer modules PASS twice each; broader/critical/browser/concurrency gates pending |
+| Final verification | Local guard and consumer modules PASS twice each; approved-adjustment collection race PASS 5/5; concurrent approval/collection, broader/critical/browser gates pending |
 | Severity | Critical financial integrity |
 | Priority | P0 |
 | Category | DATA |
@@ -36,6 +36,8 @@
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
 ## Latest consumer repair checkpoint — 2026-10-01
+
+2026-10-03 [P0 continuation](../REPORTS/PHASE_2B_P0_CONTINUATION.md): a new real SQL/Identity/HTTP five-pair race with the adjustment approved *before* collection passes 5/5. It verifies the existing invoice lock also protects the reduced collectible balance from two simultaneous payments. It does not establish policy or safety for an approval racing a payment; that remains OPEN.
 
 [Consumer repair/evidence](../REPORTS/PHASE_2B_FINANCE_CONSUMER_REPAIR.md): Student invoice/download, dashboard and reminder balances now subtract applied adjustment. Payments page uses canonical API balance and counts Completed/Reconciled collections. New before-fix reminder 1 PASS/5 FAIL and page 1 PASS/6 FAIL; final API 140/140, page 7/7/typecheck PASS, targeted lint 0 errors/1 existing warning. Six consumer stages PASS twice on fresh Identity/HTTP/SQL: mixed/Voided, settled/full adjustment, PendingApproval/Rejected and one-cent balance, expected notification deltas and financial snapshots. Owned cleanup, no commit/deployment. Consumer arithmetic gap is repaired locally, not browser/Guardian permission/concurrency/full critical certification or issue closure. Restoration/zero-net policy separate and pending. Earlier checkpoint below is historical.
 

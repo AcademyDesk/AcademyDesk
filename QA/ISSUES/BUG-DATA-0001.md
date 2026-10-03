@@ -4,7 +4,7 @@
 | --- | --- |
 | Status | OPEN / FIX-IN-PROGRESS (local repair) |
 | Confirmation status | RUNTIME-REPRODUCED |
-| Final verification | Sequential case reconfirmed 2026-10-03; concurrent repair PASS 5/5 against disposable SQL; browser and device pending |
+| Final verification | Sequential case reconfirmed 2026-10-03; unadjusted and pre-approved adjustment collection races PASS 5/5 each against disposable SQL; browser/device/critical gates pending |
 | Severity | Critical financial integrity |
 | Priority | P0 |
 | Category | DATA |
@@ -36,6 +36,8 @@
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
 ## Concurrent collection — 2026-10-03
+
+[Additional adjusted-race coverage](../REPORTS/PHASE_2B_P0_CONTINUATION.md): on a 1000 invoice with an approved 200 discount and Reconciled 600, simultaneous 200+200 payment requests produced one 201 and one 400 with the exact balance message in all five fresh SQL/HTTP pairs. Collected stayed 800, with two payment rows, Paid status and one intact approved adjustment. The original unadjusted five-pair case reran 5/5. This does not exercise concurrent adjustment *approval* versus payment or replace live browser/device checks; issue remains OPEN.
 
 [Concurrent collection](../REPORTS/PHASE_2B_COLLECTION_RACE.md): five invoices of 1000, each with a reconciled payment of 600, then two simultaneous payments of 400. Attempts 2, 4, and 5 returned 201 and 201 and stored 1400. Attempts 1 and 3 returned 201 and 400 and stored 1000. Run `45e986ef6c4b4a72a840fcf09b604e4a` exit 1. Create reads the collected sum and inserts the payment without a transaction or invoice-row lock. Issue remains OPEN. The sequential confirmation below is unchanged.
 
