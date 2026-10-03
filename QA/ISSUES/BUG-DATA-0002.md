@@ -43,6 +43,8 @@
 
 2026-10-04 [bounded finance-approval browser feedback](../REPORTS/PHASE_2B_FINANCE_APPROVAL_BROWSER_FEEDBACK.md): a source-identical page with a synthetic loopback 400 now displays the exact balance reason as an alert, refreshes the pending queue, and retains the pending item. The unsupported native prompt was replaced by an inline note form; cancelling makes no approval request and an empty rejection reason cannot submit. This is not a linked live SQL/browser or physical-device pass; policy and release gates remain open.
 
+2026-10-04 [linked signed-in browser/SQL](../REPORTS/PHASE_2B_FINANCE_APPROVAL_LINKED_BROWSER.md): a real disposable SQL-backed API returned one 400 to the source-identical Finance Governance page for a 200 discount on a fully collected 1,000 invoice. The page showed the exact balance reason, and reload retained PendingApproval. Final SQL proved Paid, adjusted 0, collected 1,000 in exactly two rows, with the proposal unapplied. Mobile emulation had no horizontal overflow. This closes only the bounded linked browser gate; physical devices, policy, broader fault/role/release gates remain open.
+
 ## Latest consumer repair checkpoint — 2026-10-01
 
 2026-10-03 [Live Payments browser check](../REPORTS/PHASE_2B_PAYMENTS_BROWSER_CHECK.md): an approved 200 discount on gross 1000 and Reconciled 600 displayed a 200 balance with 800 due; a stale 200 browser submit after another client paid returned the exact balance error, refreshed to Paid/0, and final isolated SQL asserted exactly two rows and collected 800. Approval-versus-collection concurrency, physical devices and broader gates remain OPEN.

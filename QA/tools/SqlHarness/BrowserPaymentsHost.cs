@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 internal static partial class SqlHarnessEntryPoint
 {
     // A real loopback API backed only by this run's disposable SQL database.
-    private static async Task ServeBrowserPaymentsAsync(QaRunManifest manifest)
+    private static async Task ServeBrowserPaymentsAsync(QaRunManifest manifest, bool approvalMode = false)
     {
         if (!int.TryParse(Environment.GetEnvironmentVariable("QA_BROWSER_API_PORT"), out var port) || port is < 1024 or > 65535 ||
             !Uri.TryCreate(Environment.GetEnvironmentVariable("QA_BROWSER_ORIGIN"), UriKind.Absolute, out var origin) ||
@@ -67,12 +67,26 @@ internal static partial class SqlHarnessEntryPoint
                 RequireFinanceStatus(approval, HttpStatusCode.OK, "approval");
             }
             await SeedReconciled(adjustedId, "QA-BROWSER-ADJUSTED");
+            Guid? pendingApprovalId = null;
+            if (approvalMode)
+            {
+                using var plainRemainder = await client.PostAsJsonAsync(paymentsPath, new { invoiceId = plainId, amount = 400m, method = "UPI", reference = "QA-BROWSER-PLAIN-REMAINDER" });
+                RequireFinanceStatus(plainRemainder, HttpStatusCode.Created, "plain remainder");
+                using var adjustedRemainder = await client.PostAsJsonAsync(paymentsPath, new { invoiceId = adjustedId, amount = 200m, method = "UPI", reference = "QA-BROWSER-ADJUSTED-REMAINDER" });
+                RequireFinanceStatus(adjustedRemainder, HttpStatusCode.Created, "adjusted remainder");
+                using var pending = await client.PostAsJsonAsync(adjustmentsPath, new { invoiceId = plainId, type = "Discount", amount = 200m, reason = "Synthetic paid-invoice approval check" });
+                RequireFinanceStatus(pending, HttpStatusCode.OK, "pending approval");
+                using var json = JsonDocument.Parse(await pending.Content.ReadAsStringAsync());
+                pendingApprovalId = json.RootElement.GetProperty("id").GetGuid();
+            }
             client.DefaultRequestHeaders.Authorization = null;
 
             var builder = WebApplication.CreateSlimBuilder();
             builder.Logging.ClearProviders();
             builder.WebHost.UseUrls($"http://127.0.0.1:{port}");
             await using var bridge = builder.Build();
+            var approvalAttempts = 0;
+            var rejectedApprovals = 0;
             bridge.Run(async context =>
             {
                 if (context.Connection.RemoteIpAddress is null || !IPAddress.IsLoopback(context.Connection.RemoteIpAddress) || context.Request.Host.Host != "127.0.0.1" || context.Request.Host.Port != port)
@@ -88,6 +102,11 @@ internal static partial class SqlHarnessEntryPoint
                     if (!request.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray())) request.Content?.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray());
                 }
                 using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, context.RequestAborted);
+                if (approvalMode && context.Request.Method == "PATCH" && context.Request.Path == $"{adjustmentsPath}/{pendingApprovalId}/approval")
+                {
+                    Interlocked.Increment(ref approvalAttempts);
+                    if (response.StatusCode == HttpStatusCode.BadRequest) Interlocked.Increment(ref rejectedApprovals);
+                }
                 context.Response.StatusCode = (int)response.StatusCode;
                 foreach (var header in response.Headers.Concat(response.Content.Headers))
                 {
@@ -99,7 +118,7 @@ internal static partial class SqlHarnessEntryPoint
             });
             await bridge.StartAsync();
             var stop = Path.Combine(manifest.Root, "stop-browser");
-            Console.WriteLine($"PAYPORTAL READY run={manifest.RunId:N} academy={academyId:N} plain={plainId:N} adjusted={adjustedId:N} api={port} origin={origin.Port} stop={stop}");
+            Console.WriteLine($"PAYPORTAL READY run={manifest.RunId:N} academy={academyId:N} plain={plainId:N} adjusted={adjustedId:N} pending={pendingApprovalId?.ToString("N") ?? "none"} api={port} origin={origin.Port} stop={stop}");
             var deadline = DateTime.UtcNow.AddMinutes(30);
             while (!File.Exists(stop) && DateTime.UtcNow < deadline) await Task.Delay(1000);
             await bridge.StopAsync();
@@ -114,6 +133,13 @@ internal static partial class SqlHarnessEntryPoint
                 payments.Where(x => x.InvoiceId == plainId && (x.Status == "Completed" || x.Status == "Reconciled")).Sum(x => x.Amount) != 1000m ||
                 payments.Where(x => x.InvoiceId == adjustedId && (x.Status == "Completed" || x.Status == "Reconciled")).Sum(x => x.Amount) != 800m)
                 throw new InvalidOperationException("Browser payment/adjustment SQL ledger does not match the accepted and rejected UI actions.");
+            if (approvalMode)
+            {
+                var pending = await finalDb.FinanceAdjustments.AsNoTracking().SingleAsync(x => x.Id == pendingApprovalId);
+                if (approvalAttempts != 1 || rejectedApprovals != 1 || pending.Status != "PendingApproval" || pending.ApprovedAtUtc is not null || pending.AppliedAtUtc is not null)
+                    throw new InvalidOperationException("Browser approval did not return one rejection with the pending adjustment unchanged.");
+                Console.WriteLine($"PAYPORTAL APPROVAL rejected={rejectedApprovals} attempts={approvalAttempts} pending={pending.Status} plainCollected=1000 plainAdjusted=0");
+            }
             Console.WriteLine("PAYPORTAL SQL " + JsonSerializer.Serialize(rows.Select(x => new { x.Id, x.TotalAmount, x.AdjustedAmount, x.Status, collected = payments.Where(p => p.InvoiceId == x.Id && (p.Status == "Completed" || p.Status == "Reconciled")).Sum(p => p.Amount), paymentRows = payments.Count(p => p.InvoiceId == x.Id) })));
         }
         finally
