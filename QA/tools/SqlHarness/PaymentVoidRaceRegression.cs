@@ -124,4 +124,96 @@ internal static partial class SqlHarnessEntryPoint
         if (guarded != 5) throw new InvalidOperationException($"Concurrent create/void ledger/status mismatch: {guarded}/5 guarded.");
         Console.WriteLine("TRANSITION CREATE/VOID PASS: 5/5 gross/adjusted pairs retained only the new collection and a PartiallyPaid invoice.");
     }
+
+    private static async Task VerifyReconcileVoidRaceAsync(QaApiFactory factory, HttpClient client)
+    {
+        Guid academyId, studentId;
+        using (var scope = factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+            academyId = await db.Academies.AsNoTracking().Where(x => x.Name == "Synthetic Academy A")
+                .Select(x => x.Id).SingleAsync();
+            studentId = await db.Students.AsNoTracking().Where(x => x.AcademyId == academyId && x.FirstName == "Isolated-A")
+                .Select(x => x.Id).SingleAsync();
+        }
+        var token = await LoginAsync(client, "qa-admin-a@example.invalid", "Synthetic!39Ab");
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var guarded = 0;
+        for (var attempt = 1; attempt <= 5; attempt++)
+        {
+            var adjustment = attempt % 2 == 0 ? 200m : 0m;
+            var fixture = await CreateTransitionFixtureAsync(factory, client, academyId, studentId,
+                1000m - adjustment, adjustment, "reconcile-void-race-" + attempt);
+            using var reconcileClient = factory.CreateClient(new() { AllowAutoRedirect = false });
+            using var voidClient = factory.CreateClient(new() { AllowAutoRedirect = false });
+            reconcileClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            voidClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            var responses = await Task.WhenAll(
+                reconcileClient.PatchAsJsonAsync($"{fixture.PaymentsPath}/{fixture.PaymentId}/reconcile",
+                    new { reference = "QA-RECONCILE-VOID-RACE" }),
+                voidClient.PatchAsJsonAsync($"{fixture.PaymentsPath}/{fixture.PaymentId}/status",
+                    new { status = "Voided" }));
+            var codes = responses.Select(response => (int)response.StatusCode).ToArray();
+            foreach (var response in responses) response.Dispose();
+            if (codes.Contains(429)) throw new InvalidOperationException("Rate limit prevented the reconcile/void race.");
+            var after = await ReadAdjustmentSnapshotAsync(factory, academyId, studentId, fixture.InvoiceId,
+                "reconcile-void-race-after-" + attempt);
+            var view = await ReadAdjustedInvoiceViewAsync(client, fixture.InvoicesPath, fixture.InvoiceId);
+            var listed = await CollectionsIncludesAsync(client, fixture);
+            var row = after.Payments.Single();
+            var collected = row.Status == "Reconciled";
+            var consistent = codes.SequenceEqual(new[] { 200, 200 }) && after.Payments.Count == 1 &&
+                row.Id == fixture.PaymentId && row.Amount == 1000m - adjustment &&
+                row.ReconciliationReference == "QA-RECONCILE-VOID-RACE" && row.ReconciledAtUtc is not null &&
+                after.Adjusted == adjustment && after.Adjustments.Count == (adjustment > 0m ? 1 : 0) &&
+                (collected && after.Status == "Paid" && view == (1000m - adjustment, 0m, "Paid") && !listed ||
+                 !collected && row.Status == "Voided" && after.Status == "Overdue" &&
+                 view == (0m, 1000m - adjustment, "Overdue") && listed);
+            if (consistent) guarded++;
+            Console.WriteLine($"TRANSITION RECONCILE/VOID attempt={attempt} adjusted={adjustment} " +
+                $"statuses={string.Join(',', codes)} payment={row.Status} invoice={after.Status} " +
+                $"viewPaid={view.Paid} balance={view.Balance} guarded={consistent}");
+        }
+        if (guarded != 5) throw new InvalidOperationException($"Concurrent reconcile/void ledger/status mismatch: {guarded}/5 guarded.");
+
+        // Existing explicit restoration remains available, but it must restore
+        // the invoice atomically and cannot revive an already-replaced amount.
+        var restore = await CreateTransitionFixtureAsync(factory, client, academyId, studentId, 1000m, 0m,
+            "reconcile-after-void");
+        using (var voidResponse = await client.PatchAsJsonAsync($"{restore.PaymentsPath}/{restore.PaymentId}/status",
+            new { status = "Voided" }))
+            RequireFinanceStatus(voidResponse, HttpStatusCode.OK, "void before explicit reconciliation");
+        using (var reconcileResponse = await client.PatchAsJsonAsync($"{restore.PaymentsPath}/{restore.PaymentId}/reconcile",
+            new { reference = "QA-EXPLICIT-RESTORE" }))
+            RequireFinanceStatus(reconcileResponse, HttpStatusCode.OK, "explicit reconciliation after void");
+        var restored = await ReadAdjustmentSnapshotAsync(factory, academyId, studentId, restore.InvoiceId,
+            "reconcile-after-void-restored");
+        if (restored.Status != "Paid" || restored.Payments.Single().Status != "Reconciled" ||
+            await ReadAdjustedInvoiceViewAsync(client, restore.InvoicesPath, restore.InvoiceId) != (1000m, 0m, "Paid"))
+            throw new InvalidOperationException("Explicit reconciliation restored a payment without restoring the invoice.");
+
+        var replacement = await CreateTransitionFixtureAsync(factory, client, academyId, studentId, 1000m, 0m,
+            "reconcile-replaced-void");
+        using (var voidResponse = await client.PatchAsJsonAsync($"{replacement.PaymentsPath}/{replacement.PaymentId}/status",
+            new { status = "Voided" }))
+            RequireFinanceStatus(voidResponse, HttpStatusCode.OK, "void before replacement payment");
+        using (var newPayment = await client.PostAsJsonAsync(replacement.PaymentsPath,
+            new { invoiceId = replacement.InvoiceId, amount = 1000m }))
+            RequireFinanceStatus(newPayment, HttpStatusCode.Created, "replacement payment");
+        using (var rejected = await client.PatchAsJsonAsync($"{replacement.PaymentsPath}/{replacement.PaymentId}/reconcile",
+            new { reference = "QA-OVERCOLLECTION-REJECT" }))
+        {
+            RequireFinanceStatus(rejected, HttpStatusCode.BadRequest, "overcollecting reconciliation");
+            using var rejection = JsonDocument.Parse(await rejected.Content.ReadAsStringAsync());
+            if (rejection.RootElement.GetProperty("message").GetString() != "Payment exceeds the invoice balance.")
+                throw new InvalidOperationException("Overcollecting reconciliation returned the wrong balance message.");
+        }
+        var unchanged = await ReadAdjustmentSnapshotAsync(factory, academyId, studentId, replacement.InvoiceId,
+            "reconcile-replaced-unchanged");
+        if (unchanged.Status != "Paid" || unchanged.Payments.Count != 2 ||
+            unchanged.Payments.Single(x => x.Id == replacement.PaymentId) is not { Status: "Voided", ReconciliationReference: null, ReconciledAtUtc: null } ||
+            unchanged.Payments.Where(x => x.Status is "Completed" or "Reconciled").Sum(x => x.Amount) != 1000m)
+            throw new InvalidOperationException("Rejected restoration changed the replacement ledger.");
+        Console.WriteLine("TRANSITION RECONCILE/VOID PASS: 5/5 concurrent pairs, explicit restoration updates invoice, replaced amount rejected without writes. Restoration policy remains pending.");
+    }
 }

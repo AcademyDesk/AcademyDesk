@@ -87,7 +87,49 @@ public sealed class PaymentsController(AcademyDeskDbContext dbContext) : Control
     }
     [HttpPatch("{paymentId:guid}/reconcile")]
     public async Task<ActionResult> Reconcile(Guid academyId, Guid paymentId, ReconcilePaymentRequest request, CancellationToken token)
-    { var payment=await dbContext.Payments.SingleOrDefaultAsync(x=>x.Id==paymentId&&x.AcademyId==academyId,token);if(payment is null)return NotFound();if(string.IsNullOrWhiteSpace(request.Reference))return BadRequest(new{message="A bank/cash reconciliation reference is required."});payment.Status="Reconciled";payment.ReconciledAtUtc=DateTime.UtcNow;payment.ReconciliationReference=request.Reference.Trim();await dbContext.SaveChangesAsync(token);return Ok(); }
+    {
+        if (string.IsNullOrWhiteSpace(request.Reference))
+            return BadRequest(new { message = "A bank/cash reconciliation reference is required." });
+
+        var invoiceId = await dbContext.Payments.AsNoTracking()
+            .Where(x => x.Id == paymentId && x.AcademyId == academyId)
+            .Select(x => (Guid?)x.InvoiceId).SingleOrDefaultAsync(token);
+        if (invoiceId is null) return NotFound();
+
+        // Use the same invoice-first lock as Create and Voided. The outer finance
+        // transaction owns normal requests; direct/platform callers own this one.
+        await using var ownedTransaction = dbContext.Database.IsSqlServer() && dbContext.Database.CurrentTransaction is null
+            ? await dbContext.Database.BeginTransactionAsync(token) : null;
+        var invoiceQuery = dbContext.Database.IsSqlServer()
+            ? dbContext.Invoices.FromSqlInterpolated($"SELECT * FROM [Invoices] WITH (UPDLOCK, HOLDLOCK) WHERE [AcademyId] = {academyId} AND [Id] = {invoiceId.Value}")
+            : dbContext.Invoices.Where(x => x.Id == invoiceId.Value && x.AcademyId == academyId);
+        var invoice = await invoiceQuery.SingleOrDefaultAsync(token);
+        if (invoice is null) return NotFound();
+        // The first lookup is only for lock ordering; another request may have
+        // voided this row while we waited for the invoice lock.
+        var payment = await dbContext.Payments.SingleOrDefaultAsync(x => x.Id == paymentId && x.AcademyId == academyId, token);
+        if (payment is null) return NotFound();
+
+        if (payment.Status == "Voided")
+        {
+            var otherCollected = await dbContext.Payments.Where(x => x.AcademyId == academyId && x.InvoiceId == invoice.Id &&
+                x.Id != payment.Id && (x.Status == "Completed" || x.Status == "Reconciled"))
+                .SumAsync(x => (decimal?)x.Amount, token) ?? 0m;
+            var collected = otherCollected + payment.Amount;
+            var collectible = invoice.TotalAmount - invoice.AdjustedAmount;
+            if (collected > collectible)
+                return BadRequest(new { message = "Payment exceeds the invoice balance." });
+            if (!string.Equals(invoice.Status, "Cancelled", StringComparison.OrdinalIgnoreCase))
+                invoice.Status = collected == collectible ? "Paid" : "PartiallyPaid";
+        }
+
+        payment.Status = "Reconciled";
+        payment.ReconciledAtUtc = DateTime.UtcNow;
+        payment.ReconciliationReference = request.Reference.Trim();
+        await dbContext.SaveChangesAsync(token);
+        if (ownedTransaction is not null) await ownedTransaction.CommitAsync(token);
+        return Ok();
+    }
 }
 
 public sealed record RecordPaymentRequest(Guid InvoiceId, decimal Amount, string? Method, string? Reference);

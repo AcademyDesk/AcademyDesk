@@ -13,8 +13,10 @@ public sealed class FinanceWorkflowTests
     {
         await using var db = CreateDb();
         var academyId = Guid.NewGuid();
-        var payment = new Payment { AcademyId = academyId, InvoiceId = Guid.NewGuid(), Amount = 4500m, Method = "UPI", Reference = "UTR-INITIAL" };
-        db.Payments.Add(payment);
+        var invoice = new Invoice { AcademyId = academyId, InvoiceNumber = "QA-RECONCILE", StudentId = Guid.NewGuid(),
+            TotalAmount = 4500m, Status = "Paid" };
+        var payment = new Payment { AcademyId = academyId, InvoiceId = invoice.Id, Amount = 4500m, Method = "UPI", Reference = "UTR-INITIAL" };
+        db.AddRange(invoice, payment);
         await db.SaveChangesAsync();
 
         var result = await new PaymentsController(db).Reconcile(academyId, payment.Id, new ReconcilePaymentRequest("HDFC-20260918-001"), CancellationToken.None);

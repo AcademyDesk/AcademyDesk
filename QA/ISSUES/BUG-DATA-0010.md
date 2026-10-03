@@ -4,7 +4,7 @@
 | --- | --- |
 | Status | OPEN / FIX-IN-PROGRESS |
 | Confirmation status | RUNTIME-REPRODUCED; local void/evidence repair retested |
-| Final verification | Sequential void/evidence PASS twice; concurrent two-row void baseline FAIL 0/5, repaired two-void and create/void gross/adjusted retests PASS 5/5 each; restoration policy / other interleavings / broader gates pending |
+| Final verification | Sequential void/evidence PASS; repaired two-void, create/void and reconcile/void gross/adjusted SQL/HTTP races PASS 5/5 each; explicit restoration consistency and overcollection rejection PASS; restoration policy / other interleavings / broader gates pending |
 | Severity | Critical financial ledger consistency |
 | Priority | P0 |
 | Category | DATA |
@@ -30,18 +30,20 @@
 | API response | Void 200 leaves stale invoice status; full/adjusted invoices absent from collections; direct Reconciled 200 lacks reference/timestamp |
 | Database before/after | Fresh SQL confirms full/adjusted Paid and partial PartiallyPaid after void; direct Reconciled lacks evidence; rejected controls unchanged; restoration policy pending |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | Local uncommitted PaymentsController void/evidence repair; no deployment |
+| Fix commit | Local branch repairs (void/evidence, invoice locking, reconcile/void guard); no deployment |
 | Retest result | Confirmed void/evidence cases PASS on two fresh owned Identity/HTTP/SQL runs; restoration POLICY-PENDING |
 | Regression result | API 134/134 and bounded SQL transition module PASS twice; not full critical / concurrent / browser acceptance |
 | Closure notes | Remain OPEN; restoration policy, permissions/recomputation and broader closure requirements pending |
 
 ## Local repair checkpoint — 2026-10-01
 
+2026-10-03 [reconcile/void ledger guard](../REPORTS/PHASE_2B_PAYMENT_RECONCILE_VOID_GUARD.md): the dedicated reconcile action previously could revive a Voided payment without restoring invoice status or checking whether a replacement payment had consumed the balance. It now takes the same invoice-first transaction lock as Create/Voided, re-reads the payment, recomputes status on explicit restoration and rejects overcollection without writes. Real SQL/HTTP concurrent gross/approved-adjustment pairs PASS 5/5 twice, with explicit restoration and replacement controls. Existing TransitionRace, Transition, CollectionRace and 1,042 API tests PASS. Current behavior is preserved, not a business-policy approval: Voided restoration remains POLICY-PENDING, as do Voided-to-Completed, browser/device and release gates. Issue remains OPEN.
+
 2026-10-03 [concurrent void repair](../REPORTS/PHASE_2B_PAYMENT_VOID_RACE_REPAIR.md): two simultaneous voids on a Paid invoice reproduced a stored `PartiallyPaid` status despite zero collected in 5/5 fresh SQL/HTTP baseline pairs. The Voided path now locks the academy invoice row in a transaction before re-reading the payment and recalculating the aggregate. Final five-pair two-void and create/void matrices (including approved adjustments) each PASS 5/5; existing Transition and CollectionRace regressions and 1,042 API tests PASS. Restoration policy and other transition interleavings remain unaccepted; issue stays OPEN.
 
 [Phase 2B repair/evidence](../REPORTS/PHASE_2B_PAYMENT_TRANSITION_REPAIR.md): void updates invoice using remaining Completed/Reconciled amounts and approved adjustment; repeat void is no-write; cancelled status and historic reconciliation evidence preserved. Generic Reconciled changes reject in favor of the dedicated reference-taking action. Before-fix 16 unit cases: 6 PASS/10 FAIL; final API 134/134 and original-case/module SQL PASS twice on fresh owned runs. Resources cleaned; no commit/push/Azure or normal dev database changes.
 
-Voided restoration deliberately unchanged and unaccepted pending human policy: dedicated reconcile still returns 200 with evidence but does not recompute invoice; generic Voided→Completed also remains outside accepted coverage. No concurrency, exhaustive role/tenant/browser/device, cancelled collection-normalization or full critical PASS claimed. Related read-view follow-ups remain queued. The original reproduction below is historical before-fix evidence, not the current confirmed void/evidence behavior.
+Historical note from the earlier void/evidence repair: at that point dedicated reconcile returned 200 with evidence but did not recompute invoice. The subsequent 2026-10-03 reconcile/void guard above repairs that inconsistency. The business decision whether Voided restoration should be permitted remains pending; generic Voided→Completed also remains outside accepted coverage. No exhaustive role/tenant/browser/device, cancelled collection-normalization or full critical PASS is claimed. Related read-view follow-ups remain queued. The original reproduction below is historical before-fix evidence, not the current confirmed behavior.
 
 ## Original reproduction (before fix)
 
