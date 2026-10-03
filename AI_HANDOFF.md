@@ -93,23 +93,21 @@ Azure deployment waits for the pre-Azure quality gate in `ENTERPRISE_TESTING_ROA
 
 ## Active handoff
 
-CURRENT PHASE: BUG-FUNC-0032 linked portal check. The issue stays open.
+CURRENT PHASE: BUG-DATA-0001 current-source confirmation. The issue stays open.
 
-COMPLETED THIS SLICE: One signed-in issue on the real certificates page against disposable SQL. Official PDF text matches certificate CERT-20261003105343-561, verification F1C3B80D1A6F44F4, Portal Learner, Portal programme, Portal saved achievement, Portal recognition, and Issued 2026-10-03. The unsaved title is absent. The draft PDF is watermarked. The CertificateIssued audit points at the same certificate id. Owned SQL was removed.
+COMPLETED THIS SLICE: Fresh disposable SQL rerun of the original reconciled-payment case. Invoice 1000, reconciled payment 600, admin and student balance 400, excess 500 rejected, ledger unchanged. Run `9a85332f6e1148d1a45900c6c5e0a9e8` exit 0. Owned SQL removed.
 
-NOT ACCEPTED: The official PDF is three repeated letter pages. ActorUserId on that audit is null. Physical phone check is NOT RUN.
+NOT ACCEPTED: Concurrent collection of the same remaining balance, live Payments browser, and physical device.
 
-TEST RESULTS: `QA/REPORTS/PHASE_2B_CERTIFICATE_PORTAL_CHECK.md`.
+TEST RESULTS: `QA/REPORTS/PHASE_2B_RECONCILED_PAYMENT_CONFIRMATION.md`.
 
-OPEN BLOCKERS: BUG-FUNC-0032 pagination, null issue-audit actor, physical device, and P0 issues BUG-DATA-0001, BUG-DATA-0002, BUG-DATA-0003, BUG-DATA-0010, BUG-SEC-0001.
+OPEN BLOCKERS: BUG-DATA-0001 concurrency/browser/device, BUG-DATA-0002, BUG-DATA-0003, BUG-DATA-0010, BUG-SEC-0001, and BUG-FUNC-0032 pagination/audit actor/device.
 
-NEXT SLICE: BUG-DATA-0001 reconciled payment balances. Stay in Cursor. Move to Codex only if that repair becomes a genuine financial or transaction design block. Do not open v0, Lovable, or Framer.
+NEXT SLICE: Two simultaneous payments for the remaining balance after reconciliation. Stay in Cursor. Move to Codex only if that race needs a transaction design change. Do not open v0, Lovable, or Framer.
 
 MODEL/TOOL ROUTING: Grok 4.7 in Cursor.
 
-BRANCH: `cursor/certificate-validation` in `D:\AcademyDesk-cursor-certificate`. Do not merge to `main`.
-
-COMMIT: QA host and report. No product source change.
+BRANCH: `cursor/certificate-validation`. Do not merge to `main`.
 
 ## Data Protection classification
 

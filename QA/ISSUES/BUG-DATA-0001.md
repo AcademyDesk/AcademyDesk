@@ -35,7 +35,9 @@
 | Regression result | Latest API 140/140 and controlled Payments page 7/7; adjusted/collected consumer HTTP/SQL six stages PASS twice; earlier original-case evidence retained; full critical NOT RUN |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
-## Latest frontend/consumer follow-up — 2026-10-01
+## Current-source confirmation — 2026-10-03
+
+[Current-source confirmation](../REPORTS/PHASE_2B_RECONCILED_PAYMENT_CONFIRMATION.md): fresh disposable SQL rerun of the original case PASS. Reconciled 600 still leaves admin and student balance 400, and excess 500 is rejected with the ledger unchanged. Issue remains OPEN for concurrent collection, live browser, and device checks.
 
 [Consumer repair/evidence](../REPORTS/PHASE_2B_FINANCE_CONSUMER_REPAIR.md): Payments page Collected now includes Reconciled and Completed, excludes Voided; options/directory/detail/amount prefill/max/open/outstanding use canonical invoice API balance. Actual page with controlled hook state passes 7/7 after before-fix 1 PASS/6 FAIL; typecheck PASS, lint 0 errors/1 pre-existing warning. Related adjustment consumers pass six real Identity/HTTP/SQL stages twice, API suite 140/140. Not a live browser/React lifecycle or full critical/role/concurrency PASS; remains OPEN. No deployment, current owned QA resources cleaned. Earlier checkpoint below is historical.
 
