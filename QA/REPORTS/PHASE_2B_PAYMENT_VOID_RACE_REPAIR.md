@@ -12,6 +12,8 @@ Date: 2026-10-03. Worktree `D:\AcademyDesk-codex-p0`, branch `codex/enterprise-p
 
 `TransitionRace` is a separate strict harness module. It uses the existing real SQL/Identity/tenant fixture and five simultaneous two-void pairs: three gross invoices and two invoices with an approved 200 adjustment. Each starts Paid with Reconciled 600 plus Completed 400 or 200, then voids both rows concurrently. It requires two HTTP 200s, no 429, exactly two Voided rows, intact reconciliation evidence/approved adjustment, SQL invoice `Overdue`, Admin paid 0 and balance 1000 or 800, and overdue collections inclusion. The existing `Transition` and `CollectionRace` modules were not weakened.
 
+The same module now also runs five concurrent create-versus-void pairs on gross/approved-adjustment invoices. A prior Reconciled 600 is voided while a 400 or 200 payment is posted. It requires HTTP 200/201, old row Voided with historical evidence, exactly one new Completed row, collected 400 or 200, SQL/Admin `PartiallyPaid`, balance 600 and collections inclusion. This exercises another ordering against the shared invoice lock without deciding the distinct Voided-restoration policy.
+
 ## Verification
 
 | Check | Fresh result |
@@ -22,9 +24,10 @@ Date: 2026-10-03. Worktree `D:\AcademyDesk-codex-p0`, branch `codex/enterprise-p
 | Existing `Transition` | `b0ff1b3939294c6b9c69b4d26f5d4867`, PASS |
 | Existing `CollectionRace` | `f437a282eb614893be48609b2b28219f`, 5/5 PASS |
 | API tests | 1,042/1,042 PASS, 0 failed/skipped |
+| Extended `TransitionRace` (two-void plus create/void) | `839ffd89254449deb7de71493e29dd60`, both matrices 5/5 PASS |
 
 The SQL runner used a process-only PowerShell execution-policy override on this host. Its exact run-owned database/login/container cleanup completed on passing runs. The failing baseline container was verified by exact name, run label and loopback binding before removal. No broad Docker prune was used.
 
 ## Still open
 
-`BUG-DATA-0010` remains OPEN: Voided→Completed or Voided→Reconciled restoration policy is not decided; reconcile/void and create/void interleavings, payment-specific role/tenant coverage, live browser/physical-device checks and the full critical/pre-Azure gates remain unaccepted. This report does not certify all possible finance transitions or authorize an Azure deployment.
+`BUG-DATA-0010` remains OPEN: Voided→Completed or Voided→Reconciled restoration policy is not decided; reconcile/void and other untested interleavings, payment-specific role/tenant coverage, live browser/physical-device checks and the full critical/pre-Azure gates remain unaccepted. This report does not certify all possible finance transitions or authorize an Azure deployment.

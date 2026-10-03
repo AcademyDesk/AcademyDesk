@@ -75,5 +75,53 @@ internal static partial class SqlHarnessEntryPoint
         }
         if (guarded != 5) throw new InvalidOperationException($"Concurrent void ledger/status mismatch: {guarded}/5 guarded.");
         Console.WriteLine("TRANSITION RACE PASS: 5/5 concurrent two-row void pairs, including approved adjustments, left zero collected, Overdue invoice and preserved reconciliation evidence.");
+        await VerifyCreateVoidRaceAsync(factory, client, token, academyId, studentId);
+    }
+
+    private static async Task VerifyCreateVoidRaceAsync(QaApiFactory factory, HttpClient client, string token,
+        Guid academyId, Guid studentId)
+    {
+        var guarded = 0;
+        for (var attempt = 1; attempt <= 5; attempt++)
+        {
+            var adjustment = attempt % 2 == 0 ? 200m : 0m;
+            var newAmount = 400m - adjustment;
+            var fixture = await CreateTransitionFixtureAsync(factory, client, academyId, studentId, 600m, adjustment,
+                "create-void-race-" + attempt);
+            using var reconcile = await client.PatchAsJsonAsync($"{fixture.PaymentsPath}/{fixture.PaymentId}/reconcile",
+                new { reference = "QA-CREATE-VOID-RACE" });
+            RequireFinanceStatus(reconcile, HttpStatusCode.OK, "create-void race reconcile");
+
+            using var voidClient = factory.CreateClient(new() { AllowAutoRedirect = false });
+            using var createClient = factory.CreateClient(new() { AllowAutoRedirect = false });
+            voidClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            createClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            var voidTask = voidClient.PatchAsJsonAsync($"{fixture.PaymentsPath}/{fixture.PaymentId}/status",
+                new { status = "Voided" });
+            var createTask = createClient.PostAsJsonAsync(fixture.PaymentsPath,
+                new { invoiceId = fixture.InvoiceId, amount = newAmount });
+            await Task.WhenAll(voidTask, createTask);
+            using var voidResponse = await voidTask;
+            using var createResponse = await createTask;
+            var codes = new[] { (int)voidResponse.StatusCode, (int)createResponse.StatusCode };
+            if (codes.Contains(429)) throw new InvalidOperationException("Rate limit prevented the create/void race.");
+            var snapshot = await ReadAdjustmentSnapshotAsync(factory, academyId, studentId, fixture.InvoiceId,
+                "create-void-race-after-" + attempt);
+            var view = await ReadAdjustedInvoiceViewAsync(client, fixture.InvoicesPath, fixture.InvoiceId);
+            var listed = await CollectionsIncludesAsync(client, fixture);
+            var oldPayment = snapshot.Payments.SingleOrDefault(x => x.Id == fixture.PaymentId);
+            var surviving = snapshot.Payments.SingleOrDefault(x => x.Id != fixture.PaymentId);
+            var consistent = codes.SequenceEqual(new[] { 200, 201 }) && snapshot.Payments.Count == 2 &&
+                oldPayment is { Status: "Voided", ReconciliationReference: "QA-CREATE-VOID-RACE" } &&
+                oldPayment.ReconciledAtUtc is not null && surviving is { Status: "Completed" } &&
+                surviving.Amount == newAmount && snapshot.Adjusted == adjustment &&
+                snapshot.Status == "PartiallyPaid" && view == (newAmount, 600m, "PartiallyPaid") && listed;
+            if (consistent) guarded++;
+            Console.WriteLine($"TRANSITION CREATE/VOID attempt={attempt} adjusted={adjustment} " +
+                $"statuses={string.Join(',', codes)} collected={snapshot.Payments.Where(x => x.Status is "Completed" or "Reconciled").Sum(x => x.Amount)} " +
+                $"invoice={snapshot.Status} viewBalance={view.Balance} guarded={consistent}");
+        }
+        if (guarded != 5) throw new InvalidOperationException($"Concurrent create/void ledger/status mismatch: {guarded}/5 guarded.");
+        Console.WriteLine("TRANSITION CREATE/VOID PASS: 5/5 gross/adjusted pairs retained only the new collection and a PartiallyPaid invoice.");
     }
 }

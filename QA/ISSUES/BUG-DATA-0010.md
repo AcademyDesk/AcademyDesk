@@ -4,7 +4,7 @@
 | --- | --- |
 | Status | OPEN / FIX-IN-PROGRESS |
 | Confirmation status | RUNTIME-REPRODUCED; local void/evidence repair retested |
-| Final verification | Sequential void/evidence PASS twice; concurrent two-row void baseline FAIL 0/5, repaired gross/adjusted retest PASS 5/5; restoration policy / other interleavings / broader gates pending |
+| Final verification | Sequential void/evidence PASS twice; concurrent two-row void baseline FAIL 0/5, repaired two-void and create/void gross/adjusted retests PASS 5/5 each; restoration policy / other interleavings / broader gates pending |
 | Severity | Critical financial ledger consistency |
 | Priority | P0 |
 | Category | DATA |
@@ -37,7 +37,7 @@
 
 ## Local repair checkpoint — 2026-10-01
 
-2026-10-03 [concurrent void repair](../REPORTS/PHASE_2B_PAYMENT_VOID_RACE_REPAIR.md): two simultaneous voids on a Paid invoice reproduced a stored `PartiallyPaid` status despite zero collected in 5/5 fresh SQL/HTTP baseline pairs. The Voided path now locks the academy invoice row in a transaction before re-reading the payment and recalculating the aggregate. Final five pairs (including approved adjustments) PASS 5/5; existing Transition and CollectionRace regressions and 1,042 API tests PASS. Restoration policy and other transition interleavings remain unaccepted; issue stays OPEN.
+2026-10-03 [concurrent void repair](../REPORTS/PHASE_2B_PAYMENT_VOID_RACE_REPAIR.md): two simultaneous voids on a Paid invoice reproduced a stored `PartiallyPaid` status despite zero collected in 5/5 fresh SQL/HTTP baseline pairs. The Voided path now locks the academy invoice row in a transaction before re-reading the payment and recalculating the aggregate. Final five-pair two-void and create/void matrices (including approved adjustments) each PASS 5/5; existing Transition and CollectionRace regressions and 1,042 API tests PASS. Restoration policy and other transition interleavings remain unaccepted; issue stays OPEN.
 
 [Phase 2B repair/evidence](../REPORTS/PHASE_2B_PAYMENT_TRANSITION_REPAIR.md): void updates invoice using remaining Completed/Reconciled amounts and approved adjustment; repeat void is no-write; cancelled status and historic reconciliation evidence preserved. Generic Reconciled changes reject in favor of the dedicated reference-taking action. Before-fix 16 unit cases: 6 PASS/10 FAIL; final API 134/134 and original-case/module SQL PASS twice on fresh owned runs. Resources cleaned; no commit/push/Azure or normal dev database changes.
 
