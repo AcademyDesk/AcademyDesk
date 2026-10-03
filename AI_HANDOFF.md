@@ -2,7 +2,9 @@
 
 ## Current state
 
-Latest local checkpoint (2026-10-03): [Reconcile/void ledger guard](QA/REPORTS/PHASE_2B_PAYMENT_RECONCILE_VOID_GUARD.md) on `codex/enterprise-p0-continuation`. Reconcile now uses the invoice-first SQL lock and transaction, re-reads the payment, updates invoice status when explicitly restoring a Voided payment, and rejects restoration that would overcollect. Fresh real Identity/HTTP/disposable-SQL reconcile/void pairs passed 5/5 twice, including gross/approved-adjustment invoices; explicit restore and replaced-amount rejection passed. Existing TransitionRace (two matrices), Transition, CollectionRace and 1,042 API tests passed. This preserves current explicit restoration behavior without approving its business policy. BUG-DATA-0010 remains OPEN for that policy, Voided-to-Completed, browser/device and release gates. No main/merge/push/Azure. Next: obtain the restoration policy before broader state-transition closure; Sol High for any further financial-state implementation.
+Latest local checkpoint (2026-10-04): [Approval/payment transaction guard](QA/REPORTS/PHASE_2B_APPROVAL_PAYMENT_GUARD.md) on `codex/enterprise-p0-continuation`. `FinanceAdjustmentsController.Decide` now serializes on the same invoice SQL row as payment creation, re-reads the pending adjustment after the lock, and rejects an approval that would put collected money above the adjusted collectible amount. The earlier 5/5 live SQL overcollection reproduction now passes 5/5 in three fresh runs, with payment winning and approval returning 400/no write. An approval-first control rejected the stale payment and preserved paid 600/balance 200. Existing Adjustment and AdjustmentRace SQL modules and all 1,044 API tests passed. BUG-DATA-0002 stays OPEN for over-adjustment/refund policy, browser/physical device and full release gates. No main/merge/push/Azure. Next: bounded browser/device and policy follow-up; Sol High only for unresolved finance policy or deeper concurrency, Cursor for routine validation.
+
+Previous local checkpoint (2026-10-03): [Reconcile/void ledger guard](QA/REPORTS/PHASE_2B_PAYMENT_RECONCILE_VOID_GUARD.md) on `codex/enterprise-p0-continuation`. Reconcile now uses the invoice-first SQL lock and transaction, re-reads the payment, updates invoice status when explicitly restoring a Voided payment, and rejects restoration that would overcollect. Fresh real Identity/HTTP/disposable-SQL reconcile/void pairs passed 5/5 twice, including gross/approved-adjustment invoices; explicit restore and replaced-amount rejection passed. Existing TransitionRace (two matrices), Transition, CollectionRace and 1,042 API tests passed. This preserves current explicit restoration behavior without approving its business policy. BUG-DATA-0010 remains OPEN for that policy, Voided-to-Completed, browser/device and release gates. No main/merge/push/Azure.
 
 Previous local checkpoint (2026-10-03): [Payments browser/SQL check](QA/REPORTS/PHASE_2B_PAYMENTS_BROWSER_CHECK.md) on `codex/enterprise-p0-continuation`. Synthetic loopback browser and disposable SQL passed the Reconciled/adjusted balances, exact collection, stale-balance rejection, mobile emulation and final two-row ledger assertions. `apps/web/src/app/payments/page.tsx` now gives durable success/error feedback and describes the adjusted amount; a new QA browser fixture is added. TypeScript and harness build pass. Changes are local in this worktree only; do not merge/push/deploy yet. BUG-DATA-0001/0002 remain OPEN for physical devices and broader gates.
 
@@ -97,17 +99,17 @@ Azure deployment waits for the pre-Azure quality gate in `ENTERPRISE_TESTING_ROA
 
 ## Active handoff
 
-CURRENT PHASE: BUG-DATA-0002 approval versus payment. The issue stays OPEN.
+CURRENT PHASE: BUG-DATA-0002 approval versus payment guarded locally. The issue stays OPEN.
 
-COMPLETED THIS SLICE: Five pairs approved a pending 200 discount at the same time as a 400 payment, after a reconciled 600 on an invoice of 1000. All five returned 200 and 201 and stored collected 1000 with adjusted 200. Run `d66c4ad4118c4001a2a3e9703ea1d7e6` exit 1. Owned SQL removed. No product change.
+COMPLETED THIS SLICE: The earlier five-pair failing race (`d66c4ad4118c4001a2a3e9703ea1d7e6`) is retained as baseline. The local invoice-first transaction and balance guard passed corrected strict five-pair SQL/HTTP runs (`50a9f525d4164ba1aa09db0368c03d71`, `811706c0ed0a45b482737284791c572d`, final `5903c5aec0f8436c89b08b24e94d02b2`). All five in each run observed payment-first, approval 400/no write; a forced approval-first control rejected the stale payment with 400 and left the adjusted ledger exact. Adjustment and AdjustmentRace SQL modules and 1,044 API tests passed. All owned SQL containers were removed.
 
-NOT ACCEPTED: That race, physical device, over-adjustment policy, void-restoration policy, BUG-SEC-0001, certificate pagination and null audit actor, and the pre-Azure gates. Codex's earlier collection, void, reconcile, and Payments browser checks remain valid.
+NOT ACCEPTED: Physical device, over-adjustment/refund policy, void-restoration policy, BUG-SEC-0001, certificate pagination and null audit actor, and the pre-Azure gates. Codex's earlier collection, void, reconcile, and Payments browser checks remain valid.
 
-TEST RESULTS: `QA/REPORTS/PHASE_2B_APPROVAL_RACE.md`.
+TEST RESULTS: `QA/REPORTS/PHASE_2B_APPROVAL_RACE.md` is the retained failing baseline; `QA/REPORTS/PHASE_2B_APPROVAL_PAYMENT_GUARD.md` is the repair/retest.
 
-NEXT SLICE: Move to Codex, Sol High, for a transaction that stops the approval and the payment from both committing when together they pass the collectible amount. Do not invent that lock in Cursor. After review, return here on Grok 4.7 to rerun `ApprovalRace`. Do not open v0, Lovable, or Framer.
+NEXT SLICE: Review the bounded finance guard, then use Cursor for routine browser/physical-device checks or Sol High if an unresolved finance policy/concurrency decision is needed. Do not open v0, Lovable, or Framer for this finance gate.
 
-MODEL/TOOL ROUTING: Grok 4.7 in Cursor for this reproduction. Codex, Sol High, for the transaction design.
+MODEL/TOOL ROUTING: Codex/Sol High for this transaction repair; Cursor for routine retesting. Astra only if policy/architecture remains unresolved after focused review.
 
 BRANCH: `codex/enterprise-p0-continuation` in `D:\AcademyDesk-codex-p0`. Do not merge to `main`. Do not edit `D:\AcademyDesk` main.
 

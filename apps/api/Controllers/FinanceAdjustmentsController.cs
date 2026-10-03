@@ -28,19 +28,44 @@ public sealed class FinanceAdjustmentsController(AcademyDeskDbContext db) : Cont
     [HttpPatch("{adjustmentId:guid}/approval")]
     public async Task<ActionResult<FinanceAdjustmentSummary>> Decide(Guid academyId, Guid adjustmentId, FinanceAdjustmentDecisionRequest request, CancellationToken token)
     {
-        var item = await db.FinanceAdjustments.SingleOrDefaultAsync(x => x.AcademyId == academyId && x.Id == adjustmentId, token); if (item is null) return NotFound();
+        var invoiceId = await db.FinanceAdjustments.AsNoTracking()
+            .Where(x => x.AcademyId == academyId && x.Id == adjustmentId)
+            .Select(x => (Guid?)x.InvoiceId).SingleOrDefaultAsync(token);
+        if (invoiceId is null) return NotFound();
+
+        // Match payment creation's invoice-first lock order. The finance access
+        // filter normally owns the transaction; direct callers need their own.
+        await using var ownedTransaction = db.Database.IsSqlServer() && db.Database.CurrentTransaction is null
+            ? await db.Database.BeginTransactionAsync(token) : null;
+        var invoiceQuery = db.Database.IsSqlServer()
+            ? db.Invoices.FromSqlInterpolated($"SELECT * FROM [Invoices] WITH (UPDLOCK, HOLDLOCK) WHERE [AcademyId] = {academyId} AND [Id] = {invoiceId.Value}")
+            : db.Invoices.Where(x => x.AcademyId == academyId && x.Id == invoiceId.Value);
+        var invoice = await invoiceQuery.SingleOrDefaultAsync(token);
+        if (invoice is null) return NotFound();
+        // A competing decision may have completed while the invoice lock waited.
+        var item = await db.FinanceAdjustments.SingleOrDefaultAsync(x => x.AcademyId == academyId && x.Id == adjustmentId, token);
+        if (item is null) return NotFound();
         if (item.Status != "PendingApproval") return Conflict(new { message = "This adjustment has already been decided." });
-        item.Status = request.Approve ? "Approved" : "Rejected"; item.ApprovalNotes = string.IsNullOrWhiteSpace(request.Notes) ? null : request.Notes.Trim(); item.ApprovedAtUtc = DateTime.UtcNow;
+        var decidedAtUtc = DateTime.UtcNow;
         if (request.Approve)
         {
-            var invoice = await db.Invoices.SingleAsync(x => x.Id == item.InvoiceId && x.AcademyId == academyId, token);
+            var paid = await db.Payments.Where(x => x.AcademyId == academyId && x.InvoiceId == invoice.Id &&
+                (x.Status == "Completed" || x.Status == "Reconciled"))
+                .SumAsync(x => (decimal?)x.Amount, token) ?? 0m;
+            var remainingAfterApproval = invoice.TotalAmount - invoice.AdjustedAmount - item.Amount - paid;
+            if (remainingAfterApproval < 0m)
+                return BadRequest(new { message = "Adjustment exceeds the remaining invoice balance." });
             invoice.AdjustedAmount += item.Amount;
-            item.AppliedAtUtc = DateTime.UtcNow;
-            var paid = await db.Payments.Where(x => x.InvoiceId == invoice.Id && (x.Status == "Completed" || x.Status == "Reconciled")).SumAsync(x => (decimal?)x.Amount, token) ?? 0;
-            var balance = invoice.TotalAmount - invoice.AdjustedAmount - paid;
+            item.AppliedAtUtc = decidedAtUtc;
+            var balance = remainingAfterApproval;
             invoice.Status = balance <= 0 ? "Paid" : paid > 0 ? "PartiallyPaid" : "Issued";
         }
-        await db.SaveChangesAsync(token); return Ok(ToSummary(item));
+        item.Status = request.Approve ? "Approved" : "Rejected";
+        item.ApprovalNotes = string.IsNullOrWhiteSpace(request.Notes) ? null : request.Notes.Trim();
+        item.ApprovedAtUtc = decidedAtUtc;
+        await db.SaveChangesAsync(token);
+        if (ownedTransaction is not null) await ownedTransaction.CommitAsync(token);
+        return Ok(ToSummary(item));
     }
     private static readonly HashSet<string> AllowedTypes = new(StringComparer.OrdinalIgnoreCase) { "Discount", "Scholarship", "Concession", "Refund", "CreditNote" };
     private static FinanceAdjustmentSummary ToSummary(FinanceAdjustment x) => new(x.Id, x.InvoiceId, x.Type, x.Amount, x.Currency, x.Reason, x.Status, x.ApprovedAtUtc, x.ApprovalNotes);

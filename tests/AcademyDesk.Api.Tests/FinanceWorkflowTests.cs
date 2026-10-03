@@ -70,6 +70,53 @@ public sealed class FinanceWorkflowTests
         Assert.Equal("Evidence not supplied", storedAdjustment.ApprovalNotes);
     }
 
+    [Fact]
+    public async Task Approval_cannot_reduce_collectible_below_existing_collections()
+    {
+        await using var db = CreateDb();
+        var academyId = Guid.NewGuid();
+        var invoice = new Invoice { AcademyId = academyId, InvoiceNumber = "QA-OVER-ADJUST", StudentId = Guid.NewGuid(),
+            TotalAmount = 1000m, Status = "Paid" };
+        var payment = new Payment { AcademyId = academyId, InvoiceId = invoice.Id, Amount = 1000m,
+            Status = "Reconciled", ReconciliationReference = "QA-EXISTING", ReconciledAtUtc = DateTime.UtcNow };
+        var adjustment = new FinanceAdjustment { AcademyId = academyId, InvoiceId = invoice.Id, Amount = 200m,
+            Type = "Discount", Reason = "QA pending discount" };
+        db.AddRange(invoice, payment, adjustment);
+        await db.SaveChangesAsync();
+
+        var result = await new FinanceAdjustmentsController(db).Decide(academyId, adjustment.Id,
+            new FinanceAdjustmentDecisionRequest(true, "QA approval"), CancellationToken.None);
+
+        Assert.IsType<BadRequestObjectResult>(result.Result);
+        Assert.Equal("PendingApproval", adjustment.Status);
+        Assert.Null(adjustment.ApprovedAtUtc);
+        Assert.Null(adjustment.AppliedAtUtc);
+        Assert.Equal(0m, invoice.AdjustedAmount);
+        Assert.Equal("Paid", invoice.Status);
+    }
+
+    [Fact]
+    public async Task Approval_at_exact_remaining_balance_preserves_paid_status()
+    {
+        await using var db = CreateDb();
+        var academyId = Guid.NewGuid();
+        var invoice = new Invoice { AcademyId = academyId, InvoiceNumber = "QA-EXACT-ADJUST", StudentId = Guid.NewGuid(),
+            TotalAmount = 1000m, Status = "PartiallyPaid" };
+        var payment = new Payment { AcademyId = academyId, InvoiceId = invoice.Id, Amount = 800m, Status = "Reconciled" };
+        var adjustment = new FinanceAdjustment { AcademyId = academyId, InvoiceId = invoice.Id, Amount = 200m,
+            Type = "Discount", Reason = "QA exact discount" };
+        db.AddRange(invoice, payment, adjustment);
+        await db.SaveChangesAsync();
+
+        var result = await new FinanceAdjustmentsController(db).Decide(academyId, adjustment.Id,
+            new FinanceAdjustmentDecisionRequest(true, "QA approval"), CancellationToken.None);
+
+        Assert.IsType<OkObjectResult>(result.Result);
+        Assert.Equal("Approved", adjustment.Status);
+        Assert.Equal(200m, invoice.AdjustedAmount);
+        Assert.Equal("Paid", invoice.Status);
+    }
+
     private static AcademyDeskDbContext CreateDb()
     {
         var options = new DbContextOptionsBuilder<AcademyDeskDbContext>()

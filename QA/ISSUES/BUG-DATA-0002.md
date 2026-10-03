@@ -4,7 +4,7 @@
 | --- | --- |
 | Status | OPEN / FIX-IN-PROGRESS (local guard/status and consumer repair) |
 | Confirmation status | RUNTIME-REPRODUCED |
-| Final verification | Approved-adjustment collection race PASS 5/5; approval-versus-payment race FAIL 0/5 on 2026-10-03; physical device and policy pending |
+| Final verification | Approved-adjustment collection race PASS 5/5; approval-versus-payment baseline FAIL 0/5, local guarded retest PASS 5/5 in three fresh runs plus approval-first control; physical device and policy pending |
 | Severity | Critical financial integrity |
 | Priority | P0 |
 | Category | DATA |
@@ -30,7 +30,7 @@
 | API response | Extra 300 at balance 200 accepted 201; exact 200 accepted but status PartiallyPaid; extra 1 after full adjustment accepted 201 |
 | Database before/after | Fresh SQL confirms overcollection, exact settlement with wrong status and full-adjustment Paid→PartiallyPaid; invalid/repeated approval snapshots unchanged |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | Local uncommitted guard and balance-consumer repair, 2026-10-01; no deployment |
+| Fix commit | Local branch guard, balance-consumer and approval/payment transaction repairs; no deployment |
 | Retest result | Three original variants PASS in two fresh guarded Identity/HTTP/SQL runs |
 | Regression result | Latest API 140/140, controlled page 7/7 and consumer HTTP/SQL six stages PASS twice; earlier guard module evidence retained; full critical NOT RUN |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
@@ -38,6 +38,8 @@
 ## Approval versus payment — 2026-10-03
 
 [Approval versus payment](../REPORTS/PHASE_2B_APPROVAL_RACE.md): five invoices of 1000, each with a reconciled 600 and a pending discount of 200. Approving that discount and posting 400 at the same time returned 200 and 201 on every attempt and stored collected 1000 with adjusted 200. The invoice was marked Paid. Run `d66c4ad4118c4001a2a3e9703ea1d7e6` exit 1. Issue remains OPEN.
+
+2026-10-04 [local transaction guard and retest](../REPORTS/PHASE_2B_APPROVAL_PAYMENT_GUARD.md): approval now shares the invoice-first SQL lock with payment creation and rejects a decision that would put collected money above the adjusted collectible amount. The former 5/5 overcollection case is guarded 5/5 in three fresh runs, with exact 400/no-write pending adjustment when payment wins. An approval-first control rejects the stale payment and keeps paid 600/balance 200. Existing Adjustment/AdjustmentRace SQL and 1,044 API tests pass. Over-adjustment/refund policy, live browser/physical devices and release gates remain open; issue stays OPEN.
 
 ## Latest consumer repair checkpoint — 2026-10-01
 
