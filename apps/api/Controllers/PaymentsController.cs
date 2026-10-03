@@ -20,15 +20,24 @@ public sealed class PaymentsController(AcademyDeskDbContext dbContext) : Control
     [HttpPost]
     public async Task<ActionResult<PaymentSummary>> Create(Guid academyId, RecordPaymentRequest request, CancellationToken cancellationToken)
     {
-        var invoice = await dbContext.Invoices.SingleOrDefaultAsync(x => x.Id == request.InvoiceId && x.AcademyId == academyId, cancellationToken);
-        if (invoice is null) return NotFound();
         if (request.Amount <= 0) return BadRequest(new { message = "Payment amount must be positive." });
+        // The academy access filter owns the transaction for normal finance requests.
+        // Direct/platform callers need their own boundary so the invoice lock lasts
+        // through the balance check and the payment insert.
+        await using var ownedTransaction = dbContext.Database.IsSqlServer() && dbContext.Database.CurrentTransaction is null
+            ? await dbContext.Database.BeginTransactionAsync(cancellationToken) : null;
+        var invoiceQuery = dbContext.Database.IsSqlServer()
+            ? dbContext.Invoices.FromSqlInterpolated($"SELECT * FROM [Invoices] WITH (UPDLOCK, HOLDLOCK) WHERE [AcademyId] = {academyId} AND [Id] = {request.InvoiceId}")
+            : dbContext.Invoices.Where(x => x.Id == request.InvoiceId && x.AcademyId == academyId);
+        var invoice = await invoiceQuery.SingleOrDefaultAsync(cancellationToken);
+        if (invoice is null) return NotFound();
         var paid = await dbContext.Payments.Where(x => x.InvoiceId == invoice.Id && (x.Status == "Completed" || x.Status == "Reconciled")).SumAsync(x => (decimal?)x.Amount, cancellationToken) ?? 0;
         var collectibleAmount = invoice.TotalAmount - invoice.AdjustedAmount;
         if (paid + request.Amount > collectibleAmount) return BadRequest(new { message = "Payment exceeds the invoice balance." });
         var payment = new Payment { AcademyId = academyId, InvoiceId = invoice.Id, Amount = request.Amount, Currency = invoice.Currency, Method = string.IsNullOrWhiteSpace(request.Method) ? "Offline" : request.Method.Trim(), Reference = request.Reference?.Trim() };
         invoice.Status = paid + request.Amount == collectibleAmount ? "Paid" : "PartiallyPaid";
         dbContext.Payments.Add(payment); await dbContext.SaveChangesAsync(cancellationToken);
+        if (ownedTransaction is not null) await ownedTransaction.CommitAsync(cancellationToken);
         return Created($"/api/academies/{academyId}/payments/{payment.Id}", new PaymentSummary(payment.Id, payment.InvoiceId, payment.Amount, payment.Currency, payment.Method, payment.Status, payment.Reference, payment.PaidAtUtc, payment.ReconciliationReference, payment.ReconciledAtUtc));
     }
     [HttpPatch("{paymentId:guid}/status")]

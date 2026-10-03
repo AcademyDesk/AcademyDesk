@@ -44,15 +44,24 @@ internal static partial class SqlHarnessEntryPoint
                 left.PostAsJsonAsync(paymentsPath, new { invoiceId, amount = 400m }),
                 right.PostAsJsonAsync(paymentsPath, new { invoiceId, amount = 400m }));
             var codes = responses.Select(response => (int)response.StatusCode).OrderBy(code => code).ToArray();
+            var rejected = responses.SingleOrDefault(response => response.StatusCode == System.Net.HttpStatusCode.BadRequest);
+            var rejectionMessageMatches = false;
+            if (rejected is not null)
+            {
+                using var rejectionJson = System.Text.Json.JsonDocument.Parse(await rejected.Content.ReadAsStringAsync());
+                rejectionMessageMatches = rejectionJson.RootElement.TryGetProperty("message", out var message) &&
+                    message.GetString() == "Payment exceeds the invoice balance.";
+            }
             foreach (var response in responses) response.Dispose();
             if (codes.Any(code => code == 429))
                 throw new InvalidOperationException("Rate limit prevented the collection race.");
             var snapshot = await ReadFinanceSnapshotAsync(factory, invoiceId, academyId, studentId, "race-" + attempt);
             var collected = snapshot.Payments.Where(payment => payment.Status is "Completed" or "Reconciled").Sum(payment => payment.Amount);
-            var guarded = codes.Count(code => code == 201) == 1 && codes.Count(code => code == 400) == 1 && collected == 1000m && snapshot.Payments.Count == 2;
+            var guarded = codes.Count(code => code == 201) == 1 && codes.Count(code => code == 400) == 1 &&
+                rejectionMessageMatches && collected == 1000m && snapshot.Payments.Count == 2;
             attempts++;
             if (guarded) protectedAttempts++;
-            Console.WriteLine($"FINANCE RACE attempt={attempt} statuses={string.Join(",", codes)} collected={collected} rows={snapshot.Payments.Count} guarded={guarded}");
+            Console.WriteLine($"FINANCE RACE attempt={attempt} statuses={string.Join(",", codes)} rejectionMessage={rejectionMessageMatches} collected={collected} rows={snapshot.Payments.Count} guarded={guarded}");
         }
         if (protectedAttempts != attempts)
             throw new InvalidOperationException($"Concurrent collection was not guarded on every attempt: {protectedAttempts}/{attempts}.");
