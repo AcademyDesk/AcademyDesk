@@ -93,17 +93,17 @@ Azure deployment waits for the pre-Azure quality gate in `ENTERPRISE_TESTING_ROA
 
 ## Active handoff
 
-CURRENT PHASE: BUG-DATA-0001 current-source confirmation. The issue stays open.
+CURRENT PHASE: BUG-DATA-0001 concurrent collection. The issue stays open.
 
-COMPLETED THIS SLICE: Fresh disposable SQL rerun of the original reconciled-payment case. Invoice 1000, reconciled payment 600, admin and student balance 400, excess 500 rejected, ledger unchanged. Run `9a85332f6e1148d1a45900c6c5e0a9e8` exit 0. Owned SQL removed.
+COMPLETED THIS SLICE: Five pairs of simultaneous 400 payments after a reconciled 600 on an invoice of 1000. Three pairs both returned 201 and stored a collected total of 1400. Two pairs correctly kept 1000. Run `45e986ef6c4b4a72a840fcf09b604e4a` exit 1. Owned SQL removed after the failure. No product change.
 
-NOT ACCEPTED: Concurrent collection of the same remaining balance, live Payments browser, and physical device.
+NOT ACCEPTED: The collection race, live Payments browser, and physical device. Sequential confirmation from the same day remains valid and does not cover this race.
 
-TEST RESULTS: `QA/REPORTS/PHASE_2B_RECONCILED_PAYMENT_CONFIRMATION.md`.
+TEST RESULTS: `QA/REPORTS/PHASE_2B_COLLECTION_RACE.md`.
 
-OPEN BLOCKERS: BUG-DATA-0001 concurrency/browser/device, BUG-DATA-0002, BUG-DATA-0003, BUG-DATA-0010, BUG-SEC-0001, and BUG-FUNC-0032 pagination/audit actor/device.
+OPEN BLOCKERS: BUG-DATA-0001 race/browser/device, BUG-DATA-0002, BUG-DATA-0003, BUG-DATA-0010, BUG-SEC-0001, and BUG-FUNC-0032 pagination/audit actor/device.
 
-NEXT SLICE: Two simultaneous payments for the remaining balance after reconciliation. Stay in Cursor. Move to Codex only if that race needs a transaction design change. Do not open v0, Lovable, or Framer.
+NEXT SLICE: Move to Codex, Sol High, for a transaction that lets only one payment collect the remaining balance. Do not invent the lock in Cursor. After that design is reviewed, return here for the retest. Other open P0 reproductions that are not transaction design can stay in Cursor on Grok 4.7. Do not open v0, Lovable, or Framer.
 
 MODEL/TOOL ROUTING: Grok 4.7 in Cursor.
 

@@ -4,7 +4,7 @@
 | --- | --- |
 | Status | OPEN / FIX-IN-PROGRESS (local repair) |
 | Confirmation status | RUNTIME-REPRODUCED |
-| Final verification | LOCAL original-case/module PASS twice; full critical/browser/concurrency gates pending |
+| Final verification | Sequential case reconfirmed 2026-10-03; concurrent double-collect FAIL 3/5; browser and device pending |
 | Severity | Critical financial integrity |
 | Priority | P0 |
 | Category | DATA |
@@ -34,6 +34,10 @@
 | Retest result | Original case PASS in two fresh guarded Identity/HTTP/SQL runs |
 | Regression result | Latest API 140/140 and controlled Payments page 7/7; adjusted/collected consumer HTTP/SQL six stages PASS twice; earlier original-case evidence retained; full critical NOT RUN |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
+
+## Concurrent collection — 2026-10-03
+
+[Concurrent collection](../REPORTS/PHASE_2B_COLLECTION_RACE.md): five invoices of 1000, each with a reconciled payment of 600, then two simultaneous payments of 400. Attempts 2, 4, and 5 returned 201 and 201 and stored 1400. Attempts 1 and 3 returned 201 and 400 and stored 1000. Run `45e986ef6c4b4a72a840fcf09b604e4a` exit 1. Create reads the collected sum and inserts the payment without a transaction or invoice-row lock. Issue remains OPEN. The sequential confirmation below is unchanged.
 
 ## Current-source confirmation — 2026-10-03
 
