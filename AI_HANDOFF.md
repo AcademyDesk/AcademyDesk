@@ -93,23 +93,23 @@ Azure deployment waits for the pre-Azure quality gate in `ENTERPRISE_TESTING_ROA
 
 ## Active handoff
 
-CURRENT PHASE: Docker image and container runtime validation.
+CURRENT PHASE: BUG-FUNC-0032 certificate PDF check. The issue stays open.
 
-COMPLETED: API image runtime, static-export web image runtime, web asset to test API URL, API to disposable SQL Server, startup migrations, bounded health, and the 1,042 API tests after the health change.
+COMPLETED THIS SLICE: Synthetic headless Chrome PDF for one saved Issued certificate and one draft. Official text contains CERT-SYNTHETIC-001, VERIFY-SYNTHETIC-001, Saved Learner, Saved programme, and Issued. The unsaved title UNSAVED DRAFT TITLE is absent. Draft PDF is watermarked and has no certificate number. Revoked selection keeps Print / save PDF disabled. Font-adapted controlled checks 66/66 PASS. Docker runtime evidence on `cursor/docker-runtime-validation` remains the prior slice.
 
-FIXES: The web image serves the Next static `out/` tree. `GET /health` returns 503 within about 5 seconds when SQL cannot be reached.
+NOT ACCEPTED: The official PDF is three letter pages that each repeat the full certificate. Linked authentication plus disposable SQL was not run. Physical phone check is NOT RUN.
 
-TEST RESULTS: See `QA/REPORTS/PHASE_DOCKER_RUNTIME_VALIDATION.md`. API tests 1042/1042 PASS. Web `/`, `/login`, and `/certificates` returned 200. Unreachable SQL health returned 503 in 5206 ms.
+TEST RESULTS: `QA/REPORTS/PHASE_2B_CERTIFICATE_PDF_CHECK.md`. PDF binaries stayed local under the certificate worktree `.build-check` and are not committed.
 
-OPEN BLOCKERS: Enterprise release is not complete. Data-protection keys remain container-local. npm audit findings in the web image were not triaged. BUG-FUNC-0032 and the open P0 issues stay open.
+OPEN BLOCKERS: BUG-FUNC-0032, pagination, linked portal, physical device, and the open P0 issues BUG-DATA-0001, BUG-DATA-0002, BUG-DATA-0003, BUG-DATA-0010, BUG-SEC-0001. Enterprise release is not complete.
 
-NEXT SLICE: BUG-FUNC-0032 certificate PDF, layout, and linked full-portal coverage.
+NEXT SLICE: Linked certificate issue and print through the authenticated app against disposable SQL. Match the register row, printed identity, and audit. Do not close BUG-FUNC-0032 on the synthetic PDF alone.
 
-MODEL/TOOL ROUTING: This Docker remediation stayed on Grok 4.7 in Cursor. Next certificate slice stays on Cursor unless it needs Sol High.
+MODEL/TOOL ROUTING: This slice stayed on Grok 4.7 in Cursor. The linked portal path stays on Cursor unless it needs Sol High.
 
-BRANCH: `cursor/docker-runtime-validation`
+BRANCH: `cursor/certificate-validation` in `D:\AcademyDesk-cursor-certificate`. Parent includes the Docker remediation. Do not merge to `main`.
 
-COMMIT: This handoff is updated in the Docker remediation commit. Do not merge to `main`.
+COMMIT: QA record only. No product source change.
 
 ## Data Protection classification
 
