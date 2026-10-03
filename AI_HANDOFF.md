@@ -93,23 +93,23 @@ Azure deployment waits for the pre-Azure quality gate in `ENTERPRISE_TESTING_ROA
 
 ## Active handoff
 
-CURRENT PHASE: BUG-FUNC-0032 certificate PDF check. The issue stays open.
+CURRENT PHASE: BUG-FUNC-0032 linked portal check. The issue stays open.
 
-COMPLETED THIS SLICE: Synthetic headless Chrome PDF for one saved Issued certificate and one draft. Official text contains CERT-SYNTHETIC-001, VERIFY-SYNTHETIC-001, Saved Learner, Saved programme, and Issued. The unsaved title UNSAVED DRAFT TITLE is absent. Draft PDF is watermarked and has no certificate number. Revoked selection keeps Print / save PDF disabled. Font-adapted controlled checks 66/66 PASS. Docker runtime evidence on `cursor/docker-runtime-validation` remains the prior slice.
+COMPLETED THIS SLICE: One signed-in issue on the real certificates page against disposable SQL. Official PDF text matches certificate CERT-20261003105343-561, verification F1C3B80D1A6F44F4, Portal Learner, Portal programme, Portal saved achievement, Portal recognition, and Issued 2026-10-03. The unsaved title is absent. The draft PDF is watermarked. The CertificateIssued audit points at the same certificate id. Owned SQL was removed.
 
-NOT ACCEPTED: The official PDF is three letter pages that each repeat the full certificate. Linked authentication plus disposable SQL was not run. Physical phone check is NOT RUN.
+NOT ACCEPTED: The official PDF is three repeated letter pages. ActorUserId on that audit is null. Physical phone check is NOT RUN.
 
-TEST RESULTS: `QA/REPORTS/PHASE_2B_CERTIFICATE_PDF_CHECK.md`. PDF binaries stayed local under the certificate worktree `.build-check` and are not committed.
+TEST RESULTS: `QA/REPORTS/PHASE_2B_CERTIFICATE_PORTAL_CHECK.md`.
 
-OPEN BLOCKERS: BUG-FUNC-0032, pagination, linked portal, physical device, and the open P0 issues BUG-DATA-0001, BUG-DATA-0002, BUG-DATA-0003, BUG-DATA-0010, BUG-SEC-0001. Enterprise release is not complete.
+OPEN BLOCKERS: BUG-FUNC-0032 pagination, null issue-audit actor, physical device, and P0 issues BUG-DATA-0001, BUG-DATA-0002, BUG-DATA-0003, BUG-DATA-0010, BUG-SEC-0001.
 
-NEXT SLICE: Linked certificate issue and print through the authenticated app against disposable SQL. Match the register row, printed identity, and audit. Do not close BUG-FUNC-0032 on the synthetic PDF alone.
+NEXT SLICE: BUG-DATA-0001 reconciled payment balances. Stay in Cursor. Move to Codex only if that repair becomes a genuine financial or transaction design block. Do not open v0, Lovable, or Framer.
 
-MODEL/TOOL ROUTING: This slice stayed on Grok 4.7 in Cursor. The linked portal path stays on Cursor unless it needs Sol High.
+MODEL/TOOL ROUTING: Grok 4.7 in Cursor.
 
-BRANCH: `cursor/certificate-validation` in `D:\AcademyDesk-cursor-certificate`. Parent includes the Docker remediation. Do not merge to `main`.
+BRANCH: `cursor/certificate-validation` in `D:\AcademyDesk-cursor-certificate`. Do not merge to `main`.
 
-COMMIT: QA record only. No product source change.
+COMMIT: QA host and report. No product source change.
 
 ## Data Protection classification
 

@@ -93,3 +93,7 @@ Native print was attempted, cancelled and the page recovered, but no PDF/native-
 ## PDF successor — 2026-10-03
 
 [Certificate PDF check](../REPORTS/PHASE_2B_CERTIFICATE_PDF_CHECK.md) reads a real Chrome PDF from the synthetic certificates page. The official PDF text matches the saved Issued row (`CERT-SYNTHETIC-001`, `VERIFY-SYNTHETIC-001`, Saved Learner, Saved programme, Issued) and does not contain the unsaved draft title. The draft PDF is watermarked and has no certificate number. Selecting the revoked synthetic record leaves Print / save PDF disabled. Font-adapted controlled checks were 66/66. The official PDF is three repeated letter pages, so pagination is not accepted. Linked auth/SQL portal and a physical phone were not run. Issue remains OPEN. No product change.
+
+## Linked portal successor — 2026-10-03
+
+[Linked certificate portal](../REPORTS/PHASE_2B_CERTIFICATE_PORTAL_CHECK.md) signs in through the real certificates page and issues one certificate against disposable SQL. The official PDF matches that saved number, verification code, learner, programme, title, note and date, and excludes the unsaved draft title. The draft PDF is watermarked. The official PDF still repeats on three pages. The CertificateIssued audit points at the same certificate and stores a null actor. Physical device NOT RUN. Issue remains OPEN.
