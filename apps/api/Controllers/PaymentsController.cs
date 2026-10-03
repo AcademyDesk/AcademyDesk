@@ -43,18 +43,33 @@ public sealed class PaymentsController(AcademyDeskDbContext dbContext) : Control
     [HttpPatch("{paymentId:guid}/status")]
     public async Task<ActionResult> UpdateStatus(Guid academyId, Guid paymentId, UpdatePaymentStatusRequest request, CancellationToken token)
     {
-        var payment = await dbContext.Payments.SingleOrDefaultAsync(x => x.Id == paymentId && x.AcademyId == academyId, token);
-        if (payment is null) return NotFound();
+        var invoiceId = await dbContext.Payments.AsNoTracking()
+            .Where(x => x.Id == paymentId && x.AcademyId == academyId)
+            .Select(x => (Guid?)x.InvoiceId).SingleOrDefaultAsync(token);
+        if (invoiceId is null) return NotFound();
         if (request.Status is not ("Completed" or "Reconciled" or "Voided"))
             return BadRequest(new { message = "Status must be Completed, Reconciled, or Voided." });
         if (request.Status == "Reconciled")
             return BadRequest(new { message = "Use the reconciliation action and provide a bank/cash reference." });
+
+        // Match Create's invoice-first lock order. The finance filter owns the
+        // normal request transaction; direct/platform callers own this one.
+        // Read the payment again after acquiring the lock so concurrent voids
+        // cannot each calculate against the other's pre-void state.
+        await using var ownedTransaction = request.Status == "Voided" &&
+            dbContext.Database.IsSqlServer() && dbContext.Database.CurrentTransaction is null
+                ? await dbContext.Database.BeginTransactionAsync(token) : null;
+        var invoiceQuery = dbContext.Database.IsSqlServer() && request.Status == "Voided"
+            ? dbContext.Invoices.FromSqlInterpolated($"SELECT * FROM [Invoices] WITH (UPDLOCK, HOLDLOCK) WHERE [AcademyId] = {academyId} AND [Id] = {invoiceId.Value}")
+            : dbContext.Invoices.Where(x => x.Id == invoiceId.Value && x.AcademyId == academyId);
+        var invoice = request.Status == "Voided" ? await invoiceQuery.SingleOrDefaultAsync(token) : null;
+        if (request.Status == "Voided" && invoice is null) return NotFound();
+        var payment = await dbContext.Payments.SingleOrDefaultAsync(x => x.Id == paymentId && x.AcademyId == academyId, token);
+        if (payment is null) return NotFound();
         if (payment.Status == request.Status) return Ok();
         if (request.Status == "Voided")
         {
-            var invoice = await dbContext.Invoices.SingleOrDefaultAsync(x => x.Id == payment.InvoiceId && x.AcademyId == academyId, token);
-            if (invoice is null) return NotFound();
-            if (!string.Equals(invoice.Status, "Cancelled", StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(invoice!.Status, "Cancelled", StringComparison.OrdinalIgnoreCase))
             {
                 // Exclude the changed row: SQL still contains its previous status until SaveChanges.
                 var paid = await dbContext.Payments.Where(x => x.AcademyId == academyId && x.InvoiceId == invoice.Id &&
@@ -67,6 +82,7 @@ public sealed class PaymentsController(AcademyDeskDbContext dbContext) : Control
         }
         payment.Status = request.Status;
         await dbContext.SaveChangesAsync(token);
+        if (ownedTransaction is not null) await ownedTransaction.CommitAsync(token);
         return Ok();
     }
     [HttpPatch("{paymentId:guid}/reconcile")]
