@@ -10,7 +10,7 @@
 | Repository | `D:\AcademyDesk` |
 | Accepted source of truth | GitHub |
 | `main` | `f7af512f884ca5fe8ac3ddb287c852492592e709` until the Docker branch is reviewed |
-| Active branch | `cursor/docker-runtime-validation` in `D:\AcademyDesk-cursor-docker` |
+| Active branch | `cursor/certificate-validation` in `D:\AcademyDesk-cursor-certificate` |
 | Application baseline | `535e6784e38b20fa1c9486b889544706f3c454a7` |
 
 ## Tech stack
@@ -93,17 +93,17 @@ Azure deployment waits for the pre-Azure quality gate in `ENTERPRISE_TESTING_ROA
 
 ## Active handoff
 
-CURRENT PHASE: BUG-DATA-0001 concurrent collection. The issue stays open.
+CURRENT PHASE: BUG-DATA-0001 concurrent collection repair on `cursor/certificate-validation`. The issue stays OPEN; this branch is not merged or pushed.
 
-COMPLETED THIS SLICE: Five pairs of simultaneous 400 payments after a reconciled 600 on an invoice of 1000. Three pairs both returned 201 and stored a collected total of 1400. Two pairs correctly kept 1000. Run `45e986ef6c4b4a72a840fcf09b604e4a` exit 1. Owned SQL removed after the failure. No product change.
+COMPLETED THIS SLICE: Commit `bbe73f0` locks the academy-scoped invoice row with SQL Server `UPDLOCK, HOLDLOCK` before the Completed/Reconciled sum and holds a transaction through payment insertion. Ordinary academy requests reuse the finance filter transaction; direct/platform callers own one. The five-pair regression additionally checks the exact over-balance 400 message without reducing its original assertions. Prior failing run `45e986ef6c4b4a72a840fcf09b604e4a` remains historical evidence.
 
-NOT ACCEPTED: The collection race, live Payments browser, and physical device. Sequential confirmation from the same day remains valid and does not cover this race.
+TEST RESULTS: SQL harness build 0 warnings/errors. Fresh `CollectionRace` run `7f5f02d9f7674c6aa7fb31aa3c6dfdb4` PASS 5/5: one 201 and one 400 with required message per pair, collected 1000, two rows, no 429. Fresh `Reconciliation` run `d107470396c54192acbd73def3e6d59e` PASS; original reconciled 600/balance 400/excess 500 rejection retained. API suite 1,042/1,042 PASS. Both owned SQL containers were removed. See `QA/REPORTS/PHASE_2B_COLLECTION_RACE_REPAIR.md`.
 
-TEST RESULTS: `QA/REPORTS/PHASE_2B_COLLECTION_RACE.md`.
+NOT ACCEPTED: Live Payments browser, physical device, broader finance concurrency, and pre-Azure quality gates. BUG-DATA-0001 remains OPEN. No Azure or production database touched.
 
 OPEN BLOCKERS: BUG-DATA-0001 race/browser/device, BUG-DATA-0002, BUG-DATA-0003, BUG-DATA-0010, BUG-SEC-0001, and BUG-FUNC-0032 pagination/audit actor/device.
 
-NEXT SLICE: Move to Codex, Sol High, for a transaction that lets only one payment collect the remaining balance. Do not invent the lock in Cursor. After that design is reviewed, return here for the retest. Other open P0 reproductions that are not transaction design can stay in Cursor on Grok 4.7. Do not open v0, Lovable, or Framer.
+NEXT SLICE: Retest review and the remaining P0 queue return to Cursor on Grok 4.7. Do not open v0, Lovable, or Framer.
 
 MODEL/TOOL ROUTING: Grok 4.7 in Cursor.
 
