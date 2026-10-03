@@ -97,13 +97,19 @@ Azure deployment waits for the pre-Azure quality gate in `ENTERPRISE_TESTING_ROA
 
 ## Active handoff
 
-CURRENT PHASE: Cursor on Grok 4.7 has reviewed the Codex P0 continuation and is continuing the next open finance race. Branch `codex/enterprise-p0-continuation`, worktree `D:\AcademyDesk-codex-p0`. Do not edit `D:\AcademyDesk` main or its untracked `QA/EVIDENCE`. No merge, push, or Azure deployment.
+CURRENT PHASE: BUG-DATA-0002 approval versus payment. The issue stays OPEN.
 
-COMPLETED BY CODEX: Invoice-row lock on payment create (`bbe73f0`), five-pair adjusted collection race (`0c893fa`), concurrent void repair (`ea67638`, `4eecfd0`), and a signed-in Payments browser check against disposable SQL (`a3a03d2`). Reconcile now uses the same invoice lock, re-reads the payment, rejects a void restore that would overcollect, and keeps the invoice status aligned. See `QA/REPORTS/PHASE_2B_PAYMENT_RECONCILE_VOID_GUARD.md`. Issues stay OPEN.
+COMPLETED THIS SLICE: Five pairs approved a pending 200 discount at the same time as a 400 payment, after a reconciled 600 on an invoice of 1000. All five returned 200 and 201 and stored collected 1000 with adjusted 200. Run `d66c4ad4118c4001a2a3e9703ea1d7e6` exit 1. Owned SQL removed. No product change.
 
-NOT ACCEPTED: Physical device, approval-versus-payment concurrency, over-adjustment and void-restoration policy, zero-net payroll policy, BUG-SEC-0001, certificate pagination and null audit actor, and the pre-Azure gates.
+NOT ACCEPTED: That race, physical device, over-adjustment policy, void-restoration policy, BUG-SEC-0001, certificate pagination and null audit actor, and the pre-Azure gates. Codex's earlier collection, void, reconcile, and Payments browser checks remain valid.
 
-NEXT SLICE: Reproduce approving a pending adjustment at the same time as a payment for the pre-adjustment remainder. Stay in Cursor on Grok 4.7 for that reproduction. Move to Codex, Sol High, only if the race needs a new transaction design. Do not open v0, Lovable, or Framer.
+TEST RESULTS: `QA/REPORTS/PHASE_2B_APPROVAL_RACE.md`.
+
+NEXT SLICE: Move to Codex, Sol High, for a transaction that stops the approval and the payment from both committing when together they pass the collectible amount. Do not invent that lock in Cursor. After review, return here on Grok 4.7 to rerun `ApprovalRace`. Do not open v0, Lovable, or Framer.
+
+MODEL/TOOL ROUTING: Grok 4.7 in Cursor for this reproduction. Codex, Sol High, for the transaction design.
+
+BRANCH: `codex/enterprise-p0-continuation` in `D:\AcademyDesk-codex-p0`. Do not merge to `main`. Do not edit `D:\AcademyDesk` main.
 
 ## Data Protection classification
 

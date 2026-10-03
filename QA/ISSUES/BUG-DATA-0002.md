@@ -4,7 +4,7 @@
 | --- | --- |
 | Status | OPEN / FIX-IN-PROGRESS (local guard/status and consumer repair) |
 | Confirmation status | RUNTIME-REPRODUCED |
-| Final verification | Local guard and consumer modules PASS twice each; approved-adjustment collection race PASS 5/5; concurrent approval/collection, broader/critical/browser gates pending |
+| Final verification | Approved-adjustment collection race PASS 5/5; approval-versus-payment race FAIL 0/5 on 2026-10-03; physical device and policy pending |
 | Severity | Critical financial integrity |
 | Priority | P0 |
 | Category | DATA |
@@ -34,6 +34,10 @@
 | Retest result | Three original variants PASS in two fresh guarded Identity/HTTP/SQL runs |
 | Regression result | Latest API 140/140, controlled page 7/7 and consumer HTTP/SQL six stages PASS twice; earlier guard module evidence retained; full critical NOT RUN |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
+
+## Approval versus payment — 2026-10-03
+
+[Approval versus payment](../REPORTS/PHASE_2B_APPROVAL_RACE.md): five invoices of 1000, each with a reconciled 600 and a pending discount of 200. Approving that discount and posting 400 at the same time returned 200 and 201 on every attempt and stored collected 1000 with adjusted 200. The invoice was marked Paid. Run `d66c4ad4118c4001a2a3e9703ea1d7e6` exit 1. Issue remains OPEN.
 
 ## Latest consumer repair checkpoint — 2026-10-01
 
