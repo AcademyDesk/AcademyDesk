@@ -12,6 +12,12 @@ Date: 2026-10-04 (Asia/Calcutta). Branch `codex/enterprise-p0-continuation`. Sta
 
 ## Decision needed before changing financial behavior
 
+### Product-owner direction — 2026-10-04
+
+The owner confirmed that Academy Desk should follow IFRS principles and applicable Indian GST rules. Treat price reductions, refund obligations/settlement, and credit-note documents as separate concepts. This approves the **design direction**, not the current implementation or an assertion that a particular academy has a GST registration or that IFRS is its statutory reporting framework. The applicable tax treatment, dates, document fields and accounting entries require qualified local review before release.
+
+The next bounded implementation should first prevent the present `Refund`/`CreditNote` labels from implying a payout or legally issued note, then introduce separate persisted workflows with migration, approval, ledger, tax-document and regression evidence. Existing pending records must be reviewed/migrated without silently changing their meaning. Do not alter the financial ledger or claim compliance from this documentation update.
+
 Recommend separating **price reductions** from **money owed/returned**:
 
 | Case | Interim safe rule | Future governed workflow |
