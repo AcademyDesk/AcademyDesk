@@ -9,9 +9,9 @@
 | Initial market | Music academies, with architecture capable of supporting other instructor-led academies such as dance and arts |
 | Repository | `D:\AcademyDesk` |
 | Accepted source of truth | GitHub |
-| Branch | `main` |
-| Current verified baseline | `535e6784e38b20fa1c9486b889544706f3c454a7` |
-| GitHub `origin/main` | Same verified commit |
+| `main` | `f7af512f884ca5fe8ac3ddb287c852492592e709` until the Docker branch is reviewed |
+| Active branch | `cursor/docker-runtime-validation` in `D:\AcademyDesk-cursor-docker` |
+| Application baseline | `535e6784e38b20fa1c9486b889544706f3c454a7` |
 
 ## Tech stack
 
@@ -93,10 +93,26 @@ Azure deployment waits for the pre-Azure quality gate in `ENTERPRISE_TESTING_ROA
 
 ## Active handoff
 
-| | |
-| --- | --- |
-| Last governance update | Documentation set created for agent context. No application, test, migration, Docker, Azure, or `QA/EVIDENCE` changes. |
-| Next engineering route | Continue the existing enterprise remediation and testing program from the verified baseline. Route the task with `AI_MODEL_ROUTING.md`. |
-| Commit state | These governance files are ready for review and are not committed by this handoff. |
+CURRENT PHASE: Docker image and container runtime validation.
+
+COMPLETED: API image runtime, static-export web image runtime, web asset to test API URL, API to disposable SQL Server, startup migrations, bounded health, and the 1,042 API tests after the health change.
+
+FIXES: The web image serves the Next static `out/` tree. `GET /health` returns 503 within about 5 seconds when SQL cannot be reached.
+
+TEST RESULTS: See `QA/REPORTS/PHASE_DOCKER_RUNTIME_VALIDATION.md`. API tests 1042/1042 PASS. Web `/`, `/login`, and `/certificates` returned 200. Unreachable SQL health returned 503 in 5206 ms.
+
+OPEN BLOCKERS: Enterprise release is not complete. Data-protection keys remain container-local. npm audit findings in the web image were not triaged. BUG-FUNC-0032 and the open P0 issues stay open.
+
+NEXT SLICE: BUG-FUNC-0032 certificate PDF, layout, and linked full-portal coverage.
+
+MODEL/TOOL ROUTING: This Docker remediation stayed on Grok 4.7 in Cursor. Next certificate slice stays on Cursor unless it needs Sol High.
+
+BRANCH: `cursor/docker-runtime-validation`
+
+COMMIT: This handoff is updated in the Docker remediation commit. Do not merge to `main`.
+
+## Data Protection classification
+
+The API container logs that data-protection keys are stored under `/root/.aspnet/DataProtection-Keys` and may be unencrypted. Those keys do not survive container replacement and are not shared by replicas. That is acceptable for this single-container QA run. Before Azure scale-out, production needs a persisted shared key ring. This slice does not add that ring.
 
 Update this file after substantial work. Record the branch, commit, what changed, what was validated, what remains open, and the next route.

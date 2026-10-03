@@ -7,13 +7,10 @@ ARG NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 RUN npm run build
 
-FROM node:22-alpine AS runtime
-WORKDIR /app
-ENV NODE_ENV=production
-ENV PORT=3000
-ENV HOSTNAME=0.0.0.0
+# Academy Desk production web is a Next.js static export (output: "export"),
+# deployed to Azure Static Web Apps. This image serves that same out/ tree
+# for local runtime validation. It does not run a Next.js standalone server.
+FROM nginx:1.27-alpine AS runtime
+COPY apps/web/nginx.static.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/out /usr/share/nginx/html
 EXPOSE 3000
-COPY --from=build /app/public ./public
-COPY --from=build /app/.next/standalone ./
-COPY --from=build /app/.next/static ./.next/static
-CMD ["node", "server.js"]

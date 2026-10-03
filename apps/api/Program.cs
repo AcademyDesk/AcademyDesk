@@ -134,7 +134,15 @@ app.MapControllers();
 app.MapGroup("/api/auth").MapIdentityApi<ApplicationUser>();
 app.MapGet("/health", async (AcademyDeskDbContext db, CancellationToken token) =>
 {
-    try { return await db.Database.CanConnectAsync(token) ? Results.Ok(new { status = "Healthy" }) : Results.StatusCode(StatusCodes.Status503ServiceUnavailable); }
+    // SqlClient may ignore cancellation during a TCP connect, so also bound the await.
+    using var budget = CancellationTokenSource.CreateLinkedTokenSource(token);
+    budget.CancelAfter(TimeSpan.FromSeconds(5));
+    try
+    {
+        var connected = await Task.Run(async () => await db.Database.CanConnectAsync(budget.Token), token)
+            .WaitAsync(TimeSpan.FromSeconds(5), token);
+        return connected ? Results.Ok(new { status = "Healthy" }) : Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
+    }
     catch { return Results.StatusCode(StatusCodes.Status503ServiceUnavailable); }
 }).AllowAnonymous();
 

@@ -58,6 +58,8 @@ Development seeder credentials were removed from current source. Local developme
 - health checks
 - failure behaviour
 
+Branch `cursor/docker-runtime-validation` records a completed single-container pass in `QA/REPORTS/PHASE_DOCKER_RUNTIME_VALIDATION.md`: API image, static-export web image, disposable SQL startup migrations, and a 5-second health bound. That pass is not on `main` until the branch is reviewed. It does not close authentication, RBAC, tenant isolation, concurrency, browser, or Azure gates. Data-protection keys remain container-local.
+
 ### 2. Database and SQL Server
 
 - real SQL Server integration
