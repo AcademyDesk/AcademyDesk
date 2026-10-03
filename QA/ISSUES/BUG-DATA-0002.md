@@ -41,6 +41,8 @@
 
 2026-10-04 [local transaction guard and retest](../REPORTS/PHASE_2B_APPROVAL_PAYMENT_GUARD.md): approval now shares the invoice-first SQL lock with payment creation and rejects a decision that would put collected money above the adjusted collectible amount. The former 5/5 overcollection case is guarded 5/5 in three fresh runs, with exact 400/no-write pending adjustment when payment wins. An approval-first control rejects the stale payment and keeps paid 600/balance 200. Existing Adjustment/AdjustmentRace SQL and 1,044 API tests pass. Over-adjustment/refund policy, live browser/physical devices and release gates remain open; issue stays OPEN.
 
+2026-10-04 [bounded finance-approval browser feedback](../REPORTS/PHASE_2B_FINANCE_APPROVAL_BROWSER_FEEDBACK.md): a source-identical page with a synthetic loopback 400 now displays the exact balance reason as an alert, refreshes the pending queue, and retains the pending item. The unsupported native prompt was replaced by an inline note form; cancelling makes no approval request and an empty rejection reason cannot submit. This is not a linked live SQL/browser or physical-device pass; policy and release gates remain open.
+
 ## Latest consumer repair checkpoint — 2026-10-01
 
 2026-10-03 [Live Payments browser check](../REPORTS/PHASE_2B_PAYMENTS_BROWSER_CHECK.md): an approved 200 discount on gross 1000 and Reconciled 600 displayed a 200 balance with 800 due; a stale 200 browser submit after another client paid returned the exact balance error, refreshed to Paid/0, and final isolated SQL asserted exactly two rows and collected 800. Approval-versus-collection concurrency, physical devices and broader gates remain OPEN.
