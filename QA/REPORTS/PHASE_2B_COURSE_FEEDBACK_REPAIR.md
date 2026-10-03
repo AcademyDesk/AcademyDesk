@@ -1,0 +1,28 @@
+# Phase 2B — Course feedback, reset and recovery
+
+Historical checkpoint, superseded by [Course hidden-setting preservation](PHASE_2B_COURSE_PRESERVATION_REPAIR.md) for current payloads/snapshot/counts. Its209-case suite is retained within current233 controls. The abbreviated PUT limitation below describes the original feedback slice; the next frontend slice now fixes that payload loss, with server/browser acceptance still pending.
+
+2026-10-01. Bounded local implementation of the Course variant of accepted [BUG-FUNC-0003](../ISSUES/BUG-FUNC-0003.md), using the agreed Sol High allocation without repeating Astra's audit. Issue and Phase 2B remain OPEN. No commit, push or deployment.
+
+## Repair
+
+Only the [Course application page](../../apps/web/src/app/courses/page.tsx) changes. Creation now gives a durable `Course created.` status notice, clears name/optional level and restores the initial Music type while retaining academy context. Existing successful edit/deactivate/reactivate notices are positive controls, not missing-notice failures; they now also survive a failed list refresh with explicit refresh guidance. Successful edit closes its editor; rejected or unconfirmed writes retain entered details.
+
+Network/5xx mutations are labelled unconfirmed and advise checking the list before retrying; no automatic retry can duplicate a potentially committed mutation. Definite rejection is not reported as success. All paths release pending state in finally. An immediate ref guards duplicate/opposing requests even before React renders, and remains locked through readback. Inputs/selects/actions are disabled during save and refresh; academy changes, cancel and begin-edit callbacks are also guarded. Blank names or absent academy context produce no request. These are page-local guards, not server idempotency, cross-tab locking or concurrency control. Users remain on the Course screen; no route, scroll or browser-history change is claimed.
+
+POST/PUT contracts and permissions are unchanged. In particular, the old PUT still sends `durationMonths:null` and omits hidden configuration. Accepted P1 [BUG-DATA-0028](../ISSUES/BUG-DATA-0028.md) is **not repaired or certified** by this slice; it is the next bounded task. No shared-control, CSS, controller, DTO, schema, backend, database, Azure or Blob change.
+
+## Evidence
+
+- [Before snapshot](PHASE_2B_COURSE_FEEDBACK_BEFORE_SOURCE_SNAPSHOT.json) is independently verified against the source embedded in pre-edit lint. Courses was not among the preceding 147 bounded captures; no fabricated prior capture is claimed. [Baseline](../EVIDENCE/logs/phase-2b-course-feedback-before-client.log):15 cases,10 PASS/5 FAIL—missing create confirmation, three duplicate writes and whitespace-only create. Existing successful edit/status feedback passed. Baseline excludes old uncaught network/readback failures in void click handlers; final checks exercise those paths.
+- [49 targeted Course cases](../tools/course-feedback.test.cjs), [targeted log](../EVIDENCE/logs/phase-2b-course-feedback-targeted.log):49/49 PASS. Sixteen successful-save/readback cases cover create/edit/deactivate/reactivate x success/500/network/JSON readback;12 rejected/unconfirmed write cases;3 duplicate/opposing/disabled-control checks;2 blank names;1 same-render duplicate callback;3 slow-readback locks;3 explicit retries after definite400;3 missing-academy cases;6 type/optional-level/reset/subsequent-create cases.
+- [Combined frontend log](../EVIDENCE/logs/phase-2b-course-feedback-client.log):209/209 PASS = prior160 plus new49. Existing assertions were not removed or relaxed. Actual TSX handlers run with controlled hooks/API; this is not live React/DOM/browser, durable SQL, mobile-device or assistive-technology evidence.
+- [TypeScript](../EVIDENCE/logs/phase-2b-course-feedback-typecheck.log):noEmit/incremental false PASS. [Before lint](../EVIDENCE/logs/phase-2b-course-feedback-before-lint.json):2 errors/1 warning; [after lint](../EVIDENCE/logs/phase-2b-course-feedback-after-lint.json):1 error/1 warning. Only the loading-effect diagnostic at loadCourses disappears after the added asynchronous readback path; loadAcademies effect/dependency diagnostics remain, unsuppressed. The validator compares exact remaining rules/reasons/offending loader, excluding shifted source excerpts only. Lint gate remains FAIL; no full-repository lint/build claim.
+- [Snapshot](PHASE_2B_COURSE_FEEDBACK_SOURCE_SNAPSHOT.json):150 captures, all147 preceding captures unchanged,3 first captures (Course page/new test/new validator). Pre-edit page hash separately retained. API and SQL-harness assemblies unchanged. Historical API277 and two SQL runs x48 are **not rerun or counted as new evidence**.
+- [Validator](../tools/validate-course-feedback.cjs), [output](../EVIDENCE/logs/phase-2b-course-feedback-validation.log):exact hashes/delta, unchanged HEAD, baseline/final counts, TypeScript, precise lint delta, linked artifacts and OPEN issues. Its output placeholder was seeded as PENDING, not acceptance, before validation.
+
+HEAD remains20bb6047f9edf733ac8e2a226621cc582ec54b3c. Broad dirty work is preserved. No new server, container or database was created; normal development services/data were not duplicated, restarted or written. No files or academy data were deleted.
+
+## Next and remaining
+
+Next: Course hidden-configuration preservation under BUG-DATA-0028, **Sol High**. Implement accepted findings, do not redo unchanged Astra audit work. Browser/mobile/accessibility, initial/overlapping GET races, focus/scroll, all-linked forms, cross-tab/concurrent updates and critical/release gates remain open. This is not whole-issue or phase acceptance.

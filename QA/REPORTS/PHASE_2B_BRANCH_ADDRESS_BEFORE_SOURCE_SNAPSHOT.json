@@ -1,0 +1,6 @@
+{
+  "records": [
+    { "file": "apps/api/Controllers/BranchesController.cs", "sha256": "47d54f02bb82fef01c199a8681cd01ecf18c44378e917685904d07d8c07bc510" },
+    { "file": "apps/web/src/app/branches/page.tsx", "sha256": "ec86c804f3643b0ed194cea1e25d021db0d42309693a6ba87d4f94bc7793c18e" }
+  ]
+}

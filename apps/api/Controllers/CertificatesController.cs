@@ -77,6 +77,10 @@ public sealed class CertificatesController(AcademyDeskDbContext dbContext, IWebH
         if (!InRange(request.ArtworkX, 0, 100) || !InRange(request.ArtworkY, 0, 100) || !InRange(request.ArtworkSize, 36, 180)) return BadRequest(new { message = "Artwork placement is outside the certificate canvas." });
         if (!await dbContext.Students.AnyAsync(x => x.Id == request.StudentId && x.AcademyId == academyId, token)) return BadRequest(new { message = "The student does not belong to this academy." });
         if (request.BatchId.HasValue && !await dbContext.Batches.AnyAsync(x => x.Id == request.BatchId && x.AcademyId == academyId, token)) return BadRequest(new { message = "The class or batch does not belong to this academy." });
+        if (request.BatchId.HasValue && !await dbContext.Enrollments.AnyAsync(x =>
+            x.AcademyId == academyId && x.StudentId == request.StudentId && x.BatchId == request.BatchId.Value &&
+            x.Status != null && (x.Status.ToLower() == "active" || x.Status.ToLower() == "completed"), token))
+            return BadRequest(new { message = "Select a class or batch where this student has an Active or Completed enrollment." });
 
         var certificate = new Certificate
         {

@@ -81,10 +81,12 @@ function StudentDetailList({ rows, empty }: { rows: [string, string][]; empty: s
 }
 
 export default function StudentProfilePage() {
-  const requested =
+  const search =
     typeof window === "undefined"
-      ? ""
-      : (new URLSearchParams(window.location.search).get("studentId") ?? "");
+      ? new URLSearchParams()
+      : new URLSearchParams(window.location.search);
+  const requested = search.get("studentId") ?? "";
+  const createdNotice = search.get("notice") === "student-created";
   const [academyId, setAcademyId] = useState("");
   const [students, setStudents] = useState<Student[]>([]);
   const [studentId, setStudentId] = useState(requested);
@@ -172,6 +174,7 @@ export default function StudentProfilePage() {
           </Link>
         </div>
       </section>
+      {createdNotice && <p className="enterprise-page-state student-360-message" role="status">Student created successfully. You can now enrol the student, add fees, or update their profile.</p>}
       {message && <p className="enterprise-page-state student-360-message">{message}</p>}
       {student && profile && (
         <>

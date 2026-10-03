@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "purpose": "Individual source-semantic verdicts; never runtime PASS or Phase 1 acceptance",
+  "rows": [
+    { "testId": "FEES-API-005", "state": "STATIC-SPECIFIED", "issues": ["BUG-DATA-0001"], "pending": "SQL paid/adjusted balance, ordering, tenant and cross-reader checks", "document": "QA/COVERAGE/41_FINANCE_COHORT_VERDICTS.md" },
+    { "testId": "FEES-API-006", "state": "STATIC-SPECIFIED", "issues": [], "pending": "SQL decimals, UTC defaults, number collision, concurrent duplicate and no-write checks", "document": "QA/COVERAGE/41_FINANCE_COHORT_VERDICTS.md" },
+    { "testId": "FEES-API-007", "state": "STATIC-SPECIFIED", "issues": ["BUG-DATA-0055"], "pending": "Ledger-status, case-normalization, cancellation and denied no-write checks", "document": "QA/COVERAGE/41_FINANCE_COHORT_VERDICTS.md" },
+    { "testId": "FINANCE-API-012", "state": "STATIC-SPECIFIED", "issues": [], "pending": "Scoped SQL filter/order/empty/serialization and access checks", "document": "QA/COVERAGE/41_FINANCE_COHORT_VERDICTS.md" },
+    { "testId": "FINANCE-API-013", "state": "STATIC-SPECIFIED", "issues": ["BUG-DATA-0001", "BUG-DATA-0002"], "pending": "SQL adjusted/reconciled balance, excess, concurrency, response and fresh-read checks", "document": "QA/COVERAGE/41_FINANCE_COHORT_VERDICTS.md" },
+    { "testId": "FINANCE-API-014", "state": "STATIC-SPECIFIED", "issues": ["BUG-DATA-0010"], "pending": "HTTP/SQL transition, reconciliation evidence, invoice state and no-write checks", "document": "QA/COVERAGE/41_FINANCE_COHORT_VERDICTS.md" },
+    { "testId": "FINANCE-API-015", "state": "STATIC-SPECIFIED", "issues": ["BUG-DATA-0001", "BUG-DATA-0010"], "pending": "Voided/repeated/racing reconciliation, evidence and cross-reader balance checks", "document": "QA/COVERAGE/41_FINANCE_COHORT_VERDICTS.md" },
+    { "testId": "FINANCE-API-004", "state": "STATIC-SPECIFIED", "issues": [], "pending": "Scoped SQL filter/order/empty/serialization and module checks", "document": "QA/COVERAGE/41_FINANCE_COHORT_VERDICTS.md" },
+    { "testId": "FINANCE-API-005", "state": "STATIC-SPECIFIED", "issues": [], "pending": "Type/refund policy, SQL amount/length/over-credit and duplicate request checks", "document": "QA/COVERAGE/41_FINANCE_COHORT_VERDICTS.md" },
+    { "testId": "FINANCE-API-006", "state": "STATIC-SPECIFIED", "issues": ["BUG-FUNC-0005"], "pending": "Approval/rejection, maker-checker policy, racing decisions and browser cancellation", "document": "QA/COVERAGE/41_FINANCE_COHORT_VERDICTS.md" },
+    { "testId": "FEES-FORM-003", "state": "STATIC-SPECIFIED", "issues": ["BUG-FUNC-0006"], "pending": "Browser boundary/duplicate/notice, lookup permissions, print and responsive checks", "document": "QA/COVERAGE/41_FINANCE_COHORT_VERDICTS.md" },
+    { "testId": "FINANCE-FORM-008", "state": "STATIC-SPECIFIED", "issues": ["BUG-DATA-0001", "BUG-DATA-0002", "BUG-FUNC-0003", "BUG-FUNC-0006"], "pending": "Browser adjusted/reconciled balances, unknown-save, notice, role and accessibility checks", "document": "QA/COVERAGE/41_FINANCE_COHORT_VERDICTS.md" },
+    { "testId": "FINANCE-FORM-007", "state": "STATIC-SPECIFIED", "issues": ["BUG-DATA-0010", "BUG-FUNC-0003"], "pending": "Browser cancel/required/refresh, HTTP transition and timestamp/reference checks", "document": "QA/COVERAGE/41_FINANCE_COHORT_VERDICTS.md" },
+    { "testId": "FINANCE-FORM-002", "state": "STATIC-SPECIFIED", "issues": ["BUG-FUNC-0003"], "pending": "Browser reset/error/duplicate, amount/type, role and visual checks", "document": "QA/COVERAGE/41_FINANCE_COHORT_VERDICTS.md" },
+    { "testId": "PAYROLL-API-001", "state": "STATIC-SPECIFIED", "issues": [], "pending": "Full-pipeline access and SQL empty/order/serialization/legacy profile checks", "document": "QA/COVERAGE/42_PAYROLL_COHORT_VERDICTS.md" },
+    { "testId": "PAYROLL-API-002", "state": "STATIC-SPECIFIED", "issues": ["BUG-DATA-0009"], "pending": "SQL worker-link/model/rate/date/duplicate and disabled-create policy checks", "document": "QA/COVERAGE/42_PAYROLL_COHORT_VERDICTS.md" },
+    { "testId": "PAYROLL-API-003", "state": "STATIC-SPECIFIED", "issues": ["BUG-DATA-0009", "BUG-DATA-0056"], "pending": "SQL cross-tenant worker links, concurrent edit and prior payout identity checks", "document": "QA/COVERAGE/42_PAYROLL_COHORT_VERDICTS.md" },
+    { "testId": "PAYROLL-API-004", "state": "STATIC-SPECIFIED", "issues": ["BUG-DATA-0056"], "pending": "Fresh historical identity/orphan/deactivation/tenant and money projection checks", "document": "QA/COVERAGE/42_PAYROLL_COHORT_VERDICTS.md" },
+    { "testId": "PAYROLL-API-005", "state": "STATIC-SPECIFIED", "issues": ["BUG-DATA-0003"], "pending": "SQL decimal/net/duplicate-period/concurrent/number-collision and no-write checks", "document": "QA/COVERAGE/42_PAYROLL_COHORT_VERDICTS.md" },
+    { "testId": "PAYROLL-FORM-001", "state": "STATIC-SPECIFIED", "issues": ["BUG-FUNC-0001", "BUG-DATA-0009"], "pending": "Browser conditional/optional/duplicate/unknown-save, message, role and responsive checks", "document": "QA/COVERAGE/42_PAYROLL_COHORT_VERDICTS.md" },
+    { "testId": "PAYROLL-FORM-002", "state": "STATIC-SPECIFIED", "issues": ["BUG-FUNC-0001", "BUG-DATA-0003", "BUG-FUNC-0033"], "pending": "Browser conditional/duplicate-period/cent display and selected-payslip PDF checks", "document": "QA/COVERAGE/42_PAYROLL_COHORT_VERDICTS.md" }
+  ]
+}

@@ -1,0 +1,133 @@
+{
+  "capturedAt": "2026-10-01T11:45:53.085Z",
+  "commit": "20bb6047f9edf733ac8e2a226621cc582ec54b3c",
+  "scope": "BUG-DATA-0033 local assessment grade repair; bounded source/evidence capture, not full release certification",
+  "sources": [
+    {
+      "file": "apps/api/Controllers/AssessmentsController.cs",
+      "sha256": "3831ec01dc7583fa76362c032401c7f86fbed49ff339e095430067658653b3a6"
+    },
+    {
+      "file": "apps/api/Controllers/TeacherPortalController.cs",
+      "sha256": "35e3d9f34f8f871dee63fe3425aedb14d5c0eee49c9ad52832a811e9ec57010d"
+    },
+    {
+      "file": "apps/api/Domain/Entities/AssessmentResult.cs",
+      "sha256": "20a311fc946d16be6d7976c7b2ba067ae6debe61a32133db6392b8bbb6acdead"
+    },
+    {
+      "file": "apps/api/Infrastructure/AssessmentGrading.cs",
+      "sha256": "01130db2917a535f268beb2053ac989e2721846af18d1daaedcc4e842acce207"
+    },
+    {
+      "file": "apps/api/Migrations/20261001113622_TrackAssessmentGradeMode.cs",
+      "sha256": "dec37f6c57e3ba48fd5d21438d2283e283b84bea5f123448fef7ee3e983a87b3"
+    },
+    {
+      "file": "apps/api/Migrations/20261001113622_TrackAssessmentGradeMode.Designer.cs",
+      "sha256": "42f2d444f6337cae4e0c4e45f17399af83d2c4a2749b94fd1eb4fb4fe3018ec7"
+    },
+    {
+      "file": "apps/api/Migrations/AcademyDeskDbContextModelSnapshot.cs",
+      "sha256": "565aae357d2b446737862d1dc4993aa93a1c04694e8d1bc9298911ac2c97c340"
+    },
+    {
+      "file": "apps/web/src/app/assessments/page.tsx",
+      "sha256": "de537a19d7b9e94464439b712bf6b5d177aa58fb19d02ce045b2035f60ebd6b3"
+    },
+    {
+      "file": "apps/web/src/app/globals.css",
+      "sha256": "27750616e72e777e80c4727d6e17fc6ded75f966d8aae0c9027604e57d6575ff"
+    },
+    {
+      "file": "tests/AcademyDesk.Api.Tests/AssessmentGradingTests.cs",
+      "sha256": "1d1e07d14b635dfcf2e9f3012f88e5e53c9b6754ebba557fd4336654eb6d6ec0"
+    },
+    {
+      "file": "QA/tools/assessment-grade.test.cjs",
+      "sha256": "e8de3723a217712a9798abe78fe84ca64dcab9712f2a4d3a502c6beab559e93f"
+    },
+    {
+      "file": "QA/tools/SqlHarness/AssessmentGradeRegression.cs",
+      "sha256": "a0bb605e71d9c322f0e850ef6504a749538b507374c951dd41f763a55b2f7b55"
+    },
+    {
+      "file": "QA/tools/SqlHarness/Program.cs",
+      "sha256": "3f8205e1fdf820793ed5226e2766db021df66342929c617e8a79ff62239e2666"
+    },
+    {
+      "file": "QA/tools/SqlHarness/Run-ReconciledPayment.ps1",
+      "sha256": "aa7070980c7813a2c142caa260d1a92846d6a7dd693783c6c95be1f909e0a085"
+    },
+    {
+      "file": "QA/tools/validate-assessment-grade.cjs",
+      "sha256": "b6aa5c3d2e33f51664629c6dc693ee09991c49a158f8f9ad8c76ddac5878188e"
+    }
+  ],
+  "binaries": [
+    {
+      "file": ".build-check/assessment-grade-tests/bin/AcademyDesk.Api/debug/AcademyDesk.Api.dll",
+      "sha256": "4b6fe70d848c43353f052c34fd79aa8dc2cf26ef7446705260fb49aeed358572"
+    },
+    {
+      "file": ".build-check/assessment-grade-tests/bin/AcademyDesk.Api.Tests/debug/AcademyDesk.Api.Tests.dll",
+      "sha256": "2802086f526bccfb9ae408897830defd63a744027aa5790db65da7c6a984be90"
+    },
+    {
+      "file": ".build-check/assessment-grade-sql/bin/AcademyDesk.Api/debug/AcademyDesk.Api.dll",
+      "sha256": "29826cd1bf3fd169bc87c072e5fb177cfcc134643a1c059b3622206cb7e57d02"
+    },
+    {
+      "file": ".build-check/assessment-grade-sql/bin/SqlHarness/debug/SqlHarness.dll",
+      "sha256": "ce33186442541faafc446e731dbfd0a9f60e18593c9ef8e4bc341064f92104cd"
+    }
+  ],
+  "evidence": [
+    {
+      "file": "QA/EVIDENCE/assessment-grade/assessment-grade-suite.trx",
+      "sha256": "87196821182f96bd93799e4d527791235936df85ebb81e361a395346ba326109"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-assessment-grade-suite.log",
+      "sha256": "4bd5a1cf266af763bafb17e9a9dee075abc72e72021dc5b8e25f0af76f90c949"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-assessment-grade-ui.log",
+      "sha256": "44140a508bf11e5cceef228bcd784692a5504195ef5c4b2ae0c9f8b5c7d8acfa"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-assessment-grade-typecheck.log",
+      "sha256": "32e33df6121b1391e7c235f6688aab7a4c2ff24d088dffbe69f49e6e4ee23124"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-assessment-grade-lint.log",
+      "sha256": "c6b96336e162847870383d0e39ee424bf4dd8d9f4d2c377fb4fc8e5b7d560b4d"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-assessment-grade-baseline-lint.log",
+      "sha256": "854cdd7e8fef2ef9df11acd3b849351e7fe37b0b7285c728cae07dc89a29166a"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-assessment-grade-sql-build.log",
+      "sha256": "137bc996cdfc3e553172b8bda06383eebc54b1c1c87e7191503dac26bc875d90"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-assessment-grade-sql.log",
+      "sha256": "e40341dbdd628f0d3de3bb0329ef467359210670d52bc3babc92d4b79b3fba47"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-assessment-grade-sql-final.log",
+      "sha256": "26b5946ddbe2a88291831a5abe625594c1fe37f3c7a5d2cd212a7144f4b55e63"
+    }
+  ],
+  "normalBinaries": [
+    {
+      "file": "apps/api/bin/Debug/net10.0/AcademyDesk.Api.dll",
+      "sha256": "10ecb9da46c8198affae586776aca4747244cda18670dde8a1892ed20170f614"
+    },
+    {
+      "file": "QA/tools/SqlHarness/bin/Debug/net10.0/SqlHarness.dll",
+      "sha256": "7c165e280c7752cfaef4e56d45062445a9f7181bab3fd5ce6aa12d32b7194c94"
+    }
+  ]
+}

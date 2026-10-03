@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { academyApi, apiHeaders } from "@/lib/api";
+import { batchUpdatePayload, type BatchUpdateSource } from "@/lib/batch-update";
 import { StandardDetailModal, StandardInteractiveTile, StandardSelectField } from "@/components/design-system/controls";
 
 type Academy = { id: string; name: string };
 type Branch = { id: string; name: string };
-type Batch = { id: string; name: string; batchCode?: string | null; courseId: string; teacherId?: string | null; branchId?: string | null; capacity: number; waitlistCapacity: number; deliveryMode?: string; meetingPattern?: string | null; roomName?: string | null; enrollmentStatus?: string; adminNotes?: string | null; startDate?: string | null; endDate?: string | null; isActive: boolean };
+type Batch = BatchUpdateSource;
 type Teacher = {
   id: string;
   firstName: string;
@@ -165,15 +166,7 @@ export default function TeachersPage() {
       const response = await academyApi(`/api/academies/${academy.id}/batches/${batch.id}`, {
         method: "PUT",
         headers: apiHeaders(true),
-        body: JSON.stringify({
-          name: batch.name, batchCode: batch.batchCode ?? null, courseId: batch.courseId,
-          teacherId: assignmentTeacherId, branchId: batch.branchId ?? null,
-          capacity: batch.capacity, waitlistCapacity: batch.waitlistCapacity ?? 0,
-          deliveryMode: batch.deliveryMode ?? "InPerson", meetingPattern: batch.meetingPattern ?? null,
-          roomName: batch.roomName ?? null, enrollmentStatus: batch.enrollmentStatus ?? "Open",
-          adminNotes: batch.adminNotes ?? null, startDate: batch.startDate ?? null,
-          endDate: batch.endDate ?? null, isActive: batch.isActive,
-        }),
+        body: JSON.stringify(batchUpdatePayload(batch, { teacherId: assignmentTeacherId })),
       });
       const result = await response.json().catch(() => null);
       if (!response.ok) throw new Error(result?.message ?? "The teacher could not be assigned.");

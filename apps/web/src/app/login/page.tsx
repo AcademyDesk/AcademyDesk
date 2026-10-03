@@ -74,6 +74,9 @@ export default function LoginPage() {
         </p>
         <h1>Sign in</h1>
         <p className="auth-intro">Your academy workspace, in one place.</p>
+        {searchParams.get("passwordChanged") === "1" && (
+          <p className="auth-intro" role="status">Password changed. Sign in with your new password.</p>
+        )}
         <label className="auth-label auth-label-first" htmlFor="username">
           User name
         </label>

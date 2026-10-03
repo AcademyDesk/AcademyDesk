@@ -1,6 +1,7 @@
 using AcademyDesk.Api.Data;
 using AcademyDesk.Api.Domain.Entities;
 using AcademyDesk.Api.Domain.Identity;
+using AcademyDesk.Api.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -41,7 +42,7 @@ public sealed class TeacherPortalController(
             .Select(x => new TeacherSessionSummary(x.Id, x.BatchId, x.StartUtc, x.EndUtc, x.DeliveryMode, x.RoomName, x.Status, x.TeacherAttendanceStatus))
             .ToListAsync(cancellationToken);
 
-        return Ok(new TeacherPortalSummary(teacher.FirstName, teacher.LastName, batches, sessions));
+        return Ok(new TeacherPortalSummary(teacher.FirstName, teacher.LastName, batches, sessions, user.Id));
     }
 
     [HttpGet("calendar")]
@@ -390,7 +391,7 @@ public sealed class TeacherPortalController(
         var results = await dbContext.AssessmentResults.AsNoTracking()
             .Where(x => x.AcademyId == user.AcademyId && x.AssessmentId == assessmentId)
             .Join(dbContext.Students.AsNoTracking(), x => x.StudentId, s => s.Id,
-                (x, s) => new TeacherAssessmentResultSummary(x.Id, x.StudentId, s.FirstName + " " + s.LastName, x.Score, x.Grade, x.Remarks, x.IsPublished))
+                (x, s) => new TeacherAssessmentResultSummary(x.Id, x.StudentId, s.FirstName + " " + s.LastName, x.Score, x.Grade, x.Remarks, x.IsPublished, x.IsGradeManual))
             .ToListAsync(cancellationToken);
         return Ok(results);
     }
@@ -405,16 +406,18 @@ public sealed class TeacherPortalController(
         if (request.Score < 0 || request.Score > assessment.MaxScore || !await dbContext.Enrollments.AnyAsync(x =>
             x.AcademyId == user.AcademyId && x.BatchId == assessment.BatchId && x.StudentId == request.StudentId && x.Status == "Active", cancellationToken))
             return BadRequest(new { message = "Student must be actively enrolled and score must be within the assessment range." });
+        var grading = await AssessmentGrading.ResolveAsync(dbContext, assessment, request.Score, request.Grade, request.IsGradeManual, cancellationToken);
+        if (grading.Error is not null) return BadRequest(new { message = grading.Error });
         var result = await dbContext.AssessmentResults.SingleOrDefaultAsync(x => x.AcademyId == user.AcademyId && x.AssessmentId == assessmentId && x.StudentId == request.StudentId, cancellationToken);
         var isNew = result is null;
         result ??= new AssessmentResult { AcademyId = user.AcademyId.Value, AssessmentId = assessmentId, StudentId = request.StudentId };
-        result.Score = request.Score; result.Grade = request.Grade?.Trim(); result.Remarks = request.Remarks?.Trim(); result.IsPublished = request.IsPublished;
+        result.Score = request.Score; result.Grade = grading.Grade; result.IsGradeManual = grading.IsManual; result.Remarks = request.Remarks?.Trim(); result.IsPublished = request.IsPublished;
         if (isNew) dbContext.AssessmentResults.Add(result);
         if (result.IsPublished)
             dbContext.Notifications.Add(new Notification { AcademyId = user.AcademyId.Value, RecipientId = result.StudentId, RecipientType = "Student", Title = "Assessment result published", Message = $"Your result for {assessment.Title} is available in your learning progress.", Channel = "InApp", Status = "Queued" });
         await dbContext.SaveChangesAsync(cancellationToken);
         var student = await dbContext.Students.AsNoTracking().SingleAsync(x => x.Id == result.StudentId, cancellationToken);
-        return Ok(new TeacherAssessmentResultSummary(result.Id, result.StudentId, student.FirstName + " " + student.LastName, result.Score, result.Grade, result.Remarks, result.IsPublished));
+        return Ok(new TeacherAssessmentResultSummary(result.Id, result.StudentId, student.FirstName + " " + student.LastName, result.Score, result.Grade, result.Remarks, result.IsPublished, result.IsGradeManual));
     }
 
     [HttpGet("resources")]
@@ -656,7 +659,7 @@ public sealed class TeacherPortalController(
     private sealed record TeacherContext(Guid AcademyId, ClassSession Session);
 }
 
-public sealed record TeacherPortalSummary(string FirstName, string LastName, IReadOnlyList<TeacherBatchSummary> Batches, IReadOnlyList<TeacherSessionSummary> Sessions);
+public sealed record TeacherPortalSummary(string FirstName, string LastName, IReadOnlyList<TeacherBatchSummary> Batches, IReadOnlyList<TeacherSessionSummary> Sessions, Guid UserId);
 public sealed record TeacherBatchSummary(Guid Id, string Name, int Capacity, string DeliveryMode, string? MeetingLink, string? RoomName);
 public sealed record TeacherSessionSummary(Guid Id, Guid BatchId, DateTime StartUtc, DateTime EndUtc, string DeliveryMode, string? RoomName, string Status, string? TeacherAttendanceStatus);
 public sealed record TeacherHolidaySummary(Guid Id, string Name, DateOnly HolidayDate, bool IsClosed);
@@ -685,8 +688,8 @@ public sealed record TeacherLessonPlanStatusRequest(string Status);
 public sealed record TeacherAssessmentSummary(Guid Id, Guid BatchId, string Title, string Type, decimal MaxScore, DateTime? ScheduledAtUtc, bool IsPublished);
 public sealed record TeacherCreateAssessmentRequest(Guid BatchId, string Title, string? Type, decimal MaxScore, DateTime? ScheduledAtUtc, bool IsPublished);
 public sealed record TeacherPublishAssessmentRequest(bool IsPublished);
-public sealed record TeacherAssessmentResultSummary(Guid Id, Guid StudentId, string StudentName, decimal Score, string? Grade, string? Remarks, bool IsPublished);
-public sealed record TeacherRecordAssessmentResultRequest(Guid StudentId, decimal Score, string? Grade, string? Remarks, bool IsPublished);
+public sealed record TeacherAssessmentResultSummary(Guid Id, Guid StudentId, string StudentName, decimal Score, string? Grade, string? Remarks, bool IsPublished, bool? IsGradeManual = null);
+public sealed record TeacherRecordAssessmentResultRequest(Guid StudentId, decimal Score, string? Grade, string? Remarks, bool IsPublished, bool? IsGradeManual = null);
 public sealed record TeacherResourceSummary(Guid Id, Guid BatchId, Guid? StudentId, Guid? ClassSessionId, string Title, string? Description, string Type, string Url, DateTime CreatedAtUtc);
 public sealed record TeacherClassroomActivitySummary(IReadOnlyList<TeacherResourceSummary> Resources, IReadOnlyList<TeacherAssignmentSummary> Homework);
 public sealed record TeacherCreateResourceNoteRequest(Guid BatchId, Guid? StudentId, Guid? ClassSessionId, string Title, string Notes, string? Type);

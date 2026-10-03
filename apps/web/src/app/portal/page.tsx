@@ -3,6 +3,7 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { academyApi, apiHeaders, apiUrl, clearPortalTokens } from "@/lib/api";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { PrivateMaterialActions } from "@/components/private-material-actions";
 type Me = {
   role: "Student" | "Parent";
   displayName: string;
@@ -93,7 +94,7 @@ type D = {
     upcomingDates: string[];
   }[];
 };
-type Notice = { id: string; title: string; message: string; status: string; createdAtUtc?: string };
+type Notice = { id: string; title: string; message: string; status: string; isRead?: boolean; readAtUtc?: string | null; createdAtUtc?: string };
 type Announcement = { id: string; title: string; message: string };
 type Leave = {
   id: string;
@@ -275,8 +276,11 @@ function AnnouncementTicker({ announcements }: { announcements: Announcement[] }
 }
 function PortalNotifications({ notices, setNotices }: { notices: Notice[]; setNotices: React.Dispatch<React.SetStateAction<Notice[]>> }) {
   const [open, setOpen] = useState(false);
+  const [readError, setReadError] = useState("");
   const ref = useRef<HTMLDivElement>(null);
-  const unread = notices.filter((notice) => notice.status !== "Read").length;
+  const acknowledging = useRef(false);
+  const isRead = (notice: Notice) => notice.isRead ?? notice.status === "Read";
+  const unread = notices.filter((notice) => !isRead(notice)).length;
   useEffect(() => {
     if (!open) return;
     const close = (event: MouseEvent) => { if (!ref.current?.contains(event.target as Node)) setOpen(false); };
@@ -284,15 +288,28 @@ function PortalNotifications({ notices, setNotices }: { notices: Notice[]; setNo
     return () => document.removeEventListener("mousedown", close);
   }, [open]);
   async function openNotifications() {
-    setOpen((value) => !value);
-    const unreadItems = notices.filter((notice) => notice.status !== "Read");
+    if (open) { setOpen(false); return; }
+    setOpen(true);
+    if (acknowledging.current) return;
+    const unreadItems = notices.slice(0, 8).filter((notice) => !isRead(notice));
     if (unreadItems.length === 0) return;
-    await Promise.all(unreadItems.map((notice) => academyApi(`/api/portal/notifications/${notice.id}/read`, { method: "PATCH" })));
-    setNotices((items) => items.map((item) => ({ ...item, status: "Read" })));
+    acknowledging.current = true;
+    setReadError("");
+    try {
+      const results = await Promise.allSettled(unreadItems.map(async (notice) => {
+        const response = await academyApi(`/api/portal/notifications/${notice.id}/read`, { method: "PATCH" });
+        const result = await response.json().catch(() => null);
+        if (!response.ok || result?.id !== notice.id || result?.isRead !== true || typeof result?.readAtUtc !== "string" || !Number.isFinite(Date.parse(result.readAtUtc))) throw new Error("Read acknowledgment was not confirmed.");
+        return { id: notice.id, readAtUtc: result.readAtUtc as string };
+      }));
+      const confirmed = new Map(results.flatMap((result) => result.status === "fulfilled" ? [[result.value.id, result.value.readAtUtc] as const] : []));
+      setNotices((items) => items.map((item) => confirmed.has(item.id) ? { ...item, isRead: true, readAtUtc: confirmed.get(item.id) } : item));
+      if (results.some((result) => result.status === "rejected")) setReadError("Some notifications could not be marked as read. Reopen this menu to retry.");
+    } finally { acknowledging.current = false; }
   }
   return <div className="learner-notifications" ref={ref}>
     <button type="button" className="learner-notification-button" onClick={() => void openNotifications()} aria-label="Open notifications" aria-expanded={open}>♢{unread > 0 && <em>{unread > 9 ? "9+" : unread}</em>}</button>
-    {open && <section className="learner-notification-menu"><header><strong>Notifications</strong><small>{unread ? `${unread} new` : "All caught up"}</small></header>{notices.length ? notices.slice(0, 8).map((notice) => <article key={notice.id}><b>{notice.title}</b><span>{notice.message}</span></article>) : <p>No notifications yet.</p>}</section>}
+    {open && <section className="learner-notification-menu"><header><strong>Notifications</strong><small>{unread ? `${unread} new` : "All caught up"}</small></header>{readError && <p role="status">{readError}</p>}{notices.length ? notices.slice(0, 8).map((notice) => <article key={notice.id}><b>{notice.title}</b><span>{notice.message}</span></article>) : <p>No notifications yet.</p>}</section>}
   </div>;
 }
 function View({
@@ -517,8 +534,7 @@ function CalendarEvent({ session }: { session: D["schedule"][number] }) {
   return <div className="learner-calendar-event"><span>{session.batchName}</span><small>{session.deliveryMode}</small></div>;
 }
 function ResourceRow({ x }: { x: { title: string; type: string; url: string; description?: string } }) {
-  const downloadable = x.url.startsWith("/") || x.url.startsWith("http");
-  return <article className="learner-row learner-resource-row"><b>{x.title}</b><small>{x.type}{x.description ? ` · ${x.description}` : ""}</small>{downloadable && <a href={x.url.startsWith("/") ? `${apiUrl}${x.url}` : x.url} target="_blank" rel="noreferrer">Open / download</a>}</article>;
+  return <article className="learner-row learner-resource-row"><b>{x.title}</b><small>{x.type}{x.description ? ` · ${x.description}` : ""}</small><PrivateMaterialActions url={x.url} title={x.title} /></article>;
 }
 function ClassHistoryRow({ item }: { item: D["classHistory"][number] }) {
   const [expanded, setExpanded] = useState(false);

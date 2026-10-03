@@ -1,0 +1,109 @@
+{
+  "capturedAt": "2026-10-01T11:57:29.285Z",
+  "commit": "20bb6047f9edf733ac8e2a226621cc582ec54b3c",
+  "scope": "BUG-DATA-0034 partial exact-membership repair; historical-status policy pending; not full release certification",
+  "sources": [
+    {
+      "file": "apps/api/Controllers/AssessmentsController.cs",
+      "sha256": "8a54df78ce2c14dc26bdb58c4fc635b72d2cb56d05578b6af254dac65049e0c8"
+    },
+    {
+      "file": "apps/api/Controllers/TeacherPortalController.cs",
+      "sha256": "35e3d9f34f8f871dee63fe3425aedb14d5c0eee49c9ad52832a811e9ec57010d"
+    },
+    {
+      "file": "apps/api/Infrastructure/AssessmentGrading.cs",
+      "sha256": "01130db2917a535f268beb2053ac989e2721846af18d1daaedcc4e842acce207"
+    },
+    {
+      "file": "apps/api/Domain/Entities/Enrollment.cs",
+      "sha256": "05c24d37452ef30f02e9e6dea9cf8ccf445ef13b6a53a0644133f05c5f897a7e"
+    },
+    {
+      "file": "tests/AcademyDesk.Api.Tests/AssessmentRosterTests.cs",
+      "sha256": "70b60558a6410d25ade7fc2b16da856b2487b5c1d7600efe13b1c36dcc7c3656"
+    },
+    {
+      "file": "tests/AcademyDesk.Api.Tests/AssessmentGradingTests.cs",
+      "sha256": "459bbcf0d5a933748b847aaf58646b60d0b952702ad7ede24f56b3b8cb52ae16"
+    },
+    {
+      "file": "QA/tools/SqlHarness/AssessmentRosterRegression.cs",
+      "sha256": "014a1035f4b0c08fc48e8afb457260d1bb9056c36666be6922ff0a02f1b27626"
+    },
+    {
+      "file": "QA/tools/SqlHarness/Program.cs",
+      "sha256": "5ef6b8b87d6e1a649fbc831e15f8efbecd40418bbf96a9e8fa8d0efef517ab80"
+    },
+    {
+      "file": "QA/tools/SqlHarness/Run-ReconciledPayment.ps1",
+      "sha256": "95e85e92515842d9691fff2d80136e42a461f310766b513ca15a0d7a2df0e787"
+    },
+    {
+      "file": "QA/tools/validate-assessment-roster.cjs",
+      "sha256": "f57aeb59e5947bfeaa860e0be814d88338baa61889140a7a04280abe9ce13135"
+    },
+    {
+      "file": "QA/REPORTS/PHASE_2B_ASSESSMENT_ROSTER_REPAIR.md",
+      "sha256": "6db75c9dcfeaa2d601ee89e3073c1cc2bbf391c921b4c3f53ba634d68d7e8ff3"
+    },
+    {
+      "file": "QA/ISSUES/BUG-DATA-0034.md",
+      "sha256": "56df6071e26dd84c28dbcefe6cd6c59d6ec846023a863d16e4e88d006eef5d79"
+    }
+  ],
+  "binaries": [
+    {
+      "file": ".build-check/assessment-roster-tests/bin/AcademyDesk.Api/debug/AcademyDesk.Api.dll",
+      "sha256": "72a24b2624d0ecd3025b2eeadd71f1a1b1371b7035336067e473f218b2bd3e94"
+    },
+    {
+      "file": ".build-check/assessment-roster-tests/bin/AcademyDesk.Api.Tests/debug/AcademyDesk.Api.Tests.dll",
+      "sha256": "7bcc2a6437f0ef3e4c5b5320bba95af17df2d52718560fcbabfe07633dc91e09"
+    },
+    {
+      "file": ".build-check/assessment-roster-sql/bin/AcademyDesk.Api/debug/AcademyDesk.Api.dll",
+      "sha256": "0d634096c5129f90b19fee005344e456f441a1e10bf8ae5ae80b152775d72120"
+    },
+    {
+      "file": ".build-check/assessment-roster-sql/bin/SqlHarness/debug/SqlHarness.dll",
+      "sha256": "8a7553878d97b4fbcfc2ebfe2c1d7dc379d22693b498cc5d4ab8b8b34e8c127c"
+    }
+  ],
+  "evidence": [
+    {
+      "file": "QA/EVIDENCE/assessment-roster/assessment-roster-suite.trx",
+      "sha256": "3ec909164f48ad743a11e9cc5a4e592e5e0ad4707d7a4e25bc09272fd215dbed"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-assessment-roster-suite.log",
+      "sha256": "1c477553e001500e1f6d6f1999bfa4be2c53c6de8625a7e862824232a4d0cce2"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-assessment-roster-sql-build.log",
+      "sha256": "6cd4348d8dc67bef3bc0afd361544ced7fea2b44a0cbecbdc20998678a05fe61"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-assessment-roster-sql.log",
+      "sha256": "dcd00939161f92aac80f7a5794641bbf2a43eeb478a05e9feaed1e4a5fb2ec08"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-assessment-roster-sql-development.log",
+      "sha256": "5dc82dd71a28b041ca3de2a756afce3a5b36b2f6d6c838c3c31d331ac685fa01"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-assessment-roster-sql-final.log",
+      "sha256": "75238cf00acf9c611484492b3450afcec9e0afcce3f587ee9cf59cafc87da2f1"
+    }
+  ],
+  "normalBinaries": [
+    {
+      "file": "apps/api/bin/Debug/net10.0/AcademyDesk.Api.dll",
+      "sha256": "10ecb9da46c8198affae586776aca4747244cda18670dde8a1892ed20170f614"
+    },
+    {
+      "file": "QA/tools/SqlHarness/bin/Debug/net10.0/SqlHarness.dll",
+      "sha256": "7c165e280c7752cfaef4e56d45062445a9f7181bab3fd5ce6aa12d32b7194c94"
+    }
+  ]
+}

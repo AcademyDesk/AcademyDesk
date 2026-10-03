@@ -1,0 +1,121 @@
+{
+  "capturedAt": "2026-10-01T12:13:57.963Z",
+  "commit": "20bb6047f9edf733ac8e2a226621cc582ec54b3c",
+  "scope": "BUG-FUNC-0020 academic-scoped options and controlled page integration; not full browser/device/release certification",
+  "checks": {
+    "typeScriptExitCode": 0,
+    "lintExitCode": 1
+  },
+  "sources": [
+    {
+      "file": "apps/api/Controllers/AssessmentsController.cs",
+      "sha256": "79bdd33f9bacb7915c11f952896f8e66d71a9c5e8836f7403c68797c89686551"
+    },
+    {
+      "file": "apps/web/src/app/assessments/page.tsx",
+      "sha256": "ece79b581530cb39c19366fce6c5e41c952536c66113e0ec9c15c78e28df0526"
+    },
+    {
+      "file": "apps/api/Security/PermissionCatalog.cs",
+      "sha256": "6703cf7acc8c90309ce8e804981fc5a5342567d1f2cd756820351560a65d4d5a"
+    },
+    {
+      "file": "apps/api/Security/SubscriptionPlanCatalog.cs",
+      "sha256": "e0723659dfbba118af239586ce50001fd22bcc4436d6e64471f317ba8b74f9b4"
+    },
+    {
+      "file": "tests/AcademyDesk.Api.Tests/AssessmentOptionTests.cs",
+      "sha256": "c28d297e6bb37f3e2df0ce3dfbdc6c0c8538211d362f7ae4e78646d584bf0555"
+    },
+    {
+      "file": "QA/tools/assessment-options.test.cjs",
+      "sha256": "937c82d9b5f932db8c3047187e3647fa0f3558019380204e8e6f29dec0d1197a"
+    },
+    {
+      "file": "QA/tools/assessment-grade.test.cjs",
+      "sha256": "e8de3723a217712a9798abe78fe84ca64dcab9712f2a4d3a502c6beab559e93f"
+    },
+    {
+      "file": "QA/tools/SqlHarness/AssessmentOptionsRegression.cs",
+      "sha256": "291b2fdb86a226c35069af10a1531770a326f8b82691a57d34547b6326fe25eb"
+    },
+    {
+      "file": "QA/tools/SqlHarness/Program.cs",
+      "sha256": "42e9965cefe27ea7a5680cd617905e0fde3d9760436d2abab6e4f93340b17d9c"
+    },
+    {
+      "file": "QA/tools/SqlHarness/Run-ReconciledPayment.ps1",
+      "sha256": "1c3570caa29fcb5cc2c1b7c10ac7f9f1d5628bf2b3216cfb14d0b1e4cfbac594"
+    },
+    {
+      "file": "QA/tools/validate-assessment-options.cjs",
+      "sha256": "f6765534031c4878d667e51c182f6a9894f64c29c088f018e6ac5646a6ea0c63"
+    },
+    {
+      "file": "QA/REPORTS/PHASE_2B_ASSESSMENT_OPTIONS_REPAIR.md",
+      "sha256": "de8535aeddcd34876b280dcbf8d3dbb965549bf02221f207807bf1220c50b915"
+    },
+    {
+      "file": "QA/ISSUES/BUG-FUNC-0020.md",
+      "sha256": "593a755e460d0cf9ab8f77bacadd59887ba1eb0eb0183472eab0e7b5669feb7a"
+    }
+  ],
+  "binaries": [
+    {
+      "file": ".build-check/assessment-options-tests/bin/AcademyDesk.Api/debug/AcademyDesk.Api.dll",
+      "sha256": "bcb0783df0d03a90a59b81dae753d031d1ad0d7c65c3fd13bc2ca53db7a26fa4"
+    },
+    {
+      "file": ".build-check/assessment-options-tests/bin/AcademyDesk.Api.Tests/debug/AcademyDesk.Api.Tests.dll",
+      "sha256": "b34e089f7df65c5e5913673b98a9925239730dd97be798697f9aaa568b75f779"
+    },
+    {
+      "file": ".build-check/assessment-options-sql/bin/AcademyDesk.Api/debug/AcademyDesk.Api.dll",
+      "sha256": "9476e43b95b9d3cc100f2e0e7a4338ceac596fc30daa606783ea21cd1be6a96f"
+    },
+    {
+      "file": ".build-check/assessment-options-sql/bin/SqlHarness/debug/SqlHarness.dll",
+      "sha256": "51cd6799b158a5c0e7f583b0749f4ca9457c8c392ee21609da3af4544a0628a6"
+    }
+  ],
+  "evidence": [
+    {
+      "file": "QA/EVIDENCE/assessment-options/assessment-options-suite.trx",
+      "sha256": "5f91e4b034b6f7000ac1837e227d59a3a14825e4db4622cb4208538a92858e73"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-assessment-options-suite.log",
+      "sha256": "248f095564986da424a7dfaceee69353b9477f2a390c54ae9cd6c485ceec8ebe"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-assessment-options-sql-build.log",
+      "sha256": "6f53bcbfd976ae6676fa8d0a45621032056f95a52f37130df0b3e98cb7b98373"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-assessment-options-sql.log",
+      "sha256": "8f6aceae4bb4abf791d176783d8fee8fda5f104d8a6ffc6059afcf815da464e4"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-assessment-options-ui.log",
+      "sha256": "9619507d20d3f34f668a0ee308cb0c3d31d448e51f07d293e907b9f8dab76220"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-assessment-options-typecheck.log",
+      "sha256": "596887ae6399d9efcb9637237a8a51c2793bec516ce72978929c4f983cf67076"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-assessment-options-lint.log",
+      "sha256": "71f5a299a1b4ed6ec5d8e1db096071eb9b51526699ad52093deb944a4c218539"
+    }
+  ],
+  "normalBinaries": [
+    {
+      "file": "apps/api/bin/Debug/net10.0/AcademyDesk.Api.dll",
+      "sha256": "10ecb9da46c8198affae586776aca4747244cda18670dde8a1892ed20170f614"
+    },
+    {
+      "file": "QA/tools/SqlHarness/bin/Debug/net10.0/SqlHarness.dll",
+      "sha256": "7c165e280c7752cfaef4e56d45062445a9f7181bab3fd5ce6aa12d32b7194c94"
+    }
+  ]
+}

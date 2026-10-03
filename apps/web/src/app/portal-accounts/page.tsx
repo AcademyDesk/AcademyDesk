@@ -1,5 +1,5 @@
 "use client";
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { WorkspaceNav } from "@/components/workspace-nav";
 import { StandardSelectField } from "@/components/design-system/controls";
 import { academyApi, apiHeaders } from "@/lib/api";
@@ -18,6 +18,9 @@ export default function PortalAccounts() {
   const [password, setPassword] = useState("");
   const [id, setId] = useState("");
   const [m, setM] = useState("Loading portal accounts…");
+  const [saving, setSaving] = useState(false);
+  const submitting = useRef(false);
+  const [messageTone, setMessageTone] = useState<"success" | "error" | "neutral">("neutral");
   useEffect(() => {
     void (async () => {
       try {
@@ -25,30 +28,40 @@ export default function PortalAccounts() {
         if (!r.ok) throw new Error();
         const x: Academy[] = await r.json();
         if (!x[0]) return setM("Create your academy first.");
-        setA(x[0]);
         const [r1, r2, r3] = await Promise.all([
           academyApi(`/api/academies/${x[0].id}/students`),
           academyApi(`/api/academies/${x[0].id}/guardians`),
           academyApi(`/api/academies/${x[0].id}/teachers`),
         ]);
-        setS(await r1.json());
-        setG(await r2.json());
-        setT(await r3.json());
+        if (!r1.ok || !r2.ok || !r3.ok) throw new Error();
+        const [students, guardians, teachers] = await Promise.all([r1.json(), r2.json(), r3.json()]);
+        if (![students, guardians, teachers].every(Array.isArray)) throw new Error();
+        setS(students);
+        setG(guardians);
+        setT(teachers);
+        setA(x[0]);
         setM("");
       } catch {
+        setMessageTone("error");
         setM(
-          "Portal accounts could not be loaded. Apply the portal migration and restart the API.",
+          "Portal accounts could not be loaded. Check your connection and access, then refresh the page.",
         );
       }
     })();
   }, []);
   async function create(e: FormEvent) {
     e.preventDefault();
-    if (!a) return;
-    if (!id)
+    if (!a || submitting.current) return;
+    if (!id) {
+      setMessageTone("error");
       return setM(
         `Select the ${role === "Guardian" ? "parent" : role.toLowerCase()} first.`,
       );
+    }
+    submitting.current = true;
+    setSaving(true);
+    setM("");
+    try {
     const r = await academyApi(`/api/academies/${a.id}/portal-accounts`, {
       method: "POST",
       headers: apiHeaders(true),
@@ -63,16 +76,25 @@ export default function PortalAccounts() {
       }),
     });
     const q = await r.json().catch(() => null);
+    setMessageTone(r.ok ? "success" : "error");
     setM(
       r.ok
         ? `Created ${role === "Guardian" ? "parent" : role.toLowerCase()} portal account for ${email}.`
-        : (q?.message ?? "Account could not be created."),
+        : (q?.message ?? (r.status === 401 ? "Your session has expired. Sign in again before creating an account." : r.status === 403 ? "You do not have access to create portal accounts." : "Account could not be created.")),
     );
     if (r.ok) {
       setEmail("");
       setDisplayName("");
       setPassword("");
       setId("");
+    }
+    } catch {
+      // A lost response does not prove rollback. Keep the draft; never replay automatically.
+      setMessageTone("error");
+      setM("The result could not be confirmed. Check whether this login already exists before trying again. Your entries have been kept.");
+    } finally {
+      submitting.current = false;
+      setSaving(false);
     }
   }
   const choices = role === "Student" ? s : role === "Teacher" ? t : g;
@@ -92,7 +114,7 @@ export default function PortalAccounts() {
           </div>
         </header>
         {m && (
-          <p className="enterprise-page-state portal-access-message">{m}</p>
+          <p className="enterprise-page-state portal-access-message" role={messageTone === "error" ? "alert" : "status"} data-tone={messageTone}>{m}</p>
         )}
         <form onSubmit={create} className="portal-access-panel">
           <header className="portal-access-panel-header">
@@ -101,7 +123,7 @@ export default function PortalAccounts() {
               <h2>Create portal account</h2>
             </div>
           </header>
-          <div className="portal-access-fields">
+          <fieldset className="portal-access-fields" disabled={saving || !a} style={{ border: 0, margin: 0, minWidth: 0 }} aria-busy={saving}>
             <StandardSelectField
               name="portal-role"
               value={role}
@@ -157,9 +179,9 @@ export default function PortalAccounts() {
               />
             </label>
             <button className="enterprise-action-button portal-access-action">
-              Create portal account
+              {saving ? "Creating account…" : "Create portal account"}
             </button>
-          </div>
+          </fieldset>
         </form>
       </div>
     </main>

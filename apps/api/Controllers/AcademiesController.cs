@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using AcademyDesk.Api.Security;
 
 namespace AcademyDesk.Api.Controllers;
 
@@ -14,7 +15,8 @@ namespace AcademyDesk.Api.Controllers;
 public sealed class AcademiesController(
     AcademyDeskDbContext dbContext,
     UserManager<ApplicationUser> userManager,
-    RoleManager<ApplicationRole> roleManager) : ControllerBase
+    RoleManager<ApplicationRole> roleManager,
+    IdentityDbContext identityDb) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<AcademySummary>>> List(CancellationToken cancellationToken)
@@ -47,6 +49,13 @@ public sealed class AcademiesController(
             return BadRequest(new { message = "Academy name is required." });
         }
 
+        // This route has no academyId: own the same-store academy/Identity boundary.
+        // The existing user's optimistic concurrency stamp also prevents two
+        // overlapping requests from committing separate academies for one account.
+        var identityConnection = AcademyIdentityTransaction.Validate(dbContext, identityDb);
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+        await using var identityTransaction = await AcademyIdentityTransaction.EnlistAsync(dbContext, identityDb, transaction, identityConnection, cancellationToken);
+
         var academy = new Academy
         {
             Name = request.Name.Trim(),
@@ -61,14 +70,26 @@ public sealed class AcademiesController(
         const string ownerRole = "Owner";
         if (!await roleManager.RoleExistsAsync(ownerRole))
         {
-            var roleResult = await roleManager.CreateAsync(new ApplicationRole { Name = ownerRole });
-            if (!roleResult.Succeeded) return Problem("The Owner role could not be created.");
+            IdentityResult roleResult;
+            try { roleResult = await roleManager.CreateAsync(new ApplicationRole { Name = ownerRole }); }
+            catch (Exception exception) when (IdentityProvisioningConflict.RoleName(exception))
+            {
+                return Conflict(new { message = "Another request is initializing the Owner role. Please retry. No changes were saved." });
+            }
+            if (!roleResult.Succeeded) return Problem("The Owner role could not be created. No changes were saved.");
         }
 
         user.AcademyId = academy.Id;
         user.DisplayName = academy.Name;
-        await userManager.UpdateAsync(user);
-        await userManager.AddToRoleAsync(user, ownerRole);
+        var update = await userManager.UpdateAsync(user);
+        if (!update.Succeeded) return BadRequest(new { message = "The academy account could not be updated. No changes were saved." });
+        // An unassigned account may already have Owner membership. Retain that
+        // valid membership instead of treating Identity's duplicate-role result as failure.
+        if (!await userManager.IsInRoleAsync(user, ownerRole))
+        {
+            var assignment = await userManager.AddToRoleAsync(user, ownerRole);
+            if (!assignment.Succeeded) return BadRequest(new { message = "The Owner role could not be assigned. No changes were saved." });
+        }
 
         var response = new AcademySummary(
             academy.Id,
@@ -78,6 +99,7 @@ public sealed class AcademiesController(
             academy.TimeZone,
             academy.IsActive, academy.SubscriptionPlan, academy.SubscriptionStatus, academy.EnabledModulesJson);
 
+        await transaction.CommitAsync(cancellationToken);
         return CreatedAtAction(nameof(List), new { id = academy.Id }, response);
     }
     [HttpPut("{academyId:guid}")]

@@ -1,0 +1,105 @@
+{
+  "capturedAt": "2026-10-01T12:04:10.913Z",
+  "commit": "20bb6047f9edf733ac8e2a226621cc582ec54b3c",
+  "scope": "BUG-FUNC-0020 partial API permission/module alignment; four page lookup dependencies pending; not full release certification",
+  "sources": [
+    {
+      "file": "apps/api/Security/PermissionCatalog.cs",
+      "sha256": "6703cf7acc8c90309ce8e804981fc5a5342567d1f2cd756820351560a65d4d5a"
+    },
+    {
+      "file": "apps/api/Security/SubscriptionPlanCatalog.cs",
+      "sha256": "e0723659dfbba118af239586ce50001fd22bcc4436d6e64471f317ba8b74f9b4"
+    },
+    {
+      "file": "apps/api/Security/AcademyAccessFilter.cs",
+      "sha256": "f74c29ef47dbafc20939ce10ec10c36b1ca0f7be23c8900422417ecb69db8753"
+    },
+    {
+      "file": "apps/api/Controllers/AssessmentsController.cs",
+      "sha256": "8a54df78ce2c14dc26bdb58c4fc635b72d2cb56d05578b6af254dac65049e0c8"
+    },
+    {
+      "file": "apps/api/Controllers/TeacherPortalController.cs",
+      "sha256": "35e3d9f34f8f871dee63fe3425aedb14d5c0eee49c9ad52832a811e9ec57010d"
+    },
+    {
+      "file": "apps/api/Controllers/GradingSchemeLifecycleController.cs",
+      "sha256": "0a45853cd17ba599cc6c96fa3dfa305e3885be836b50166da64d466178c1157c"
+    },
+    {
+      "file": "tests/AcademyDesk.Api.Tests/AssessmentAccessTests.cs",
+      "sha256": "90584e2ce1fe3c24a241870166909e752546ec6d868622c940b3ea9488c124ce"
+    },
+    {
+      "file": "QA/tools/SqlHarness/AssessmentAccessRegression.cs",
+      "sha256": "25b6160fb2440811b3a72ed0e45c1203a648bb5dffe70ae8640eb457415a3de9"
+    },
+    {
+      "file": "QA/tools/SqlHarness/Program.cs",
+      "sha256": "6970542ffc372240571863c9443ac90a29c40d53e0b67a7b3bd4b8273ca26829"
+    },
+    {
+      "file": "QA/tools/SqlHarness/Run-ReconciledPayment.ps1",
+      "sha256": "b4e41cb50726c69f1e79cbb0efc0d42662755126238861186ab3f53bdc398073"
+    },
+    {
+      "file": "QA/tools/validate-assessment-access.cjs",
+      "sha256": "ec0279ec818ec38658d461049b7fa32f0456d9116964c4d602c6e1aa6409fe1e"
+    },
+    {
+      "file": "QA/REPORTS/PHASE_2B_ASSESSMENT_ACCESS_REPAIR.md",
+      "sha256": "f4b79292f5b941eecbac9040589ef292c8a814396a23d0f73bd72b46642a7ab8"
+    },
+    {
+      "file": "QA/ISSUES/BUG-FUNC-0020.md",
+      "sha256": "bc4aa7d85821450f1c37d04f2d09b913d11cc6aaad1503e0359e8023623df452"
+    }
+  ],
+  "binaries": [
+    {
+      "file": ".build-check/assessment-access-tests/bin/AcademyDesk.Api/debug/AcademyDesk.Api.dll",
+      "sha256": "2860514d1ffb2ff5e219d2176ca60c112ac77a0c922d190c302488982e7a6c2c"
+    },
+    {
+      "file": ".build-check/assessment-access-tests/bin/AcademyDesk.Api.Tests/debug/AcademyDesk.Api.Tests.dll",
+      "sha256": "14016202cc2fe045f01510ecc9a0363e2b0c7e13cc3258901c4c6560ac133f8f"
+    },
+    {
+      "file": ".build-check/assessment-access-sql/bin/AcademyDesk.Api/debug/AcademyDesk.Api.dll",
+      "sha256": "bd23e29683a04e3cfe47716ac4ed77e614156658a8b549c0ddf8110a53873855"
+    },
+    {
+      "file": ".build-check/assessment-access-sql/bin/SqlHarness/debug/SqlHarness.dll",
+      "sha256": "81f879698ed99895834a1f435b65669e86831fe76981f54ff74bfab29349234f"
+    }
+  ],
+  "evidence": [
+    {
+      "file": "QA/EVIDENCE/assessment-access/assessment-access-suite.trx",
+      "sha256": "b2da854a9c3aa0432af4b204742c1b4635094aeb00a5734b2a3e4625452e7ff0"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-assessment-access-suite.log",
+      "sha256": "6f42158c9c085bfb3b5f7ded07d9d6088933710f7b66c044d513cd668c08c79a"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-assessment-access-sql-build.log",
+      "sha256": "1fd28819e8fc50e204c066938e668605712beddedaf293933fca6af306e75623"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-assessment-access-sql.log",
+      "sha256": "6c2c52a9ac7cf0afc88d40ca81ef63f87fa8b25583476038055e5e439b7c532c"
+    }
+  ],
+  "normalBinaries": [
+    {
+      "file": "apps/api/bin/Debug/net10.0/AcademyDesk.Api.dll",
+      "sha256": "10ecb9da46c8198affae586776aca4747244cda18670dde8a1892ed20170f614"
+    },
+    {
+      "file": "QA/tools/SqlHarness/bin/Debug/net10.0/SqlHarness.dll",
+      "sha256": "7c165e280c7752cfaef4e56d45062445a9f7181bab3fd5ce6aa12d32b7194c94"
+    }
+  ]
+}

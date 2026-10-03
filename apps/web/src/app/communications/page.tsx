@@ -16,6 +16,7 @@ type Template = {
   name: string;
   body: string;
   isActive: boolean;
+  status: string;
 };
 type Notification = {
   id: string;
@@ -31,6 +32,9 @@ const variablesFrom = (value: string) => [
     Array.from(value.matchAll(/\{\{([a-zA-Z0-9_]+)\}\}/g), (match) => match[1]),
   ),
 ];
+// Disabled overrides availability; Draft/Approved retain the existing local policy.
+const templateAvailable = (template: Template) =>
+  template.isActive && template.status?.trim().toLowerCase() !== "disabled";
 export default function CommunicationsPage() {
   const [academy, setAcademy] = useState<Academy>();
   const [students, setStudents] = useState<Person[]>([]);
@@ -90,9 +94,9 @@ export default function CommunicationsPage() {
       .catch(() => setMessage("Messages could not be loaded."));
   }, []);
   function chooseTemplate(id: string) {
-    setTemplateId(id);
     const template = templates.find((item) => item.id === id);
-    if (!template) return;
+    if (!template || !templateAvailable(template)) { detachTemplate(); return; }
+    setTemplateId(id);
     setChannel(template.channel);
     setTitle(template.name);
     setBody(template.body);
@@ -102,9 +106,29 @@ export default function CommunicationsPage() {
       ),
     );
   }
+  function detachTemplate() {
+    // Keep the visible composed text, not hidden template/variable state.
+    setBody((current) => current.replace(/\{\{([a-zA-Z0-9_]+)\}\}/g, (match, name: string) => variables[name] ?? match));
+    setTemplateId("");
+    setVariables({});
+  }
+  function chooseRecipientType(value: string) {
+    if (value !== recipientType && (value === "Academy" || isAnnouncement)) detachTemplate();
+    if (value === "Academy") setChannel("InApp");
+    setRecipientType(value);
+    setRecipientId("");
+  }
+  function chooseChannel(value: string) {
+    if (selectedTemplate && selectedTemplate.channel !== value) detachTemplate();
+    setChannel(value);
+  }
   async function create(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!academy || (!isAnnouncement && !recipientId)) return;
+    if (!isAnnouncement && templateId && (!selectedTemplate || !templateAvailable(selectedTemplate)))
+      return setMessage("The selected template is unavailable. Choose another template or remove it.");
+    if (!isAnnouncement && templateId && selectedTemplate?.channel !== channel)
+      return setMessage("The selected template does not match this channel. Choose a matching template or remove it.");
     const scheduledAtUtc = isAnnouncement
       ? announcementStartDate
         ? new Date(`${announcementStartDate}T${announcementStartTime}:00`).toISOString()
@@ -124,9 +148,9 @@ export default function CommunicationsPage() {
           message: body,
           channel: isAnnouncement ? "InApp" : channel,
           scheduledAtUtc,
-          templateId: templateId || null,
+          templateId: isAnnouncement ? null : templateId || null,
           variables: isAnnouncement
-            ? { ...variables, audiences: announcementAudience }
+            ? { audiences: announcementAudience }
             : variables,
           isImportant: isAnnouncement,
           displayHours: isAnnouncement ? Number(displayHours) : null,
@@ -188,10 +212,7 @@ export default function CommunicationsPage() {
                 <StandardSelectField
                   name="recipientType"
                   value={recipientType}
-                  onChange={(value) => {
-                    setRecipientType(value);
-                    setRecipientId("");
-                  }}
+                  onChange={chooseRecipientType}
                   placeholder="Select message type"
                   options={[
                     { value: "Guardian", label: "Parent" },
@@ -264,7 +285,7 @@ export default function CommunicationsPage() {
                       onChange={chooseTemplate}
                       placeholder="Manual message"
                       options={templates
-                        .filter((item) => item.isActive)
+                        .filter(templateAvailable)
                         .map((item) => ({
                           value: item.id,
                           label: `${item.channel} · ${item.name}`,
@@ -311,7 +332,7 @@ export default function CommunicationsPage() {
                     <StandardSelectField
                       name="channel"
                       value={channel}
-                      onChange={setChannel}
+                      onChange={chooseChannel}
                       placeholder="Select channel"
                       options={[
                         { value: "InApp", label: "In-app notification" },

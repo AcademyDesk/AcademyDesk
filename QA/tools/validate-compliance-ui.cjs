@@ -1,0 +1,22 @@
+const fs = require('node:fs'), path = require('node:path'), crypto = require('node:crypto'), cp = require('node:child_process'), assert = require('node:assert/strict');
+const root = path.resolve(__dirname, '../..'), read = file => fs.readFileSync(path.join(root, file), 'utf8').replace(/^\uFEFF/, ''), sha = file => crypto.createHash('sha256').update(fs.readFileSync(path.join(root, file))).digest('hex');
+const snapshot = JSON.parse(read('QA/REPORTS/PHASE_2B_COMPLIANCE_UI_SOURCE_SNAPSHOT.json')), prior = JSON.parse(read('QA/REPORTS/PHASE_2B_COMPLIANCE_IDENTITY_SOURCE_SNAPSHOT.json'));
+assert.equal(cp.execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(), snapshot.commit);
+for (const entry of [...snapshot.sources, ...snapshot.evidence, ...snapshot.binaries, ...snapshot.normalBinaries]) assert.equal(sha(entry.file), entry.sha256, entry.file);
+const intentional = ['apps/web/src/app/compliance/page.tsx', 'QA/00_QA_README.md', 'QA/REPORTS/PHASE_2_START_PLAN.md', 'QA/ISSUES/INDEX.md', 'QA/03_TEST_MATRIX.md', 'QA/ISSUES/BUG-DATA-0045.md'];
+for (const entry of [...prior.sources, ...prior.evidence, ...prior.binaries, ...prior.normalBinaries]) if (!intentional.includes(entry.file)) assert.equal(sha(entry.file), entry.sha256, 'Accepted predecessor preserved ' + entry.file);
+for (const entry of snapshot.beforeSources) assert.equal(entry.sha256, prior.sources.find(x => x.file === entry.file).sha256, 'Accepted starting source ' + entry.file);
+assert.deepEqual(snapshot.normalBinaries, prior.normalBinaries);
+assert.match(read('QA/EVIDENCE/logs/phase-2b-compliance-ui-baseline.log'), /tests 4[\s\S]*pass 0[\s\S]*fail 4/);
+assert.match(read('QA/EVIDENCE/logs/phase-2b-compliance-ui-baseline.log'), /Cannot read properties of null \(reading 'reset'\)/);
+assert.match(read('QA/EVIDENCE/logs/phase-2b-compliance-ui-suite.log'), /tests 45[\s\S]*pass 45[\s\S]*fail 0/);
+assert.match(read('QA/EVIDENCE/logs/phase-2b-compliance-ui-harness-intermediate.log'), /tests 45[\s\S]*pass 7[\s\S]*fail 38/);
+assert.match(read('QA/EVIDENCE/logs/phase-2b-compliance-ui-adjacent-regression.log'), /tests 153[\s\S]*pass 153[\s\S]*fail 0/);
+const verification = JSON.parse(read('QA/EVIDENCE/compliance-ui-verification.json'));
+for (const key of ['targetLint', 'typecheck', 'diffCheck']) assert.equal(verification[key].exitCode, 0);
+assert.equal(verification.targetLint.errors, 0); assert.equal(verification.targetLint.warnings, 0); assert.equal(verification.backendRerun, false);
+assert.deepEqual(snapshot.checks, { newControlledTsx: 45, baselineCases: 4, baselineFailures: 4, adjacentReusedRegression: 153, priorBackend: 988, backendRerun: false, typecheck: 'PASS', targetLint: 'PASS', frontendBuild: 'NOT RUN', complianceHttpSql: 'NOT RUN', browserDevice: 'NOT RUN', closure: 'OPEN', devServices: 'UNCHANGED' });
+assert.match(read('QA/ISSUES/BUG-DATA-0045.md'), /\| Status \| OPEN \|/);
+for (const file of ['QA/REPORTS/PHASE_2B_COMPLIANCE_UI_REPAIR.md', 'QA/ISSUES/BUG-DATA-0045.md']) for (const match of read(file).matchAll(/\]\(([^)]+)\)/g)) { const target = match[1].split('#')[0]; if (target && !/^https?:/.test(target)) assert.ok(fs.existsSync(path.resolve(root, path.dirname(file), target)), target); }
+assert.equal(cp.spawnSync('git', ['diff', '--check'], { cwd: root, encoding: 'utf8' }).status, 0);
+console.log('PASS Compliance typed UI:4 reproduced baseline failures;45 actual controlled TSX/153 reused adjacent frontend PASS; TypeScript/target lint PASS. Typed options/ledger names, independent reset/draft retention, async capture, durable notices, refresh-only recovery and duplicate guards. Prior988 backend/API/harness/schema/shared controls/evidence/binaries/normal assemblies retained, not rerun. Real compliance HTTP-SQL/audits/browser/device/build NOT RUN. Issue/Phase2B OPEN; next real HTTP/disposable SQL, Sol High. No dev DB/services/Azure/commit/deploy.');

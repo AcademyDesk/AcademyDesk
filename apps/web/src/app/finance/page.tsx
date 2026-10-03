@@ -18,6 +18,7 @@ type Collection = {
   id: string;
   invoiceNumber: string;
   totalAmount: number;
+  balance: number;
   currency: string;
   dueDate: string;
   status: string;
@@ -28,7 +29,6 @@ const money = (amount: number, currency = "INR") =>
   new Intl.NumberFormat("en-IN", {
     style: "currency",
     currency,
-    maximumFractionDigits: 0,
   }).format(amount);
 const modules = [
   [
@@ -227,7 +227,7 @@ export default function FinancePage() {
                   <tr>
                     <th className="pb-3 pr-4">Invoice</th>
                     <th className="pb-3 pr-4">Due</th>
-                    <th className="pb-3 pr-4">Exposure</th>
+                    <th className="pb-3 pr-4">Remaining due</th>
                     <th className="pb-3">Priority</th>
                   </tr>
                 </thead>
@@ -239,7 +239,7 @@ export default function FinancePage() {
                       </td>
                       <td className="py-3 pr-4">{item.dueDate}</td>
                       <td className="py-3 pr-4">
-                        {money(item.totalAmount, item.currency)}
+                        {money(item.balance, item.currency)}
                       </td>
                       <td className="py-3">
                         <span

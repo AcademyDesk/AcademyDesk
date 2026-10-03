@@ -1,0 +1,121 @@
+{
+  "capturedUtcDate": "2026-09-30",
+  "scope": "Phase 2A harness/test source and separately approved media foundation; selected existing UI changes retained. Not a hash of every file in the dirty tree. Phase 1 comparison uses original UTF-8 text SHA256; scoped records use raw bytes SHA256. Reports/artifacts, generated bin/obj/build output, ignored files and credentials excluded.",
+  "commit": "20bb6047f9edf733ac8e2a226621cc582ec54b3c",
+  "baselineFileCount": 411,
+  "changedBaseline": [
+    {
+      "file": "apps/api/AcademyDesk.Api.csproj",
+      "baseline": "bf547a3b29b9167bd17efa64506656a7a447b4e1895c9e381fefe21dd04523a8",
+      "current": "ecd476787b7ebfa2a36bd6870e58bcfcc27bf481f8aea2a25c7a8379c18aeed5"
+    },
+    {
+      "file": "apps/api/Program.cs",
+      "baseline": "63fb9b121b5fc7bc4b905877eaf65cb4a9d123826950292efb8687b3fda2b7ae",
+      "current": "c9b12fac04acda567ab395dd53cacf6d3ebcac3208ffb54ea638a2301a08d89e"
+    },
+    {
+      "file": "tests/AcademyDesk.Api.Tests/AcademyDesk.Api.Tests.csproj",
+      "baseline": "7b2f4fc5058187f809d1b68e8f44129bddba8ee21813719ff89e0f668f963115",
+      "current": "4f861add4040b40023d4f9587b691cc59da93f8d37f5f9e8bab547645177f59c"
+    }
+  ],
+  "unchangedBaselineFiles": 408,
+  "records": [
+    {
+      "file": "QA/tools/SqlHarness/AdjustmentReproduction.cs",
+      "sha256": "792c8889fc0b1f2b8a1cca5cb845514ef1d59e482ce2874ec42eddec92ee5ae9"
+    },
+    {
+      "file": "QA/tools/SqlHarness/FinanceReproduction.cs",
+      "sha256": "770d7842b1ea32cd35b0dd332cfae0f9c6d6244c97e2321536a546f5c2f56df7"
+    },
+    {
+      "file": "QA/tools/SqlHarness/PaymentTransitionReproduction.cs",
+      "sha256": "4219629d541a0f61e057455f71a6e6df3c2c816bc4869f2889b313fd2f5e1f1e"
+    },
+    {
+      "file": "QA/tools/SqlHarness/PayrollReproduction.cs",
+      "sha256": "fb8c9f06a6a32de535009b7687a5201eae77455d2d30d2a23280c04d703a9b80"
+    },
+    {
+      "file": "QA/tools/SqlHarness/Program.cs",
+      "sha256": "acc323787cd2064562b48e53264d1779c39476e8081ec583d199015aeedd1507"
+    },
+    {
+      "file": "QA/tools/SqlHarness/RuntimeEvidence.cs",
+      "sha256": "77a0e6c985b39eb3f43f8324df13cc74266c2ad79e4a3e1f1201f525b59b8c6f"
+    },
+    {
+      "file": "QA/tools/SqlHarness/SqlHarness.csproj",
+      "sha256": "91afa34f9f15109702311a56ce2e736ac1d330bed17e6c254fa389eeabbf0694"
+    },
+    {
+      "file": "apps/api/AcademyDesk.Api.csproj",
+      "sha256": "ecd476787b7ebfa2a36bd6870e58bcfcc27bf481f8aea2a25c7a8379c18aeed5"
+    },
+    {
+      "file": "apps/api/Infrastructure/Media/AzureMediaBlobStore.cs",
+      "sha256": "d2e93563cb46c5845e714fe41c6e999745f01dca0b6248ca3553218b54557bd5"
+    },
+    {
+      "file": "apps/api/Infrastructure/Media/IMediaBlobStore.cs",
+      "sha256": "41a1bab4751983dbf724b4a51e2b04ba3455e7d634ec649ad258aca0e6bddcd3"
+    },
+    {
+      "file": "apps/api/Infrastructure/Media/MediaStorageOptions.cs",
+      "sha256": "dd52ce52722876f2d3fc1b102cd77053d067f18a97a64f0148a1691fabfb34ba"
+    },
+    {
+      "file": "apps/api/Infrastructure/Media/MediaStorageRegistration.cs",
+      "sha256": "ffe035c7ddceee9ea785383810c649c3049579ec5dbe4e3940a5ef884323ad71"
+    },
+    {
+      "file": "apps/api/Infrastructure/Media/MediaUpload.cs",
+      "sha256": "b90b95670cfa9f744ef2b15b6a053adc8e1aff6d22a5949178526c6515207d43"
+    },
+    {
+      "file": "apps/api/Program.cs",
+      "sha256": "c9b12fac04acda567ab395dd53cacf6d3ebcac3208ffb54ea638a2301a08d89e"
+    },
+    {
+      "file": "apps/api/appsettings.Production.json",
+      "sha256": "0ee5871cf4958ad89808b312748c53d639ec3af83bfa2c0184ea1a5bdc803301"
+    },
+    {
+      "file": "apps/web/src/app/student-onboarding/page.tsx",
+      "sha256": "57221a2481d008e49749acd86aa6453efce8b661a4b36d7085cae983dc927017"
+    },
+    {
+      "file": "apps/web/src/app/student-profile/page.tsx",
+      "sha256": "eccfdba909c7532048ea4a0a1fa1413ccbe4abf99a3cb1ad8468d8c0c8ee7a93"
+    },
+    {
+      "file": "tests/AcademyDesk.Api.Tests/AcademyDesk.Api.Tests.csproj",
+      "sha256": "4f861add4040b40023d4f9587b691cc59da93f8d37f5f9e8bab547645177f59c"
+    },
+    {
+      "file": "tests/AcademyDesk.Api.Tests/Infrastructure/QaApiFactory.cs",
+      "sha256": "25162c313b51c89b9acdb9b903736c7a118b1405493c147204a45bf9c5e388ba"
+    },
+    {
+      "file": "tests/AcademyDesk.Api.Tests/Infrastructure/QaApiFactoryTests.cs",
+      "sha256": "cfd301a1e97366548576d16054f97bb60a498a3eebb681efd544a159bb7604eb"
+    },
+    {
+      "file": "tests/AcademyDesk.Api.Tests/Infrastructure/QaRunGuard.cs",
+      "sha256": "fb5810bab33f29797f7eae5874592961a5130a87a816110507f3e6a4079f06db"
+    },
+    {
+      "file": "tests/AcademyDesk.Api.Tests/Infrastructure/QaRunGuardTests.cs",
+      "sha256": "86f67c61da04ce238511940c33d2296b55c400185b85ca7ade53647e66b845f7"
+    },
+    {
+      "file": "tests/AcademyDesk.Api.Tests/MediaUploadTests.cs",
+      "sha256": "a232d11963634ce398e52fbcbee3790502641ded0e2c2b9dc82fbeb38416b5dd"
+    }
+  ],
+  "manifestHash": "cdb900c39e26ee7eb23757f618ff0660c39b308fb67fb46f71b56eacc9384512",
+  "firstCaptureOnlyDifferences": "RuntimeEvidence.cs console label changed from all /api/auth/ routes (14) to framework-only Identity routes (10); route serialization and schema stayed identical.",
+  "firstCaptureRuntimeEvidenceSha256": "be452fab782b6bc61db8192981ec3a6b83325f55576deeeaa57b4a6af6f6d61b"
+}

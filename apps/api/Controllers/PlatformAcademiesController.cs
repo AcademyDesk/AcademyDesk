@@ -13,7 +13,7 @@ namespace AcademyDesk.Api.Controllers;
 [ApiController]
 [Authorize]
 [Route("api/platform/academies")]
-public sealed class PlatformAcademiesController(AcademyDeskDbContext db, UserManager<ApplicationUser> users, RoleManager<ApplicationRole> roles) : ControllerBase
+public sealed class PlatformAcademiesController(AcademyDeskDbContext db, UserManager<ApplicationUser> users, RoleManager<ApplicationRole> roles, IdentityDbContext identityDb) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult> List(CancellationToken token)
@@ -30,17 +30,42 @@ public sealed class PlatformAcademiesController(AcademyDeskDbContext db, UserMan
         var requestedLogin = request.AdminUserName.Trim();
         var requestedEmail = requestedLogin.Contains('@') ? requestedLogin : $"{requestedLogin}@academydesk.local";
         if (await users.FindByEmailAsync(requestedEmail) is not null) return Conflict(new { message = "That academy admin user name already exists." });
-        if (!await roles.RoleExistsAsync("AcademyAdmin")) await roles.CreateAsync(new ApplicationRole { Name = "AcademyAdmin" });
+        var trialDays = await db.PlatformSettings.AsNoTracking().OrderByDescending(x => x.UpdatedAtUtc ?? x.CreatedAtUtc).Select(x => (int?)x.DefaultTrialDays).FirstOrDefaultAsync(token) ?? 30;
+        var trialStartsAtUtc = DateTime.UtcNow;
+        if (trialDays < 1 || trialDays > (DateTime.MaxValue - trialStartsAtUtc).TotalDays)
+            return BadRequest(new { message = "The configured trial duration is invalid. Update platform settings before onboarding." });
+        // This platform route has no academyId, so the academy action filter cannot
+        // own its boundary. Keep academy, Identity role/user and success audit atomic.
+        var identityConnection = AcademyIdentityTransaction.Validate(db, identityDb);
+        await using var transaction = await db.Database.BeginTransactionAsync(token);
+        await using var identityTransaction = await AcademyIdentityTransaction.EnlistAsync(db, identityDb, transaction, identityConnection, token);
+        if (!await roles.RoleExistsAsync("AcademyAdmin"))
+        {
+            IdentityResult roleResult;
+            try { roleResult = await roles.CreateAsync(new ApplicationRole { Name = "AcademyAdmin" }); }
+            catch (Exception exception) when (IdentityProvisioningConflict.RoleName(exception))
+            {
+                return Conflict(new { message = "Another request is initializing the Academy Admin role. Please retry. No changes were saved." });
+            }
+            if (!roleResult.Succeeded) return BadRequest(new { message = "The Academy Admin role could not be created. No changes were saved." });
+        }
         var trial = SubscriptionPlanCatalog.Get("Trial");
-        var academy = new Academy { Name = request.AcademyName.Trim(), LegalName = request.LegalName?.Trim(), CountryCode = string.IsNullOrWhiteSpace(request.CountryCode) ? "IN" : request.CountryCode.Trim().ToUpperInvariant(), TimeZone = "Asia/Kolkata", SubscriptionPlan = trial.Name, SubscriptionStatus = "Trial", SubscriptionEndsAtUtc = DateTime.UtcNow.AddDays(30), StudentLimit = trial.StudentLimit, StaffLimit = trial.StaffLimit, EnabledModulesJson = JsonSerializer.Serialize(trial.Modules) };
+        var academy = new Academy { Name = request.AcademyName.Trim(), LegalName = request.LegalName?.Trim(), CountryCode = string.IsNullOrWhiteSpace(request.CountryCode) ? "IN" : request.CountryCode.Trim().ToUpperInvariant(), TimeZone = "Asia/Kolkata", SubscriptionPlan = trial.Name, SubscriptionStatus = "Trial", SubscriptionEndsAtUtc = trialStartsAtUtc.AddDays(trialDays), StudentLimit = trial.StudentLimit, StaffLimit = trial.StaffLimit, EnabledModulesJson = JsonSerializer.Serialize(trial.Modules) };
         db.Academies.Add(academy); await db.SaveChangesAsync(token);
         var userName = request.AdminUserName.Trim(); var email = userName.Contains('@') ? userName : $"{userName}@academydesk.local";
         var admin = new ApplicationUser { UserName = email, Email = email, EmailConfirmed = true, DisplayName = string.IsNullOrWhiteSpace(request.AdminDisplayName) ? userName : request.AdminDisplayName.Trim(), AcademyId = academy.Id };
-        var result = await users.CreateAsync(admin, request.Password);
-        if (!result.Succeeded) { db.Academies.Remove(academy); await db.SaveChangesAsync(token); return BadRequest(new { message = string.Join(" ", result.Errors.Select(x => x.Description)) }); }
-        await users.AddToRoleAsync(admin, "AcademyAdmin");
+        IdentityResult result;
+        try { result = await users.CreateAsync(admin, request.Password); }
+        catch (Exception exception) when (IdentityProvisioningConflict.UserName(exception))
+        {
+            return Conflict(new { message = "Another account request conflicted with this submission. Please retry, or use a different login if it already exists. No changes were saved." });
+        }
+        if (!result.Succeeded) return BadRequest(new { message = string.Join(" ", result.Errors.Select(x => x.Description)) + " No changes were saved." });
+        var assignment = await users.AddToRoleAsync(admin, "AcademyAdmin");
+        if (!assignment.Succeeded) return BadRequest(new { message = "The Academy Admin role could not be assigned. No changes were saved." });
         await Audit("Academy onboarded", "Academy", academy.Id, new { academy.Name, admin.DisplayName }, token);
         await db.SaveChangesAsync(token);
+        await transaction.CommitAsync(token);
         return Created($"/api/platform/academies/{academy.Id}", new { academy.Id, academy.Name, admin.UserName, admin.DisplayName });
     }
 
@@ -63,7 +88,8 @@ public sealed class PlatformAcademiesController(AcademyDeskDbContext db, UserMan
         var academy = await db.Academies.SingleOrDefaultAsync(x => x.Id == academyId, token);
         if (academy is null) return NotFound();
         if (string.IsNullOrWhiteSpace(request.SubscriptionPlan) || string.IsNullOrWhiteSpace(request.SubscriptionStatus)) return BadRequest(new { message = "Subscription plan and status are required." });
-        var plan = SubscriptionPlanCatalog.Get(request.SubscriptionPlan);
+        if (!SubscriptionPlanCatalog.Plans.TryGetValue(request.SubscriptionPlan, out var plan))
+            return BadRequest(new { message = "Choose a valid subscription plan." });
         academy.SubscriptionPlan = plan.Name;
         academy.SubscriptionStatus = request.SubscriptionStatus.Trim();
         academy.SubscriptionEndsAtUtc = request.SubscriptionEndsAtUtc;

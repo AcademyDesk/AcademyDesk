@@ -1,7 +1,12 @@
 using AcademyDesk.Api.Domain.Identity;
+using AcademyDesk.Api.Data;
+using AcademyDesk.Api.Domain.Entities;
+using AcademyDesk.Api.Security;
+using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace AcademyDesk.Api.Controllers;
 
@@ -10,9 +15,13 @@ namespace AcademyDesk.Api.Controllers;
 [Route("api/academies/{academyId:guid}/staff")]
 public sealed class StaffController(
     UserManager<ApplicationUser> userManager,
-    RoleManager<ApplicationRole> roleManager) : ControllerBase
+    RoleManager<ApplicationRole> roleManager,
+    AcademyDeskDbContext db,
+    IdentityDbContext identityDb) : ControllerBase
 {
     private static readonly string[] AllowedRoles = ["Manager", "Operations", "Sales", "Marketing", "FinanceUser", "FrontDesk"];
+    // Staff assignment must not revoke separate portal/admin identities.
+    private static readonly string[] ProtectedRoles = ["Owner", "AcademyAdmin", "Student", "Guardian", "Teacher"];
 
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<StaffAccountSummary>>> List(Guid academyId)
@@ -89,7 +98,8 @@ public sealed class StaffController(
     }
 
     [HttpPatch("{staffId:guid}/role")]
-    public async Task<ActionResult> UpdateRole(Guid academyId, Guid staffId, StaffRoleRequest request)
+    [AtomicAcademyMutation(IncludeIdentity = true)]
+    public async Task<ActionResult> UpdateRole(Guid academyId, Guid staffId, StaffRoleRequest request, CancellationToken token)
     {
         if (!await IsOwner(academyId)) return Forbid();
         if (!AllowedRoles.Contains(request.Role, StringComparer.OrdinalIgnoreCase))
@@ -98,8 +108,13 @@ public sealed class StaffController(
         var staff = await userManager.FindByIdAsync(staffId.ToString());
         if (staff?.AcademyId != academyId) return NotFound();
         var requestedRole = AllowedRoles.Single(role => role.Equals(request.Role, StringComparison.OrdinalIgnoreCase));
+        // The academy filter normally owns the Identity + audit transaction.
+        // Its platform-owner bypass still requires an atomic local boundary.
+        var identityConnection = db.Database.CurrentTransaction is null ? AcademyIdentityTransaction.Validate(db, identityDb) : null;
+        await using var transaction = identityConnection is not null ? await db.Database.BeginTransactionAsync(token) : null;
+        await using var identityTransaction = transaction is not null ? await AcademyIdentityTransaction.EnlistAsync(db, identityDb, transaction, identityConnection!, token) : null;
         var currentRoles = await userManager.GetRolesAsync(staff);
-        var removableRoles = currentRoles.Where(role => AllowedRoles.Contains(role, StringComparer.OrdinalIgnoreCase)).ToArray();
+        var removableRoles = currentRoles.Where(role => !ProtectedRoles.Contains(role, StringComparer.OrdinalIgnoreCase)).ToArray();
         if (removableRoles.Length > 0)
         {
             var removeResult = await userManager.RemoveFromRolesAsync(staff, removableRoles);
@@ -107,8 +122,23 @@ public sealed class StaffController(
         }
         var addResult = await userManager.AddToRoleAsync(staff, requestedRole);
         if (!addResult.Succeeded) return Problem("The new staff role could not be assigned.");
-        await userManager.UpdateSecurityStampAsync(staff);
-        return Ok(new { staff.Id, Roles = new[] { requestedRole } });
+        var stampResult = await userManager.UpdateSecurityStampAsync(staff);
+        if (!stampResult.Succeeded) return Problem("Staff sessions could not be invalidated. No changes were saved.");
+        var resultingRoles = await userManager.GetRolesAsync(staff);
+        if (transaction is not null)
+        {
+            var actor = await userManager.GetUserAsync(User);
+            db.AuditLogs.Add(new AuditLog
+            {
+                AcademyId = academyId, ActorUserId = actor!.Id,
+                Action = $"{Request.Method} Staff", EntityType = "Staff",
+                MetadataJson = JsonSerializer.Serialize(new { Route = Request.Path.Value, Action = ControllerContext.ActionDescriptor.DisplayName }),
+                IpAddress = HttpContext.Connection.RemoteIpAddress?.ToString()
+            });
+            await db.SaveChangesAsync(token);
+            await transaction.CommitAsync(token);
+        }
+        return Ok(new { staff.Id, Roles = resultingRoles.ToArray() });
     }
 
     [HttpPatch("{staffId:guid}/password")]

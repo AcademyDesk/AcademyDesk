@@ -1,0 +1,23 @@
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),cp=require('node:child_process'),os=require('node:os'),assert=require('node:assert/strict');
+const root=path.resolve(__dirname,'../..'),read=f=>fs.readFileSync(path.join(root,f),'utf8').replace(/^\uFEFF/,''),sha=f=>crypto.createHash('sha256').update(fs.readFileSync(path.join(root,f))).digest('hex');
+const snapshot=JSON.parse(read('QA/REPORTS/PHASE_2B_ASSESSMENT_ACCESS_SOURCE_SNAPSHOT.json'));
+assert.equal(cp.execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim(),snapshot.commit);
+for(const x of [...snapshot.sources,...snapshot.binaries,...snapshot.evidence,...snapshot.normalBinaries])assert.equal(sha(x.file),x.sha256,x.file);
+const roster=JSON.parse(read('QA/REPORTS/PHASE_2B_ASSESSMENT_ROSTER_SOURCE_SNAPSHOT.json'));
+for(const x of roster.sources.filter(x=>x.file.startsWith('apps/api/Controllers/')||x.file==='apps/api/Infrastructure/AssessmentGrading.cs'))assert.equal(sha(x.file),x.sha256,'Previous grading/roster writer changed');
+for(const x of snapshot.normalBinaries)assert.equal(x.sha256,roster.normalBinaries.find(y=>y.file===x.file).sha256,'Normal development assembly changed');
+const grading=JSON.parse(read('QA/REPORTS/PHASE_2B_ASSESSMENT_GRADE_SOURCE_SNAPSHOT.json'));
+for(const x of grading.sources.filter(x=>x.file.startsWith('apps/web/')))assert.equal(sha(x.file),x.sha256,'Frontend changed in backend-only access slice');
+const trx=read('QA/EVIDENCE/assessment-access/assessment-access-suite.trx'),results=[...trx.matchAll(/<UnitTestResult\b[^>]*\boutcome="([^"]+)"/g)].map(x=>x[1]);
+assert.equal(results.length,417);assert.ok(results.every(x=>x==='Passed'));assert.equal([...trx.matchAll(/testName="AcademyDesk.Api.Tests.AssessmentAccessTests\./g)].length,9);
+const log=read('QA/EVIDENCE/logs/phase-2b-assessment-access-sql.log');
+assert.equal([...log.matchAll(/^ACADEMICACCESS CASE .+ PASS\.$/gm)].length,77);assert.match(log,/ACADEMICACCESS REGRESSION PASS:77 cases/);assert.match(log,/QA AssessmentAccess exit=0/);
+assert.match(log,/PASS: application migrations=81, identity migrations=7, scoped runtime login verified; run-owned database and login removed/);
+for(const label of ['delegated-created-result-save','delegated-created-result-read','teacher-own-read','teacher-own-save','grant-revoked-permanent-same-token-save','lookup-still-denied-batches','lookup-still-denied-students','lookup-still-denied-enrollments','lookup-still-denied-grading-schemes/active'])assert.ok(log.includes('ACADEMICACCESS CASE '+label+' PASS.'),label);
+const id=log.match(/run=([a-f0-9]{32}) container=academydesk-qa-\1 /)[1],port=Number(log.match(/^QA SQL port=(\d+)/m)[1]);
+assert.equal(cp.spawnSync('docker',['inspect',`academydesk-qa-${id}`],{encoding:'utf8'}).status,1);assert.equal(fs.existsSync(path.join(os.tmpdir(),'AcademyDesk-QA',id)),false);
+assert.equal(cp.execFileSync('powershell',['-NoProfile','-Command',`@(Get-NetTCPConnection -LocalPort ${port} -State Listen -ErrorAction SilentlyContinue).Count`],{encoding:'utf8'}).trim(),'0');
+assert.match(read('QA/ISSUES/BUG-FUNC-0020.md'),/\| Status \| OPEN \|/);
+for(const f of ['QA/REPORTS/PHASE_2B_ASSESSMENT_ACCESS_REPAIR.md','QA/ISSUES/BUG-FUNC-0020.md'])for(const m of read(f).matchAll(/\]\(([^)]+)\)/g)) {const target=m[1].split('#')[0];if(target&&!/^https?:/.test(target))assert.ok(fs.existsSync(path.resolve(root,path.dirname(f),target)),target);}
+cp.execFileSync('git',['diff','--check'],{cwd:root,stdio:'pipe'});
+console.log('PASS assessment-result API access mapping: backend417/417 (9 new), real HTTP/SQL77, prior result writers/frontend/normal binaries unchanged and owned cleanup verified. Four page lookup dependencies, historical eligibility and full release acceptance remain OPEN.');

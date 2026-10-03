@@ -1,0 +1,27 @@
+# Phase 2B — Course hidden-setting preservation
+
+Frontend checkpoint retained; [Course controller checks](PHASE_2B_COURSE_CONTRACT_CHECK.md) now add45 direct-controller cases/backend322 PASS without changing application code. Its233 frontend results remain historical, not rerun. HTTP/SQL/browser/device acceptance remains open.
+
+2026-10-01. Bounded frontend repair of accepted [BUG-DATA-0028](../ISSUES/BUG-DATA-0028.md), agreed Sol High allocation. No repeated Astra audit. Issue and Phase 2B remain OPEN for HTTP/SQL/browser/device/all-linked/critical acceptance. No commit/push/deployment.
+
+## Change
+
+The [Course page](../../apps/web/src/app/courses/page.tsx) now uses a complete Course summary type and [replacement payload helper](../../apps/web/src/lib/course-update.ts) for edit and deactivate/reactivate. The current unchanged API already returns the full summary. Updates retain course code, subject, description, duration, weekly sessions, session minutes, minimum/maximum ages, delivery mode, prerequisite text, learning outcomes and publication state. Edits override only visible name/type/level; status changes override only isActive. Null, zero and false are preserved exactly; clearing visible level remains intentional. Only DTO keys are emitted, not identity/tenant/read-only fields. Creation, validation, permissions, replacement API semantics and structured prerequisite rows are unchanged. Previous confirmations/reset/error/pending guards remain intact.
+
+This prevents loss caused by the current compact-editor payload; it does not solve cross-tab/concurrent replacement or future DTO drift. Full summary fields are required in the TypeScript model rather than silently defaulting unknown hidden values. This is frontend-only: no controller, entity, schema, API assembly, SQL-harness assembly or database mutation.
+
+## Checks
+
+- [Before controlled checks](../EVIDENCE/logs/phase-2b-course-preservation-before-client.log):24 cases,3 PASS/21 FAIL. Actual original TSX sends abbreviated bodies: populated duration is null and extended/publication keys are absent. Null-control failures also identify omitted DTO keys; those are not falsely claimed as populated-value loss. Three definite-rejection controls already pass.
+- [24 new preservation checks](../tools/course-preservation.test.cjs):Music/Tuition/Coaching x populated/null x edit/deactivate/reactivate (18),3 intentional visible-level clears,3 rejection/detail-retention controls. Whole expected bodies and source-record immutability are asserted. Minimum age0 and publication true/false are covered. Null fixtures require no optional details. Status and edit are independent fixtures.
+- [Targeted final](../EVIDENCE/logs/phase-2b-course-preservation-targeted.log):73/73 = new24 plus existing49 feedback cases. [Combined frontend](../EVIDENCE/logs/phase-2b-course-preservation-client.log):233/233 = prior209 plus24. Feedback test fixtures now contain the real full summary and exact PUT expectations expand to the intended complete contract; no assertion removed or relaxed. POST expectations are unchanged.
+- Actual TSX handlers execute with controlled hooks/API. No live React/DOM/browser, real API validation/HTTP, persisted row/transaction, database no-write, permission or device acceptance is claimed. Rejected controls prove no readback and retained client details, not server no-write behavior. Static key mapping verifies the helper emits all current CourseRequest properties plus IsActive; it is not endpoint execution.
+- [TypeScript](../EVIDENCE/logs/phase-2b-course-preservation-typecheck.log) PASS. [Before lint](../EVIDENCE/logs/phase-2b-course-preservation-before-lint.json)/[after lint](../EVIDENCE/logs/phase-2b-course-preservation-after-lint.json):Course loading-effect error and dependency warning unchanged (1 error/1 warning), helper clean. Exact remaining diagnostic rules/reasons/loader checked, ignoring shifted source excerpts only; lint gate stays FAIL, no suppression/full-build claim.
+- [Snapshot](PHASE_2B_COURSE_PRESERVATION_SOURCE_SNAPSHOT.json):155 captures;2 changed prior captures (Course page/feedback test),148 prior captures unchanged,5 first captures (helper/new test/new validator/read-only Course controller/entity). API and SQL-harness assemblies unchanged. Historical API277 and SQL x48 results are retained, **not rerun or counted as new evidence**. Original Course pre-edit source is captured by the previous checkpoint and embedded pre-edit lint.
+- [Validator](../tools/validate-course-preservation.cjs)/[output](../EVIDENCE/logs/phase-2b-course-preservation-validation.log) pin exact hashes/delta, unchanged HEAD, baseline/final counts, TypeScript, lint delta, static DTO keys, links and OPEN issue status. The output placeholder was marked PENDING before execution, not acceptance.
+
+HEAD remains20bb6047f9edf733ac8e2a226621cc582ec54b3c; broad dirty work preserved. No normal dev/QA database, new server/container or Azure resource was created, restarted or written. No files/real academy data deleted.
+
+## Remaining
+
+HTTP/SQL edit/status with fresh full-row equality, intentional clears and rejected no-write checks, browser/device/accessibility, all-linked/critical regressions, stale/overlapping reads and concurrent replacements remain pending. No whole-issue/phase closure. Next bounded follow-up: verify the unchanged Course replacement contract with isolated controller-level tests, using Sol High; do not repeat the accepted audit or write the normal development database.

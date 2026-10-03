@@ -1,0 +1,163 @@
+{
+  "date": "2026-09-30",
+  "commit": "20bb6047f9edf733ac8e2a226621cc582ec54b3c",
+  "scope": "Local Phase 2B Teacher resumable upload and Teacher/family bearer-aware material actions; raw-byte SHA256. Prior snapshots remain historical. Existing student UI files are unchanged preservation controls.",
+  "records": [
+    {
+      "file": "apps/api/AcademyDesk.Api.csproj",
+      "sha256": "ecd476787b7ebfa2a36bd6870e58bcfcc27bf481f8aea2a25c7a8379c18aeed5"
+    },
+    {
+      "file": "apps/api/appsettings.Production.json",
+      "sha256": "0ee5871cf4958ad89808b312748c53d639ec3af83bfa2c0184ea1a5bdc803301"
+    },
+    {
+      "file": "apps/api/Controllers/ClassMediaContentController.cs",
+      "sha256": "087b787e1630494340428bcb3ebc36bed331fa03769133652fbdb5306ec785e4"
+    },
+    {
+      "file": "apps/api/Controllers/ClassMediaUploadsController.cs",
+      "sha256": "8b79f3a85b6c6dca8303f4bb8d18df4b011583141b2e67e4dd4e889018a001e5"
+    },
+    {
+      "file": "apps/api/Controllers/TeacherPortalController.cs",
+      "sha256": "b2b0df5e39d07f9200e0f80d81954f69c43915261d1d7ed378ab05600857d226"
+    },
+    {
+      "file": "apps/api/Data/AcademyDeskDbContext.cs",
+      "sha256": "f77581f6e97b38e84dfec3bd022118a8da9858b9c5cb637daa6d1a25c8fa7b1e"
+    },
+    {
+      "file": "apps/api/Domain/Entities/ClassMediaUploadSession.cs",
+      "sha256": "00166f9d0dbfbf315995d39a5db0f0be8a15dbbab02a043516f60339b0969d16"
+    },
+    {
+      "file": "apps/api/Infrastructure/Media/AzureMediaBlobStore.cs",
+      "sha256": "ceab9c8fc4d0fa363f43c35195ca71c8f40db96c4508b409a38e7d5931b212a3"
+    },
+    {
+      "file": "apps/api/Infrastructure/Media/ClassMaterialAccess.cs",
+      "sha256": "4a05071cfb919bbe8421b6fc34921a54a2b9ae3a8a73dba29e4d2f308a371668"
+    },
+    {
+      "file": "apps/api/Infrastructure/Media/ClassMediaUploadPolicy.cs",
+      "sha256": "5836748a4719136cf2b56b177d21e6a523281b3ad3de827c0352a343b42b99b9"
+    },
+    {
+      "file": "apps/api/Infrastructure/Media/IMediaBlobStore.cs",
+      "sha256": "d3c62ae204e55e05fb09290870c0b12824f9a0be5757b3d850aad8595e96180d"
+    },
+    {
+      "file": "apps/api/Infrastructure/Media/MediaStorageOptions.cs",
+      "sha256": "dd52ce52722876f2d3fc1b102cd77053d067f18a97a64f0148a1691fabfb34ba"
+    },
+    {
+      "file": "apps/api/Infrastructure/Media/MediaStorageRegistration.cs",
+      "sha256": "8eaaa605211f75f992e7f84651a23067a6ea3b913b348e72f189ddbd8553e53b"
+    },
+    {
+      "file": "apps/api/Infrastructure/Media/MediaUpload.cs",
+      "sha256": "0ce8604b9efca83e400e78a8bbfdfce96f55631807e91d7f2a856de3f1e4139e"
+    },
+    {
+      "file": "apps/api/Infrastructure/Media/PrivateMaterialFileProvider.cs",
+      "sha256": "f9800f40eddaacfed0d89eb5a99ee20592608a6c4efb292730a84c20ca46ad5e"
+    },
+    {
+      "file": "apps/api/Migrations/20260930125012_AddPrivateClassMediaUploadSessions.cs",
+      "sha256": "deb95d68bc48a1eaaa7fe5142627c596c084a9fa75f169510671f9e5ec598613"
+    },
+    {
+      "file": "apps/api/Migrations/20260930125012_AddPrivateClassMediaUploadSessions.Designer.cs",
+      "sha256": "fbf4b79a057340cce55bc9acc085eda5e5f9ada62b1e6cc151031278169a327c"
+    },
+    {
+      "file": "apps/api/Migrations/AcademyDeskDbContextModelSnapshot.cs",
+      "sha256": "234c692ec9e1bba6759faeed1f0ad67cbdbd448bda9304092b80f068b27d3f5c"
+    },
+    {
+      "file": "apps/api/Program.cs",
+      "sha256": "3dffc734c07b2a801ddc3f580b68852949c080ee52bd47ce2c54cd64c1643225"
+    },
+    {
+      "file": "apps/web/src/app/globals.css",
+      "sha256": "b91b3f7eee796d89585b02b302acf1e4c7a179bb5a9664059428e0c7689f83e8"
+    },
+    {
+      "file": "apps/web/src/app/portal/page.tsx",
+      "sha256": "ac15ec13005a1d36ae381d57a2d9a311c79c545d6eef3d32ad7a4b4b3d4e816c"
+    },
+    {
+      "file": "apps/web/src/app/student-onboarding/page.tsx",
+      "sha256": "57221a2481d008e49749acd86aa6453efce8b661a4b36d7085cae983dc927017"
+    },
+    {
+      "file": "apps/web/src/app/student-profile/page.tsx",
+      "sha256": "eccfdba909c7532048ea4a0a1fa1413ccbe4abf99a3cb1ad8468d8c0c8ee7a93"
+    },
+    {
+      "file": "apps/web/src/app/teacher/page.tsx",
+      "sha256": "9b72afdd6c7a67555efa928372514761a85ffbf4dc990bc09aa342aaa6979295"
+    },
+    {
+      "file": "apps/web/src/components/private-material-actions.tsx",
+      "sha256": "11af5d746e0d9173eaf5eb2e012c2c1215ff37c91f60d8895cce706e4478e360"
+    },
+    {
+      "file": "apps/web/src/components/teacher-material-uploader.tsx",
+      "sha256": "266907348731c1eda2604a6ed760b021d8b17443a7db9bb9e4cfd7580464163f"
+    },
+    {
+      "file": "apps/web/src/lib/api.ts",
+      "sha256": "a1288f9e78eacf4d70618e0145a55a4eb8a22d8359ac643b60db99492c0ea3d7"
+    },
+    {
+      "file": "apps/web/src/lib/class-media-upload.ts",
+      "sha256": "217907642a8c223bbb5ee3c87d4e7706302bfdb0206a80aae3bb861db16bb7d1"
+    },
+    {
+      "file": "apps/web/src/lib/private-material.ts",
+      "sha256": "8392f0dad4a1b0af218685618c65edb930563566a6a5a83a0b54e897ee68e393"
+    },
+    {
+      "file": "QA/tools/class-media-client.test.cjs",
+      "sha256": "ff58fe588406d685ab98dc376290c437b775a6fdbbd5d0e3af13ee4862b416fa"
+    },
+    {
+      "file": "QA/tools/SqlHarness/BlobUploadRegression.cs",
+      "sha256": "3b5164c620aaffde4595921a2347278aa6b1e95f3410c506ee91676f2e21722e"
+    },
+    {
+      "file": "QA/tools/SqlHarness/Program.cs",
+      "sha256": "34052ca77d023403b9fabeb4a2c7b0d852c7c4eff9ecf6acfc3e527ba2cb2d86"
+    },
+    {
+      "file": "QA/tools/SqlHarness/QaBlobFixture.cs",
+      "sha256": "1660c8c39458cb5e4c2064671252be6a109eda8d976589b70096658b7c0de8da"
+    },
+    {
+      "file": "QA/tools/SqlHarness/QaDesignTimeContextFactory.cs",
+      "sha256": "2cdc91be94e3ab454109b3d9dcb02ac7f73ae8db6cdca2520f6d4c5d53a4ab77"
+    },
+    {
+      "file": "QA/tools/SqlHarness/Run-BlobMedia.ps1",
+      "sha256": "0d25f097d2c6610fd9df9f16ca73fe27dde8c072305ffe3e5564ece4f2f53acc"
+    },
+    {
+      "file": "QA/tools/SqlHarness/SqlHarness.csproj",
+      "sha256": "95ad797ba244c1f0c36715b12f299e958b16bd9496d4559e78540672f03ee169"
+    },
+    {
+      "file": "tests/AcademyDesk.Api.Tests/ClassMediaUploadPolicyTests.cs",
+      "sha256": "f02e98fe309ce2d18ae4b12fe70d1353725f1973b95fefd1c540a52635a07170"
+    },
+    {
+      "file": "tests/AcademyDesk.Api.Tests/Infrastructure/QaApiFactory.cs",
+      "sha256": "806f1e08dd0ce301eb986efdc211ac3520e1dcbd13491e92d3a9702035a8c55a"
+    },
+    {
+      "file": "tests/AcademyDesk.Api.Tests/MediaUploadTests.cs",
+      "sha256": "45ad50add842f885676d1b1b918f02e4a5c16d64d38185dafdbbc5124712e036"
+    }
+  ]
+}

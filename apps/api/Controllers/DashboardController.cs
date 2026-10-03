@@ -22,7 +22,8 @@ public sealed class DashboardController(AcademyDeskDbContext db, UserManager<App
         if (academy is null) return NotFound();
         var since = DateTime.UtcNow.AddDays(-30);
         var totalInvoiced = await db.Invoices.Where(x => x.AcademyId == academyId).SumAsync(x => (decimal?)x.TotalAmount, token) ?? 0;
-        var totalPaid = await db.Payments.Where(x => x.AcademyId == academyId && x.Status == "Completed").SumAsync(x => (decimal?)x.Amount, token) ?? 0;
+        var totalAdjusted = await db.Invoices.Where(x => x.AcademyId == academyId).SumAsync(x => (decimal?)x.AdjustedAmount, token) ?? 0;
+        var totalPaid = await db.Payments.Where(x => x.AcademyId == academyId && (x.Status == "Completed" || x.Status == "Reconciled")).SumAsync(x => (decimal?)x.Amount, token) ?? 0;
         var attendance = await db.AttendanceRecords.Where(x => x.AcademyId == academyId && x.MarkedAtUtc >= since).Select(x => x.Status).ToListAsync(token);
 
         TimeZoneInfo timeZone;
@@ -61,7 +62,7 @@ public sealed class DashboardController(AcademyDeskDbContext db, UserManager<App
             attendance.Count(x => x is "Present" or "Online"),
             totalInvoiced,
             totalPaid,
-            totalInvoiced - totalPaid,
+            totalInvoiced - totalAdjusted - totalPaid,
             todaySchedule.Count,
             todaySchedule,
             activity));

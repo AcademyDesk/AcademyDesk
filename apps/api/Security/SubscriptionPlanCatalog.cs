@@ -37,7 +37,7 @@ public static class SubscriptionPlanCatalog
         "FeePlansController" or "InvoicesController" or "PaymentsController" or "ExpensesController" or "FeeRemindersController" => "Finance",
         "PayrollController" or "TeacherCompensationController" => "Finance",
         "FinanceAdjustmentsController" or "FinanceGovernanceController" => "FinanceControls",
-        "AcademicGovernanceController" or "AcademicPeriodsController" or "CourseModulesController" or "CourseModuleStatusController" or "BatchPromotionsController" or "AssessmentsController" or "AssignmentSubmissionsController" => "AcademicGovernance",
+        "AcademicGovernanceController" or "AcademicPeriodsController" or "CourseModulesController" or "CourseModuleStatusController" or "BatchPromotionsController" or "AssessmentsController" or "AssessmentResultsController" or "AssignmentSubmissionsController" => "AcademicGovernance",
         "BranchesController" => "MultiBranch",
         "AccessGrantsController" or "AccessReviewsController" or "AcademyRolesController" or "ComplianceController" or "AcademyExportsController" => "AccessGovernance",
         _ => Core

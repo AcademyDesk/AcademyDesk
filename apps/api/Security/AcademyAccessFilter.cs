@@ -4,6 +4,9 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Identity;
 using AcademyDesk.Api.Domain.Entities;
 
@@ -18,7 +21,8 @@ public sealed class AcademyAccessFilter(UserManager<ApplicationUser> userManager
     private static readonly HashSet<string> FinanceControllers = new(StringComparer.Ordinal)
     {
         "FeePlansController", "InvoicesController", "PaymentsController", "ExpensesController",
-        "FinanceAdjustmentsController", "FinanceGovernanceController", "FeeRemindersController", "AcademyExportsController"
+        "FinanceAdjustmentsController", "FinanceGovernanceController", "FeeRemindersController", "AcademyExportsController",
+        "PayrollController"
     };
 
     public async Task OnActionExecutionAsync(
@@ -94,14 +98,33 @@ public sealed class AcademyAccessFilter(UserManager<ApplicationUser> userManager
 
     private async Task ExecuteAndAuditAsync(ActionExecutingContext context, ActionExecutionDelegate next, ApplicationUser user, Guid academyId)
     {
-        var executed = await next();
-        if (executed.Canceled || executed.Exception is not null || context.HttpContext.Response.StatusCode >= StatusCodes.Status400BadRequest) return;
-
         var method = context.HttpContext.Request.Method;
-        if (HttpMethods.IsGet(method) || HttpMethods.IsHead(method) || HttpMethods.IsOptions(method)) return;
+        if (HttpMethods.IsGet(method) || HttpMethods.IsHead(method) || HttpMethods.IsOptions(method))
+        {
+            await next();
+            return;
+        }
 
-        var controller = context.Controller.GetType().Name.Replace("Controller", string.Empty, StringComparison.Ordinal);
-        if (string.Equals(controller, "AuditLogs", StringComparison.Ordinal)) return;
+        var controllerName = context.Controller.GetType().Name;
+        var controller = controllerName.Replace("Controller", string.Empty, StringComparison.Ordinal);
+        if (string.Equals(controller, "AuditLogs", StringComparison.Ordinal))
+        {
+            await next();
+            return;
+        }
+
+        // Explicit linked updates enlist their existing scoped Identity context;
+        // other opted-in actions/finance remain domain-only. Reject mismatched
+        // stores before business writes; files/Blob are never covered here.
+        var identityConnection = IncludesIdentity(context.ActionDescriptor) ? AcademyIdentityTransaction.Validate(academyDb, identityDb) : null;
+        await using var transaction = UsesAtomicBoundary(controllerName, context.ActionDescriptor) && academyDb.Database.IsRelational()
+            ? await academyDb.Database.BeginTransactionAsync(context.HttpContext.RequestAborted)
+            : null;
+        await using var identityTransaction = identityConnection is not null
+            ? await AcademyIdentityTransaction.EnlistAsync(academyDb, identityDb, transaction!, identityConnection, context.HttpContext.RequestAborted)
+            : null;
+        var executed = await next();
+        if (!ShouldAudit(executed)) return; // Disposing an uncommitted boundary rolls it back.
 
         academyDb.AuditLogs.Add(new AuditLog
         {
@@ -113,5 +136,31 @@ public sealed class AcademyAccessFilter(UserManager<ApplicationUser> userManager
             IpAddress = context.HttpContext.Connection.RemoteIpAddress?.ToString()
         });
         await academyDb.SaveChangesAsync(context.HttpContext.RequestAborted);
+        if (transaction is not null) await transaction.CommitAsync(context.HttpContext.RequestAborted);
+    }
+
+    internal static bool UsesAtomicBoundary(string controllerName, ActionDescriptor descriptor) =>
+        FinanceControllers.Contains(controllerName) || descriptor is ControllerActionDescriptor action &&
+        action.MethodInfo.IsDefined(typeof(AtomicAcademyMutationAttribute), inherit: false);
+
+    internal static bool IncludesIdentity(ActionDescriptor descriptor) => descriptor is ControllerActionDescriptor action &&
+        Attribute.GetCustomAttribute(action.MethodInfo, typeof(AtomicAcademyMutationAttribute), inherit: false) is AtomicAcademyMutationAttribute { IncludeIdentity: true };
+
+    internal static bool ShouldAudit(ActionExecutedContext executed)
+    {
+        if (executed.Canceled || executed.Exception is not null ||
+            executed.HttpContext.Response.StatusCode >= StatusCodes.Status400BadRequest) return false;
+
+        // IActionResult has not executed yet: Response.StatusCode can still be
+        // 200 for BadRequest/NotFound/Conflict/etc. Respect the pending result.
+        var status = executed.Result switch
+        {
+            ForbidResult => StatusCodes.Status403Forbidden,
+            ChallengeResult => StatusCodes.Status401Unauthorized,
+            ObjectResult { StatusCode: null, Value: ProblemDetails { Status: int problemStatus } } => problemStatus,
+            IStatusCodeActionResult { StatusCode: int resultStatus } => resultStatus,
+            _ => executed.HttpContext.Response.StatusCode
+        };
+        return status < StatusCodes.Status400BadRequest;
     }
 }

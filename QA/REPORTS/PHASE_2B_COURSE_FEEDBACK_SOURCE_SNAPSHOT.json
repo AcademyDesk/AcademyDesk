@@ -1,0 +1,630 @@
+{
+  "date": "2026-10-01",
+  "commit": "20bb6047f9edf733ac8e2a226621cc582ec54b3c",
+  "scope": "Frontend-only Course success/reset/save-refresh recovery and pending guards; hidden configuration repair excluded",
+  "priorSnapshot": "PHASE_2B_BATCH_FEEDBACK_SOURCE_SNAPSHOT.json",
+  "changedFromPrevious": [],
+  "added": [
+    "apps/web/src/app/courses/page.tsx",
+    "QA/tools/course-feedback.test.cjs",
+    "QA/tools/validate-course-feedback.cjs"
+  ],
+  "beforeApplication": [
+    {
+      "file": "apps/web/src/app/courses/page.tsx",
+      "sha256": "a70cabae64190786265959f6f83ea8d67efaca94aaf28e874e333e9ffa7d3e07"
+    }
+  ],
+  "assemblies": [
+    {
+      "file": "apps/api/bin/Debug/net10.0/AcademyDesk.Api.dll",
+      "sha256": "10ecb9da46c8198affae586776aca4747244cda18670dde8a1892ed20170f614"
+    },
+    {
+      "file": "QA/tools/SqlHarness/bin/Debug/net10.0/SqlHarness.dll",
+      "sha256": "7c165e280c7752cfaef4e56d45062445a9f7181bab3fd5ce6aa12d32b7194c94"
+    }
+  ],
+  "records": [
+    {
+      "file": "apps/api/AcademyDesk.Api.csproj",
+      "sha256": "ecd476787b7ebfa2a36bd6870e58bcfcc27bf481f8aea2a25c7a8379c18aeed5"
+    },
+    {
+      "file": "apps/api/appsettings.Production.json",
+      "sha256": "0ee5871cf4958ad89808b312748c53d639ec3af83bfa2c0184ea1a5bdc803301"
+    },
+    {
+      "file": "apps/api/Controllers/AcademyExportsController.cs",
+      "sha256": "fa6d221561e3f545373182ac2dae0e16198be3f903a47dc67c6aade7615041ca"
+    },
+    {
+      "file": "apps/api/Controllers/ClassMaterialDownloadTicketsController.cs",
+      "sha256": "ae814b4cff98c88f2b0879c07eaa706d354a217cbe7936b9394c34ddaf75176b"
+    },
+    {
+      "file": "apps/api/Controllers/ClassMaterialFilesController.cs",
+      "sha256": "c662626b00f31ffa9f9af4b5e7cdc34db95b299166570b9a10072ec2400a2c24"
+    },
+    {
+      "file": "apps/api/Controllers/ClassMediaContentController.cs",
+      "sha256": "b11b28337c240fa580a1f780b1656ad8efdbd3da8f69451d87ba30a69dacd84a"
+    },
+    {
+      "file": "apps/api/Controllers/ClassMediaUploadsController.cs",
+      "sha256": "8b79f3a85b6c6dca8303f4bb8d18df4b011583141b2e67e4dd4e889018a001e5"
+    },
+    {
+      "file": "apps/api/Controllers/DashboardController.cs",
+      "sha256": "8d6416878054061befaedcba360575c1e3eb1a36376f4fe5289cc37fbfa7ba93"
+    },
+    {
+      "file": "apps/api/Controllers/ExpensesController.cs",
+      "sha256": "961fb32e233061dded564e106c55378c28b67d2d3ed5e657f631ccc54a72fa58"
+    },
+    {
+      "file": "apps/api/Controllers/FeePlansController.cs",
+      "sha256": "71eb01a6323aa1221bfe24abe3ddd077e4939234d3822f9c885c29fcf5c5be5d"
+    },
+    {
+      "file": "apps/api/Controllers/FeeRemindersController.cs",
+      "sha256": "b65d7cce9d5999a46bae2fc7f9f30d5a29babc709a1b043d0a085a27d795f886"
+    },
+    {
+      "file": "apps/api/Controllers/FinanceGovernanceController.cs",
+      "sha256": "f5c68af54fa1ada357dbe27530b5ad6ab66936ee53a6fa900c7a067f446cb04d"
+    },
+    {
+      "file": "apps/api/Controllers/InvoicesController.cs",
+      "sha256": "e3fa51b83028371f4dfdb43cfb86725af11b8b9eb0e19d161598a3314c27b024"
+    },
+    {
+      "file": "apps/api/Controllers/PaymentsController.cs",
+      "sha256": "7086add2d93e361e6286ff924baf66319ac0add34f852080af65ef49316ffebc"
+    },
+    {
+      "file": "apps/api/Controllers/PayrollController.cs",
+      "sha256": "2cedacb726aa72f4d08325ea7a1ea2f7596e81f1852c5733d34dff1fd057fa76"
+    },
+    {
+      "file": "apps/api/Controllers/PortalController.cs",
+      "sha256": "6e33b3fda6db048be982f948b60fb836445a7341c30a04759e731254264d73ef"
+    },
+    {
+      "file": "apps/api/Controllers/StudentsController.cs",
+      "sha256": "d031a3e5f73155e93fd0c527840abc47ee1b4fb26e9794947aa1aa083aa0ad95"
+    },
+    {
+      "file": "apps/api/Controllers/TeacherPortalController.cs",
+      "sha256": "b2b0df5e39d07f9200e0f80d81954f69c43915261d1d7ed378ab05600857d226"
+    },
+    {
+      "file": "apps/api/Controllers/TeachersController.cs",
+      "sha256": "083862ae263e156cfffc9940b51fc1db67dc04663ea7b6d2cb923590b1d4e812"
+    },
+    {
+      "file": "apps/api/Data/AcademyDeskDbContext.cs",
+      "sha256": "f77581f6e97b38e84dfec3bd022118a8da9858b9c5cb637daa6d1a25c8fa7b1e"
+    },
+    {
+      "file": "apps/api/Domain/Entities/ClassMediaUploadSession.cs",
+      "sha256": "00166f9d0dbfbf315995d39a5db0f0be8a15dbbab02a043516f60339b0969d16"
+    },
+    {
+      "file": "apps/api/Infrastructure/Media/AzureMediaBlobStore.cs",
+      "sha256": "ceab9c8fc4d0fa363f43c35195ca71c8f40db96c4508b409a38e7d5931b212a3"
+    },
+    {
+      "file": "apps/api/Infrastructure/Media/ClassMaterialAccess.cs",
+      "sha256": "4a05071cfb919bbe8421b6fc34921a54a2b9ae3a8a73dba29e4d2f308a371668"
+    },
+    {
+      "file": "apps/api/Infrastructure/Media/ClassMaterialDownloadHandler.cs",
+      "sha256": "72cbaf2c673bf5e8ff3d067f28193a14b1d7a2ad5c25629bbc451cefe350ade0"
+    },
+    {
+      "file": "apps/api/Infrastructure/Media/ClassMaterialDownloadTickets.cs",
+      "sha256": "22febd997f6cf5a811e6b547bf9a1de9a3d032af06b0c8f463fa3536fb5e407f"
+    },
+    {
+      "file": "apps/api/Infrastructure/Media/ClassMediaUploadPolicy.cs",
+      "sha256": "5836748a4719136cf2b56b177d21e6a523281b3ad3de827c0352a343b42b99b9"
+    },
+    {
+      "file": "apps/api/Infrastructure/Media/IMediaBlobStore.cs",
+      "sha256": "d3c62ae204e55e05fb09290870c0b12824f9a0be5757b3d850aad8595e96180d"
+    },
+    {
+      "file": "apps/api/Infrastructure/Media/MediaStorageOptions.cs",
+      "sha256": "dd52ce52722876f2d3fc1b102cd77053d067f18a97a64f0148a1691fabfb34ba"
+    },
+    {
+      "file": "apps/api/Infrastructure/Media/MediaStorageRegistration.cs",
+      "sha256": "8eaaa605211f75f992e7f84651a23067a6ea3b913b348e72f189ddbd8553e53b"
+    },
+    {
+      "file": "apps/api/Infrastructure/Media/MediaUpload.cs",
+      "sha256": "0ce8604b9efca83e400e78a8bbfdfce96f55631807e91d7f2a856de3f1e4139e"
+    },
+    {
+      "file": "apps/api/Infrastructure/Media/PrivateMaterialFileProvider.cs",
+      "sha256": "f9800f40eddaacfed0d89eb5a99ee20592608a6c4efb292730a84c20ca46ad5e"
+    },
+    {
+      "file": "apps/api/Migrations/20260930125012_AddPrivateClassMediaUploadSessions.cs",
+      "sha256": "deb95d68bc48a1eaaa7fe5142627c596c084a9fa75f169510671f9e5ec598613"
+    },
+    {
+      "file": "apps/api/Migrations/20260930125012_AddPrivateClassMediaUploadSessions.Designer.cs",
+      "sha256": "fbf4b79a057340cce55bc9acc085eda5e5f9ada62b1e6cc151031278169a327c"
+    },
+    {
+      "file": "apps/api/Migrations/AcademyDeskDbContextModelSnapshot.cs",
+      "sha256": "234c692ec9e1bba6759faeed1f0ad67cbdbd448bda9304092b80f068b27d3f5c"
+    },
+    {
+      "file": "apps/api/Program.cs",
+      "sha256": "acd42c20105d1ccc39fd4619a608f1d37361e799f09816a5797030a3c9bace2e"
+    },
+    {
+      "file": "apps/api/Properties/AssemblyInfo.cs",
+      "sha256": "40b4b8adcba57604cddc8b9a096a89b62f0b8cdad61f55a6e1a86f7b4c8341f9"
+    },
+    {
+      "file": "apps/api/Security/AcademyAccessFilter.cs",
+      "sha256": "f74c29ef47dbafc20939ce10ec10c36b1ca0f7be23c8900422417ecb69db8753"
+    },
+    {
+      "file": "apps/api/Security/AcademyIdentityTransaction.cs",
+      "sha256": "319620510d367d6f6c03bc298b325812e87ba7d1d27f625d9ff2d4fd260ba2e5"
+    },
+    {
+      "file": "apps/api/Security/AtomicAcademyMutationAttribute.cs",
+      "sha256": "3f431a4cfa64e88ad02e3862577cb3b13aeb180a889d11659b49cf32eff7e02c"
+    },
+    {
+      "file": "apps/api/Security/PermissionCatalog.cs",
+      "sha256": "e8d577ff0f1fce04cc81818be2d6823c8947c83e007e87098398b44d0d1098ed"
+    },
+    {
+      "file": "apps/api/Security/SubscriptionPlanCatalog.cs",
+      "sha256": "c8090c4937fabe4100fb0dfc32ef32502f9aa63444a2d8b92671af4b6781e269"
+    },
+    {
+      "file": "apps/web/src/app/finance-governance/page.tsx",
+      "sha256": "e1f2fef5219656112ccddcd4d796e2a24bf61d39f04061cc0328bdf03bd3c7e4"
+    },
+    {
+      "file": "apps/web/src/app/globals.css",
+      "sha256": "b91b3f7eee796d89585b02b302acf1e4c7a179bb5a9664059428e0c7689f83e8"
+    },
+    {
+      "file": "apps/web/src/app/invoices/page.tsx",
+      "sha256": "b041549708dbc73e4e41c7d6ab3a969c3f6a39e6391c25279c543b686bfaa127"
+    },
+    {
+      "file": "apps/web/src/app/payments/page.tsx",
+      "sha256": "5d3d215dc47c2328185e7b8d96db36e1f0a255c4b7ebb923c6f085018a199e21"
+    },
+    {
+      "file": "apps/web/src/app/portal/page.tsx",
+      "sha256": "ac15ec13005a1d36ae381d57a2d9a311c79c545d6eef3d32ad7a4b4b3d4e816c"
+    },
+    {
+      "file": "apps/web/src/app/student-onboarding/page.tsx",
+      "sha256": "57221a2481d008e49749acd86aa6453efce8b661a4b36d7085cae983dc927017"
+    },
+    {
+      "file": "apps/web/src/app/student-profile/page.tsx",
+      "sha256": "eccfdba909c7532048ea4a0a1fa1413ccbe4abf99a3cb1ad8468d8c0c8ee7a93"
+    },
+    {
+      "file": "apps/web/src/app/teacher/page.tsx",
+      "sha256": "a065e09af508de2ee56581233c591eb6324ed18c631f003d554412ac7cc911dc"
+    },
+    {
+      "file": "apps/web/src/components/private-material-actions.tsx",
+      "sha256": "8c4afaa857c9d33c84699a713e6f3760dd8dbcdacdd68d7ecd3c411be6c1ffe4"
+    },
+    {
+      "file": "apps/web/src/components/teacher-material-uploader.tsx",
+      "sha256": "46aaebe7b2f9b81bc25945cef6a2ab5d3ef6fb13d1eec84824e5a66be57bcceb"
+    },
+    {
+      "file": "apps/web/src/lib/api.ts",
+      "sha256": "a1288f9e78eacf4d70618e0145a55a4eb8a22d8359ac643b60db99492c0ea3d7"
+    },
+    {
+      "file": "apps/web/src/lib/class-media-upload.ts",
+      "sha256": "217907642a8c223bbb5ee3c87d4e7706302bfdb0206a80aae3bb861db16bb7d1"
+    },
+    {
+      "file": "apps/web/src/lib/private-material.ts",
+      "sha256": "676d611bf504f57da43f8e79f9beecb00e5335817d26ae2e361681518d1a5003"
+    },
+    {
+      "file": "apps/web/src/lib/teacher-workspace.ts",
+      "sha256": "4f30cdb5b91cafc91d7612f4390453c447b87f950194b1adeab71a2dcb174440"
+    },
+    {
+      "file": "QA/tools/class-media-client.test.cjs",
+      "sha256": "908f3ca451f7dbea91bc5271cf5d41dbab24bcf1a25bb2b33a807f990583e59a"
+    },
+    {
+      "file": "QA/tools/create-browser-large-fixture.cjs",
+      "sha256": "5a71fa9698867efe53ae194e138f96cb83cc61c7b78fb8db6cad4d83c3ea5e86"
+    },
+    {
+      "file": "QA/tools/create-browser-media-fixtures.cjs",
+      "sha256": "e0290fe24a56e49fbd665a4a38f259f6c0fe7d145974519c7e5276c1f25b879b"
+    },
+    {
+      "file": "QA/tools/create-browser-video-fixture.cjs",
+      "sha256": "e0816f1075c52a08f3f87b6c5bba511b9c9cffe1802f516d49375fb15fe81fc1"
+    },
+    {
+      "file": "QA/tools/finance-governance.test.cjs",
+      "sha256": "0c51e9f1f963cd35effbb34f01bd5c730da316e51c5114792138c52314aadaaf"
+    },
+    {
+      "file": "QA/tools/finance-lookups.test.cjs",
+      "sha256": "11c07c123783785b343330860b7bf29c40594329a63b0154a1bf8fd3f6989292"
+    },
+    {
+      "file": "QA/tools/native-download-browser-fixture.cjs",
+      "sha256": "2bcf53e4804635fc7091d0b55f24bd9244a86d21cdcfe1fe6124970d26de8ece"
+    },
+    {
+      "file": "QA/tools/payment-balances.test.cjs",
+      "sha256": "03322bc672ba2aed6a36d5620eba8b5b2f4bb82a3251327107a84dd28fa59820"
+    },
+    {
+      "file": "QA/tools/Run-BrowserMediaFrontend.ps1",
+      "sha256": "db26300d3dc314f60674234599afb737305e1b9970207b3d69b4c12fdf5e4f13"
+    },
+    {
+      "file": "QA/tools/SqlHarness/AdjustmentRegression.cs",
+      "sha256": "262969506e6418b0c8476756958edbfacbd3e0b5b8f76b6c1ee34a1580829c90"
+    },
+    {
+      "file": "QA/tools/SqlHarness/AdjustmentReproduction.cs",
+      "sha256": "707ef56a55839adb37f84a3a622b0b3b72f9e5113e437daf0361117f8fe34713"
+    },
+    {
+      "file": "QA/tools/SqlHarness/AuditSaveRegression.cs",
+      "sha256": "4adc71d9078ef0ac3997950ed985d035a7e0f242763d44fe05daedb807fd2183"
+    },
+    {
+      "file": "QA/tools/SqlHarness/BlobUploadRegression.cs",
+      "sha256": "9479c8410f79f12043ada5dcac46685002c079d4b5be0a44a5ec206247deb028"
+    },
+    {
+      "file": "QA/tools/SqlHarness/BrowserCompletionLoss.cs",
+      "sha256": "67b2430ac1e04d201e747aa5d8b86456bd5b234b902598e307c7c48e89f1646a"
+    },
+    {
+      "file": "QA/tools/SqlHarness/BrowserFailureBlobStore.cs",
+      "sha256": "c2dd4bc00e9bd8e12ddc9912e1ec89d4cea21ad96e3e38f98f306aae395542e9"
+    },
+    {
+      "file": "QA/tools/SqlHarness/BrowserMediaHost.cs",
+      "sha256": "9e65917739d6365648fb20057207c1d32af41b96a8d3823431aaa1192fc0fd94"
+    },
+    {
+      "file": "QA/tools/SqlHarness/BrowserUploadRevocation.cs",
+      "sha256": "a5b13f64daa0bb18281a3f9c204d1bd8939885c2a30de208f335c28a441babbd"
+    },
+    {
+      "file": "QA/tools/SqlHarness/FinanceAccessRegression.cs",
+      "sha256": "f1dc7a2f24c8adc30a3cc77e589dbfd55a96782effb1127e41fdcbf9e84ef78b"
+    },
+    {
+      "file": "QA/tools/SqlHarness/FinanceConsumerRegression.cs",
+      "sha256": "11caf7f73b929f2616bd6566825801413182f9c8bd59c2f53b3c827aa2b99239"
+    },
+    {
+      "file": "QA/tools/SqlHarness/FinanceGovernanceRegression.cs",
+      "sha256": "5d40a9a7a526797cdeca01ff2247776cc742284002d17c8981200a757d3e7e46"
+    },
+    {
+      "file": "QA/tools/SqlHarness/FinanceLookupRegression.cs",
+      "sha256": "46c4fa94986e3b75d3e3a057588d80b36d5d4d85a349f174444692ccefa5c0be"
+    },
+    {
+      "file": "QA/tools/SqlHarness/FinanceReproduction.cs",
+      "sha256": "d9dc4c61a26982f3453741a13af5f44d92a982c233313ccb9809b346426a02bb"
+    },
+    {
+      "file": "QA/tools/SqlHarness/LinkedPeopleRegression.cs",
+      "sha256": "dda8aee51b6fc0f6b9b196a5ed2967175076b6806d9415f22011f76c34778117"
+    },
+    {
+      "file": "QA/tools/SqlHarness/PaymentTransitionRegression.cs",
+      "sha256": "7276fc336b38a96d9d98baa15070ea3bf44a68ab89b76d39864f64db739507f5"
+    },
+    {
+      "file": "QA/tools/SqlHarness/PaymentTransitionReproduction.cs",
+      "sha256": "ac6c402f9a4e04cd8e35c9264f1238eb247ce4c8d04fbf868a5b298b42e903ee"
+    },
+    {
+      "file": "QA/tools/SqlHarness/PayrollRegression.cs",
+      "sha256": "bb7d55f9018792281179e95d4e9e2f31e4112a969e95c65aaf7c61b0166939e3"
+    },
+    {
+      "file": "QA/tools/SqlHarness/PayrollReproduction.cs",
+      "sha256": "c777cc98d4ab42c6de9c4595cd461c28ff9d8df18ef00a3f2bd05ea59cab8c98"
+    },
+    {
+      "file": "QA/tools/SqlHarness/PeopleBranchRegression.cs",
+      "sha256": "4728be207355ed0ab3b8698e67a25955edac50573099a83e008f7c794eec1508"
+    },
+    {
+      "file": "QA/tools/SqlHarness/PeopleCreationAuditRegression.cs",
+      "sha256": "79ae7a5e963b579ee112a494823f88539af607e4fe95a214c05b74b782e16a64"
+    },
+    {
+      "file": "QA/tools/SqlHarness/Program.cs",
+      "sha256": "eff60a713f167f14406335d9b88f88729833b33739c1fb82ac4042292cc521bb"
+    },
+    {
+      "file": "QA/tools/SqlHarness/QaBlobFixture.cs",
+      "sha256": "1660c8c39458cb5e4c2064671252be6a109eda8d976589b70096658b7c0de8da"
+    },
+    {
+      "file": "QA/tools/SqlHarness/QaDesignTimeContextFactory.cs",
+      "sha256": "2cdc91be94e3ab454109b3d9dcb02ac7f73ae8db6cdca2520f6d4c5d53a4ab77"
+    },
+    {
+      "file": "QA/tools/SqlHarness/ReconciliationRegression.cs",
+      "sha256": "44aa4d49a725a1a047c96825c5d37f2f1e1032e7fcf5b5de5166dff2dfd78385"
+    },
+    {
+      "file": "QA/tools/SqlHarness/Run-BlobMedia.ps1",
+      "sha256": "2927e259973173405f491da3190c6ee9d3551d9fafc0a7c1e102811f9b2e97cd"
+    },
+    {
+      "file": "QA/tools/SqlHarness/Run-ReconciledPayment.ps1",
+      "sha256": "11c4fe09494ad150584021d50efd244a170240c6c94fb8c82ac504436d7bf6d5"
+    },
+    {
+      "file": "QA/tools/SqlHarness/SqlHarness.csproj",
+      "sha256": "95ad797ba244c1f0c36715b12f299e958b16bd9496d4559e78540672f03ee169"
+    },
+    {
+      "file": "QA/tools/teacher-recording.test.cjs",
+      "sha256": "09a55ea4c572b127d730b84a760b64a24109e760fa9794dd48b5a2392f997206"
+    },
+    {
+      "file": "QA/tools/teacher-workspace.test.cjs",
+      "sha256": "2911cd5790ecb229aa2317cadf2bc8045168daf55a54cf7e64e8bc8c75292a03"
+    },
+    {
+      "file": "QA/tools/validate-branch-repair.cjs",
+      "sha256": "55252c4c43a89dbcc5c9c61f55dc9479ccd10ae6ef4a10cad24aed30bc5ba7d1"
+    },
+    {
+      "file": "QA/tools/validate-finance-governance.cjs",
+      "sha256": "33f1162d8d28bdaa1995bb998322c0174190682e9fd98c63233fef49854c940e"
+    },
+    {
+      "file": "QA/tools/validate-finance-lookups.cjs",
+      "sha256": "32d29f0ea95775a75a66e478bba8bb5845a4bd0df0f0016ef5b992ff1e3f970f"
+    },
+    {
+      "file": "QA/tools/validate-linked-repair.cjs",
+      "sha256": "a1892e8422da7b42bd7ee17a8ffbd2e2e8eb702efb6185b97c0347abb04c6872"
+    },
+    {
+      "file": "QA/tools/Verify-BrowserDraftIsolation.ps1",
+      "sha256": "88c5ad1d29429d3eb7d8f6cd44599e1c7bd18496725454accefee8bf2b87ae82"
+    },
+    {
+      "file": "QA/tools/Verify-BrowserMicrophoneDenial.ps1",
+      "sha256": "a7af75b1e875cf20ef4db5696444f2caf562bab5b7101ece879b0597b81638d7"
+    },
+    {
+      "file": "QA/tools/Verify-BrowserRecording.ps1",
+      "sha256": "68a8568848b5fbfbc95a2c76cde46cda79d48cbfdcbc66e8affb8c2a759e977e"
+    },
+    {
+      "file": "tests/AcademyDesk.Api.Tests/AcademyIdentityTransactionTests.cs",
+      "sha256": "331f39acc9829616fec383b326c9b7421463aad6203def626069b7433cd50e56"
+    },
+    {
+      "file": "tests/AcademyDesk.Api.Tests/AdjustedPaymentTests.cs",
+      "sha256": "edfa2e97ddfa4ee95f9bdf6ccd63e6562521480bef29fb670bee60235286f341"
+    },
+    {
+      "file": "tests/AcademyDesk.Api.Tests/AuditOutcomeTests.cs",
+      "sha256": "a4a87b4a36ff4b86be7f47313cd23a9530c9d101b3be22440f8fd6789cb6c5ca"
+    },
+    {
+      "file": "tests/AcademyDesk.Api.Tests/ClassMaterialDownloadTicketTests.cs",
+      "sha256": "0aed520145dfa98c27424c6dde5531da4b5ae48e8e0dd206d81b407e63d93805"
+    },
+    {
+      "file": "tests/AcademyDesk.Api.Tests/ClassMediaUploadPolicyTests.cs",
+      "sha256": "f02e98fe309ce2d18ae4b12fe70d1353725f1973b95fefd1c540a52635a07170"
+    },
+    {
+      "file": "tests/AcademyDesk.Api.Tests/CollectionTaskTests.cs",
+      "sha256": "d5eccc81651581a070f2126b2b1a677a90dec82ee742b6d50c75ca67c2189618"
+    },
+    {
+      "file": "tests/AcademyDesk.Api.Tests/FinanceConsumerTests.cs",
+      "sha256": "eb77ee7b56979b931ef416b7a31d74dcc126585375a6349faab9d58d99b2c0f2"
+    },
+    {
+      "file": "tests/AcademyDesk.Api.Tests/Infrastructure/QaApiFactory.cs",
+      "sha256": "e95c9c767672aba5a2ffb1f9a2f83567789338aabc70cd030b464a4c2fea9892"
+    },
+    {
+      "file": "tests/AcademyDesk.Api.Tests/InvoiceStudentOptionTests.cs",
+      "sha256": "eb752bc58399d231223b98d93fd88451ef26b2ef22d3528b46ff920b0fd7faa2"
+    },
+    {
+      "file": "tests/AcademyDesk.Api.Tests/MediaUploadTests.cs",
+      "sha256": "45ad50add842f885676d1b1b918f02e4a5c16d64d38185dafdbbc5124712e036"
+    },
+    {
+      "file": "tests/AcademyDesk.Api.Tests/PaymentTransitionTests.cs",
+      "sha256": "f374bd29530e6fadb65e91a260b6bb0a0b44f6e37b996702809a38b9961ec9f3"
+    },
+    {
+      "file": "tests/AcademyDesk.Api.Tests/PayrollNetTests.cs",
+      "sha256": "bec34c8fe1f7e0571cef58eadbd93c616eb9934d0db99e11b498b8f53e9923a9"
+    },
+    {
+      "file": "tests/AcademyDesk.Api.Tests/PeopleBranchValidationTests.cs",
+      "sha256": "530439f7e69d59467428bfdc187ed5bf92ae1e44954a80a0ee82b6998eb1f237"
+    },
+    {
+      "file": "tests/AcademyDesk.Api.Tests/ReconciledBalanceTests.cs",
+      "sha256": "c4d9ec24b6572a3bc5d43d7baef43d83f74e7b73a70658c5ba79bab7018dd2a1"
+    },
+    {
+      "file": "apps/web/src/app/finance/page.tsx",
+      "sha256": "2834e39cb237b14949b637fbee21b97ea905cd53aaf58cf25b85b078c63505c9"
+    },
+    {
+      "file": "QA/tools/collections-balance.test.cjs",
+      "sha256": "b19ae85ae5d2875cee3980a6ef0c6d41e57a18a1650e8dc82ca9a4cac59cc781"
+    },
+    {
+      "file": "QA/tools/SqlHarness/CollectionsBalanceRegression.cs",
+      "sha256": "861182ec5f33b00e14bc783fa2b37205cc041a853dcf6fd54606cf765d7a687f"
+    },
+    {
+      "file": "tests/AcademyDesk.Api.Tests/CollectionsBalanceTests.cs",
+      "sha256": "6d8bc32b4aecf15eaddc44c18821decaad74ba02b24290c8e9bc8d05754d867d"
+    },
+    {
+      "file": "QA/tools/validate-collections-balance.cjs",
+      "sha256": "64e026620efeb0f39d6e3ebbeebd87676daa69c7f41017a6e387acf665e4f088"
+    },
+    {
+      "file": "tests/AcademyDesk.Api.Tests/InvoiceDocumentSettingsTests.cs",
+      "sha256": "56b033503b4117751251d2a0b29ec4869bfea733a9ac9e8d37863d5cea89d6b1"
+    },
+    {
+      "file": "QA/tools/invoice-settings.test.cjs",
+      "sha256": "1be53d786de5f4940c0379f302c995123ccc7b5a2c25882f264ed4e12eec6bba"
+    },
+    {
+      "file": "QA/tools/SqlHarness/InvoiceSettingsRegression.cs",
+      "sha256": "0bd9e958b52f586f50d026be0c7032322e1856ce9ea668b5786b72e1a32e3ad1"
+    },
+    {
+      "file": "QA/tools/validate-invoice-settings.cjs",
+      "sha256": "0f27596bc5f715031a6687f202d78e881f675da82387be84d562d851ddf2b303"
+    },
+    {
+      "file": "apps/web/src/app/branches/page.tsx",
+      "sha256": "b051b7dfb802538fcc8f750bb9fe2398ea7112a5506fbca1d1e7bba65eb4fb8a"
+    },
+    {
+      "file": "QA/tools/branch-feedback.test.cjs",
+      "sha256": "c1e1d90612f574040d4cdeb9a1ad2dc03360f5e775d1c954d8ea234e235af81c"
+    },
+    {
+      "file": "QA/tools/validate-branch-feedback.cjs",
+      "sha256": "e6f5f60418e78a4c30314b2e082e4257a0e053d413d2fc0d664fa831f481500e"
+    },
+    {
+      "file": "apps/api/Controllers/BranchesController.cs",
+      "sha256": "d5433561ee8321d52531fa36976766573e0b825d6d3bf0edeeac157000447716"
+    },
+    {
+      "file": "tests/AcademyDesk.Api.Tests/BranchAddressTests.cs",
+      "sha256": "b2a1d61f9d8a1feafc5fff672d2aab16e54954ccda2164339ccc2b78a32ffdd5"
+    },
+    {
+      "file": "QA/tools/branch-address.test.cjs",
+      "sha256": "346f147fee0d598fd9ec641b288b12c80a8238361072123dc470c573757042b8"
+    },
+    {
+      "file": "QA/tools/SqlHarness/BranchAddressRegression.cs",
+      "sha256": "5f174db1f5bca323b324c0b6e02e149a3b92d7beb45b7e6d430627853e04c2ed"
+    },
+    {
+      "file": "QA/tools/validate-branch-address.cjs",
+      "sha256": "8c9353561845c35e34cd09abb99cbc440ba4fcda9979e705eac06f7e1a288daf"
+    },
+    {
+      "file": "apps/api/Controllers/BatchesController.cs",
+      "sha256": "87828134b99e47efae6fd8753c4d7b9083d8d4f289b7c8ab0cef6e4514db4591"
+    },
+    {
+      "file": "apps/web/src/app/batches/page.tsx",
+      "sha256": "c45e9b240bd07d8c65bdc1bb9ff0ee5fd76397790cef412c4e7cac43acb8865d"
+    },
+    {
+      "file": "apps/web/src/app/teachers/page.tsx",
+      "sha256": "9635aa109ac71a7dd4f66605d0d5062d749e9209c01f0be7eed926ab0a549e90"
+    },
+    {
+      "file": "apps/web/src/lib/batch-update.ts",
+      "sha256": "503c540c7bfe699298e27f52c2426b9e0f71c2d9540f51ccce0cf9cacb2b9884"
+    },
+    {
+      "file": "tests/AcademyDesk.Api.Tests/BatchPreservationTests.cs",
+      "sha256": "a002aeeb32d331370c4978f3341006b293a868f59894a7ab6ae3ee6bb27500af"
+    },
+    {
+      "file": "QA/tools/batch-preservation.test.cjs",
+      "sha256": "245942e0baff81880262678934a1d18545835831c20749f5dcf4bdee19801ed8"
+    },
+    {
+      "file": "QA/tools/SqlHarness/BatchPreservationRegression.cs",
+      "sha256": "5a772f99a30ea04333e00675ff170a8af75d34c0ab1faeecc7e29b2ffcc4be6e"
+    },
+    {
+      "file": "QA/tools/compare-batch-lint.cjs",
+      "sha256": "2274ece73c4d513d968af91a2fa1d1785d94a9dd8b9b225b5dacd6132ba09698"
+    },
+    {
+      "file": "QA/tools/validate-batch-preservation.cjs",
+      "sha256": "7b9682e450831d1a2c39851c6013f9128ad8182c0e79873238947f665e9d6e2a"
+    },
+    {
+      "file": "tests/AcademyDesk.Api.Tests/BatchTimesTests.cs",
+      "sha256": "16377f9d5813189f37f42854fd6da87d60a863101d871d299dab58f446e74273"
+    },
+    {
+      "file": "QA/tools/batch-times.test.cjs",
+      "sha256": "a6d7c31aa69db35770afd93fe777b97cf80da4a5a8c1ecef7b4a558fbc02a19f"
+    },
+    {
+      "file": "QA/tools/SqlHarness/BatchTimesRegression.cs",
+      "sha256": "bfe862295a5be25a8e889b48adf329d01a4373523b386a70e613d7563ee17475"
+    },
+    {
+      "file": "QA/tools/compare-batch-times-lint.cjs",
+      "sha256": "d8770a22173f2c682e91f2852e375e5c8aa0b060edf3e7c5c4d8cb92740a3e72"
+    },
+    {
+      "file": "QA/tools/validate-batch-times.cjs",
+      "sha256": "d650ae76204a2d514ba9a42545378ac9c0de81fc784a033d4bae2ef5f96e0f1f"
+    },
+    {
+      "file": "QA/tools/batch-feedback.test.cjs",
+      "sha256": "574ca594cffdbe7aa0617c7662f75eaa52dff0027fe33af5e9bcd797d1b8e0db"
+    },
+    {
+      "file": "QA/tools/validate-batch-feedback.cjs",
+      "sha256": "a7dc15414ee117da283a949bddd615357f414ba0f2823c94b424b2183b072006"
+    },
+    {
+      "file": "apps/web/src/app/courses/page.tsx",
+      "sha256": "c5fac786e5d40d767b92c2bda0457cb7fac1b3e4e67ebd2a7c379ae770593fb2"
+    },
+    {
+      "file": "QA/tools/course-feedback.test.cjs",
+      "sha256": "68436cd006b992fbf623cd0f7ecab460a92c88b27b3a1b5ee81b4c044ab2e0ae"
+    },
+    {
+      "file": "QA/tools/validate-course-feedback.cjs",
+      "sha256": "3fa5046c02b33cff79ac606d2bab1ed242eefc229a5adbbea44e5b8e8b40b943"
+    }
+  ]
+}

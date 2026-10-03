@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-01",
+  "records": [
+    {
+      "file": "apps/api/Controllers/FinanceGovernanceController.cs",
+      "sha256": "5f9c8b38a026ccf7284072ea46d1f58d3aa57d1831ff0d231acc739402d4847e"
+    },
+    {
+      "file": "apps/web/src/app/finance-governance/page.tsx",
+      "sha256": "c6edba41bb90fdd410dfe2c970b2ba821bbe035da9c0ffb27053857d1bb751b4"
+    },
+    {
+      "file": "apps/web/src/app/finance/page.tsx",
+      "sha256": "ac39030aa4fbcd68efe3d5e4e5cc84279215de3f8c9dd7de078ab5b1d194bb4d"
+    }
+  ]
+}

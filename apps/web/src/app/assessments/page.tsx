@@ -26,6 +26,7 @@ type Result = {
   studentId: string;
   score: number;
   grade?: string | null;
+  isGradeManual?: boolean | null;
   remarks?: string | null;
   isPublished: boolean;
 };
@@ -33,7 +34,12 @@ type GradingScheme = {
   id: string;
   name: string;
   passingPercent: number;
-  isActive: boolean;
+};
+type AssessmentOptions = {
+  batches: Batch[];
+  students: Student[];
+  enrollments: Enrollment[];
+  gradingSchemes: GradingScheme[];
 };
 const assessmentTypes = ["Performance", "Exam", "Recital", "Test", "Practical"];
 
@@ -58,39 +64,27 @@ export default function AssessmentsPage() {
   async function load(academyId?: string) {
     const id = academyId ?? academy?.id;
     if (!id) return;
-    const [
-      batchResponse,
-      studentResponse,
-      enrollmentResponse,
-      assessmentResponse,
-      schemeResponse,
-    ] = await Promise.all([
-      academyApi(`/api/academies/${id}/batches`, { cache: "no-store" }),
-      academyApi(`/api/academies/${id}/students`, { cache: "no-store" }),
-      academyApi(`/api/academies/${id}/enrollments`, { cache: "no-store" }),
+    const [optionsResponse, assessmentResponse] = await Promise.all([
+      academyApi(`/api/academies/${id}/assessments/options`, { cache: "no-store" }),
       academyApi(`/api/academies/${id}/assessments`, { cache: "no-store" }),
-      academyApi(`/api/academies/${id}/grading-schemes/active`, {
-        cache: "no-store",
-      }),
     ]);
-    if (
-      ![
-        batchResponse,
-        studentResponse,
-        enrollmentResponse,
-        assessmentResponse,
-        schemeResponse,
-      ].every((response) => response.ok)
-    )
-      throw new Error();
-    const batchData: Batch[] = await batchResponse.json();
-    setBatches(batchData);
-    setStudents(await studentResponse.json());
-    setEnrollments(await enrollmentResponse.json());
-    const assessmentData: Assessment[] = await assessmentResponse.json();
+    if (![optionsResponse, assessmentResponse].every((response) => response.ok)) {
+      const denied = [optionsResponse, assessmentResponse].some((response) => response.status === 403);
+      throw new Error(denied
+        ? "Assessments could not be loaded. Your account needs academic access and an enabled academic module."
+        : "Assessments could not be loaded. Please try again.");
+    }
+    const [options, assessmentData]: [AssessmentOptions, Assessment[]] = await Promise.all([
+      optionsResponse.json(), assessmentResponse.json(),
+    ]);
+    if (!options || ![options.batches, options.students, options.enrollments, options.gradingSchemes, assessmentData].every(Array.isArray))
+      throw new Error("Assessment options could not be loaded completely. Please try again.");
+    setBatches(options.batches);
+    setStudents(options.students);
+    setEnrollments(options.enrollments);
     setAssessments(assessmentData);
-    setGradingSchemes(await schemeResponse.json());
-    if (!batchId && batchData.length) setBatchId(batchData[0].id);
+    setGradingSchemes(options.gradingSchemes);
+    if (!batchId && options.batches.length) setBatchId(options.batches[0].id);
     if (!assessmentId && assessmentData.length)
       setAssessmentId(assessmentData[0].id);
     setMessage("");
@@ -116,9 +110,9 @@ export default function AssessmentsPage() {
           return setMessage("Create your academy and batch first.");
         setAcademy(academies[0]);
         await load(academies[0].id);
-      } catch {
+      } catch (error) {
         setMessage(
-          "Assessments could not be loaded. Confirm the API is running on port 5092.",
+          error instanceof Error && error.message ? error.message : "Assessments could not be loaded. Please try again.",
         );
       }
     })();
@@ -176,6 +170,7 @@ export default function AssessmentsPage() {
     score: number,
     grade: string,
     remarks: string,
+    isGradeManual: boolean,
   ) {
     if (!academy || !selected || Number.isNaN(score)) return;
     setSavingStudentId(studentId);
@@ -189,16 +184,26 @@ export default function AssessmentsPage() {
           body: JSON.stringify({
             studentId,
             score,
-            grade: grade || null,
+            grade: isGradeManual ? grade.trim() || null : null,
+            isGradeManual,
             remarks: remarks || null,
             isPublished: true,
           }),
         },
       );
-      if (!response.ok) throw new Error();
-      await loadResults(selected.id);
+      if (!response.ok) {
+        const details = await response.json().catch(() => null);
+        setMessage(details?.message ?? "Assessment result could not be saved. Your entries have been retained.");
+        return;
+      }
+      setMessage("Assessment result saved.");
+      try {
+        await loadResults(selected.id);
+      } catch {
+        setMessage("Assessment result saved, but results could not be refreshed. Refresh the page to see the saved result.");
+      }
     } catch {
-      setMessage(`Result must be between 0 and ${selected.maxScore}.`);
+      setMessage("Assessment result could not be confirmed. Your entries have been retained; check the saved result before retrying.");
     } finally {
       setSavingStudentId("");
     }
@@ -221,7 +226,7 @@ export default function AssessmentsPage() {
           </div>
         </header>
         {message && (
-          <p className="enterprise-page-state assessments-message">{message}</p>
+          <p className="enterprise-page-state assessments-message" role="status" aria-live="polite">{message}</p>
         )}
         <section className="assessments-layout">
           <form onSubmit={createAssessment} className="assessments-panel">
@@ -334,7 +339,7 @@ export default function AssessmentsPage() {
                 <ul>
                   {roster.map((student) => (
                     <ResultRow
-                      key={student.id}
+                      key={`${selected.id}-${student.id}-${JSON.stringify(currentResult(student.id))}`}
                       student={student}
                       result={currentResult(student.id)}
                       maxScore={selected.maxScore}
@@ -367,22 +372,39 @@ function ResultRow({
     score: number,
     grade: string,
     remarks: string,
+    isGradeManual: boolean,
   ) => Promise<void>;
 }) {
   const [score, setScore] = useState(result?.score.toString() ?? "");
   const [grade, setGrade] = useState(result?.grade ?? "");
   const [remarks, setRemarks] = useState(result?.remarks ?? "");
-  useEffect(() => {
-    setScore(result?.score.toString() ?? "");
-    setGrade(result?.grade ?? "");
-    setRemarks(result?.remarks ?? "");
-  }, [result]);
+  const [isGradeManual, setIsGradeManual] = useState(
+    result?.isGradeManual ?? Boolean(result?.grade?.trim()),
+  );
   return (
     <li>
       <b>
         {student.firstName} {student.lastName}
       </b>
       <div>
+        <label className="assessment-grading-mode">
+          Grading mode
+          <StandardSelectField
+            name={`grading-mode-${student.id}`}
+            placeholder="Select grading mode"
+            value={isGradeManual ? "manual" : "automatic"}
+            disabled={saving}
+            onChange={(value) => setIsGradeManual(value === "manual")}
+            options={[
+              { value: "automatic", label: "Automatic (grading scheme)" },
+              { value: "manual", label: "Manual override" },
+            ]}
+          />
+        </label>
+        <small className="assessment-grading-help">
+          Automatic grades follow the assessment’s grading scheme. Without a scheme, only the score is saved.
+          {result?.isGradeManual == null && result?.grade?.trim() ? " This existing grade has been preserved. Select Automatic to recalculate it." : ""}
+        </small>
         <input
           type="number"
           min="0"
@@ -391,11 +413,16 @@ function ResultRow({
           value={score}
           onChange={(event) => setScore(event.target.value)}
           placeholder={`Score / ${maxScore}`}
+          aria-label="Assessment score"
+          disabled={saving}
         />
         <input
           value={grade}
+          disabled={saving || !isGradeManual}
+          maxLength={30}
+          aria-label="Manual grade"
           onChange={(event) => setGrade(event.target.value)}
-          placeholder="Grade"
+          placeholder={isGradeManual ? "Manual grade" : "Calculated when saved"}
         />
         <input
           value={remarks}
@@ -403,9 +430,9 @@ function ResultRow({
           placeholder="Remarks"
         />
         <button
-          disabled={saving || !score}
+          disabled={saving || score.trim() === "" || !Number.isFinite(Number(score)) || Number(score) < 0 || Number(score) > maxScore || (isGradeManual && !grade.trim())}
           type="button"
-          onClick={() => void onSave(student.id, Number(score), grade, remarks)}
+          onClick={() => void onSave(student.id, Number(score), grade, remarks, isGradeManual)}
         >
           {saving ? "Saving…" : "Save"}
         </button>

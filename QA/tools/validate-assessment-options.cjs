@@ -1,0 +1,25 @@
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),cp=require('node:child_process'),os=require('node:os'),assert=require('node:assert/strict');
+const root=path.resolve(__dirname,'../..'),read=f=>fs.readFileSync(path.join(root,f),'utf8').replace(/^\uFEFF/,''),sha=f=>crypto.createHash('sha256').update(fs.readFileSync(path.join(root,f))).digest('hex');
+const snapshot=JSON.parse(read('QA/REPORTS/PHASE_2B_ASSESSMENT_OPTIONS_SOURCE_SNAPSHOT.json'));
+assert.equal(cp.execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim(),snapshot.commit);
+for(const x of [...snapshot.sources,...snapshot.binaries,...snapshot.evidence,...snapshot.normalBinaries])assert.equal(sha(x.file),x.sha256,x.file);
+const access=JSON.parse(read('QA/REPORTS/PHASE_2B_ASSESSMENT_ACCESS_SOURCE_SNAPSHOT.json'));
+for(const x of access.sources.filter(x=>x.file.startsWith('apps/api/Security/')||x.file==='apps/api/Controllers/TeacherPortalController.cs'||x.file==='apps/api/Controllers/GradingSchemeLifecycleController.cs'))assert.equal(sha(x.file),x.sha256,'Prior access/Teacher/lifecycle source changed');
+for(const x of snapshot.normalBinaries)assert.equal(x.sha256,access.normalBinaries.find(y=>y.file===x.file).sha256,'Normal development assembly changed');
+const grading=JSON.parse(read('QA/REPORTS/PHASE_2B_ASSESSMENT_GRADE_SOURCE_SNAPSHOT.json'));
+for(const x of grading.sources.filter(x=>x.file.startsWith('apps/api/Migrations/')||x.file==='apps/api/Infrastructure/AssessmentGrading.cs'||x.file==='apps/web/src/app/globals.css'))assert.equal(sha(x.file),x.sha256,'Schema/grading/CSS changed in lookup slice');
+const trx=read('QA/EVIDENCE/assessment-options/assessment-options-suite.trx'),results=[...trx.matchAll(/<UnitTestResult\b[^>]*\boutcome="([^"]+)"/g)].map(x=>x[1]);
+assert.equal(results.length,426);assert.ok(results.every(x=>x==='Passed'));assert.equal([...trx.matchAll(/testName="AcademyDesk.Api.Tests.AssessmentOptionTests\./g)].length,9);
+assert.match(read('QA/EVIDENCE/logs/phase-2b-assessment-options-ui.log'),/tests 29[\s\S]*pass 29[\s\S]*fail 0/);
+const log=read('QA/EVIDENCE/logs/phase-2b-assessment-options-sql.log');assert.equal([...log.matchAll(/^ACADEMICOPTIONS CASE .+ PASS\.$/gm)].length,40);assert.match(log,/ACADEMICOPTIONS REGRESSION PASS:40 cases/);assert.match(log,/QA AssessmentOptions exit=0/);
+assert.match(log,/routes=312, controller method\/routes=301, framework Identity method\/routes=10, SHA256=74CB2F226EBAFF8881F6CF80D6F648310A78B07D79A0A6D9E04D4ED858544FF3/);
+assert.match(log,/PASS: application migrations=81, identity migrations=7, scoped runtime login verified; run-owned database and login removed/);
+for(const label of ['empty-academy','grant-revoked-permanent-same-token','options-post-method-denied','delegated-option-linked-create','delegated-option-linked-result-save','delegated-option-linked-result-readback','generic-management-still-denied-batches','generic-management-still-denied-students','generic-management-still-denied-enrollments','generic-management-still-denied-grading-schemes/active'])assert.ok(log.includes('ACADEMICOPTIONS CASE '+label+' PASS.'),label);
+const id=log.match(/run=([a-f0-9]{32}) container=academydesk-qa-\1 /)[1],port=Number(log.match(/^QA SQL port=(\d+)/m)[1]);
+assert.equal(cp.spawnSync('docker',['inspect',`academydesk-qa-${id}`],{encoding:'utf8'}).status,1);assert.equal(fs.existsSync(path.join(os.tmpdir(),'AcademyDesk-QA',id)),false);
+assert.equal(cp.execFileSync('powershell',['-NoProfile','-Command',`@(Get-NetTCPConnection -LocalPort ${port} -State Listen -ErrorAction SilentlyContinue).Count`],{encoding:'utf8'}).trim(),'0');
+assert.equal(snapshot.checks.typeScriptExitCode,0);assert.equal(snapshot.checks.lintExitCode,1);assert.match(read('QA/EVIDENCE/logs/phase-2b-assessment-options-lint.log'),/1 error, 2 warnings/);
+assert.match(read('QA/ISSUES/BUG-FUNC-0020.md'),/\| Status \| OPEN \|/);
+for(const f of ['QA/REPORTS/PHASE_2B_ASSESSMENT_OPTIONS_REPAIR.md','QA/ISSUES/BUG-FUNC-0020.md'])for(const m of read(f).matchAll(/\]\(([^)]+)\)/g)){const target=m[1].split('#')[0];if(target&&!/^https?:/.test(target))assert.ok(fs.existsSync(path.resolve(root,path.dirname(f),target)),target);}
+cp.execFileSync('git',['diff','--check'],{cwd:root,stdio:'pipe'});
+console.log('PASS academic options/page repair: backend426/426 (9 new), controlled form/grade29, real HTTP/SQL40, minimal projection/owned cleanup, prior access/Teacher/schema/grading/normal binaries preserved. TypeScript PASS; lint still fails on1 inherited error/2 warnings. Browser/device, historical policy and release gates OPEN.');

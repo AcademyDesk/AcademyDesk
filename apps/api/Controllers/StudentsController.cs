@@ -1,6 +1,7 @@
 using AcademyDesk.Api.Data;
 using AcademyDesk.Api.Domain.Entities;
 using AcademyDesk.Api.Domain.Identity;
+using AcademyDesk.Api.Security;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -41,6 +42,7 @@ public sealed class StudentsController(AcademyDeskDbContext dbContext, UserManag
     }
 
     [HttpPost]
+    [AtomicAcademyMutation]
     public async Task<ActionResult<StudentSummary>> Create(Guid academyId, CreateStudentRequest request, CancellationToken cancellationToken)
     {
         if (!await dbContext.Academies.AnyAsync(x => x.Id == academyId, cancellationToken)) return NotFound();
@@ -65,12 +67,15 @@ public sealed class StudentsController(AcademyDeskDbContext dbContext, UserManag
         return Created($"/api/academies/{academyId}/students/{student.Id}", response);
     }
     [HttpPut("{studentId:guid}")]
+    [AtomicAcademyMutation(IncludeIdentity = true)]
     public async Task<ActionResult<StudentSummary>> Update(Guid academyId, Guid studentId, UpdateStudentRequest request, CancellationToken token)
     {
         var student = await dbContext.Students.SingleOrDefaultAsync(x => x.Id == studentId && x.AcademyId == academyId, token);
         if (student is null) return NotFound();
         if (string.IsNullOrWhiteSpace(request.FirstName) || string.IsNullOrWhiteSpace(request.LastName))
             return BadRequest(new { message = "First and last name are required." });
+        if (request.BranchId.HasValue && !await dbContext.Branches.AnyAsync(x => x.Id == request.BranchId && x.AcademyId == academyId, token))
+            return BadRequest(new { message = "The selected branch does not belong to this academy." });
 
         student.FirstName = request.FirstName.Trim();
         student.LastName = request.LastName.Trim();
@@ -91,7 +96,9 @@ public sealed class StudentsController(AcademyDeskDbContext dbContext, UserManag
             account.PhoneNumber = student.Phone;
             var update = await userManager.UpdateAsync(account);
             if (!update.Succeeded)
-                return BadRequest(new { message = "Student record saved, but the linked portal account could not be updated." });
+                return BadRequest(new { message = dbContext.Database.CurrentTransaction is not null
+                    ? "The student and linked portal accounts could not be updated. No changes were saved."
+                    : "Student record saved, but the linked portal account could not be updated." });
         }
 
         return Ok(new StudentSummary(student.Id, student.FirstName, student.LastName, student.Email, student.Phone, student.BranchId, student.IsActive));

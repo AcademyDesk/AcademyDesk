@@ -1,0 +1,123 @@
+{
+  "createdAt": "2026-10-01T13:04:06.422Z",
+  "commit": "20bb6047f9edf733ac8e2a226621cc582ec54b3c",
+  "issue": "BUG-DATA-0036",
+  "checks": {
+    "controlledTsxCases": 31,
+    "httpSqlCases": 11,
+    "typeScriptExitCode": 0,
+    "lintExitCode": 0,
+    "browserDevice": "NOT RUN",
+    "closure": "OPEN"
+  },
+  "sources": [
+    {
+      "file": "apps/web/src/app/calendar/page.tsx",
+      "sha256": "474bb022b839760256400c34627c09aabf91133be762f98bc3a3fcd44a371887"
+    },
+    {
+      "file": "apps/api/Controllers/ClassSessionsController.cs",
+      "sha256": "5445b6b9c69a189c5b5a707138df4ebde7bf06f03e704a8ec8f3219d6c0460d2"
+    },
+    {
+      "file": "QA/tools/calendar-details.test.cjs",
+      "sha256": "e0501a6da10a6025f15abe8dc165c82499f9d349b00ac538432b090be22269aa"
+    },
+    {
+      "file": "QA/tools/SqlHarness/CalendarDetailsRegression.cs",
+      "sha256": "83b9dc424de45218efbfff414c1f66960c27360fbfdf7bb6e0a032ff3cc9b366"
+    },
+    {
+      "file": "QA/tools/SqlHarness/Program.cs",
+      "sha256": "2bc6f364ee6a6b93b4cd8d0576aa27d6025fe7792cac885b820650a1f48cfd7b"
+    },
+    {
+      "file": "QA/tools/SqlHarness/Run-ReconciledPayment.ps1",
+      "sha256": "69b477de1b78eb5afd749f7372fecc6db8404a69942f5602c0b923d3d529bba8"
+    },
+    {
+      "file": "QA/tools/validate-calendar-details.cjs",
+      "sha256": "56de5680ecdd843fccb3927fb57daea2f8bbe870a29779bd47c6c9d9b7dcc9ed"
+    },
+    {
+      "file": "QA/REPORTS/PHASE_2B_CALENDAR_DETAILS_REPAIR.md",
+      "sha256": "b4ecdfd3727c21a3ecd3db806a332f26472c2424ae4bbd9003c5de65864b011b"
+    },
+    {
+      "file": "QA/ISSUES/BUG-DATA-0036.md",
+      "sha256": "ad0a3786ab95602d9d6f6a4217c9b00d31134f1b354998ae4b21a3c3d965e0db"
+    }
+  ],
+  "unchangedSources": [
+    {
+      "file": "apps/web/src/app/schedule/page.tsx",
+      "sha256": "7490da2d4555471bc6e39c7d2c59901ef3de18a17d4cea3986b0cc13488e19b6"
+    },
+    {
+      "file": "apps/api/Controllers/TeacherPortalController.cs",
+      "sha256": "35e3d9f34f8f871dee63fe3425aedb14d5c0eee49c9ad52832a811e9ec57010d"
+    },
+    {
+      "file": "apps/web/src/app/teacher/page.tsx",
+      "sha256": "a065e09af508de2ee56581233c591eb6324ed18c631f003d554412ac7cc911dc"
+    },
+    {
+      "file": "apps/web/src/app/globals.css",
+      "sha256": "27750616e72e777e80c4727d6e17fc6ded75f966d8aae0c9027604e57d6575ff"
+    }
+  ],
+  "binaries": [
+    {
+      "file": ".build-check/calendar-details-sql/bin/AcademyDesk.Api/debug/AcademyDesk.Api.dll",
+      "sha256": "37d959f3e08e6bfc59f757e3b68889c7e66016713ae1fdbc857c2b99d383a567"
+    },
+    {
+      "file": ".build-check/calendar-details-sql/bin/SqlHarness/debug/SqlHarness.dll",
+      "sha256": "70573b5425d1d3f42886f90221e216b4b0cc452895d59bd2f907ed6e942b47e1"
+    }
+  ],
+  "evidence": [
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-calendar-details-baseline-lint.log",
+      "sha256": "5fe9b821f303d1be5fa41d9670a362be4d3ce955645e73cbd3227d873c6a0c46"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-calendar-details-ui.log",
+      "sha256": "bc1c87c9d57f20d6dc7e6cbb58fd14d0e1745490a2e57e8bc312cd2992037dfe"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-calendar-details-ui-sql.log",
+      "sha256": "04e1cef6cfd4c0e7c95bff670c08578eed5e6656acdade643e6ea669d186ea68"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-calendar-details-sql-build-attempt1.log",
+      "sha256": "247b3d2b6c3ad6ee3cc8b9fed786d36a23f040673ce798ce771bc350c8f329f5"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-calendar-details-sql-build.log",
+      "sha256": "6fa4f09200e1ef74d63c31dcc836ab337eb8bd7830caf821abe8b01676f93fbc"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-calendar-details-sql.log",
+      "sha256": "7fa9f78eff9374e8dcceaba19dc2203d52347180721b0ffb1fc03cc0bfbe313b"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-calendar-details-typecheck.log",
+      "sha256": "6ebe19947b62792d3f59def853d038463d516aaf2c7a7bea98b196e0d51933ef"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-calendar-details-lint.log",
+      "sha256": "0117988c22c2d03e4caa2e344675fef87981d32c2070ab4f7d1913413d1532e8"
+    }
+  ],
+  "normalBinaries": [
+    {
+      "file": "apps/api/bin/Debug/net10.0/AcademyDesk.Api.dll",
+      "sha256": "10ecb9da46c8198affae586776aca4747244cda18670dde8a1892ed20170f614"
+    },
+    {
+      "file": "QA/tools/SqlHarness/bin/Debug/net10.0/SqlHarness.dll",
+      "sha256": "7c165e280c7752cfaef4e56d45062445a9f7181bab3fd5ce6aa12d32b7194c94"
+    }
+  ]
+}

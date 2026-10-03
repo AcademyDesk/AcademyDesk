@@ -1,0 +1,33 @@
+# Phase 2B — Academic-scoped assessment options and page integration
+
+2026-10-01. Sol High task allocation. Completes the bounded lookup-dependency repair following[assessment result access alignment](PHASE_2B_ASSESSMENT_ACCESS_REPAIR.md); accepted[BUG-FUNC-0020](../ISSUES/BUG-FUNC-0020.md) evidence reused, not re-audited. Issue/Phase2B remain OPEN for live browser/device/critical release acceptance.
+
+## Result and contract
+
+[AssessmentsController.Options](../../apps/api/Controllers/AssessmentsController.cs) adds only `GET /api/academies/{academyId}/assessments/options`, under the existing `academics.manage` permission and `AcademicGovernance` module. The response has:
+
+- `batches`: owned batch ID/name, ordered by name/ID. Inactive owned batches are retained as in the previous general selector; no new batch policy.
+- `students`: ID/first name/last name only, limited to eligible active enrollment rows in an owned batch; no email, phone, student number, birth date, guardians, account IDs or other full student fields.
+- `enrollments`: distinct student ID/batch ID/Active tuples, requiring enrollment, student and batch academy ownership together. Duplicate active rows do not duplicate result editors. Paused/Completed/Waitlisted/Withdrawn/Cancelled/Transferred rows are excluded from this existing active editor roster.
+- `gradingSchemes`: owned active scheme ID/name/passing percentage, ordered by name/ID; no bands/configuration metadata.
+
+The endpoint is read-only/no-tracking. Student `IsActive` is deliberately not an additional filter: a valid active enrollment previously appeared in the editor even if its student identity was inactive. This preserves that contract rather than resolving a new archived-student policy. Historical result creation/corrections remain the unanswered policy boundary of[BUG-DATA-0034](../ISSUES/BUG-DATA-0034.md); the options roster does not change result-write admission.
+
+The[assessment page](../../apps/web/src/app/assessments/page.tsx) now loads options plus the academic assessment list instead of `/batches`, `/students`, `/enrollments` and `/grading-schemes/active`. Both responses are parsed and array shapes checked before selector state changes, so failed/partial contracts are not rendered as a successful partial load.403 receives academic permission/module guidance, other failures stay visible, empty success uses empty selectors, and initial batch/assessment defaults and refresh after Create retain their existing behavior. Prior grade-mode/result-save confirmation handlers are unchanged.
+
+Generic management permissions, grading-scheme lifecycle write access, catalog entries, Teacher writer and global/platform bypass behavior are unchanged. This read-only workflow contract does not grant academics general student or batch-management rights.
+
+## Verification
+
+- [Backend suite](../EVIDENCE/logs/phase-2b-assessment-options-suite.log)/[TRX](../EVIDENCE/assessment-options/assessment-options-suite.trx):426/426 PASS, including[9 new option tests](../../tests/AcademyDesk.Api.Tests/AssessmentOptionTests.cs). Owned/student/batch relation scoping, foreign/corrupt relations, duplicate and multibatch rosters, six inactive enrollment statuses, empty results, ordering, minimal DTO fields and no-tracking/no-write behavior.
+- [Controlled actual TSX handlers](../tools/assessment-options.test.cjs) plus[prior grade handlers](../tools/assessment-grade.test.cjs)/[combined log](../EVIDENCE/logs/phase-2b-assessment-options-ui.log):29/29 PASS (14 new lookup/form cases and15 grade regression cases). Actual initial request paths, visible labels, reachable active result row, empty/403/500/network/invalid JSON/malformed contract recovery, Create payload lookup IDs and academic-only refresh verified. Controlled hooks/effects are not a real browser or React runtime acceptance test.
+- [Real Identity/HTTP/SQL harness](../tools/SqlHarness/AssessmentOptionsRegression.cs)/[log](../EVIDENCE/logs/phase-2b-assessment-options-sql.log):40 cases PASS. Eight roles, anonymous/cross-tenant and each academy's own/empty options; scoped JSON field allowlists and complete payload compared with independently filtered fresh SQL. Grant absent/foreign/current/expired/revoked/permanent/no-expiry/revoked-permanent, modules disabled/enabled/empty/malformed, inactive/reactivated users/academy and method405 denial. Successful reads and denied requests leave captured batches/students/enrollments/schemes/assessments/results/audits unchanged. All four generic lookup paths remain403 for an academic-only role. Real returned selector IDs support assessment creation, automatic Pass grade save and fresh result readback.
+- [TypeScript](../EVIDENCE/logs/phase-2b-assessment-options-typecheck.log) PASS. [SQL build](../EVIDENCE/logs/phase-2b-assessment-options-sql-build.log):0 warnings/errors. [Page lint](../EVIDENCE/logs/phase-2b-assessment-options-lint.log) remains1 existing error/2 dependency warnings, same categories as the[prior grade checkpoint](../EVIDENCE/logs/phase-2b-assessment-grade-lint.log). The lint gate is not passed; existing result-loading effect/lifecycle is not repaired in this bounded lookup slice.
+
+## Evidence and handoff
+
+One successful40-case SQL run,81 domain/7 Identity migrations and exact loopback/generated runtime ownership checks. Runtime route inventory is now312 total/301 controller method-routes/10 framework Identity method-routes, digest `74CB2F226EBAFF8881F6CF80D6F648310A78B07D79A0A6D9E04D4ED858544FF3`. The only new application method-route is the options GET; prior311-route captures are historical. This report records that incremental route delta without rerunning the accepted whole-source audit.
+
+[Bounded source/evidence snapshot](PHASE_2B_ASSESSMENT_OPTIONS_SOURCE_SNAPSHOT.json) and[validator](../tools/validate-assessment-options.cjs) pin current changes and check prior catalogs/Teacher/grading implementation unchanged. Normal developer assemblies and database/services, Azure/Blob/customer data untouched. Disposable database/login/container/root folders removed after success. No commit/push/deployment and no normal service restart; the new endpoint must be included when the normal API is next rebuilt/restarted or released. No schema migration in this slice.
+
+Historical enrollment/correction policy, actual browser/device layout and workflow, existing lint/effect risks, platform bypass, broader audit-rollback/concurrency/performance/critical/release gates remain pending. Next independent accepted repair is[BUG-DATA-0035](../ISSUES/BUG-DATA-0035.md), preserving attendance notes during status-only/unchanged saves. Keep Sol High; no repeat Astra audit.

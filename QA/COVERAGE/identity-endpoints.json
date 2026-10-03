@@ -1,0 +1,20 @@
+{
+  "frameworkVersion": "10.0.12",
+  "source": "https://raw.githubusercontent.com/dotnet/aspnetcore/v10.0.12/src/Identity/Core/src/IdentityApiEndpointRouteBuilderExtensions.cs",
+  "applicationMapping": "apps/api/Program.cs",
+  "testId": "AUTH-FRAMEWORK-001",
+  "runtime": "NOT RUN",
+  "limitations": "Static route composition only; runtime metadata enumeration, effective options and binding remain unverified. These are separate from the 282 controller actions and health route.",
+  "endpoints": [
+    {"method":"POST","route":"/api/auth/register","authorization":"anonymous","input":"email, password"},
+    {"method":"POST","route":"/api/auth/login","authorization":"anonymous credentials/MFA","input":"email, password, twoFactorCode or twoFactorRecoveryCode; query useCookies/useSessionCookies"},
+    {"method":"POST","route":"/api/auth/refresh","authorization":"valid refresh ticket and security stamp","input":"refreshToken"},
+    {"method":"GET","route":"/api/auth/confirmEmail","authorization":"valid confirmation token","input":"userId, code, optional changedEmail"},
+    {"method":"POST","route":"/api/auth/resendConfirmationEmail","authorization":"anonymous","input":"email"},
+    {"method":"POST","route":"/api/auth/forgotPassword","authorization":"anonymous","input":"email"},
+    {"method":"POST","route":"/api/auth/resetPassword","authorization":"valid reset token","input":"email, resetCode, newPassword"},
+    {"method":"POST","route":"/api/auth/manage/2fa","authorization":"authenticated own account","input":"enable, twoFactorCode, resetSharedKey, resetRecoveryCodes, forgetMachine"},
+    {"method":"GET","route":"/api/auth/manage/info","authorization":"authenticated own account","input":"none"},
+    {"method":"POST","route":"/api/auth/manage/info","authorization":"authenticated own account","input":"newEmail, newPassword, oldPassword"}
+  ]
+}

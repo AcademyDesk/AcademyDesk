@@ -1,0 +1,14 @@
+{
+  "date": "2026-10-01",
+  "commit": "20bb6047f9edf733ac8e2a226621cc582ec54b3c",
+  "scope": "Before linked-update application edits; compiled baseline application retained for both no-build reproductions",
+  "baselineApiAssemblySha256": "b28b08b6addee33b83ef0b3e33e1f56f4bdb25191742115d967f5fe4d0d3e560",
+  "baselineHarnessAssemblySha256": "919c6c561987df5d13f45325d5f8144536bef39aedf6c5c121c60f676b137308",
+  "records": [
+    {"file":"apps/api/Security/AcademyAccessFilter.cs","sha256":"5eed9543091f61e1edde01db40a93a6e08429e4b71c8b74bf1ae96e70886e562"},
+    {"file":"apps/api/Security/AtomicAcademyMutationAttribute.cs","sha256":"2e276013e94f14c2c0bbade82c20cdf5ef5b6101420f868a42b5296d32b64631"},
+    {"file":"apps/api/Controllers/StudentsController.cs","sha256":"33318d443466961247b18ddfb9c94144a69a48cba11e2de17c568ff6cf07450d"},
+    {"file":"apps/api/Controllers/TeachersController.cs","sha256":"758957774e42d7c21e34a2b06079bc72fb9dd342a6e5651ea00efd93c4e3e126"},
+    {"file":"tests/AcademyDesk.Api.Tests/AuditOutcomeTests.cs","sha256":"37c87c8c5c33af58ecdbce8a71faf92bd1acf18be0f2489dbd3cc35351bbdbe8"}
+  ]
+}

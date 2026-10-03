@@ -1,0 +1,1957 @@
+{
+  "reviewType": "Source-backed specification, NOT runtime verification",
+  "sourceFingerprint": "b6a85cba8faed70d77443825e68fbfb712b2e70f3a414e4dacd682b8f4ba288b",
+  "reviewedForms": [
+    {
+      "form": "apps/web/src/app/teacher-onboarding/page.tsx#form-1",
+      "testId": "TEACHER-FORM-003",
+      "fields": 17,
+      "document": "QA/COVERAGE/01_ONBOARDING_PAYROLL.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/student-onboarding/page.tsx#form-1",
+      "testId": "STUDENT-FORM-001",
+      "fields": 28,
+      "document": "QA/COVERAGE/01_ONBOARDING_PAYROLL.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/payroll/page.tsx#form-1",
+      "testId": "PAYROLL-FORM-001",
+      "fields": 7,
+      "document": "QA/COVERAGE/01_ONBOARDING_PAYROLL.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/payroll/page.tsx#form-2",
+      "testId": "PAYROLL-FORM-002",
+      "fields": 7,
+      "document": "QA/COVERAGE/01_ONBOARDING_PAYROLL.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/invoices/page.tsx#form-1",
+      "testId": "FEES-FORM-003",
+      "fields": 4,
+      "document": "QA/COVERAGE/02_FINANCE_LIFECYCLE.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/payments/page.tsx#form-1",
+      "testId": "FINANCE-FORM-008",
+      "fields": 4,
+      "document": "QA/COVERAGE/02_FINANCE_LIFECYCLE.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/finance-reconciliation/page.tsx#form-1",
+      "testId": "FINANCE-FORM-007",
+      "fields": 1,
+      "document": "QA/COVERAGE/02_FINANCE_LIFECYCLE.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/finance-adjustments/page.tsx#form-1",
+      "testId": "FINANCE-FORM-002",
+      "fields": 4,
+      "document": "QA/COVERAGE/02_FINANCE_LIFECYCLE.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/login/page.tsx#form-1",
+      "testId": "AUTH-FORM-003",
+      "fields": 2,
+      "document": "QA/COVERAGE/03_AUTH_ACCOUNTS_FILES.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/register/page.tsx#form-1",
+      "testId": "AUTH-FORM-005",
+      "fields": 3,
+      "document": "QA/COVERAGE/03_AUTH_ACCOUNTS_FILES.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/portal-accounts/page.tsx#form-1",
+      "testId": "AUTH-FORM-004",
+      "fields": 5,
+      "document": "QA/COVERAGE/03_AUTH_ACCOUNTS_FILES.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/teacher/page.tsx#form-1",
+      "testId": "TEACHERPORTAL-FORM-001",
+      "fields": 2,
+      "document": "QA/COVERAGE/03_AUTH_ACCOUNTS_FILES.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/teacher/page.tsx#form-2",
+      "testId": "TEACHERPORTAL-FORM-002",
+      "fields": 3,
+      "document": "QA/COVERAGE/03_AUTH_ACCOUNTS_FILES.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/staff/page.tsx#form-1",
+      "testId": "AUTH-FORM-006",
+      "fields": 4,
+      "document": "QA/COVERAGE/04_STAFF_ACCESS_GOVERNANCE.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/access-review/page.tsx#form-1",
+      "testId": "AUTH-FORM-001",
+      "fields": 5,
+      "document": "QA/COVERAGE/04_STAFF_ACCESS_GOVERNANCE.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/access-review/sign-off/page.tsx#form-1",
+      "testId": "AUTH-FORM-002",
+      "fields": 2,
+      "document": "QA/COVERAGE/04_STAFF_ACCESS_GOVERNANCE.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/teacher/page.tsx#form-3",
+      "testId": "TEACHERPORTAL-FORM-003",
+      "fields": 4,
+      "document": "QA/COVERAGE/05_TEACHER_FAMILY.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/teacher/page.tsx#form-4",
+      "testId": "TEACHERPORTAL-FORM-004",
+      "fields": 2,
+      "document": "QA/COVERAGE/05_TEACHER_FAMILY.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/teacher/page.tsx#form-5",
+      "testId": "TEACHERPORTAL-FORM-005",
+      "fields": 5,
+      "document": "QA/COVERAGE/05_TEACHER_FAMILY.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/teacher/page.tsx#form-6",
+      "testId": "TEACHERPORTAL-FORM-006",
+      "fields": 12,
+      "document": "QA/COVERAGE/05_TEACHER_FAMILY.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/teacher/page.tsx#form-7",
+      "testId": "TEACHERPORTAL-FORM-007",
+      "fields": 3,
+      "document": "QA/COVERAGE/05_TEACHER_FAMILY.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/portal/page.tsx#form-1",
+      "testId": "FAMILY-FORM-001",
+      "fields": 2,
+      "document": "QA/COVERAGE/05_TEACHER_FAMILY.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/portal/page.tsx#form-2",
+      "testId": "FAMILY-FORM-002",
+      "fields": 0,
+      "document": "QA/COVERAGE/05_TEACHER_FAMILY.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/finance-governance/page.tsx#form-1",
+      "testId": "FINANCE-FORM-003",
+      "fields": 6,
+      "document": "QA/COVERAGE/06_FINANCE_GOVERNANCE.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/finance-governance/page.tsx#form-2",
+      "testId": "FINANCE-FORM-004",
+      "fields": 3,
+      "document": "QA/COVERAGE/06_FINANCE_GOVERNANCE.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/finance-governance/page.tsx#form-3",
+      "testId": "FINANCE-FORM-005",
+      "fields": 2,
+      "document": "QA/COVERAGE/06_FINANCE_GOVERNANCE.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/guardians/page.tsx#form-1",
+      "testId": "GUARDIAN-FORM-001",
+      "fields": 4,
+      "document": "QA/COVERAGE/07_GUARDIAN_ADMINISTRATION.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/guardians/page.tsx#form-2",
+      "testId": "GUARDIAN-FORM-002",
+      "fields": 4,
+      "document": "QA/COVERAGE/07_GUARDIAN_ADMINISTRATION.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/fee-plans/page.tsx#form-1",
+      "testId": "FEES-FORM-001",
+      "fields": 3,
+      "document": "QA/COVERAGE/08_FEE_PLANS_REMINDERS.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/fee-plans/page.tsx#form-2",
+      "testId": "FEES-FORM-002",
+      "fields": 3,
+      "document": "QA/COVERAGE/08_FEE_PLANS_REMINDERS.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/student-fees/page.tsx#form-1",
+      "testId": "FEES-FORM-004",
+      "fields": 2,
+      "document": "QA/COVERAGE/09_STUDENT_FEE_ARRANGEMENTS.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/components/student-fee-arrangements.tsx#form-1",
+      "testId": "ACADEMY-FORM-003",
+      "fields": 3,
+      "document": "QA/COVERAGE/09_STUDENT_FEE_ARRANGEMENTS.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/platform/control/page.tsx#form-1",
+      "testId": "PLATFORM-FORM-001",
+      "fields": 32,
+      "document": "QA/COVERAGE/12_TENANT_LIFECYCLE.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/platform/control/page.tsx#form-2",
+      "testId": "PLATFORM-FORM-002",
+      "fields": 28,
+      "document": "QA/COVERAGE/12_TENANT_LIFECYCLE.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/platform/control/page.tsx#form-3",
+      "testId": "PLATFORM-FORM-003",
+      "fields": 3,
+      "document": "QA/COVERAGE/12_TENANT_LIFECYCLE.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/platform/page.tsx#form-1",
+      "testId": "PLATFORM-FORM-010",
+      "fields": 5,
+      "document": "QA/COVERAGE/12_TENANT_LIFECYCLE.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/platform/control/page.tsx#form-4",
+      "testId": "PLATFORM-FORM-004",
+      "fields": 4,
+      "document": "QA/COVERAGE/13_PLATFORM_ADMINISTRATION.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/platform/control/page.tsx#form-7",
+      "testId": "PLATFORM-FORM-007",
+      "fields": 3,
+      "document": "QA/COVERAGE/13_PLATFORM_ADMINISTRATION.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/platform/control/page.tsx#form-8",
+      "testId": "PLATFORM-FORM-008",
+      "fields": 3,
+      "document": "QA/COVERAGE/13_PLATFORM_ADMINISTRATION.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/platform/control/page.tsx#form-9",
+      "testId": "PLATFORM-FORM-009",
+      "fields": 7,
+      "document": "QA/COVERAGE/13_PLATFORM_ADMINISTRATION.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/platform/control/page.tsx#form-5",
+      "testId": "PLATFORM-FORM-005",
+      "fields": 7,
+      "document": "QA/COVERAGE/14_PLATFORM_BILLING_SUPPORT.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/platform/control/page.tsx#form-6",
+      "testId": "PLATFORM-FORM-006",
+      "fields": 4,
+      "document": "QA/COVERAGE/14_PLATFORM_BILLING_SUPPORT.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/platform-services/page.tsx#form-1",
+      "testId": "PLATFORM-FORM-011",
+      "fields": 3,
+      "document": "QA/COVERAGE/14_PLATFORM_BILLING_SUPPORT.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/admin/control/page.tsx#form-1",
+      "testId": "ACADEMY-FORM-001",
+      "fields": 4,
+      "document": "QA/COVERAGE/15_ACADEMY_CONFIGURATION_BRANCHES.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/branches/page.tsx#form-1",
+      "testId": "ACADEMY-FORM-002",
+      "fields": 3,
+      "document": "QA/COVERAGE/15_ACADEMY_CONFIGURATION_BRANCHES.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/leads/page.tsx#form-1",
+      "testId": "SALES-FORM-001",
+      "fields": 10,
+      "document": "QA/COVERAGE/16_SALES_CAMPAIGNS_TRIALS.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/sales-campaigns/page.tsx#form-1",
+      "testId": "SALES-FORM-002",
+      "fields": 5,
+      "document": "QA/COVERAGE/16_SALES_CAMPAIGNS_TRIALS.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/trial-bookings/page.tsx#form-1",
+      "testId": "SALES-FORM-003",
+      "fields": 5,
+      "document": "QA/COVERAGE/16_SALES_CAMPAIGNS_TRIALS.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/courses/page.tsx#form-1",
+      "testId": "CURRICULUM-FORM-001",
+      "fields": 3,
+      "document": "QA/COVERAGE/17_COURSES_CURRICULUM.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/curriculum/page.tsx#form-1",
+      "testId": "CURRICULUM-FORM-002",
+      "fields": 3,
+      "document": "QA/COVERAGE/17_COURSES_CURRICULUM.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/academic-governance/page.tsx#form-1",
+      "testId": "ACADEMIC-FORM-001",
+      "fields": 3,
+      "document": "QA/COVERAGE/18_ACADEMIC_GOVERNANCE_PERIODS.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/academic-governance/page.tsx#form-2",
+      "testId": "ACADEMIC-FORM-002",
+      "fields": 2,
+      "document": "QA/COVERAGE/18_ACADEMIC_GOVERNANCE_PERIODS.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/academic-periods/page.tsx#form-1",
+      "testId": "ACADEMIC-FORM-003",
+      "fields": 4,
+      "document": "QA/COVERAGE/18_ACADEMIC_GOVERNANCE_PERIODS.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/academic-periods/page.tsx#form-2",
+      "testId": "ACADEMIC-FORM-004",
+      "fields": 4,
+      "document": "QA/COVERAGE/18_ACADEMIC_GOVERNANCE_PERIODS.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/batches/page.tsx#form-1",
+      "testId": "BATCH-FORM-002",
+      "fields": 15,
+      "document": "QA/COVERAGE/19_BATCHES_ENROLLMENT_PROMOTIONS.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/enrollments/page.tsx#form-1",
+      "testId": "BATCH-FORM-003",
+      "fields": 4,
+      "document": "QA/COVERAGE/19_BATCHES_ENROLLMENT_PROMOTIONS.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/batch-promotions/page.tsx#form-1",
+      "testId": "BATCH-FORM-001",
+      "fields": 5,
+      "document": "QA/COVERAGE/19_BATCHES_ENROLLMENT_PROMOTIONS.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/assessments/page.tsx#form-1",
+      "testId": "ACADEMIC-FORM-005",
+      "fields": 7,
+      "document": "QA/COVERAGE/20_ASSESSMENTS_RESULTS.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/schedule/page.tsx#form-1",
+      "testId": "SCHEDULE-FORM-006",
+      "fields": 7,
+      "document": "QA/COVERAGE/21_SCHEDULING_ATTENDANCE_CALENDAR.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/events/page.tsx#form-1",
+      "testId": "SCHEDULE-FORM-001",
+      "fields": 8,
+      "document": "QA/COVERAGE/22_LEAVE_MAKEUP_HOLIDAYS_EVENTS.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/holidays/page.tsx#form-1",
+      "testId": "SCHEDULE-FORM-002",
+      "fields": 2,
+      "document": "QA/COVERAGE/22_LEAVE_MAKEUP_HOLIDAYS_EVENTS.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/leave/page.tsx#form-1",
+      "testId": "SCHEDULE-FORM-003",
+      "fields": 5,
+      "document": "QA/COVERAGE/22_LEAVE_MAKEUP_HOLIDAYS_EVENTS.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/makeup/page.tsx#form-1",
+      "testId": "SCHEDULE-FORM-004",
+      "fields": 9,
+      "document": "QA/COVERAGE/22_LEAVE_MAKEUP_HOLIDAYS_EVENTS.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/meeting-links/page.tsx#form-1",
+      "testId": "SCHEDULE-FORM-005",
+      "fields": 14,
+      "document": "QA/COVERAGE/23_MEETING_PROVIDER_SETTINGS.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/communication-settings/page.tsx#form-1",
+      "testId": "COMMUNICATION-FORM-002",
+      "fields": 4,
+      "document": "QA/COVERAGE/23_MEETING_PROVIDER_SETTINGS.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/communication-preferences/page.tsx#form-1",
+      "testId": "COMMUNICATION-FORM-001",
+      "fields": 6,
+      "document": "QA/COVERAGE/24_MESSAGES_TEMPLATES_CONSENT.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/communications/page.tsx#form-1",
+      "testId": "COMMUNICATION-FORM-003",
+      "fields": 13,
+      "document": "QA/COVERAGE/24_MESSAGES_TEMPLATES_CONSENT.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/message-templates/page.tsx#form-1",
+      "testId": "COMMUNICATION-FORM-004",
+      "fields": 11,
+      "document": "QA/COVERAGE/24_MESSAGES_TEMPLATES_CONSENT.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/assignments/page.tsx#form-1",
+      "testId": "LEARNING-FORM-001",
+      "fields": 6,
+      "document": "QA/COVERAGE/25_ASSIGNMENTS_SUBMISSIONS_LESSONS.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/lesson-plans/page.tsx#form-1",
+      "testId": "LEARNING-FORM-002",
+      "fields": 3,
+      "document": "QA/COVERAGE/25_ASSIGNMENTS_SUBMISSIONS_LESSONS.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/music/page.tsx#form-1",
+      "testId": "LEARNING-FORM-003",
+      "fields": 4,
+      "document": "QA/COVERAGE/26_MUSIC_PRACTICE_RESOURCES.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/music/page.tsx#form-2",
+      "testId": "LEARNING-FORM-004",
+      "fields": 3,
+      "document": "QA/COVERAGE/26_MUSIC_PRACTICE_RESOURCES.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/practice-logs/page.tsx#form-1",
+      "testId": "LEARNING-FORM-005",
+      "fields": 5,
+      "document": "QA/COVERAGE/26_MUSIC_PRACTICE_RESOURCES.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/resources/page.tsx#form-1",
+      "testId": "LEARNING-FORM-006",
+      "fields": 6,
+      "document": "QA/COVERAGE/26_MUSIC_PRACTICE_RESOURCES.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/certificates/page.tsx#form-1",
+      "testId": "COMPLIANCE-FORM-001",
+      "fields": 3,
+      "document": "QA/COVERAGE/27_DOCUMENTS_COMPLIANCE_AUDIT.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/certificates/page.tsx#form-2",
+      "testId": "COMPLIANCE-FORM-002",
+      "fields": 6,
+      "document": "QA/COVERAGE/27_DOCUMENTS_COMPLIANCE_AUDIT.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/compliance/page.tsx#form-1",
+      "testId": "COMPLIANCE-FORM-003",
+      "fields": 3,
+      "document": "QA/COVERAGE/34_COMPLIANCE_SEMANTICS.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/compliance/page.tsx#form-2",
+      "testId": "COMPLIANCE-FORM-004",
+      "fields": 2,
+      "document": "QA/COVERAGE/34_COMPLIANCE_SEMANTICS.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/expenses/page.tsx#form-1",
+      "testId": "FINANCE-FORM-001",
+      "fields": 5,
+      "document": "QA/COVERAGE/28_FINANCE_OPERATIONS_COMPENSATION.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/finance-policy/page.tsx#form-1",
+      "testId": "FINANCE-FORM-006",
+      "fields": 10,
+      "document": "QA/COVERAGE/28_FINANCE_OPERATIONS_COMPENSATION.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/teacher-payments/page.tsx#form-1",
+      "testId": "TEACHER-FORM-002",
+      "fields": 7,
+      "document": "QA/COVERAGE/33_TEACHER_COMPENSATION_SEMANTICS.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    },
+    {
+      "form": "apps/web/src/app/work-queue/page.tsx#form-1",
+      "testId": "OPERATIONS-FORM-001",
+      "fields": 7,
+      "document": "QA/COVERAGE/28_FINANCE_OPERATIONS_COMPENSATION.md",
+      "g01": "STATIC-REVIEWED",
+      "g02": "STATIC-REVIEWED",
+      "runtime": "NOT RUN"
+    }
+  ],
+  "reviewedControllers": [
+    "TeachersController",
+    "StudentOnboardingController",
+    "PayrollController",
+    "InvoicesController",
+    "PaymentsController",
+    "FinanceAdjustmentsController",
+    "AuthSessionController",
+    "PortalAccountsController",
+    "LearningResourcesController",
+    "StaffController",
+    "AcademyRolesController",
+    "AccessGrantsController",
+    "AccessReviewsController",
+    "TeacherPortalController",
+    "PortalController",
+    "FinanceGovernanceController",
+    "AdminWorkItemsController",
+    "GuardiansController",
+    "StudentGuardiansController",
+    "FeePlansController",
+    "FeeRemindersController",
+    "StudentFeeArrangementsController",
+    "StudentsController",
+    "ProfilesController",
+    "PlatformAcademiesController",
+    "PlatformControlController",
+    "AcademyPlatformServicesController",
+    "AcademiesController",
+    "BranchesController",
+    "LeadsController",
+    "SalesMarketingController",
+    "CoursesController",
+    "CourseModulesController",
+    "CourseModuleStatusController",
+    "AcademicGovernanceController",
+    "GradingSchemeLifecycleController",
+    "AcademicPeriodsController",
+    "BatchesController",
+    "EnrollmentsController",
+    "BatchPromotionsController",
+    "AssessmentsController",
+    "AssessmentResultsController",
+    "ClassSessionsController",
+    "AttendanceController",
+    "LeaveRequestsController",
+    "MakeupClassesController",
+    "HolidaysController",
+    "HolidayDeleteController",
+    "EventsController",
+    "CommunicationSettingsController",
+    "NotificationsController",
+    "CommunicationTemplatesController",
+    "CommunicationPreferencesController",
+    "AssignmentsController",
+    "AssignmentSubmissionsController",
+    "LessonPlansController",
+    "MusicPiecesController",
+    "MusicProgressController",
+    "PracticeLogsController",
+    "CertificatesController",
+    "CertificateVerificationController",
+    "ComplianceController",
+    "AcademyExportsController",
+    "AuditLogsController",
+    "ExpensesController",
+    "TeacherCompensationController",
+    "StudentImportsController",
+    "DashboardController",
+    "AdminIntelligenceController",
+    "WeatherForecastController"
+  ],
+  "controllerDocument": "QA/COVERAGE/01_ONBOARDING_PAYROLL.md",
+  "controllerDocuments": {
+    "InvoicesController": "QA/COVERAGE/02_FINANCE_LIFECYCLE.md",
+    "PaymentsController": "QA/COVERAGE/02_FINANCE_LIFECYCLE.md",
+    "FinanceAdjustmentsController": "QA/COVERAGE/02_FINANCE_LIFECYCLE.md",
+    "AuthSessionController": "QA/COVERAGE/03_AUTH_ACCOUNTS_FILES.md",
+    "PortalAccountsController": "QA/COVERAGE/03_AUTH_ACCOUNTS_FILES.md",
+    "LearningResourcesController": "QA/COVERAGE/03_AUTH_ACCOUNTS_FILES.md",
+    "StaffController": "QA/COVERAGE/04_STAFF_ACCESS_GOVERNANCE.md",
+    "AcademyRolesController": "QA/COVERAGE/04_STAFF_ACCESS_GOVERNANCE.md",
+    "AccessGrantsController": "QA/COVERAGE/04_STAFF_ACCESS_GOVERNANCE.md",
+    "AccessReviewsController": "QA/COVERAGE/04_STAFF_ACCESS_GOVERNANCE.md",
+    "TeacherPortalController": "QA/COVERAGE/05_TEACHER_FAMILY.md",
+    "PortalController": "QA/COVERAGE/05_TEACHER_FAMILY.md",
+    "FinanceGovernanceController": "QA/COVERAGE/06_FINANCE_GOVERNANCE.md",
+    "AdminWorkItemsController": "QA/COVERAGE/06_FINANCE_GOVERNANCE.md",
+    "GuardiansController": "QA/COVERAGE/07_GUARDIAN_ADMINISTRATION.md",
+    "StudentGuardiansController": "QA/COVERAGE/07_GUARDIAN_ADMINISTRATION.md",
+    "FeePlansController": "QA/COVERAGE/08_FEE_PLANS_REMINDERS.md",
+    "FeeRemindersController": "QA/COVERAGE/08_FEE_PLANS_REMINDERS.md",
+    "StudentFeeArrangementsController": "QA/COVERAGE/09_STUDENT_FEE_ARRANGEMENTS.md",
+    "StudentsController": "QA/COVERAGE/10_STUDENT_ADMINISTRATION.md",
+    "ProfilesController": "QA/COVERAGE/11_TEACHER_ADMINISTRATIVE_PROFILE.md",
+    "PlatformAcademiesController": "QA/COVERAGE/12_TENANT_LIFECYCLE.md",
+    "PlatformControlController": "QA/COVERAGE/14_PLATFORM_BILLING_SUPPORT.md",
+    "AcademyPlatformServicesController": "QA/COVERAGE/14_PLATFORM_BILLING_SUPPORT.md",
+    "AcademiesController": "QA/COVERAGE/15_ACADEMY_CONFIGURATION_BRANCHES.md",
+    "BranchesController": "QA/COVERAGE/15_ACADEMY_CONFIGURATION_BRANCHES.md",
+    "LeadsController": "QA/COVERAGE/16_SALES_CAMPAIGNS_TRIALS.md",
+    "SalesMarketingController": "QA/COVERAGE/16_SALES_CAMPAIGNS_TRIALS.md",
+    "CoursesController": "QA/COVERAGE/17_COURSES_CURRICULUM.md",
+    "CourseModulesController": "QA/COVERAGE/17_COURSES_CURRICULUM.md",
+    "CourseModuleStatusController": "QA/COVERAGE/17_COURSES_CURRICULUM.md",
+    "AcademicGovernanceController": "QA/COVERAGE/18_ACADEMIC_GOVERNANCE_PERIODS.md",
+    "GradingSchemeLifecycleController": "QA/COVERAGE/18_ACADEMIC_GOVERNANCE_PERIODS.md",
+    "AcademicPeriodsController": "QA/COVERAGE/18_ACADEMIC_GOVERNANCE_PERIODS.md",
+    "BatchesController": "QA/COVERAGE/19_BATCHES_ENROLLMENT_PROMOTIONS.md",
+    "EnrollmentsController": "QA/COVERAGE/19_BATCHES_ENROLLMENT_PROMOTIONS.md",
+    "BatchPromotionsController": "QA/COVERAGE/19_BATCHES_ENROLLMENT_PROMOTIONS.md",
+    "AssessmentsController": "QA/COVERAGE/20_ASSESSMENTS_RESULTS.md",
+    "AssessmentResultsController": "QA/COVERAGE/20_ASSESSMENTS_RESULTS.md",
+    "ClassSessionsController": "QA/COVERAGE/21_SCHEDULING_ATTENDANCE_CALENDAR.md",
+    "AttendanceController": "QA/COVERAGE/21_SCHEDULING_ATTENDANCE_CALENDAR.md",
+    "LeaveRequestsController": "QA/COVERAGE/22_LEAVE_MAKEUP_HOLIDAYS_EVENTS.md",
+    "MakeupClassesController": "QA/COVERAGE/22_LEAVE_MAKEUP_HOLIDAYS_EVENTS.md",
+    "HolidaysController": "QA/COVERAGE/22_LEAVE_MAKEUP_HOLIDAYS_EVENTS.md",
+    "HolidayDeleteController": "QA/COVERAGE/22_LEAVE_MAKEUP_HOLIDAYS_EVENTS.md",
+    "EventsController": "QA/COVERAGE/22_LEAVE_MAKEUP_HOLIDAYS_EVENTS.md",
+    "CommunicationSettingsController": "QA/COVERAGE/23_MEETING_PROVIDER_SETTINGS.md",
+    "NotificationsController": "QA/COVERAGE/24_MESSAGES_TEMPLATES_CONSENT.md",
+    "CommunicationTemplatesController": "QA/COVERAGE/24_MESSAGES_TEMPLATES_CONSENT.md",
+    "CommunicationPreferencesController": "QA/COVERAGE/24_MESSAGES_TEMPLATES_CONSENT.md",
+    "AssignmentsController": "QA/COVERAGE/25_ASSIGNMENTS_SUBMISSIONS_LESSONS.md",
+    "AssignmentSubmissionsController": "QA/COVERAGE/25_ASSIGNMENTS_SUBMISSIONS_LESSONS.md",
+    "LessonPlansController": "QA/COVERAGE/25_ASSIGNMENTS_SUBMISSIONS_LESSONS.md",
+    "MusicPiecesController": "QA/COVERAGE/26_MUSIC_PRACTICE_RESOURCES.md",
+    "MusicProgressController": "QA/COVERAGE/26_MUSIC_PRACTICE_RESOURCES.md",
+    "PracticeLogsController": "QA/COVERAGE/26_MUSIC_PRACTICE_RESOURCES.md",
+    "CertificatesController": "QA/COVERAGE/27_DOCUMENTS_COMPLIANCE_AUDIT.md",
+    "CertificateVerificationController": "QA/COVERAGE/27_DOCUMENTS_COMPLIANCE_AUDIT.md",
+    "ComplianceController": "QA/COVERAGE/34_COMPLIANCE_SEMANTICS.md",
+    "AcademyExportsController": "QA/COVERAGE/27_DOCUMENTS_COMPLIANCE_AUDIT.md",
+    "AuditLogsController": "QA/COVERAGE/27_DOCUMENTS_COMPLIANCE_AUDIT.md",
+    "ExpensesController": "QA/COVERAGE/28_FINANCE_OPERATIONS_COMPENSATION.md",
+    "TeacherCompensationController": "QA/COVERAGE/33_TEACHER_COMPENSATION_SEMANTICS.md",
+    "StudentImportsController": "QA/COVERAGE/29_IMPORTS_DASHBOARD_INTELLIGENCE.md",
+    "DashboardController": "QA/COVERAGE/29_IMPORTS_DASHBOARD_INTELLIGENCE.md",
+    "AdminIntelligenceController": "QA/COVERAGE/29_IMPORTS_DASHBOARD_INTELLIGENCE.md",
+    "WeatherForecastController": "QA/COVERAGE/29_IMPORTS_DASHBOARD_INTELLIGENCE.md"
+  },
+  "reviewedStandaloneControls": [
+    {"file":"apps/web/src/app/activity/page.tsx","name":"Searchactivity","line":90,"sourceProperty":"value","sourceName":"{query}","document":"QA/COVERAGE/31_SHARED_CONTROL_MAPPINGS.md","testIds":["VISUAL-PAGE-005"],"runtime":"NOT RUN"},
+    {"file":"apps/web/src/app/activity/page.tsx","name":"activityrecordtype","line":96,"sourceProperty":"name","sourceName":"\"activity-record-type\"","document":"QA/COVERAGE/31_SHARED_CONTROL_MAPPINGS.md","testIds":["VISUAL-PAGE-005"],"runtime":"NOT RUN"},
+    {"file":"apps/web/src/app/activity/page.tsx","name":"activityperiod","line":103,"sourceProperty":"name","sourceName":"\"activity-period\"","document":"QA/COVERAGE/31_SHARED_CONTROL_MAPPINGS.md","testIds":["VISUAL-PAGE-005"],"runtime":"NOT RUN"},
+    {"file":"apps/web/src/app/activity/page.tsx","name":"activitydate","line":110,"sourceProperty":"name","sourceName":"\"activity-date\"","document":"QA/COVERAGE/31_SHARED_CONTROL_MAPPINGS.md","testIds":["VISUAL-PAGE-005"],"runtime":"NOT RUN"},
+    {"file":"apps/web/src/app/compliance/page.tsx","name":"personType","line":81,"sourceProperty":"name","sourceName":"\"personType\"","document":"QA/COVERAGE/31_SHARED_CONTROL_MAPPINGS.md","testIds":["VISUAL-PAGE-021","COMPLIANCE-API-010","COMPLIANCE-API-013"],"runtime":"NOT RUN"},
+    {"file":"apps/web/src/app/compliance/page.tsx","name":"personId","line":81,"sourceProperty":"name","sourceName":"\"personId\"","document":"QA/COVERAGE/31_SHARED_CONTROL_MAPPINGS.md","testIds":["VISUAL-PAGE-021","COMPLIANCE-API-010","COMPLIANCE-API-013"],"runtime":"NOT RUN"},
+    {"file":"apps/web/src/app/compliance/page.tsx","name":"expiryDate","line":82,"sourceProperty":"name","sourceName":"\"expiryDate\"","document":"QA/COVERAGE/31_SHARED_CONTROL_MAPPINGS.md","testIds":["VISUAL-PAGE-021","COMPLIANCE-API-010"],"runtime":"NOT RUN"},
+    {"file":"apps/web/src/app/compliance/page.tsx","name":"visibility","line":82,"sourceProperty":"name","sourceName":"\"visibility\"","document":"QA/COVERAGE/31_SHARED_CONTROL_MAPPINGS.md","testIds":["VISUAL-PAGE-021","COMPLIANCE-API-010"],"runtime":"NOT RUN"},
+    {"file":"apps/web/src/app/expenses/page.tsx","name":"expenseFilter","line":18,"sourceProperty":"name","sourceName":"\"expenseFilter\"","document":"QA/COVERAGE/31_SHARED_CONTROL_MAPPINGS.md","testIds":["VISUAL-PAGE-028"],"runtime":"NOT RUN"},
+    {"file":"apps/web/src/app/finance-governance/page.tsx","name":"documentKind","line":70,"sourceProperty":"value","sourceName":"{documentKind}","document":"QA/COVERAGE/31_SHARED_CONTROL_MAPPINGS.md","testIds":["VISUAL-PAGE-033","FINANCE-API-008"],"runtime":"NOT RUN"},
+    {"file":"apps/web/src/app/finance-governance/page.tsx","name":"documentKindInvoicedocumentSettingsinvoiceTemplateKeydocumentSettingspayslipTemplateKey","line":70,"sourceProperty":"value","sourceName":"{documentKind === \"Invoice\" ? documentSettings.invoiceTemplateKey : documentSettings.payslipTemplateKey}","document":"QA/COVERAGE/31_SHARED_CONTROL_MAPPINGS.md","testIds":["VISUAL-PAGE-033","FINANCE-API-008"],"runtime":"NOT RUN"},
+    {"file":"apps/web/src/app/music/page.tsx","name":"progressitemid","line":295,"sourceProperty":"name","sourceName":"{`progress-${item.id}`}","document":"QA/COVERAGE/31_SHARED_CONTROL_MAPPINGS.md","testIds":["VISUAL-PAGE-048","LEARNING-API-019"],"runtime":"NOT RUN"},
+    {"file":"apps/web/src/app/platform/control/page.tsx","name":"name","line":881,"sourceProperty":"name","sourceName":"{name}","document":"QA/COVERAGE/31_SHARED_CONTROL_MAPPINGS.md","testIds":["VISUAL-PAGE-052"],"runtime":"NOT RUN"},
+    {"file":"apps/web/src/app/platform/control/page.tsx","name":"name","line":903,"sourceProperty":"name","sourceName":"{name}","document":"QA/COVERAGE/31_SHARED_CONTROL_MAPPINGS.md","testIds":["VISUAL-PAGE-052"],"runtime":"NOT RUN"},
+    {"file":"apps/web/src/app/portal/page.tsx","name":"id","line":199,"sourceProperty":"value","sourceName":"{id}","document":"QA/COVERAGE/31_SHARED_CONTROL_MAPPINGS.md","testIds":["VISUAL-PAGE-055","FAMILY-API-008"],"runtime":"NOT RUN"},
+    {"file":"apps/web/src/app/portal/page.tsx","name":"unnamed","line":270,"sourceProperty":"ref","sourceName":"{input}","document":"QA/COVERAGE/31_SHARED_CONTROL_MAPPINGS.md","testIds":["VISUAL-PAGE-055","AUTH-API-010"],"runtime":"NOT RUN"},
+    {"file":"apps/web/src/app/portal/page.tsx","name":"Historyfromdate","line":530,"sourceProperty":"value","sourceName":"{from}","document":"QA/COVERAGE/31_SHARED_CONTROL_MAPPINGS.md","testIds":["VISUAL-PAGE-055","FAMILY-API-008"],"runtime":"NOT RUN"},
+    {"file":"apps/web/src/app/portal/page.tsx","name":"Historytodate","line":530,"sourceProperty":"value","sourceName":"{to}","document":"QA/COVERAGE/31_SHARED_CONTROL_MAPPINGS.md","testIds":["VISUAL-PAGE-055","FAMILY-API-008"],"runtime":"NOT RUN"},
+    {"file":"apps/web/src/app/portal/page.tsx","name":"Paymentcycle","line":549,"sourceProperty":"value","sourceName":"{cycle}","document":"QA/COVERAGE/31_SHARED_CONTROL_MAPPINGS.md","testIds":["VISUAL-PAGE-055","FAMILY-API-008"],"runtime":"NOT RUN"},
+    {"file":"apps/web/src/app/portal/page.tsx","name":"Paymentstatus","line":549,"sourceProperty":"value","sourceName":"{status}","document":"QA/COVERAGE/31_SHARED_CONTROL_MAPPINGS.md","testIds":["VISUAL-PAGE-055","FAMILY-API-008"],"runtime":"NOT RUN"},
+    {"file":"apps/web/src/app/practice-logs/page.tsx","name":"Teacherfeedback","line":2,"sourceProperty":"value","sourceName":"{v}","document":"QA/COVERAGE/31_SHARED_CONTROL_MAPPINGS.md","testIds":["VISUAL-PAGE-057","LEARNING-API-022"],"runtime":"NOT RUN"},
+    {"file":"apps/web/src/app/teacher/page.tsx","name":"unnamed","line":261,"sourceProperty":"ref","sourceName":"{inputRef}","document":"QA/COVERAGE/31_SHARED_CONTROL_MAPPINGS.md","testIds":["VISUAL-PAGE-072","AUTH-API-010"],"runtime":"NOT RUN"},
+    {"file":"apps/web/src/app/teacher/page.tsx","name":"name","line":374,"sourceProperty":"name","sourceName":"{name}","document":"QA/COVERAGE/31_SHARED_CONTROL_MAPPINGS.md","testIds":["VISUAL-PAGE-072"],"runtime":"NOT RUN"},
+    {"file":"apps/web/src/app/teacher/page.tsx","name":"fromDate","line":466,"sourceProperty":"value","sourceName":"{fromDate}","document":"QA/COVERAGE/31_SHARED_CONTROL_MAPPINGS.md","testIds":["VISUAL-PAGE-072","TEACHERPORTAL-API-024"],"runtime":"NOT RUN"},
+    {"file":"apps/web/src/app/teacher/page.tsx","name":"toDate","line":466,"sourceProperty":"value","sourceName":"{toDate}","document":"QA/COVERAGE/31_SHARED_CONTROL_MAPPINGS.md","testIds":["VISUAL-PAGE-072","TEACHERPORTAL-API-024"],"runtime":"NOT RUN"},
+    {"file":"apps/web/src/app/teacher/page.tsx","name":"payslipMonth","line":481,"sourceProperty":"value","sourceName":"{payslipMonth}","document":"QA/COVERAGE/31_SHARED_CONTROL_MAPPINGS.md","testIds":["VISUAL-PAGE-072","TEACHERPORTAL-API-028"],"runtime":"NOT RUN"},
+    {"file":"apps/web/src/app/teacher/page.tsx","name":"Feedbackforstudent","line":618,"sourceProperty":"value","sourceName":"{feedback[log.id] ?? log.teacherFeedback ?? \"\"}","document":"QA/COVERAGE/31_SHARED_CONTROL_MAPPINGS.md","testIds":["VISUAL-PAGE-072","TEACHERPORTAL-API-009"],"runtime":"NOT RUN"},
+    {"file":"apps/web/src/app/teacher-payments/page.tsx","name":"paymentteacher","line":37,"sourceProperty":"name","sourceName":"\"payment-teacher\"","document":"QA/COVERAGE/31_SHARED_CONTROL_MAPPINGS.md","testIds":["VISUAL-PAGE-075","TEACHER-API-001","TEACHER-API-002"],"runtime":"NOT RUN"},
+    {"file":"apps/web/src/app/teachers/page.tsx","name":"assignmentteacher","line":217,"sourceProperty":"name","sourceName":"\"assignment-teacher\"","document":"QA/COVERAGE/35_TEACHER_MANAGEMENT_SEMANTICS.md","testIds":["VISUAL-PAGE-077","BATCH-API-003"],"runtime":"NOT RUN"},
+    {"file":"apps/web/src/app/teachers/page.tsx","name":"assignmentbatch","line":226,"sourceProperty":"name","sourceName":"\"assignment-batch\"","document":"QA/COVERAGE/35_TEACHER_MANAGEMENT_SEMANTICS.md","testIds":["VISUAL-PAGE-077","BATCH-API-003"],"runtime":"NOT RUN"},
+    {"file":"apps/web/src/app/teachers/page.tsx","name":"editFirstName","line":252,"sourceProperty":"value","sourceName":"{editFirstName}","document":"QA/COVERAGE/35_TEACHER_MANAGEMENT_SEMANTICS.md","testIds":["VISUAL-PAGE-077","TEACHER-API-005"],"runtime":"NOT RUN"},
+    {"file":"apps/web/src/app/teachers/page.tsx","name":"editLastName","line":257,"sourceProperty":"value","sourceName":"{editLastName}","document":"QA/COVERAGE/35_TEACHER_MANAGEMENT_SEMANTICS.md","testIds":["VISUAL-PAGE-077","TEACHER-API-005"],"runtime":"NOT RUN"},
+    {"file":"apps/web/src/app/teachers/page.tsx","name":"Email","line":262,"sourceProperty":"value","sourceName":"{editEmail}","document":"QA/COVERAGE/35_TEACHER_MANAGEMENT_SEMANTICS.md","testIds":["VISUAL-PAGE-077","TEACHER-API-005"],"runtime":"NOT RUN"},
+    {"file":"apps/web/src/app/teachers/page.tsx","name":"Phone","line":268,"sourceProperty":"value","sourceName":"{editPhone}","document":"QA/COVERAGE/35_TEACHER_MANAGEMENT_SEMANTICS.md","testIds":["VISUAL-PAGE-077","TEACHER-API-005"],"runtime":"NOT RUN"},
+    {"file":"apps/web/src/app/teachers/page.tsx","name":"Specialties","line":274,"sourceProperty":"value","sourceName":"{editSpecialties}","document":"QA/COVERAGE/35_TEACHER_MANAGEMENT_SEMANTICS.md","testIds":["VISUAL-PAGE-077","TEACHER-API-005"],"runtime":"NOT RUN"},
+    {"file":"apps/web/src/app/teachers/page.tsx","name":"teacherbranch","line":280,"sourceProperty":"name","sourceName":"\"teacher-branch\"","document":"QA/COVERAGE/35_TEACHER_MANAGEMENT_SEMANTICS.md","testIds":["VISUAL-PAGE-077","TEACHER-API-005"],"runtime":"NOT RUN"},
+    {"file":"apps/web/src/app/work-queue/page.tsx","name":"workQueueFilter","line":16,"sourceProperty":"name","sourceName":"\"workQueueFilter\"","document":"QA/COVERAGE/31_SHARED_CONTROL_MAPPINGS.md","testIds":["VISUAL-PAGE-079","OPERATIONS-API-005"],"runtime":"NOT RUN"},
+    {"file":"apps/web/src/app/work-queue/page.tsx","name":"statusitemid","line":16,"sourceProperty":"name","sourceName":"{`status-${item.id}`}","document":"QA/COVERAGE/31_SHARED_CONTROL_MAPPINGS.md","testIds":["VISUAL-PAGE-079","OPERATIONS-API-007"],"runtime":"NOT RUN"},
+    {"file":"apps/web/src/components/enterprise-shell.tsx","name":"unnamed","line":509,"sourceProperty":"ref","sourceName":"{profileImageInputRef}","document":"QA/COVERAGE/31_SHARED_CONTROL_MAPPINGS.md","testIds":["UI-A11Y-001","AUTH-API-010"],"runtime":"NOT RUN"},
+    {"file":"apps/web/src/components/enterprise-shell.tsx","name":"SearchAcademyDeskmodules","line":520,"sourceProperty":"value","sourceName":"{query}","document":"QA/COVERAGE/31_SHARED_CONTROL_MAPPINGS.md","testIds":["UI-A11Y-001","UI-SCROLL-001"],"runtime":"NOT RUN"},
+    {"file":"apps/web/src/components/standard-date-field.tsx","name":"name","line":43,"sourceProperty":"name","sourceName":"{name}","document":"QA/COVERAGE/31_SHARED_CONTROL_MAPPINGS.md","testIds":["UI-A11Y-001","UI-TIME-001"],"runtime":"NOT RUN"},
+    {"file":"apps/web/src/components/standard-date-field.tsx","name":"Selectmonth","line":48,"sourceProperty":"value","sourceName":"{month.getMonth()}","document":"QA/COVERAGE/31_SHARED_CONTROL_MAPPINGS.md","testIds":["UI-A11Y-001","UI-TIME-001"],"runtime":"NOT RUN"},
+    {"file":"apps/web/src/components/standard-date-field.tsx","name":"Selectyear","line":48,"sourceProperty":"value","sourceName":"{month.getFullYear()}","document":"QA/COVERAGE/31_SHARED_CONTROL_MAPPINGS.md","testIds":["UI-A11Y-001","UI-TIME-001"],"runtime":"NOT RUN"},
+    {"file":"apps/web/src/components/standard-select-field.tsx","name":"name","line":73,"sourceProperty":"name","sourceName":"{name}","document":"QA/COVERAGE/31_SHARED_CONTROL_MAPPINGS.md","testIds":["UI-A11Y-001","UI-DROPDOWN-001"],"runtime":"NOT RUN"},
+    {"file":"apps/web/src/components/standard-time-field.tsx","name":"name","line":100,"sourceProperty":"name","sourceName":"{name}","document":"QA/COVERAGE/31_SHARED_CONTROL_MAPPINGS.md","testIds":["UI-A11Y-001","UI-TIME-001"],"runtime":"NOT RUN"},
+    {
+      "file": "apps/web/src/app/finance-reconciliation/page.tsx",
+      "name": "reconciliationStatus",
+      "document": "QA/COVERAGE/02_FINANCE_LIFECYCLE.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/finance-reconciliation/page.tsx",
+      "name": "reconciliationRecordedOn",
+      "document": "QA/COVERAGE/02_FINANCE_LIFECYCLE.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/finance-adjustments/page.tsx",
+      "name": "adjustmentFilter",
+      "document": "QA/COVERAGE/02_FINANCE_LIFECYCLE.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/staff/page.tsx",
+      "name": "staff-role-${person.id}",
+      "sourceName": "{`staff-role-${person.id}`}",
+      "document": "QA/COVERAGE/04_STAFF_ACCESS_GOVERNANCE.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/portal/page.tsx",
+      "name": "practiceDate",
+      "line": 611,
+      "document": "QA/COVERAGE/05_TEACHER_FAMILY.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/portal/page.tsx",
+      "name": "minutesPracticed",
+      "line": 612,
+      "document": "QA/COVERAGE/05_TEACHER_FAMILY.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/portal/page.tsx",
+      "name": "focusArea",
+      "line": 619,
+      "document": "QA/COVERAGE/05_TEACHER_FAMILY.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/portal/page.tsx",
+      "name": "startDate",
+      "line": 633,
+      "document": "QA/COVERAGE/05_TEACHER_FAMILY.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/portal/page.tsx",
+      "name": "endDate",
+      "line": 634,
+      "document": "QA/COVERAGE/05_TEACHER_FAMILY.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/portal/page.tsx",
+      "name": "reason",
+      "line": 635,
+      "document": "QA/COVERAGE/05_TEACHER_FAMILY.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/portal/page.tsx",
+      "name": "firstName",
+      "line": 656,
+      "document": "QA/COVERAGE/05_TEACHER_FAMILY.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/portal/page.tsx",
+      "name": "lastName",
+      "line": 656,
+      "document": "QA/COVERAGE/05_TEACHER_FAMILY.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/portal/page.tsx",
+      "name": "preferredName",
+      "line": 657,
+      "document": "QA/COVERAGE/05_TEACHER_FAMILY.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/portal/page.tsx",
+      "name": "gender",
+      "line": 657,
+      "document": "QA/COVERAGE/05_TEACHER_FAMILY.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/portal/page.tsx",
+      "name": "dateOfBirth",
+      "line": 658,
+      "document": "QA/COVERAGE/05_TEACHER_FAMILY.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/portal/page.tsx",
+      "name": "email",
+      "line": 659,
+      "document": "QA/COVERAGE/05_TEACHER_FAMILY.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/portal/page.tsx",
+      "name": "phone",
+      "line": 665,
+      "document": "QA/COVERAGE/05_TEACHER_FAMILY.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/portal/page.tsx",
+      "name": "addressLine1",
+      "line": 670,
+      "document": "QA/COVERAGE/05_TEACHER_FAMILY.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/portal/page.tsx",
+      "name": "city",
+      "line": 671,
+      "document": "QA/COVERAGE/05_TEACHER_FAMILY.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/portal/page.tsx",
+      "name": "state",
+      "line": 671,
+      "document": "QA/COVERAGE/05_TEACHER_FAMILY.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/portal/page.tsx",
+      "name": "postalCode",
+      "line": 672,
+      "document": "QA/COVERAGE/05_TEACHER_FAMILY.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/portal/page.tsx",
+      "name": "emergencyContactName",
+      "line": 673,
+      "document": "QA/COVERAGE/05_TEACHER_FAMILY.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/portal/page.tsx",
+      "name": "emergencyContactPhone",
+      "line": 673,
+      "document": "QA/COVERAGE/05_TEACHER_FAMILY.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/portal/page.tsx",
+      "name": "email",
+      "line": 696,
+      "document": "QA/COVERAGE/05_TEACHER_FAMILY.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/portal/page.tsx",
+      "name": "phone",
+      "line": 702,
+      "document": "QA/COVERAGE/05_TEACHER_FAMILY.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/guardian-profile/page.tsx",
+      "name": "guardianId",
+      "line": 129,
+      "sourceProperty": "value",
+      "sourceName": "{guardianId}",
+      "document": "QA/COVERAGE/07_GUARDIAN_ADMINISTRATION.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/guardian-profile/page.tsx",
+      "name": "preferredName",
+      "line": 189,
+      "sourceProperty": "value",
+      "sourceName": "{form.preferredName ?? \"\"}",
+      "document": "QA/COVERAGE/07_GUARDIAN_ADMINISTRATION.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/guardian-profile/page.tsx",
+      "name": "preferredLanguage",
+      "line": 195,
+      "sourceProperty": "value",
+      "sourceName": "{form.preferredLanguage ?? \"\"}",
+      "document": "QA/COVERAGE/07_GUARDIAN_ADMINISTRATION.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/guardian-profile/page.tsx",
+      "name": "addressLine1",
+      "line": 201,
+      "sourceProperty": "value",
+      "sourceName": "{form.addressLine1 ?? \"\"}",
+      "document": "QA/COVERAGE/07_GUARDIAN_ADMINISTRATION.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/guardian-profile/page.tsx",
+      "name": "city",
+      "line": 207,
+      "sourceProperty": "value",
+      "sourceName": "{form.city ?? \"\"}",
+      "document": "QA/COVERAGE/07_GUARDIAN_ADMINISTRATION.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/guardian-profile/page.tsx",
+      "name": "state",
+      "line": 213,
+      "sourceProperty": "value",
+      "sourceName": "{form.state ?? \"\"}",
+      "document": "QA/COVERAGE/07_GUARDIAN_ADMINISTRATION.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/guardian-profile/page.tsx",
+      "name": "postalCode",
+      "line": 219,
+      "sourceProperty": "value",
+      "sourceName": "{form.postalCode ?? \"\"}",
+      "document": "QA/COVERAGE/07_GUARDIAN_ADMINISTRATION.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/guardians/page.tsx",
+      "name": "editFirstName",
+      "line": 322,
+      "sourceProperty": "value",
+      "sourceName": "{editFirstName}",
+      "document": "QA/COVERAGE/07_GUARDIAN_ADMINISTRATION.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/guardians/page.tsx",
+      "name": "editLastName",
+      "line": 329,
+      "sourceProperty": "value",
+      "sourceName": "{editLastName}",
+      "document": "QA/COVERAGE/07_GUARDIAN_ADMINISTRATION.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/guardians/page.tsx",
+      "name": "editEmail",
+      "line": 336,
+      "sourceProperty": "value",
+      "sourceName": "{editEmail}",
+      "document": "QA/COVERAGE/07_GUARDIAN_ADMINISTRATION.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/guardians/page.tsx",
+      "name": "editPhone",
+      "line": 343,
+      "sourceProperty": "value",
+      "sourceName": "{editPhone}",
+      "document": "QA/COVERAGE/07_GUARDIAN_ADMINISTRATION.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/student-fees/page.tsx",
+      "name": "fee-student",
+      "document": "QA/COVERAGE/09_STUDENT_FEE_ARRANGEMENTS.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/student-profile/page.tsx",
+      "name": "student-record",
+      "line": 158,
+      "document": "QA/COVERAGE/10_STUDENT_ADMINISTRATION.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/students/page.tsx",
+      "name": "query",
+      "line": 140,
+      "sourceProperty": "value",
+      "sourceName": "{query}",
+      "document": "QA/COVERAGE/10_STUDENT_ADMINISTRATION.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/students/page.tsx",
+      "name": "assignment-student",
+      "line": 244,
+      "document": "QA/COVERAGE/10_STUDENT_ADMINISTRATION.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/students/page.tsx",
+      "name": "assignment-batch",
+      "line": 251,
+      "document": "QA/COVERAGE/10_STUDENT_ADMINISTRATION.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/components/student-admin-profile.tsx",
+      "name": "studentNumber",
+      "line": 104,
+      "sourceProperty": "value",
+      "sourceName": "{form.studentNumber}",
+      "document": "QA/COVERAGE/10_STUDENT_ADMINISTRATION.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/components/student-admin-profile.tsx",
+      "name": "preferredName",
+      "line": 110,
+      "sourceProperty": "value",
+      "sourceName": "{form.preferredName}",
+      "document": "QA/COVERAGE/10_STUDENT_ADMINISTRATION.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/components/student-admin-profile.tsx",
+      "name": "student-gender",
+      "line": 116,
+      "document": "QA/COVERAGE/10_STUDENT_ADMINISTRATION.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/components/student-admin-profile.tsx",
+      "name": "dateOfBirthDisplay",
+      "line": 128,
+      "document": "QA/COVERAGE/10_STUDENT_ADMINISTRATION.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/components/student-admin-profile.tsx",
+      "name": "admissionDateDisplay",
+      "line": 129,
+      "document": "QA/COVERAGE/10_STUDENT_ADMINISTRATION.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/components/student-admin-profile.tsx",
+      "name": "addressLine1",
+      "line": 130,
+      "sourceProperty": "value",
+      "sourceName": "{form.addressLine1}",
+      "document": "QA/COVERAGE/10_STUDENT_ADMINISTRATION.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/components/student-admin-profile.tsx",
+      "name": "city",
+      "line": 136,
+      "sourceProperty": "value",
+      "sourceName": "{form.city}",
+      "document": "QA/COVERAGE/10_STUDENT_ADMINISTRATION.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/components/student-admin-profile.tsx",
+      "name": "state",
+      "line": 142,
+      "sourceProperty": "value",
+      "sourceName": "{form.state}",
+      "document": "QA/COVERAGE/10_STUDENT_ADMINISTRATION.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/components/student-admin-profile.tsx",
+      "name": "postalCode",
+      "line": 148,
+      "sourceProperty": "value",
+      "sourceName": "{form.postalCode}",
+      "document": "QA/COVERAGE/10_STUDENT_ADMINISTRATION.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/components/student-admin-profile.tsx",
+      "name": "emergencyContactName",
+      "line": 154,
+      "sourceProperty": "value",
+      "sourceName": "{form.emergencyContactName}",
+      "document": "QA/COVERAGE/10_STUDENT_ADMINISTRATION.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/components/student-admin-profile.tsx",
+      "name": "emergencyContactPhone",
+      "line": 160,
+      "sourceProperty": "value",
+      "sourceName": "{form.emergencyContactPhone}",
+      "document": "QA/COVERAGE/10_STUDENT_ADMINISTRATION.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/components/student-admin-profile.tsx",
+      "name": "medicalOrAccessibilityNotes",
+      "line": 167,
+      "sourceProperty": "value",
+      "sourceName": "{form.medicalOrAccessibilityNotes}",
+      "document": "QA/COVERAGE/10_STUDENT_ADMINISTRATION.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/components/student-admin-profile.tsx",
+      "name": "adminNotes",
+      "line": 173,
+      "sourceProperty": "value",
+      "sourceName": "{form.adminNotes}",
+      "document": "QA/COVERAGE/10_STUDENT_ADMINISTRATION.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/teacher-profile/page.tsx",
+      "name": "teacher-record",
+      "line": 163,
+      "document": "QA/COVERAGE/11_TEACHER_ADMINISTRATIVE_PROFILE.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/teacher-profile/page.tsx",
+      "name": "specialties",
+      "line": 192,
+      "sourceProperty": "value",
+      "sourceName": "{form.specialties ?? \"\"}",
+      "document": "QA/COVERAGE/11_TEACHER_ADMINISTRATIVE_PROFILE.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/teacher-profile/page.tsx",
+      "name": "availabilityEnabled",
+      "line": 194,
+      "sourceProperty": "checked",
+      "sourceName": "{Boolean(slot)}",
+      "document": "QA/COVERAGE/11_TEACHER_ADMINISTRATIVE_PROFILE.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/teacher-profile/page.tsx",
+      "name": "availabilityFrom",
+      "line": 194,
+      "sourceProperty": "value",
+      "sourceName": "{slot?.from ?? \"\"}",
+      "document": "QA/COVERAGE/11_TEACHER_ADMINISTRATIVE_PROFILE.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/teacher-profile/page.tsx",
+      "name": "availabilityTo",
+      "line": 194,
+      "sourceProperty": "value",
+      "sourceName": "{slot?.to ?? \"\"}",
+      "document": "QA/COVERAGE/11_TEACHER_ADMINISTRATIVE_PROFILE.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/teacher-profile/page.tsx",
+      "name": "employeeCode",
+      "line": 209,
+      "sourceProperty": "value",
+      "sourceName": "{form.employeeCode ?? \"\"}",
+      "document": "QA/COVERAGE/11_TEACHER_ADMINISTRATIVE_PROFILE.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/teacher-profile/page.tsx",
+      "name": "preferredName",
+      "line": 215,
+      "sourceProperty": "value",
+      "sourceName": "{form.preferredName ?? \"\"}",
+      "document": "QA/COVERAGE/11_TEACHER_ADMINISTRATIVE_PROFILE.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/teacher-profile/page.tsx",
+      "name": "teacher-employment-type",
+      "line": 221,
+      "document": "QA/COVERAGE/11_TEACHER_ADMINISTRATIVE_PROFILE.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/teacher-profile/page.tsx",
+      "name": "teacher-date-of-birth",
+      "line": 228,
+      "document": "QA/COVERAGE/11_TEACHER_ADMINISTRATIVE_PROFILE.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/teacher-profile/page.tsx",
+      "name": "teacher-joining-date",
+      "line": 229,
+      "document": "QA/COVERAGE/11_TEACHER_ADMINISTRATIVE_PROFILE.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/teacher-profile/page.tsx",
+      "name": "addressLine",
+      "line": 230,
+      "sourceProperty": "value",
+      "sourceName": "{form.addressLine1 ?? \"\"}",
+      "document": "QA/COVERAGE/11_TEACHER_ADMINISTRATIVE_PROFILE.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/teacher-profile/page.tsx",
+      "name": "city",
+      "line": 236,
+      "sourceProperty": "value",
+      "sourceName": "{form.city ?? \"\"}",
+      "document": "QA/COVERAGE/11_TEACHER_ADMINISTRATIVE_PROFILE.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/teacher-profile/page.tsx",
+      "name": "state",
+      "line": 242,
+      "sourceProperty": "value",
+      "sourceName": "{form.state ?? \"\"}",
+      "document": "QA/COVERAGE/11_TEACHER_ADMINISTRATIVE_PROFILE.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/teacher-profile/page.tsx",
+      "name": "postalCode",
+      "line": 248,
+      "sourceProperty": "value",
+      "sourceName": "{form.postalCode ?? \"\"}",
+      "document": "QA/COVERAGE/11_TEACHER_ADMINISTRATIVE_PROFILE.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/teacher-profile/page.tsx",
+      "name": "emergencyContactName",
+      "line": 254,
+      "sourceProperty": "value",
+      "sourceName": "{form.emergencyContactName ?? \"\"}",
+      "document": "QA/COVERAGE/11_TEACHER_ADMINISTRATIVE_PROFILE.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/teacher-profile/page.tsx",
+      "name": "emergencyContactPhone",
+      "line": 260,
+      "sourceProperty": "value",
+      "sourceName": "{form.emergencyContactPhone ?? \"\"}",
+      "document": "QA/COVERAGE/11_TEACHER_ADMINISTRATIVE_PROFILE.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/teacher-profile/page.tsx",
+      "name": "qualifications",
+      "line": 267,
+      "sourceProperty": "value",
+      "sourceName": "{form.qualifications ?? \"\"}",
+      "document": "QA/COVERAGE/11_TEACHER_ADMINISTRATIVE_PROFILE.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/teacher-profile/page.tsx",
+      "name": "adminNotes",
+      "line": 273,
+      "sourceProperty": "value",
+      "sourceName": "{form.adminNotes ?? \"\"}",
+      "document": "QA/COVERAGE/11_TEACHER_ADMINISTRATIVE_PROFILE.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/platform/page.tsx",
+      "name": "query",
+      "line": 280,
+      "sourceProperty": "value",
+      "sourceName": "{query}",
+      "document": "QA/COVERAGE/12_TENANT_LIFECYCLE.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/platform/control/page.tsx",
+      "name": "academy",
+      "line": 660,
+      "document": "QA/COVERAGE/12_TENANT_LIFECYCLE.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/platform/control/page.tsx",
+      "name": "academy",
+      "line": 677,
+      "document": "QA/COVERAGE/12_TENANT_LIFECYCLE.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/platform/control/page.tsx",
+      "name": "activityScope",
+      "line": 842,
+      "document": "QA/COVERAGE/13_PLATFORM_ADMINISTRATION.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/platform/control/page.tsx",
+      "name": "activityFrom",
+      "line": 842,
+      "document": "QA/COVERAGE/13_PLATFORM_ADMINISTRATION.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/platform/control/page.tsx",
+      "name": "activityTo",
+      "line": 842,
+      "document": "QA/COVERAGE/13_PLATFORM_ADMINISTRATION.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/platform/control/page.tsx",
+      "name": "deleteLogMonth",
+      "line": 842,
+      "document": "QA/COVERAGE/13_PLATFORM_ADMINISTRATION.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/platform/control/page.tsx",
+      "name": "deleteLogYear",
+      "line": 842,
+      "document": "QA/COVERAGE/13_PLATFORM_ADMINISTRATION.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/platform/control/page.tsx",
+      "name": "profileImageInput",
+      "line": 817,
+      "sourceProperty": "ref",
+      "sourceName": "{profileImageInput}",
+      "document": "QA/COVERAGE/13_PLATFORM_ADMINISTRATION.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/platform/control/page.tsx",
+      "name": "invoice-status-${item.id}",
+      "line": 779,
+      "sourceProperty": "name",
+      "sourceName": "{`invoice-status-${item.id}`}",
+      "document": "QA/COVERAGE/14_PLATFORM_BILLING_SUPPORT.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/platform/control/page.tsx",
+      "name": "case-status-${item.id}",
+      "line": 806,
+      "sourceProperty": "name",
+      "sourceName": "{`case-status-${item.id}`}",
+      "document": "QA/COVERAGE/14_PLATFORM_BILLING_SUPPORT.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/platform-services/page.tsx",
+      "name": "paymentReference",
+      "line": 67,
+      "sourceProperty": "value",
+      "sourceName": "{references[invoice.id] ?? \"\"}",
+      "document": "QA/COVERAGE/14_PLATFORM_BILLING_SUPPORT.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/platform-services/page.tsx",
+      "name": "supportResponse",
+      "line": 70,
+      "sourceProperty": "value",
+      "sourceName": "{responses[item.id] ?? \"\"}",
+      "document": "QA/COVERAGE/14_PLATFORM_BILLING_SUPPORT.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/branches/page.tsx",
+      "name": "academy",
+      "line": 18,
+      "document": "QA/COVERAGE/15_ACADEMY_CONFIGURATION_BRANCHES.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/branches/page.tsx",
+      "name": "editName",
+      "line": 18,
+      "sourceProperty": "value",
+      "sourceName": "{editName}",
+      "document": "QA/COVERAGE/15_ACADEMY_CONFIGURATION_BRANCHES.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/branches/page.tsx",
+      "name": "editCity",
+      "line": 18,
+      "sourceProperty": "value",
+      "sourceName": "{editCity}",
+      "document": "QA/COVERAGE/15_ACADEMY_CONFIGURATION_BRANCHES.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/branches/page.tsx",
+      "name": "editState",
+      "line": 18,
+      "sourceProperty": "value",
+      "sourceName": "{editState}",
+      "document": "QA/COVERAGE/15_ACADEMY_CONFIGURATION_BRANCHES.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/leads/page.tsx",
+      "name": "lead-stage-${lead.id}",
+      "line": 316,
+      "sourceProperty": "name",
+      "sourceName": "{`lead-stage-${lead.id}`}",
+      "document": "QA/COVERAGE/16_SALES_CAMPAIGNS_TRIALS.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/sales-campaigns/page.tsx",
+      "name": "campaign-status-${campaign.id}",
+      "line": 224,
+      "sourceProperty": "name",
+      "sourceName": "{`campaign-status-${campaign.id}`}",
+      "document": "QA/COVERAGE/16_SALES_CAMPAIGNS_TRIALS.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/trial-bookings/page.tsx",
+      "name": "trial-status-${trial.id}",
+      "line": 224,
+      "sourceProperty": "name",
+      "sourceName": "{`trial-status-${trial.id}`}",
+      "document": "QA/COVERAGE/16_SALES_CAMPAIGNS_TRIALS.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/courses/page.tsx",
+      "name": "academy",
+      "line": 150,
+      "sourceProperty": "name",
+      "sourceName": "\"academy\"",
+      "document": "QA/COVERAGE/17_COURSES_CURRICULUM.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/courses/page.tsx",
+      "name": "editName",
+      "line": 219,
+      "sourceProperty": "value",
+      "sourceName": "{editName}",
+      "document": "QA/COVERAGE/17_COURSES_CURRICULUM.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/courses/page.tsx",
+      "name": "course-type-${course.id}",
+      "line": 226,
+      "sourceProperty": "name",
+      "sourceName": "{`course-type-${course.id}`}",
+      "document": "QA/COVERAGE/17_COURSES_CURRICULUM.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/courses/page.tsx",
+      "name": "editLevel",
+      "line": 235,
+      "sourceProperty": "value",
+      "sourceName": "{editLevel}",
+      "document": "QA/COVERAGE/17_COURSES_CURRICULUM.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/batches/page.tsx",
+      "name": "academy",
+      "line": 340,
+      "document": "QA/COVERAGE/19_BATCHES_ENROLLMENT_PROMOTIONS.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/batches/page.tsx",
+      "name": "editName",
+      "line": 513,
+      "sourceProperty": "value",
+      "sourceName": "{editName}",
+      "document": "QA/COVERAGE/19_BATCHES_ENROLLMENT_PROMOTIONS.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/batches/page.tsx",
+      "name": "edit-course",
+      "line": 518,
+      "document": "QA/COVERAGE/19_BATCHES_ENROLLMENT_PROMOTIONS.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/batches/page.tsx",
+      "name": "edit-teacher",
+      "line": 525,
+      "document": "QA/COVERAGE/19_BATCHES_ENROLLMENT_PROMOTIONS.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/batches/page.tsx",
+      "name": "edit-branch",
+      "line": 532,
+      "document": "QA/COVERAGE/19_BATCHES_ENROLLMENT_PROMOTIONS.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/batches/page.tsx",
+      "name": "editCapacity",
+      "line": 539,
+      "sourceProperty": "value",
+      "sourceName": "{editCapacity}",
+      "document": "QA/COVERAGE/19_BATCHES_ENROLLMENT_PROMOTIONS.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/batches/page.tsx",
+      "name": "edit-batch-start-date",
+      "line": 547,
+      "document": "QA/COVERAGE/19_BATCHES_ENROLLMENT_PROMOTIONS.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/enrollments/page.tsx",
+      "name": "enrollmentStatus",
+      "line": 65,
+      "sourceProperty": "value",
+      "sourceName": "{enrollment.status}",
+      "document": "QA/COVERAGE/19_BATCHES_ENROLLMENT_PROMOTIONS.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/assessments/page.tsx",
+      "name": "assessment",
+      "line": 317,
+      "document": "QA/COVERAGE/20_ASSESSMENTS_RESULTS.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/assessments/page.tsx",
+      "name": "score",
+      "line": 386,
+      "sourceProperty": "value",
+      "sourceName": "{score}",
+      "document": "QA/COVERAGE/20_ASSESSMENTS_RESULTS.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/assessments/page.tsx",
+      "name": "grade",
+      "line": 395,
+      "sourceProperty": "value",
+      "sourceName": "{grade}",
+      "document": "QA/COVERAGE/20_ASSESSMENTS_RESULTS.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/assessments/page.tsx",
+      "name": "remarks",
+      "line": 400,
+      "sourceProperty": "value",
+      "sourceName": "{remarks}",
+      "document": "QA/COVERAGE/20_ASSESSMENTS_RESULTS.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/schedule/page.tsx",
+      "name": "sessionStatus",
+      "line": 321,
+      "sourceProperty": "value",
+      "sourceName": "{session.status}",
+      "document": "QA/COVERAGE/21_SCHEDULING_ATTENDANCE_CALENDAR.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/attendance/page.tsx",
+      "name": "session",
+      "line": 75,
+      "document": "QA/COVERAGE/21_SCHEDULING_ATTENDANCE_CALENDAR.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/attendance/page.tsx",
+      "name": "attendance-${student.id}",
+      "line": 76,
+      "sourceProperty": "name",
+      "sourceName": "{`attendance-${student.id}`}",
+      "document": "QA/COVERAGE/21_SCHEDULING_ATTENDANCE_CALENDAR.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/attendance/page.tsx",
+      "name": "attendanceNotes",
+      "line": 76,
+      "sourceProperty": "value",
+      "sourceName": "{notesByStudent[student.id] ?? record?.notes ?? \"\"}",
+      "document": "QA/COVERAGE/21_SCHEDULING_ATTENDANCE_CALENDAR.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/makeup/page.tsx",
+      "name": "makeup-status-${item.id}",
+      "line": 39,
+      "sourceProperty": "name",
+      "sourceName": "{`makeup-status-${item.id}`}",
+      "document": "QA/COVERAGE/22_LEAVE_MAKEUP_HOLIDAYS_EVENTS.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/meeting-links/page.tsx",
+      "name": "created-from",
+      "line": 417,
+      "sourceProperty": "name",
+      "sourceName": "\"created-from\"",
+      "document": "QA/COVERAGE/23_MEETING_PROVIDER_SETTINGS.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/meeting-links/page.tsx",
+      "name": "created-to",
+      "line": 423,
+      "sourceProperty": "name",
+      "sourceName": "\"created-to\"",
+      "document": "QA/COVERAGE/23_MEETING_PROVIDER_SETTINGS.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/meeting-links/page.tsx",
+      "name": "emailFilter",
+      "line": 429,
+      "sourceProperty": "value",
+      "sourceName": "{emailFilter}",
+      "document": "QA/COVERAGE/23_MEETING_PROVIDER_SETTINGS.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/components/meeting-provider-settings.tsx",
+      "name": "meeting-provider",
+      "line": 49,
+      "sourceProperty": "name",
+      "sourceName": "\"meeting-provider\"",
+      "document": "QA/COVERAGE/23_MEETING_PROVIDER_SETTINGS.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/components/meeting-provider-settings.tsx",
+      "name": "meeting-status",
+      "line": 63,
+      "sourceProperty": "name",
+      "sourceName": "\"meeting-status\"",
+      "document": "QA/COVERAGE/23_MEETING_PROVIDER_SETTINGS.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/components/meeting-provider-settings.tsx",
+      "name": "organizerName",
+      "line": 77,
+      "sourceProperty": "value",
+      "sourceName": "{value.organizerName}",
+      "document": "QA/COVERAGE/23_MEETING_PROVIDER_SETTINGS.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/components/meeting-provider-settings.tsx",
+      "name": "organizerEmail",
+      "line": 86,
+      "sourceProperty": "value",
+      "sourceName": "{value.organizerEmail}",
+      "document": "QA/COVERAGE/23_MEETING_PROVIDER_SETTINGS.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/components/meeting-provider-settings.tsx",
+      "name": "reference",
+      "line": 97,
+      "sourceProperty": "value",
+      "sourceName": "{value.reference}",
+      "document": "QA/COVERAGE/23_MEETING_PROVIDER_SETTINGS.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/data-operations/page.tsx",
+      "name": "StudentCsvFileInput",
+      "testIds": ["STUDENT-API-008", "STUDENT-API-002"],
+      "line": 17,
+      "sourceProperty": "identity",
+      "sourceName": "input:\"file\":\".csv\"",
+      "document": "QA/COVERAGE/31_SHARED_CONTROL_MAPPINGS.md",
+      "runtime": "NOT RUN"
+    },
+    {
+      "file": "apps/web/src/app/message-templates/page.tsx",
+      "name": "starterTemplateSelected",
+      "line": 219,
+      "sourceProperty": "checked",
+      "sourceName": "{selectedIds.includes(item.id)}",
+      "document": "QA/COVERAGE/24_MESSAGES_TEMPLATES_CONSENT.md",
+      "runtime": "NOT RUN"
+    }
+  ],
+  "partialInteractions": [
+    {
+      "file": "apps/web/src/app/fee-reminders/page.tsx",
+      "handler": "queue",
+      "testId": "FEES-API-004",
+      "document": "QA/COVERAGE/08_FEE_PLANS_REMINDERS.md",
+      "runtime": "NOT RUN",
+      "excludes": "Source queue/filter/history states specified; no runtime UI or delivery proof, no native form"
+    },
+    {
+      "file": "apps/web/src/app/submission-review/page.tsx",
+      "handler": "review",
+      "testId": "LEARNING-API-006",
+      "document": "QA/COVERAGE/25_ASSIGNMENTS_SUBMISSIONS_LESSONS.md",
+      "runtime": "NOT RUN",
+      "excludes": "Complete page source states and prompt/review behavior specified; native browser prompt is not an inventoried JSX control. Runtime and visual verification remain NOT RUN."
+    }
+  ],
+  "partialControllerReviews": [],
+  "frameworkManifest": "QA/COVERAGE/identity-endpoints.json",
+  "declarationCounts": {"forms":82,"formFields":481,"standaloneFields":168,"totalFields":649,"controllers":70},
+  "limitations": "82/82 native forms contain 481 lexical controls; 168 distinct non-form declarations are machine-mapped, total 649/649 source declarations. Counts include hidden mirrors, shared implementations and unused helper declarations; they are not rendered fields or semantic acceptance. Batch31 has explicit existing scenario links for the final 46 mappings. Phase1 acceptance remains NOT CLOSED; remaining semantic gaps are scoped in the re-audited batch32 report. Runtime evidence belongs to Phase2."
+}

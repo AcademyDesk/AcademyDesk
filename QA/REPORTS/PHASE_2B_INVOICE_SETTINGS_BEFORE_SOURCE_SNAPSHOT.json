@@ -1,0 +1,13 @@
+{
+  "date": "2026-10-01",
+  "records": [
+    {
+      "file": "apps/api/Controllers/InvoicesController.cs",
+      "sha256": "5bda6aa8309d8335ce61d450036d762075185165c91d3d94567d7a297204a7f1"
+    },
+    {
+      "file": "apps/web/src/app/invoices/page.tsx",
+      "sha256": "975bed4326886c3f14ed2caad8f40a1604b8c61a8321a9cf53aef5ac20fdb808"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+# Phase 1 gap-only triage — 2026-09-30
+
+Decision reached: [Phase 1 formal acceptance](PHASE_1_ACCEPTANCE.md) closes the static audit **with recorded limitations** and accepts it for test implementation. The table below preserves the triage basis; runtime proof and exhaustive dynamic-state certification are not implied.
+
+This is a routing decision for the unchanged pinned application baseline, not a new whole-repository audit or a runtime test result. Preserve the detailed Astra High reviews in Coverage Batches 01–31 and the named residual completions in Batches 33–40. Reopen a reviewed area only for a specific contradictory source anchor, missing acceptance condition, or changed source fingerprint.
+
+| Scope | Evidence already available | Actual remaining decision or work |
+| --- | --- | --- |
+| Native forms, fields and controller declarations | Batch 31 reconciles 82/82 forms, 481 form fields, 168 standalone declarations and 70/70 controllers; Batches 01–29 contain the original source reviews | No declaration gap. These counts alone do not certify semantic completeness |
+| Named semantic residuals in Batch 32 | Teacher compensation (33), compliance (34), teacher editing/assignment (35), later action permissions (36), operations forms (38), learning forms (39) and certificates (40) now have targeted specifications | No specifically named native-form gap remains. Do not queue Student Onboarding or finance for another generic review: Batches 01/02 already contain detailed traces |
+| 532-row evidence locator | Batch 37 links 82 forms, 168 standalone declarations and 282 actions to source and candidate evidence. Batches 41/42 add 21 supplemental individual verdicts | The other 511 rows were not individually re-adjudicated by the *new* Sol verdict registry. They are not 511 demonstrated omissions and are not a mandatory re-review queue. Retain the index as a locator; request an individual verdict only when a concrete gap is shown |
+| Standalone controls without individual scenario IDs | Batch 37 exposes 122 such entries; Batch 31 includes source-specific mappings and family scenarios, including unused/N/A helper declarations | Classify only where a concrete interaction lacks a test expectation. Do not turn 122 missing individual IDs into 122 presumed bugs or workflows |
+| Conditional non-form UI interactions (G01) | Batch 31 covers shared controls; [Batch 43](../COVERAGE/43_NON_FORM_MODAL_GROUPING.md) groups modal families; [Batch 44](../COVERAGE/44_NON_FORM_SELECTOR_DISCLOSURE_GROUPING.md) groups selector/disclosure families; [Batch 45](../COVERAGE/45_NON_FORM_EDITOR_ACTION_GROUPING.md) connects seven inline-editor families and non-form action behavior to their existing Astra reviews | No **specifically demonstrated** unreviewed non-form group remains from this bounded triage. This is evidence routing, not a semantic PASS; final acceptance may still name a precise residual |
+| Final static G01/G02/G03 acceptance | Original source reviews, named residual completions and Batches 43–45 were used for the [formal decision](PHASE_1_ACCEPTANCE.md) | CLOSED WITH RECORDED LIMITATIONS for test implementation; dynamic-state/scenario-link qualifications and all execution obligations remain explicit |
+| Runtime, security, persistence and visual proof | Current application evidence is eight direct-controller/InMemory tests, a TypeScript check and failing lint; browser, HTTP and SQL application checks have not run | These are Phase 2 and later execution gaps, not grounds to repeat the Phase 1 static source audit. No release approval follows from Phase 1 documentation |
+
+## Next bounded work
+
+The bounded grouping and formal static acceptance are complete. Next is **Sol High implementation of Phase 2A isolation guards**, then the HTTP/SQL harness and five P0 reproductions described in [the starting plan](PHASE_2_START_PLAN.md). Keep completed Astra reviews as the baseline; the 511 supplemental-unreviewed rows do not form a new audit queue. During test implementation, add a precise missing case or link when encountered. Runtime confirmation and visual/device approval remain future work.
+
+All product findings remain static unless separately reproduced. No application code, database, Azure, commit, push or deployment change is authorized by this triage.

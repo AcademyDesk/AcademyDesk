@@ -1,0 +1,87 @@
+# BUG-FUNC-0003 — Success notices are missing or cleared immediately by reload helpers
+
+| Field | Value |
+| --- | --- |
+| Status | OPEN |
+| Confirmation status | Governance/Branches/Batch/Course variants CONTROLLED-REPRODUCED / local repair; other original forms STATIC-FINDING |
+| Final verification | Course49 / combined209 controlled frontend PASS; browser/device/other forms/critical NOT RUN |
+| Severity | Major feedback |
+| Priority | P1 |
+| Category | FUNC |
+| Module | OPERATIONS |
+| Role | See reproduction; same-tenant Admin unless stated otherwise |
+| Screen / route | /work-queue; /access-review/sign-off; /platform-services; /compliance; /branches; /leads; /sales-campaigns; /trial-bookings; /courses; /curriculum; /academic-governance; /academic-periods; /batch-setup; /enrollments; /batch-promotions; /assessments; /schedule; /attendance; /leave; /makeup; /holidays; /events; /communication-settings; /communications; /communication-preferences; /assignments; /lesson-plans; /submission-review |
+| API | Corresponding create actions |
+| Environment | Source review of local working tree; runtime production state not inferred |
+| Device/viewport | NOT RUN; use QA/06_DEVICE_VIEWPORT_MATRIX.md where UI applies |
+| Baseline | 20bb6047f9edf733ac8e2a226621cc582ec54b3c + pre-existing student UI diff |
+| Discovery test / review ID | FORM-SUCCESS-001 |
+| Evidence classification | Accepted static traces retained; bounded Governance/Branches/Batch/Course actual-handler checks, not live browser/SQL proof |
+| Preconditions | Isolated synthetic fixture from QA/10_TEST_DATA_STRATEGY.md; never customer data |
+| Reproduction frequency | Not measured; reproduction instructions are proposed |
+| Source | apps/web/src/app/work-queue/page.tsx:13 |
+| Class/function | create / load; similar sign-off and support flows |
+| Related source | INVENTORY/API_ENDPOINTS.md, CONTRACTS.md, FORMS_AND_FIELDS.md and ASYNC_FORM_RISKS.md |
+| Root-cause confidence | HIGH |
+| Evidence location | Source excerpt below; source fingerprint in INVENTORY/SOURCE_MANIFEST.md |
+| Screenshot | Not captured on pinned baseline |
+| Console logs | Not captured; required in retest |
+| API request | After isolating async reset defect, submit valid form with immediate successful reload. Observe live status region after list refresh. |
+| API response | Not captured for this issue; use synthetic request/response in isolated reproduction |
+| Database before/after | Not executed; fixture and fresh-context assertions defined below |
+| Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
+| Fix commit | Local Governance/Branches/Batch/Course feedback variants; uncommitted/not deployed; other original forms pending |
+| Retest result | Course durable confirmations/reset/error/pending guards controlled PASS; browser/device/other forms pending |
+| Regression result | 209 current combined controlled frontend PASS; no new backend/SQL run; Course lint FAIL (1 error/1 warning after improvement), not all-form/critical acceptance |
+| Closure notes | Remain OPEN; follow closure requirements in QA README |
+
+## Course feedback checkpoint — 2026-10-01
+
+[Course feedback repair](../REPORTS/PHASE_2B_COURSE_FEEDBACK_REPAIR.md):49 new actual-handler checks and combined209/209 PASS; TypeScript PASS. Baseline15:10 PASS/5 FAIL. Create now confirms and resets; existing edit/status successful notices remain positive controls. Failed refresh retains confirmed success with guidance; rejected/unconfirmed writes keep details; pending duplicate/opposing requests are guarded through readback. Course lint improves2 to1 error/1 warning; gate remains FAIL. Frontend-only; all147 previous captures and backend assemblies unchanged,3 new captures. No new API/SQL/browser proof or deployment. Known Course configuration-loss BUG-DATA-0028 remains separate and OPEN, queued next with Sol High. Other forms/browser/device/critical acceptance remain OPEN.
+
+## Batch feedback checkpoint — 2026-10-01 (historical)
+
+[Batch feedback repair](../REPORTS/PHASE_2B_BATCH_FEEDBACK_REPAIR.md):44 new actual-handler controls, combined160/160 PASS and TypeScript PASS. Create/edit/deactivate/reactivate notices survive successful or failed readback; confirmed create resets all per-batch inputs, failed/unconfirmed writes keep details, pending guards block duplicate/opposing requests through refresh. Existing successful edit/toggle notices are retained positive controls, not missing-notice reproductions. Baseline15:10 PASS/5 FAIL(create notice, three duplicates, blank create). Frontend-only; lint improves2 to1 error/3 warnings, gate still FAIL, backend sources/assemblies unchanged, no API/SQL rerun or new server/database. Other forms/live browser/device/critical remain OPEN. Next accepted Course create feedback variant, Sol High.
+
+## Branches feedback checkpoint — 2026-10-01 (historical)
+
+[Branches feedback repair](../REPORTS/PHASE_2B_BRANCH_FEEDBACK_REPAIR.md) fixes durable create/edit/deactivate/reactivate confirmations, confirmed-save-but-refresh-failed guidance, failed-write detail retention and pending duplicate/opposing request guards. Network/5xx saves are labelled unconfirmed; no automatic retry. Controlled create fields clear only after confirmed response, edit closes only after success, pending state always releases. Corrected before baseline 8/15 PASS (four erased confirmations/three duplicate failures); final Branches 45/45 and combined frontend 88/88 PASS with TypeScript/lint. Only the Branches application file changes; prior 123 source captures and backend assemblies unchanged, no API/SQL rerun or deployment. Other forms/live browser/device/full critical remain OPEN. Branch address/postcode preservation is separate accepted BUG-DATA-0025, queued next.
+
+## Governance feedback checkpoint — 2026-10-01 (historical)
+
+[Bounded Governance repair](../REPORTS/PHASE_2B_GOVERNANCE_ACCESS_REPAIR.md) extends this feedback finding to adjustment decisions, collection follow-up and escalation saves. Corrected before-handler fixture allows the generic admin lookup to isolate empty-notice clearing; separate failed-refresh controls lose saved confirmation. `load` now retains supplied confirmation after readback or adds an explicit refresh warning after a confirmed save. Nine Governance controlled cases and prior 13 frontend controls PASS; no live React/browser/device proof. Original forms, async/stale-response/concurrency/critical gates remain unverified/unfixed; this is not whole-issue closure. No commit/deployment.
+
+## Exact reproduction (original forms)
+
+After isolating async reset defect, submit valid form with immediate successful reload. Observe live status region after list refresh.
+
+## Expected
+
+Durable success message remains visible after successful reload; list shows newly saved record.
+
+## Actual / evidence
+
+Some handlers set success then await load(); load clears the shared message state. Branch create, edit and active-state handlers also set success then loadBranches clears it; these handlers do not require the async-reset defect to reproduce. Lead conversion does the same. Lead create/stage and campaign/trial create/status flows provide no positive notice after successful readback. Curriculum add/publication notices are erased by load; course creation supplies none, while course edit/toggle notices survive loadCourses. Governance create/status and academic-period create/close likewise clear positive notices during reload. Batch create and enrollment create provide no success; enrollment status and promotion create/decision notices are cleared by load. Batch edit/toggle success survives loadWorkspace. Assessment creation and result saving also provide no positive notice after readback; failed result refresh is described as score validation failure even if save already committed. Schedule create and attendance mark provide no success; schedule status success is cleared by load. Attendance refresh failure is reported as failed attendance despite a potentially committed write. Leave/event/holiday creation and status actions also omit durable success; make-up scheduling and holiday defaults messages are erased by load. Sender and meeting-provider Save notices are also erased by load, including the message about the missing secure-connection next step. Message queue/banner and consent Save notices are cleared by load. Template create and starter-add notices survive their load and are positive controls, not instances of this issue. Assignment and lesson-plan creation supply no success notice; submission review updates its row but shows no durable success and does not clear an earlier save error. Independent feedback defects remain after fixing currentTarget.
+
+Source snapshot:
+
+```text
+12:   useEffect(() => { void load(); }, []);
+13:   async function create(event: FormEvent<HTMLFormElement>) { event.preventDefault(); if (!academy) return; const form = new FormData(event.currentTarget); const dueAtUtc = dueDate ? new Date(`${dueDate}T${dueTime}:00`).toISOString() : null; const response = await academyApi(`/api/academies/${academy.id}/admin-work-items`, { method: "POST", headers: apiHeaders(true), body: JSON.stringify({ type, title: form.get("title"), description: form.get("description") || null, priority, entityType: null, entityId: null, assignedUserId: assignedUserId || null, dueAtUtc }) }); if (!response.ok) return setMessage("Work item could not be created."); event.currentTarget.reset(); setAssignedUserId(""); setDueDate(""); setDueTime("09:00"); setMessage("Work item added to the operational queue."); await load(); }
+14:   async function move(item: Work, status: string) { if (!academy) return; const response = await academyApi(`/api/academies/${academy.id}/admin-work-items/${item.id}/status`, { method: "PATCH", headers: apiHeaders(true), body: JSON.stringify({ status }) }); if (!response.ok) return setMessage("Work item could not be updated."); setMessage(`Work item moved to ${status}.`); await load(); }
+15:   const highPriority = items.filter(item => item.priority === "Critical" || item.priority === "High").length;
+```
+
+## Suspected root cause
+
+Loading/error and success feedback share state and reload clears it.
+
+## Business impact and blast radius
+
+Multiple form handlers; do not assume all setMessage calls provide visible confirmation.
+
+## Related / required regression
+
+FORM-SUCCESS-001: Fast and slow refresh with controlled network; assert visible success after reload, no false success on partial failure.
+
+Also run all endpoint/form cases pointing to this issue in QA/03_TEST_MATRIX.md and the critical regression suite before closure.

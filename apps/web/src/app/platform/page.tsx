@@ -166,8 +166,12 @@ export default function PlatformPage() {
       const payload = await response.json().catch(() => null);
       if (!response.ok) throw new Error(payload?.message ?? "The academy could not be created.");
       setOnboardingOpen(false); setAcademyName(""); setLegalName(""); setAdminUserName(""); setAdminDisplayName(""); setTemporaryPassword("");
-      await load();
-      setNotice({ text: "Academy and Academy Admin created. Complete the discovery information in Tenant Onboarding.", tone: "success" });
+      try {
+        await load();
+        setNotice({ text: "Academy and Academy Admin created. Complete the discovery information in Tenant Onboarding.", tone: "success" });
+      } catch {
+        setNotice({ text: "Academy and Academy Admin created, but the portfolio could not be refreshed. Refresh the page to see the academy; do not submit it again.", tone: "success" });
+      }
     } catch (error) {
       setNotice({ text: error instanceof Error ? error.message : "The academy could not be created.", tone: "error" });
     } finally { setBusy(false); }

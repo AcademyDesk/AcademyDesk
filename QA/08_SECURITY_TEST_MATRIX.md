@@ -1,0 +1,22 @@
+# Security test matrix
+
+All cases below are NOT RUN unless specifically backed by an execution artifact. Source findings are risks to reproduce in an isolated environment, not claims of a production penetration test. [Role matrix](04_ROLE_PERMISSION_MATRIX.md) and endpoint authorization appendix define the tested boundaries.
+
+| Test ID | Scope / executable expectation | Source / evidence | Current risk |
+| --- | --- | --- | --- |
+| AUTH-001 | Valid/invalid login, no account enumeration in public errors, correct user/workspace; inactive account denied | Program, AuthSessionController, lib/api.ts | No HTTP authentication suite |
+| AUTH-002 | Refresh retry uses new token; expired refresh preserves input and offers login; parallel refresh behavior | lib/api.ts request/academyApi | BUG-API-0003 stale header override |
+| SECURITY-ROLE-001 | Every HTTP method: anonymous, allowed actor, wrong role, academy B, inactive academy, disabled module; no unauthorized read or write | AcademyAccessFilter + endpoint action guards | Global filter is present; absence of an attribute is not evidence of no protection |
+| SECURITY-ROLE-002 | Permission grants and role policy agree for onboarding and strict admin endpoints | StudentOnboarding, Staff, PortalAccounts, AcademyRoles, AccessGrants | BUG-FUNC-0002; policy conflicts require review |
+| SECURITY-GUARDIAN-001 | Own child / other child; revoke link and each academic/finance/documents/leave flag; re-fetch and download directly | PortalController.ParentAccess/CanAccessStudent and StudentGuardians | Nested object and download isolation untested |
+| SECURITY-SESSION-001 | Disabled/deleted user, password change, refresh expiry, logout, role switch and workspace localStorage isolation; no secrets in evidence | Program bearer options; api.ts; AuthSession | LocalStorage XSS impact, refresh concurrency and server revocation behavior need tests |
+| SECURITY-FILE-001 | Direct upload URL requires authorized scope, including guessed/known URL and range requests | UseStaticFiles; teacher upload webroot | BUG-SEC-0001 public private-material risk |
+| SECURITY-UPLOAD-001 | File content/extension/MIME consistency; zero/limit/oversize; path traversal; interruption; cleanup; no leaked private URLs | TeacherPortal, Portal, AuthSession upload actions | Different size/type checks; local replica storage; no antivirus pipeline found |
+| SECURITY-INPUT-001 | XSS payload stays inert in UI and HTML downloads; malformed JSON/IDs return safe validation; SQL-like strings cannot escape parameterized LINQ | Portal HTML download encoding; EF controller queries; layout constant theme script | No direct raw SQL execution found in scanned API source; do not claim SQLi-proof from scan alone |
+| SECURITY-EXPORT-001 | CSV formula-leading values neutralized under approved export policy | AcademyExports.Csv, AuditLogs export, reports downloadCsv | BUG-SEC-0002 |
+| SECURITY-DEBUG-001 | Development-only OpenAPI and seeder absent in production; errors disclose no stack/connection details; sample WeatherForecast decision | Program + WeatherForecastController | Sample route remains; seeder contains development credentials (values deliberately omitted) |
+| SECURITY-RATE-001 | Login/reset throttling and ordinary traffic bounded; proxy headers cannot bypass chosen limit identity; CORS trusted origins only | Program rate limiter before authentication, cleared KnownProxies/IPNetworks | User-based partition may not see authenticated principal; deployment proxy trust must be established |
+
+Additional required cases under endpoint scenarios: role assignment cannot grant unintended system/owner capability; custom role names/permissions remain tenant-scoped; Identity default register route cannot choose role/tenant flags; public certificate verification exposes only intended information; access grants reject expired/unknown scope; audit export/delete restricted; HTML download must encode user text and not execute URLs/scripts. Policies and framework default routes must be enumerated in the actual test host rather than assumed from UI routes.
+
+Inspect dependency vulnerabilities with the pinned lock files in Phase 2; no dependency advisory scan was run here. Headers/CSP/HSTS, data-protection key persistence across Azure replicas, upload storage durability and production secret rotation require deployment configuration evidence beyond this repository. Do not copy secrets from pipeline/environment into QA. No production exploit attempt or destructive request is authorized by this audit.

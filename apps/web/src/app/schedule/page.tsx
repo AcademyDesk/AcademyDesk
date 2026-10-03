@@ -75,7 +75,12 @@ export default function SchedulePage() {
     setTeachers(await teacherResponse.json());
     setBranches(await branchResponse.json());
     setSessions(await sessionResponse.json());
-    if (!batchId && batchData.length) setBatchId(batchData[0].id);
+    if (!batchId && batchData.length) {
+      const initialBatch = batchData[0];
+      setBatchId(initialBatch.id);
+      setTeacherId(initialBatch.teacherId ?? "");
+      setBranchId(initialBatch.branchId ?? "");
+    }
     setMessage("");
   }
 
@@ -105,10 +110,11 @@ export default function SchedulePage() {
   }, []);
 
   function applyBatchDefaults(id: string) {
+    if (id === batchId) return;
     setBatchId(id);
     const batch = batches.find((item) => item.id === id);
-    if (batch?.teacherId) setTeacherId(batch.teacherId);
-    if (batch?.branchId) setBranchId(batch.branchId);
+    setTeacherId(batch?.teacherId ?? "");
+    setBranchId(batch?.branchId ?? "");
   }
 
   async function createSession(event: FormEvent<HTMLFormElement>) {

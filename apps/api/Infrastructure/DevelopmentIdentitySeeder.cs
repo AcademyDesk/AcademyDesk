@@ -7,9 +7,22 @@ using System.Text.Json;
 
 namespace AcademyDesk.Api.Infrastructure;
 
+internal sealed record DevelopmentSeedCredentials(string DefaultPassword, string PlatformOwnerPassword, string AcademyAdminPassword)
+{
+    internal static DevelopmentSeedCredentials FromConfiguration(IConfiguration configuration) => new(
+        Required(configuration, "DevelopmentSeed:DefaultPassword"),
+        Required(configuration, "DevelopmentSeed:PlatformOwnerPassword"),
+        Required(configuration, "DevelopmentSeed:AcademyAdminPassword"));
+
+    private static string Required(IConfiguration configuration, string key) =>
+        !string.IsNullOrWhiteSpace(configuration[key])
+            ? configuration[key]!
+            : throw new InvalidOperationException($"Development seeding requires {key} in local user-secrets or environment variables.");
+}
+
 public static class DevelopmentIdentitySeeder
 {
-    public static async Task SeedAsync(IServiceProvider services)
+    internal static async Task SeedAsync(IServiceProvider services, DevelopmentSeedCredentials credentials)
     {
         using var scope = services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
@@ -257,8 +270,8 @@ public static class DevelopmentIdentitySeeder
         }
         await db.SaveChangesAsync();
 
-        await EnsureUser(users, "Shashank", "Shashank@academydesk.local", "Shashank", null, true, "PlatformOwner", password: "Test\\@123", loginId: "Shashank");
-        await EnsureUser(users, "Kavya", "Kavya@academydesk.local", "Kavya", academy.Id, false, "AcademyAdmin", password: "Test\\@123", loginId: "Kavya");
+        await EnsureUser(users, "Shashank", "Shashank@academydesk.local", "Shashank", null, true, "PlatformOwner", password: credentials.PlatformOwnerPassword, loginId: "Shashank");
+        await EnsureUser(users, "Kavya", "Kavya@academydesk.local", "Kavya", academy.Id, false, "AcademyAdmin", password: credentials.AcademyAdminPassword, loginId: "Kavya");
         // Kavya is the local Academy Administrator used for end-to-end testing.
         // Keep this account active; AcademyAdmin is intentionally unrestricted
         // within its academy and does not receive Platform Owner access.
@@ -268,17 +281,18 @@ public static class DevelopmentIdentitySeeder
             kavya.IsActive = true;
             await users.UpdateAsync(kavya);
         }
-        await EnsureUser(users, "Finance", "finance@academydesk.local", "Finance user", academy.Id, false, "FinanceUser");
-        await EnsureUser(users, "Haynsh", "Haynsh@academydesk.local", "Haynsh", academy.Id, false, "Student", student.Id, null);
+        await EnsureUser(users, "Finance", "finance@academydesk.local", "Finance user", academy.Id, false, "FinanceUser", password: credentials.DefaultPassword);
+        await EnsureUser(users, "Haynsh", "Haynsh@academydesk.local", "Haynsh", academy.Id, false, "Student", student.Id, null, password: credentials.DefaultPassword);
         // Active teaching profiles have matching portal accounts, so the Teacher
         // workspace can be tested with a real linked profile rather than a stub.
-        await EnsureUser(users, "Hayansh1", "Hayansh1@academydesk.local", "Hayansh1", academy.Id, false, "Teacher", null, hayansh.Id);
-        await EnsureUser(users, "Ananya.Rao", "ananya.rao@academydesk.local", "Ananya Rao", academy.Id, false, "Teacher", null, ananya.Id);
-        await EnsureUser(users, "Arjun.Mehta", "arjun.mehta@academydesk.local", "Arjun Mehta", academy.Id, false, "Teacher", null, arjun.Id);
+        await EnsureUser(users, "Hayansh1", "Hayansh1@academydesk.local", "Hayansh1", academy.Id, false, "Teacher", null, hayansh.Id, password: credentials.DefaultPassword);
+        await EnsureUser(users, "Ananya.Rao", "ananya.rao@academydesk.local", "Ananya Rao", academy.Id, false, "Teacher", null, ananya.Id, password: credentials.DefaultPassword);
+        await EnsureUser(users, "Arjun.Mehta", "arjun.mehta@academydesk.local", "Arjun Mehta", academy.Id, false, "Teacher", null, arjun.Id, password: credentials.DefaultPassword);
     }
 
-    private static async Task EnsureUser(UserManager<ApplicationUser> users, string userName, string email, string displayName, Guid? academyId, bool platformOwner, string role, Guid? studentId = null, Guid? teacherId = null, string password = "Test@123", string? loginId = null)
+    private static async Task EnsureUser(UserManager<ApplicationUser> users, string userName, string email, string displayName, Guid? academyId, bool platformOwner, string role, Guid? studentId = null, Guid? teacherId = null, string? password = null, string? loginId = null)
     {
+        if (string.IsNullOrWhiteSpace(password)) throw new InvalidOperationException("Development account password is required.");
         var user = await users.FindByEmailAsync(email) ?? await users.FindByNameAsync(userName);
         var created = false;
         if (user is null)

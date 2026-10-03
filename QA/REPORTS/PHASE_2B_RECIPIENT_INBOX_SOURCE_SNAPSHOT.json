@@ -1,0 +1,430 @@
+{
+  "createdAt": "2026-10-01",
+  "commit": "20bb6047f9edf733ac8e2a226621cc582ec54b3c",
+  "issue": "BUG-FUNC-0027",
+  "checks": {
+    "backendTotal": 593,
+    "newBackendCases": 36,
+    "controlledTsxCases": 14,
+    "httpSqlCases": 80,
+    "baselineSqlDefects": 2,
+    "baselineUiFailures": 13,
+    "closure": "OPEN",
+    "browserDevice": "NOT RUN",
+    "normalDevMigration": "NOT RUN"
+  },
+  "beforeSources": [
+    {
+      "file": "apps/api/Controllers/PortalController.cs",
+      "sha256": "6e33b3fda6db048be982f948b60fb836445a7341c30a04759e731254264d73ef"
+    },
+    {
+      "file": "apps/api/Data/AcademyDeskDbContext.cs",
+      "sha256": "f77581f6e97b38e84dfec3bd022118a8da9858b9c5cb637daa6d1a25c8fa7b1e"
+    },
+    {
+      "file": "apps/api/Migrations/AcademyDeskDbContextModelSnapshot.cs",
+      "sha256": "565aae357d2b446737862d1dc4993aa93a1c04694e8d1bc9298911ac2c97c340"
+    },
+    {
+      "file": "apps/web/src/app/portal/page.tsx",
+      "sha256": "ac15ec13005a1d36ae381d57a2d9a311c79c545d6eef3d32ad7a4b4b3d4e816c"
+    },
+    {
+      "file": "QA/tools/SqlHarness/Program.cs",
+      "sha256": "98a85650c83c00b81cdf3a874dc20d0aa2e214cd8ce9d20c986632b9cd892a27"
+    },
+    {
+      "file": "QA/tools/SqlHarness/Run-ReconciledPayment.ps1",
+      "sha256": "0c397f81b6efc0b8c28c96bd6846274d0e21c9089c1a6d2a92390f8e7b2a9dbc"
+    }
+  ],
+  "sources": [
+    {
+      "file": "apps/web/src/app/schedule/page.tsx",
+      "sha256": "41df5a30430498237fca3a039763de296f4db0117734e3ae6752902aa8ba750c"
+    },
+    {
+      "file": "apps/api/Controllers/ClassSessionsController.cs",
+      "sha256": "5445b6b9c69a189c5b5a707138df4ebde7bf06f03e704a8ec8f3219d6c0460d2"
+    },
+    {
+      "file": "apps/api/Controllers/LeaveRequestsController.cs",
+      "sha256": "ed0f3e50f1f446a448120b6ba852fb7a7334ce22a7a7ece607f7b77f94e9eb4f"
+    },
+    {
+      "file": "apps/web/src/app/leave/page.tsx",
+      "sha256": "40c8c3b99d8e232c85dd8f3a0e5ea38bb1cdba5fe756b4fa87dfbacec388603d"
+    },
+    {
+      "file": "apps/api/Domain/Entities/LeaveRequest.cs",
+      "sha256": "9e7f36c796f3d857ab7944b384e9e03c58109f17f7e84487c12544c587cdc680"
+    },
+    {
+      "file": "apps/api/Data/AcademyDeskDbContext.cs",
+      "sha256": "1e7fed1ae71bebab1d33ebfc4604185131149a8a76e6571f17cbce88a88d5fa9"
+    },
+    {
+      "file": "apps/api/Security/AcademyAccessFilter.cs",
+      "sha256": "f74c29ef47dbafc20939ce10ec10c36b1ca0f7be23c8900422417ecb69db8753"
+    },
+    {
+      "file": "apps/api/Security/PermissionCatalog.cs",
+      "sha256": "6703cf7acc8c90309ce8e804981fc5a5342567d1f2cd756820351560a65d4d5a"
+    },
+    {
+      "file": "apps/api/Controllers/MakeupClassesController.cs",
+      "sha256": "2bb08bf6187e00ceec5b57bdaa8bdedbca7ff06e9d4665a36d62b842ec41c6d7"
+    },
+    {
+      "file": "apps/api/Domain/Entities/MakeupClass.cs",
+      "sha256": "6dc5fd2a7490317f9dad657cbe84563fdc1fba94fe192fab344c11ffa78fae74"
+    },
+    {
+      "file": "apps/api/Domain/Entities/Notification.cs",
+      "sha256": "0dd5438d91096a6d857dec5f87ae733a63326ad436ceef91f49efe5b3e5f59ed"
+    },
+    {
+      "file": "apps/web/src/app/makeup/page.tsx",
+      "sha256": "42f3c787928228d48a01ee8353a7a09f8f6557bafe76a1551bff7b57d9f26b64"
+    },
+    {
+      "file": "apps/web/src/app/calendar/page.tsx",
+      "sha256": "5c9799a1b6369ac65d4924d847542ab7a58dd960dcb191fec91cafb59aae9b4a"
+    },
+    {
+      "file": "apps/web/src/app/communication-settings/page.tsx",
+      "sha256": "7de4002f717ca4589432bba7d7c3f5aa354793198548b25570543e6ae1edc5e9"
+    },
+    {
+      "file": "apps/api/Controllers/CommunicationSettingsController.cs",
+      "sha256": "3ba3caa165224f5ca92d07c809b2aeca9a317d74254abe5c21705ba96e6f30dc"
+    },
+    {
+      "file": "apps/api/Domain/Entities/CommunicationChannel.cs",
+      "sha256": "7e65641fbcb82e814487ca3170f30dd479332a3bfd7434855ddc9dd059dd7da2"
+    },
+    {
+      "file": "apps/web/src/components/meeting-provider-settings.tsx",
+      "sha256": "6d95b7627206066bf82ace60325d82067a6c4b4e67b5904e8fca310ecf5de581"
+    },
+    {
+      "file": "QA/tools/communication-roundtrip.test.cjs",
+      "sha256": "38a6b67426e56ce168f86a6cc5f3bacd22b78bf8afbb5773f2cbbbe72a1a116d"
+    },
+    {
+      "file": "QA/tools/SqlHarness/CommunicationRoundtripRegression.cs",
+      "sha256": "d81724d9c245803cdec2d20a3b53a2a6456af96a65383f9e982b7a5361df44aa"
+    },
+    {
+      "file": "QA/tools/SqlHarness/Program.cs",
+      "sha256": "832d5c038102ffe8761237fe5781c7685fc43e1237f51679b633965ba69669ee"
+    },
+    {
+      "file": "QA/tools/SqlHarness/Run-ReconciledPayment.ps1",
+      "sha256": "bd2e7b78537625eec20ad5d6e7a14c20bea88729a5f03a6ee67828002478b9ec"
+    },
+    {
+      "file": "QA/tools/validate-communication-roundtrip.cjs",
+      "sha256": "59b66369f31f6336f22b92e072ce28d5477ec4284b30a00cf2f65fe0a0246dc3"
+    },
+    {
+      "file": "QA/REPORTS/PHASE_2B_COMMUNICATION_ROUNDTRIP_REPAIR.md",
+      "sha256": "6747c692fff8d166e546cfc40f6c34b9461175032ad2ce0aea4273b6b51565c2"
+    },
+    {
+      "file": "QA/ISSUES/BUG-DATA-0040.md",
+      "sha256": "40bd26d956fbdc1fa2a7da3b004699b198521d06978dd24dcc8fc33fed45d9b8"
+    },
+    {
+      "file": "QA/tools/communication-page-harness.cjs",
+      "sha256": "3629ea1f7dfb92978622bd6a6d31162d8d66f7a70beef3d762d41d6e82598f31"
+    },
+    {
+      "file": "QA/tools/communication-drafts.test.cjs",
+      "sha256": "78528404852c7fafe88c47a8216d27d881dae0240fa0d649885a853d6bc3a443"
+    },
+    {
+      "file": "QA/tools/validate-communication-drafts.cjs",
+      "sha256": "6112b4296a198a67189b19411c6ece377045d3229908164f1ec12ac6d8476c48"
+    },
+    {
+      "file": "QA/REPORTS/PHASE_2B_COMMUNICATION_DRAFTS_REPAIR.md",
+      "sha256": "01e57a50efca842b6952dd9050de18a150b4e197a2e4aee8cc0912419f640004"
+    },
+    {
+      "file": "QA/ISSUES/BUG-DATA-0041.md",
+      "sha256": "bbebdb9f9f97da1d75e38f52d025aabf81f4486e7404a9f46b56603e9f200f38"
+    },
+    {
+      "file": "apps/api/Controllers/NotificationsController.cs",
+      "sha256": "9784bf25474c1147cd65a04384919ededfa526153547f7c70d430e57f0be2eee"
+    },
+    {
+      "file": "apps/web/src/app/communications/page.tsx",
+      "sha256": "dbe9060dac13e0d22c44a50fa3c399229781a17227b689ad9edeb90385705547"
+    },
+    {
+      "file": "apps/api/Domain/Entities/CommunicationTemplate.cs",
+      "sha256": "ba0aead6eab4e50a13eeb644baedf68b15c21c1e1391d385c5d3350ce62144a0"
+    },
+    {
+      "file": "apps/api/Domain/Entities/CommunicationPreference.cs",
+      "sha256": "2dbb1b47fc98e875702071f17fbcfb2479aff2feca74ebb0c9589c450b4dfe0c"
+    },
+    {
+      "file": "apps/api/Controllers/CommunicationTemplatesController.cs",
+      "sha256": "660aff10f25387b30538c89d3cd607c7c70f6c23b013d2d8d80d4a5e51cd537b"
+    },
+    {
+      "file": "tests/AcademyDesk.Api.Tests/NotificationChannelTests.cs",
+      "sha256": "635fd455836607c99624164b39c0282a9f0e0ec90e8c57b269a7227044f564f3"
+    },
+    {
+      "file": "QA/tools/communication-channel.test.cjs",
+      "sha256": "0f8cb89ffbbb17e95462ea388a1539633ff850beb3ebded2c0bf57fc80cbc0e2"
+    },
+    {
+      "file": "QA/tools/SqlHarness/NotificationChannelRegression.cs",
+      "sha256": "bb629fd97628e2ac2b40a48bfcea53b4331e18be87dcb271e8d1597c5183333d"
+    },
+    {
+      "file": "QA/tools/validate-communication-channel.cjs",
+      "sha256": "24b2e6eea079566caad219486a5bdd04731cd8a8baa5d743f4289a443fbf0d2b"
+    },
+    {
+      "file": "QA/REPORTS/PHASE_2B_COMMUNICATION_CHANNEL_REPAIR.md",
+      "sha256": "2d05ea453ddac3f8e4cd7b89f3ecef769d83340b4e4be1436c39e1c13c0369f0"
+    },
+    {
+      "file": "QA/ISSUES/BUG-FUNC-0026.md",
+      "sha256": "48ade76de6a64f35eb0b02e3ec041c33b58e16f0e06d601d260cfaa2795c8b31"
+    },
+    {
+      "file": "apps/api/Controllers/PortalController.cs",
+      "sha256": "c26099aef1f82f064f3cab750a77aed42b29fe6fb6b73c959cfbfb969a7875db"
+    },
+    {
+      "file": "apps/api/Infrastructure/RecipientNotificationVisibility.cs",
+      "sha256": "91c5f1de03306186717d306480739565f66c55e4b1900a5ad8b8401b9fa7be92"
+    },
+    {
+      "file": "apps/api/Domain/Entities/NotificationReadReceipt.cs",
+      "sha256": "d35b28ccd8e9660f84ddc8090c1fdccd38a44c4da9d0e985b775317ebda66fe3"
+    },
+    {
+      "file": "apps/api/Migrations/AcademyDeskDbContextModelSnapshot.cs",
+      "sha256": "e6090df6a4bb4f07d1fc2218d1d388f12d65f9b84ec286a11ef938e9e2e7b1dd"
+    },
+    {
+      "file": "apps/api/Migrations/20261001152214_AddNotificationReadReceipts.cs",
+      "sha256": "d3a383b5b0acaa4718ec2685cff562bb653b46149bf84e814b8449384910759b"
+    },
+    {
+      "file": "apps/api/Migrations/20261001152214_AddNotificationReadReceipts.Designer.cs",
+      "sha256": "725cc37bc3afcfb751fa3380185bbf3ddc50c2a46bffa04dd7141bb9bfc42c94"
+    },
+    {
+      "file": "apps/web/src/app/portal/page.tsx",
+      "sha256": "c9499230bca8ac9849ff463821270ac6da0fc8b2610ecb0fb0a264156a5160d0"
+    },
+    {
+      "file": "tests/AcademyDesk.Api.Tests/RecipientNotificationVisibilityTests.cs",
+      "sha256": "169e67362824cce99e8e504d3b8bfb5a6762398c7e98ef98ac1f068da6c5c2ea"
+    },
+    {
+      "file": "QA/tools/SqlHarness/RecipientInboxRegression.cs",
+      "sha256": "2f020164a745ac4286fe3e7e1bde0dbf7c36d4e35d04eab615d5fbd1d8080af1"
+    },
+    {
+      "file": "QA/tools/recipient-inbox-ui.test.cjs",
+      "sha256": "3f1025ad04eb1e73f470f092972704e912cab3fd3b78028f1fcf778ce9a8e9c4"
+    },
+    {
+      "file": "QA/tools/validate-recipient-inbox.cjs",
+      "sha256": "d1d8d4b0400d385fbd317b124484b362474221e66fc4d98231e3123cb3020ae7"
+    },
+    {
+      "file": "QA/REPORTS/PHASE_2B_RECIPIENT_INBOX_REPAIR.md",
+      "sha256": "59a1870834aa1c0189f61f3f6a7ecf837a252f99894f8da7eaabf7e56065e236"
+    },
+    {
+      "file": "QA/ISSUES/BUG-FUNC-0027.md",
+      "sha256": "7fbc6a55b2d584660e0f7630c14437317c66a0d58a60d8bee43cb4bac08cb5e4"
+    },
+    {
+      "file": "QA/00_QA_README.md",
+      "sha256": "3ed8a8cf4e98647dc30a7de865c5bc4544852e7275eeca93bc19d99f85a3c4ed"
+    },
+    {
+      "file": "QA/REPORTS/PHASE_2_START_PLAN.md",
+      "sha256": "90f31b9f36c55985b564b4547cc6e26ab64dd32025efa5da8028c99fed3aab9e"
+    },
+    {
+      "file": "QA/ISSUES/INDEX.md",
+      "sha256": "d5e7635cd167fd76fc61b47551f0e5372171ae38302591bc115be68383f88b5c"
+    },
+    {
+      "file": "QA/03_TEST_MATRIX.md",
+      "sha256": "08ca8ec212ffeb93aa57fd84d8c12ad78fc5bb4b90d9319b4aeb5ff8f1a1e067"
+    }
+  ],
+  "evidence": [
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-communication-channel-backend-baseline.log",
+      "sha256": "09c8f56ae043bb09d694058b3bba4bd2096ffb4128207c504b63e8db324865fe"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-communication-channel-lint.log",
+      "sha256": "0b7c7715edb34be6480be90e3af495aa5e8de4fbcb65237607cd3b0d02ea0db8"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-communication-channel-sql-build.log",
+      "sha256": "e9bd528b74ec67c198431052ec6fcef9d4c4ad2cfa26c6e69f2c3f376cda8cf4"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-communication-channel-sql.log",
+      "sha256": "93bc0faca1b75e8c72d4f81d124d98d5d1a7ef1c5b8a608c33c775fa8624773d"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-communication-channel-suite.log",
+      "sha256": "09ebdfebb810f057b0279a2a20e22c26bed251653c342f705257bd5dd6468a1d"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-communication-channel-typecheck.log",
+      "sha256": "9351e662fec76dfe40e0144b41d3bbdf9cad39ae941236f0cbcfe401e89c1651"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-communication-channel-ui-baseline-truncated.log",
+      "sha256": "a5f5fbee1215159205dd9fe72c60eeaca2157c1b823f9e17d0c650768a227778"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-communication-channel-ui-baseline.log",
+      "sha256": "59862247ef9622b08c7bde6f25212742a177cc39f334bef06a9dd9a8be751740"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-communication-channel-ui-final.log",
+      "sha256": "5b3f4f3a521b8eaf80767011efa0f1a2e189f9771676dbeae3e9c8ee6e6e4837"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-communication-channel-ui-harness-attempt1.log",
+      "sha256": "33b37cb386b87dc0bf75a3448aff4bb270e5511d2e4189b0faf8902508a81b5c"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-communication-channel-ui.log",
+      "sha256": "55b8511aa50f0051b6181ae36a758548386e28851688c8a4d6d684648a518979"
+    },
+    {
+      "file": "QA/EVIDENCE/communication-channel/communication-channel-baseline.trx",
+      "sha256": "c219ce18293ff4e184b2b2f2011ecd94b91d3b69647d7799e2ffa01924569d0b"
+    },
+    {
+      "file": "QA/EVIDENCE/communication-channel/communication-channel-suite.trx",
+      "sha256": "13164de793e22d3ca01140486ac5d884665c6f24eb1514198dec0a34e548c761"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-inbox-baseline-build.log",
+      "sha256": "ec02ee43cf1587184fc2b1a41b2bccccfec441807a8c47a839b661e7b75d7336"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-inbox-migration-scaffold.log",
+      "sha256": "3b37e330a054a7d31a4068f3d0d6964b1ad48330e40c1f21aeb243ac3f6bec3b"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-inbox-migration-build.log",
+      "sha256": "42938f2c73cf61eddd024c4175b910a855676dd7b35c8975e8c90d95aaf7f8ce"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-inbox-sql-baseline.log",
+      "sha256": "2422ac3a3e5d6b908ab53ac37b0a6a8427034da1a70e9cf9b146ca4c2e56cc77"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-inbox-ui-baseline.log",
+      "sha256": "b8e229167431fb12c7dcfc725259ddfe426e1aa1e58fe3c90f809302faadfeba"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-inbox-ui.log",
+      "sha256": "3f18ae9d0de3ff7ce1bfab8ce05c42f37e273bcc9aa993e5113a9885f028a086"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-inbox-suite.log",
+      "sha256": "40028b2a302fd5a0d7d106b947631461ae033658fd73be82eb27331ad7cb336a"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-inbox-typecheck.log",
+      "sha256": "9351e662fec76dfe40e0144b41d3bbdf9cad39ae941236f0cbcfe401e89c1651"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-inbox-lint.log",
+      "sha256": "e6eea60162055c689952c229695669be603e3ecb9e4290867b4ecbb1d90b18aa"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-inbox-sql-build.log",
+      "sha256": "2240c088f37b1fd73eaa020efc3708656640face1690a3e66ecca8706f99c1e3"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-inbox-sql.log",
+      "sha256": "3c2fa08600ec5c46cc36d7dfc8a63fc2dda9b69eeb9a6325d07c9337c2355e43"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-inbox-model.log",
+      "sha256": "c924da1693ad60eb6a78717ddd333946a8a61a056c2ce2868ae514384f01c866"
+    },
+    {
+      "file": "QA/EVIDENCE/inbox/inbox-suite.trx",
+      "sha256": "e7fd17cd57232976a2a63d41f42c0c9f69c46d0e9cbe6c50774256050fdd840f"
+    }
+  ],
+  "binaries": [
+    {
+      "file": ".build-check/communication-channel-baseline/bin/AcademyDesk.Api/debug/AcademyDesk.Api.dll",
+      "sha256": "b0e8e6233846e47c0fcfc6f5ae223995dc9d98d7a4cae61e231ad38ca9819846"
+    },
+    {
+      "file": ".build-check/communication-channel-baseline/bin/AcademyDesk.Api.Tests/debug/AcademyDesk.Api.Tests.dll",
+      "sha256": "ea64031a1dba6802560b4c8ff5ef47a0dc31a8a499ce62fb87a28de1bb6d7c15"
+    },
+    {
+      "file": ".build-check/communication-channel-tests/bin/AcademyDesk.Api/debug/AcademyDesk.Api.dll",
+      "sha256": "e5e5bb79434e4a840e60ab9d870c1d698e9acd1502caf4f1a48cdbbb30d2d229"
+    },
+    {
+      "file": ".build-check/communication-channel-tests/bin/AcademyDesk.Api.Tests/debug/AcademyDesk.Api.Tests.dll",
+      "sha256": "eab3ca91681bf20c1885723e233510a9860551deb49177668fda4442f2813e35"
+    },
+    {
+      "file": ".build-check/notification-channel-sql/bin/AcademyDesk.Api/debug/AcademyDesk.Api.dll",
+      "sha256": "11e4bc00e91fb9fc9f3143b2322f72559be2cdc2db66e10034baacaf99964d11"
+    },
+    {
+      "file": ".build-check/notification-channel-sql/bin/SqlHarness/debug/SqlHarness.dll",
+      "sha256": "6e58414c2a5d3742cfec5b7fa4e064e692083847d8848280cde196ef87a9ffa3"
+    },
+    {
+      "file": ".build-check/inbox-tests/bin/AcademyDesk.Api/debug/AcademyDesk.Api.dll",
+      "sha256": "21faf46a4ac70bb6019a92901bed1fd6458173c1cbeca03129dd41a569503f36"
+    },
+    {
+      "file": ".build-check/inbox-tests/bin/AcademyDesk.Api.Tests/debug/AcademyDesk.Api.Tests.dll",
+      "sha256": "3c7733b5bc7f95e6e24ce2fcab59e067003a3719fc6e64fc50001e7a390ff723"
+    },
+    {
+      "file": ".build-check/inbox-lifecycle-sql/bin/AcademyDesk.Api/debug/AcademyDesk.Api.dll",
+      "sha256": "c23925012e2f39f3af03bbbfaa19c0febf636d4d4876232b79c9140eb0421957"
+    },
+    {
+      "file": ".build-check/inbox-lifecycle-sql/bin/SqlHarness/debug/SqlHarness.dll",
+      "sha256": "ab45dd63b29452175d7e98ef189e5eacade803c88cd7e4eea9e0037d3c540f1b"
+    }
+  ],
+  "normalBinaries": [
+    {
+      "file": "apps/api/bin/Debug/net10.0/AcademyDesk.Api.dll",
+      "sha256": "10ecb9da46c8198affae586776aca4747244cda18670dde8a1892ed20170f614"
+    },
+    {
+      "file": "QA/tools/SqlHarness/bin/Debug/net10.0/SqlHarness.dll",
+      "sha256": "7c165e280c7752cfaef4e56d45062445a9f7181bab3fd5ce6aa12d32b7194c94"
+    }
+  ]
+}

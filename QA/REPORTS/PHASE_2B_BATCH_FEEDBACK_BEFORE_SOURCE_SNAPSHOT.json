@@ -1,0 +1,6 @@
+{
+  "date": "2026-10-01",
+  "records": [
+    { "file": "apps/web/src/app/batches/page.tsx", "sha256": "6b348311674731abe8d226e59c0458c82ffba1613c182bd48a17973846940fd0" }
+  ]
+}

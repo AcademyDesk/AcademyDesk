@@ -1,6 +1,7 @@
 using AcademyDesk.Api.Data;
 using AcademyDesk.Api.Domain.Entities;
 using AcademyDesk.Api.Domain.Identity;
+using AcademyDesk.Api.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -65,10 +66,14 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
         var recipientId = user.StudentId ?? user.GuardianId ?? user.TeacherId;
         if (!recipientId.HasValue) return Forbid();
         var recipientTypes = user.StudentId.HasValue ? new[] { "Student" } : user.TeacherId.HasValue ? new[] { "Teacher" } : new[] { "Guardian", "Parent" };
+        var now = DateTime.UtcNow;
         var notifications = await db.Notifications.AsNoTracking()
             .Where(x => x.AcademyId == user.AcademyId && x.RecipientId == recipientId && recipientTypes.Contains(x.RecipientType))
+            .Where(RecipientNotificationVisibility.At(now))
             .OrderByDescending(x => x.CreatedAtUtc).Take(100)
-            .Select(x => new PortalNotificationSummary(x.Id, x.Title, x.Message, x.Channel, x.Status, x.CreatedAtUtc, x.SentAtUtc))
+            .Select(x => new PortalNotificationSummary(x.Id, x.Title, x.Message, x.Channel, x.Status, x.CreatedAtUtc, x.SentAtUtc,
+                x.Status == "Read" || db.NotificationReadReceipts.Any(r => r.NotificationId == x.Id && r.AcademyId == user.AcademyId && r.UserId == user.Id),
+                db.NotificationReadReceipts.Where(r => r.NotificationId == x.Id && r.AcademyId == user.AcademyId && r.UserId == user.Id).Select(r => (DateTime?)r.ReadAtUtc).SingleOrDefault()))
             .ToListAsync(token);
         return Ok(notifications);
     }
@@ -78,7 +83,9 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
     {
         var user = await users.GetUserAsync(User);
         if (user?.AcademyId is null) return Forbid();
-        var audience = user.StudentId.HasValue ? "Student" : user.TeacherId.HasValue ? "Teacher" : "Admin";
+        string? audience = user.StudentId.HasValue ? "Student" : user.TeacherId.HasValue ? "Teacher" : null;
+        if (audience is null && (await users.IsInRoleAsync(user, "Owner") || await users.IsInRoleAsync(user, "AcademyAdmin"))) audience = "Admin";
+        if (audience is null) return Ok(Array.Empty<PortalAnnouncementSummary>());
         var candidates = await db.Notifications.AsNoTracking()
             .Where(x => x.AcademyId == user.AcademyId && x.RecipientId == null && x.RecipientType == "Academy" && x.Status != "Cancelled")
             .OrderByDescending(x => x.CreatedAtUtc).Take(10)
@@ -98,11 +105,25 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
         var recipientId = user.StudentId ?? user.GuardianId ?? user.TeacherId;
         var recipientTypes = user.StudentId.HasValue ? new[] { "Student" } : user.TeacherId.HasValue ? new[] { "Teacher" } : new[] { "Guardian", "Parent" };
         if (!recipientId.HasValue) return Forbid();
-        var notification = await db.Notifications.SingleOrDefaultAsync(x => x.Id == notificationId && x.AcademyId == user.AcademyId && x.RecipientId == recipientId && recipientTypes.Contains(x.RecipientType), token);
+        // Serialize acknowledgments with other writes to this notification on SQL
+        // Server. Delivery status is never changed; retrying preserves first read.
+        await using var transaction = db.Database.IsSqlServer() ? await db.Database.BeginTransactionAsync(token) : null;
+        var source = db.Database.IsSqlServer()
+            ? db.Notifications.FromSqlInterpolated($"SELECT * FROM [Notifications] WITH (UPDLOCK, HOLDLOCK) WHERE [Id] = {notificationId}")
+            : db.Notifications;
+        var notification = await source.AsNoTracking()
+            .Where(x => x.Id == notificationId && x.AcademyId == user.AcademyId && x.RecipientId == recipientId && recipientTypes.Contains(x.RecipientType))
+            .Where(RecipientNotificationVisibility.At(DateTime.UtcNow)).SingleOrDefaultAsync(token);
         if (notification is null) return NotFound();
-        notification.Status = "Read";
-        await db.SaveChangesAsync(token);
-        return Ok(new { notification.Id, notification.Status });
+        var receipt = await db.NotificationReadReceipts.SingleOrDefaultAsync(x => x.NotificationId == notification.Id && x.UserId == user.Id && x.AcademyId == user.AcademyId, token);
+        if (receipt is null)
+        {
+            receipt = new NotificationReadReceipt { NotificationId = notification.Id, UserId = user.Id, AcademyId = user.AcademyId.Value, ReadAtUtc = DateTime.UtcNow };
+            db.NotificationReadReceipts.Add(receipt);
+            await db.SaveChangesAsync(token);
+        }
+        if (transaction is not null) await transaction.CommitAsync(token);
+        return Ok(new { notification.Id, notification.Status, IsRead = true, receipt.ReadAtUtc });
     }
 
     [HttpGet("events")]
@@ -183,7 +204,7 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
         var certificates = await db.Certificates.AsNoTracking().Where(x => x.AcademyId == user.AcademyId && x.StudentId == studentId && x.Status == "Issued").OrderByDescending(x => x.IssuedDate).Select(x => new PortalCertificate(x.CertificateNumber, x.Title, x.IssuedDate, x.Notes)).ToListAsync(token);
         var invoices = await db.Invoices.AsNoTracking().Where(x => x.AcademyId == user.AcademyId && x.StudentId == studentId).OrderByDescending(x => x.IssuedDate).ToListAsync(token);
         var invoiceIds = invoices.Select(x => x.Id).ToArray();
-        var paid = await db.Payments.AsNoTracking().Where(x => invoiceIds.Contains(x.InvoiceId) && x.Status == "Completed").GroupBy(x => x.InvoiceId).Select(x => new { x.Key, Total = x.Sum(p => p.Amount) }).ToDictionaryAsync(x => x.Key, x => x.Total, token);
+        var paid = await db.Payments.AsNoTracking().Where(x => invoiceIds.Contains(x.InvoiceId) && (x.Status == "Completed" || x.Status == "Reconciled")).GroupBy(x => x.InvoiceId).Select(x => new { x.Key, Total = x.Sum(p => p.Amount) }).ToDictionaryAsync(x => x.Key, x => x.Total, token);
         var results = await db.AssessmentResults.AsNoTracking()
             .Where(x => x.AcademyId == user.AcademyId && x.StudentId == studentId && x.IsPublished)
             .Join(db.Assessments.AsNoTracking().Where(x => batchIds.Contains(x.BatchId)), x => x.AssessmentId, a => a.Id,
@@ -206,8 +227,8 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
         var classHistory = historySessions.Select(x => new PortalClassHistory(
             x.Session.Id, x.Name, x.Session.StartUtc, x.Session.EndUtc, x.Session.DeliveryMode, x.Session.Status,
             historyAttendance.TryGetValue(x.Session.Id, out var mark) ? mark.Status : "Not marked",
-            historyResources.Where(resource => resource.ClassSessionId == x.Session.Id)
-                .Select(resource => new PortalClassResource(resource.Title, resource.Description, resource.Type, resource.Url)).ToList()))
+            canViewDocuments ? historyResources.Where(resource => resource.ClassSessionId == x.Session.Id)
+                .Select(resource => new PortalClassResource(resource.Title, resource.Description, resource.Type, resource.Url)).ToList() : []))
             .ToList();
         var cycleProgress = batchDetails.Select(batch =>
         {
@@ -222,7 +243,7 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
         return Ok(new PortalStudentDetails($"{student.FirstName} {student.LastName}", student.Email, student.Phone, student.FirstName, student.LastName, student.PreferredName, student.Gender, student.DateOfBirth, student.AddressLine1, student.City, student.State, student.PostalCode, student.EmergencyContactName, student.EmergencyContactPhone,
             canViewAcademicProgress ? batches : [], canViewAcademicProgress ? schedule : [], canViewAcademicProgress ? assignments : [], canViewAcademicProgress ? attendance : [], canViewAcademicProgress ? attendanceSummary : new PortalAttendanceSummary(0, 0, 0, 0, 0),
             canViewAcademicProgress ? music : [], canViewDocuments ? resources : [], canViewAcademicProgress ? practice : [], canViewAcademicProgress ? practiceSummary : new PortalPracticeSummary(0, 0), canViewAcademicProgress ? lessonPlans : [], canViewAcademicProgress ? modules : [], canViewDocuments ? certificates : [],
-            canViewFinance ? invoices.Select(x => new PortalInvoice(x.Id, x.InvoiceNumber, x.TotalAmount, x.TotalAmount - paid.GetValueOrDefault(x.Id), x.Currency, x.DueDate, x.Status)).ToList() : [], canViewAcademicProgress ? results : [], canViewAcademicProgress ? classHistory : [], canViewAcademicProgress ? cycleProgress : []));
+            canViewFinance ? invoices.Select(x => new PortalInvoice(x.Id, x.InvoiceNumber, x.TotalAmount, Math.Max(0m, x.TotalAmount - x.AdjustedAmount - paid.GetValueOrDefault(x.Id)), x.Currency, x.DueDate, x.Status)).ToList() : [], canViewAcademicProgress ? results : [], canViewAcademicProgress ? classHistory : [], canViewAcademicProgress ? cycleProgress : []));
     }
 
     [HttpPost("students/{studentId:guid}/assignments/{assignmentId:guid}/submit")]
@@ -265,11 +286,13 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
     public async Task<IActionResult> DownloadInvoice(Guid studentId, Guid invoiceId, CancellationToken token)
     {
         var user = await users.GetUserAsync(User);
-        if (user?.AcademyId is null || !await CanAccessStudent(user, studentId, token)) return Forbid();
+        if (user?.AcademyId is null || !await CanAccessStudent(user, studentId, token)
+            || (user.GuardianId.HasValue && (await ParentAccess(user, studentId, token))?.CanViewFinance != true)) return Forbid();
         var invoice = await db.Invoices.AsNoTracking().SingleOrDefaultAsync(x => x.Id == invoiceId && x.AcademyId == user.AcademyId && x.StudentId == studentId, token);
         if (invoice is null) return NotFound();
-        var paid = await db.Payments.AsNoTracking().Where(x => x.InvoiceId == invoice.Id && x.Status == "Completed").SumAsync(x => (decimal?)x.Amount, token) ?? 0m;
-        var document = $"<html><body style='font-family:Arial;padding:48px'><h1>AcademyDesk invoice</h1><h2>{WebUtility.HtmlEncode(invoice.InvoiceNumber)}</h2><p>Issued: {invoice.IssuedDate:dd MMM yyyy}</p><p>Due: {invoice.DueDate:dd MMM yyyy}</p><hr/><p>Total: {invoice.Currency} {invoice.TotalAmount:N2}</p><p>Paid: {invoice.Currency} {paid:N2}</p><p>Balance: {invoice.Currency} {invoice.TotalAmount - paid:N2}</p><p>Status: {WebUtility.HtmlEncode(invoice.Status)}</p></body></html>";
+        var paid = await db.Payments.AsNoTracking().Where(x => x.InvoiceId == invoice.Id && (x.Status == "Completed" || x.Status == "Reconciled")).SumAsync(x => (decimal?)x.Amount, token) ?? 0m;
+        var balance = Math.Max(0m, invoice.TotalAmount - invoice.AdjustedAmount - paid);
+        var document = $"<html><body style='font-family:Arial;padding:48px'><h1>AcademyDesk invoice</h1><h2>{WebUtility.HtmlEncode(invoice.InvoiceNumber)}</h2><p>Issued: {invoice.IssuedDate:dd MMM yyyy}</p><p>Due: {invoice.DueDate:dd MMM yyyy}</p><hr/><p>Total: {invoice.Currency} {invoice.TotalAmount:N2}</p><p>Adjustments: {invoice.Currency} {invoice.AdjustedAmount:N2}</p><p>Paid: {invoice.Currency} {paid:N2}</p><p>Balance: {invoice.Currency} {balance:N2}</p><p>Status: {WebUtility.HtmlEncode(invoice.Status)}</p></body></html>";
         return File(Encoding.UTF8.GetBytes(document), "text/html", $"{invoice.InvoiceNumber}.html");
     }
 
@@ -277,10 +300,13 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
     public async Task<IActionResult> DownloadCertificate(Guid studentId, string certificateNumber, CancellationToken token)
     {
         var user = await users.GetUserAsync(User);
-        if (user?.AcademyId is null || !await CanAccessStudent(user, studentId, token)) return Forbid();
+        if (user?.AcademyId is null || !await CanAccessStudent(user, studentId, token)
+            || (user.GuardianId.HasValue && (await ParentAccess(user, studentId, token))?.CanViewDocuments != true)) return Forbid();
         var certificate = await db.Certificates.AsNoTracking().SingleOrDefaultAsync(x => x.AcademyId == user.AcademyId && x.StudentId == studentId && x.CertificateNumber == certificateNumber && x.Status == "Issued", token);
         if (certificate is null) return NotFound();
-        var document = $"<html><body style='font-family:Georgia;text-align:center;padding:80px;border:12px solid #1674c4'><h1>Certificate of achievement</h1><p>This certifies that</p><h2>{WebUtility.HtmlEncode(user.DisplayName)}</h2><p>has completed</p><h2>{WebUtility.HtmlEncode(certificate.Title)}</h2><p>Certificate no. {WebUtility.HtmlEncode(certificate.CertificateNumber)}</p><p>Issued {certificate.IssuedDate:dd MMM yyyy}</p></body></html>";
+        var student = await db.Students.AsNoTracking().SingleOrDefaultAsync(x => x.AcademyId == user.AcademyId && x.Id == certificate.StudentId, token);
+        if (student is null) return NotFound();
+        var document = $"<html><body style='font-family:Georgia;text-align:center;padding:80px;border:12px solid #1674c4'><h1>Certificate of achievement</h1><p>This certifies that</p><h2>{WebUtility.HtmlEncode($"{student.FirstName} {student.LastName}")}</h2><p>has completed</p><h2>{WebUtility.HtmlEncode(certificate.Title)}</h2><p>Certificate no. {WebUtility.HtmlEncode(certificate.CertificateNumber)}</p><p>Issued {certificate.IssuedDate:dd MMM yyyy}</p></body></html>";
         return File(Encoding.UTF8.GetBytes(document), "text/html", $"{certificate.CertificateNumber}.html");
     }
 
@@ -438,7 +464,7 @@ public sealed record PortalChangePasswordRequest(string CurrentPassword, string 
 public sealed record PortalLeaveRequest(DateOnly StartDate, DateOnly EndDate, string Reason);
 public sealed record PortalLeaveSummary(Guid Id, DateOnly StartDate, DateOnly EndDate, string Reason, string Status, string? DecisionNotes);
 public sealed record PortalPracticeLogRequest(DateOnly PracticeDate, int MinutesPracticed, string? FocusArea, string? Notes);
-public sealed record PortalNotificationSummary(Guid Id, string Title, string Message, string Channel, string Status, DateTime CreatedAtUtc, DateTime? SentAtUtc);
+public sealed record PortalNotificationSummary(Guid Id, string Title, string Message, string Channel, string Status, DateTime CreatedAtUtc, DateTime? SentAtUtc, bool IsRead, DateTime? ReadAtUtc);
 public sealed record PortalAnnouncementSummary(Guid Id, string Title, string Message, DateTime CreatedAtUtc);
 public sealed record PortalAnnouncementCandidate(Guid Id, string Title, string Message, DateTime CreatedAtUtc, string? VariablesJson);
 public sealed record PortalChildSummary(Guid Id, string Name, string? Email, string? Phone, bool IsActive, int ActiveEnrollmentCount);

@@ -1,9 +1,13 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { TeacherMaterialUploader } from "@/components/teacher-material-uploader";
+import { PrivateMaterialActions } from "@/components/private-material-actions";
 import { useRouter } from "next/navigation";
 import { academyApi, apiHeaders, apiUrl, clearPortalTokens } from "@/lib/api";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { TeacherWorkspaceError, teacherWorkspaceFailure } from "@/lib/teacher-workspace";
 type P = {
+  userId: string;
   firstName: string;
   lastName: string;
   batches: { id: string; name: string; capacity: number; deliveryMode: string; meetingLink?: string; roomName?: string }[];
@@ -60,6 +64,7 @@ export default function Teacher() {
   const [attendance, setAttendance] = useState<A[]>([]);
   const [t, setT] = useState<T>("today");
   const [m, setM] = useState("Loading your teaching workspace…");
+  const [needsSignIn, setNeedsSignIn] = useState(false);
   const [busy, setBusy] = useState("");
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [messages, setMessages] = useState<PortalNotification[]>([]);
@@ -75,7 +80,7 @@ export default function Teacher() {
   }
   async function load() {
     const r = await academyApi("/api/teacher/me");
-    if (!r.ok) throw Error();
+    if (!r.ok) throw new TeacherWorkspaceError(r.status);
     const x: P = await r.json();
     setP(x);
     if (x.sessions[0]) {
@@ -85,9 +90,11 @@ export default function Teacher() {
     setM("");
   }
   useEffect(() => {
-    void load().catch(() =>
-      setM("This account is not linked to an active teacher profile."),
-    );
+    void load().catch((error: unknown) => {
+      const failure = teacherWorkspaceFailure(error);
+      setM(failure.message);
+      setNeedsSignIn(failure.signIn);
+    });
     void academyApi("/api/portal/announcements").then(async (response) => { if (response.ok) setAnnouncements(await response.json()); }).catch(() => undefined);
     void academyApi("/api/portal/notifications").then(async (response) => { if (response.ok) setMessages(await response.json()); }).catch(() => undefined);
   }, []);
@@ -142,6 +149,7 @@ export default function Teacher() {
           {m ? (
             <p className="learner-state" role="status" aria-live="polite">
               {m}
+              {needsSignIn && <><br /><a href="/login" className="enterprise-action-button enterprise-action-button-secondary">Sign in</a></>}
             </p>
           ) : (
             p && (
@@ -149,7 +157,7 @@ export default function Teacher() {
                 {t === "classroom" && p.sessions.find((session) => session.id === sid)?.status === "InProgress" && <TeacherActiveClassBanner batch={p.batches.find((batch) => batch.id === p.sessions.find((session) => session.id === sid)?.batchId)} rosterCount={roster.length} status="In progress" />}
                 {t === "classroom" && sid && <TeacherClassroomHero batch={p.batches.find((batch) => batch.id === p.sessions.find((session) => session.id === sid)?.batchId)} sessionId={sid} sessionStatus={p.sessions.find((session) => session.id === sid)?.status} onStatusChange={(status) => updateSessionStatus(sid, status)} />}
                 {t === "classroom" && sid && <TeacherAttendanceRoster sessionId={sid} roster={roster} attendance={attendance} teacherStatus={p.sessions.find((session) => session.id === sid)?.teacherAttendanceStatus} busy={busy === "attendance"} onSubmit={submitAttendance} />}
-                {t === "classroom" && <TeacherClassroom batches={p.batches} sessions={p.sessions} sessionId={sid} roster={roster} onSessionSelect={(id) => void selectClassroomSession(id)} />}
+                {t === "classroom" && <TeacherClassroom ownerId={p.userId} batches={p.batches} sessions={p.sessions} sessionId={sid} roster={roster} onSessionSelect={(id) => void selectClassroomSession(id)} />}
                 {t === "today" && <header className="learner-heading">
                   <p>Teacher workspace</p>
                   <h1>{`Welcome, ${p.firstName}`}</h1>
@@ -326,7 +334,6 @@ function TeacherCalendar({ batches, onOpen, compact = false }: { batches: P["bat
 }
 type TeacherBatch = P["batches"][number];
 type Resource = { id: string; batchId: string; studentId?: string; classSessionId?: string; title: string; description?: string; type: string; url: string; createdAtUtc: string };
-const historyLinkLabel = (url: string) => /\.(mp3|wav|m4a|ogg|webm)$/i.test(url) ? "Listen" : /\.(mp4|mov|webm)$/i.test(url) ? "Watch" : "View file";
 
 function TeacherAttendanceRoster({ sessionId, roster, attendance, teacherStatus, busy, onSubmit }: { sessionId: string; roster: S[]; attendance: A[]; teacherStatus?: string | null; busy: boolean; onSubmit: (teacherStatus: string, records: { studentId: string; status: string }[]) => Promise<void> }) {
   const [draft, setDraft] = useState<Record<string, string>>({});
@@ -405,54 +412,37 @@ function TeacherClassroomHero({ batch, sessionId, sessionStatus, onStatusChange 
     <div className="teacher-classroom-hero-actions">{sessionId && isLiveDelivery && <button type="button" className="enterprise-action-button" onClick={() => void startOnlineClass()}>{sessionStatus === "Scheduled" ? "Start online class" : "Open class link"}</button>}{sessionId && !isLiveDelivery && sessionStatus !== "InProgress" && sessionStatus !== "Completed" && <button type="button" className="enterprise-action-button" onClick={() => void updateStatus("InProgress")}>Start class</button>}{sessionId && sessionStatus === "InProgress" && <button type="button" className="enterprise-action-button enterprise-action-button-secondary" onClick={() => void updateStatus("Completed")}>Complete class</button>}</div>
   </section>;
 }
-function TeacherClassroom({ batches, sessions, sessionId, roster, onSessionSelect }: { batches: TeacherBatch[]; sessions: P["sessions"]; sessionId: string; roster: S[]; onSessionSelect: (id: string) => void }) {
+function TeacherClassroom({ ownerId, batches, sessions, sessionId, roster, onSessionSelect }: { ownerId: string; batches: TeacherBatch[]; sessions: P["sessions"]; sessionId: string; roster: S[]; onSessionSelect: (id: string) => void }) {
   const [batchId, setBatchId] = useState("");
   const [studentId, setStudentId] = useState("");
-  const [resources, setResources] = useState<Resource[]>([]);
   const [activity, setActivity] = useState<ClassroomActivity>({ resources: [], homework: [] });
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [message, setMessage] = useState("");
-  const [recording, setRecording] = useState(false);
-  const [recordingPaused, setRecordingPaused] = useState(false);
-  const [pendingFile, setPendingFile] = useState<File | null>(null);
-  const [pendingPreviewUrl, setPendingPreviewUrl] = useState("");
-  const recorder = useRef<MediaRecorder | null>(null);
-  const chunks = useRef<Blob[]>([]);
   const selected = batches.find((batch) => batch.id === batchId);
   const selectedStudent = roster.find((student) => student.id === studentId);
-  function stageFile(file: File | null) {
-    if (pendingPreviewUrl) URL.revokeObjectURL(pendingPreviewUrl);
-    setPendingFile(file); setPendingPreviewUrl(file ? URL.createObjectURL(file) : "");
-  }
   async function refresh(id = batchId) {
     if (!id) return;
-    const [materials, history] = await Promise.all([
-      academyApi(`/api/teacher/resources?batchId=${id}`),
-      academyApi(`/api/teacher/classroom-activity?batchId=${id}${studentId ? `&studentId=${studentId}` : ""}${fromDate ? `&fromUtc=${encodeURIComponent(fromDate)}` : ""}${toDate ? `&toUtc=${encodeURIComponent(toDate)}` : ""}`),
-    ]);
-    if (materials.ok) setResources(await materials.json());
-    if (history.ok) setActivity(await history.json());
+    const history = await academyApi(`/api/teacher/classroom-activity?batchId=${id}${studentId ? `&studentId=${studentId}` : ""}${fromDate ? `&fromUtc=${encodeURIComponent(fromDate)}` : ""}${toDate ? `&toUtc=${encodeURIComponent(toDate)}` : ""}`);
+    if (!history.ok) throw Error("Class history could not be refreshed.");
+    setActivity(await history.json());
   }
   useEffect(() => { setBatchId(sessions.find((session) => session.id === sessionId)?.batchId ?? ""); }, [sessionId, sessions]);
   useEffect(() => { if (selected?.capacity === 1 && roster[0] && studentId !== roster[0].id) setStudentId(roster[0].id); }, [selected?.capacity, selected?.id, roster, studentId]);
-  useEffect(() => { void refresh(); }, [batchId, studentId, fromDate, toDate]);
+  useEffect(() => {
+    if (!batchId) return;
+    let active = true;
+    void academyApi(`/api/teacher/classroom-activity?batchId=${batchId}${studentId ? `&studentId=${studentId}` : ""}${fromDate ? `&fromUtc=${encodeURIComponent(fromDate)}` : ""}${toDate ? `&toUtc=${encodeURIComponent(toDate)}` : ""}`)
+      .then(async response => { if (!response.ok) throw Error(); const history = await response.json(); if (active) setActivity(history); })
+      .catch(() => { if (active) setMessage("Class history could not be refreshed. Try again."); });
+    return () => { active = false; };
+  }, [batchId, studentId, fromDate, toDate]);
   async function addNote(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault(); const form = new FormData(event.currentTarget);
+    event.preventDefault(); const formElement = event.currentTarget; const form = new FormData(formElement);
     const response = await academyApi("/api/teacher/resources/note", { method: "POST", headers: apiHeaders(true), body: JSON.stringify({ batchId, studentId: studentId || null, classSessionId: sessionId || null, title: form.get("title"), notes: form.get("notes"), type: "Note" }) });
-    setMessage(response.ok ? "Class note saved." : "Class note could not be saved."); if (response.ok) { event.currentTarget.reset(); await refresh(); }
+    setMessage(response.ok ? "Class note saved." : "Class note could not be saved."); if (response.ok) { formElement.reset(); await refresh(); }
   }
-  async function upload(file: File, title?: string, description?: string, type = "Attachment") {
-    const form = new FormData(); form.append("batchId", batchId); if (studentId) form.append("studentId", studentId); if (sessionId) form.append("classSessionId", sessionId); form.append("file", file); form.append("title", title || file.name); form.append("description", description || ""); form.append("type", type);
-    const response = await academyApi("/api/teacher/resources/upload", { method: "POST", body: form });
-    setMessage(response.ok ? "Material uploaded." : "Material could not be uploaded."); if (response.ok) await refresh();
-  }
-  async function addFile(event: React.FormEvent<HTMLFormElement>) { event.preventDefault(); const form = new FormData(event.currentTarget); if (pendingFile) { await upload(pendingFile, String(form.get("title") || pendingFile.name), String(form.get("description") || ""), "Attachment"); stageFile(null); event.currentTarget.reset(); } else setMessage("Choose a file or record audio before uploading."); }
-  async function toggleRecording() {
-    if (recording) { recorder.current?.stop(); return; }
-    try { const stream = await navigator.mediaDevices.getUserMedia({ audio: true }); const current = new MediaRecorder(stream); chunks.current = []; current.ondataavailable = (event) => chunks.current.push(event.data); current.onstop = () => { stream.getTracks().forEach((track) => track.stop()); setRecording(false); setRecordingPaused(false); stageFile(new File([new Blob(chunks.current, { type: current.mimeType || "audio/webm" })], `class-recording-${Date.now()}.webm`, { type: current.mimeType || "audio/webm" })); setMessage("Recording ready. Listen to it below, then upload when you are happy."); }; recorder.current = current; current.start(); setRecording(true); } catch { setMessage("Microphone access is required to record class audio."); }
-  }
-  function toggleRecordingPause() { if (!recorder.current) return; if (recorder.current.state === "recording") { recorder.current.pause(); setRecordingPaused(true); } else if (recorder.current.state === "paused") { recorder.current.resume(); setRecordingPaused(false); } }
+  const uploadScope = useMemo(() => ({ ownerId, batchId, studentId: studentId || null, classSessionId: sessionId || null }), [ownerId, batchId, studentId, sessionId]);
   return <>
     <section className="teacher-classroom-controls" data-selected={Boolean(selected)}>
       <label>Class<TeacherDropdown label="Class" value={batchId} onChange={(value) => { setBatchId(value); setStudentId(""); const nextSession = sessions.find((session) => session.batchId === value && session.status !== "Completed") ?? sessions.find((session) => session.batchId === value); onSessionSelect(nextSession?.id ?? ""); }} options={[{ value: "", label: "Select class" }, ...batches.map((batch) => ({ value: batch.id, label: `${batch.name}${batch.capacity === 1 ? " · 1:1" : ""}` }))]} /></label>
@@ -461,9 +451,9 @@ function TeacherClassroom({ batches, sessions, sessionId, roster, onSessionSelec
     {selected && <>
     <section className="teacher-classroom-grid">
       <TeacherActionPanel icon="✎" title={selectedStudent ? `Notes for ${selectedStudent.firstName}` : "Notes"}><form className="learner-form teacher-note-form" onSubmit={(event) => void addNote(event)}><input required name="title" placeholder="Note title" /><textarea required name="notes" placeholder="Add a comment" /><button>Save note</button></form></TeacherActionPanel>
-      <TeacherActionPanel icon="⌁" title={selectedStudent ? `Attachments & recordings for ${selectedStudent.firstName}` : "Attachments & recordings"}><form className="learner-form teacher-upload-form" onSubmit={(event) => void addFile(event)}><input name="title" placeholder="Attachment title" /><input name="description" placeholder="Comment (optional)" /><label className="teacher-file-picker"><input name="file" type="file" accept="image/*,.pdf,audio/*,video/*,.doc,.docx" onChange={(event) => stageFile(event.target.files?.[0] ?? null)} /><span>{pendingFile ? pendingFile.name : "Choose photo, video, audio, PDF, or document"}</span></label>{pendingFile && <div className="teacher-file-preview"><b>Ready to review</b>{pendingFile.type.startsWith("audio/") && <audio controls src={pendingPreviewUrl} />}{pendingFile.type.startsWith("video/") && <video controls src={pendingPreviewUrl} />}{pendingFile.type.startsWith("image/") && <img src={pendingPreviewUrl} alt="Selected upload preview" />} {!/^(audio|video|image)\//.test(pendingFile.type) && <small>{pendingFile.name} · {(pendingFile.size / 1024 / 1024).toFixed(1)} MB</small>}<button type="button" className="teacher-clear-file" onClick={() => stageFile(null)}>Remove</button></div>}<div className="teacher-material-actions"><button disabled={!pendingFile}>Upload confirmed file</button>{!recording ? <button type="button" className="teacher-mic-button" aria-label="Start audio recording" title="Start audio recording" onClick={() => void toggleRecording()}>🎙</button> : <><span className="teacher-recording-state">● Recording{recordingPaused ? " paused" : ""}</span><button type="button" className="enterprise-action-button enterprise-action-button-secondary" onClick={toggleRecordingPause}>{recordingPaused ? "Resume" : "Pause"}</button><button type="button" className="teacher-stop-button" onClick={() => void toggleRecording()}>Stop</button></>}</div></form></TeacherActionPanel>
+      <TeacherActionPanel icon="⌁" title={selectedStudent ? `Attachments & recordings for ${selectedStudent.firstName}` : "Attachments & recordings"}><TeacherMaterialUploader key={`${ownerId}:${batchId}:${studentId}:${sessionId}`} scope={uploadScope} onUploaded={() => refresh()} /></TeacherActionPanel>
     </section>
-    <TeacherActionPanel icon="◴" title={selectedStudent ? `${selectedStudent.firstName}'s history` : "Class history"}><div className="teacher-history-filter"><label>From<input type="date" value={fromDate} onChange={(event) => setFromDate(event.target.value)} /></label><label>To<input type="date" value={toDate} onChange={(event) => setToDate(event.target.value)} /></label><button type="button" onClick={() => { setFromDate(""); setToDate(""); }}>Clear</button></div><div className="teacher-activity-list">{activity.resources.length || activity.homework.length ? <>{activity.resources.map((item) => <article key={item.id}><div><b>{item.title}</b><small>{item.type}{item.studentId ? " · individual" : " · whole class"} · {dt(item.createdAtUtc)}</small>{item.description && <p>{item.description}</p>}</div>{!item.url.startsWith("note://") && <a href={`${apiUrl}${item.url}`} target="_blank" rel="noreferrer">{historyLinkLabel(item.url)}</a>}</article>)}{activity.homework.map((item) => <article key={item.id}><div><b>{item.title}</b><small>Homework{item.studentId ? " · individual" : " · whole class"}{item.dueAtUtc ? ` · due ${dt(item.dueAtUtc)}` : ""}</small>{item.description && <p>{item.description}</p>}</div></article>)}</> : <p className="learner-empty">No class history for this period.</p>}</div></TeacherActionPanel>
+    <TeacherActionPanel icon="◴" title={selectedStudent ? `${selectedStudent.firstName}'s history` : "Class history"}><div className="teacher-history-filter"><label>From<input type="date" value={fromDate} onChange={(event) => setFromDate(event.target.value)} /></label><label>To<input type="date" value={toDate} onChange={(event) => setToDate(event.target.value)} /></label><button type="button" onClick={() => { setFromDate(""); setToDate(""); }}>Clear</button></div><div className="teacher-activity-list">{activity.resources.length || activity.homework.length ? <>{activity.resources.map((item) => <article key={item.id}><div><b>{item.title}</b><small>{item.type}{item.studentId ? " · individual" : " · whole class"} · {dt(item.createdAtUtc)}</small>{item.description && <p>{item.description}</p>}</div>{!item.url.startsWith("note://") && <PrivateMaterialActions url={item.url} title={item.title} />}</article>)}{activity.homework.map((item) => <article key={item.id}><div><b>{item.title}</b><small>Homework{item.studentId ? " · individual" : " · whole class"}{item.dueAtUtc ? ` · due ${dt(item.dueAtUtc)}` : ""}</small>{item.description && <p>{item.description}</p>}</div></article>)}</> : <p className="learner-empty">No class history for this period.</p>}</div></TeacherActionPanel>
     {message && <p className="teacher-classroom-message" role="status">{message}</p>}
     </>}
   </>;

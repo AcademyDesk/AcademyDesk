@@ -1,10 +1,11 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { WorkspaceNav } from "@/components/workspace-nav";
 import { academyApi, apiHeaders } from "@/lib/api";
+import { batchUpdatePayload, type BatchUpdateSource } from "@/lib/batch-update";
 import { StandardDateField, StandardSelectField } from "@/components/design-system/controls";
 import { StandardDetailModal, StandardInteractiveTile } from "@/components/design-system/interactive";
 
@@ -12,24 +13,7 @@ type Academy = { id: string; name: string };
 type Course = { id: string; name: string; academyType: string };
 type Teacher = { id: string; firstName: string; lastName: string };
 type Branch = { id: string; name: string };
-type Batch = {
-  id: string;
-  name: string;
-  batchCode?: string | null;
-  courseId: string;
-  teacherId?: string | null;
-  branchId?: string | null;
-  capacity: number;
-  waitlistCapacity?: number;
-  deliveryMode?: string;
-  meetingPattern?: string | null;
-  roomName?: string | null;
-  enrollmentStatus?: string;
-  activeEnrolments?: number;
-  startDate?: string | null;
-  endDate?: string | null;
-  isActive: boolean;
-};
+type Batch = BatchUpdateSource & { activeEnrolments?: number };
 
 function Metric({
   label,
@@ -79,6 +63,20 @@ export default function BatchesPage() {
   const [editStartDate, setEditStartDate] = useState("");
   const [savingId, setSavingId] = useState<string | null>(null);
   const [detail, setDetail] = useState<"classes" | "teachers" | "capacity" | null>(null);
+  const saveInFlight = useRef(false);
+
+  function startSaving(id: string) {
+    if (saveInFlight.current) return false;
+    saveInFlight.current = true;
+    setSavingId(id);
+    return true;
+  }
+  function finishSaving() { saveInFlight.current = false; setSavingId(null); }
+  async function refreshAfterSave(id: string, notice: string) {
+    setMessage(notice);
+    try { await loadWorkspace(id); }
+    catch { setMessage(`${notice} The batch list could not be refreshed. Refresh the page to see the latest batches.`); }
+  }
 
   async function loadAcademies() {
     const response = await academyApi("/api/academies", { cache: "no-store" });
@@ -103,11 +101,13 @@ export default function BatchesPage() {
       )
     )
       throw new Error();
-    const courseData: Course[] = await courseResponse.json();
+    const [courseData, teacherData, branchData, batchData]: [Course[], Teacher[], Branch[], Batch[]] = await Promise.all([
+      courseResponse.json(), teacherResponse.json(), branchResponse.json(), batchResponse.json(),
+    ]);
     setCourses(courseData);
-    setTeachers(await teacherResponse.json());
-    setBranches(await branchResponse.json());
-    setBatches(await batchResponse.json());
+    setTeachers(teacherData);
+    setBranches(branchData);
+    setBatches(batchData);
     if (!courseId && courseData.length) setCourseId(courseData[0].id);
   }
 
@@ -126,52 +126,66 @@ export default function BatchesPage() {
 
   async function createBatch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (saveInFlight.current) return;
     if (!academyId || !courseId) {
       setMessage("Select an academy and course before creating the batch.");
       return;
     }
-    const response = await academyApi(`/api/academies/${academyId}/batches`, {
-      method: "POST",
-      headers: apiHeaders(true),
-      body: JSON.stringify({
-        name,
-        batchCode: batchCode || null,
-        courseId,
-        teacherId: null,
-        branchId: branchId || null,
-        capacity: Number(capacity),
-        waitlistCapacity: Number(waitlistCapacity),
-        deliveryMode,
-        classType,
-        sessionMinutes: Number(sessionMinutes),
-        sessionsPerWeek: Number(sessionsPerWeek),
-        meetingDaysJson: JSON.stringify(meetingDays.map((day) => ({ day, startTime: meetingTimes[day] }))),
-        meetingLink: meetingLink || null,
-        meetingPattern: meetingDays.map((day) => `${day} ${meetingTimes[day] ?? ""}`.trim()).join(" · ") || null,
-        roomName: roomName || null,
-        enrollmentStatus,
-        adminNotes: null,
-        startDate: startDate || null,
-        endDate: null,
-      }),
-    });
-    if (!response.ok)
-      return setMessage(
-        "The batch could not be saved. Check the course, teacher, and date fields.",
-      );
-    setName("");
-    setBatchCode("");
-    setBranchId("");
-    setWaitlistCapacity("0");
-    setDeliveryMode("InPerson");
-    setMeetingTimes({});
-    setRoomName("");
-    setEnrollmentStatus("Open");
-    setStartDate("");
-    setMessage("");
-    await loadWorkspace(academyId);
+    if (!name.trim()) return setMessage("Batch name is required.");
+    if (!startSaving("create")) return;
+    setMessage("Saving batch…");
+    const unconfirmed = "The batch save could not be confirmed. Your details are still here. Check the batch list before trying again.";
+    try {
+      const response = await academyApi(`/api/academies/${academyId}/batches`, {
+        method: "POST",
+        headers: apiHeaders(true),
+        body: JSON.stringify({
+          name,
+          batchCode: batchCode || null,
+          courseId,
+          teacherId: null,
+          branchId: branchId || null,
+          capacity: Number(capacity),
+          waitlistCapacity: Number(waitlistCapacity),
+          deliveryMode,
+          classType,
+          sessionMinutes: Number(sessionMinutes),
+          sessionsPerWeek: Number(sessionsPerWeek),
+          meetingDaysJson: meetingDays.length ? JSON.stringify(meetingDays.map((day) => ({ day, startTime: meetingTimes[day] }))) : null,
+          meetingLink: meetingLink || null,
+          meetingPattern: meetingDays.map((day) => `${day} ${meetingTimes[day] ?? ""}`.trim()).join(" · ") || null,
+          roomName: roomName || null,
+          enrollmentStatus,
+          adminNotes: null,
+          startDate: startDate || null,
+          endDate: null,
+        }),
+      });
+      if (!response.ok)
+        return setMessage(
+          response.status >= 500 ? unconfirmed : "The batch could not be saved. Check the course, teacher, and date fields.",
+        );
+      setName("");
+      setCapacity("10");
+      setBatchCode("");
+      setBranchId("");
+      setWaitlistCapacity("0");
+      setDeliveryMode("InPerson");
+      setClassType("Group");
+      setSessionMinutes("60");
+      setSessionsPerWeek("1");
+      setMeetingLink("");
+      setMeetingDays([]);
+      setMeetingTimes({});
+      setRoomName("");
+      setEnrollmentStatus("Open");
+      setStartDate("");
+      await refreshAfterSave(academyId, "Batch created.");
+    } catch { setMessage(unconfirmed); }
+    finally { finishSaving(); }
   }
   function beginEdit(batch: Batch) {
+    if (saveInFlight.current) return;
     setEditingId(batch.id);
     setEditName(batch.name);
     setEditCourseId(batch.courseId);
@@ -181,58 +195,56 @@ export default function BatchesPage() {
     setEditStartDate(batch.startDate ?? "");
   }
   async function saveBatch(batch: Batch) {
+    if (saveInFlight.current || !academyId) return;
     if (!editName.trim() || !editCourseId)
       return setMessage("Batch name and course are required.");
-    setSavingId(batch.id);
-    const response = await academyApi(
-      `/api/academies/${academyId}/batches/${batch.id}`,
-      {
-        method: "PUT",
-        headers: apiHeaders(true),
-        body: JSON.stringify({
-          name: editName,
-          courseId: editCourseId,
-          teacherId: editTeacherId || null,
-          branchId: editBranchId || null,
-          capacity: Number(editCapacity),
-          startDate: editStartDate || null,
-          endDate: null,
-          isActive: batch.isActive,
-        }),
-      },
-    );
-    setSavingId(null);
-    if (!response.ok) return setMessage("The batch could not be updated.");
-    setEditingId(null);
-    setMessage("Batch updated.");
-    await loadWorkspace(academyId);
+    if (!startSaving(batch.id)) return;
+    setMessage("Updating batch…");
+    const unconfirmed = "The batch update could not be confirmed. Your details are still here. Check the batch list before trying again.";
+    try {
+      const response = await academyApi(
+        `/api/academies/${academyId}/batches/${batch.id}`,
+        {
+          method: "PUT",
+          headers: apiHeaders(true),
+          body: JSON.stringify(batchUpdatePayload(batch, {
+            name: editName,
+            courseId: editCourseId,
+            teacherId: editTeacherId || null,
+            branchId: editBranchId || null,
+            capacity: Number(editCapacity),
+            startDate: editStartDate || null,
+          })),
+        },
+      );
+      if (!response.ok) return setMessage(response.status >= 500 ? unconfirmed : "The batch could not be updated.");
+      setEditingId(null);
+      await refreshAfterSave(academyId, "Batch updated.");
+    } catch { setMessage(unconfirmed); }
+    finally { finishSaving(); }
   }
   async function toggleActive(batch: Batch) {
-    setSavingId(batch.id);
-    const response = await academyApi(
-      `/api/academies/${academyId}/batches/${batch.id}`,
-      {
-        method: "PUT",
-        headers: apiHeaders(true),
-        body: JSON.stringify({
-          name: batch.name,
-          courseId: batch.courseId,
-          teacherId: batch.teacherId,
-          branchId: batch.branchId,
-          capacity: batch.capacity,
-          startDate: batch.startDate,
-          endDate: batch.endDate,
-          isActive: !batch.isActive,
-        }),
-      },
-    );
-    setSavingId(null);
-    if (!response.ok)
-      return setMessage("The batch status could not be updated.");
-    setMessage(
-      batch.isActive ? "Batch marked inactive." : "Batch reactivated.",
-    );
-    await loadWorkspace(academyId);
+    if (!academyId || !startSaving(batch.id)) return;
+    setMessage("Updating batch status…");
+    const unconfirmed = "The batch status update could not be confirmed. Check the batch list before trying again.";
+    try {
+      const response = await academyApi(
+        `/api/academies/${academyId}/batches/${batch.id}`,
+        {
+          method: "PUT",
+          headers: apiHeaders(true),
+          body: JSON.stringify(batchUpdatePayload(batch, {
+            isActive: !batch.isActive,
+          })),
+        },
+      );
+      if (!response.ok)
+        return setMessage(response.status >= 500 ? unconfirmed : "The batch status could not be updated.");
+      await refreshAfterSave(academyId,
+        batch.isActive ? "Batch marked inactive." : "Batch reactivated.",
+      );
+    } catch { setMessage(unconfirmed); }
+    finally { finishSaving(); }
   }
 
   const teacherName = (id?: string | null) => {
@@ -265,7 +277,7 @@ export default function BatchesPage() {
             </Link>
           </header>
           {message && (
-            <p className="mt-6 rounded-lg border border-amber-700/50 bg-amber-950/40 p-4 text-sm text-amber-100">
+            <p role="status" className="mt-6 rounded-lg border border-amber-700/50 bg-amber-950/40 p-4 text-sm text-amber-100">
               {message}
             </p>
           )}
@@ -325,7 +337,7 @@ export default function BatchesPage() {
       <div className="batch-setup-content mx-auto max-w-6xl px-6 py-10">
         <header className="batch-setup-heading"><div className="batch-setup-title"><span className="batch-setup-title-icon" aria-hidden="true">+</span><div><p>Class &amp; batch</p><h1>Create Class / Batch</h1></div></div></header>
         {message && (
-          <p className="mt-6 rounded-lg border border-amber-700/50 bg-amber-950/40 p-4 text-sm text-amber-100">
+          <p role="status" className="mt-6 rounded-lg border border-amber-700/50 bg-amber-950/40 p-4 text-sm text-amber-100">
             {message}
           </p>
         )}
@@ -338,9 +350,10 @@ export default function BatchesPage() {
             <section className="batch-setup-academy">
               <span>Academy</span>
             <StandardSelectField
+              disabled={savingId !== null}
               name="academy"
               value={academyId}
-              onChange={setAcademyId}
+              onChange={(id) => { if (!saveInFlight.current) setAcademyId(id); }}
               placeholder="Select academy"
               options={academies.map((academy) => ({ value: academy.id, label: academy.name }))}
             />
@@ -348,8 +361,9 @@ export default function BatchesPage() {
             <section className="batch-setup-layout">
               <form onSubmit={createBatch} className="batch-setup-panel">
                 <header className="batch-setup-panel-header"><div><p>Setup</p><h2>Create Class / Batch</h2></div></header>
-                <div className="batch-setup-form-fields">
+                <fieldset disabled={savingId !== null} className="batch-setup-form-fields" style={{ border: 0, margin: 0, minWidth: 0 }}>
                 <StandardSelectField
+                  disabled={savingId !== null}
                   name="course"
                   value={courseId}
                   onChange={setCourseId}
@@ -370,6 +384,7 @@ export default function BatchesPage() {
                   className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
                 />
                 <StandardSelectField
+                  disabled={savingId !== null}
                   name="branch"
                   value={branchId}
                   onChange={setBranchId}
@@ -388,6 +403,7 @@ export default function BatchesPage() {
                 />
                 <div className="mt-3 grid gap-3 sm:grid-cols-2">
                   <StandardSelectField
+                    disabled={savingId !== null}
                     name="class-type"
                     value={classType}
                     onChange={setClassType}
@@ -395,6 +411,7 @@ export default function BatchesPage() {
                     options={[{ value: "Group", label: "Group class" }, { value: "OneToOne", label: "1:1 class" }]}
                   />
                   <StandardSelectField
+                    disabled={savingId !== null}
                     name="delivery-mode"
                     value={deliveryMode}
                     onChange={setDeliveryMode}
@@ -492,10 +509,10 @@ export default function BatchesPage() {
                   className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
                 />
                 <StandardDateField name="batch-start-date" label="Batch start date" value={startDate} onChange={setStartDate} />
-                <button className="mt-5 w-full rounded-lg bg-cyan-400 px-4 py-2.5 font-semibold text-slate-950 hover:bg-cyan-300">
+                <button disabled={savingId !== null} className="mt-5 w-full rounded-lg bg-cyan-400 px-4 py-2.5 font-semibold text-slate-950 hover:bg-cyan-300">
                   Create batch
                 </button>
-                </div>
+                </fieldset>
               </form>
               <section className="batch-setup-panel batch-directory-panel">
                 <header className="batch-setup-panel-header"><div><p>Directory</p><h2>Batches</h2></div><span>{batches.length} records</span></header>
@@ -509,13 +526,14 @@ export default function BatchesPage() {
                           key={batch.id}
                           className="rounded-lg border border-cyan-700/60 bg-slate-950 p-4"
                         >
-                          <div className="grid gap-2">
+                          <fieldset disabled={savingId !== null} className="grid gap-2" style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
                             <input
                               value={editName}
                               onChange={(e) => setEditName(e.target.value)}
                               className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2"
                             />
                             <StandardSelectField
+                              disabled={savingId !== null}
                               name="edit-course"
                               value={editCourseId}
                               onChange={setEditCourseId}
@@ -523,6 +541,7 @@ export default function BatchesPage() {
                               options={courses.map((course) => ({ value: course.id, label: course.name }))}
                             />
                             <StandardSelectField
+                              disabled={savingId !== null}
                               name="edit-teacher"
                               value={editTeacherId}
                               onChange={setEditTeacherId}
@@ -530,6 +549,7 @@ export default function BatchesPage() {
                               options={teachers.map((teacher) => ({ value: teacher.id, label: `${teacher.firstName} ${teacher.lastName}` }))}
                             />
                             <StandardSelectField
+                              disabled={savingId !== null}
                               name="edit-branch"
                               value={editBranchId}
                               onChange={setEditBranchId}
@@ -545,17 +565,18 @@ export default function BatchesPage() {
                               className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2"
                             />
                             <StandardDateField name="edit-batch-start-date" label="Batch start date" value={editStartDate} onChange={setEditStartDate} />
-                          </div>
+                          </fieldset>
                           <div className="mt-3 flex gap-2">
                             <button
                               onClick={() => void saveBatch(batch)}
-                              disabled={savingId === batch.id}
+                              disabled={savingId !== null}
                               className="rounded-lg bg-cyan-400 px-3 py-2 text-sm font-semibold text-slate-950"
                             >
                               Save
                             </button>
                             <button
-                              onClick={() => setEditingId(null)}
+                              onClick={() => { if (!saveInFlight.current) setEditingId(null); }}
+                              disabled={savingId !== null}
                               className="rounded-lg border border-slate-700 px-3 py-2 text-sm"
                             >
                               Cancel
@@ -593,13 +614,14 @@ export default function BatchesPage() {
                           <div className="mt-3 flex gap-2">
                             <button
                               onClick={() => beginEdit(batch)}
+                              disabled={savingId !== null}
                               className="rounded-lg border border-slate-700 px-3 py-1.5 text-sm"
                             >
                               Edit
                             </button>
                             <button
                               onClick={() => void toggleActive(batch)}
-                              disabled={savingId === batch.id}
+                              disabled={savingId !== null}
                               className="rounded-lg border border-slate-700 px-3 py-1.5 text-sm"
                             >
                               {batch.isActive ? "Deactivate" : "Reactivate"}

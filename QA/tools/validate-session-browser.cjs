@@ -1,0 +1,45 @@
+// Validates retained evidence, not a new application-suite run or broad release acceptance.
+const fs=require('node:fs'),p=require('node:path'),c=require('node:crypto'),cp=require('node:child_process'),a=require('node:assert/strict');
+const root=p.resolve(__dirname,'../..'),read=f=>fs.readFileSync(p.join(root,f),'utf8').replace(/^\uFEFF/,'').replace(/\r\n/g,'\n'),json=f=>JSON.parse(read(f)),sha=f=>c.createHash('sha256').update(fs.readFileSync(p.join(root,f))).digest('hex');
+const before=json('QA/EVIDENCE/session-browser-before.json'),receipt=json('QA/EVIDENCE/session-browser-source-receipt.json');
+const predecessors=new Map([...json('QA/EVIDENCE/session-revocation-before.json').retainedBefore,...json('QA/EVIDENCE/session-revocation-source-receipt.json').current,...json('QA/EVIDENCE/session-revocation-repair-source-receipt.json').current].map(x=>[x.file,x]));
+const allowed=new Set(before.files.map(x=>x.file));
+for(const item of before.files){a.equal(sha(item.backup),item.sha256,item.backup);a.equal(item.sha256,predecessors.get(item.file).sha256,item.file);}
+let retained=0;for(const [file,item] of predecessors){if(allowed.has(file))continue;a.equal(sha(file),item.sha256,'Immutable predecessor '+file);retained++;}
+a.equal(predecessors.size,receipt.predecessorPins);a.equal(retained,receipt.immutablePredecessorPins);
+for(const item of receipt.current)a.equal(sha(item.file),item.sha256,item.file);
+const oldProgram=read('QA/EVIDENCE/session-browser-before/QA/tools/SqlHarness/Program.cs');
+a.equal(read('QA/tools/SqlHarness/Program.cs'),oldProgram.replace('args[3] != "--browser-provisioning"','args[3] != "--browser-session" && args[3] != "--browser-provisioning"').replace('if (args.Length == 4 && args[3] == "--browser-provisioning")','if (args.Length == 4 && args[3] == "--browser-session")\n    await ServeBrowserSessionAsync(manifest);\nelse if (args.Length == 4 && args[3] == "--browser-provisioning")'));
+const oldRunner=read('QA/EVIDENCE/session-browser-before/QA/tools/SqlHarness/Run-ReconciledPayment.ps1');
+a.equal(read('QA/tools/SqlHarness/Run-ReconciledPayment.ps1'),oldRunner.replaceAll("'SessionRefresh','BrowserProvisioning'","'SessionRefresh','BrowserSession','BrowserProvisioning'").replace("    if ($Module -eq 'BrowserProvisioning')","    if ($Module -eq 'BrowserSession') { $qaSwitch = '--browser-session' }\n    if ($Module -eq 'BrowserProvisioning')").replace("            if ($Module -eq 'BrowserProvisioning')","            if ($Module -eq 'BrowserSession') { $qaArtifact = 'session-browser-sql' }\n            if ($Module -eq 'BrowserProvisioning')").replace('PROVISIONUI|SESSIONREVOCATION','PROVISIONUI|SESSIONBROWSER|SESSIONREVOCATION'));
+const observations=json('QA/EVIDENCE/session-browser-observations.json'),partial=json('QA/EVIDENCE/session-browser-incomplete-observations.json');
+a.equal(observations.resumed,true);a.equal(observations.checks.length,9);a.equal(observations.browserErrors.length,0);
+const retainedIds=['active-admin-real-login','platform-disable-visible-success','platform-disable-readback'];
+a.deepEqual(partial.checks.map(x=>x.id),retainedIds);a.deepEqual(observations.checks.filter(x=>x.retainedFrom).map(x=>x.id),retainedIds);
+a.match(partial.error,/Timeout 30000ms/);a.ok(partial.events.some(x=>x.status===429));
+a.ok(observations.checks.every(x=>x.accepted));a.equal(new Set(observations.checks.map(x=>x.id)).size,9);
+for(const id of ['disabled-login-visible-error','password-mismatch-local','password-rejected-retains-form-session','password-success-recovery','new-password-real-login-return'])a.ok(observations.checks.find(x=>x.id===id));
+a.ok(!observations.events.some(x=>x.status===429));
+a.deepEqual(observations.events.filter(x=>x.path==='/api/auth/session/change-password'&&x.method==='POST').map(x=>x.status),[400,200]);
+a.ok(observations.events.some(x=>x.context==='admin'&&x.path==='/api/auth/login'&&x.status===401));
+a.ok(observations.events.some(x=>x.context==='owner'&&x.path==='/api/auth/login'&&x.status===200));
+a.match(observations.existingAdminReloadBrowserAcceptance,/NOT ACCEPTED/);
+const prefix='QA/EVIDENCE/logs/phase-2b-session-browser-',log=n=>read(prefix+n+'.log');
+a.match(log('acceptance'),/UI FAILED[\s\S]*Timeout 30000ms/);
+a.match(log('acceptance-resume'),/UI SUMMARY \{"checks":9,"accepted":true/);
+a.match(log('build'),/error CS0136/);a.match(log('build-final'),/Build succeeded\.[\s\S]*0 Warning\(s\)[\s\S]*0 Error\(s\)/);
+a.match(log('predecessor-validator'),/AssertionError[\s\S]*QA\/tools\/SqlHarness\/Program.cs/);
+const native=log('sql');a.match(native,/Runtime inventory PASS: routes=313/);a.match(native,/Tenant controls PASS/);
+a.match(native,/DISABLE SQL PASS inactive identity and exactly one attributed platform audit/);a.match(native,/PASSWORD SQL PASS owner stamp rotated/);
+a.equal([...native.matchAll(/SESSIONBROWSER NATIVE/g)].length,7);
+a.equal([...native.matchAll(/SESSIONBROWSER HTTP PATCH \/api\/platform\/admins\/[0-9a-f-]+\/active 200/g)].length,1);
+a.deepEqual([...native.matchAll(/SESSIONBROWSER HTTP POST \/api\/auth\/session\/change-password (\d+)/g)].map(x=>+x[1]),[400,200]);
+a.match(native,/FINAL disableVerified=True passwordNativeVerified=True; original user\/role counts preserved/);
+a.match(native,/Negative cleanup check refused/);a.match(native,/application migrations=82, identity migrations=7/);a.match(native,/QA BrowserSession exit=0/);
+for(const [file,text] of [['disable-success','Synthetic Academy Admin deactivated.'],['disable-reloaded','Deactivated'],['password-rejected','current password is incorrect'],['password-success-login','Password changed. Sign in with your new password.'],['new-password-return','Tenant Management'],['inactive-login-error','Login failed.']])a.ok(read('QA/EVIDENCE/session-browser-'+file+'.txt').includes(text),file);
+const cleanup=json('QA/EVIDENCE/session-browser-cleanup.json');a.equal(cleanup.runId,observations.run);a.equal(cleanup.containerAbsent,true);a.equal(cleanup.rootAbsent,true);a.equal(cleanup.listenersRemaining,0);a.equal(cleanup.webStopped,true);a.equal(cleanup.previousBrowserFixture,'stopped and retained; no deletion retry');
+a.ok(!fs.existsSync(cleanup.root));a.ok(!cp.execFileSync('docker',['ps','-a','--format','{{.Names}}'],{encoding:'utf8'}).split(/\r?\n/).includes('academydesk-qa-'+cleanup.runId));
+const report='QA/REPORTS/PHASE_2B_SESSION_BROWSER_ACCEPTANCE.md';for(const link of read(report).matchAll(/\]\(([^)]+)\)/g))a.ok(fs.existsSync(p.resolve(root,p.dirname(report),link[1])),link[1]);
+for(const [k,v] of Object.entries({applicationChanged:false,azure:'UNCHANGED',commitPushDeploy:'NOT DONE',priorSuitesRerun:false,broaderSessionAcceptance:'OPEN',browserChecksAccepted:9,uninterruptedBrowserRunAccepted:false,existingAdminReloadBrowserAccepted:false,nativeControls:7,cleanupComplete:true}))a.equal(receipt[k],v,k);
+a.equal(cp.execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim(),receipt.commit);a.equal(cp.spawnSync('git',['-c','core.safecrlf=false','diff','--check'],{cwd:root,encoding:'utf8'}).status,0);
+console.log(`PASS successor consistency:${retained} immutable predecessor pins;9 scoped browser observations across partial+resume,7 native controls/SQL;product/repair preserved. Initial429/reload timeout NOT accepted;fixture cleaned,broader session/release OPEN,no deployment.`);

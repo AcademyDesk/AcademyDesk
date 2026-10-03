@@ -25,8 +25,9 @@ public static class PermissionCatalog
         ["FeeRemindersController"] = ["finance.manage"], ["AcademyExportsController"] = ["reports.export"],
         ["CoursesController"] = ["academics.manage"], ["CourseModulesController"] = ["academics.manage"],
         ["AcademicGovernanceController"] = ["academics.manage"], ["AcademicPeriodsController"] = ["academics.manage"],
-        ["AssessmentsController"] = ["academics.manage"], ["BatchPromotionsController"] = ["academics.manage"],
+        ["AssessmentsController"] = ["academics.manage"], ["AssessmentResultsController"] = ["academics.manage"], ["BatchPromotionsController"] = ["academics.manage"],
         ["StaffController"] = ["workforce.manage"], ["PortalAccountsController"] = ["workforce.manage"],
+        ["CommunicationPreferencesController"] = ["communications.manage"],
         ["AcademyRolesController"] = ["workforce.manage"], ["AccessGrantsController"] = ["workforce.manage"],
     };
 
@@ -35,7 +36,8 @@ public static class PermissionCatalog
     public static IEnumerable<string> ForSystemRole(string role) => role switch
     {
         "Sales" or "Marketing" => ["sales.manage", "students.onboard"],
-        "Operations" or "Manager" => ["batches.manage", "scheduling.manage", "attendance.manage", "makeup.manage"],
+        "Operations" => ["batches.manage", "scheduling.manage", "attendance.manage", "makeup.manage"],
+        "Manager" => ["batches.manage", "scheduling.manage", "attendance.manage", "makeup.manage", "communications.manage"],
         "FrontDesk" => ["sales.manage", "students.onboard", "students.manage", "student-fees.manage"],
         "FinanceUser" => ["finance.manage", "student-fees.manage", "reports.export"],
         _ => []

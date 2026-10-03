@@ -1,0 +1,7 @@
+{
+  "records": [
+    { "file": "apps/api/Controllers/BatchesController.cs", "sha256": "ee41dba42a0346158662f3860208fc3769b6ab9b0b729eaa5d985c8f05a21479" },
+    { "file": "apps/web/src/app/batches/page.tsx", "sha256": "38abe4ddfd1ae56f15beb370bd2d3c4aaedde03e35b81bb93c80f03e20b96b86" },
+    { "file": "apps/web/src/app/teachers/page.tsx", "sha256": "b51cf4c2067a185caa18c89136d41ec0e3b064e2e89302abc0c6604144480f5e" }
+  ]
+}

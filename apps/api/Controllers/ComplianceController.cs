@@ -30,6 +30,9 @@ public sealed class ComplianceController(AcademyDeskDbContext db) : ControllerBa
         if (string.IsNullOrWhiteSpace(request.DocumentType) || string.IsNullOrWhiteSpace(request.FileName))
             return BadRequest("Document type and file name are required.");
 
+        var problem = await ValidatePerson(academyId, request.StudentId, request.GuardianId, cancellationToken);
+        if (problem is not null) return BadRequest(new { message = problem });
+
         var document = new PersonDocument
         {
             AcademyId = academyId, StudentId = request.StudentId, GuardianId = request.GuardianId,
@@ -65,6 +68,9 @@ public sealed class ComplianceController(AcademyDeskDbContext db) : ControllerBa
     {
         if (string.IsNullOrWhiteSpace(request.ConsentType) || (request.StudentId is null && request.GuardianId is null))
             return BadRequest("A consent type and student or guardian are required.");
+        var problem = await ValidatePerson(academyId, request.StudentId, request.GuardianId, cancellationToken);
+        if (problem is not null) return BadRequest(new { message = problem });
+
         var consent = new ConsentRecord
         {
             AcademyId = academyId, StudentId = request.StudentId, GuardianId = request.GuardianId,
@@ -85,6 +91,17 @@ public sealed class ComplianceController(AcademyDeskDbContext db) : ControllerBa
         consent.WithdrawnAtUtc = DateTime.UtcNow;
         await db.SaveChangesAsync(cancellationToken);
         return Ok(consent);
+    }
+
+    private async Task<string?> ValidatePerson(Guid academyId, Guid? studentId, Guid? guardianId, CancellationToken token)
+    {
+        if (studentId.HasValue == guardianId.HasValue)
+            return "Select exactly one student or guardian.";
+        if (studentId.HasValue && !await db.Students.AnyAsync(person => person.Id == studentId.Value && person.AcademyId == academyId, token))
+            return "Invalid student.";
+        if (guardianId.HasValue && !await db.Guardians.AnyAsync(person => person.Id == guardianId.Value && person.AcademyId == academyId, token))
+            return "Invalid guardian.";
+        return null;
     }
 }
 

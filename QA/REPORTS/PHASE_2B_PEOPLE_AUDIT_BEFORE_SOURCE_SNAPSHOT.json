@@ -1,0 +1,13 @@
+{
+  "date": "2026-10-01",
+  "commit": "20bb6047f9edf733ac8e2a226621cc582ec54b3c",
+  "scope": "Before application edits; compiled baseline SQL runs use these prior student/teacher/filter sources",
+  "baselineApiAssemblySha256": "4916a28cf554e5fd72020c9ca2a99b5143a99529a119c0f7f3bf89d63f9a8b96",
+  "baselineHarnessAssemblySha256": "1423c95659d53073f18ab6e23fc0987a333911af53b50ca1a11b71198c8f18c3",
+  "records": [
+    {"file":"apps/api/Security/AcademyAccessFilter.cs","sha256":"f8d00992177b84abe9bb7e1d37839dc5fc672c6bdcfaf262120ef35730bb7b74"},
+    {"file":"apps/api/Controllers/StudentsController.cs","sha256":"f750bd6e8b3d3319f317912897c96f50131e390aea1bc391ff5c92b10b65d1b0"},
+    {"file":"apps/api/Controllers/TeachersController.cs","sha256":"101608676ff15ed57541511d7ba713799c6866f42e7711992c773024b947b6d2"},
+    {"file":"tests/AcademyDesk.Api.Tests/AuditOutcomeTests.cs","sha256":"2107311021880c96d679fa6762bf2109615b25b7831eda39459171f8cc07fea6"}
+  ]
+}

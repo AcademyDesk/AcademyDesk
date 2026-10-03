@@ -1,0 +1,26 @@
+# Phase 2B — Independent communication drafts
+
+2026-10-01; accepted [BUG-DATA-0041](../ISSUES/BUG-DATA-0041.md), COMMUNICATION-DRAFT-001. One bounded frontend-only local repair, Sol High. Accepted Astra diagnosis reused; not a repeat audit or release closure.
+
+## Repair
+
+Only product change: `apps/web/src/app/communication-settings/page.tsx`. After a confirmed PUT, the complete returned channel summary updates only that saved channel, not a whole-page GET/load. Other panels remain untouched whether clean, dirty or missing from the initial database response. This removes dependence on a second readback and avoids cross-channel refresh races.
+
+Per-channel pending guards reject duplicate clicks synchronously, while other channels stay usable. Concurrent responses merge their own saved rows without replacing another channel. Each draft reconciles normalized fields still equal to its submitted snapshot and retains any values changed during the request. Confirmations identify the saved channel and distinguish newer edits not yet saved. Panel-specific accessible status messages survive other-panel saves/errors. API errors and network uncertainty retain entries; malformed/mismatched successful responses cannot overwrite any draft or claim success and disable further saves until reload. Ambiguous failures advise checking saved settings before retry, with no automatic retry.
+
+The previous hidden-field preservation and complete initial-load guard remain in place. Meeting hidden fields/null/default wire values, full PUT replacement/explicit clears and status normalization are unchanged. No API/DTO/schema/security/MeetingProviderSettings child/shared CSS/provider/OAuth change. Drafts remain in component memory only; reload/navigation persistence, cross-device conflicts and external server writers are not promised.
+
+## Executed evidence
+
+- [Baseline log](../EVIDENCE/logs/phase-2b-communication-drafts-baseline.log):9 controlled actual page cases,3 clean-panel PASS and6 dirty/missing-panel FAIL on the previous product source. These six are reproduced product draft resets, not test-harness failures; preserved as before evidence.
+- [Draft tests](../tools/communication-drafts.test.cjs):48 new cases. Nine clean/dirty/missing save-panel combinations; three durable confirmations with a deliberately unavailable second GET; all six completion orders for three concurrent channel saves; three same-turn duplicate guards/independent availability; three same-panel in-flight edit reconciliation controls; nine validation/server/network failure-retention/retry controls; nine null/wrong-channel/missing-hidden success controls; three optional clear/default controls; three historical real-HTTP-summary integration controls.
+- [Final combined log](../EVIDENCE/logs/phase-2b-communication-drafts-combined.log):**87/87 PASS** =48 new +39 reused accepted hidden-field tests. [Shared harness](../tools/communication-page-harness.cjs) extracts the previous controlled hooks/API/JSX setup and adds ref/deferred/fault responses; existing regression case bodies are unchanged. Stubbed Meeting child and controlled state/API handlers are not live React/browser/device or SQL evidence.
+- All24 emitted prior roundtrip payload fixtures match the previous accepted log exactly. Previous real Identity/HTTP/SQL48 and backend516 results are **historical, not rerun**: API sources and contract unchanged. Historical SQL summaries are fed into current page tests, not counted as new HTTP/SQL cases. No new API/server/database/container was started.
+- [Final TypeScript](../EVIDENCE/logs/phase-2b-communication-drafts-typecheck.log) PASS. [Final lint](../EVIDENCE/logs/phase-2b-communication-drafts-lint.log):exit0,0 errors/1 inherited load-effect dependency warning. [First lint](../EVIDENCE/logs/phase-2b-communication-drafts-lint-attempt1.log) caught render-time function-argument ref analysis; ref-mutating edits now run only inside event handlers. [Intermediate typecheck](../EVIDENCE/logs/phase-2b-communication-drafts-typecheck-attempt1.log) caught an impossible narrowed channel comparison; one typed channel edit handler fixed it. Both failed checks retained/excluded, no lint suppression or weakening tests. [Early48-case run](../EVIDENCE/logs/phase-2b-communication-drafts-ui.log) is superseded by final87, not counted twice.
+- [Snapshot](PHASE_2B_COMMUNICATION_DRAFTS_SOURCE_SNAPSHOT.json)/[validator](../tools/validate-communication-drafts.cjs): current sources/evidence, exact previous payloads, unchanged API/schema/security/prior product repairs/normal dev binaries and existing historical evidence preserved. Previous communication validator's page/test hashes are intentionally superseded by this independent follow-up, not rewritten.
+
+## Remaining gates / next
+
+BUG-DATA-0041 and Phase2B remain OPEN for live browser/mobile/hydration, reload/navigation persistence, real-server concurrent writers, complete lifecycle/all-linked/critical and release acceptance. Audit-fault rollback/provider secure-connection acceptance remains separate. No customer/dev database, Azure, outbound message, commit/push/deployment or normal service restart.
+
+Next accepted bounded task: [BUG-FUNC-0026](../ISSUES/BUG-FUNC-0026.md), retained templates overriding the selected message/banner delivery channel. Keep Sol High.

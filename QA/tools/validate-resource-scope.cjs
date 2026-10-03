@@ -1,0 +1,22 @@
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),cp=require('node:child_process'),assert=require('node:assert/strict'),os=require('node:os');
+const root=path.resolve(__dirname,'../..'),read=f=>fs.readFileSync(path.join(root,f),'utf8').replace(/^\uFEFF/,''),sha=f=>crypto.createHash('sha256').update(fs.readFileSync(path.join(root,f))).digest('hex');
+const snapshot=JSON.parse(read('QA/REPORTS/PHASE_2B_RESOURCE_SCOPE_SOURCE_SNAPSHOT.json')),prior=JSON.parse(read('QA/REPORTS/PHASE_2B_PRACTICE_IDENTITY_SOURCE_SNAPSHOT.json'));
+assert.equal(cp.execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim(),snapshot.commit);
+for(const x of [...snapshot.sources,...snapshot.evidence,...snapshot.binaries,...snapshot.normalBinaries])assert.equal(sha(x.file),x.sha256,x.file);
+const intentional=['apps/api/Controllers/LearningResourcesController.cs','QA/00_QA_README.md','QA/REPORTS/PHASE_2_START_PLAN.md','QA/ISSUES/INDEX.md','QA/03_TEST_MATRIX.md','QA/ISSUES/BUG-DATA-0044.md'];
+for(const x of [...prior.sources,...prior.evidence,...prior.binaries,...prior.normalBinaries])if(!intentional.includes(x.file))assert.equal(sha(x.file),x.sha256,'Accepted predecessor preserved '+x.file);
+assert.deepEqual(snapshot.normalBinaries,prior.normalBinaries);
+for(const x of snapshot.beforeSources.filter(x=>prior.sources.some(y=>y.file===x.file)))assert.equal(x.sha256,prior.sources.find(y=>y.file===x.file).sha256,'Accepted starting source '+x.file);
+const baseline=read('QA/EVIDENCE/logs/phase-2b-resource-scope-backend-baseline.log'),suite=read('QA/EVIDENCE/logs/phase-2b-resource-scope-suite.log'),baselineTrx=read('QA/EVIDENCE/resource-scope/resource-scope-baseline.trx'),trx=read('QA/EVIDENCE/resource-scope/resource-scope-suite.trx');
+assert.match(baseline,/Failed:\s+4, Passed:\s+33, Skipped:\s+0, Total:\s+37/);assert.match(baselineTrx,/<Counters total="37" executed="37" passed="33" failed="4"/);
+assert.equal([...baselineTrx.matchAll(/<UnitTestResult [^>]*outcome="Failed"/g)].length,4);
+for(const mode of ['Mismatch','InactiveMismatch'])for(const upload of ['False','True'])assert.ok(baseline.includes('upload: '+upload+', mode: "'+mode+'"'));
+assert.match(suite,/Failed:\s+0, Passed:\s+912, Skipped:\s+0, Total:\s+912/);assert.match(trx,/<Counters total="912" executed="912" passed="912"/);
+assert.equal([...trx.matchAll(/<UnitTestResult [^>]*testName="AcademyDesk\.Api\.Tests\.LearningResourceScopeTests\./g)].length,37);
+assert.equal([...trx.matchAll(/<UnitTestResult [^>]*testName="AcademyDesk\.Api\.Tests\.LearningResourceScopeTests\.Scope_matrix_/g)].length,30);
+assert.equal(fs.readdirSync(os.tmpdir()).filter(x=>/^AcademyDesk-ResourceScope-[a-f0-9]{32}$/.test(x)).length,0,'Per-test resource temp roots absent');
+assert.deepEqual(snapshot.checks,{backendTotal:912,newBackendCases:37,baselineBackendCases:37,baselineBackendFailures:4,scopeMatrixCases:30,httpSql:'NOT RUN',familyVisibility:'NOT RUN',frontend:'UNCHANGED',closure:'OPEN',browserDevice:'NOT RUN',devServices:'UNCHANGED'});
+assert.match(read('QA/ISSUES/BUG-DATA-0044.md'),/\| Status \| OPEN \|/);
+for(const f of ['QA/REPORTS/PHASE_2B_RESOURCE_SCOPE_REPAIR.md','QA/ISSUES/BUG-DATA-0044.md'])for(const m of read(f).matchAll(/\]\(([^)]+)\)/g)){const target=m[1].split('#')[0];if(target&&!/^https?:/.test(target))assert.ok(fs.existsSync(path.resolve(root,path.dirname(f),target)),target);}
+assert.equal(cp.spawnSync('git',['diff','--check'],{cwd:root,encoding:'utf8'}).status,0);
+console.log('PASS Resource audience controller repair:4 baseline mismatch failures;912 backend (37 new,30 scope matrix). Optional scopes/inactive behavior/file bytes/no-write/List/Publish preserved. Accepted predecessor/frontend/harness/schema/evidence/binaries/normal assemblies verified; synthetic temp roots absent. No SQL/HTTP/family/browser/device/dev/Azure/deploy claim; closure OPEN. Next real HTTP-SQL and family audience verification, Sol High.');

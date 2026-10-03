@@ -1,6 +1,7 @@
 using AcademyDesk.Api.Data;
 using AcademyDesk.Api.Domain.Entities;
 using AcademyDesk.Api.Domain.Identity;
+using AcademyDesk.Api.Security;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +24,7 @@ public sealed class TeachersController(AcademyDeskDbContext dbContext, UserManag
     }
 
     [HttpPost]
+    [AtomicAcademyMutation]
     public async Task<ActionResult<TeacherSummary>> Create(Guid academyId, CreateTeacherRequest request, CancellationToken cancellationToken)
     {
         if (!await dbContext.Academies.AnyAsync(x => x.Id == academyId, cancellationToken)) return NotFound();
@@ -37,12 +39,15 @@ public sealed class TeachersController(AcademyDeskDbContext dbContext, UserManag
         return Created($"/api/academies/{academyId}/teachers/{teacher.Id}", new TeacherSummary(teacher.Id, teacher.FirstName, teacher.LastName, teacher.Email, teacher.Phone, teacher.Specialties, teacher.BranchId, teacher.IsActive));
     }
     [HttpPut("{teacherId:guid}")]
+    [AtomicAcademyMutation(IncludeIdentity = true)]
     public async Task<ActionResult<TeacherSummary>> Update(Guid academyId, Guid teacherId, UpdateTeacherRequest request, CancellationToken token)
     {
         var teacher = await dbContext.Teachers.SingleOrDefaultAsync(x => x.Id == teacherId && x.AcademyId == academyId, token);
         if (teacher is null) return NotFound();
         if (string.IsNullOrWhiteSpace(request.FirstName) || string.IsNullOrWhiteSpace(request.LastName))
             return BadRequest(new { message = "First and last name are required." });
+        if (request.BranchId.HasValue && !await dbContext.Branches.AnyAsync(x => x.Id == request.BranchId && x.AcademyId == academyId, token))
+            return BadRequest(new { message = "The selected branch does not belong to this academy." });
 
         teacher.FirstName = request.FirstName.Trim();
         teacher.LastName = request.LastName.Trim();
@@ -64,7 +69,9 @@ public sealed class TeachersController(AcademyDeskDbContext dbContext, UserManag
             account.PhoneNumber = teacher.Phone;
             var update = await userManager.UpdateAsync(account);
             if (!update.Succeeded)
-                return BadRequest(new { message = "Teacher record saved, but the linked portal account could not be updated." });
+                return BadRequest(new { message = dbContext.Database.CurrentTransaction is not null
+                    ? "The teacher and linked portal accounts could not be updated. No changes were saved."
+                    : "Teacher record saved, but the linked portal account could not be updated." });
         }
 
         return Ok(new TeacherSummary(teacher.Id, teacher.FirstName, teacher.LastName, teacher.Email, teacher.Phone, teacher.Specialties, teacher.BranchId, teacher.IsActive));

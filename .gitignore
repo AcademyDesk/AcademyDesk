@@ -1,20 +1,57 @@
 # .NET
 **/bin/
 **/obj/
+**/TestResults/
+*.trx
+*.coverage
+*.coveragexml
+*.user
+*.suo
+*.rsuser
+*.userosscache
+*.sln.docstates
 
 # Node.js / Next.js
 **/node_modules/
 **/.next/
+**/out/
+**/coverage/
+!QA/COVERAGE/
+!QA/COVERAGE/**
+**/.nyc_output/
+*.tsbuildinfo
 npm-debug.log*
 *.log
+
+# Local build and QA run output
+.build-check/
+*.tmp
+*.temp
+*.swp
+*~
 
 # Secrets
 .env
 .env.*
 !.env.example
+!.env.*.example
+appsettings.Local.json
+appsettings.*.local.json
+secrets.json
+*.pfx
+*.p12
+*.pem
+*.key
+*.publishsettings
+*.pubxml.user
+.azure/
 
 # IDE and OS
 .vs/
+.idea/
+.fleet/
 .vscode/*
 !.vscode/extensions.json
 .DS_Store
+Thumbs.db
+Desktop.ini

@@ -1,0 +1,22 @@
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),cp=require('node:child_process'),assert=require('node:assert/strict');
+const root=path.resolve(__dirname,'../..'),read=f=>fs.readFileSync(path.join(root,f),'utf8').replace(/^\uFEFF/,''),sha=f=>crypto.createHash('sha256').update(fs.readFileSync(path.join(root,f))).digest('hex');
+const snapshot=JSON.parse(read('QA/REPORTS/PHASE_2B_COMPLIANCE_IDENTITY_SOURCE_SNAPSHOT.json')),prior=JSON.parse(read('QA/REPORTS/PHASE_2B_RESOURCE_SCOPE_SQL_SOURCE_SNAPSHOT.json'));
+assert.equal(cp.execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim(),snapshot.commit);
+for(const x of [...snapshot.sources,...snapshot.evidence,...snapshot.binaries,...snapshot.normalBinaries])assert.equal(sha(x.file),x.sha256,x.file);
+const intentional=['apps/api/Controllers/ComplianceController.cs','QA/00_QA_README.md','QA/REPORTS/PHASE_2_START_PLAN.md','QA/ISSUES/INDEX.md','QA/03_TEST_MATRIX.md','QA/ISSUES/BUG-DATA-0045.md'];
+for(const x of [...prior.sources,...prior.evidence,...prior.binaries,...prior.normalBinaries])if(!intentional.includes(x.file))assert.equal(sha(x.file),x.sha256,'Accepted predecessor preserved '+x.file);
+assert.deepEqual(snapshot.normalBinaries,prior.normalBinaries);
+for(const x of snapshot.beforeSources.filter(x=>prior.sources.some(y=>y.file===x.file)))assert.equal(x.sha256,prior.sources.find(y=>y.file===x.file).sha256,'Accepted starting source '+x.file);
+const baseline=read('QA/EVIDENCE/logs/phase-2b-compliance-identity-backend-baseline.log'),suite=read('QA/EVIDENCE/logs/phase-2b-compliance-identity-suite.log'),baselineTrx=read('QA/EVIDENCE/compliance-identity/compliance-identity-baseline.trx'),trx=read('QA/EVIDENCE/compliance-identity/compliance-identity-suite.trx');
+assert.match(baseline,/Failed:\s+25, Passed:\s+51, Skipped:\s+0, Total:\s+76/);assert.match(baselineTrx,/<Counters total="76" executed="76" passed="51" failed="25"/);
+assert.equal([...baselineTrx.matchAll(/<UnitTestResult [^>]*outcome="Failed"/g)].length,25);
+for(const result of baselineTrx.matchAll(/<UnitTestResult [^>]*testName="([^"]*)"[^>]*outcome="Failed"/g))assert.ok(result[1].includes('ComplianceIdentityTests.Invalid_or_contradictory_person_references'));
+assert.match(suite,/Failed:\s+0, Passed:\s+988, Skipped:\s+0, Total:\s+988/);assert.match(trx,/<Counters total="988" executed="988" passed="988"/);
+assert.equal([...trx.matchAll(/<UnitTestResult [^>]*testName="AcademyDesk\.Api\.Tests\.ComplianceIdentityTests\./g)].length,76);
+assert.equal([...trx.matchAll(/<UnitTestResult [^>]*testName="AcademyDesk\.Api\.Tests\.ComplianceIdentityTests\.Invalid_or_contradictory/g)].length,26);
+assert.equal([...trx.matchAll(/<UnitTestResult [^>]*testName="AcademyDesk\.Api\.Tests\.ComplianceIdentityTests\.Valid_single_person/g)].length,36);
+assert.deepEqual(snapshot.checks,{backendTotal:988,newBackendCases:76,baselineBackendCases:76,baselineBackendFailures:25,invalidPersonCases:26,validCreationCases:36,httpSql:'NOT RUN',typedUi:'NOT FIXED',frontend:'UNCHANGED',closure:'OPEN',browserDevice:'NOT RUN',devServices:'UNCHANGED'});
+assert.match(read('QA/ISSUES/BUG-DATA-0045.md'),/\| Status \| OPEN \|/);
+for(const f of ['QA/REPORTS/PHASE_2B_COMPLIANCE_IDENTITY_REPAIR.md','QA/ISSUES/BUG-DATA-0045.md'])for(const m of read(f).matchAll(/\]\(([^)]+)\)/g)){const target=m[1].split('#')[0];if(target&&!/^https?:/.test(target))assert.ok(fs.existsSync(path.resolve(root,path.dirname(f),target)),target);}
+assert.equal(cp.spawnSync('git',['diff','--check'],{cwd:root,encoding:'utf8'}).status,0);
+console.log('PASS Compliance controller identity:25 baseline invalid-person failures;988 backend (76 new:26 rejected/36 valid creation/14 preserved guards-lifecycle-history-list). Same-academy typed single subject, optional/inactive/source/foreign evidence preservation verified. Accepted predecessor/frontend/harness/schema/evidence/binaries/normal assemblies retained. Mixed typed UI not fixed; real HTTP-SQL/auth/audits/browser/dev/Azure/deploy not claimed. Closure OPEN; next typed picker then HTTP-SQL, Sol High.');

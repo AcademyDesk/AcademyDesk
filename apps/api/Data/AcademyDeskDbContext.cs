@@ -40,6 +40,7 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
     public DbSet<AdminWorkItem> AdminWorkItems => Set<AdminWorkItem>();
     public DbSet<AccessReview> AccessReviews => Set<AccessReview>();
     public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<NotificationReadReceipt> NotificationReadReceipts => Set<NotificationReadReceipt>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
     public DbSet<MusicPiece> MusicPieces => Set<MusicPiece>();
     public DbSet<StudentMusicProgress> StudentMusicProgress => Set<StudentMusicProgress>();
@@ -48,6 +49,7 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
     public DbSet<LeaveRequest> LeaveRequests => Set<LeaveRequest>();
     public DbSet<MakeupClass> MakeupClasses => Set<MakeupClass>();
     public DbSet<LearningResource> LearningResources => Set<LearningResource>();
+    public DbSet<ClassMediaUploadSession> ClassMediaUploadSessions => Set<ClassMediaUploadSession>();
     public DbSet<CourseModule> CourseModules => Set<CourseModule>();
     public DbSet<CoursePrerequisite> CoursePrerequisites => Set<CoursePrerequisite>();
     public DbSet<GradingScheme> GradingSchemes => Set<GradingScheme>();
@@ -411,6 +413,14 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
             entity.HasIndex(x => new { x.AcademyId, x.RecipientId, x.CreatedAtUtc });
         });
 
+        modelBuilder.Entity<NotificationReadReceipt>(entity =>
+        {
+            entity.HasKey(x => new { x.NotificationId, x.UserId });
+            entity.HasIndex(x => new { x.AcademyId, x.UserId });
+            entity.HasOne<Notification>().WithMany().HasForeignKey(x => x.NotificationId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
         modelBuilder.Entity<AuditLog>(entity =>
         {
             entity.Property(x => x.Action).HasMaxLength(80).IsRequired();
@@ -481,6 +491,14 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
             entity.Property(x => x.Status).HasMaxLength(30).IsRequired();
             entity.Property(x => x.Notes).HasMaxLength(2000);
             entity.HasIndex(x => new { x.AcademyId, x.StartUtc });
+        });
+        modelBuilder.Entity<ClassMediaUploadSession>(entity =>
+        {
+            entity.Property(x => x.FileName).HasMaxLength(250).IsRequired();
+            entity.Property(x => x.Title).HasMaxLength(250).IsRequired();
+            entity.Property(x => x.Description).HasMaxLength(2000);
+            entity.Property(x => x.Type).HasMaxLength(40).IsRequired();
+            entity.HasIndex(x => new { x.AcademyId, x.OwnerUserId, x.ClientRequestId }).IsUnique();
         });
         modelBuilder.Entity<LearningResource>(entity =>
         {

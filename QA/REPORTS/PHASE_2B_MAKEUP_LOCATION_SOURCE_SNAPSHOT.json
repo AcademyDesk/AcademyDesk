@@ -1,0 +1,185 @@
+{
+  "createdAt": "2026-10-01T13:55:05.626Z",
+  "commit": "20bb6047f9edf733ac8e2a226621cc582ec54b3c",
+  "issue": "BUG-DATA-0039",
+  "checks": {
+    "backendTotal": 516,
+    "newBackendCases": 39,
+    "httpSqlCases": 50,
+    "controlledTsxCases": 53,
+    "newControlledTsxCases": 22,
+    "typeScriptExitCode": 0,
+    "lintExitCode": 0,
+    "inheritedLintWarnings": 1,
+    "browserDevice": "NOT RUN",
+    "closure": "OPEN"
+  },
+  "sources": [
+    {
+      "file": "apps/web/src/app/schedule/page.tsx",
+      "sha256": "41df5a30430498237fca3a039763de296f4db0117734e3ae6752902aa8ba750c"
+    },
+    {
+      "file": "apps/api/Controllers/ClassSessionsController.cs",
+      "sha256": "5445b6b9c69a189c5b5a707138df4ebde7bf06f03e704a8ec8f3219d6c0460d2"
+    },
+    {
+      "file": "apps/api/Controllers/LeaveRequestsController.cs",
+      "sha256": "ed0f3e50f1f446a448120b6ba852fb7a7334ce22a7a7ece607f7b77f94e9eb4f"
+    },
+    {
+      "file": "apps/web/src/app/leave/page.tsx",
+      "sha256": "40c8c3b99d8e232c85dd8f3a0e5ea38bb1cdba5fe756b4fa87dfbacec388603d"
+    },
+    {
+      "file": "apps/api/Domain/Entities/LeaveRequest.cs",
+      "sha256": "9e7f36c796f3d857ab7944b384e9e03c58109f17f7e84487c12544c587cdc680"
+    },
+    {
+      "file": "apps/api/Data/AcademyDeskDbContext.cs",
+      "sha256": "f77581f6e97b38e84dfec3bd022118a8da9858b9c5cb637daa6d1a25c8fa7b1e"
+    },
+    {
+      "file": "apps/api/Security/AcademyAccessFilter.cs",
+      "sha256": "f74c29ef47dbafc20939ce10ec10c36b1ca0f7be23c8900422417ecb69db8753"
+    },
+    {
+      "file": "apps/api/Security/PermissionCatalog.cs",
+      "sha256": "6703cf7acc8c90309ce8e804981fc5a5342567d1f2cd756820351560a65d4d5a"
+    },
+    {
+      "file": "apps/api/Controllers/MakeupClassesController.cs",
+      "sha256": "2bb08bf6187e00ceec5b57bdaa8bdedbca7ff06e9d4665a36d62b842ec41c6d7"
+    },
+    {
+      "file": "apps/api/Domain/Entities/MakeupClass.cs",
+      "sha256": "6dc5fd2a7490317f9dad657cbe84563fdc1fba94fe192fab344c11ffa78fae74"
+    },
+    {
+      "file": "apps/api/Domain/Entities/Notification.cs",
+      "sha256": "0dd5438d91096a6d857dec5f87ae733a63326ad436ceef91f49efe5b3e5f59ed"
+    },
+    {
+      "file": "apps/web/src/app/makeup/page.tsx",
+      "sha256": "42f3c787928228d48a01ee8353a7a09f8f6557bafe76a1551bff7b57d9f26b64"
+    },
+    {
+      "file": "apps/web/src/app/calendar/page.tsx",
+      "sha256": "5c9799a1b6369ac65d4924d847542ab7a58dd960dcb191fec91cafb59aae9b4a"
+    },
+    {
+      "file": "tests/AcademyDesk.Api.Tests/MakeupLocationTests.cs",
+      "sha256": "70326377a2140c0587a194b7e30b814d9ceaf5339168728d006460b138d5f935"
+    },
+    {
+      "file": "QA/tools/makeup-location.test.cjs",
+      "sha256": "f06dd56ac2b87351be1f4f99f91a5649ec35a159f6da029190ff2d2d03621733"
+    },
+    {
+      "file": "QA/tools/calendar-details.test.cjs",
+      "sha256": "b6c10169d682ac62e99b6a9bd60188b96a0283385557f6b33c70248294998f86"
+    },
+    {
+      "file": "QA/tools/SqlHarness/MakeupLocationRegression.cs",
+      "sha256": "8d39f9d34486fef798e302abc792b725c282b9ca9675013c1c76e0b60f2b672a"
+    },
+    {
+      "file": "QA/tools/SqlHarness/Program.cs",
+      "sha256": "9e4e6ba907c158fd5b4f50f60bd114fb6affd8712008f183bfea57566afbd908"
+    },
+    {
+      "file": "QA/tools/SqlHarness/Run-ReconciledPayment.ps1",
+      "sha256": "aeba16f9ca178c976023d6c26cbbee7cca664ed38ebae47ac14dfbc904589835"
+    },
+    {
+      "file": "QA/tools/validate-makeup-location.cjs",
+      "sha256": "340a606fa48a77026cf6cc008a5ed01c6101474243d61583cb1089174adf9db7"
+    },
+    {
+      "file": "QA/REPORTS/PHASE_2B_MAKEUP_LOCATION_REPAIR.md",
+      "sha256": "2d1d7d64658625d6578017c783874c2db0564f684d42fb94224931d27ee0e1bc"
+    },
+    {
+      "file": "QA/ISSUES/BUG-DATA-0039.md",
+      "sha256": "708d62ebc2a931ca05a5d54d1ba868893a38a5686c6d721fb26f3e064e55ea53"
+    }
+  ],
+  "binaries": [
+    {
+      "file": ".build-check/makeup-location-tests/bin/AcademyDesk.Api/debug/AcademyDesk.Api.dll",
+      "sha256": "fafb6bb497dd37ea967facfd7a8009646bc725a7ae0acbb5ff78e9642f6e620e"
+    },
+    {
+      "file": ".build-check/makeup-location-tests/bin/AcademyDesk.Api.Tests/debug/AcademyDesk.Api.Tests.dll",
+      "sha256": "6d7b37c925ea6dac748ce991f616f5150000348ecdbb559f163e22a46915f77f"
+    },
+    {
+      "file": ".build-check/makeup-location-sql/bin/AcademyDesk.Api/debug/AcademyDesk.Api.dll",
+      "sha256": "da5a801bd21fe09bab58b95c428df5e32ab5fecaab8fc27b894e47e622cbd4bf"
+    },
+    {
+      "file": ".build-check/makeup-location-sql/bin/SqlHarness/debug/SqlHarness.dll",
+      "sha256": "653439bd6b362e371b00378548a980a94d70a34ce6f8460c3da586ec943b4547"
+    }
+  ],
+  "evidence": [
+    {
+      "file": "QA/EVIDENCE/makeup-location/makeup-location-suite.trx",
+      "sha256": "476eb17254aadc0b67ebe9a425e690af384352fa8b8af4c32dccba8f7c066588"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-makeup-location-suite.log",
+      "sha256": "d436165f740c3e21f87968c5e2664329d81dde7da26c46a63e95bb18e4cd7c4d"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-makeup-location-sql-build.log",
+      "sha256": "fefecd07138854eee2eddab06b5a5a938f446f64f230f9b84b18242c0b477ac5"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-makeup-location-sql.log",
+      "sha256": "fd0ffcd23cfde0027a2dced57cae7b3ff68c82713c9067a7bccd5737daee9cab"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-makeup-location-ui.log",
+      "sha256": "d7a03a94c4e8568eeb57650840d881f42f04ff288ebe1377a4d681728f5acfdd"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-makeup-location-typecheck.log",
+      "sha256": "9351e662fec76dfe40e0144b41d3bbdf9cad39ae941236f0cbcfe401e89c1651"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-makeup-location-lint.log",
+      "sha256": "7014eab6dc333e7989688bce4f51f4514a78585e096d5d73b961196a56281ee0"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-makeup-location-lint-runner-error.log",
+      "sha256": "712b4a375c614fec839888fb81a47f4974582884a56abaf62b029d6c09830c82"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-makeup-location-ui-attempt1.log",
+      "sha256": "121be2c1c61651733218bf1b710b85d4e9197c59287b1a8734e7bf8e5a281782"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-makeup-location-ui-pre-sql.log",
+      "sha256": "ba98173c3fdd83af0e991946f500613ed86f3465da1c86e2f97d5b066c3689ea"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-makeup-location-sql-attempt1.log",
+      "sha256": "b067d7dc930f0f5ac2e13f0342172df4d219044bfba81b1f87725a3a4a7378d6"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-makeup-location-sql-build-attempt1.log",
+      "sha256": "8dae61481217713b17581526539a9d5631e0fa0fa261109fefe17ca9a99eb87c"
+    }
+  ],
+  "normalBinaries": [
+    {
+      "file": "apps/api/bin/Debug/net10.0/AcademyDesk.Api.dll",
+      "sha256": "10ecb9da46c8198affae586776aca4747244cda18670dde8a1892ed20170f614"
+    },
+    {
+      "file": "QA/tools/SqlHarness/bin/Debug/net10.0/SqlHarness.dll",
+      "sha256": "7c165e280c7752cfaef4e56d45062445a9f7181bab3fd5ce6aa12d32b7194c94"
+    }
+  ]
+}

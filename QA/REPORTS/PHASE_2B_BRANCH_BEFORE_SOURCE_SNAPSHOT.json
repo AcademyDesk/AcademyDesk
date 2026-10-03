@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-01",
+  "commit": "20bb6047f9edf733ac8e2a226621cc582ec54b3c",
+  "scope": "Before Update branch validation; unchanged application assemblies used for two no-build baseline runs",
+  "baselineApiAssemblySha256": "94dec0727ee4138adb112d51f3482b4062119e97234b11fb6d0b035fee19ec86",
+  "baselineHarnessAssemblySha256": "3f390a01bf32592267b14c9b56f0946d441e2153cf8e46c3b7c61290e6fb4cec",
+  "records": [
+    {
+      "file": "apps/api/Controllers/StudentsController.cs",
+      "sha256": "936e146c495d396306238e1cb752eae3e285e2626cf42137f9f7f9de163c20c1"
+    },
+    {
+      "file": "apps/api/Controllers/TeachersController.cs",
+      "sha256": "036161ee4b5d48ccf49cfe31372722a0abf63977adc0c6b6e6d85161f3015714"
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 using AcademyDesk.Api.Data;
 using AcademyDesk.Api.Domain.Entities;
+using AcademyDesk.Api.Security;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -27,21 +28,34 @@ public sealed class AcademicPeriodsController(AcademyDeskDbContext db) : Control
     }
 
     [HttpPost("terms")]
+    [AtomicAcademyMutation]
     public async Task<ActionResult<AcademicTermSummary>> CreateTerm(Guid academyId, AcademicTermRequest request, CancellationToken token)
     {
-        var year = await db.AcademicYears.SingleOrDefaultAsync(x => x.AcademyId == academyId && x.Id == request.AcademicYearId, token);
+        // Reuse the normal actor's save/audit boundary; platform bypass/direct
+        // SQL callers still need a transaction for the coupled parent lock.
+        await using var ownedTransaction = db.Database.IsSqlServer() && db.Database.CurrentTransaction is null
+            ? await db.Database.BeginTransactionAsync(token) : null;
+        var year = await YearForMutationAsync(academyId, request.AcademicYearId, token);
         if (year is null) return BadRequest(new { message = "Select an academic year in this academy." });
+        if (year.IsClosed) return Conflict(new { message = "This academic year is closed. You cannot add a new term." });
         if (string.IsNullOrWhiteSpace(request.Name) || request.EndDate < request.StartDate || request.StartDate < year.StartDate || request.EndDate > year.EndDate) return BadRequest(new { message = "Term dates must be within the academic year." });
-        var term = new AcademicTerm { AcademyId = academyId, AcademicYearId = year.Id, Name = request.Name.Trim(), StartDate = request.StartDate, EndDate = request.EndDate }; db.AcademicTerms.Add(term); await db.SaveChangesAsync(token); return Ok(new AcademicTermSummary(term.Id, term.AcademicYearId, term.Name, term.StartDate, term.EndDate, term.IsClosed));
+        var term = new AcademicTerm { AcademyId = academyId, AcademicYearId = year.Id, Name = request.Name.Trim(), StartDate = request.StartDate, EndDate = request.EndDate }; db.AcademicTerms.Add(term); await db.SaveChangesAsync(token);
+        if (ownedTransaction is not null) await ownedTransaction.CommitAsync(token);
+        return Ok(new AcademicTermSummary(term.Id, term.AcademicYearId, term.Name, term.StartDate, term.EndDate, term.IsClosed));
     }
 
     [HttpPatch("years/{yearId:guid}/close")]
+    [AtomicAcademyMutation]
     public async Task<ActionResult> CloseYear(Guid academyId, Guid yearId, CancellationToken token)
     {
-        var year = await db.AcademicYears.SingleOrDefaultAsync(item => item.Id == yearId && item.AcademyId == academyId, token);
+        await using var ownedTransaction = db.Database.IsSqlServer() && db.Database.CurrentTransaction is null
+            ? await db.Database.BeginTransactionAsync(token) : null;
+        var year = await YearForMutationAsync(academyId, yearId, token);
         if (year is null) return NotFound();
         if (await db.AcademicTerms.AnyAsync(item => item.AcademicYearId == yearId && !item.IsClosed, token)) return Conflict(new { message = "Close all terms before closing the academic year." });
-        year.IsClosed = true; year.IsCurrent = false; await db.SaveChangesAsync(token); return Ok();
+        year.IsClosed = true; year.IsCurrent = false; await db.SaveChangesAsync(token);
+        if (ownedTransaction is not null) await ownedTransaction.CommitAsync(token);
+        return Ok();
     }
 
     [HttpPatch("terms/{termId:guid}/close")]
@@ -50,6 +64,16 @@ public sealed class AcademicPeriodsController(AcademyDeskDbContext db) : Control
         var term = await db.AcademicTerms.SingleOrDefaultAsync(item => item.Id == termId && item.AcademyId == academyId, token);
         if (term is null) return NotFound();
         term.IsClosed = true; await db.SaveChangesAsync(token); return Ok();
+    }
+
+    private Task<AcademicYear?> YearForMutationAsync(Guid academyId, Guid yearId, CancellationToken token)
+    {
+        // Both child creation and parent closure lock the same parent until the
+        // edge/state + audit commit. Parameterized SQL; no schema change.
+        var query = db.Database.IsSqlServer()
+            ? db.AcademicYears.FromSqlInterpolated($"SELECT * FROM [AcademicYears] WITH (UPDLOCK, HOLDLOCK) WHERE [AcademyId] = {academyId} AND [Id] = {yearId}")
+            : db.AcademicYears.Where(x => x.AcademyId == academyId && x.Id == yearId);
+        return query.SingleOrDefaultAsync(token);
     }
 }
 

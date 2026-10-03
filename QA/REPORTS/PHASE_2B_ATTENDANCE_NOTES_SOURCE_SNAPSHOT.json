@@ -1,0 +1,101 @@
+{
+  "createdAt": "2026-10-01T12:36:29.734Z",
+  "commit": "20bb6047f9edf733ac8e2a226621cc582ec54b3c",
+  "issue": "BUG-DATA-0035",
+  "checks": {
+    "controlledHandlerCases": 24,
+    "httpSqlCases": 16,
+    "typeScriptExitCode": 0,
+    "lintExitCode": 1,
+    "browserDevice": "NOT RUN",
+    "closure": "OPEN"
+  },
+  "sources": [
+    {
+      "file": "apps/web/src/app/attendance/page.tsx",
+      "sha256": "a81fc4e6ad0d9390944169f00d723ae02fc9862ecee4eddf86a88e5b7d5bb1af"
+    },
+    {
+      "file": "apps/api/Controllers/AttendanceController.cs",
+      "sha256": "dd3e47e2637ac1fe5f2aef3945420c833f25f5ec23c0849cfb8f82294873b1ff"
+    },
+    {
+      "file": "apps/api/Domain/Entities/AttendanceRecord.cs",
+      "sha256": "266a5d96b6e5d2dbd95aa32629b8815c4cc65485ab9ded403c5aaa0ae81fdb25"
+    },
+    {
+      "file": "QA/tools/attendance-notes.test.cjs",
+      "sha256": "d42d0b0247858d8977f827b625d6eedd8709b2597c62b03275979d58c7dc8e44"
+    },
+    {
+      "file": "QA/tools/SqlHarness/AttendanceNotesRegression.cs",
+      "sha256": "6bc924ebe84635825c021a103025e43a9b94b86f7335bd49c1fbde5cd9768d98"
+    },
+    {
+      "file": "QA/tools/SqlHarness/Program.cs",
+      "sha256": "05dbd623e5cc04982d1939855735fc8499826264a809a9deb25ef07ebb21086a"
+    },
+    {
+      "file": "QA/tools/SqlHarness/Run-ReconciledPayment.ps1",
+      "sha256": "7b39318437f57f62b0a8f4ec813ee8805d70949e908013272b81d0952ad25b4d"
+    },
+    {
+      "file": "QA/tools/validate-attendance-notes.cjs",
+      "sha256": "918aa1b7c83cba235d2d2b7f84c89694a694ee9bc857349e3bdca96e54fea058"
+    },
+    {
+      "file": "QA/REPORTS/PHASE_2B_ATTENDANCE_NOTES_REPAIR.md",
+      "sha256": "5330c83d31e76642484f3b467a464437fa145312bc3f18b3448244e9019b4908"
+    },
+    {
+      "file": "QA/ISSUES/BUG-DATA-0035.md",
+      "sha256": "51ddc2fdda5ab0535c6347de47a49fbc7cff99eaee0d9961d31d5912d697556f"
+    }
+  ],
+  "binaries": [
+    {
+      "file": ".build-check/attendance-notes-sql/bin/AcademyDesk.Api/debug/AcademyDesk.Api.dll",
+      "sha256": "028fead47618ddd0e0bdbbe0c8d360ff319082c6f8715d09c1ec338370b5e294"
+    },
+    {
+      "file": ".build-check/attendance-notes-sql/bin/SqlHarness/debug/SqlHarness.dll",
+      "sha256": "09b31e7a24488a32f2c4c3b440e8288a50acf5d8f46d9dafabbd9fd83f6bb9f8"
+    }
+  ],
+  "evidence": [
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-attendance-notes-baseline-lint.log",
+      "sha256": "adc86bcb6670b3c95ba5aada41c1fd7022706bf1e5fc7565af44dc5918d87feb"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-attendance-notes-ui.log",
+      "sha256": "9ab9ffdd8522f413da0710d3d49a28925d897af7ce3835832d67ce4c061132e0"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-attendance-notes-sql-build.log",
+      "sha256": "7cd7b7ef8724f1bc9a525ed36dde858b36c2dae1f803a9a509d229fcf9e7d0de"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-attendance-notes-sql.log",
+      "sha256": "9c346d1b4bc5149270df5ca29de1c5d460dd439d70be1d331c69b00672e6c971"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-attendance-notes-typecheck.log",
+      "sha256": "6ebe19947b62792d3f59def853d038463d516aaf2c7a7bea98b196e0d51933ef"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-attendance-notes-lint.log",
+      "sha256": "c40205733ce71bf9a3412dd8fe3df1e30b651a2267f48bf3e79bffffd3f89bd1"
+    }
+  ],
+  "normalBinaries": [
+    {
+      "file": "apps/api/bin/Debug/net10.0/AcademyDesk.Api.dll",
+      "sha256": "10ecb9da46c8198affae586776aca4747244cda18670dde8a1892ed20170f614"
+    },
+    {
+      "file": "QA/tools/SqlHarness/bin/Debug/net10.0/SqlHarness.dll",
+      "sha256": "7c165e280c7752cfaef4e56d45062445a9f7181bab3fd5ce6aa12d32b7194c94"
+    }
+  ]
+}

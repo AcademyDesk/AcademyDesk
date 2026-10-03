@@ -9,7 +9,6 @@ type Person = {
   firstName: string;
   lastName: string;
   email?: string | null;
-  phone?: string | null;
 };
 type Preference = {
   recipientId: string;
@@ -35,14 +34,19 @@ export default function CommunicationPreferencesPage() {
     const academyId = id ?? academy?.id;
     if (!academyId) return;
     const responses = await Promise.all([
-      academyApi(`/api/academies/${academyId}/students`),
-      academyApi(`/api/academies/${academyId}/guardians`),
+      academyApi(`/api/academies/${academyId}/communication-preferences/recipients`),
       academyApi(`/api/academies/${academyId}/communication-preferences`),
     ]);
     if (!responses.every((response) => response.ok)) throw Error();
-    setStudents(await responses[0].json());
-    setGuardians(await responses[1].json());
-    setPreferences(await responses[2].json());
+    const recipients = await responses[0].json();
+    const savedPreferences = await responses[1].json();
+    const validPeople = (value: unknown): value is Person[] => Array.isArray(value) && value.every((person) =>
+      person && typeof person.id === "string" && typeof person.firstName === "string" && typeof person.lastName === "string" &&
+      (person.email == null || typeof person.email === "string"));
+    if (!validPeople(recipients?.students) || !validPeople(recipients?.guardians) || !Array.isArray(savedPreferences)) throw Error("Invalid preference lookup response.");
+    setStudents(recipients.students);
+    setGuardians(recipients.guardians);
+    setPreferences(savedPreferences);
     setMessage("");
   }
   useEffect(() => {

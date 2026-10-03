@@ -1,19 +1,13 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { WorkspaceNav } from "@/components/workspace-nav";
 import { StandardSelectField } from "@/components/design-system/controls";
 import { academyApi, apiHeaders } from "@/lib/api";
+import { courseUpdatePayload, type CourseUpdateSource } from "@/lib/course-update";
 
 type Academy = { id: string; name: string };
-type Course = {
-  id: string;
-  name: string;
-  academyType: string;
-  level?: string | null;
-  description?: string | null;
-  isActive: boolean;
-};
+type Course = CourseUpdateSource;
 const courseTypes = ["Music", "Tuition", "Coaching"];
 
 export default function CoursesPage() {
@@ -29,6 +23,19 @@ export default function CoursesPage() {
   const [editType, setEditType] = useState("Music");
   const [editLevel, setEditLevel] = useState("");
   const [savingId, setSavingId] = useState<string | null>(null);
+  const saveInFlight = useRef(false);
+  function startSaving(id: string) {
+    if (saveInFlight.current) return false;
+    saveInFlight.current = true;
+    setSavingId(id);
+    return true;
+  }
+  function finishSaving() { saveInFlight.current = false; setSavingId(null); }
+  async function refreshAfterSave(id: string, notice: string) {
+    setMessage(notice);
+    try { await loadCourses(id); }
+    catch { setMessage(`${notice} The course list could not be refreshed. Refresh the page to see the latest courses.`); }
+  }
   async function loadAcademies() {
     const response = await academyApi("/api/academies", { cache: "no-store" });
     if (!response.ok) throw new Error();
@@ -56,71 +63,80 @@ export default function CoursesPage() {
   }, [academyId]);
   async function createCourse(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const response = await academyApi(`/api/academies/${academyId}/courses`, {
-      method: "POST",
-      headers: apiHeaders(true),
-      body: JSON.stringify({ name, academyType: type, level }),
-    });
-    if (!response.ok) return setMessage("The course could not be saved.");
-    setName("");
-    setLevel("");
-    setMessage("");
-    await loadCourses(academyId);
+    if (saveInFlight.current) return;
+    if (!academyId) return setMessage("Select an academy before creating the course.");
+    if (!name.trim()) return setMessage("Course name is required.");
+    if (!startSaving("create")) return;
+    setMessage("Saving course…");
+    const unconfirmed = "The course save could not be confirmed. Your details are still here. Check the course list before trying again.";
+    try {
+      const response = await academyApi(`/api/academies/${academyId}/courses`, {
+        method: "POST",
+        headers: apiHeaders(true),
+        body: JSON.stringify({ name, academyType: type, level }),
+      });
+      if (!response.ok) return setMessage(response.status >= 500 ? unconfirmed : "The course could not be saved.");
+      setName("");
+      setType("Music");
+      setLevel("");
+      await refreshAfterSave(academyId, "Course created.");
+    } catch { setMessage(unconfirmed); }
+    finally { finishSaving(); }
   }
   function beginEdit(course: Course) {
+    if (saveInFlight.current) return;
     setEditingId(course.id);
     setEditName(course.name);
     setEditType(course.academyType);
     setEditLevel(course.level ?? "");
   }
   async function saveCourse(course: Course) {
+    if (saveInFlight.current || !academyId) return;
     if (!editName.trim()) return setMessage("Course name is required.");
-    setSavingId(course.id);
-    const response = await academyApi(
-      `/api/academies/${academyId}/courses/${course.id}`,
-      {
-        method: "PUT",
-        headers: apiHeaders(true),
-        body: JSON.stringify({
-          name: editName,
-          academyType: editType,
-          level: editLevel || null,
-          description: course.description,
-          durationMonths: null,
-          isActive: course.isActive,
-        }),
-      },
-    );
-    setSavingId(null);
-    if (!response.ok) return setMessage("The course could not be updated.");
-    setEditingId(null);
-    setMessage("Course updated.");
-    await loadCourses(academyId);
+    if (!startSaving(course.id)) return;
+    setMessage("Updating course…");
+    const unconfirmed = "The course update could not be confirmed. Your details are still here. Check the course list before trying again.";
+    try {
+      const response = await academyApi(
+        `/api/academies/${academyId}/courses/${course.id}`,
+        {
+          method: "PUT",
+          headers: apiHeaders(true),
+          body: JSON.stringify(courseUpdatePayload(course, {
+            name: editName,
+            academyType: editType,
+            level: editLevel || null,
+          })),
+        },
+      );
+      if (!response.ok) return setMessage(response.status >= 500 ? unconfirmed : "The course could not be updated.");
+      setEditingId(null);
+      await refreshAfterSave(academyId, "Course updated.");
+    } catch { setMessage(unconfirmed); }
+    finally { finishSaving(); }
   }
   async function toggleActive(course: Course) {
-    setSavingId(course.id);
-    const response = await academyApi(
-      `/api/academies/${academyId}/courses/${course.id}`,
-      {
-        method: "PUT",
-        headers: apiHeaders(true),
-        body: JSON.stringify({
-          name: course.name,
-          academyType: course.academyType,
-          level: course.level,
-          description: course.description,
-          durationMonths: null,
-          isActive: !course.isActive,
-        }),
-      },
-    );
-    setSavingId(null);
-    if (!response.ok)
-      return setMessage("The course status could not be updated.");
-    setMessage(
-      course.isActive ? "Course marked inactive." : "Course reactivated.",
-    );
-    await loadCourses(academyId);
+    if (!academyId || !startSaving(course.id)) return;
+    setMessage("Updating course status…");
+    const unconfirmed = "The course status update could not be confirmed. Check the course list before trying again.";
+    try {
+      const response = await academyApi(
+        `/api/academies/${academyId}/courses/${course.id}`,
+        {
+          method: "PUT",
+          headers: apiHeaders(true),
+          body: JSON.stringify(courseUpdatePayload(course, {
+            isActive: !course.isActive,
+          })),
+        },
+      );
+      if (!response.ok)
+        return setMessage(response.status >= 500 ? unconfirmed : "The course status could not be updated.");
+      await refreshAfterSave(academyId,
+        course.isActive ? "Course marked inactive." : "Course reactivated.",
+      );
+    } catch { setMessage(unconfirmed); }
+    finally { finishSaving(); }
   }
   const typeOptions = courseTypes.map((value) => ({ value, label: value }));
   return (
@@ -139,7 +155,7 @@ export default function CoursesPage() {
           </div>
         </header>
         {message && (
-          <p className="enterprise-page-state courses-message">{message}</p>
+          <p role="status" className="enterprise-page-state courses-message">{message}</p>
         )}
         {academies.length === 0 ? (
           <p className="courses-empty">Create an academy first.</p>
@@ -148,9 +164,10 @@ export default function CoursesPage() {
             <section className="courses-academy">
               <span>Academy</span>
               <StandardSelectField
+                disabled={savingId !== null}
                 name="academy"
                 value={academyId}
-                onChange={setAcademyId}
+                onChange={(id) => { if (!saveInFlight.current) setAcademyId(id); }}
                 placeholder="Select academy"
                 options={academies.map((academy) => ({
                   value: academy.id,
@@ -170,6 +187,7 @@ export default function CoursesPage() {
                   <label>
                     <span>Course or subject name</span>
                     <input
+                      disabled={savingId !== null}
                       value={name}
                       onChange={(event) => setName(event.target.value)}
                       placeholder="Course or subject name"
@@ -177,6 +195,7 @@ export default function CoursesPage() {
                     />
                   </label>
                   <StandardSelectField
+                    disabled={savingId !== null}
                     name="course-type"
                     value={type}
                     onChange={setType}
@@ -186,12 +205,13 @@ export default function CoursesPage() {
                   <label>
                     <span>Level</span>
                     <input
+                      disabled={savingId !== null}
                       value={level}
                       onChange={(event) => setLevel(event.target.value)}
                       placeholder="Optional level"
                     />
                   </label>
-                  <button className="enterprise-action-button courses-create-button">
+                  <button disabled={savingId !== null} className="enterprise-action-button courses-create-button">
                     Create course
                   </button>
                 </div>
@@ -217,6 +237,7 @@ export default function CoursesPage() {
                             <label>
                               <span>Course name</span>
                               <input
+                                disabled={savingId !== null}
                                 value={editName}
                                 onChange={(event) =>
                                   setEditName(event.target.value)
@@ -224,6 +245,7 @@ export default function CoursesPage() {
                               />
                             </label>
                             <StandardSelectField
+                              disabled={savingId !== null}
                               name={`course-type-${course.id}`}
                               value={editType}
                               onChange={setEditType}
@@ -233,6 +255,7 @@ export default function CoursesPage() {
                             <label>
                               <span>Level</span>
                               <input
+                                disabled={savingId !== null}
                                 value={editLevel}
                                 onChange={(event) =>
                                   setEditLevel(event.target.value)
@@ -245,13 +268,14 @@ export default function CoursesPage() {
                             <button
                               type="button"
                               onClick={() => void saveCourse(course)}
-                              disabled={savingId === course.id}
+                              disabled={savingId !== null}
                             >
                               Save
                             </button>
                             <button
                               type="button"
-                              onClick={() => setEditingId(null)}
+                              onClick={() => { if (!saveInFlight.current) setEditingId(null); }}
+                              disabled={savingId !== null}
                             >
                               Cancel
                             </button>
@@ -273,13 +297,14 @@ export default function CoursesPage() {
                             <button
                               type="button"
                               onClick={() => beginEdit(course)}
+                              disabled={savingId !== null}
                             >
                               Edit
                             </button>
                             <button
                               type="button"
                               onClick={() => void toggleActive(course)}
-                              disabled={savingId === course.id}
+                              disabled={savingId !== null}
                             >
                               {course.isActive ? "Deactivate" : "Reactivate"}
                             </button>

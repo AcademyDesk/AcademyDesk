@@ -1,0 +1,6 @@
+{
+  "date": "2026-10-01",
+  "records": [
+    { "file": "apps/web/src/app/courses/page.tsx", "sha256": "a70cabae64190786265959f6f83ea8d67efaca94aaf28e874e333e9ffa7d3e07" }
+  ]
+}

@@ -28,7 +28,7 @@ public sealed class PlatformControlController(AcademyDeskDbContext db, UserManag
             OpenSupportCases = await db.PlatformSupportCases.CountAsync(x => x.Status != "Resolved" && x.Status != "Closed", token),
             TotalBilled = await invoices.Where(x => x.Status != "Draft" && x.Status != "Void").SumAsync(x => (decimal?)x.Amount, token) ?? 0,
             CollectedBilling = await invoices.Where(x => x.Status == "Paid").SumAsync(x => (decimal?)x.Amount, token) ?? 0,
-            OutstandingBilling = await invoices.Where(x => x.Status == "Issued" || x.Status == "Overdue").SumAsync(x => (decimal?)x.Amount, token) ?? 0,
+            OutstandingBilling = await invoices.Where(x => x.Status == "Issued" || x.Status == "Overdue" || x.Status == "Payment submitted").SumAsync(x => (decimal?)x.Amount, token) ?? 0,
             OverdueInvoices = await invoices.CountAsync(x => x.Status == "Overdue", token),
             Plans = await academies.GroupBy(x => x.SubscriptionPlan).Select(x => new { Plan = x.Key, Count = x.Count() }).ToListAsync(token),
             RecentAudit = await db.PlatformAuditEntries.AsNoTracking().OrderByDescending(x => x.OccurredAtUtc).Take(8).Select(x => new { x.Id, x.Action, x.EntityType, x.ActorName, x.OccurredAtUtc }).ToListAsync(token)
@@ -210,6 +210,10 @@ public sealed class PlatformControlController(AcademyDeskDbContext db, UserManag
     public async Task<ActionResult> DeleteActivityLogs(DeleteActivityLogsRequest request, CancellationToken token)
     {
         if (!await IsPlatformOwner()) return Forbid();
+        if (request.Scope is not null
+            && !string.Equals(request.Scope, "PlatformOwner", StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(request.Scope, "AcademyAdmin", StringComparison.OrdinalIgnoreCase))
+            return BadRequest(new { message = "Choose a valid activity-log scope." });
         if (request.ToUtc <= request.FromUtc) return BadRequest(new { message = "Choose a valid start and end date." });
         var includePlatform = !string.Equals(request.Scope, "AcademyAdmin", StringComparison.OrdinalIgnoreCase);
         var includeAdmin = !string.Equals(request.Scope, "PlatformOwner", StringComparison.OrdinalIgnoreCase);

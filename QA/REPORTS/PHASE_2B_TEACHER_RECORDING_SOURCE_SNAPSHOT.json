@@ -1,0 +1,239 @@
+{
+  "date": "2026-10-01",
+  "commit": "20bb6047f9edf733ac8e2a226621cc582ec54b3c",
+  "scope": "Teacher recording permission-pending UX fix; actual local start/pause/resume/stop/upload/saved playback; real denial pending; explicit media/hook doubles",
+  "records": [
+    {
+      "file": "apps/api/AcademyDesk.Api.csproj",
+      "sha256": "ecd476787b7ebfa2a36bd6870e58bcfcc27bf481f8aea2a25c7a8379c18aeed5"
+    },
+    {
+      "file": "apps/api/appsettings.Production.json",
+      "sha256": "0ee5871cf4958ad89808b312748c53d639ec3af83bfa2c0184ea1a5bdc803301"
+    },
+    {
+      "file": "apps/api/Controllers/ClassMaterialDownloadTicketsController.cs",
+      "sha256": "ae814b4cff98c88f2b0879c07eaa706d354a217cbe7936b9394c34ddaf75176b"
+    },
+    {
+      "file": "apps/api/Controllers/ClassMaterialFilesController.cs",
+      "sha256": "c662626b00f31ffa9f9af4b5e7cdc34db95b299166570b9a10072ec2400a2c24"
+    },
+    {
+      "file": "apps/api/Controllers/ClassMediaContentController.cs",
+      "sha256": "b11b28337c240fa580a1f780b1656ad8efdbd3da8f69451d87ba30a69dacd84a"
+    },
+    {
+      "file": "apps/api/Controllers/ClassMediaUploadsController.cs",
+      "sha256": "8b79f3a85b6c6dca8303f4bb8d18df4b011583141b2e67e4dd4e889018a001e5"
+    },
+    {
+      "file": "apps/api/Controllers/TeacherPortalController.cs",
+      "sha256": "b2b0df5e39d07f9200e0f80d81954f69c43915261d1d7ed378ab05600857d226"
+    },
+    {
+      "file": "apps/api/Data/AcademyDeskDbContext.cs",
+      "sha256": "f77581f6e97b38e84dfec3bd022118a8da9858b9c5cb637daa6d1a25c8fa7b1e"
+    },
+    {
+      "file": "apps/api/Domain/Entities/ClassMediaUploadSession.cs",
+      "sha256": "00166f9d0dbfbf315995d39a5db0f0be8a15dbbab02a043516f60339b0969d16"
+    },
+    {
+      "file": "apps/api/Infrastructure/Media/AzureMediaBlobStore.cs",
+      "sha256": "ceab9c8fc4d0fa363f43c35195ca71c8f40db96c4508b409a38e7d5931b212a3"
+    },
+    {
+      "file": "apps/api/Infrastructure/Media/ClassMaterialAccess.cs",
+      "sha256": "4a05071cfb919bbe8421b6fc34921a54a2b9ae3a8a73dba29e4d2f308a371668"
+    },
+    {
+      "file": "apps/api/Infrastructure/Media/ClassMaterialDownloadHandler.cs",
+      "sha256": "72cbaf2c673bf5e8ff3d067f28193a14b1d7a2ad5c25629bbc451cefe350ade0"
+    },
+    {
+      "file": "apps/api/Infrastructure/Media/ClassMaterialDownloadTickets.cs",
+      "sha256": "22febd997f6cf5a811e6b547bf9a1de9a3d032af06b0c8f463fa3536fb5e407f"
+    },
+    {
+      "file": "apps/api/Infrastructure/Media/ClassMediaUploadPolicy.cs",
+      "sha256": "5836748a4719136cf2b56b177d21e6a523281b3ad3de827c0352a343b42b99b9"
+    },
+    {
+      "file": "apps/api/Infrastructure/Media/IMediaBlobStore.cs",
+      "sha256": "d3c62ae204e55e05fb09290870c0b12824f9a0be5757b3d850aad8595e96180d"
+    },
+    {
+      "file": "apps/api/Infrastructure/Media/MediaStorageOptions.cs",
+      "sha256": "dd52ce52722876f2d3fc1b102cd77053d067f18a97a64f0148a1691fabfb34ba"
+    },
+    {
+      "file": "apps/api/Infrastructure/Media/MediaStorageRegistration.cs",
+      "sha256": "8eaaa605211f75f992e7f84651a23067a6ea3b913b348e72f189ddbd8553e53b"
+    },
+    {
+      "file": "apps/api/Infrastructure/Media/MediaUpload.cs",
+      "sha256": "0ce8604b9efca83e400e78a8bbfdfce96f55631807e91d7f2a856de3f1e4139e"
+    },
+    {
+      "file": "apps/api/Infrastructure/Media/PrivateMaterialFileProvider.cs",
+      "sha256": "f9800f40eddaacfed0d89eb5a99ee20592608a6c4efb292730a84c20ca46ad5e"
+    },
+    {
+      "file": "apps/api/Migrations/20260930125012_AddPrivateClassMediaUploadSessions.cs",
+      "sha256": "deb95d68bc48a1eaaa7fe5142627c596c084a9fa75f169510671f9e5ec598613"
+    },
+    {
+      "file": "apps/api/Migrations/20260930125012_AddPrivateClassMediaUploadSessions.Designer.cs",
+      "sha256": "fbf4b79a057340cce55bc9acc085eda5e5f9ada62b1e6cc151031278169a327c"
+    },
+    {
+      "file": "apps/api/Migrations/AcademyDeskDbContextModelSnapshot.cs",
+      "sha256": "234c692ec9e1bba6759faeed1f0ad67cbdbd448bda9304092b80f068b27d3f5c"
+    },
+    {
+      "file": "apps/api/Program.cs",
+      "sha256": "acd42c20105d1ccc39fd4619a608f1d37361e799f09816a5797030a3c9bace2e"
+    },
+    {
+      "file": "apps/web/src/app/globals.css",
+      "sha256": "b91b3f7eee796d89585b02b302acf1e4c7a179bb5a9664059428e0c7689f83e8"
+    },
+    {
+      "file": "apps/web/src/app/portal/page.tsx",
+      "sha256": "ac15ec13005a1d36ae381d57a2d9a311c79c545d6eef3d32ad7a4b4b3d4e816c"
+    },
+    {
+      "file": "apps/web/src/app/student-onboarding/page.tsx",
+      "sha256": "57221a2481d008e49749acd86aa6453efce8b661a4b36d7085cae983dc927017"
+    },
+    {
+      "file": "apps/web/src/app/student-profile/page.tsx",
+      "sha256": "eccfdba909c7532048ea4a0a1fa1413ccbe4abf99a3cb1ad8468d8c0c8ee7a93"
+    },
+    {
+      "file": "apps/web/src/app/teacher/page.tsx",
+      "sha256": "a065e09af508de2ee56581233c591eb6324ed18c631f003d554412ac7cc911dc"
+    },
+    {
+      "file": "apps/web/src/components/private-material-actions.tsx",
+      "sha256": "8c4afaa857c9d33c84699a713e6f3760dd8dbcdacdd68d7ecd3c411be6c1ffe4"
+    },
+    {
+      "file": "apps/web/src/components/teacher-material-uploader.tsx",
+      "sha256": "61bc9ce82ab4c5904cf8961cfc736082cf3027d53bd34a754927e30edec4e25d"
+    },
+    {
+      "file": "apps/web/src/lib/api.ts",
+      "sha256": "a1288f9e78eacf4d70618e0145a55a4eb8a22d8359ac643b60db99492c0ea3d7"
+    },
+    {
+      "file": "apps/web/src/lib/class-media-upload.ts",
+      "sha256": "217907642a8c223bbb5ee3c87d4e7706302bfdb0206a80aae3bb861db16bb7d1"
+    },
+    {
+      "file": "apps/web/src/lib/private-material.ts",
+      "sha256": "676d611bf504f57da43f8e79f9beecb00e5335817d26ae2e361681518d1a5003"
+    },
+    {
+      "file": "QA/tools/class-media-client.test.cjs",
+      "sha256": "908f3ca451f7dbea91bc5271cf5d41dbab24bcf1a25bb2b33a807f990583e59a"
+    },
+    {
+      "file": "QA/tools/create-browser-media-fixtures.cjs",
+      "sha256": "e0290fe24a56e49fbd665a4a38f259f6c0fe7d145974519c7e5276c1f25b879b"
+    },
+    {
+      "file": "QA/tools/native-download-browser-fixture.cjs",
+      "sha256": "2bcf53e4804635fc7091d0b55f24bd9244a86d21cdcfe1fe6124970d26de8ece"
+    },
+    {
+      "file": "QA/tools/Run-BrowserMediaFrontend.ps1",
+      "sha256": "db26300d3dc314f60674234599afb737305e1b9970207b3d69b4c12fdf5e4f13"
+    },
+    {
+      "file": "QA/tools/SqlHarness/BlobUploadRegression.cs",
+      "sha256": "9479c8410f79f12043ada5dcac46685002c079d4b5be0a44a5ec206247deb028"
+    },
+    {
+      "file": "QA/tools/SqlHarness/BrowserMediaHost.cs",
+      "sha256": "9e65917739d6365648fb20057207c1d32af41b96a8d3823431aaa1192fc0fd94"
+    },
+    {
+      "file": "QA/tools/SqlHarness/Program.cs",
+      "sha256": "397f4db72e745df61ed67ca8c47d1746ab89d5d6bd6c7e38b479fe7e5cd23be0"
+    },
+    {
+      "file": "QA/tools/SqlHarness/QaBlobFixture.cs",
+      "sha256": "1660c8c39458cb5e4c2064671252be6a109eda8d976589b70096658b7c0de8da"
+    },
+    {
+      "file": "QA/tools/SqlHarness/QaDesignTimeContextFactory.cs",
+      "sha256": "2cdc91be94e3ab454109b3d9dcb02ac7f73ae8db6cdca2520f6d4c5d53a4ab77"
+    },
+    {
+      "file": "QA/tools/SqlHarness/Run-BlobMedia.ps1",
+      "sha256": "2927e259973173405f491da3190c6ee9d3551d9fafc0a7c1e102811f9b2e97cd"
+    },
+    {
+      "file": "QA/tools/SqlHarness/SqlHarness.csproj",
+      "sha256": "95ad797ba244c1f0c36715b12f299e958b16bd9496d4559e78540672f03ee169"
+    },
+    {
+      "file": "tests/AcademyDesk.Api.Tests/ClassMaterialDownloadTicketTests.cs",
+      "sha256": "0aed520145dfa98c27424c6dde5531da4b5ae48e8e0dd206d81b407e63d93805"
+    },
+    {
+      "file": "tests/AcademyDesk.Api.Tests/ClassMediaUploadPolicyTests.cs",
+      "sha256": "f02e98fe309ce2d18ae4b12fe70d1353725f1973b95fefd1c540a52635a07170"
+    },
+    {
+      "file": "tests/AcademyDesk.Api.Tests/Infrastructure/QaApiFactory.cs",
+      "sha256": "806f1e08dd0ce301eb986efdc211ac3520e1dcbd13491e92d3a9702035a8c55a"
+    },
+    {
+      "file": "tests/AcademyDesk.Api.Tests/MediaUploadTests.cs",
+      "sha256": "45ad50add842f885676d1b1b918f02e4a5c16d64d38185dafdbbc5124712e036"
+    },
+    {
+      "file": "QA/tools/create-browser-video-fixture.cjs",
+      "sha256": "e0816f1075c52a08f3f87b6c5bba511b9c9cffe1802f516d49375fb15fe81fc1"
+    },
+    {
+      "file": "QA/tools/create-browser-large-fixture.cjs",
+      "sha256": "5a71fa9698867efe53ae194e138f96cb83cc61c7b78fb8db6cad4d83c3ea5e86"
+    },
+    {
+      "file": "QA/tools/SqlHarness/BrowserFailureBlobStore.cs",
+      "sha256": "c2dd4bc00e9bd8e12ddc9912e1ec89d4cea21ad96e3e38f98f306aae395542e9"
+    },
+    {
+      "file": "QA/tools/SqlHarness/BrowserCompletionLoss.cs",
+      "sha256": "67b2430ac1e04d201e747aa5d8b86456bd5b234b902598e307c7c48e89f1646a"
+    },
+    {
+      "file": "QA/tools/SqlHarness/BrowserUploadRevocation.cs",
+      "sha256": "a5b13f64daa0bb18281a3f9c204d1bd8939885c2a30de208f335c28a441babbd"
+    },
+    {
+      "file": "QA/tools/Verify-BrowserDraftIsolation.ps1",
+      "sha256": "88c5ad1d29429d3eb7d8f6cd44599e1c7bd18496725454accefee8bf2b87ae82"
+    },
+    {
+      "file": "apps/web/src/lib/teacher-workspace.ts",
+      "sha256": "4f30cdb5b91cafc91d7612f4390453c447b87f950194b1adeab71a2dcb174440"
+    },
+    {
+      "file": "QA/tools/teacher-workspace.test.cjs",
+      "sha256": "2911cd5790ecb229aa2317cadf2bc8045168daf55a54cf7e64e8bc8c75292a03"
+    },
+    {
+      "file": "QA/tools/teacher-recording.test.cjs",
+      "sha256": "a4517c943097f0b8e887dd45edcc9b035cbc545689eaf4e4f840b19b5c01867a"
+    },
+    {
+      "file": "QA/tools/Verify-BrowserRecording.ps1",
+      "sha256": "68a8568848b5fbfbc95a2c76cde46cda79d48cbfdcbc66e8affb8c2a759e977e"
+    }
+  ]
+}

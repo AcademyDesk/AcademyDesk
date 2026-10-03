@@ -1,0 +1,48 @@
+const fs = require('node:fs'), path = require('node:path'), crypto = require('node:crypto'), cp = require('node:child_process'), assert = require('node:assert/strict');
+const root = path.resolve(__dirname, '../..');
+const read = file => fs.readFileSync(path.join(root, file), 'utf8').replace(/^\uFEFF/, '');
+const sha = file => crypto.createHash('sha256').update(fs.readFileSync(path.join(root, file))).digest('hex');
+const prior = JSON.parse(read('QA/REPORTS/PHASE_2B_COMPLIANCE_SQL_SOURCE_SNAPSHOT.json'));
+const snapshot = JSON.parse(read('QA/REPORTS/PHASE_2B_CERTIFICATE_ENROLLMENT_SOURCE_SNAPSHOT.json'));
+assert.equal(cp.execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(), snapshot.commit);
+const intentional = ['QA/00_QA_README.md', 'QA/REPORTS/PHASE_2_START_PLAN.md', 'QA/ISSUES/INDEX.md', 'QA/03_TEST_MATRIX.md', 'QA/ISSUES/BUG-DATA-0046.md'];
+for (const entry of [...snapshot.sources, ...snapshot.evidence, ...snapshot.binaries, ...snapshot.normalBinaries]) assert.equal(sha(entry.file), entry.sha256, entry.file);
+for (const entry of [...prior.sources, ...prior.evidence, ...prior.binaries, ...prior.normalBinaries]) if (!intentional.includes(entry.file)) assert.equal(sha(entry.file), entry.sha256, 'Accepted predecessor preserved: ' + entry.file);
+for (const entry of snapshot.beforeSources) assert.equal(entry.sha256, prior.sources.find(x => x.file === entry.file).sha256, 'Accepted starting source: ' + entry.file);
+assert.deepEqual(snapshot.normalBinaries, prior.normalBinaries);
+assert.deepEqual(snapshot.productBefore, { file: 'apps/api/Controllers/CertificatesController.cs', sha256: '061416316eb6a350dd7c92c88db72b33ada2cdc9e5d1a32fd73f426bb4450755' });
+const controllerDiff = cp.execFileSync('git', ['diff', '--', 'apps/api/Controllers/CertificatesController.cs'], { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+assert.equal(controllerDiff.split('\n').filter(x => x.startsWith('+') && !x.startsWith('+++')).length, 4, 'Only four product lines added to this previously clean controller');
+assert.equal(controllerDiff.split('\n').filter(x => x.startsWith('-') && !x.startsWith('---')).length, 0);
+assert.match(read('apps/api/Controllers/CertificatesController.cs'), /x\.AcademyId == academyId && x\.StudentId == request\.StudentId && x\.BatchId == request\.BatchId\.Value/);
+assert.match(read('apps/api/Controllers/CertificatesController.cs'), /x\.Status != null && \(x\.Status\.ToLower\(\) == "active" \|\| x\.Status\.ToLower\(\) == "completed"\)/);
+
+function results(file, expected) {
+    const text = read(file), counters = text.match(/<Counters\b[^>]+>/)[0];
+    for (const [key, value] of Object.entries(expected)) assert.match(counters, new RegExp('\\b' + key + '="' + value + '"'));
+    assert.match(counters, /notExecuted="0"/);
+    const rows = [...text.matchAll(/<UnitTestResult\b[^>]+>/g)].map(x => x[0]);
+    assert.equal(rows.length, expected.total);
+    return rows;
+}
+results('QA/EVIDENCE/logs/certificate-enrollment-baseline/certificate-enrollment-baseline.trx', { total: 11, passed: 11, failed: 0 });
+const baseline = results('QA/EVIDENCE/logs/certificate-enrollment-regression-baseline/certificate-enrollment-regression-baseline.trx', { total: 31, passed: 20, failed: 11 });
+const baselineFailures = baseline.filter(x => /outcome="Failed"/.test(x));
+assert.equal(baselineFailures.filter(x => x.includes('Unrelated_association_is_rejected_without_writes')).length, 3);
+assert.equal(baselineFailures.filter(x => x.includes('Nonqualifying_enrollment_status_is_rejected_without_writes') && !x.includes('status: null')).length, 7);
+assert.equal(baselineFailures.filter(x => x.includes('status: null')).length, 1, 'One fixture error, not a product issuance failure');
+const initial = results('QA/EVIDENCE/logs/certificate-enrollment-final/certificate-enrollment-final.trx', { total: 1019, passed: 1018, failed: 1 });
+assert.ok(initial.find(x => /outcome="Failed"/.test(x)).includes('status: null'));
+const final = results('QA/EVIDENCE/logs/certificate-enrollment-final-corrected/certificate-enrollment-final-corrected.trx', { total: 1019, passed: 1019, failed: 0 });
+const certificate = final.filter(x => x.includes('CertificateEnrollmentTests.'));
+assert.equal(certificate.length, 31); assert.equal(final.length - certificate.length, 988);
+assert.equal(certificate.filter(x => x.includes('Enrollment_status_is_required_by_the_existing_model')).length, 1);
+for (const file of ['phase-2b-certificate-enrollment-baseline.log', 'phase-2b-certificate-enrollment-regression-baseline.log', 'phase-2b-certificate-enrollment-final.log', 'phase-2b-certificate-enrollment-final-corrected.log']) assert.doesNotMatch(read('QA/EVIDENCE/logs/' + file), /\bwarning (?:CS|NU|MSB)[0-9]+\b/);
+assert.match(read('QA/EVIDENCE/logs/phase-2b-certificate-enrollment-final-corrected.log'), /Passed!\s+- Failed:\s+0, Passed:\s+1019, Skipped:\s+0, Total:\s+1019/);
+const report = read('QA/REPORTS/PHASE_2B_CERTIFICATE_ENROLLMENT_REPAIR.md');
+assert.match(report, /Ten are product failures/); assert.match(report, /One is QA-only/);
+assert.match(report, /direct-controller\/EF InMemory only/); assert.match(report, /Issue\/Phase2B\/release remain OPEN/);
+assert.match(read('QA/ISSUES/BUG-DATA-0046.md'), /\| Status \| OPEN \|/);
+const diff = cp.spawnSync('git', ['diff', '--check'], { cwd: root, encoding: 'utf8' });
+assert.equal(diff.status, 0, 'git diff --check: ' + diff.stdout.slice(0, 500));
+console.log('PASS Certificate enrollment API:approved Active/Completed guard;10 product baseline failures plus1 separate fixture error;1019 backend PASS (31 certificate,988 existing). Accepted predecessor/normal assemblies retained; no current certificate HTTP-SQL/UI/device or release closure claim. Next matching certificate picker,Sol High; no dev service/Azure/commit/deploy.');

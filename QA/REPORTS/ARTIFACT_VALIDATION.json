@@ -1,0 +1,110 @@
+{
+  "checkType": "QA artifact consistency, NOT application testing",
+  "timestamp": "2026-09-30T04:59:16.911Z",
+  "checks": [
+    {
+      "name": "current commit matches recorded evidence",
+      "status": "PASS"
+    },
+    {
+      "name": "source file set matches inventory (including new files)",
+      "status": "PASS"
+    },
+    {
+      "name": "recorded source fingerprint matches inventory",
+      "status": "PASS"
+    },
+    {
+      "name": "tracked repository hashes match including configuration and lockfiles",
+      "status": "PASS"
+    },
+    {
+      "name": "native form occurrence keys are unique and fields resolve",
+      "status": "PASS"
+    },
+    {
+      "name": "retained evidence matches recorded digests",
+      "status": "PASS"
+    },
+    {
+      "name": "acceptance and conditional next-phase document links resolve",
+      "status": "PASS"
+    },
+    {
+      "name": "existing test results reconcile with retained TRX",
+      "status": "PASS"
+    },
+    {
+      "name": "lint totals reconcile with retained diagnostics",
+      "status": "PASS"
+    },
+    {
+      "name": "required control-centre documents",
+      "status": "PASS"
+    },
+    {
+      "name": "unique valid scenario IDs",
+      "status": "PASS"
+    },
+    {
+      "name": "every controller action has its scenario",
+      "status": "PASS"
+    },
+    {
+      "name": "every route has visual/state coverage",
+      "status": "PASS"
+    },
+    {
+      "name": "every native form has an explicit scenario",
+      "status": "PASS"
+    },
+    {
+      "name": "counts reconcile",
+      "status": "PASS"
+    },
+    {
+      "name": "issue references resolve",
+      "status": "PASS"
+    },
+    {
+      "name": "application source hashes unchanged since inventory",
+      "status": "PASS"
+    },
+    {
+      "name": "no unexecuted proposal reported as PASS",
+      "status": "PASS"
+    },
+    {
+      "name": "all issues remain open",
+      "status": "PASS"
+    },
+    {
+      "name": "issues have explicit confirmation and final-verification states",
+      "status": "PASS"
+    },
+    {
+      "name": "reviewed coverage batch matches pinned inventory and permanent Test IDs",
+      "status": "PASS"
+    },
+    {
+      "name": "all declarations have distinct coverage mappings",
+      "status": "PASS"
+    },
+    {
+      "name": "framework endpoint specification is distinct from runtime evidence",
+      "status": "PASS"
+    },
+    {
+      "name": "semantic evidence locator matches inventory without claiming acceptance",
+      "status": "PASS"
+    },
+    {
+      "name": "no unapproved golden images",
+      "status": "PASS"
+    },
+    {
+      "name": "human-authored control-document local links resolve",
+      "status": "PASS"
+    }
+  ]
+}

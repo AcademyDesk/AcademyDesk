@@ -1,0 +1,27 @@
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),cp=require('node:child_process'),os=require('node:os'),assert=require('node:assert/strict');
+const root=path.resolve(__dirname,'../..'),read=f=>fs.readFileSync(path.join(root,f),'utf8').replace(/^\uFEFF/,''),sha=f=>crypto.createHash('sha256').update(fs.readFileSync(path.join(root,f))).digest('hex');
+const snapshot=JSON.parse(read('QA/REPORTS/PHASE_2B_RESOURCE_SCOPE_SQL_SOURCE_SNAPSHOT.json')),prior=JSON.parse(read('QA/REPORTS/PHASE_2B_RESOURCE_SCOPE_SOURCE_SNAPSHOT.json'));
+assert.equal(cp.execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim(),snapshot.commit);
+for(const x of [...snapshot.sources,...snapshot.evidence,...snapshot.binaries,...snapshot.normalBinaries])assert.equal(sha(x.file),x.sha256,x.file);
+const intentional=['QA/tools/SqlHarness/Program.cs','QA/tools/SqlHarness/Run-ReconciledPayment.ps1','QA/00_QA_README.md','QA/REPORTS/PHASE_2_START_PLAN.md','QA/ISSUES/INDEX.md','QA/03_TEST_MATRIX.md','QA/ISSUES/BUG-DATA-0044.md'];
+for(const x of [...prior.sources,...prior.evidence,...prior.binaries,...prior.normalBinaries])if(!intentional.includes(x.file))assert.equal(sha(x.file),x.sha256,'Accepted predecessor preserved '+x.file);
+assert.deepEqual(snapshot.normalBinaries,prior.normalBinaries);
+for(const x of snapshot.beforeSources.filter(x=>prior.sources.some(y=>y.file===x.file)))assert.equal(x.sha256,prior.sources.find(y=>y.file===x.file).sha256,'Accepted starting source '+x.file);
+const log=read('QA/EVIDENCE/logs/phase-2b-resource-scope-sql.log');assert.match(log,/REGRESSION PASS:73 cases/);assert.equal([...log.matchAll(/^RESOURCESCOPE CASE .+ PASS\.$/gm)].length,73);
+for(const endpoint of ['link','upload'])for(const mode of ['Match','Mismatch','BatchOnly','SubjectOnly','AcademyWide','MissingBatch','ForeignBatch','EmptyBatch','MissingCourse','ForeignCourse','EmptyCourse','InactiveMatch','InactiveBatchOnly','InactiveSubjectOnly','InactiveMismatch'])assert.ok(log.includes('CASE '+endpoint+'-'+mode+' PASS.'));
+for(const endpoint of ['link','upload','list','publish'])for(const actor of ['anonymous','foreign-actor','teacher'])assert.ok(log.includes('CASE '+endpoint+'-'+actor+'-denied PASS.'));
+for(const label of ['link-subject-B','upload-matched-B','link-binding-no-body','link-binding-null-body','link-binding-invalid-guid','upload-binding-BatchId','upload-binding-CourseId','upload-missing-file','upload-empty-file','upload-disallowed-extension','link-module-denied','upload-module-denied','full-scoped-ordered-list-no-write','student-A-exact-audience','student-B-exact-audience','student-dual-exact-audience','student-no-enrollment-global-only','guardian-A-exact-audience','student-other-denied','foreign-student-denied','family-anonymous-denied','unpublish-exact-row','republish-exact-row','student-unpublished-hidden','guardian-unpublished-hidden','student-republished-visible','publish-foreign-row-404','publish-missing-row-404','guardian-document-permission-empty','guardian-revoked-denied','completed-enrollment-global-only'])assert.ok(log.includes('CASE '+label+' PASS.'),label);
+assert.match(log,/QA ResourceScope exit=0/);assert.match(log,/application migrations=82, identity migrations=7/);assert.match(log,/Negative cleanup check refused a mismatched database marker/);
+assert.match(log,/routes=313, controller method\/routes=302, framework Identity method\/routes=10, SHA256=562F95AD3C4514C384CCC11317E91174D0BAB7203E6AA7F162FCD74E8BE81A99/);
+const id=log.match(/run=([a-f0-9]{32}) container=academydesk-qa-\1 /)[1],port=Number(log.match(/^QA SQL port=(\d+)/m)[1]);
+assert.equal(cp.spawnSync('docker',['inspect',`academydesk-qa-${id}`],{encoding:'utf8'}).status,1);
+assert.equal(fs.existsSync(path.join(os.tmpdir(),'AcademyDesk-QA',id)),false);
+assert.equal(cp.execFileSync('powershell',['-NoProfile','-Command',`@(Get-NetTCPConnection -LocalPort ${port} -State Listen -ErrorAction SilentlyContinue).Count`],{encoding:'utf8'}).trim(),'0');
+assert.match(read('QA/EVIDENCE/logs/phase-2b-resource-scope-sql-build.log'),/error CS4007/);
+assert.match(read('QA/EVIDENCE/logs/phase-2b-resource-scope-sql-build-final.log'),/0 Warning\(s\)[\s\S]*0 Error\(s\)/);
+assert.match(read('QA/EVIDENCE/resource-scope/resource-scope-suite.trx'),/<Counters total="912" executed="912" passed="912"/);
+assert.deepEqual(snapshot.checks,{retainedBackendTotal:912,httpSqlCases:73,scopeMatrixCases:30,sqlRuns:1,harnessCompileFailures:1,product:'UNCHANGED',frontend:'UNCHANGED',closure:'OPEN',browserDevice:'NOT RUN',devServices:'UNCHANGED'});
+assert.match(read('QA/ISSUES/BUG-DATA-0044.md'),/\| Status \| OPEN \|/);
+for(const f of ['QA/REPORTS/PHASE_2B_RESOURCE_SCOPE_SQL_CHECK.md','QA/ISSUES/BUG-DATA-0044.md'])for(const m of read(f).matchAll(/\]\(([^)]+)\)/g)){const target=m[1].split('#')[0];if(target&&!/^https?:/.test(target))assert.ok(fs.existsSync(path.resolve(root,path.dirname(f),target)),target);}
+assert.equal(cp.spawnSync('git',['diff','--check'],{cwd:root,encoding:'utf8'}).status,0);
+console.log('PASS Resource scope HTTP-SQL:73 real Identity/JSON/multipart/file/audit/Student-Guardian audience checks, one fresh run; accepted912 backend retained not rerun. Initial QA compiler failure corrected/retained/excluded. Controller/frontend/schema/auth/prior evidence/binaries/normal assemblies preserved; owned container/root/port cleanup verified. No dev/Azure/deploy; browser/device/linked/critical/legacy/races/faults/release gates OPEN.');

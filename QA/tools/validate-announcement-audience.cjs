@@ -1,0 +1,42 @@
+// Preservation/evidence consistency, not extra runtime test counts.
+const fs=require('node:fs'),path=require('node:path'),c=require('node:crypto'),cp=require('node:child_process'),a=require('node:assert/strict');
+const root=path.resolve(__dirname,'../..'),read=f=>fs.readFileSync(path.join(root,f),'utf8').replace(/^\uFEFF/,'').replace(/\r\n/g,'\n'),sha=f=>c.createHash('sha256').update(fs.readFileSync(path.join(root,f))).digest('hex');
+const before=JSON.parse(read('QA/EVIDENCE/announcement-audience-before.json')),receipt=JSON.parse(read('QA/EVIDENCE/announcement-audience-source-receipt.json'));
+a.equal(cp.execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim(),before.commit);
+const allowed=['apps/api/Controllers/PortalController.cs','QA/tools/SqlHarness/Program.cs','QA/tools/SqlHarness/Run-ReconciledPayment.ps1','QA/ISSUES/BUG-SEC-0009.md','QA/03_TEST_MATRIX.md','QA/REPORTS/PHASE_2_START_PLAN.md'];
+for(const e of before.retainedBefore)if(!allowed.includes(e.file))a.equal(sha(e.file),e.sha256,e.file);
+for(const e of receipt.current)a.equal(sha(e.file),e.sha256,e.file);
+for(const [copy,original] of [['PortalController.cs','apps/api/Controllers/PortalController.cs'],['Program.cs','QA/tools/SqlHarness/Program.cs'],['Run-ReconciledPayment.ps1','QA/tools/SqlHarness/Run-ReconciledPayment.ps1']])a.equal(sha('QA/EVIDENCE/announcement-audience-before/'+copy),before.retainedBefore.find(x=>x.file===original).sha256);
+const old='        var audience = user.StudentId.HasValue ? "Student" : user.TeacherId.HasValue ? "Teacher" : "Admin";',fixed='        string? audience = user.StudentId.HasValue ? "Student" : user.TeacherId.HasValue ? "Teacher" : null;\n        if (audience is null && (await users.IsInRoleAsync(user, "Owner") || await users.IsInRoleAsync(user, "AcademyAdmin"))) audience = "Admin";\n        if (audience is null) return Ok(Array.Empty<PortalAnnouncementSummary>());';
+a.ok(read('QA/EVIDENCE/announcement-audience-before/PortalController.cs').includes(old));a.equal(read('apps/api/Controllers/PortalController.cs'),read('QA/EVIDENCE/announcement-audience-before/PortalController.cs').replace(old,fixed),'Only announcement audience selection changed; invoice/certificate/nested repairs preserved');
+const oldProgram=read('QA/EVIDENCE/announcement-audience-before/Program.cs');
+a.equal(read('QA/tools/SqlHarness/Program.cs'),oldProgram.replace('args[3] != "--audit-guardian-flags"','args[3] != "--audit-announcement-audience" && args[3] != "--audit-guardian-flags"').replace('            if (auditMode == "--audit-guardian-flags") { await VerifyGuardianFlagsAsync(factory, client); return; }','            if (auditMode == "--audit-guardian-flags") { await VerifyGuardianFlagsAsync(factory, client); return; }\n            if (auditMode == "--audit-announcement-audience") { await VerifyAnnouncementAudienceAsync(factory, client); return; }'));
+const expectedRunner=read('QA/EVIDENCE/announcement-audience-before/Run-ReconciledPayment.ps1').split('\n').map(line=>{
+ if(line.includes('ValidateSet')||line.includes(' -in @'))return line.replace("'GuardianFlags'","'AnnouncementAudience','GuardianFlags'");
+ if(line.includes('qaArtifact = switch'))return line.replace("'GuardianFlags' {","'AnnouncementAudience' { 'announcement-audience-sql-baseline' }; 'GuardianFlags' {");
+ if(line.includes('GuardianFlags')&&line.includes('qaSwitch ='))return line+"\n    if ($Module -eq 'AnnouncementAudience') { $qaSwitch = '--audit-announcement-audience' }";
+ if(line.includes('QA_GUARDIAN_FLAGS_BASELINE'))return line+"\n            if ($Module -eq 'AnnouncementAudience' -and $env:QA_ANNOUNCEMENT_AUDIENCE_BASELINE -ne '1') { $qaArtifact = 'announcement-audience-sql-final' }";
+ return line.replace('GUARDIANFLAGS)','GUARDIANFLAGS|ANNOUNCEMENTAUDIENCE)');
+}).join('\n');a.equal(read('QA/tools/SqlHarness/Run-ReconciledPayment.ps1'),expectedRunner);
+const prefix='ANNOUNCEMENTAUDIENCE EVIDENCE ',parse=f=>read(f).split('\n').filter(x=>x.startsWith(prefix)).map(x=>JSON.parse(x.slice(prefix.length)));
+const baselineFile='QA/EVIDENCE/logs/phase-2b-announcement-audience-baseline.log',finalFile='QA/EVIDENCE/logs/phase-2b-announcement-audience-final.log';
+const baseline=parse(baselineFile),final=parse(finalFile);a.equal(baseline.length,4);a.ok(baseline.every(x=>x.status===200&&JSON.parse(x.response).length===1));a.ok(baseline.slice(1).every(x=>x.label.startsWith('baseline-admin-disclosure-')));
+a.equal(final.length,46);a.equal(new Set(final.map(x=>x.label)).size,46);a.equal(read(finalFile).split('\n').filter(x=>/^ANNOUNCEMENTAUDIENCE CASE .* PASS\.$/.test(x)).length,47);a.equal(final.filter(x=>x.status===401).length,1);a.equal(final.filter(x=>x.status===403).length,1);
+for(const e of [...baseline,...final]){a.equal(e.beforeDigest,e.afterDigest,e.label);a.equal(c.createHash('sha256').update(e.response).digest('hex').toUpperCase(),e.bodyDigest,e.label);}
+const find=label=>{const x=final.find(x=>x.label===label);a.ok(x,label);return JSON.parse(x.response);};
+for(const name of ['guardian','revoked-guardian','manager','finance','unlinked','unlinked-student','unlinked-teacher'])a.deepEqual(find('role-'+name),[]);
+for(const name of ['admin','owner','dual-guardian-admin'])a.ok(find('role-'+name).some(x=>x.title==='QA-ADMIN-OWNER'));
+for(const name of ['student','teacher','dual-student-teacher','dual-guardian-student','dual-guardian-teacher','dual-admin-student'])a.ok(find('role-'+name).every(x=>x.title!=='QA-ADMIN-OWNER'));
+for(const label of ['admin-role-revoked-same-token','owner-role-removed-same-token','guardian-link-revoked','guardian-portal-off'])a.deepEqual(find(label),[]);
+for(const label of ['admin-role-restored-same-token','owner-role-granted-same-token'])a.ok(find(label).some(x=>x.title==='QA-ADMIN-OWNER'));
+a.deepEqual(find('foreign-admin-scoped').map(x=>x.title),['QA-FOREIGN-ADMIN']);
+for(const variant of ['future','expired','cancelled','not-important','malformed','targeted','wrong-recipient'])for(const actor of ['admin','student','teacher'])a.ok(find('metadata-'+variant+'-'+actor).every(x=>x.title!=='QA-AUDIENCE-Both'));
+for(const file of [baselineFile,finalFile]){const log=read(file);a.match(log,/QA AnnouncementAudience exit=0/);a.match(log,/Negative cleanup check refused a mismatched database marker/);a.match(log,/application migrations=82, identity migrations=7, scoped runtime login verified; run-owned database and login removed/);a.doesNotMatch(log,/Unhandled exception|Regression failed/);const publication=JSON.parse(log.split('\n').find(x=>x.startsWith('ANNOUNCEMENTAUDIENCE PUBLICATION ')).slice('ANNOUNCEMENTAUDIENCE PUBLICATION '.length));a.equal(publication.persistedAdminAudience,true);a.equal(publication.exactOneNotificationAndPlatformAudit,true);}
+for(const file of ['baseline-build','final-build']){const log=read('QA/EVIDENCE/logs/phase-2b-announcement-audience-'+file+'.log');a.match(log,/Build succeeded/);a.match(log,/0 Warning\(s\)/);a.match(log,/0 Error\(s\)/);}
+a.match(read('QA/EVIDENCE/logs/phase-2b-announcement-audience-initial-build-failure.log'),/CS1061.*NotificationReadReceipt/);
+a.match(read('QA/EVIDENCE/logs/phase-2b-announcement-audience-backend.log'),/Failed:\s+0, Passed:\s+1019, Skipped:\s+0, Total:\s+1019/);a.match(read('QA/EVIDENCE/announcement-audience-test-results/announcement-audience.trx'),/<Counters total="1019" executed="1019" passed="1019"/);
+const cleanup=JSON.parse(read('QA/EVIDENCE/announcement-audience-cleanup.json'));a.equal(cleanup.runs.length,2);a.equal(cleanup.listenersRemaining,0);a.ok(cleanup.runs.every(x=>x.containerAbsent&&x.rootAbsent));
+a.match(read('QA/ISSUES/BUG-SEC-0009.md'),/\| Status \| OPEN \|/);for(const id of ['SECURITY-ANNOUNCEMENT-001','FAMILY-API-004'])a.match(read('QA/03_TEST_MATRIX.md').split('\n').find(x=>x.includes(id)),/PARTIAL PASS \/ OPEN/);
+const report='QA/REPORTS/PHASE_2B_ANNOUNCEMENT_AUDIENCE_REPAIR.md';for(const link of read(report).matchAll(/\]\(([^)]+)\)/g))a.ok(fs.existsSync(path.resolve(root,path.dirname(report),link[1])),link[1]);
+a.equal(receipt.closure,'OPEN');a.equal(receipt.azure,'UNCHANGED');a.equal(receipt.commitPushDeploy,'NOT DONE');a.equal(cp.spawnSync('git',['diff','--check'],{cwd:root,encoding:'utf8'}).status,0);
+console.log('PASS announcement audience consistency: three real baseline disclosures;47 real HTTP-SQL cases including one owned publication;1019 backend rerun;method-only repair;accepted source/evidence/normal binaries retained;owned cleanup. Broader gates OPEN;Azure unchanged.');

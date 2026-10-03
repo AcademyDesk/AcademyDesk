@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { academyApi } from "@/lib/api";
+import { academyApi, clearPortalTokens } from "@/lib/api";
 import { StandardDetailModal, StandardInteractiveTile } from "@/components/design-system/controls";
 
 type Academy = { id: string; name: string };
@@ -100,22 +100,42 @@ export default function DashboardPage() {
   const [message, setMessage] = useState("Loading your workspace…");
   const [details, setDetails] = useState<DetailData>(emptyDetails);
   const [detail, setDetail] = useState<"students" | "classes" | "attendance" | "outstanding" | null>(null);
+  const [loadState, setLoadState] = useState<"loading" | "ready" | "signin" | "denied" | "retry" | "empty">("loading");
+  const [reload, setReload] = useState(0);
 
   useEffect(() => {
+    let cancelled = false;
+    function rejectResponse(response: Response) {
+      if (![401, 403, 429].includes(response.status)) return false;
+      if (cancelled) return true;
+      if (response.status === 401) {
+        clearPortalTokens("AcademyAdmin");
+        setLoadState("signin");
+        setMessage("Your session has ended. Please sign in again to open your workspace.");
+      } else if (response.status === 403) {
+        setLoadState("denied");
+        setMessage("You do not have access to this workspace. Contact your academy administrator or Platform Owner for help.");
+      } else {
+        setLoadState("retry");
+        setMessage("Too many requests. Please wait a moment, then try again.");
+      }
+      return true;
+    }
     async function loadDashboard() {
+      setLoadState("loading");
+      setMessage("Loading your workspace…");
+      setData(emptyDashboard); setDetails(emptyDetails); setSession(undefined); setDetail(null);
       try {
         const academyResponse = await academyApi("/api/academies", {
           cache: "no-store",
         });
-        if (academyResponse.status === 401) {
-          setMessage("Please sign in to open your workspace.");
-          return;
-        }
+        if (cancelled || rejectResponse(academyResponse)) return;
         if (!academyResponse.ok) throw new Error();
         const academies: Academy[] = await academyResponse.json();
         const academy = academies[0];
         if (!academy) {
           setData(emptyDashboard);
+          setLoadState("empty");
           setMessage("Create your academy first to unlock the workspace.");
           return;
         }
@@ -125,8 +145,10 @@ export default function DashboardPage() {
           }),
           academyApi("/api/auth/session", { cache: "no-store" }),
         ]);
+        if (cancelled || rejectResponse(dashboardResponse) || rejectResponse(sessionResponse)) return;
         if (!dashboardResponse.ok) throw new Error();
         const summary = await dashboardResponse.json();
+        if (cancelled) return;
         setData({
           academy,
           students: summary.activeStudents,
@@ -152,17 +174,37 @@ export default function DashboardPage() {
           const response = await academyApi(`/api/academies/${academy.id}/sessions/${item.id}/attendance`);
           return response.ok ? await response.json() as Attendance[] : [];
         }));
+        if (cancelled) return;
         setDetails({ students: studentResponse.ok ? await studentResponse.json() : [], invoices: invoiceResponse.ok ? await invoiceResponse.json() : [], payroll: payrollResponse.ok ? await payrollResponse.json() : [], attendance: attendanceRows.flat() });
         if (sessionResponse.ok) setSession(await sessionResponse.json());
+        if (cancelled) return;
+        setLoadState("ready");
         setMessage("");
       } catch {
+        if (cancelled) return;
+        setLoadState("retry");
         setMessage(
-          "The dashboard could not reach AcademyDesk. Confirm that the API is running on port 5092.",
+          "Your workspace could not be loaded. Check your connection and try again.",
         );
       }
     }
     void loadDashboard();
-  }, []);
+    return () => { cancelled = true; };
+  }, [reload]);
+
+  if (loadState !== "ready") return (
+    <main className="enterprise-dashboard">
+      <section className="enterprise-data-panel" aria-labelledby="workspace-load-title">
+        <header className="enterprise-panel-header"><h2 id="workspace-load-title">Academy workspace</h2></header>
+        <div className="enterprise-empty-row">
+          <p role={loadState === "loading" || loadState === "empty" ? "status" : "alert"}>{message}</p>
+          {loadState === "signin" && <Link href="/login?returnTo=/dashboard" className="enterprise-primary-action">Sign in again</Link>}
+          {loadState === "denied" && <Link href="/login" className="enterprise-primary-action">Use another account</Link>}
+          {loadState === "retry" && <button type="button" className="enterprise-primary-action" onClick={() => setReload((value) => value + 1)}>Try again</button>}
+        </div>
+      </section>
+    </main>
+  );
 
   const attendanceRate = data.attendanceLast30Days
     ? Math.round(

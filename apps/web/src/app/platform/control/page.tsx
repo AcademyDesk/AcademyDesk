@@ -505,11 +505,24 @@ export default function PlatformControlPage() {
   }
   async function changeOwnerPassword(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
+    const passwordForm = event.currentTarget;
+    const form = new FormData(passwordForm);
     const newPassword = String(form.get("newPassword") || "");
     if (newPassword !== String(form.get("confirmPassword") || "")) return setMessage("New password and confirmation must match.");
-    await request("/api/auth/session/change-password", "POST", { currentPassword: form.get("currentPassword"), newPassword }, "Password changed. Use the new password next time you sign in.");
-    event.currentTarget.reset();
+    setBusy(true); setMessage("");
+    try {
+      const response = await academyApi("/api/auth/session/change-password", {
+        method: "POST", headers: apiHeaders(true),
+        body: JSON.stringify({ currentPassword: form.get("currentPassword"), newPassword }),
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(payload?.message ?? "The password could not be changed.");
+      passwordForm.reset();
+      clearPortalTokens("Platform");
+      router.replace("/login?returnTo=/platform/control&passwordChanged=1");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "The password could not be changed.");
+    } finally { setBusy(false); }
   }
   async function uploadOwnerImage(event: React.ChangeEvent<HTMLInputElement>) {
     const image = event.target.files?.[0];

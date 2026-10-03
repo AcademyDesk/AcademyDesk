@@ -1,0 +1,40 @@
+// Consistency validation only; native and backend results are retained runs.
+const fs = require('node:fs'), path = require('node:path'), crypto = require('node:crypto'), cp = require('node:child_process'), a = require('node:assert/strict');
+const root = path.resolve(__dirname, '../..');
+const read = file => fs.readFileSync(path.join(root, file), 'utf8').replace(/^\uFEFF/, '');
+const json = file => JSON.parse(read(file));
+const sha = file => crypto.createHash('sha256').update(fs.readFileSync(path.join(root, file))).digest('hex');
+const receipt = json('QA/EVIDENCE/session-revocation-repair-source-receipt.json');
+const before = json('QA/EVIDENCE/session-revocation-repair-before.json');
+for (const item of before.files) a.equal(sha(item.backup), item.sha256, item.backup);
+for (const item of receipt.current) a.equal(sha(item.file), item.sha256, item.file);
+const predecessors = new Map([...json('QA/EVIDENCE/session-revocation-before.json').retainedBefore, ...json('QA/EVIDENCE/session-revocation-source-receipt.json').current].map(item => [item.file, item]));
+const changed = new Set(before.files.map(item => item.file));
+let retained = 0;
+for (const [file, item] of predecessors) {
+  if (changed.has(file)) continue;
+  a.equal(sha(file), item.sha256, 'immutable predecessor ' + file); retained++;
+}
+a.equal(retained, receipt.immutablePredecessorPins);
+a.equal(predecessors.size, receipt.predecessorPins);
+const log = name => read('QA/EVIDENCE/logs/phase-2b-session-revocation-repair-' + name + '.log');
+const observations = [...log('sql').matchAll(/SESSIONREVOCATION CASE (\{[^\r\n]+\})/g)].map(match => JSON.parse(match[1]));
+a.equal(observations.length, 36); a.ok(observations.every(item => item.accepted && item.expected.includes(item.actual)));
+for (const id of ['disabled-login', 'disabled-refresh', 'password-change-old-access', 'password-change-old-cookie', 'deleted-old-protected-academies', 'expired-access', 'expired-refresh', 'active-cookie-access', 'teacher-admin-route-denied']) a.ok(observations.find(item => item.id === id)?.accepted, id);
+const summary = JSON.parse(log('sql').match(/SESSIONREVOCATION SUMMARY (\{[^\r\n]+\})/)[1]);
+a.equal(summary.requests, 36); a.equal(summary.policyGaps, 0); a.equal(summary.acceptance, 'BOUNDED PASS');
+for (const line of ['Tenant controls PASS', 'SECURITY-FILE-001 PASS', 'Negative cleanup check refused', 'run-owned database and login removed', 'SessionRevocationRepair exit=0']) a.ok(log('sql').includes(line), line);
+a.match(log('backend'), /Failed:\s+0, Passed:\s+1032, Skipped:\s+0/);
+a.match(log('handlers'), /tests 42/); a.match(log('handlers'), /pass 42/); a.match(log('handlers'), /fail 0/);
+a.ok(log('build').includes('0 Warning(s)') && log('build').includes('0 Error(s)'));
+a.equal(log('types').trim(), '');
+const cleanup = json('QA/EVIDENCE/session-revocation-repair-cleanup.json');
+a.equal(cleanup.containerAbsent, true); a.equal(cleanup.rootAbsent, true); a.equal(cleanup.listenersRemaining, 0);
+a.ok(log('sql').includes('run=' + cleanup.runId));
+a.equal(cleanup.previousBrowserFixture, 'stopped and retained; no deletion retry');
+const report = 'QA/REPORTS/PHASE_2B_SESSION_REVOCATION_REPAIR.md';
+for (const match of read(report).matchAll(/\]\(([^)]+)\)/g)) if (!match[1].startsWith('https://')) a.ok(fs.existsSync(path.resolve(root, path.dirname(report), match[1])), match[1]);
+a.equal(cp.execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(), receipt.commit);
+a.equal(cp.spawnSync('git', ['-c', 'core.safecrlf=false', 'diff', '--check'], { cwd: root, encoding: 'utf8' }).status, 0);
+a.equal(receipt.azure, 'UNCHANGED'); a.equal(receipt.commitPushDeploy, 'NOT DONE'); a.equal(receipt.broadSessionAcceptance, 'OPEN');
+console.log(`PASS: 36 strict native session cases, four original gaps repaired; 1032 backend/42 handler checks; ${retained} immutable predecessor pins, declared successors and backups verified. Cleanup verified; broader session/release OPEN, no deployment.`);

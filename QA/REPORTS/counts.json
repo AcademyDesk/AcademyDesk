@@ -1,0 +1,38 @@
+{
+  "modules": 23,
+  "pages": 79,
+  "forms": 82,
+  "fields": 649,
+  "ui": 843,
+  "controllers": 70,
+  "controllerActions": 282,
+  "domainModels": 57,
+  "identityTables": 8,
+  "roles": 12,
+  "workflows": 24,
+  "existingTests": 8,
+  "proposedTests": 595,
+  "registeredScenarios": 605,
+  "issues": 115,
+  "testPriorities": {
+    "P0": 41,
+    "P1": 471,
+    "P2": 92,
+    "P3": 1
+  },
+  "issuePriorities": {
+    "P0": 5,
+    "P1": 97,
+    "P2": 13,
+    "P3": 0
+  },
+  "visualResponsive": 83,
+  "e2e": 20,
+  "security": 18,
+  "proposedPriorities": {
+    "P0": 41,
+    "P1": 461,
+    "P2": 92,
+    "P3": 1
+  }
+}

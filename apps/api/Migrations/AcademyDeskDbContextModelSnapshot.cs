@@ -517,6 +517,9 @@ namespace AcademyDesk.Api.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
 
+                    b.Property<bool?>("IsGradeManual")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("IsPublished")
                         .HasColumnType("bit");
 
@@ -990,6 +993,75 @@ namespace AcademyDesk.Api.Migrations
                     b.HasIndex("AcademyId", "StudentId", "IssuedDate");
 
                     b.ToTable("Certificates");
+                });
+
+            modelBuilder.Entity("AcademyDesk.Api.Domain.Entities.ClassMediaUploadSession", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AcademyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("BatchId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("ChunkBytes")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("ClassSessionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ClientRequestId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("CompletedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<long>("Length")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("OwnerUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("StudentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("TeacherId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AcademyId", "OwnerUserId", "ClientRequestId")
+                        .IsUnique();
+
+                    b.ToTable("ClassMediaUploadSessions");
                 });
 
             modelBuilder.Entity("AcademyDesk.Api.Domain.Entities.ClassSession", b =>
@@ -2125,6 +2197,27 @@ namespace AcademyDesk.Api.Migrations
                     b.HasIndex("AcademyId", "RecipientId", "CreatedAtUtc");
 
                     b.ToTable("Notifications");
+                });
+
+            modelBuilder.Entity("AcademyDesk.Api.Domain.Entities.NotificationReadReceipt", b =>
+                {
+                    b.Property<Guid>("NotificationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AcademyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("ReadAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("NotificationId", "UserId");
+
+                    b.HasIndex("AcademyId", "UserId");
+
+                    b.ToTable("NotificationReadReceipts");
                 });
 
             modelBuilder.Entity("AcademyDesk.Api.Domain.Entities.Payment", b =>
@@ -3343,6 +3436,15 @@ namespace AcademyDesk.Api.Migrations
                         .IsRequired();
 
                     b.Navigation("Academy");
+                });
+
+            modelBuilder.Entity("AcademyDesk.Api.Domain.Entities.NotificationReadReceipt", b =>
+                {
+                    b.HasOne("AcademyDesk.Api.Domain.Entities.Notification", null)
+                        .WithMany()
+                        .HasForeignKey("NotificationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("AcademyDesk.Api.Domain.Entities.StudentGuardian", b =>

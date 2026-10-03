@@ -2572,6 +2572,14 @@ html[data-theme="light"] .field-label { color: #475569; }
 @media (max-width: 1040px) { .certificates-admin .certificate-branding { grid-template-columns: 1fr; }.certificate-branding form { grid-template-columns: auto auto minmax(150px, .6fr) minmax(180px, 1fr) auto; } }
 @media (max-width: 720px) { .certificate-branding form, .certificate-issue-form { grid-template-columns: 1fr; }.certificate-template-picker > div { grid-template-columns: repeat(2, minmax(0, 1fr)); }.certificate-design-picker > div { grid-template-columns: repeat(2, minmax(0, 1fr)); }.certificate-preview { min-height: 430px; padding: 28px 20px; }.certificate-preview footer { flex-direction: column; align-items: center; margin-top: 32px; }.certificate-issue-form > :not(h3) { grid-column: 1; } }
 
+.certificates-admin .certificate-preview[data-print-state="preview"]::after { content: "PREVIEW — NOT AN ISSUED PRINT"; position: absolute; inset: 42% 4% auto; width: auto; height: auto; border: 0; border-radius: 0; z-index: 3; transform: rotate(-20deg); color: rgb(180 35 35 / 28%); font-size: clamp(22px, 3vw, 42px); font-weight: 900; line-height: 1.3; pointer-events: none; }
+.certificates-admin .certificate-print-watermark { color: #9c2020; font-size: 12px; font-weight: 800; letter-spacing: .04em; }
+.certificates-admin .certificate-record-identity { overflow-wrap: anywhere; font-size: 12px; line-height: 1.5; }
+.certificates-admin .certificate-preview.theme-music-recital footer { box-sizing: border-box; padding: 12px 8px; border: 1px solid #d27ba1; border-radius: 4px; background: #fff8fb; color: #40516a; }
+.certificates-admin .certificate-preview.theme-music-recital footer span:last-child { min-width: 0; width: min(130px, 100%); }
+.certificates-admin .certificate-preview.theme-holiday-eid { background: #153952; }
+.certificates-admin .certificate-preview.theme-holiday-eid .certificate-print-watermark { color: #f5df8e; }
+.certificates-admin .certificate-branding input[type="file"].sr-only { position: absolute; width: 1px; height: 1px; min-height: 0; margin: -1px; padding: 0 !important; border: 0; overflow: hidden; clip: rect(0, 0, 0, 0); clip-path: inset(50%); white-space: nowrap; }
 @media print { body * { visibility: hidden !important; }.certificate-preview, .certificate-preview * { visibility: visible !important; }.certificate-preview { position: fixed; inset: 0; width: 100%; min-height: 100%; margin: 0; border-width: 10px; } }
 
 /* Academy experience pages use the shared workspace hierarchy and controls. */
@@ -4291,6 +4299,16 @@ html[data-theme="light"] .field-label { color: #475569; }
 .teacher-classroom-toolbar select { min-width: min(100%, 280px); }
 .teacher-classroom-toolbar span { color: var(--ad-text-muted); font-size: .8rem; }
 .teacher-material-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.teacher-upload-form > label { display: grid; gap: 8px; color: var(--ad-text); font-weight: 650; }
+.teacher-upload-form > small, .teacher-upload-form > p { overflow-wrap: anywhere; color: var(--ad-text-muted); }
+.teacher-upload-progress progress { display: block; width: 100%; height: 12px; margin-top: 8px; accent-color: var(--ad-accent); }
+.private-material-actions { display: grid; gap: 8px; min-width: 0; max-width: 100%; }
+.private-material-actions > div:first-child { display: flex; flex-wrap: wrap; gap: 8px; }
+.private-material-actions button { min-height: 44px; white-space: normal; }
+.private-material-actions p { font-size: .8rem; color: var(--ad-text-muted); overflow-wrap: anywhere; }
+.private-material-preview { display: grid; gap: 10px; padding: 12px; border: 1px solid var(--ad-border); border-radius: 10px; background: var(--ad-surface-subtle); }
+.private-material-preview :is(img,video,audio) { width: 100%; max-width: 100%; max-height: 320px; object-fit: contain; }
+@media (max-width:760px) { .teacher-activity-list > article { flex-wrap: wrap; } .teacher-activity-list .private-material-actions { width: 100%; } }
 .teacher-portal-shell .learner-row a { display: inline-flex; width: max-content; margin-top: 8px; color: var(--ad-accent); font-size: .78rem; font-weight: 700; }
 @media (max-width: 760px) { .teacher-classroom-hero { align-items: flex-start; flex-direction: column; } .teacher-classroom-controls, .teacher-classroom-grid, .teacher-finance-summary, .teacher-compact-panels, .teacher-batch-progress-list > article { grid-template-columns: 1fr; } .teacher-classroom-grid > :nth-child(3), .teacher-profile-panels > .teacher-action-panel:first-child { grid-column: auto; } .teacher-attendance-grid { grid-template-columns: 1fr; } .teacher-calendar-day, .teacher-calendar-blank { min-height: 82px; padding: 5px; } .teacher-calendar-day > span { font-size: .55rem; } }
 .learner-shell .learner-topbar { height: 78px; }
@@ -5677,3 +5695,5 @@ html[data-theme="light"] .field-label { color: #475569; }
 .standard-select-menu { display:grid; gap:3px; overflow:auto; padding:6px; border:1px solid var(--ad-border-strong); border-radius:10px; background:var(--ad-surface); box-shadow:0 18px 42px color-mix(in srgb,var(--ad-text) 22%,transparent); }
 .standard-select-menu button { display:block; width:100%; height:36px!important; min-height:36px!important; max-height:36px!important; margin:0; padding:8px 10px!important; border:1px solid transparent; border-radius:7px; background:transparent; color:var(--ad-text); cursor:pointer; font:inherit; font-size:.78rem; font-weight:650; line-height:1.2!important; text-align:left; }
 .standard-select-menu button:hover,.standard-select-menu button[aria-selected="true"] { border-color:color-mix(in srgb,var(--ad-accent) 25%,transparent); background:var(--ad-accent-soft); color:var(--ad-accent); }
+.assessments-results-panel .assessment-grading-mode { grid-column:1 / -1; display:grid; gap:7px; min-width:0; color:var(--ad-text-muted); font-size:.78rem; font-weight:650; }
+.assessments-results-panel .assessment-grading-help { grid-column:1 / -1; color:var(--ad-text-muted); font-size:.75rem; line-height:1.5; }

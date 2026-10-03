@@ -15,9 +15,10 @@ type Batch = {
 type Session = {
   id: string;
   batchId: string;
+  teacherId?: string | null;
   startUtc: string;
   deliveryMode: string;
-  roomName?: string;
+  roomName?: string | null;
 };
 type Event = {
   id: string;
@@ -31,7 +32,9 @@ type Makeup = {
   studentId: string;
   batchId: string;
   startUtc: string;
-  venue?: string;
+  deliveryMode?: string | null;
+  venue?: string | null;
+  meetingLink?: string | null;
 };
 type Student = { id: string; firstName: string; lastName: string };
 type Teacher = { id: string; firstName: string; lastName: string };
@@ -50,6 +53,8 @@ type CalendarItem = {
   teacher?: string;
   students?: string[];
   meetingPattern?: string;
+  deliveryMode?: string;
+  location?: string;
 };
 const names = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const monthName = (date: Date) =>
@@ -62,6 +67,17 @@ const time = (date: Date) =>
     minute: "2-digit",
     timeZone: "Asia/Kolkata",
   }).format(date);
+
+function meetingUrl(value?: string | null): string | undefined {
+  const candidate = value?.trim();
+  if (!candidate || !/^https?:\/\//i.test(candidate) || /\s/.test(candidate)) return undefined;
+  try {
+    const url = new URL(candidate);
+    return ["http:", "https:"].includes(url.protocol) && url.hostname && !url.username && !url.password
+      ? candidate
+      : undefined;
+  } catch { return undefined; }
+}
 
 function AgendaItem({ item }: { item: CalendarItem }) {
   const [studentsExpanded, setStudentsExpanded] = useState(false);
@@ -98,6 +114,8 @@ function AgendaItem({ item }: { item: CalendarItem }) {
             <div><dt>Time</dt><dd>{time(item.start)}</dd></div>
             <div><dt>Schedule</dt><dd>{item.meetingPattern || schedule}</dd></div>
             <div><dt>Teacher</dt><dd>{item.teacher ?? "Unassigned"}</dd></div>
+            <div><dt>Delivery</dt><dd>{item.deliveryMode}</dd></div>
+            <div><dt>Location</dt><dd title={item.location} style={{ whiteSpace: "normal", overflowWrap: "anywhere" }}>{item.location || "Not specified"}</dd></div>
           </dl>
           <div className="workspace-calendar-agenda-students">
             <div>
@@ -190,34 +208,46 @@ export default function CalendarPage() {
     return [
       ...sessions.map((row) => {
         const assignedBatch = batch(row.batchId);
-        const isVirtualClass = ["Online", "Hybrid"].includes(row.deliveryMode);
+        const isVirtualClass = ["online", "hybrid"].includes(row.deliveryMode.trim().toLowerCase());
+        // A stored session teacher is authoritative (including null/unassigned).
+        // Only an absent session location uses a legacy batch link; never
+        // replace a supplied location with a different meeting destination.
+        const location = row.roomName?.trim() || (isVirtualClass ? assignedBatch?.meetingLink?.trim() : undefined);
         const meetingLink = isVirtualClass
-          ? assignedBatch?.meetingLink ?? (/^https?:\/\//i.test(row.roomName ?? "") ? row.roomName : undefined)
+          ? meetingUrl(location)
           : undefined;
         return ({
         id: row.id,
         type: "Class" as const,
         title: batchName(row.batchId),
-        detail: `${row.deliveryMode}${row.roomName ? ` · ${row.roomName}` : ""}`,
+        detail: `${row.deliveryMode}${location ? ` · ${location}` : ""}`,
         start: new Date(row.startUtc),
         href: meetingLink,
         actionLabel: meetingLink ? "Open" : undefined,
         opensExternally: Boolean(meetingLink),
         subject: assignedBatch ? courseName(assignedBatch.courseId) : "Not assigned",
-        teacher: teacherName(assignedBatch?.teacherId),
+        teacher: teacherName(row.teacherId),
+        deliveryMode: row.deliveryMode,
+        location,
         students: classStudents(row.batchId),
         meetingPattern: assignedBatch?.meetingPattern ?? undefined,
       });
       }),
-      ...makeups.map((row) => ({
+      ...makeups.map((row) => {
+        const mode = row.deliveryMode?.trim().toLowerCase();
+        const location = mode === "online" || mode === "hybrid" ? row.meetingLink?.trim() : row.venue?.trim();
+        return ({
         id: row.id,
         type: "Make-up" as const,
         title: `${studentName(row.studentId)} · ${batchName(row.batchId)}`,
-        detail: row.venue ?? "Make-up class",
+        detail: location || "Make-up class",
+        deliveryMode: row.deliveryMode ?? undefined,
+        location: location || undefined,
         start: new Date(row.startUtc),
         href: "/makeup",
         actionLabel: "Open make-up",
-      })),
+      });
+      }),
       ...events.map((row) => ({
         id: row.id,
         type: "Event" as const,

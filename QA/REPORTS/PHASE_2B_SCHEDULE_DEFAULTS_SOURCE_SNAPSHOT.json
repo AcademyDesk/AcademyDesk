@@ -1,0 +1,98 @@
+{
+  "createdAt": "2026-10-01T13:24:12.772Z",
+  "commit": "20bb6047f9edf733ac8e2a226621cc582ec54b3c",
+  "issue": "BUG-DATA-0037",
+  "checks": {
+    "controlledTsxCases": 18,
+    "httpSqlCases": 18,
+    "typeScriptExitCode": 0,
+    "lintExitCode": 0,
+    "inheritedLintWarnings": 1,
+    "browserDevice": "NOT RUN",
+    "closure": "OPEN"
+  },
+  "sources": [
+    {
+      "file": "apps/web/src/app/schedule/page.tsx",
+      "sha256": "41df5a30430498237fca3a039763de296f4db0117734e3ae6752902aa8ba750c"
+    },
+    {
+      "file": "apps/api/Controllers/ClassSessionsController.cs",
+      "sha256": "5445b6b9c69a189c5b5a707138df4ebde7bf06f03e704a8ec8f3219d6c0460d2"
+    },
+    {
+      "file": "QA/tools/schedule-defaults.test.cjs",
+      "sha256": "bdcd55d7fa7f2d111d9fbf5c9760ee7f7bb0c9e061aaa1d5ffd62c5c6f2490b9"
+    },
+    {
+      "file": "QA/tools/SqlHarness/ScheduleDefaultsRegression.cs",
+      "sha256": "95c50cba5d05277e2fdbb89c7df30075e2b01ec1f61bcc3c24f4abab14715052"
+    },
+    {
+      "file": "QA/tools/SqlHarness/Program.cs",
+      "sha256": "bf3760b5544ed671c5ab8b94d9a2e8ff693784480b6d803a0c47fb97f5fb3a53"
+    },
+    {
+      "file": "QA/tools/SqlHarness/Run-ReconciledPayment.ps1",
+      "sha256": "d307ddadfa6c3ba388779ead79f8624becd36da068af6e7708eee672bba1f2bf"
+    },
+    {
+      "file": "QA/tools/validate-schedule-defaults.cjs",
+      "sha256": "a8c67fe5e1e6a9c6a99eca31f83c2adb80d22131d4a21f47c37c9861cda482f6"
+    },
+    {
+      "file": "QA/REPORTS/PHASE_2B_SCHEDULE_DEFAULTS_REPAIR.md",
+      "sha256": "68ca0af3510225fee687dc0b8c1006691f15d5a7e2db25be8f91905cc4c488f3"
+    },
+    {
+      "file": "QA/ISSUES/BUG-DATA-0037.md",
+      "sha256": "e4b459b7b3ff7f1836cb1b038eca159a2c0a76d323dc9762f8b6b31e3492b13d"
+    }
+  ],
+  "binaries": [
+    {
+      "file": ".build-check/schedule-defaults-sql/bin/AcademyDesk.Api/debug/AcademyDesk.Api.dll",
+      "sha256": "1138eebd5c860084fdbc8820c96e93a863989b4a43cc31668f8544e7e6b73212"
+    },
+    {
+      "file": ".build-check/schedule-defaults-sql/bin/SqlHarness/debug/SqlHarness.dll",
+      "sha256": "fa78ad58032a05e53c8682ffa017e1342e3e0824cd6fcbe4dc496f20e8ac8332"
+    }
+  ],
+  "evidence": [
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-schedule-defaults-baseline-lint.log",
+      "sha256": "8e4b11d4520e65a24861d4692fcfc98fb07fc329d57502595447945ea2b852cb"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-schedule-defaults-ui.log",
+      "sha256": "ef777fc2cc1ec1cfa29fc3ac059c45a91846b3cc629f651bbdc75ad4397ddefd"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-schedule-defaults-sql-build.log",
+      "sha256": "f267b492a4a932f150d75c5d90f08d63ef5bc1db7ebcfaf174944ececc4b01a5"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-schedule-defaults-sql.log",
+      "sha256": "2b42f182ccc8e8e133337f4ab6d47ae432ad65dbcc06df81f9c77ef08c89bbb4"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-schedule-defaults-typecheck.log",
+      "sha256": "596887ae6399d9efcb9637237a8a51c2793bec516ce72978929c4f983cf67076"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-schedule-defaults-lint.log",
+      "sha256": "0c2d8d3603239a2b7036e56fe93e1b596fc66c47f903412ebda165048e838de8"
+    }
+  ],
+  "normalBinaries": [
+    {
+      "file": "apps/api/bin/Debug/net10.0/AcademyDesk.Api.dll",
+      "sha256": "10ecb9da46c8198affae586776aca4747244cda18670dde8a1892ed20170f614"
+    },
+    {
+      "file": "QA/tools/SqlHarness/bin/Debug/net10.0/SqlHarness.dll",
+      "sha256": "7c165e280c7752cfaef4e56d45062445a9f7181bab3fd5ce6aa12d32b7194c94"
+    }
+  ]
+}

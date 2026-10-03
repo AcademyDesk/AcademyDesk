@@ -1,0 +1,38 @@
+// Real React/DOM and browser StorageEvents with explicitly controlled API transport.
+// No native Identity/SQL/server-revocation acceptance, no user browser/profile.
+const fs=require('node:fs'),p=require('node:path'),a=require('node:assert/strict'),c=require('node:crypto');
+const {chromium}=require('C:/Users/Admin/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const root=p.resolve(__dirname,'../..'),out=p.join(root,'QA/EVIDENCE'),origin='http://127.0.0.1:49431',api='http://127.0.0.1:49432';
+const copy='D:/AcademyDesk/.build-check/browser-web-8786d65143cf4b509385bbd11b6095bd';
+for(const file of ['lib/api.ts','components/workspace-frame.tsx']){const hash=f=>c.createHash('sha256').update(fs.readFileSync(f)).digest('hex');a.equal(hash(p.join(root,'apps/web/src',file)),hash(p.join(copy,'src',file)));}
+const checks=[],events=[],errors=[],controlled=[];const pass=id=>{checks.push(id);console.log('SESSIONLOGOUT PASS '+id);};
+const stored=page=>page.evaluate(()=>Object.fromEntries(['AcademyAdmin','Teacher'].map(w=>[w,{access:!!localStorage.getItem('academydesk.accessToken.'+w),refresh:!!localStorage.getItem('academydesk.refreshToken.'+w)}])));
+async function login(page,workspace){await page.goto(origin+'/login');await page.getByRole('button',{name:'Show password'}).click();await page.getByRole('button',{name:'Hide password'}).click();await page.getByLabel('User name',{exact:true}).fill('synthetic-'+workspace+'@example.invalid');await page.getByLabel('Password',{exact:true}).fill('Synthetic!UiOnly58');await page.getByRole('button',{name:'Sign in',exact:true}).click();await page.waitForURL(u=>u.pathname===(workspace==='Teacher'?'/teacher':'/dashboard'));if(workspace==='Teacher')await page.getByRole('heading',{name:'Welcome, SyntheticTeacher'}).waitFor();else await page.getByRole('region',{name:'Academy operating indicators'}).waitFor();}
+async function signOut(page){await page.locator('.enterprise-profile-trigger').click();await page.getByRole('button',{name:'Sign out',exact:true}).click();await page.waitForURL(u=>u.pathname==='/login');}
+async function snap(page,id){fs.writeFileSync(p.join(out,'session-logout-'+id+'.txt'),await page.locator('main').innerText());await page.screenshot({path:p.join(out,'session-logout-'+id+'.png'),fullPage:true});}
+(async()=>{let browser;try{
+ browser=await chromium.launch({headless:true,executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'});const context=await browser.newContext({viewport:{width:1280,height:900}});
+ await context.route('**/*',route=>{const request=route.request(),u=new URL(request.url());if(u.origin===origin)return route.continue();if(u.origin!==api)return route.abort();const path=u.pathname;let body=[],status=200;
+  if(request.method()==='OPTIONS')return route.fulfill({status:204,headers:{'Access-Control-Allow-Origin':origin,'Access-Control-Allow-Headers':'Authorization, Content-Type','Access-Control-Allow-Methods':'GET, POST, PUT, PATCH, DELETE'}});
+  if(path==='/api/auth/login'){const workspace=JSON.parse(request.postData()).email.includes('Teacher')?'Teacher':'AcademyAdmin';body={accessToken:'synthetic-'+workspace,refreshToken:'synthetic-refresh-'+workspace};}
+  else if(path==='/api/auth/session'){const teacher=request.headers().authorization?.includes('Teacher');body={workspace:teacher?'Teacher':'AcademyAdmin',displayName:teacher?'SyntheticTeacher':'SyntheticAdmin',roles:[teacher?'Teacher':'AcademyAdmin'],academyId:'synthetic-academy'};}
+  else if(path==='/api/academies')body=[{id:'synthetic-academy',name:'Synthetic academy'}];
+  else if(path.endsWith('/dashboard'))body={activeStudents:2,activeTeachers:1,activeCourses:1,activeBatches:1,openLeads:0,attendanceRecordsLast30Days:0,presentAttendanceLast30Days:0,outstandingBalance:0};
+  else if(path.endsWith('/subscription'))body={planName:'Synthetic',enabledModules:[]};
+  else if(path==='/api/teacher/me')body={userId:'synthetic-teacher',firstName:'SyntheticTeacher',lastName:'Test',batches:[],sessions:[]};
+  else if(path==='/api/teacher/calendar')body={sessions:[],holidays:[]};
+  else if(path==='/api/teacher/profile')body={firstName:'SyntheticTeacher',lastName:'Test'};
+  else if(path==='/api/teacher/payroll/summary')body={gross:0,net:0,deductions:0};
+  if(path==='/api/auth/refresh'){status=401;body={message:'Synthetic unsupported renewal'};}
+  controlled.push({path,method:request.method(),status});return route.fulfill({status,contentType:'application/json',body:JSON.stringify(body),headers:{'Access-Control-Allow-Origin':origin}});
+ });
+ context.on('page',page=>{page.on('pageerror',e=>errors.push(e.message));page.on('console',msg=>{if(msg.type()==='error'&&msg.text().includes('hydrated'))errors.push(msg.text());});});
+ const source=await context.newPage(),peer=await context.newPage(),teacher=await context.newPage();
+ await login(source,'Teacher');await login(source,'AcademyAdmin');await peer.goto(origin+'/dashboard');await peer.getByRole('region',{name:'Academy operating indicators'}).waitFor();await teacher.goto(origin+'/teacher');await teacher.getByRole('heading',{name:'Welcome, SyntheticTeacher'}).waitFor();pass('controlled-login-populates-two-workspaces-and-open-peers');
+ await peer.evaluate(()=>{window.__qaLogoutEvents=[];window.addEventListener('storage',e=>window.__qaLogoutEvents.push({key:e.key,removed:e.newValue===null}));});
+ await signOut(source);await peer.getByRole('alert').filter({hasText:'another tab'}).waitFor();a.equal(await peer.locator('[aria-label="Academy operating indicators"]').count(),0);a.ok(await teacher.getByRole('heading',{name:'Welcome, SyntheticTeacher'}).isVisible());a.deepEqual((await stored(peer)).Teacher,{access:true,refresh:true});a.deepEqual((await stored(peer)).AcademyAdmin,{access:false,refresh:false});events.push(...await peer.evaluate(()=>window.__qaLogoutEvents));a.ok(events.some(x=>x.key==='academydesk.accessToken.AcademyAdmin'&&x.removed));await snap(peer,'desktop-peer');pass('real-storage-event-admin-logout-gates-peer-preserves-teacher');
+ await peer.getByRole('link',{name:'Sign in again'}).click();await peer.waitForURL(u=>u.pathname==='/login');await login(peer,'AcademyAdmin');pass('peer-signin-link-full-load-returns-ready-dashboard');
+ await login(source,'AcademyAdmin');await peer.setViewportSize({width:390,height:844});await signOut(source);await peer.getByRole('alert').filter({hasText:'another tab'}).waitFor();a.ok(await peer.getByRole('link',{name:'Sign in again'}).isVisible());a.ok(await peer.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await snap(peer,'mobile-peer');pass('mobile390-peer-logout-message-action-no-horizontal-overflow');
+ await login(peer,'AcademyAdmin');await signOut(teacher);a.ok(await peer.getByRole('region',{name:'Academy operating indicators'}).isVisible());a.deepEqual((await stored(peer)).AcademyAdmin,{access:true,refresh:true});a.deepEqual((await stored(peer)).Teacher,{access:false,refresh:false});pass('teacher-own-logout-does-not-gate-admin-workspace');
+ a.equal(errors.length,0);fs.writeFileSync(p.join(out,'session-logout-browser-observations.json'),JSON.stringify({at:new Date().toISOString(),browser:await browser.version(),checks,events,controlled,errors,transport:'controlled API responses; no native backend',serverRevocationAccepted:false},null,2));console.log('SESSIONLOGOUT SUMMARY '+JSON.stringify({checks:checks.length,accepted:true,nativeBackend:false}));
+ }catch(e){console.error('SESSIONLOGOUT FAILED '+e.message);fs.writeFileSync(p.join(out,'session-logout-browser-incomplete.json'),JSON.stringify({checks,events,controlled,errors,error:e.message},null,2));process.exitCode=1;}finally{if(browser)await browser.close();}})();

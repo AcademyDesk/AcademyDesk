@@ -1,0 +1,52 @@
+{
+  "date": "2026-09-30",
+  "scope": "Legacy private class-material read gate, targeted regressions and local launcher; not all dirty-tree files. Raw byte SHA256, source-array digest is compact JSON SHA256. Includes two untouched pre-existing student UI files as preservation controls.",
+  "commit": "20bb6047f9edf733ac8e2a226621cc582ec54b3c",
+  "records": [
+    {
+      "file": "QA/tools/SqlHarness/ClassMaterialRegression.cs",
+      "sha256": "faccfa42f0a73462abd97f75f37898f5d2ecd58d6873d3102992291ee92a0c01"
+    },
+    {
+      "file": "QA/tools/SqlHarness/Program.cs",
+      "sha256": "b3e3fa76bbd3d140a7be9569f3a8dea7d94503d333acff00f8fd50e43f8d0b97"
+    },
+    {
+      "file": "QA/tools/SqlHarness/Run-ClassMedia.ps1",
+      "sha256": "c458152db9abf6614a38ca0173f7eb4a60ea5044092b78d4d7052e859fb88f5a"
+    },
+    {
+      "file": "apps/api/Controllers/ClassMaterialFilesController.cs",
+      "sha256": "267551e13cfdd642a2edb6f6c8ce15a95ce09e86fcd873b9023c7b000227685b"
+    },
+    {
+      "file": "apps/api/Infrastructure/Media/ClassMaterialAccess.cs",
+      "sha256": "4a05071cfb919bbe8421b6fc34921a54a2b9ae3a8a73dba29e4d2f308a371668"
+    },
+    {
+      "file": "apps/api/Infrastructure/Media/PrivateMaterialFileProvider.cs",
+      "sha256": "f9800f40eddaacfed0d89eb5a99ee20592608a6c4efb292730a84c20ca46ad5e"
+    },
+    {
+      "file": "apps/api/Program.cs",
+      "sha256": "aac041feee0ba40ad2c678e830105f52855f285f4c8e9cb45606e114803ac565"
+    },
+    {
+      "file": "apps/web/src/app/student-onboarding/page.tsx",
+      "sha256": "57221a2481d008e49749acd86aa6453efce8b661a4b36d7085cae983dc927017"
+    },
+    {
+      "file": "apps/web/src/app/student-profile/page.tsx",
+      "sha256": "eccfdba909c7532048ea4a0a1fa1413ccbe4abf99a3cb1ad8468d8c0c8ee7a93"
+    },
+    {
+      "file": "tests/AcademyDesk.Api.Tests/ClassMaterialAccessTests.cs",
+      "sha256": "1aa04e4318d45fb62aa44263f633c90d55daa723f891248877ae28536948bb5e"
+    },
+    {
+      "file": "tests/AcademyDesk.Api.Tests/PrivateMaterialFileProviderTests.cs",
+      "sha256": "e4cf6ec67037c5120b46f2ebd69b126c070fcd9dfcfcf3e137a9fb269d688581"
+    }
+  ],
+  "digest": "b282f12a3ceca542858c9922b108886307937e51da972fe004e482d8e0a94030"
+}

@@ -1,0 +1,47 @@
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs');
+const ts=require('../../apps/web/node_modules/typescript'),jsx=require('../../apps/web/node_modules/react/jsx-runtime');
+const source=process.env.QA_CHANNEL_BASELINE==='1'?require('node:child_process').execFileSync('git',['show','HEAD:apps/web/src/app/communications/page.tsx'],{encoding:'utf8'}):fs.readFileSync('apps/web/src/app/communications/page.tsx','utf8');
+const code=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2022}}).outputText;
+const people={Guardian:'40000000-0000-0000-0000-000000000001',Student:'40000000-0000-0000-0000-000000000002',Teacher:'40000000-0000-0000-0000-000000000003'};
+const templates=['Email','WhatsApp'].map((channel,i)=>({id:`50000000-0000-0000-0000-00000000000${i+1}`,channel,name:'Synthetic '+channel,body:'Hello {{name}}',isActive:true}));
+const nodes=n=>Array.isArray(n)?n.flatMap(nodes):!n||typeof n!=='object'?[]:[n,...nodes(n.props?.children)];
+async function page(){let index=0,effectIndex=0;const state=new Map(),deps=[],effects=[],calls=[],module={exports:{}};function StandardSelectField(){}function StandardDateField(){}function StandardTimeField(){}
+ const react={useState:v=>{const k=index++;if(!state.has(k))state.set(k,v);return[state.get(k),v=>state.set(k,typeof v==='function'?v(state.get(k)):v)];},useEffect:(fn,next)=>{const k=effectIndex++;if(!deps[k]||next.some((v,i)=>v!==deps[k][i])){deps[k]=next;effects.push(fn);}},useMemo:fn=>fn()};
+ const api=async(url,init={})=>{calls.push({url,...init});if(init.method==='POST')return{ok:true,json:async()=>({status:'Queued'})};const entity=url.split('/').at(-1);const data=entity==='academies'?[{id:'owned'}]:entity==='communication-templates'?templates:entity==='notifications'?[]:[{id:people[entity==='students'?'Student':entity==='teachers'?'Teacher':'Guardian'],firstName:'Synthetic',lastName:entity}];return{ok:true,json:async()=>structuredClone(data)};};
+ new Function('require','module','exports',code)(n=>n==='react/jsx-runtime'?jsx:n==='react'?react:n==='@/lib/api'?{academyApi:api,apiHeaders:()=>({})}:n==='@/components/workspace-nav'?{WorkspaceNav(){}}:n==='@/components/design-system/controls'?{StandardSelectField,StandardDateField,StandardTimeField}:(()=>{throw Error(n)})(),module,module.exports);
+ const render=()=>{index=effectIndex=0;return module.exports.default();};const flush=async()=>{for(let i=0;i<5;i++){for(const fn of effects.splice(0))fn();await new Promise(r=>setImmediate(r));render();}};render();await flush();
+ const select=(name,value)=>nodes(render()).find(n=>n.type===StandardSelectField&&n.props.name===name).props.onChange(value);
+ const edit=(label,value)=>{const fields=nodes(render()).filter(n=>n.type==='label'),field=fields.find(n=>Array.isArray(n.props.children)&&typeof n.props.children[0]==='string'&&n.props.children[0].trim()===label);const input=nodes(field).find(n=>['input','textarea'].includes(n.type));if(!input)throw Error('Missing field '+label+'; templates='+JSON.stringify(state.get(4))+'; selected='+JSON.stringify(state.get(8))+'; labels='+fields.map(n=>JSON.stringify(n.props.children?.[0])).join(','));input.props.onChange({target:{value}});};
+ const save=async()=>{await nodes(render()).find(n=>n.type==='form').props.onSubmit({preventDefault(){}});await flush();};
+ return{state,calls,render,flush,select,edit,save,writes:()=>calls.filter(x=>x.method==='POST')};
+}
+for(const recipientType of ['Guardian','Student','Teacher'])for(const template of templates)test(`${recipientType} ${template.channel} template detaches for Portal banner`,async()=>{
+ const p=await page();p.select('recipientType',recipientType);p.select('recipientId',people[recipientType]);p.select('templateId',template.id);p.edit('name','Synthetic Person');p.select('recipientType','Academy');
+ assert.equal(p.state.get(8),'');assert.deepEqual(p.state.get(9),{});assert.equal(p.state.get(7),'');assert.equal(p.state.get(11),'Hello Synthetic Person');
+ p.edit('Title','Banner');await p.save();const payload=JSON.parse(p.writes()[0].body);assert.equal(payload.templateId,null);assert.equal(payload.channel,'InApp');assert.equal(payload.recipientId,null);assert.equal(payload.message,'Hello Synthetic Person');assert.deepEqual(payload.variables,{audiences:'Student,Teacher'});
+ console.log('CHANNELCHOICE PAYLOAD '+JSON.stringify({label:recipientType+'-'+template.channel+'-banner',payload}));
+});
+for(const template of templates)for(const channel of ['InApp','Email','WhatsApp'].filter(x=>x!==template.channel))test(`${template.channel} template detaches on explicit ${channel} choice`,async()=>{
+ const p=await page();p.select('recipientId',people.Guardian);p.select('templateId',template.id);p.edit('name','Manual Person');p.select('channel',channel);assert.equal(p.state.get(8),'');assert.deepEqual(p.state.get(9),{});await p.save();const payload=JSON.parse(p.writes()[0].body);assert.equal(payload.channel,channel);assert.equal(payload.templateId,null);assert.equal(payload.message,'Hello Manual Person');
+ console.log('CHANNELCHOICE PAYLOAD '+JSON.stringify({label:template.channel+'-manual-'+channel,payload}));
+});
+for(const recipientType of ['Guardian','Student','Teacher'])for(const template of templates)test(`${recipientType} compatible ${template.channel} template remains linked`,async()=>{
+ const p=await page();p.select('recipientType',recipientType);p.select('recipientId',people[recipientType]);p.select('templateId',template.id);p.edit('name','Linked Person');p.select('channel',template.channel);await p.save();const payload=JSON.parse(p.writes()[0].body);assert.equal(payload.templateId,template.id);assert.equal(payload.channel,template.channel);assert.deepEqual(payload.variables,{name:'Linked Person'});
+ console.log('CHANNELCHOICE PAYLOAD '+JSON.stringify({label:recipientType+'-'+template.channel+'-linked',payload}));
+});
+for(const recipientType of ['Guardian','Student','Teacher'])for(const template of templates)test(`${template.channel} banner back to ${recipientType} cannot restore a hidden template`,async()=>{
+ const p=await page();p.select('templateId',template.id);p.edit('name','Draft Person');p.select('recipientType','Academy');p.select('recipientType',recipientType);assert.equal(p.state.get(8),'');assert.equal(p.state.get(12),'InApp');p.select('recipientId',people[recipientType]);await p.save();const payload=JSON.parse(p.writes()[0].body);assert.equal(payload.templateId,null);assert.equal(payload.channel,'InApp');assert.equal(payload.recipientType,recipientType);
+ console.log('CHANNELCHOICE PAYLOAD '+JSON.stringify({label:template.channel+'-banner-back-'+recipientType,payload}));
+});
+for(const template of templates)test(`${template.channel} template removal retains visible resolved text without hidden variables`,async()=>{
+ const p=await page();p.select('recipientId',people.Guardian);p.select('templateId',template.id);p.edit('name','Kept Person');p.select('templateId','');assert.equal(p.state.get(11),'Hello Kept Person');assert.deepEqual(p.state.get(9),{});await p.save();assert.equal(JSON.parse(p.writes()[0].body).templateId,null);
+});
+for(const template of templates)for(const from of ['Guardian','Student','Teacher'])for(const to of ['Guardian','Student','Teacher'].filter(x=>x!==from))test(`Direct ${from} to ${to} keeps compatible ${template.channel} template but clears recipient`,async()=>{
+ const p=await page();p.select('recipientType',from);p.select('recipientId',people[from]);p.select('templateId',template.id);p.select('recipientType',to);assert.equal(p.state.get(7),'');assert.equal(p.state.get(8),template.id);assert.equal(p.writes().length,0);
+});
+for(const from of [...Object.keys(people),'Academy'])for(const to of [...Object.keys(people),'Academy'].filter(x=>x!==from))test(`Manual ${from} to ${to} has no stale recipient or template`,async()=>{
+ const p=await page();p.select('recipientType',from);if(from!=='Academy')p.select('recipientId',people[from]);p.edit('Title','Manual title');p.edit('Message','Manual body');p.select('recipientType',to);assert.equal(p.state.get(7),'');assert.equal(p.state.get(8),'');if(to!=='Academy')p.select('recipientId',people[to]);await p.save();const payload=JSON.parse(p.writes()[0].body);assert.equal(payload.templateId,null);assert.equal(payload.recipientType,to);assert.equal(payload.recipientId,to==='Academy'?null:people[to]);assert.equal(payload.channel,'InApp');assert.equal(payload.message,'Manual body');
+});
+test('Submit refuses stale incompatible direct template instead of changing channel',async()=>{const p=await page();p.select('recipientId',people.Guardian);p.select('templateId',templates[0].id);p.state.set(12,'InApp');await p.save();assert.equal(p.writes().length,0);assert.match(p.state.get(19),/template.*channel/i);});
+test('Banner submit omits stale hidden template and variables defensively',async()=>{const p=await page();p.select('templateId',templates[0].id);p.select('recipientType','Academy');p.state.set(8,templates[0].id);p.state.set(9,{name:'Hidden'});p.edit('Title','Banner');p.edit('Message','Visible text');await p.save();const payload=JSON.parse(p.writes()[0].body);assert.equal(payload.templateId,null);assert.deepEqual(payload.variables,{audiences:'Student,Teacher'});});
+module.exports={people,templates};

@@ -5,9 +5,11 @@ import { academyApi, apiHeaders } from "@/lib/api";
 
 type Academy = { id: string };
 type Student = { id: string; firstName: string; lastName: string };
-type Invoice = { id: string; invoiceNumber: string; studentId: string; totalAmount: number; currency: string; dueDate: string; status: string };
+type Invoice = { id: string; invoiceNumber: string; studentId: string; totalAmount: number; balance: number; currency: string; dueDate: string; status: string };
 type Payment = { id: string; invoiceId: string; amount: number; currency: string; method: string; status: string; reference?: string | null; paidAtUtc: string };
 const money = (amount: number, currency = "INR") => new Intl.NumberFormat("en-IN", { style: "currency", currency }).format(amount);
+// The invoice API owns applied-adjustment and collected-payment arithmetic.
+const balance = (invoice: Invoice) => invoice.balance;
 
 export default function PaymentsPage() {
   const [academy, setAcademy] = useState<Academy>();
@@ -24,7 +26,7 @@ export default function PaymentsPage() {
     const id = academyId ?? academy?.id;
     if (!id) return;
     const [studentResponse, invoiceResponse, paymentResponse] = await Promise.all([
-      academyApi(`/api/academies/${id}/students`, { cache: "no-store" }), academyApi(`/api/academies/${id}/invoices`, { cache: "no-store" }), academyApi(`/api/academies/${id}/payments`, { cache: "no-store" }),
+      academyApi(`/api/academies/${id}/invoices/student-options`, { cache: "no-store" }), academyApi(`/api/academies/${id}/invoices`, { cache: "no-store" }), academyApi(`/api/academies/${id}/payments`, { cache: "no-store" }),
     ]);
     if (![studentResponse, invoiceResponse, paymentResponse].every((response) => response.ok)) throw new Error();
     setStudents(await studentResponse.json()); setInvoices(await invoiceResponse.json()); setPayments(await paymentResponse.json()); setMessage("");
@@ -32,16 +34,14 @@ export default function PaymentsPage() {
 
   useEffect(() => { async function initialise() { try { const response = await academyApi("/api/academies", { cache: "no-store" }); if (response.status === 401) return setMessage("Please sign in before recording payments."); if (!response.ok) throw new Error(); const academies: Academy[] = await response.json(); if (!academies[0]) return setMessage("Create your academy first."); setAcademy(academies[0]); await load(academies[0].id); } catch { setMessage("Payments could not be loaded. Confirm the API is running on port 5092."); } } void initialise(); }, []);
 
-  const paidByInvoice = useMemo(() => payments.reduce<Record<string, number>>((totals, payment) => ({ ...totals, [payment.invoiceId]: (totals[payment.invoiceId] ?? 0) + (payment.status === "Completed" ? payment.amount : 0) }), {}), [payments]);
-  const balance = (invoice: Invoice) => invoice.totalAmount - (paidByInvoice[invoice.id] ?? 0);
   const selectedInvoice = invoices.find((invoice) => invoice.id === invoiceId);
-  const selectedBalance = selectedInvoice ? selectedInvoice.totalAmount - (paidByInvoice[selectedInvoice.id] ?? 0) : 0;
-  const paymentTotals = useMemo(() => ({ collected: payments.filter((payment) => payment.status === "Completed").reduce((total, payment) => total + payment.amount, 0), open: invoices.filter((invoice) => balance(invoice) > 0).length, outstanding: invoices.reduce((total, invoice) => total + Math.max(0, balance(invoice)), 0) }), [invoices, payments, paidByInvoice]);
+  const selectedBalance = selectedInvoice ? balance(selectedInvoice) : 0;
+  const paymentTotals = useMemo(() => ({ collected: payments.filter((payment) => payment.status === "Completed" || payment.status === "Reconciled").reduce((total, payment) => total + payment.amount, 0), open: invoices.filter((invoice) => balance(invoice) > 0).length, outstanding: invoices.reduce((total, invoice) => total + Math.max(0, balance(invoice)), 0) }), [invoices, payments]);
 
   function selectInvoice(id: string) {
     setInvoiceId(id);
     const invoice = invoices.find((item) => item.id === id);
-    if (invoice) setAmount((invoice.totalAmount - (paidByInvoice[id] ?? 0)).toString());
+    if (invoice) setAmount(balance(invoice).toString());
   }
 
   async function recordPayment(event: FormEvent<HTMLFormElement>) {

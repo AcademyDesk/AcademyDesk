@@ -1,0 +1,3060 @@
+{
+  "capturedUtcDate": "2026-09-30",
+  "runs": [
+    {
+      "runId": "fd522b5268184938b15b99df92684968",
+      "startedUtc": "2026-09-30T12:10:24.6386487Z",
+      "sqlPort": 65364,
+      "durationSeconds": 47.8,
+      "harnessExit": 0
+    },
+    {
+      "runId": "fd4c6ce456d84109bdf15ae8b458f68b",
+      "startedUtc": "2026-09-30T12:14:08.0616598Z",
+      "sqlPort": 54812,
+      "durationSeconds": 43,
+      "harnessExit": 0
+    }
+  ],
+  "commit": "20bb6047f9edf733ac8e2a226621cc582ec54b3c",
+  "digestAlgorithm": "SHA256 of exact UTF-8 compact System.Text.Json endpoint array; retained as captured in runtime log",
+  "capturedEndpointSha256": "01DA5334907B569F29A6130AB75C76B2CC89D0A0B1F59F87E954BA1FC9DA6CEC",
+  "counts": {
+    "methodRouteEntries": 293,
+    "controllerMethodRoutes": 282,
+    "frameworkIdentityMethodRoutes": 10,
+    "customAuthControllerMethodRoutes": 4,
+    "health": 1
+  },
+  "limits": "This is runtime route metadata, not proof that every route was executed or that effective role/tenant authorization passed. Custom filters and token checks require separate scenario tests. First run console label Identity=14 counted all /api/auth/ routes; corrected display in repeat distinguishes 10 framework and 4 controller routes. Serialized endpoint arrays are identical.",
+  "endpoints": [
+    {
+      "Method": "GET",
+      "Route": "/WeatherForecast",
+      "Controller": "WeatherForecast",
+      "Action": "Get",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies",
+      "Controller": "Academies",
+      "Action": "List",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies",
+      "Controller": "Academies",
+      "Action": "Create",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "PUT",
+      "Route": "/api/academies/{academyId:guid}",
+      "Controller": "Academies",
+      "Action": "Update",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/academic-governance/grading-schemes",
+      "Controller": "AcademicGovernance",
+      "Action": "Schemes",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/academic-governance/grading-schemes",
+      "Controller": "AcademicGovernance",
+      "Action": "AddScheme",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/academic-governance/prerequisites",
+      "Controller": "AcademicGovernance",
+      "Action": "Prerequisites",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/academic-governance/prerequisites",
+      "Controller": "AcademicGovernance",
+      "Action": "AddPrerequisite",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/academic-periods",
+      "Controller": "AcademicPeriods",
+      "Action": "List",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/academic-periods/terms",
+      "Controller": "AcademicPeriods",
+      "Action": "CreateTerm",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PATCH",
+      "Route": "/api/academies/{academyId:guid}/academic-periods/terms/{termId:guid}/close",
+      "Controller": "AcademicPeriods",
+      "Action": "CloseTerm",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/academic-periods/years",
+      "Controller": "AcademicPeriods",
+      "Action": "CreateYear",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PATCH",
+      "Route": "/api/academies/{academyId:guid}/academic-periods/years/{yearId:guid}/close",
+      "Controller": "AcademicPeriods",
+      "Action": "CloseYear",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/access-grants",
+      "Controller": "AccessGrants",
+      "Action": "List",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/access-grants",
+      "Controller": "AccessGrants",
+      "Action": "Create",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "PATCH",
+      "Route": "/api/academies/{academyId:guid}/access-grants/{grantId:guid}/revoke",
+      "Controller": "AccessGrants",
+      "Action": "Revoke",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/access-reviews",
+      "Controller": "AccessReviews",
+      "Action": "List",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/access-reviews",
+      "Controller": "AccessReviews",
+      "Action": "SignOff",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PATCH",
+      "Route": "/api/academies/{academyId:guid}/active",
+      "Controller": "Academies",
+      "Action": "SetActive",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/admin-intelligence",
+      "Controller": "AdminIntelligence",
+      "Action": "Get",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/admin-work-items",
+      "Controller": "AdminWorkItems",
+      "Action": "List",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/admin-work-items",
+      "Controller": "AdminWorkItems",
+      "Action": "Create",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PATCH",
+      "Route": "/api/academies/{academyId:guid}/admin-work-items/{id:guid}/collections",
+      "Controller": "AdminWorkItems",
+      "Action": "CollectionState",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PATCH",
+      "Route": "/api/academies/{academyId:guid}/admin-work-items/{id:guid}/status",
+      "Controller": "AdminWorkItems",
+      "Action": "Status",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/assessments",
+      "Controller": "Assessments",
+      "Action": "List",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/assessments",
+      "Controller": "Assessments",
+      "Action": "Create",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PATCH",
+      "Route": "/api/academies/{academyId:guid}/assessments/{assessmentId:guid}/publish",
+      "Controller": "Assessments",
+      "Action": "Publish",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/assessments/{assessmentId:guid}/results",
+      "Controller": "AssessmentResults",
+      "Action": "List",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/assessments/{assessmentId:guid}/results",
+      "Controller": "AssessmentResults",
+      "Action": "Upsert",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/assignment-submissions",
+      "Controller": "AssignmentSubmissions",
+      "Action": "List",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/assignment-submissions",
+      "Controller": "AssignmentSubmissions",
+      "Action": "Submit",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PATCH",
+      "Route": "/api/academies/{academyId:guid}/assignment-submissions/{id:guid}/review",
+      "Controller": "AssignmentSubmissions",
+      "Action": "Review",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/assignments",
+      "Controller": "Assignments",
+      "Action": "List",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/assignments",
+      "Controller": "Assignments",
+      "Action": "Create",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PATCH",
+      "Route": "/api/academies/{academyId:guid}/assignments/{assignmentId:guid}/publish",
+      "Controller": "Assignments",
+      "Action": "Publish",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/audit-logs",
+      "Controller": "AuditLogs",
+      "Action": "List",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/audit-logs/export.csv",
+      "Controller": "AuditLogs",
+      "Action": "ExportCsv",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/batch-promotions",
+      "Controller": "BatchPromotions",
+      "Action": "List",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/batch-promotions",
+      "Controller": "BatchPromotions",
+      "Action": "Create",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PATCH",
+      "Route": "/api/academies/{academyId:guid}/batch-promotions/{id:guid}/decision",
+      "Controller": "BatchPromotions",
+      "Action": "Decide",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/batches",
+      "Controller": "Batches",
+      "Action": "List",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/batches",
+      "Controller": "Batches",
+      "Action": "Create",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PUT",
+      "Route": "/api/academies/{academyId:guid}/batches/{batchId:guid}",
+      "Controller": "Batches",
+      "Action": "Update",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/branches",
+      "Controller": "Branches",
+      "Action": "List",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/branches",
+      "Controller": "Branches",
+      "Action": "Create",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PUT",
+      "Route": "/api/academies/{academyId:guid}/branches/{branchId:guid}",
+      "Controller": "Branches",
+      "Action": "Update",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/certificates",
+      "Controller": "Certificates",
+      "Action": "List",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/certificates",
+      "Controller": "Certificates",
+      "Action": "Issue",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/certificates/branding",
+      "Controller": "Certificates",
+      "Action": "GetBranding",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PUT",
+      "Route": "/api/academies/{academyId:guid}/certificates/branding",
+      "Controller": "Certificates",
+      "Action": "UpdateBranding",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/certificates/branding/logo",
+      "Controller": "Certificates",
+      "Action": "UploadLogo",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PATCH",
+      "Route": "/api/academies/{academyId:guid}/certificates/{certificateId:guid}/status",
+      "Controller": "Certificates",
+      "Action": "UpdateStatus",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/communication-preferences",
+      "Controller": "CommunicationPreferences",
+      "Action": "List",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "PUT",
+      "Route": "/api/academies/{academyId:guid}/communication-preferences/{recipientType}/{recipientId:guid}",
+      "Controller": "CommunicationPreferences",
+      "Action": "Save",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/communication-settings",
+      "Controller": "CommunicationSettings",
+      "Action": "List",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "PUT",
+      "Route": "/api/academies/{academyId:guid}/communication-settings/{channel}",
+      "Controller": "CommunicationSettings",
+      "Action": "Save",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/communication-templates",
+      "Controller": "CommunicationTemplates",
+      "Action": "List",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/communication-templates",
+      "Controller": "CommunicationTemplates",
+      "Action": "Create",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/communication-templates/starter-templates",
+      "Controller": "CommunicationTemplates",
+      "Action": "StarterTemplateCatalogue",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/communication-templates/starter-templates",
+      "Controller": "CommunicationTemplates",
+      "Action": "AddStarterTemplates",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "PUT",
+      "Route": "/api/academies/{academyId:guid}/communication-templates/{templateId:guid}",
+      "Controller": "CommunicationTemplates",
+      "Action": "Update",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/compliance/consents",
+      "Controller": "Compliance",
+      "Action": "Consents",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/compliance/consents",
+      "Controller": "Compliance",
+      "Action": "AddConsent",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PATCH",
+      "Route": "/api/academies/{academyId:guid}/compliance/consents/{consentId:guid}/withdraw",
+      "Controller": "Compliance",
+      "Action": "WithdrawConsent",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/compliance/documents",
+      "Controller": "Compliance",
+      "Action": "Documents",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/compliance/documents",
+      "Controller": "Compliance",
+      "Action": "AddDocument",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PATCH",
+      "Route": "/api/academies/{academyId:guid}/compliance/documents/{documentId:guid}/review",
+      "Controller": "Compliance",
+      "Action": "ReviewDocument",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/compliance/documents/{documentId:guid}/review-task",
+      "Controller": "Compliance",
+      "Action": "CreateReviewTask",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/course-modules",
+      "Controller": "CourseModules",
+      "Action": "List",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/course-modules",
+      "Controller": "CourseModules",
+      "Action": "Create",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PATCH",
+      "Route": "/api/academies/{academyId:guid}/course-modules/{moduleId:guid}/publication",
+      "Controller": "CourseModules",
+      "Action": "SetPublication",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PATCH",
+      "Route": "/api/academies/{academyId:guid}/course-modules/{moduleId:guid}/publish",
+      "Controller": "CourseModuleStatus",
+      "Action": "Publish",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/courses",
+      "Controller": "Courses",
+      "Action": "List",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/courses",
+      "Controller": "Courses",
+      "Action": "Create",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PUT",
+      "Route": "/api/academies/{academyId:guid}/courses/{courseId:guid}",
+      "Controller": "Courses",
+      "Action": "Update",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/dashboard",
+      "Controller": "Dashboard",
+      "Action": "Summary",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/enrollments",
+      "Controller": "Enrollments",
+      "Action": "List",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/enrollments",
+      "Controller": "Enrollments",
+      "Action": "Create",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PUT",
+      "Route": "/api/academies/{academyId:guid}/enrollments/{enrollmentId:guid}",
+      "Controller": "Enrollments",
+      "Action": "Update",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/enrollments/{enrollmentId:guid}/transfer",
+      "Controller": "Enrollments",
+      "Action": "Transfer",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/events",
+      "Controller": "Events",
+      "Action": "List",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/events",
+      "Controller": "Events",
+      "Action": "Create",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PATCH",
+      "Route": "/api/academies/{academyId:guid}/events/{eventId:guid}/status",
+      "Controller": "Events",
+      "Action": "UpdateStatus",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/expenses",
+      "Controller": "Expenses",
+      "Action": "List",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/expenses",
+      "Controller": "Expenses",
+      "Action": "Create",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PUT",
+      "Route": "/api/academies/{academyId:guid}/expenses/{expenseId:guid}",
+      "Controller": "Expenses",
+      "Action": "Update",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/exports/{resource}",
+      "Controller": "AcademyExports",
+      "Action": "Export",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/fee-plans",
+      "Controller": "FeePlans",
+      "Action": "List",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/fee-plans",
+      "Controller": "FeePlans",
+      "Action": "Create",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PUT",
+      "Route": "/api/academies/{academyId:guid}/fee-plans/{feePlanId:guid}",
+      "Controller": "FeePlans",
+      "Action": "Update",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/fee-reminders",
+      "Controller": "FeeReminders",
+      "Action": "Queue",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/finance-adjustments",
+      "Controller": "FinanceAdjustments",
+      "Action": "List",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/finance-adjustments",
+      "Controller": "FinanceAdjustments",
+      "Action": "Create",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PATCH",
+      "Route": "/api/academies/{academyId:guid}/finance-adjustments/{adjustmentId:guid}/approval",
+      "Controller": "FinanceAdjustments",
+      "Action": "Decide",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/finance-governance/collections",
+      "Controller": "FinanceGovernance",
+      "Action": "Collections",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/finance-governance/collections/{invoiceId:guid}/follow-up",
+      "Controller": "FinanceGovernance",
+      "Action": "CreateFollowUp",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/finance-governance/settings",
+      "Controller": "FinanceGovernance",
+      "Action": "Get",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PUT",
+      "Route": "/api/academies/{academyId:guid}/finance-governance/settings",
+      "Controller": "FinanceGovernance",
+      "Action": "Save",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/finance-governance/summary",
+      "Controller": "FinanceGovernance",
+      "Action": "Summary",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/grading-schemes/active",
+      "Controller": "GradingSchemeLifecycle",
+      "Action": "Active",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PATCH",
+      "Route": "/api/academies/{academyId:guid}/grading-schemes/{schemeId:guid}/status",
+      "Controller": "GradingSchemeLifecycle",
+      "Action": "Status",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/guardians",
+      "Controller": "Guardians",
+      "Action": "List",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/guardians",
+      "Controller": "Guardians",
+      "Action": "Create",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PUT",
+      "Route": "/api/academies/{academyId:guid}/guardians/{guardianId:guid}",
+      "Controller": "Guardians",
+      "Action": "Update",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/guardians/{guardianId:guid}/profile",
+      "Controller": "Profiles",
+      "Action": "Guardian",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PUT",
+      "Route": "/api/academies/{academyId:guid}/guardians/{guardianId:guid}/profile",
+      "Controller": "Profiles",
+      "Action": "UpdateGuardianProfile",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/holidays",
+      "Controller": "Holidays",
+      "Action": "List",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/holidays",
+      "Controller": "Holidays",
+      "Action": "Create",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/holidays/india-2026-defaults",
+      "Controller": "Holidays",
+      "Action": "India",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "DELETE",
+      "Route": "/api/academies/{academyId:guid}/holidays/{holidayId:guid}",
+      "Controller": "HolidayDelete",
+      "Action": "Delete",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "DELETE",
+      "Route": "/api/academies/{academyId:guid}/holidays/{id:guid}",
+      "Controller": "Holidays",
+      "Action": "Delete",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/imports/students",
+      "Controller": "StudentImports",
+      "Action": "Import",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/imports/students/validate",
+      "Controller": "StudentImports",
+      "Action": "Validate",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/invoices",
+      "Controller": "Invoices",
+      "Action": "List",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/invoices",
+      "Controller": "Invoices",
+      "Action": "Create",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PATCH",
+      "Route": "/api/academies/{academyId:guid}/invoices/{invoiceId:guid}/status",
+      "Controller": "Invoices",
+      "Action": "UpdateStatus",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/leads",
+      "Controller": "Leads",
+      "Action": "List",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/leads",
+      "Controller": "Leads",
+      "Action": "Create",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/leads/{leadId:guid}/convert",
+      "Controller": "Leads",
+      "Action": "Convert",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PATCH",
+      "Route": "/api/academies/{academyId:guid}/leads/{leadId:guid}/notes",
+      "Controller": "Leads",
+      "Action": "UpdateNotes",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PATCH",
+      "Route": "/api/academies/{academyId:guid}/leads/{leadId:guid}/stage",
+      "Controller": "Leads",
+      "Action": "UpdateStage",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/leave-requests",
+      "Controller": "LeaveRequests",
+      "Action": "List",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/leave-requests",
+      "Controller": "LeaveRequests",
+      "Action": "Create",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PATCH",
+      "Route": "/api/academies/{academyId:guid}/leave-requests/{id:guid}",
+      "Controller": "LeaveRequests",
+      "Action": "Decide",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/lesson-plans",
+      "Controller": "LessonPlans",
+      "Action": "List",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/lesson-plans",
+      "Controller": "LessonPlans",
+      "Action": "Create",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PATCH",
+      "Route": "/api/academies/{academyId:guid}/lesson-plans/{id:guid}",
+      "Controller": "LessonPlans",
+      "Action": "Status",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/makeup-classes",
+      "Controller": "MakeupClasses",
+      "Action": "List",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/makeup-classes",
+      "Controller": "MakeupClasses",
+      "Action": "Create",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PATCH",
+      "Route": "/api/academies/{academyId:guid}/makeup-classes/{id:guid}",
+      "Controller": "MakeupClasses",
+      "Action": "UpdateStatus",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/music-pieces",
+      "Controller": "MusicPieces",
+      "Action": "List",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/music-pieces",
+      "Controller": "MusicPieces",
+      "Action": "Create",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PATCH",
+      "Route": "/api/academies/{academyId:guid}/music-pieces/{pieceId:guid}/active",
+      "Controller": "MusicPieces",
+      "Action": "SetActive",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/music-progress",
+      "Controller": "MusicProgress",
+      "Action": "List",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/music-progress",
+      "Controller": "MusicProgress",
+      "Action": "Assign",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PATCH",
+      "Route": "/api/academies/{academyId:guid}/music-progress/{progressId:guid}",
+      "Controller": "MusicProgress",
+      "Action": "Update",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/notifications",
+      "Controller": "Notifications",
+      "Action": "List",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/notifications",
+      "Controller": "Notifications",
+      "Action": "Create",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PATCH",
+      "Route": "/api/academies/{academyId:guid}/notifications/{notificationId:guid}/status",
+      "Controller": "Notifications",
+      "Action": "UpdateStatus",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/payments",
+      "Controller": "Payments",
+      "Action": "List",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/payments",
+      "Controller": "Payments",
+      "Action": "Create",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PATCH",
+      "Route": "/api/academies/{academyId:guid}/payments/{paymentId:guid}/reconcile",
+      "Controller": "Payments",
+      "Action": "Reconcile",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PATCH",
+      "Route": "/api/academies/{academyId:guid}/payments/{paymentId:guid}/status",
+      "Controller": "Payments",
+      "Action": "UpdateStatus",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/payroll/payouts",
+      "Controller": "Payroll",
+      "Action": "Payouts",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/payroll/payouts",
+      "Controller": "Payroll",
+      "Action": "Pay",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/payroll/profiles",
+      "Controller": "Payroll",
+      "Action": "Profiles",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/payroll/profiles",
+      "Controller": "Payroll",
+      "Action": "CreateProfile",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PUT",
+      "Route": "/api/academies/{academyId:guid}/payroll/profiles/{profileId:guid}",
+      "Controller": "Payroll",
+      "Action": "UpdateProfile",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/platform-services/billing-invoices",
+      "Controller": "AcademyPlatformServices",
+      "Action": "BillingInvoices",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/platform-services/billing-invoices/{invoiceId:guid}/payment-submission",
+      "Controller": "AcademyPlatformServices",
+      "Action": "SubmitPayment",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/platform-services/support-cases",
+      "Controller": "AcademyPlatformServices",
+      "Action": "SupportCases",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/platform-services/support-cases",
+      "Controller": "AcademyPlatformServices",
+      "Action": "CreateSupportCase",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/platform-services/support-cases/{caseId:guid}/response",
+      "Controller": "AcademyPlatformServices",
+      "Action": "RespondToSupportCase",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/portal-accounts",
+      "Controller": "PortalAccounts",
+      "Action": "Create",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/practice-logs",
+      "Controller": "PracticeLogs",
+      "Action": "List",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/practice-logs",
+      "Controller": "PracticeLogs",
+      "Action": "Create",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PATCH",
+      "Route": "/api/academies/{academyId:guid}/practice-logs/{id:guid}/review",
+      "Controller": "PracticeLogs",
+      "Action": "Review",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/resources",
+      "Controller": "LearningResources",
+      "Action": "List",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/resources",
+      "Controller": "LearningResources",
+      "Action": "Create",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/resources/upload",
+      "Controller": "LearningResources",
+      "Action": "Upload",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PATCH",
+      "Route": "/api/academies/{academyId:guid}/resources/{resourceId:guid}/publish",
+      "Controller": "LearningResources",
+      "Action": "Publish",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/roles",
+      "Controller": "AcademyRoles",
+      "Action": "List",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/roles",
+      "Controller": "AcademyRoles",
+      "Action": "Create",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "PUT",
+      "Route": "/api/academies/{academyId:guid}/roles/staff/{staffId:guid}/assignment",
+      "Controller": "AcademyRoles",
+      "Action": "Assign",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/sales-marketing/campaigns",
+      "Controller": "SalesMarketing",
+      "Action": "Campaigns",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/sales-marketing/campaigns",
+      "Controller": "SalesMarketing",
+      "Action": "CreateCampaign",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PATCH",
+      "Route": "/api/academies/{academyId:guid}/sales-marketing/campaigns/{id:guid}",
+      "Controller": "SalesMarketing",
+      "Action": "UpdateCampaign",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/sales-marketing/trials",
+      "Controller": "SalesMarketing",
+      "Action": "Trials",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/sales-marketing/trials",
+      "Controller": "SalesMarketing",
+      "Action": "CreateTrial",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PATCH",
+      "Route": "/api/academies/{academyId:guid}/sales-marketing/trials/{id:guid}/status",
+      "Controller": "SalesMarketing",
+      "Action": "UpdateTrialStatus",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/sessions",
+      "Controller": "ClassSessions",
+      "Action": "List",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/sessions",
+      "Controller": "ClassSessions",
+      "Action": "Create",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PUT",
+      "Route": "/api/academies/{academyId:guid}/sessions/{sessionId:guid}",
+      "Controller": "ClassSessions",
+      "Action": "Update",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/sessions/{sessionId:guid}/attendance",
+      "Controller": "Attendance",
+      "Action": "List",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/sessions/{sessionId:guid}/attendance",
+      "Controller": "Attendance",
+      "Action": "Mark",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/staff",
+      "Controller": "Staff",
+      "Action": "List",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/staff",
+      "Controller": "Staff",
+      "Action": "Create",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/staff/{staffId:guid}/offboard",
+      "Controller": "Staff",
+      "Action": "Offboard",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "PATCH",
+      "Route": "/api/academies/{academyId:guid}/staff/{staffId:guid}/password",
+      "Controller": "Staff",
+      "Action": "ResetPassword",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "PATCH",
+      "Route": "/api/academies/{academyId:guid}/staff/{staffId:guid}/role",
+      "Controller": "Staff",
+      "Action": "UpdateRole",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "PATCH",
+      "Route": "/api/academies/{academyId:guid}/staff/{staffId:guid}/status",
+      "Controller": "Staff",
+      "Action": "UpdateStatus",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/student-onboarding",
+      "Controller": "StudentOnboarding",
+      "Action": "Create",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/students",
+      "Controller": "Students",
+      "Action": "List",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/students",
+      "Controller": "Students",
+      "Action": "Create",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/students/overview",
+      "Controller": "Students",
+      "Action": "Overview",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PUT",
+      "Route": "/api/academies/{academyId:guid}/students/{studentId:guid}",
+      "Controller": "Students",
+      "Action": "Update",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/students/{studentId:guid}/fee-arrangements",
+      "Controller": "StudentFeeArrangements",
+      "Action": "List",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/students/{studentId:guid}/fee-arrangements",
+      "Controller": "StudentFeeArrangements",
+      "Action": "Create",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/students/{studentId:guid}/fee-arrangements/admission-fee",
+      "Controller": "StudentFeeArrangements",
+      "Action": "AdmissionFee",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PUT",
+      "Route": "/api/academies/{academyId:guid}/students/{studentId:guid}/fee-arrangements/admission-fee",
+      "Controller": "StudentFeeArrangements",
+      "Action": "UpdateAdmissionFee",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/students/{studentId:guid}/guardians",
+      "Controller": "StudentGuardians",
+      "Action": "List",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/students/{studentId:guid}/guardians",
+      "Controller": "StudentGuardians",
+      "Action": "Link",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "DELETE",
+      "Route": "/api/academies/{academyId:guid}/students/{studentId:guid}/guardians/{guardianId:guid}",
+      "Controller": "StudentGuardians",
+      "Action": "Unlink",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PATCH",
+      "Route": "/api/academies/{academyId:guid}/students/{studentId:guid}/guardians/{guardianId:guid}/portal-access",
+      "Controller": "StudentGuardians",
+      "Action": "SetPortalAccess",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/students/{studentId:guid}/profile",
+      "Controller": "Profiles",
+      "Action": "Student",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PUT",
+      "Route": "/api/academies/{academyId:guid}/students/{studentId:guid}/profile",
+      "Controller": "Profiles",
+      "Action": "UpdateStudentProfile",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/teachers",
+      "Controller": "Teachers",
+      "Action": "List",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/academies/{academyId:guid}/teachers",
+      "Controller": "Teachers",
+      "Action": "Create",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PUT",
+      "Route": "/api/academies/{academyId:guid}/teachers/{teacherId:guid}",
+      "Controller": "Teachers",
+      "Action": "Update",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/teachers/{teacherId:guid}/compensation",
+      "Controller": "TeacherCompensation",
+      "Action": "Get",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PUT",
+      "Route": "/api/academies/{academyId:guid}/teachers/{teacherId:guid}/compensation",
+      "Controller": "TeacherCompensation",
+      "Action": "Save",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/academies/{academyId:guid}/teachers/{teacherId:guid}/profile",
+      "Controller": "Profiles",
+      "Action": "Teacher",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "PUT",
+      "Route": "/api/academies/{academyId:guid}/teachers/{teacherId:guid}/profile",
+      "Controller": "Profiles",
+      "Action": "UpdateTeacherProfile",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/auth/confirmEmail",
+      "Controller": null,
+      "Action": null,
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/auth/forgotPassword",
+      "Controller": null,
+      "Action": null,
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/auth/login",
+      "Controller": null,
+      "Action": null,
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/auth/manage/2fa",
+      "Controller": null,
+      "Action": null,
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/auth/manage/info",
+      "Controller": null,
+      "Action": null,
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/auth/manage/info",
+      "Controller": null,
+      "Action": null,
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/auth/refresh",
+      "Controller": null,
+      "Action": null,
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/auth/register",
+      "Controller": null,
+      "Action": null,
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/auth/resendConfirmationEmail",
+      "Controller": null,
+      "Action": null,
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/auth/resetPassword",
+      "Controller": null,
+      "Action": null,
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/auth/session",
+      "Controller": "AuthSession",
+      "Action": "Current",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/auth/session/change-password",
+      "Controller": "AuthSession",
+      "Action": "ChangePassword",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "PUT",
+      "Route": "/api/auth/session/profile",
+      "Controller": "AuthSession",
+      "Action": "UpdateProfile",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/auth/session/profile-image",
+      "Controller": "AuthSession",
+      "Action": "UploadProfileImage",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/certificates/verify/{verificationCode}",
+      "Controller": "CertificateVerification",
+      "Action": "Verify",
+      "AllowAnonymousMetadata": true,
+      "AuthorizationMetadata": []
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/platform/academies",
+      "Controller": "PlatformAcademies",
+      "Action": "List",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/platform/academies",
+      "Controller": "PlatformAcademies",
+      "Action": "Onboard",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "PUT",
+      "Route": "/api/platform/academies/{academyId:guid}/configuration",
+      "Controller": "PlatformAcademies",
+      "Action": "Configure",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/platform/academies/{academyId:guid}/onboarding",
+      "Controller": "PlatformControl",
+      "Action": "GetTenantOnboarding",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "PUT",
+      "Route": "/api/platform/academies/{academyId:guid}/onboarding",
+      "Controller": "PlatformControl",
+      "Action": "SaveTenantOnboarding",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "PATCH",
+      "Route": "/api/platform/academies/{academyId:guid}/status",
+      "Controller": "PlatformAcademies",
+      "Action": "SetStatus",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "DELETE",
+      "Route": "/api/platform/activity-logs",
+      "Controller": "PlatformControl",
+      "Action": "DeleteActivityLogs",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/platform/activity-logs",
+      "Controller": "PlatformControl",
+      "Action": "ActivityLogs",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/platform/admins",
+      "Controller": "PlatformControl",
+      "Action": "Admins",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "PATCH",
+      "Route": "/api/platform/admins/{userId:guid}/active",
+      "Controller": "PlatformControl",
+      "Action": "SetAdminActive",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/platform/admins/{userId:guid}/reset-password",
+      "Controller": "PlatformControl",
+      "Action": "ResetAdminPassword",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/platform/announcements",
+      "Controller": "PlatformControl",
+      "Action": "ListAnnouncements",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/platform/announcements",
+      "Controller": "PlatformControl",
+      "Action": "CreateAnnouncement",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/platform/audit",
+      "Controller": "PlatformControl",
+      "Action": "AuditLog",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/platform/billing-invoices",
+      "Controller": "PlatformControl",
+      "Action": "ListInvoices",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/platform/billing-invoices",
+      "Controller": "PlatformControl",
+      "Action": "CreateInvoice",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "PATCH",
+      "Route": "/api/platform/billing-invoices/{invoiceId:guid}/status",
+      "Controller": "PlatformControl",
+      "Action": "UpdateInvoiceStatus",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/platform/health",
+      "Controller": "PlatformControl",
+      "Action": "Health",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/platform/overview",
+      "Controller": "PlatformControl",
+      "Action": "Overview",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/platform/settings",
+      "Controller": "PlatformControl",
+      "Action": "GetSettings",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "PUT",
+      "Route": "/api/platform/settings",
+      "Controller": "PlatformControl",
+      "Action": "SaveSettings",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/platform/support-cases",
+      "Controller": "PlatformControl",
+      "Action": "ListSupportCases",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/platform/support-cases",
+      "Controller": "PlatformControl",
+      "Action": "CreateSupportCase",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "PATCH",
+      "Route": "/api/platform/support-cases/{caseId:guid}",
+      "Controller": "PlatformControl",
+      "Action": "UpdateSupportCase",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/portal/announcements",
+      "Controller": "Portal",
+      "Action": "Announcements",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/portal/change-password",
+      "Controller": "Portal",
+      "Action": "ChangePassword",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/portal/events",
+      "Controller": "Portal",
+      "Action": "UpcomingEvents",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/portal/guardians/{guardianId:guid}/children",
+      "Controller": "Portal",
+      "Action": "GuardianChildren",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "PUT",
+      "Route": "/api/portal/guardians/{guardianId:guid}/profile",
+      "Controller": "Portal",
+      "Action": "UpdateGuardianProfile",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/portal/me",
+      "Controller": "Portal",
+      "Action": "Me",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/portal/notifications",
+      "Controller": "Portal",
+      "Action": "Notifications",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "PATCH",
+      "Route": "/api/portal/notifications/{notificationId:guid}/read",
+      "Controller": "Portal",
+      "Action": "MarkNotificationRead",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/portal/students/{studentId:guid}",
+      "Controller": "Portal",
+      "Action": "Student",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/portal/students/{studentId:guid}/assignments/{assignmentId:guid}/submit",
+      "Controller": "Portal",
+      "Action": "SubmitAssignment",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/portal/students/{studentId:guid}/certificates/{certificateNumber}/download",
+      "Controller": "Portal",
+      "Action": "DownloadCertificate",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/portal/students/{studentId:guid}/invoices/{invoiceId:guid}/download",
+      "Controller": "Portal",
+      "Action": "DownloadInvoice",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/portal/students/{studentId:guid}/leave-requests",
+      "Controller": "Portal",
+      "Action": "StudentLeaveRequests",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/portal/students/{studentId:guid}/leave-requests",
+      "Controller": "Portal",
+      "Action": "RequestStudentLeave",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/portal/students/{studentId:guid}/practice-logs",
+      "Controller": "Portal",
+      "Action": "LogPractice",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "PUT",
+      "Route": "/api/portal/students/{studentId:guid}/profile",
+      "Controller": "Portal",
+      "Action": "UpdateProfile",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/teacher/assessments",
+      "Controller": "TeacherPortal",
+      "Action": "Assessments",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/teacher/assessments",
+      "Controller": "TeacherPortal",
+      "Action": "CreateAssessment",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "PATCH",
+      "Route": "/api/teacher/assessments/{assessmentId:guid}/publish",
+      "Controller": "TeacherPortal",
+      "Action": "PublishAssessment",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/teacher/assessments/{assessmentId:guid}/results",
+      "Controller": "TeacherPortal",
+      "Action": "AssessmentResults",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/teacher/assessments/{assessmentId:guid}/results",
+      "Controller": "TeacherPortal",
+      "Action": "RecordAssessmentResult",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/teacher/assignments",
+      "Controller": "TeacherPortal",
+      "Action": "Assignments",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/teacher/assignments",
+      "Controller": "TeacherPortal",
+      "Action": "CreateAssignment",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "PATCH",
+      "Route": "/api/teacher/assignments/{assignmentId:guid}/publish",
+      "Controller": "TeacherPortal",
+      "Action": "PublishAssignment",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/teacher/assignments/{assignmentId:guid}/submissions",
+      "Controller": "TeacherPortal",
+      "Action": "Submissions",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/teacher/batch-progress",
+      "Controller": "TeacherPortal",
+      "Action": "BatchProgress",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/teacher/calendar",
+      "Controller": "TeacherPortal",
+      "Action": "Calendar",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/teacher/classroom-activity",
+      "Controller": "TeacherPortal",
+      "Action": "ClassroomActivity",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/teacher/leave-requests",
+      "Controller": "TeacherPortal",
+      "Action": "LeaveRequests",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/teacher/leave-requests",
+      "Controller": "TeacherPortal",
+      "Action": "RequestLeave",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/teacher/lesson-plans",
+      "Controller": "TeacherPortal",
+      "Action": "LessonPlans",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/teacher/lesson-plans",
+      "Controller": "TeacherPortal",
+      "Action": "CreateLessonPlan",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "PATCH",
+      "Route": "/api/teacher/lesson-plans/{lessonPlanId:guid}/status",
+      "Controller": "TeacherPortal",
+      "Action": "UpdateLessonPlanStatus",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/teacher/me",
+      "Controller": "TeacherPortal",
+      "Action": "Me",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/teacher/payments",
+      "Controller": "TeacherPortal",
+      "Action": "Payments",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/teacher/practice-logs",
+      "Controller": "TeacherPortal",
+      "Action": "PracticeLogs",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "PATCH",
+      "Route": "/api/teacher/practice-logs/{practiceLogId:guid}/review",
+      "Controller": "TeacherPortal",
+      "Action": "ReviewPracticeLog",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/teacher/profile",
+      "Controller": "TeacherPortal",
+      "Action": "Profile",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "PUT",
+      "Route": "/api/teacher/profile",
+      "Controller": "TeacherPortal",
+      "Action": "UpdateProfile",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/teacher/progress",
+      "Controller": "TeacherPortal",
+      "Action": "Progress",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/teacher/resources",
+      "Controller": "TeacherPortal",
+      "Action": "Resources",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/teacher/resources/note",
+      "Controller": "TeacherPortal",
+      "Action": "CreateClassNote",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/teacher/resources/upload",
+      "Controller": "TeacherPortal",
+      "Action": "UploadClassMaterial",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/teacher/sessions/{sessionId:guid}/attendance",
+      "Controller": "TeacherPortal",
+      "Action": "Attendance",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/teacher/sessions/{sessionId:guid}/attendance",
+      "Controller": "TeacherPortal",
+      "Action": "MarkAttendance",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "POST",
+      "Route": "/api/teacher/sessions/{sessionId:guid}/attendance/bulk",
+      "Controller": "TeacherPortal",
+      "Action": "MarkAttendanceBulk",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/api/teacher/sessions/{sessionId:guid}/roster",
+      "Controller": "TeacherPortal",
+      "Action": "Roster",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "PATCH",
+      "Route": "/api/teacher/sessions/{sessionId:guid}/status",
+      "Controller": "TeacherPortal",
+      "Action": "UpdateSessionStatus",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "PUT",
+      "Route": "/api/teacher/sessions/{sessionId:guid}/teacher-attendance",
+      "Controller": "TeacherPortal",
+      "Action": "MarkTeacherAttendance",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "PATCH",
+      "Route": "/api/teacher/submissions/{submissionId:guid}/review",
+      "Controller": "TeacherPortal",
+      "Action": "ReviewSubmission",
+      "AllowAnonymousMetadata": false,
+      "AuthorizationMetadata": [
+        {
+          "Policy": null,
+          "Roles": null,
+          "Schemes": null
+        }
+      ]
+    },
+    {
+      "Method": "GET",
+      "Route": "/health",
+      "Controller": null,
+      "Action": null,
+      "AllowAnonymousMetadata": true,
+      "AuthorizationMetadata": []
+    }
+  ]
+}

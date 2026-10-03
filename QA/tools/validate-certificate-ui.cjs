@@ -1,0 +1,43 @@
+const fs = require('node:fs'), path = require('node:path'), crypto = require('node:crypto'), cp = require('node:child_process'), assert = require('node:assert/strict');
+const root = path.resolve(__dirname, '../..'), read = file => fs.readFileSync(path.join(root, file), 'utf8').replace(/^\uFEFF/, ''), sha = file => crypto.createHash('sha256').update(fs.readFileSync(path.join(root, file))).digest('hex');
+const snapshot = JSON.parse(read('QA/REPORTS/PHASE_2B_CERTIFICATE_UI_SOURCE_SNAPSHOT.json')), prior = JSON.parse(read('QA/REPORTS/PHASE_2B_CERTIFICATE_ENROLLMENT_SOURCE_SNAPSHOT.json'));
+assert.equal(cp.execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(), snapshot.commit);
+for (const entry of [...snapshot.sources, ...snapshot.evidence, ...snapshot.binaries, ...snapshot.normalBinaries]) assert.equal(sha(entry.file), entry.sha256, entry.file);
+const intentional = ['QA/00_QA_README.md', 'QA/REPORTS/PHASE_2_START_PLAN.md', 'QA/ISSUES/INDEX.md', 'QA/03_TEST_MATRIX.md', 'QA/ISSUES/BUG-DATA-0046.md'];
+for (const entry of [...prior.sources, ...prior.evidence, ...prior.binaries, ...prior.normalBinaries]) if (!intentional.includes(entry.file)) assert.equal(sha(entry.file), entry.sha256, 'Accepted predecessor preserved: ' + entry.file);
+for (const entry of snapshot.beforeSources) assert.equal(entry.sha256, prior.sources.find(x => x.file === entry.file).sha256, 'Accepted starting source: ' + entry.file);
+assert.deepEqual(snapshot.normalBinaries, prior.normalBinaries); assert.deepEqual(snapshot.binaries, prior.binaries);
+assert.deepEqual(snapshot.productBefore, { file: 'apps/web/src/app/certificates/page.tsx', sha256: '74ce00255d4f72808e05616b4a02903af128264db98678a251fe55f9e94d0ab6' });
+for (const entry of snapshot.sharedBefore) assert.equal(sha(entry.file), entry.sha256, 'Shared implementation retained: ' + entry.file);
+function testLog(file, tests, passed, failed) {
+    const log = read(file); assert.match(log, new RegExp('tests ' + tests + '[\\s\\S]*pass ' + passed + '[\\s\\S]*fail ' + failed));
+    assert.match(log, /cancelled 0/); assert.match(log, /skipped 0/);
+    const labels = log.split(/\r?\n/).filter(x => x.startsWith('✔ ') || x.startsWith('✖ '));
+    if (failed === 0) assert.equal(labels.length, tests);
+    return log;
+}
+const baseline = testLog('QA/EVIDENCE/logs/phase-2b-certificate-ui-baseline.log', 4, 0, 4);
+assert.match(baseline, /'b3'/); assert.match(baseline, /'b1' !== ''/); assert.match(baseline, /Check the required details/);
+testLog('QA/EVIDENCE/logs/phase-2b-certificate-ui-suite.log', 47, 47, 0);
+testLog('QA/EVIDENCE/logs/phase-2b-certificate-ui-target-final.log', 48, 48, 0);
+testLog('QA/EVIDENCE/logs/phase-2b-certificate-ui-final.log', 93, 93, 0);
+const verification = JSON.parse(read('QA/EVIDENCE/certificate-ui-verification.json'));
+for (const key of ['controlledTsx', 'typecheck', 'targetLint', 'diffCheck']) assert.equal(verification[key].exitCode, 0);
+assert.equal(verification.targetLint.errors, 0); assert.equal(verification.targetLint.warnings, 2);
+assert.equal(verification.backendRerun, false); assert.equal(verification.priorBackend, 1019);
+assert.equal(verification.certificateHttpSql, 'NOT RUN'); assert.equal(verification.browserDevice, 'NOT RUN'); assert.equal(verification.frontendBuild, 'NOT RUN');
+assert.match(read('QA/EVIDENCE/logs/phase-2b-certificate-ui-lint-baseline.log'), /3 problems \(0 errors, 3 warnings\)/);
+assert.match(read('QA/EVIDENCE/logs/phase-2b-certificate-ui-lint.log'), /2 problems \(0 errors, 2 warnings\)/);
+assert.doesNotMatch(read('QA/EVIDENCE/logs/phase-2b-certificate-ui-lint.log'), /react-hooks\/exhaustive-deps/);
+assert.match(read('QA/EVIDENCE/logs/phase-2b-certificate-ui-typecheck.log'), /QA TypeScript --noEmit --incremental false exit=0/);
+assert.doesNotMatch(read('QA/EVIDENCE/logs/phase-2b-certificate-ui-typecheck.log'), /error TS[0-9]+/);
+const product = read('apps/web/src/app/certificates/page.tsx');
+assert.match(product, /options=\{eligibleBatches\.map/); assert.match(product, /className="contents"/);
+assert.match(product, /sameId\(enrollment\.studentId, studentId\) && sameId\(enrollment\.batchId, batch\.id\)/);
+assert.match(product, /\["active", "completed"\]\.includes\(enrollment\.status\.toLowerCase\(\)\)/);
+assert.match(read('QA/ISSUES/BUG-DATA-0046.md'), /\| Status \| OPEN \|/);
+const report = read('QA/REPORTS/PHASE_2B_CERTIFICATE_UI_REPAIR.md');
+assert.match(report, /48\/48 PASS/); assert.match(report, /93\/93 PASS/); assert.match(report, /Issue\/Phase2B\/release remain OPEN/);
+for (const file of ['QA/REPORTS/PHASE_2B_CERTIFICATE_UI_REPAIR.md', 'QA/ISSUES/BUG-DATA-0046.md']) for (const match of read(file).matchAll(/\]\(([^)]+)\)/g)) { const target = match[1].split('#')[0]; if (target && !/^https?:/.test(target)) assert.ok(fs.existsSync(path.resolve(root, path.dirname(file), target)), target); }
+const diff = cp.spawnSync('git', ['diff', '--check'], { cwd: root, encoding: 'utf8' }); assert.equal(diff.status, 0, diff.stdout.slice(0, 500));
+console.log('PASS Certificate picker UI:4 baseline failures;48 certificate/45 reused compliance controlled TSX PASS;TypeScript PASS,target lint0 errors/2 inherited image warnings. Approved eligibility/stale reset/optional payload/draft/durable notice/refresh/duplicate guards. API/prior1019 backend/evidence/binaries/shared controls/CSS retained,not rerun. Current certificate HTTP-SQL/browser/device/build/closure pending. Next real HTTP/SQL,Sol High;no dev services/Azure/commit/deploy.');

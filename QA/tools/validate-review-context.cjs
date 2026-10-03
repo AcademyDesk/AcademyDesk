@@ -1,0 +1,29 @@
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),cp=require('node:child_process'),os=require('node:os'),assert=require('node:assert/strict');
+const root=path.resolve(__dirname,'../..'),read=f=>fs.readFileSync(path.join(root,f),'utf8').replace(/^\uFEFF/,''),sha=f=>crypto.createHash('sha256').update(fs.readFileSync(path.join(root,f))).digest('hex');
+const snapshot=JSON.parse(read('QA/REPORTS/PHASE_2B_REVIEW_CONTEXT_SOURCE_SNAPSHOT.json')),prior=JSON.parse(read('QA/REPORTS/PHASE_2B_MARKETING_CONSENT_SOURCE_SNAPSHOT.json'));
+assert.equal(cp.execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim(),snapshot.commit);
+for(const x of [...snapshot.sources,...snapshot.evidence,...snapshot.binaries,...snapshot.normalBinaries])assert.equal(sha(x.file),x.sha256,x.file);
+const intentional=['apps/api/Controllers/AssignmentSubmissionsController.cs','apps/web/src/app/submission-review/page.tsx','QA/tools/SqlHarness/Program.cs','QA/tools/SqlHarness/Run-ReconciledPayment.ps1','QA/00_QA_README.md','QA/REPORTS/PHASE_2_START_PLAN.md','QA/ISSUES/INDEX.md','QA/03_TEST_MATRIX.md','QA/ISSUES/BUG-FUNC-0030.md'];
+for(const x of [...prior.sources,...prior.evidence,...prior.binaries,...prior.normalBinaries])if(!intentional.includes(x.file))assert.equal(sha(x.file),x.sha256,'Accepted predecessor preserved '+x.file);
+assert.deepEqual(snapshot.normalBinaries,prior.normalBinaries);
+for(const x of snapshot.beforeSources.filter(x=>prior.sources.some(y=>y.file===x.file)))assert.equal(x.sha256,prior.sources.find(y=>y.file===x.file).sha256,'Accepted starting source '+x.file);
+const log=read('QA/EVIDENCE/logs/phase-2b-review-context-sql-final.log'),failed=read('QA/EVIDENCE/logs/phase-2b-review-context-sql.log');
+assert.match(failed,/Sequence contains no elements/);assert.equal([...failed.matchAll(/^REVIEWCONTEXT CASE/gm)].length,0);
+assert.match(log,/REVIEWCONTEXT REGRESSION PASS:21 cases/);assert.equal([...log.matchAll(/^REVIEWCONTEXT CASE .+ PASS\.$/gm)].length,21);
+for(const label of ['owned-read-no-write','assignment-filter','exact-target-review','fresh-SQL-exact-write-and-audit','fresh-readback','anonymous-GET','foreign-GET','teacher-GET','anonymous-PATCH','foreign-PATCH','teacher-PATCH','foreign-row-404','missing-row-404',...Array.from({length:8},(_,i)=>'scoped-context-'+i)])assert.ok(log.includes(`CASE ${label} PASS.`));
+assert.match(log,/QA ReviewContext exit=0/);assert.match(log,/application migrations=82, identity migrations=7/);assert.match(log,/Negative cleanup check refused a mismatched database marker/);
+assert.match(log,/routes=313, controller method\/routes=302, framework Identity method\/routes=10, SHA256=562F95AD3C4514C384CCC11317E91174D0BAB7203E6AA7F162FCD74E8BE81A99/);
+for(const output of [failed,log]){const id=output.match(/run=([a-f0-9]{32}) container=academydesk-qa-\1 /)[1],port=Number(output.match(/^QA SQL port=(\d+)/m)[1]);assert.equal(cp.spawnSync('docker',['inspect',`academydesk-qa-${id}`],{encoding:'utf8'}).status,1);assert.equal(fs.existsSync(path.join(os.tmpdir(),'AcademyDesk-QA',id)),false);assert.equal(cp.execFileSync('powershell',['-NoProfile','-Command',`@(Get-NetTCPConnection -LocalPort ${port} -State Listen -ErrorAction SilentlyContinue).Count`],{encoding:'utf8'}).trim(),'0');}
+assert.match(read('QA/EVIDENCE/logs/phase-2b-review-context-backend-baseline.log'),/Failed:\s+8, Passed:\s+0, Skipped:\s+0, Total:\s+8/);
+assert.match(read('QA/EVIDENCE/review-context/review-context-baseline.trx'),/<Counters total="8" executed="8" passed="0" failed="8"/);
+assert.match(read('QA/EVIDENCE/logs/phase-2b-review-context-suite.log'),/Failed:\s+0, Passed:\s+821, Skipped:\s+0, Total:\s+821/);
+const trx=read('QA/EVIDENCE/review-context/review-context-suite.trx');assert.match(trx,/<Counters total="821" executed="821" passed="821"/);assert.equal([...trx.matchAll(/<UnitTestResult [^>]*testName="AcademyDesk\.Api\.Tests\.SubmissionReviewContextTests\./g)].length,8);
+const ui=read('QA/EVIDENCE/logs/phase-2b-review-context-ui-final-time.log');assert.match(ui,/tests 15/);assert.match(ui,/pass 15/);assert.match(ui,/fail 0/);assert.match(ui,/SQL UTC timestamp without suffix/);
+const baseline=read('QA/EVIDENCE/logs/phase-2b-review-context-ui-baseline.log');assert.match(baseline,/tests 14/);assert.match(baseline,/pass 1/);assert.match(baseline,/fail 13/);
+assert.match(read('QA/EVIDENCE/logs/phase-2b-review-context-typecheck-time.log'),/REVIEW TYPECHECK exit=0/);assert.match(read('QA/EVIDENCE/logs/phase-2b-review-context-lint-time.log'),/REVIEW LINT exit=0/);
+for(const suffix of ['sql-build','sql-build-final'])assert.match(read(`QA/EVIDENCE/logs/phase-2b-review-context-${suffix}.log`),/0 Warning\(s\)[\s\S]*0 Error\(s\)/);
+assert.deepEqual(snapshot.checks,{backendTotal:821,newBackendCases:8,baselineBackendFailures:8,controlledUiCases:15,baselineUiPass:1,baselineUiFailures:13,httpSqlCases:21,failedFixtureRuns:1,closure:'OPEN',browserDevice:'NOT RUN',devServices:'UNCHANGED'});
+assert.match(read('QA/ISSUES/BUG-FUNC-0030.md'),/\| Status \| OPEN \|/);
+for(const f of ['QA/REPORTS/PHASE_2B_REVIEW_CONTEXT_REPAIR.md','QA/ISSUES/BUG-FUNC-0030.md'])for(const m of read(f).matchAll(/\]\(([^)]+)\)/g)){const target=m[1].split('#')[0];if(target&&!/^https?:/.test(target))assert.ok(fs.existsSync(path.resolve(root,path.dirname(f),target)),target);}
+assert.equal(cp.spawnSync('git',['diff','--check'],{cwd:root,encoding:'utf8'}).status,0);
+console.log('PASS Submission review context:821 backend (8 new),15 controlled TSX,21 real Identity/global-filter/HTTP-SQL checks; tenant-scoped labels/full legacy projection/exact feedback+audit/no-write denials. Baseline8 controller failures; corrected/excluded fixture failure retained. Prior repairs/evidence/binaries/normal assemblies/routes/schema and owned cleanup verified. Browser/device/linked/critical/concurrency OPEN; dev/Azure unchanged.');

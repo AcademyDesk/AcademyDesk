@@ -15,6 +15,21 @@ public sealed class CommunicationPreferencesController(
     AcademyDeskDbContext dbContext,
     UserManager<ApplicationUser> userManager) : ControllerBase
 {
+    [HttpGet("recipients")]
+    public async Task<ActionResult<CommunicationPreferenceRecipients>> Recipients(Guid academyId, CancellationToken cancellationToken)
+    {
+        if (!await CanManage(academyId)) return Forbid();
+        // Contact preference selection does not require full people-management
+        // records. Keep this lookup under the same consent permission/module.
+        var students = await dbContext.Students.AsNoTracking().Where(x => x.AcademyId == academyId)
+            .OrderBy(x => x.LastName).ThenBy(x => x.FirstName)
+            .Select(x => new CommunicationPreferenceRecipient(x.Id, x.FirstName, x.LastName, x.Email)).ToListAsync(cancellationToken);
+        var guardians = await dbContext.Guardians.AsNoTracking().Where(x => x.AcademyId == academyId)
+            .OrderBy(x => x.LastName).ThenBy(x => x.FirstName)
+            .Select(x => new CommunicationPreferenceRecipient(x.Id, x.FirstName, x.LastName, x.Email)).ToListAsync(cancellationToken);
+        return Ok(new CommunicationPreferenceRecipients(students, guardians));
+    }
+
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<CommunicationPreferenceSummary>>> List(Guid academyId, string? recipientType, CancellationToken cancellationToken)
     {
@@ -40,9 +55,21 @@ public sealed class CommunicationPreferencesController(
         return Ok(ToSummary(preference));
     }
 
-    private async Task<bool> CanManage(Guid academyId) { var user = await userManager.GetUserAsync(User); return user?.AcademyId == academyId && (await userManager.IsInRoleAsync(user, "Owner") || await userManager.IsInRoleAsync(user, "AcademyAdmin") || await userManager.IsInRoleAsync(user, "Manager")); }
+    private async Task<bool> CanManage(Guid academyId)
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user is not { IsActive: true } || user.AcademyId != academyId) return false;
+        // AcademyAccessFilter enforces communications.manage, including custom
+        // roles/current grants. Do not re-deny delegated users by role name.
+        // Preserve the existing platform-owner exception boundary: its global
+        // bypass is not a new grant to this tenant's consent-management actions.
+        return !user.IsPlatformOwner || await userManager.IsInRoleAsync(user, "Owner") ||
+            await userManager.IsInRoleAsync(user, "AcademyAdmin") || await userManager.IsInRoleAsync(user, "Manager");
+    }
     private static CommunicationPreferenceSummary ToSummary(CommunicationPreference x) => new(x.Id, x.RecipientId, x.RecipientType, x.EmailAllowed, x.WhatsAppAllowed, x.MarketingAllowed, x.EmailOptedInAtUtc, x.WhatsAppOptedInAtUtc, x.OptedOutAtUtc, x.Notes);
 }
 
 public sealed record SaveCommunicationPreferenceRequest(bool EmailAllowed, bool WhatsAppAllowed, bool MarketingAllowed, string? Notes);
+public sealed record CommunicationPreferenceRecipient(Guid Id, string FirstName, string LastName, string? Email);
+public sealed record CommunicationPreferenceRecipients(IReadOnlyList<CommunicationPreferenceRecipient> Students, IReadOnlyList<CommunicationPreferenceRecipient> Guardians);
 public sealed record CommunicationPreferenceSummary(Guid Id, Guid RecipientId, string RecipientType, bool EmailAllowed, bool WhatsAppAllowed, bool MarketingAllowed, DateTime? EmailOptedInAtUtc, DateTime? WhatsAppOptedInAtUtc, DateTime? OptedOutAtUtc, string? Notes);

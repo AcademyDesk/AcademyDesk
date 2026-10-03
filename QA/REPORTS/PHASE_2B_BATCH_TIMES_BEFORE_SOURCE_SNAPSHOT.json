@@ -1,0 +1,23 @@
+{
+  "date": "2026-10-01",
+  "records": [
+    {
+      "file": "apps/api/Controllers/BatchesController.cs",
+      "sha256": "a4308c31d12e76e410829974cd23233041f64cd9f8cfe3348aab7bd4abc843ea"
+    },
+    {
+      "file": "apps/web/src/app/batches/page.tsx",
+      "sha256": "c7b539f6f3e64d5e14eab37fcce1185373d64719b1f668ee54a662e28df9d62d"
+    }
+  ],
+  "assemblies": [
+    {
+      "file": "apps/api/bin/Debug/net10.0/AcademyDesk.Api.dll",
+      "sha256": "319c5e2dc9d074e655946538f3a4c135aa45274e5f255c6e4726db91d452b4b8"
+    },
+    {
+      "file": "QA/tools/SqlHarness/bin/Debug/net10.0/SqlHarness.dll",
+      "sha256": "abba20d2f0ee52bcf3d354d914bd29dae76da206d1720edbf6c527e2b93ea20f"
+    }
+  ]
+}

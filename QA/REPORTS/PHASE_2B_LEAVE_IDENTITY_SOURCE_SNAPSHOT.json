@@ -1,0 +1,120 @@
+{
+  "createdAt": "2026-10-01T13:39:38.776Z",
+  "commit": "20bb6047f9edf733ac8e2a226621cc582ec54b3c",
+  "issue": "BUG-DATA-0038",
+  "checks": {
+    "backendTotal": 477,
+    "newBackendCases": 51,
+    "httpSqlCases": 63,
+    "browserDevice": "NOT RUN",
+    "closure": "OPEN"
+  },
+  "sources": [
+    {
+      "file": "apps/web/src/app/schedule/page.tsx",
+      "sha256": "41df5a30430498237fca3a039763de296f4db0117734e3ae6752902aa8ba750c"
+    },
+    {
+      "file": "apps/api/Controllers/ClassSessionsController.cs",
+      "sha256": "5445b6b9c69a189c5b5a707138df4ebde7bf06f03e704a8ec8f3219d6c0460d2"
+    },
+    {
+      "file": "apps/api/Controllers/LeaveRequestsController.cs",
+      "sha256": "ed0f3e50f1f446a448120b6ba852fb7a7334ce22a7a7ece607f7b77f94e9eb4f"
+    },
+    {
+      "file": "apps/web/src/app/leave/page.tsx",
+      "sha256": "40c8c3b99d8e232c85dd8f3a0e5ea38bb1cdba5fe756b4fa87dfbacec388603d"
+    },
+    {
+      "file": "apps/api/Domain/Entities/LeaveRequest.cs",
+      "sha256": "9e7f36c796f3d857ab7944b384e9e03c58109f17f7e84487c12544c587cdc680"
+    },
+    {
+      "file": "apps/api/Data/AcademyDeskDbContext.cs",
+      "sha256": "f77581f6e97b38e84dfec3bd022118a8da9858b9c5cb637daa6d1a25c8fa7b1e"
+    },
+    {
+      "file": "apps/api/Security/AcademyAccessFilter.cs",
+      "sha256": "f74c29ef47dbafc20939ce10ec10c36b1ca0f7be23c8900422417ecb69db8753"
+    },
+    {
+      "file": "apps/api/Security/PermissionCatalog.cs",
+      "sha256": "6703cf7acc8c90309ce8e804981fc5a5342567d1f2cd756820351560a65d4d5a"
+    },
+    {
+      "file": "tests/AcademyDesk.Api.Tests/LeaveIdentityTests.cs",
+      "sha256": "ff36cf79b1b78858160ff31ccc3de62eff4b3092436edbdc4e7ea55e4f63c18f"
+    },
+    {
+      "file": "QA/tools/SqlHarness/LeaveIdentityRegression.cs",
+      "sha256": "de9b5f142cdcf9f91cfe957bfac05fa888deef2db7a8a5ceb0f4e8c235d33e6d"
+    },
+    {
+      "file": "QA/tools/SqlHarness/Program.cs",
+      "sha256": "56f7f31b09918c1d362f88d32e5577a759ff1294b8cb3b0b1fa6e2cb4fc1221c"
+    },
+    {
+      "file": "QA/tools/SqlHarness/Run-ReconciledPayment.ps1",
+      "sha256": "a24fb7738b938a4e057a1b0090a75328fd3471f3447f1d1ce20d26061ca9be7b"
+    },
+    {
+      "file": "QA/tools/validate-leave-identity.cjs",
+      "sha256": "39f07e3e8da34c229406dac1a79b15f2071b3f9228731ee96b0925b189980879"
+    },
+    {
+      "file": "QA/REPORTS/PHASE_2B_LEAVE_IDENTITY_REPAIR.md",
+      "sha256": "6eef74eabc59c9d6cf49f03531c3bc429b77f63ed738fb5b5a52c735b323d734"
+    },
+    {
+      "file": "QA/ISSUES/BUG-DATA-0038.md",
+      "sha256": "8135b728be661e20e265a6e630e0ebc074acff141931cde4e1b50b5474fddf71"
+    }
+  ],
+  "binaries": [
+    {
+      "file": ".build-check/leave-identity-tests/bin/AcademyDesk.Api/debug/AcademyDesk.Api.dll",
+      "sha256": "45f83a6a1d8429e86835b139135e02e9ce266c5c31ac3e42782c5250df8758ff"
+    },
+    {
+      "file": ".build-check/leave-identity-tests/bin/AcademyDesk.Api.Tests/debug/AcademyDesk.Api.Tests.dll",
+      "sha256": "0aaed0c15b10c54c945dda057f565c6e9663b76bc57e419d26c78aa980b5ac87"
+    },
+    {
+      "file": ".build-check/leave-identity-sql/bin/AcademyDesk.Api/debug/AcademyDesk.Api.dll",
+      "sha256": "5315da32413881033fca9f5f8c5a5e095eb977261dcfce7853868b47cc56c146"
+    },
+    {
+      "file": ".build-check/leave-identity-sql/bin/SqlHarness/debug/SqlHarness.dll",
+      "sha256": "228fb838a3bbb04136c27576de343a8346c0732d19544b14ad65011712a066cc"
+    }
+  ],
+  "evidence": [
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-leave-identity-suite.log",
+      "sha256": "a4c73fdaf9b1179ccf8cf6e38da40380dd4cd7485136b46d9ef2d40b49a4070a"
+    },
+    {
+      "file": "QA/EVIDENCE/leave-identity/leave-identity-suite.trx",
+      "sha256": "83fbad5d496872a1c7fa36f0844844e1220f3b6be41d3b982b086a00bf77de67"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-leave-identity-sql-build.log",
+      "sha256": "7e3fddf20fd24911c888ca00c2a8c02bc30cc4ba8013f603a9c659752b822bdb"
+    },
+    {
+      "file": "QA/EVIDENCE/logs/phase-2b-leave-identity-sql.log",
+      "sha256": "c3b74d57f0eca26acc3fd5686322c507f35541743ee341379a0e1a25e8d74317"
+    }
+  ],
+  "normalBinaries": [
+    {
+      "file": "apps/api/bin/Debug/net10.0/AcademyDesk.Api.dll",
+      "sha256": "10ecb9da46c8198affae586776aca4747244cda18670dde8a1892ed20170f614"
+    },
+    {
+      "file": "QA/tools/SqlHarness/bin/Debug/net10.0/SqlHarness.dll",
+      "sha256": "7c165e280c7752cfaef4e56d45062445a9f7181bab3fd5ce6aa12d32b7194c94"
+    }
+  ]
+}

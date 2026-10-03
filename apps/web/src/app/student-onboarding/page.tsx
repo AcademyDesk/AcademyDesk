@@ -1,11 +1,13 @@
 "use client";
 import { FormEvent, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { academyApi, apiHeaders } from "@/lib/api";
 import { StandardDateField } from "@/components/standard-date-field";
 import { StandardSelectField } from "@/components/standard-select-field";
 
 type Academy = { id: string };
 export default function StudentOnboardingPage() {
+  const router = useRouter();
   const [academy, setAcademy] = useState<Academy>();
   const [dob, setDob] = useState("");
   const [admissionDate, setAdmissionDate] = useState("");
@@ -55,9 +57,7 @@ export default function StudentOnboardingPage() {
       setDob("");
       setAdmissionDate("");
       setGender("");
-      setMessage(
-        `Student onboarded. ${result.parentAccountCreated ? "Parent account created." : ""} ${result.studentAccountCreated ? "Student account created." : ""}`,
-      );
+      router.push(`/student-management?studentId=${result.id}&notice=student-created`);
     } catch (error) {
       setMessage(
         error instanceof Error

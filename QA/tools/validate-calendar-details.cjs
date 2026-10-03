@@ -1,0 +1,28 @@
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),cp=require('node:child_process'),os=require('node:os'),assert=require('node:assert/strict');
+const root=path.resolve(__dirname,'../..'),read=f=>fs.readFileSync(path.join(root,f),'utf8').replace(/^\uFEFF/,''),sha=f=>crypto.createHash('sha256').update(fs.readFileSync(path.join(root,f))).digest('hex');
+const snapshot=JSON.parse(read('QA/REPORTS/PHASE_2B_CALENDAR_DETAILS_SOURCE_SNAPSHOT.json'));
+assert.equal(cp.execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim(),snapshot.commit);
+for(const x of [...snapshot.sources,...snapshot.binaries,...snapshot.evidence,...snapshot.normalBinaries])assert.equal(sha(x.file),x.sha256,x.file);
+const previous=JSON.parse(read('QA/REPORTS/PHASE_2B_ATTENDANCE_NOTES_SOURCE_SNAPSHOT.json'));
+for(const x of previous.sources.filter(x=>x.file.startsWith('apps/')))assert.equal(sha(x.file),x.sha256,'Prior attendance/API source changed');
+const options=JSON.parse(read('QA/REPORTS/PHASE_2B_ASSESSMENT_OPTIONS_SOURCE_SNAPSHOT.json'));
+for(const x of options.sources.filter(x=>x.file.startsWith('apps/')))assert.equal(sha(x.file),x.sha256,'Prior backend/assessment repair changed');
+for(const x of snapshot.normalBinaries)assert.equal(x.sha256,previous.normalBinaries.find(y=>y.file===x.file).sha256,'Normal development assembly changed');
+for(const x of snapshot.unchangedSources)assert.equal(sha(x.file),x.sha256,'Schedule/Teacher/CSS changed in calendar slice');
+assert.equal(cp.execFileSync('git',['diff','--','apps/api/Controllers/ClassSessionsController.cs','apps/web/src/app/schedule/page.tsx'],{cwd:root,encoding:'utf8'}),'','Session API/Schedule unexpectedly modified');
+const ui=read('QA/EVIDENCE/logs/phase-2b-calendar-details-ui-sql.log');assert.match(ui,/tests 31[\s\S]*pass 31[\s\S]*fail 0/);assert.match(ui,/Captured real HTTP\/SQL fixture reaches actual calendar grid\/agenda unchanged/);
+const log=read('QA/EVIDENCE/logs/phase-2b-calendar-details-sql.log');assert.equal([...log.matchAll(/^CALENDARDETAILS CASE .+ PASS\.$/gm)].length,11);assert.match(log,/CALENDARDETAILS REGRESSION PASS:11 cases/);assert.match(log,/QA CalendarDetails exit=0/);
+const fixture=JSON.parse(log.match(/^CALENDARDETAILS FIXTURE (.+)$/m)[1]);const row=fixture.sessions.find(x=>x.id===fixture.expected.sessionId),batch=fixture.batches.find(x=>x.id===row.batchId),teacher=fixture.teachers.find(x=>x.id===row.teacherId);
+assert.notEqual(row.teacherId,batch.teacherId);assert.notEqual(row.roomName,batch.meetingLink);assert.equal(row.roomName,fixture.expected.location);assert.equal(teacher.firstName+' '+teacher.lastName,fixture.expected.teacher);assert.ok(fixture.sessions.some(x=>x.teacherId===null&&x.roomName===null));assert.ok(fixture.sessions.some(x=>x.deliveryMode==='InPerson'));
+for(const label of ['create-override-response-fresh-SQL','owned-sessions-read','owned-batches-read','owned-teachers-read','session-batch-teacher-projections-match-fresh-SQL','substitute-teacher-calendar','default-teacher-calendar','teacher-calendar-session-ownership-and-location','foreign-sessions-route','foreign-batches-route','anonymous-sessions'])assert.ok(log.includes('CALENDARDETAILS CASE '+label+' PASS.'),label);
+assert.match(log,/routes=312, controller method\/routes=301, framework Identity method\/routes=10, SHA256=74CB2F226EBAFF8881F6CF80D6F648310A78B07D79A0A6D9E04D4ED858544FF3/);
+assert.match(log,/PASS: application migrations=81, identity migrations=7, scoped runtime login verified; run-owned database and login removed/);assert.match(log,/Negative cleanup check refused a mismatched database marker/);
+const id=log.match(/run=([a-f0-9]{32}) container=academydesk-qa-\1 /)[1],port=Number(log.match(/^QA SQL port=(\d+)/m)[1]);
+assert.equal(cp.spawnSync('docker',['inspect',`academydesk-qa-${id}`],{encoding:'utf8'}).status,1);assert.equal(fs.existsSync(path.join(os.tmpdir(),'AcademyDesk-QA',id)),false);
+assert.equal(cp.execFileSync('powershell',['-NoProfile','-Command',`@(Get-NetTCPConnection -LocalPort ${port} -State Listen -ErrorAction SilentlyContinue).Count`],{encoding:'utf8'}).trim(),'0');
+assert.match(read('QA/EVIDENCE/logs/phase-2b-calendar-details-typecheck.log'),/TypeScript PASS/);assert.match(read('QA/EVIDENCE/logs/phase-2b-calendar-details-sql-build.log'),/0 Warning\(s\)[\s\S]*0 Error\(s\)/);
+for(const f of ['phase-2b-calendar-details-baseline-lint.log','phase-2b-calendar-details-lint.log'])assert.match(read('QA/EVIDENCE/logs/'+f),/Calendar lint PASS: exit=0/);
+assert.equal(snapshot.checks.typeScriptExitCode,0);assert.equal(snapshot.checks.lintExitCode,0);assert.match(read('QA/ISSUES/BUG-DATA-0036.md'),/\| Status \| OPEN \|/);
+for(const f of ['QA/REPORTS/PHASE_2B_CALENDAR_DETAILS_REPAIR.md','QA/ISSUES/BUG-DATA-0036.md'])for(const m of read(f).matchAll(/\]\(([^)]+)\)/g)){const target=m[1].split('#')[0];if(target&&!/^https?:/.test(target))assert.ok(fs.existsSync(path.resolve(root,path.dirname(f),target)),target);}
+cp.execFileSync('git',['diff','--check'],{cwd:root,stdio:'pipe'});
+console.log('PASS calendar repair:31 actual controlled TSX checks with real API fixture,11 Identity/HTTP/fresh SQL cases, TypeScript/calendar lint/build and owned cleanup. Prior application repairs, Schedule/Teacher/CSS and normal assemblies preserved; browser/device/critical acceptance OPEN.');

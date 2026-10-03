@@ -1,0 +1,14 @@
+{
+  "date": "2026-10-01",
+  "commit": "20bb6047f9edf733ac8e2a226621cc582ec54b3c",
+  "records": [
+    {
+      "sha256": "6e7896f12a18a5108222e7ca5b322eec0d98407ede386315ec347e8a7eb14c13",
+      "file": "apps/api/Controllers/FinanceGovernanceController.cs"
+    },
+    {
+      "sha256": "167eb457a61168df2caa97f7cdcb4410b6aae8b461dcc06714c9c3541d6b9de0",
+      "file": "apps/web/src/app/finance-governance/page.tsx"
+    }
+  ]
+}
