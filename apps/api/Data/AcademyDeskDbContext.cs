@@ -65,10 +65,40 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
     public DbSet<PlatformSupportCase> PlatformSupportCases => Set<PlatformSupportCase>();
     public DbSet<PlatformBillingInvoice> PlatformBillingInvoices => Set<PlatformBillingInvoice>();
     public DbSet<TenantOnboardingProfile> TenantOnboardingProfiles => Set<TenantOnboardingProfile>();
+    public DbSet<PentaTask> PentaTasks => Set<PentaTask>();
+    public DbSet<PentaExecution> PentaExecutions => Set<PentaExecution>();
+    public DbSet<PentaAttempt> PentaAttempts => Set<PentaAttempt>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<PentaTask>(entity =>
+        {
+            entity.Property(x => x.Capability).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.Status).HasMaxLength(30).IsRequired();
+            entity.HasIndex(x => new { x.AcademyId, x.ActorUserId, x.CreatedAtUtc });
+            entity.HasAlternateKey(x => new { x.AcademyId, x.Id });
+        });
+        modelBuilder.Entity<PentaExecution>(entity =>
+        {
+            entity.Property(x => x.ToolName).HasMaxLength(80).IsRequired();
+            entity.Property(x => x.IdempotencyKey).HasMaxLength(128).IsRequired();
+            entity.Property(x => x.InputDigest).HasMaxLength(64).IsRequired();
+            entity.Property(x => x.Status).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.ResultMessage).HasMaxLength(250);
+            entity.HasIndex(x => new { x.AcademyId, x.ActorUserId, x.ToolName, x.IdempotencyKey }).IsUnique();
+            entity.HasAlternateKey(x => new { x.AcademyId, x.Id });
+            entity.HasOne<PentaTask>().WithMany().HasForeignKey(x => new { x.AcademyId, x.TaskId })
+                .HasPrincipalKey(x => new { x.AcademyId, x.Id }).OnDelete(DeleteBehavior.Restrict);
+        });
+        modelBuilder.Entity<PentaAttempt>(entity =>
+        {
+            entity.Property(x => x.Outcome).HasMaxLength(30).IsRequired();
+            entity.HasIndex(x => new { x.AcademyId, x.ExecutionId }).IsUnique();
+            entity.HasOne<PentaExecution>().WithMany().HasForeignKey(x => new { x.AcademyId, x.ExecutionId })
+                .HasPrincipalKey(x => new { x.AcademyId, x.Id }).OnDelete(DeleteBehavior.Restrict);
+        });
 
         modelBuilder.Entity<Academy>(entity =>
         {

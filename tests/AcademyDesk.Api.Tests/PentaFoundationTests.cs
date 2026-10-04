@@ -148,7 +148,9 @@ public sealed class PentaFoundationTests
         await using (var scope = factory.Services.CreateAsyncScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
-            Assert.Equal(1, await db.AuditLogs.CountAsync(x => x.AcademyId == academyA && x.EntityType == "Penta"));
+            Assert.Equal(2, await db.AuditLogs.CountAsync(x => x.AcademyId == academyA && x.EntityType == "PentaExecution"));
+            Assert.Equal(2, await db.PentaExecutions.CountAsync(x => x.AcademyId == academyA));
+            Assert.Equal(2, await db.PentaAttempts.CountAsync(x => x.AcademyId == academyA));
         }
 
         provider.Malformed = false;
@@ -178,6 +180,45 @@ public sealed class PentaFoundationTests
         Assert.Equal(HttpStatusCode.NotFound, (await client.PostAsJsonAsync(
             $"/api/academies/{academy}/penta/turns", new { text = "x", capability = "pulse" })).StatusCode);
         Assert.Equal(0, provider.Calls);
+    }
+
+    [Fact]
+    public async Task Repeated_key_replays_result_and_changed_arguments_conflict()
+    {
+        var provider = new FakeProvider();
+        using var factory = new Factory(true, provider);
+        using var client = factory.CreateClient(new() { AllowAutoRedirect = false });
+        var academy = Guid.NewGuid();
+        await SeedAsync(factory, academy, Guid.NewGuid());
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", await LoginAsync(client, "admin-a"));
+        var path = $"/api/academies/{academy}/penta/turns";
+        async Task<HttpResponseMessage> Post(string text)
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Post, path)
+            {
+                Content = JsonContent.Create(new { text, capability = "pulse" })
+            };
+            request.Headers.Add("Idempotency-Key", "unit-key-1");
+            return await client.SendAsync(request);
+        }
+        using var first = await Post("synthetic");
+        using var repeat = await Post("synthetic");
+        using var conflict = await Post("changed");
+        Assert.Equal(HttpStatusCode.OK, first.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, repeat.StatusCode);
+        Assert.Equal(HttpStatusCode.Conflict, conflict.StatusCode);
+        var firstState = await first.Content.ReadFromJsonAsync<PentaTurnState>();
+        var repeatedState = await repeat.Content.ReadFromJsonAsync<PentaTurnState>();
+        Assert.Equal(firstState, repeatedState);
+        Assert.Equal(1, provider.Calls);
+        using var status = await client.GetAsync($"/api/academies/{academy}/penta/tasks/{firstState!.TaskId}");
+        Assert.Equal(HttpStatusCode.OK, status.StatusCode);
+        await using var scope = factory.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+        Assert.Equal(1, await db.PentaTasks.CountAsync());
+        Assert.Equal(1, await db.PentaExecutions.CountAsync());
+        Assert.Equal(1, await db.PentaAttempts.CountAsync());
+        Assert.Equal(1, await db.AuditLogs.CountAsync(x => x.EntityType == "PentaExecution"));
     }
 
     [Fact]

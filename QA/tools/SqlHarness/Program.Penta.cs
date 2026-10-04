@@ -15,16 +15,46 @@ internal static partial class SqlHarnessEntryPoint
     private sealed class CountingPentaProvider : IPentaSyntheticProvider
     {
         private readonly FixedPentaSyntheticProvider inner = new();
-        public int Calls { get; private set; }
+        private int calls;
+        private int blockNext;
+        private TaskCompletionSource<bool>? entered;
+        private TaskCompletionSource<bool>? release;
+        public int Calls => Volatile.Read(ref calls);
         public bool Malformed { get; set; }
 
-        public Task<PentaSyntheticResult> ExecuteAsync(string capability, CancellationToken token)
+        public Task BlockNextAsync()
         {
-            Calls++;
-            return Malformed
-                ? Task.FromResult(new PentaSyntheticResult(Guid.NewGuid(), capability, "unregistered.tool", "bad", true))
-                : inner.ExecuteAsync(capability, token);
+            entered = new(TaskCreationOptions.RunContinuationsAsynchronously);
+            release = new(TaskCreationOptions.RunContinuationsAsynchronously);
+            Interlocked.Exchange(ref blockNext, 1);
+            return entered.Task;
         }
+
+        public void Release() => release?.TrySetResult(true);
+
+        public async Task<PentaSyntheticResult> ExecuteAsync(string capability, CancellationToken token)
+        {
+            Interlocked.Increment(ref calls);
+            if (Interlocked.Exchange(ref blockNext, 0) == 1)
+            {
+                entered!.TrySetResult(true);
+                await release!.Task.WaitAsync(token);
+            }
+            return Malformed
+                ? new PentaSyntheticResult(Guid.NewGuid(), capability, "unregistered.tool", "bad", true)
+                : await inner.ExecuteAsync(capability, token);
+        }
+    }
+
+    private static async Task<HttpResponseMessage> PentaPostAsync(HttpClient client, string path,
+        string key, string text = "synthetic request", string capability = "pulse")
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Post, path)
+        {
+            Content = JsonContent.Create(new { text, capability })
+        };
+        request.Headers.Add("Idempotency-Key", key);
+        return await client.SendAsync(request);
     }
 
     private static async Task VerifyPentaFoundationAsync(QaRunManifest manifest)
@@ -136,7 +166,7 @@ internal static partial class SqlHarnessEntryPoint
             academy.IsActive = true;
             await db.SaveChangesAsync();
         }
-        using (var success = await enabled.PostAsJsonAsync(pathA, valid))
+        using (var success = await PentaPostAsync(enabled, pathA, "sql-penta-first"))
         {
             PentaRequire(success.StatusCode == HttpStatusCode.OK, "Enabled synthetic request did not succeed.");
             var result = await success.Content.ReadFromJsonAsync<PentaSyntheticResult>();
@@ -145,6 +175,11 @@ internal static partial class SqlHarnessEntryPoint
                 "Synthetic result was malformed or echoed user text.");
         }
         PentaRequire(provider.Calls == 1, "Successful diagnostic did not make exactly one provider call.");
+        using (var replay = await PentaPostAsync(enabled, pathA, "sql-penta-first"))
+            PentaRequire(replay.StatusCode == HttpStatusCode.OK, "Successful request did not replay.");
+        using (var conflict = await PentaPostAsync(enabled, pathA, "sql-penta-first", "changed"))
+            PentaRequire(conflict.StatusCode == HttpStatusCode.Conflict, "Changed arguments did not conflict.");
+        PentaRequire(provider.Calls == 1, "Retry or conflict dispatched the provider again.");
 
         provider.Malformed = true;
         using (var invalid = await enabled.PostAsJsonAsync(pathA, valid))
@@ -155,8 +190,10 @@ internal static partial class SqlHarnessEntryPoint
         {
             var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
             var audits = await db.AuditLogs.AsNoTracking()
-                .Where(x => x.AcademyId == academyA && x.EntityType == "Penta").ToListAsync();
-            PentaRequire(audits.Count == 1, "PENTA synthetic success/denial generic audit count was wrong.");
+                .Where(x => x.AcademyId == academyA && x.EntityType == "PentaExecution").ToListAsync();
+            PentaRequire(audits.Count == 2, "PENTA execution audit count was wrong.");
+            PentaRequire(await db.PentaExecutions.CountAsync(x => x.AcademyId == academyA) == 2,
+                "PENTA retry created a duplicate execution.");
         }
 
         provider.Malformed = false;
@@ -174,7 +211,46 @@ internal static partial class SqlHarnessEntryPoint
         using (var inactive = await enabled.PostAsJsonAsync(pathB, valid))
             PentaRequire(inactive.StatusCode == HttpStatusCode.Forbidden, "Inactive account reached PENTA.");
         PentaRequire(provider.Calls == 3, "Inactive account reached PENTA provider.");
-        Console.WriteLine("PENTA PASS: real Identity/SQL, two academy admins, default-off, role/tenant/platform/inactive denial, input limits, synthetic result, malformed provider, audit scope.");
+
+        using var concurrentA = enabledFactory.CreateClient(new() { AllowAutoRedirect = false });
+        using var concurrentB = enabledFactory.CreateClient(new() { AllowAutoRedirect = false });
+        concurrentA.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenA);
+        concurrentB.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenA);
+        var entered = provider.BlockNextAsync();
+        var firstCall = PentaPostAsync(concurrentA, pathA, "sql-penta-race");
+        await entered.WaitAsync(TimeSpan.FromSeconds(20));
+        try
+        {
+            using var pending = await PentaPostAsync(concurrentB, pathA, "sql-penta-race");
+            PentaRequire(pending.StatusCode == HttpStatusCode.Accepted, "Concurrent retry was not 202 while first execution was pending.");
+            PentaRequire(provider.Calls == 4, "Concurrent retry dispatched a duplicate provider call.");
+        }
+        finally { provider.Release(); }
+        using var completed = await firstCall;
+        PentaRequire(completed.StatusCode == HttpStatusCode.OK, "Claimed request did not finish successfully.");
+        using (var replay = await PentaPostAsync(concurrentB, pathA, "sql-penta-race"))
+            PentaRequire(replay.StatusCode == HttpStatusCode.OK, "Concurrent completed replay was not 200.");
+        using (var restartedFactory = new QaApiFactory(manifest,
+            new Dictionary<string, string?> { ["Penta:Enabled"] = "true" }, isolatedPentaProvider: provider))
+        using (var restarted = restartedFactory.CreateClient(new() { AllowAutoRedirect = false }))
+        {
+            PentaRequire(restartedFactory.PreflightPassed, "Restarted PENTA host missed QA preflight.");
+            restarted.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenA);
+            using var replay = await PentaPostAsync(restarted, pathA, "sql-penta-race");
+            PentaRequire(replay.StatusCode == HttpStatusCode.OK, "Restarted host did not replay the durable outcome.");
+            PentaRequire(provider.Calls == 4, "Restarted host dispatched a duplicate provider call.");
+        }
+        await using (var scope = enabledFactory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+            var rows = await db.PentaExecutions.AsNoTracking().Where(x => x.AcademyId == academyA &&
+                x.IdempotencyKey == "sql-penta-race").ToListAsync();
+            PentaRequire(rows.Count == 1 && rows[0].Status == "Succeeded", "Concurrent key stored duplicate or incomplete execution.");
+            PentaRequire(await db.PentaAttempts.CountAsync(x => x.AcademyId == academyA &&
+                x.ExecutionId == rows[0].Id) == 1, "Concurrent key stored duplicate attempts.");
+        }
+        PentaRequire(provider.Calls == 4, "Concurrent key reached provider more than once.");
+        Console.WriteLine("PENTA PASS: real Identity/SQL, tenant/role denial, bounded synthetic output, atomic ledger/audit, replay/conflict, concurrent single dispatch.");
     }
 
     private static void PentaRequire(bool condition, string message)
