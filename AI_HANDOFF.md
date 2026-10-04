@@ -2,6 +2,14 @@
 
 ## Current state
 
+Latest implementation checkpoint (2026-10-04): **PENTA AI0-S1** is locally implemented and bounded tests pass on `codex/enterprise-p0-continuation`. The authenticated, default-off gateway allows only a synthetic Development/Testing diagnostic, with explicit current academy/admin policy and fixed tool dispatch. [AI0-S1 report](QA/REPORTS/PENTA_AI0_S1_FOUNDATION.md) records final full API 1,051/1,051, targeted PENTA 7/7, SQL harness build 0 warnings/errors, and run-owned Identity/HTTP/SQL PENTA pass `fa30408d8666477ab0d0e24d742d32dd`; owned SQL resources were removed. Generic audit recorded the one synthetic success; denials and malformed output did not. No customer data, live provider, domain mutation, migration, UI or Azure deployment. Source/docs remain local in this worktree; QA/EVIDENCE stays untouched. NEXT: AI0-S2 durable execution, approval, usage and audit ownership under the same deny-default policy; Sol High, Default mode. The five P0 issues and release gates remain open.
+
+Prior PENTA design checkpoint (2026-10-04): the owner confirmed **Academy Desk PENTA** with Pulse, Executor, Navigator, Twin and Autopilot. Executor replaces the AI product name Operator; Navigator replaces Growth while expanding opportunity/strategic guidance. Existing subscription/module names and historical reports retain their meanings. [Product vision](AI_PRODUCT_VISION.md), [implementation plan](ACADEMY_DESK_AI_IMPLEMENTATION_PLAN.md) and [architecture decision PENTA-001](PENTA_ARCHITECTURE_DECISION.md) define one shared platform, explicit actor/academy policy, narrow tools, approval binding, execution/audit ownership, idempotency, budgets and ten golden journeys. This paragraph preserves the pre-implementation design checkpoint; current implementation evidence is above.
+
+The AI0-S1 task packet in [the decision](PENTA_ARCHITECTURE_DECISION.md#next-task-packet-ai0-s1) is now implemented locally. AI0-S2 adds durable execution/approval/usage records and SQL proof. Astra's focused authority-design step is complete; return only for a consequential unresolved architecture/security decision.
+
+Enterprise continuation remains independently open: retain the finance/race/browser repairs below and finish the existing policy, physical-device, security and release gates. PENTA design does not close BUG-DATA-0001/0002 or any other issue, and does not authorize merge, push or Azure deployment.
+
 Latest product direction (2026-10-04): the owner confirmed IFRS principles and applicable Indian GST rules for adjustment/refund/credit-note design. [Policy review](QA/REPORTS/PHASE_2B_ADJUSTMENT_REFUND_POLICY_REVIEW.md) now records this direction and the required separate workflows. This is not an accounting/legal sign-off or a product-code fix. Current `Refund`/`CreditNote` still only reduce unpaid balance; `BUG-DATA-0002` remains OPEN. Release requires implementation, qualified tax/accounting review, tests and all normal gates. No main/merge/push/Azure.
 
 Latest local checkpoint (2026-10-04): [Adjustment/refund policy review](QA/REPORTS/PHASE_2B_ADJUSTMENT_REFUND_POLICY_REVIEW.md) traced the five adjustment types through UI, API and invoice ledger. All currently reduce unpaid collectible balance; `Refund` performs no payout and `CreditNote` has no distinct document/tax handling. The transaction guard is a safety gate, not a product-policy decision. No application behavior changed. `BUG-DATA-0002` remains OPEN. Next: obtain the business/accounting treatment for refunds, credit notes and post-payment reductions before implementation; continue independent physical-device and release-gate work. No main/merge/push/Azure.
@@ -105,7 +113,9 @@ Academy Desk is evolving into an AI-native academy operating system on top of th
 
 Azure deployment waits for the pre-Azure quality gate in `ENTERPRISE_TESTING_ROADMAP.md`. Do not deploy unless explicitly instructed.
 
-## Active handoff
+## Retained enterprise remediation handoff
+
+The current PENTA engineering handoff is at the top of this file. This finance checkpoint remains the continuation point for the enterprise remediation track; its recorded passes are preserved.
 
 CURRENT PHASE: BUG-DATA-0002 approval versus payment guarded locally. The issue stays OPEN.
 

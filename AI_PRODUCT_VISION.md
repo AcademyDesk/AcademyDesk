@@ -1,4 +1,4 @@
-# Academy Desk product vision
+# Academy Desk PENTA — product vision
 
 Academy Desk should evolve into an **AI-native academy operating system**.
 
@@ -6,11 +6,11 @@ The target is not traditional ERP plus a chatbot.
 
 ## Target experience
 
-Approximately 90% of operation should be AI-assisted or automated. Approximately 10% should remain traditional or manual controls for precision, fallback, administration, and governance.
+The target is 80–90% of eligible daily operations completed with AI assistance or approved automation, with 10–20% manual control for precision, exceptions, fallback, administration, and governance. Measure these outcomes; this is not a claim of current automation or a mandate to automate every decision.
 
 The existing ERP is not discarded. The existing Next.js frontend, ASP.NET Core backend, database, APIs, permissions, business rules, and workflows remain the deterministic platform and control foundation.
 
-The AI layer sits above that trusted domain platform.
+The AI layer is named **Academy Desk PENTA**. It sits above that trusted domain platform.
 
 Initial market is music academies. The architecture should be capable of supporting other instructor-led academies, such as dance and arts.
 
@@ -31,7 +31,7 @@ The product should not be reduced to a generic chat window.
 
 ## Core AI capabilities
 
-### 1. AI Operator
+### 1. Executor
 
 Natural-language operational execution.
 
@@ -119,19 +119,27 @@ All AI functionality must continue respecting:
 - cost controls
 - observability
 
-## Conceptual AI agents
+## Academy Desk PENTA
 
-Preserve this multi-agent product direction:
+Naming confirmed by the owner on 2026-10-04. All AI product capabilities belong to these five experiences:
 
-| Agent | Role |
-| --- | --- |
-| Pulse | Proactive academy intelligence, briefings, and alerts. |
-| Operator | Operational execution and admin assistance. |
-| Growth | Admissions, CRM, marketing, and growth intelligence. |
-| Twin | Academy intelligence that understands operational patterns and provides deeper contextual insight. |
-| Autopilot | Controlled automation of approved recurring and repetitive operations. |
+| Letter | Experience | Primary responsibility |
+| --- | --- | --- |
+| P | Pulse | What is happening and needs attention: proactive intelligence, alerts and briefings. |
+| E | Executor | Get approved work done: operational tools, preparation, previews, execution and verified results. |
+| N | Navigator | What to do next: admissions, leads, conversion, capacity, opportunity and growth guidance. |
+| T | Twin | Understand the academy: authorized context, patterns, explanations and explicit what-if scenarios. |
+| A | Autopilot | Handle approved recurring work within a bounded policy, with visible controls and escalation. |
 
-These may share one underlying intelligence and orchestration platform. They do not require separate duplicated AI infrastructure.
+Product wording: **Academy Desk PENTA — Five AI systems working as one.**
+
+Executor supersedes the product name Operator. Navigator supersedes the product name Growth and extends it to opportunity and strategic guidance. Historical reports and existing business terms such as the Growth subscription plan retain their original names. These aliases do not authorize source-wide renames of unrelated modules.
+
+One shared PENTA platform owns context, policy, typed tools, approval, execution, audit and cost controls. The five experiences are capability boundaries; they do not require five model calls, five services, separate databases or autonomous agents with independent permissions. A handoff preserves academy, actor, scope, task ID and approval requirements.
+
+Scheduling is served through Executor with Pulse alerts, Twin analysis and optional Autopilot workflows. Finance, payroll and learning likewise use these experiences rather than adding a sixth AI. Navigator may recommend an action; only an authorized Executor operation performs it. Autopilot invokes the same protected operations under explicit workflow authority.
+
+See [implementation plan](ACADEMY_DESK_AI_IMPLEMENTATION_PLAN.md) and [PENTA architecture decision](PENTA_ARCHITECTURE_DECISION.md) for the current boundaries and delivery tasks.
 
 ## AI architecture principles
 
@@ -207,7 +215,7 @@ Then progressively introduce:
 - student intelligence
 - grounded knowledge
 - controlled Autopilot
-- Growth capabilities
+- Navigator capabilities
 - Twin and deeper intelligence
 - a richer AI-native frontend
 - voice and document intelligence where justified

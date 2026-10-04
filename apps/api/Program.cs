@@ -3,6 +3,7 @@ using AcademyDesk.Api.Domain.Identity;
 using AcademyDesk.Api.Security;
 using AcademyDesk.Api.Infrastructure;
 using AcademyDesk.Api.Infrastructure.Media;
+using AcademyDesk.Api.Intelligence.Penta;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +24,9 @@ if (!builder.Environment.IsEnvironment("Testing")) Directory.CreateDirectory(web
 // Add services to the container.
 
 builder.Services.AddScoped<AcademyAccessFilter>();
+builder.Services.AddScoped<PentaPilotPolicy>();
+builder.Services.AddSingleton<IPentaSyntheticProvider, FixedPentaSyntheticProvider>();
+builder.Services.AddScoped<PentaSyntheticDispatcher>();
 builder.Services.AddControllers(options => options.Filters.AddService<AcademyAccessFilter>());
 builder.Services.AddPrivateMediaStorage(builder.Configuration, builder.Environment);
 builder.Services.AddScoped<ClassMaterialAccess>();

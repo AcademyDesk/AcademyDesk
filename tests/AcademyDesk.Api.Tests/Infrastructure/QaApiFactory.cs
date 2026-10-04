@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Data.SqlClient;
 using AcademyDesk.Api.Infrastructure.Media;
+using AcademyDesk.Api.Intelligence.Penta;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using AcademyDesk.Api.Data;
 using Microsoft.EntityFrameworkCore;
@@ -18,13 +19,15 @@ internal sealed class QaApiFactory : WebApplicationFactory<Program>
     private readonly IReadOnlyDictionary<string, string?> overrides;
     private readonly IMediaBlobStore? isolatedMediaStore;
     private readonly IInterceptor? isolatedIdentityInterceptor;
+    private readonly IPentaSyntheticProvider? isolatedPentaProvider;
 
-    public QaApiFactory(QaRunManifest manifest, IReadOnlyDictionary<string, string?>? overrides = null, IMediaBlobStore? isolatedMediaStore = null, IInterceptor? isolatedIdentityInterceptor = null)
+    public QaApiFactory(QaRunManifest manifest, IReadOnlyDictionary<string, string?>? overrides = null, IMediaBlobStore? isolatedMediaStore = null, IInterceptor? isolatedIdentityInterceptor = null, IPentaSyntheticProvider? isolatedPentaProvider = null)
     {
         this.manifest = manifest;
         this.overrides = overrides ?? new Dictionary<string, string?>();
         this.isolatedMediaStore = isolatedMediaStore;
         this.isolatedIdentityInterceptor = isolatedIdentityInterceptor;
+        this.isolatedPentaProvider = isolatedPentaProvider;
     }
 
     public bool PreflightPassed { get; private set; }
@@ -100,6 +103,13 @@ internal sealed class QaApiFactory : WebApplicationFactory<Program>
             {
                 services.RemoveAll<IMediaBlobStore>();
                 services.AddSingleton(isolatedMediaStore);
+            }
+
+            // Synthetic QA replacement only after the run-owned SQL host guard.
+            if (isolatedPentaProvider is not null)
+            {
+                services.RemoveAll<IPentaSyntheticProvider>();
+                services.AddSingleton(isolatedPentaProvider);
             }
 
             services.AddDataProtection().PersistKeysToFileSystem(new DirectoryInfo(manifest.DataProtectionRoot));
