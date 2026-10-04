@@ -136,6 +136,7 @@ const administrationNavigation: readonly NavigationItem[] = [
   ["Academy control", "/admin/control"],
   ["Platform billing & support", "/platform-services"],
   ["Admin intelligence", "/admin-intelligence"],
+  ["PENTA preview", "/penta"],
   ["Data operations", "/data-operations"],
   ["Work queue", "/work-queue"],
   ["Compliance centre", "/compliance"],

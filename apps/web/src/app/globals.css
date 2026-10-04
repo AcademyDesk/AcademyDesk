@@ -5697,3 +5697,80 @@ html[data-theme="light"] .field-label { color: #475569; }
 .standard-select-menu button:hover,.standard-select-menu button[aria-selected="true"] { border-color:color-mix(in srgb,var(--ad-accent) 25%,transparent); background:var(--ad-accent-soft); color:var(--ad-accent); }
 .assessments-results-panel .assessment-grading-mode { grid-column:1 / -1; display:grid; gap:7px; min-width:0; color:var(--ad-text-muted); font-size:.78rem; font-weight:650; }
 .assessments-results-panel .assessment-grading-help { grid-column:1 / -1; color:var(--ad-text-muted); font-size:.75rem; line-height:1.5; }
+
+/* PENTA preview — read-only recorded-data search for students and batches. */
+.penta-standard { width: min(100%, 880px); margin: auto; padding: 30px 34px 48px; background: var(--ad-page); color: var(--ad-text); }
+.penta-heading { display: flex; align-items: center; gap: 16px; min-height: 74px; margin-bottom: 14px; }
+.penta-icon { display: grid; flex: 0 0 56px; width: 56px; height: 56px; place-items: center; border-radius: 15px; background: var(--ad-accent); box-shadow: 0 12px 22px color-mix(in srgb, var(--ad-accent) 24%, transparent); color: #fff; font-size: 1.35rem; font-weight: 850; }
+.penta-heading p { margin: 0 0 5px; color: var(--ad-accent); font-size: .7rem; font-weight: 850; letter-spacing: .14em; text-transform: uppercase; }
+.penta-heading h1 { margin: 0; color: var(--ad-text); font-size: var(--ad-page-title-size); font-weight: var(--ad-page-title-weight); letter-spacing: var(--ad-page-title-tracking); line-height: var(--ad-page-title-line-height); }
+.penta-subtitle { margin: 0 0 18px; color: var(--ad-text-muted); font-size: .85rem; line-height: 1.5; max-width: 640px; }
+.penta-demo-bar { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 22px; padding: 12px 14px; border: 1px dashed var(--ad-border-strong); border-radius: 12px; background: var(--ad-surface-subtle); }
+.penta-demo-bar > div { display: grid; gap: 2px; min-width: 0; }
+.penta-demo-bar .standard-select-field { width: 230px; flex: 0 0 auto; }
+.penta-demo-label { color: var(--ad-text); font-size: .78rem; font-weight: 760; }
+.penta-demo-bar small { color: var(--ad-text-subtle); font-size: .72rem; line-height: 1.35; }
+.penta-choices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.penta-choice-card { display: grid; gap: 6px; padding: 22px 20px; border: 1px solid var(--ad-border); border-radius: 16px; background: var(--ad-surface); box-shadow: 0 8px 22px color-mix(in srgb, var(--ad-text) 5%, transparent); color: var(--ad-text); text-align: left; }
+.penta-choice-card:hover, .penta-choice-card:focus-visible { border-color: var(--ad-accent); }
+.penta-choice-card > span { font-size: 1.6rem; }
+.penta-choice-card h2 { margin: 2px 0 0; font-size: 1rem; font-weight: 760; }
+.penta-choice-card p { margin: 0; color: var(--ad-text-muted); font-size: .82rem; line-height: 1.45; }
+.penta-choice-card small { margin-top: 6px; color: var(--ad-accent); font-size: .78rem; font-weight: 760; }
+.penta-search-panel { display: grid; gap: 16px; }
+.penta-panel-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.penta-domain-label { margin: 0; color: var(--ad-text-muted); font-size: .78rem; font-weight: 650; text-transform: uppercase; letter-spacing: .06em; }
+.penta-link-action { padding: 0; border: 0; background: none; color: var(--ad-accent); font-size: .8rem; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
+.penta-field-row { display: grid; gap: 7px; }
+.penta-field-row label { color: var(--ad-text-muted); font-size: .8rem; font-weight: 650; }
+.penta-input-row { display: flex; gap: 10px; }
+.penta-input-row .field { flex: 1; min-width: 0; }
+.penta-examples { margin: 0; color: var(--ad-text-subtle); font-size: .74rem; }
+.penta-primary-action { display: inline-flex; align-items: center; justify-content: center; min-height: 42px; padding: 0 18px; border: 0; border-radius: 10px; background: var(--ad-accent); color: #fff; font-size: .85rem; font-weight: 700; text-decoration: none; white-space: nowrap; }
+.penta-primary-action:disabled, .penta-primary-action[aria-disabled="true"] { opacity: .5; }
+.penta-secondary-action { display: inline-flex; align-items: center; justify-content: center; min-height: 42px; padding: 0 18px; border: 1px solid var(--ad-border-strong); border-radius: 10px; background: transparent; color: var(--ad-text); font-size: .85rem; font-weight: 700; white-space: nowrap; }
+.penta-live-region { min-height: 1px; }
+.penta-status-row { display: flex; align-items: center; gap: 10px; margin: 4px 0 0; color: var(--ad-text-muted); font-size: .85rem; }
+.penta-spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--ad-border-strong); border-top-color: var(--ad-accent); border-radius: 50%; animation: penta-spin .8s linear infinite; }
+@media (prefers-reduced-motion: reduce) { .penta-spinner { animation: none; border-top-color: var(--ad-accent); } }
+@keyframes penta-spin { to { transform: rotate(360deg); } }
+.penta-empty { margin: 4px 0 0; padding: 14px 16px; border: 1px dashed var(--ad-border-strong); border-radius: 12px; color: var(--ad-text-muted); font-size: .85rem; }
+.penta-result-card { display: grid; gap: 4px; margin-top: 4px; padding: 16px 18px; border: 1px solid var(--ad-border); border-radius: 14px; background: var(--ad-surface); box-shadow: 0 8px 22px color-mix(in srgb, var(--ad-text) 5%, transparent); }
+.penta-result-card > div:first-child { display: flex; align-items: center; gap: 10px; }
+.penta-result-card strong { font-size: .95rem; font-weight: 760; }
+.penta-status-chip { padding: 2px 9px; border-radius: 999px; background: color-mix(in srgb, var(--ad-success) 16%, var(--ad-surface)); color: var(--ad-success); font-size: .68rem; font-weight: 760; text-transform: uppercase; letter-spacing: .04em; }
+.penta-result-card small { color: var(--ad-text-muted); font-size: .78rem; }
+.penta-result-source { color: var(--ad-text-subtle) !important; font-size: .72rem !important; }
+.penta-result-action { margin-top: 8px; }
+.penta-disambiguation { margin: 4px 0 0; padding: 14px 16px; border: 1px solid var(--ad-border); border-radius: 14px; background: var(--ad-surface); }
+.penta-disambiguation legend { margin-bottom: 10px; padding: 0; color: var(--ad-text); font-size: .85rem; font-weight: 650; }
+.penta-disambiguation ul { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.penta-option { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 8px 10px; border: 1px solid var(--ad-border); border-radius: 10px; cursor: pointer; }
+.penta-option:has(input:checked) { border-color: var(--ad-accent); background: var(--ad-accent-soft); }
+.penta-option input { flex: 0 0 auto; width: 16px; height: 16px; accent-color: var(--ad-accent); }
+.penta-option span { display: grid; gap: 1px; min-width: 0; }
+.penta-option strong { font-size: .86rem; font-weight: 700; }
+.penta-option small { color: var(--ad-text-muted); font-size: .74rem; }
+.penta-cap-note { margin: 10px 0 0; color: var(--ad-text-subtle); font-size: .76rem; }
+.penta-confirm-row { display: flex; gap: 10px; margin-top: 12px; }
+.penta-error-card { margin-top: 4px; padding: 16px 18px; border: 1px solid color-mix(in srgb, var(--ad-danger) 42%, var(--ad-border)); border-radius: 14px; background: color-mix(in srgb, var(--ad-danger) 8%, var(--ad-surface)); }
+.penta-error-card > p:first-child { margin: 0; color: color-mix(in srgb, var(--ad-danger) 80%, var(--ad-text)); font-size: .85rem; }
+.penta-fallback-note { margin: 12px 0 0; color: var(--ad-text-muted); font-size: .8rem; }
+.penta-fallback-note a, .penta-fallback-links a { color: var(--ad-accent); font-weight: 700; }
+.penta-footer-note { margin: 6px 0 0; color: var(--ad-text-subtle); font-size: .74rem; line-height: 1.5; }
+.penta-takeover { display: grid; justify-items: start; gap: 8px; max-width: 480px; padding: 36px 8px; }
+.penta-takeover-icon { display: grid; width: 52px; height: 52px; place-items: center; margin-bottom: 4px; border-radius: 14px; background: var(--ad-surface-strong); font-size: 1.3rem; }
+.penta-takeover p { margin: 0; color: var(--ad-accent); font-size: .7rem; font-weight: 850; letter-spacing: .12em; text-transform: uppercase; }
+.penta-takeover h2 { margin: 0 0 4px; color: var(--ad-text); font-size: 1.15rem; font-weight: 760; }
+.penta-takeover p:not(:first-child) { color: var(--ad-text-muted); font-size: .85rem; font-weight: 400; letter-spacing: normal; text-transform: none; line-height: 1.5; margin: 0 0 8px; }
+.penta-fallback-links { display: flex; gap: 14px; margin-top: 4px; }
+@media (max-width: 760px) {
+  .penta-standard { padding: 22px 16px 36px; }
+  .penta-choices { grid-template-columns: 1fr; }
+  .penta-demo-bar { flex-direction: column; align-items: stretch; }
+  .penta-demo-bar .standard-select-field { width: 100%; }
+  .penta-input-row { flex-direction: column; }
+  .penta-primary-action, .penta-secondary-action { width: 100%; }
+  .penta-confirm-row { flex-direction: column; }
+  .penta-panel-top { flex-direction: column; align-items: flex-start; gap: 6px; }
+}
