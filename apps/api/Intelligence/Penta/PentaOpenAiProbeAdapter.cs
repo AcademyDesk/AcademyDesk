@@ -11,6 +11,8 @@ public sealed record PentaProviderProbeResult(string Status, int? InputTokens = 
 /// <summary>Only a fixed synthetic probe is supported. No academy or user content is accepted.</summary>
 public interface IPentaModelProvider
 {
+    string ProviderName { get; }
+    string? ModelName { get; }
     Task<PentaProviderProbeResult> ProbeAsync(CancellationToken token);
 }
 
@@ -21,6 +23,9 @@ public interface IPentaModelProvider
 public sealed class PentaOpenAiProbeAdapter(HttpClient http, IConfiguration configuration,
     IHostEnvironment environment) : IPentaModelProvider
 {
+    private readonly string? modelName = configuration["Penta:Provider:Model"];
+    public string ProviderName => "openai";
+    public string? ModelName => modelName;
     private const int MaximumResponseBytes = 16 * 1024;
     private const int MaximumOutputTokens = 64;
     private static readonly Uri Endpoint = new("https://api.openai.com/v1/responses");
@@ -34,7 +39,7 @@ public sealed class PentaOpenAiProbeAdapter(HttpClient http, IConfiguration conf
             return new("Disabled");
 
         var key = configuration["Penta:Provider:ApiKey"];
-        var model = configuration["Penta:Provider:Model"];
+        var model = modelName;
         if (string.IsNullOrWhiteSpace(key) || key.Any(char.IsWhiteSpace) ||
             string.IsNullOrWhiteSpace(model) || model.Length > 100 ||
             model.Any(ch => !char.IsAsciiLetterOrDigit(ch) && ch is not '-' and not '_' and not '.'))

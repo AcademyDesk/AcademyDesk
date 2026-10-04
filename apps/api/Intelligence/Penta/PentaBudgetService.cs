@@ -10,14 +10,14 @@ public sealed record PentaPricedPolicy(string Provider, string Model, string Pri
     decimal InputUsdPerMillion, decimal OutputUsdPerMillion,
     int MaxInputTokens, int MaxOutputTokens, decimal DailyUserUsd, decimal DailyAcademyUsd);
 
-public enum PentaBudgetResult { Reserved, Reconciled, AlreadyReconciled, Exhausted, InvalidPolicy, InvalidUsage, NotFound }
+public enum PentaBudgetResult { Reserved, Reconciled, AlreadyReconciled, UsageUnknown, Exhausted, InvalidPolicy, InvalidUsage, NotFound }
 
 public sealed class PentaBudgetService(AcademyDeskDbContext db)
 {
     private const string ModelUnit = "ModelCost";
 
     public async Task<PentaBudgetResult> ReserveAsync(Guid academyId, Guid actorId, Guid executionId,
-        PentaPricedPolicy policy, CancellationToken token)
+        PentaPricedPolicy policy, CancellationToken token, string? requiredTool = null)
     {
         if (!Valid(policy) || !db.Database.IsSqlServer()) return PentaBudgetResult.InvalidPolicy;
         var worst = Charge(policy.MaxInputTokens, policy.MaxOutputTokens, policy);
@@ -29,6 +29,7 @@ public sealed class PentaBudgetService(AcademyDeskDbContext db)
         var execution = await db.PentaExecutions.AsNoTracking().SingleOrDefaultAsync(
             x => x.AcademyId == academyId && x.Id == executionId && x.ActorUserId == actorId, token);
         if (execution is null || execution.Status != "Executing" ||
+            (requiredTool is not null && execution.ToolName != requiredTool) ||
             !await db.PentaTasks.AnyAsync(x => x.AcademyId == academyId && x.Id == execution.TaskId &&
                 x.Status == "Executing", token)) return PentaBudgetResult.NotFound;
         // A model can never be called on an execution that already owns a reservation.
@@ -106,6 +107,66 @@ public sealed class PentaBudgetService(AcademyDeskDbContext db)
         await db.SaveChangesAsync(token);
         await transaction.CommitAsync(token);
         return PentaBudgetResult.Reconciled;
+    }
+
+    // Internal synthetic-probe completion. The execution outcome, usage and audit
+    // commit together; an ambiguous provider outcome retains the full reservation.
+    public async Task<PentaBudgetResult> CompleteProbeAsync(Guid academyId, Guid actorId,
+        Guid executionId, PentaPricedPolicy policy, PentaProviderProbeResult observation,
+        CancellationToken token)
+    {
+        if (!Valid(policy) || !db.Database.IsSqlServer() || observation is null)
+            return PentaBudgetResult.InvalidPolicy;
+        await using var transaction = await db.Database.BeginTransactionAsync(token);
+        if (!await LockAcademyAsync(academyId, token)) return PentaBudgetResult.NotFound;
+        var execution = await db.PentaExecutions.SingleOrDefaultAsync(x => x.AcademyId == academyId &&
+            x.Id == executionId && x.ActorUserId == actorId && x.ToolName == PentaProbeCoordinator.ToolName, token);
+        if (execution is null) return PentaBudgetResult.NotFound;
+        var task = await db.PentaTasks.SingleOrDefaultAsync(x => x.AcademyId == academyId &&
+            x.Id == execution.TaskId && x.ActorUserId == actorId, token);
+        var row = await db.PentaUsageReservations.SingleOrDefaultAsync(x => x.AcademyId == academyId &&
+            x.ExecutionId == executionId && x.UnitKind == ModelUnit && x.ActorUserId == actorId, token);
+        if (task is null || row is null) return PentaBudgetResult.NotFound;
+        if (execution.Status != "Executing" || task.Status != "Executing" || row.Status != "Reserved")
+            return execution.Status == "Succeeded" && task.Status == "Succeeded" && row.Status == "Reconciled"
+                ? PentaBudgetResult.AlreadyReconciled : PentaBudgetResult.UsageUnknown;
+        if (row.ProviderName != policy.Provider || row.ModelName != policy.Model ||
+            row.PriceVersion != policy.PriceVersion || row.Currency != "USD" ||
+            row.InputTokensReserved != policy.MaxInputTokens || row.OutputTokensReserved != policy.MaxOutputTokens ||
+            row.InputUsdPerMillion != policy.InputUsdPerMillion ||
+            row.OutputUsdPerMillion != policy.OutputUsdPerMillion)
+            return PentaBudgetResult.InvalidPolicy;
+
+        var succeeded = observation.Status == "Succeeded" &&
+            observation.InputTokens is >= 0 && observation.OutputTokens is >= 0 &&
+            observation.InputTokens <= row.InputTokensReserved && observation.InputTokens <= 2048 &&
+            observation.OutputTokens <= row.OutputTokensReserved && observation.OutputTokens <= 64;
+        if (succeeded)
+        {
+            var input = observation.InputTokens!.Value;
+            var output = observation.OutputTokens!.Value;
+            var actual = Charge(input, output, policy);
+            if (actual > row.EstimatedCost) return PentaBudgetResult.InvalidUsage;
+            row.Status = "Reconciled";
+            row.ActualCost = actual;
+            row.InputTokensObserved = input;
+            row.OutputTokensObserved = output;
+            db.PentaUsageEntries.Add(new PentaUsageEntry { AcademyId = academyId,
+                ReservationId = row.Id, EventKey = "synthetic-probe-final", Outcome = "Observed",
+                UnitsObserved = input + output, ActualCost = actual, Currency = "USD" });
+        }
+        else row.Status = "UsageUnknown";
+
+        var status = succeeded ? "Succeeded" : "OutcomeUnknown";
+        execution.Status = task.Status = status;
+        execution.CompletedAtUtc = DateTime.UtcNow;
+        db.PentaAttempts.Add(new PentaAttempt { AcademyId = academyId, ExecutionId = executionId, Outcome = status });
+        db.AuditLogs.Add(new AuditLog { AcademyId = academyId, ActorUserId = actorId,
+            Action = "PentaSyntheticProbeCompleted", EntityType = "PentaExecution", EntityId = executionId,
+            MetadataJson = JsonSerializer.Serialize(new { status, usageKnown = succeeded }) });
+        await db.SaveChangesAsync(token);
+        await transaction.CommitAsync(token);
+        return succeeded ? PentaBudgetResult.Reconciled : PentaBudgetResult.UsageUnknown;
     }
 
     // Deliberate operator/recovery invocation only. An in-flight or stale claim is

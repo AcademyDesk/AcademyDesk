@@ -107,7 +107,10 @@ public sealed class PentaProviderAdapterTests
             Assert.DoesNotContain("academyId", await request.Content.ReadAsStringAsync(token), StringComparison.Ordinal);
             return Json(GoodResponse);
         });
-        var result = await Adapter(handler, Settings()).ProbeAsync(CancellationToken.None);
+        var adapter = Adapter(handler, Settings());
+        Assert.Equal("openai", adapter.ProviderName);
+        Assert.Equal("synthetic-model", adapter.ModelName);
+        var result = await adapter.ProbeAsync(CancellationToken.None);
         Assert.Equal(new PentaProviderProbeResult("Succeeded", 33, 8), result);
         Assert.Equal(1, handler.Calls);
     }

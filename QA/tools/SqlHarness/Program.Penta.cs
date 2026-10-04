@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 
 internal static partial class SqlHarnessEntryPoint
 {
@@ -65,6 +67,19 @@ internal static partial class SqlHarnessEntryPoint
             return Malformed
                 ? new PentaSyntheticResult(Guid.NewGuid(), capability, "unregistered.tool", "bad", true)
                 : await inner.ExecuteAsync(capability, token);
+        }
+    }
+
+    private sealed class FakeModelProbe : IPentaModelProvider
+    {
+        public string ProviderName => "qa.fake";
+        public string? ModelName => "qa.fake-model";
+        public int Calls { get; private set; }
+        public PentaProviderProbeResult Next { get; set; } = new("Succeeded", 33, 8);
+        public Task<PentaProviderProbeResult> ProbeAsync(CancellationToken token)
+        {
+            Calls++;
+            return Task.FromResult(Next);
         }
     }
 
@@ -466,11 +481,121 @@ internal static partial class SqlHarnessEntryPoint
         }
         PentaRequire(provider.Calls == 7, "Restarted unknown outcome invoked provider.");
         await VerifyPentaPricedBudgetAsync(manifest, enabledFactory, academyA);
+        await VerifyPentaProbeCoordinationAsync(manifest, enabledFactory, academyB);
         await VerifyPentaCompletionFaultAsync(manifest, enabledFactory, academyA, tokenA);
         await VerifyPentaRecoveryCompletionRaceAsync(manifest, enabledFactory, academyA, tokenA);
         await VerifyPentaDraftApprovalAsync(manifest, enabledFactory, academyA, academyB,
             tokenA, tokenC, tokenB, teacher, platform);
         Console.WriteLine("PENTA PASS: real Identity/SQL, single dispatch/restart, concurrent tenant/user quota, scoped approval FK, known usage and unknown-outcome retention.");
+    }
+
+    private static async Task VerifyPentaProbeCoordinationAsync(QaRunManifest manifest,
+        QaApiFactory factory, Guid academyId)
+    {
+        var probe = new FakeModelProbe();
+        var settings = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            ["Penta:Enabled"] = "true", ["Penta:Provider:Enabled"] = "true",
+            ["Penta:Provider:SyntheticProbeApproved"] = "true",
+            ["Penta:Provider:OrchestrationEnabled"] = "true"
+        }).Build();
+        var disabled = new ConfigurationBuilder().Build();
+        var policy = new PentaPricedPolicy("qa.fake", "qa.fake-model", "qa.probe.v1", 300m, 300m,
+            2048, 64, .7m, .7m); // Test-only quote; no live provider rate is approved.
+        Guid actorId;
+        var ids = new[] { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+            var users = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+            actorId = (await users.FindByEmailAsync("penta-admin-b@example.invalid"))!.Id;
+            foreach (var id in ids)
+            {
+                var task = new PentaTask { AcademyId = academyId, ActorUserId = actorId,
+                    Capability = "pulse", Status = "Executing" };
+                db.PentaTasks.Add(task);
+                db.PentaExecutions.Add(new PentaExecution { Id = id, AcademyId = academyId,
+                    ActorUserId = actorId, TaskId = task.Id, ToolName = PentaProbeCoordinator.ToolName,
+                    IdempotencyKey = $"qa-probe-{id}", InputDigest = new string('B', 64),
+                    Status = "Executing" });
+            }
+            await db.SaveChangesAsync();
+        }
+        async Task<PentaBudgetResult> Run(Guid id, IConfiguration config, PentaPricedPolicy quote)
+        {
+            await using var scope = factory.Services.CreateAsyncScope();
+            var coordinator = new PentaProbeCoordinator(
+                scope.ServiceProvider.GetRequiredService<PentaBudgetService>(), probe, config,
+                scope.ServiceProvider.GetRequiredService<IHostEnvironment>());
+            return await coordinator.RunAsync(academyId, actorId, id, quote, CancellationToken.None);
+        }
+        PentaRequire(await Run(ids[0], disabled, policy) == PentaBudgetResult.InvalidPolicy && probe.Calls == 0,
+            "Disabled orchestration reached the model probe.");
+        PentaRequire(await Run(ids[0], settings, policy with { Model = "wrong" }) ==
+            PentaBudgetResult.InvalidPolicy && probe.Calls == 0,
+            "Provider/model mismatch reached the model probe.");
+        PentaRequire(await Run(ids[0], settings, policy) == PentaBudgetResult.Reconciled && probe.Calls == 1,
+            "Priced synthetic probe did not reconcile once.");
+        PentaRequire(await Run(ids[0], settings, policy) == PentaBudgetResult.NotFound && probe.Calls == 1,
+            "Completed probe was redispatched.");
+        probe.Next = new("OutcomeUnknown");
+        PentaRequire(await Run(ids[1], settings, policy) == PentaBudgetResult.UsageUnknown && probe.Calls == 2,
+            "Ambiguous probe did not retain unknown usage.");
+        PentaRequire(await Run(ids[2], settings, policy) == PentaBudgetResult.Exhausted && probe.Calls == 2,
+            "Unknown probe usage released its reserved budget.");
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+            var rows = await db.PentaUsageReservations.AsNoTracking()
+                .Where(x => x.AcademyId == academyId && ids.Contains(x.ExecutionId)).ToListAsync();
+            PentaRequire(rows.Count == 2 && rows.Any(x => x.ExecutionId == ids[0] &&
+                x.Status == "Reconciled" && x.InputTokensObserved == 33 && x.OutputTokensObserved == 8) &&
+                rows.Any(x => x.ExecutionId == ids[1] && x.Status == "UsageUnknown" && x.ActualCost == null),
+                "Probe budget ledger did not retain exact observed and unknown outcomes.");
+            PentaRequire(await db.PentaAttempts.CountAsync(x => ids.Contains(x.ExecutionId)) == 2 &&
+                await db.AuditLogs.CountAsync(x => x.Action == "PentaSyntheticProbeCompleted" &&
+                    x.EntityId.HasValue && ids.Contains(x.EntityId.Value)) == 2 &&
+                await db.PentaUsageEntries.CountAsync(x => x.ReservationId == rows[0].Id ||
+                    x.ReservationId == rows[1].Id) == 1,
+                "Probe outcome, usage and audit were not recorded exactly once.");
+        }
+        // Reserve normally, then fault only the completion audit write. Usage,
+        // execution and attempt must roll back together, with no replay.
+        await using (var scope = factory.Services.CreateAsyncScope())
+            PentaRequire(await scope.ServiceProvider.GetRequiredService<PentaBudgetService>()
+                .ReserveAsync(academyId, actorId, ids[3], policy with { DailyUserUsd = 2m,
+                    DailyAcademyUsd = 2m }, CancellationToken.None, PentaProbeCoordinator.ToolName) ==
+                PentaBudgetResult.Reserved, "Could not reserve completion-fault fixture.");
+        using (var faultFactory = new QaApiFactory(manifest,
+            isolatedDomainInterceptor: new PentaAuditFaultInterceptor()))
+        {
+            using var faultClient = faultFactory.CreateClient();
+            PentaRequire(faultFactory.PreflightPassed, "Probe completion fault host missed SQL preflight.");
+            var faulted = false;
+            try
+            {
+                await using var scope = faultFactory.Services.CreateAsyncScope();
+                await scope.ServiceProvider.GetRequiredService<PentaBudgetService>()
+                    .CompleteProbeAsync(academyId, actorId, ids[3], policy with { DailyUserUsd = 2m,
+                        DailyAcademyUsd = 2m }, new("Succeeded", 33, 8), CancellationToken.None);
+            }
+            catch (DbUpdateException ex) when (ex.InnerException?.Message.Contains("QA PENTA audit-store write fault") == true)
+            { faulted = true; }
+            catch (InvalidOperationException ex) when (ex.Message.Contains("QA PENTA audit-store write fault"))
+            { faulted = true; }
+            PentaRequire(faulted, "Injected probe completion audit fault did not fail closed.");
+        }
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+            var row = await db.PentaUsageReservations.AsNoTracking().SingleAsync(x => x.ExecutionId == ids[3]);
+            PentaRequire(row.Status == "Reserved" && row.ActualCost == null &&
+                await db.PentaExecutions.AnyAsync(x => x.Id == ids[3] && x.Status == "Executing") &&
+                !await db.PentaAttempts.AnyAsync(x => x.ExecutionId == ids[3]) &&
+                !await db.PentaUsageEntries.AnyAsync(x => x.ReservationId == row.Id),
+                "Probe completion audit fault partially committed outcome or usage.");
+        }
+        Console.WriteLine("PENTA PROBE PASS: disabled/mismatch denied, fake call budgeted, observed usage finalized, ambiguous usage held, exhausted denied, completion audit rollback.");
     }
 
     private static async Task VerifyPentaPricedBudgetAsync(QaRunManifest manifest, QaApiFactory factory, Guid academyId)
