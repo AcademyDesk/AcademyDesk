@@ -31,6 +31,7 @@ builder.Services.AddScoped<PentaExecutionService>();
 builder.Services.AddScoped<PentaBudgetService>();
 builder.Services.AddScoped<PentaDraftApprovalService>();
 builder.Services.AddScoped<PentaAcademyContextService>();
+builder.Services.AddScoped<PentaStudentSearchService>();
 builder.Services.AddHttpClient<IPentaModelProvider, PentaOpenAiProbeAdapter>()
     .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
 builder.Services.AddSingleton(TimeProvider.System);

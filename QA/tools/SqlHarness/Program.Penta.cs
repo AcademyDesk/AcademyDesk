@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Data.Common;
 using System.Security.Claims;
+using System.Text.Json;
 using AcademyDesk.Api.Data;
 using AcademyDesk.Api.Domain.Entities;
 using AcademyDesk.Api.Domain.Identity;
@@ -229,6 +230,8 @@ internal static partial class SqlHarnessEntryPoint
                 x.AcademyId == academyA) == 1,
                 "R0 audit fault changed the successful read's durable evidence.");
         }
+        await VerifyPentaStudentSearchAsync(manifest, enabledFactory, enabled,
+            academyA, academyB, tokenA, tokenB, teacher, platform, provider);
 
         enabled.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenA);
         using (var foreign = await enabled.PostAsJsonAsync(pathB, valid))
@@ -487,6 +490,110 @@ internal static partial class SqlHarnessEntryPoint
         await VerifyPentaDraftApprovalAsync(manifest, enabledFactory, academyA, academyB,
             tokenA, tokenC, tokenB, teacher, platform);
         Console.WriteLine("PENTA PASS: real Identity/SQL, single dispatch/restart, concurrent tenant/user quota, scoped approval FK, known usage and unknown-outcome retention.");
+    }
+
+    private static async Task VerifyPentaStudentSearchAsync(QaRunManifest manifest,
+        QaApiFactory factory, HttpClient client, Guid academyA, Guid academyB,
+        string tokenA, string tokenB, string teacher, string platform, CountingPentaProvider provider)
+    {
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+            for (var number = 0; number < 12; number++)
+                db.Students.Add(new Student { AcademyId = academyA, FirstName = "Meera",
+                    LastName = $"Learner{number:00}", StudentNumber = $"QA-A-{number:00}",
+                    Email = "private@example.invalid", MedicalOrAccessibilityNotes = "private medical note" });
+            db.Students.Add(new Student { AcademyId = academyA, FirstName = "Meera",
+                LastName = "Inactive", IsActive = false });
+            db.Students.Add(new Student { AcademyId = academyB, FirstName = "Meera",
+                LastName = "Foreign" });
+            await db.SaveChangesAsync();
+        }
+        var pathA = $"/api/academies/{academyA}/penta/student-search?q=Meera";
+        var pathB = $"/api/academies/{academyB}/penta/student-search?q=Meera";
+        Dictionary<Guid, string> ownStudents;
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+            ownStudents = await db.Students.AsNoTracking()
+                .Where(x => x.AcademyId == academyA && x.IsActive)
+                .ToDictionaryAsync(x => x.Id, x => x.FirstName + " " + x.LastName);
+        }
+        client.DefaultRequestHeaders.Authorization = null;
+        using (var denied = await client.GetAsync(pathA))
+            PentaRequire(denied.StatusCode == HttpStatusCode.Unauthorized,
+                "Anonymous student search was not 401.");
+        foreach (var (bearer, label) in new[] { (teacher, "Teacher"), (platform, "Platform owner"),
+            (tokenB, "Foreign academy admin") })
+        {
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", bearer);
+            using var denied = await client.GetAsync(pathA);
+            PentaRequire(denied.StatusCode == HttpStatusCode.Forbidden,
+                $"{label} student search was not 403.");
+        }
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenA);
+        using (var denied = await client.GetAsync(pathB))
+            PentaRequire(denied.StatusCode == HttpStatusCode.Forbidden,
+                "Student search crossed academy scope.");
+        using (var invalid = await client.GetAsync($"/api/academies/{academyA}/penta/student-search?q=x"))
+            PentaRequire(invalid.StatusCode == HttpStatusCode.BadRequest,
+                "Single-character student search was accepted.");
+        using (var read = await client.GetAsync(pathA))
+        {
+            PentaRequire(read.StatusCode == HttpStatusCode.OK, "Own-academy student search failed.");
+            var body = await read.Content.ReadAsStringAsync();
+            PentaRequire(!body.Contains("private@example.invalid", StringComparison.Ordinal) &&
+                !body.Contains("private medical note", StringComparison.Ordinal) &&
+                !body.Contains("Foreign", StringComparison.Ordinal) &&
+                !body.Contains("Inactive", StringComparison.Ordinal),
+                "Student search disclosed a private, foreign or inactive field.");
+            using var json = JsonDocument.Parse(body);
+            var root = json.RootElement;
+            var rows = root.GetProperty("rows");
+            PentaRequire(root.GetProperty("tool").GetString() == PentaStudentSearchService.ToolName &&
+                root.GetProperty("academyId").GetGuid() == academyA &&
+                root.GetProperty("maxRows").GetInt32() == 10 &&
+                root.GetProperty("hasMore").GetBoolean() && rows.GetArrayLength() == 10 &&
+                rows.EnumerateArray().All(x => x.EnumerateObject().Count() == 4 &&
+                    ownStudents.TryGetValue(x.GetProperty("sourceId").GetGuid(), out var name) &&
+                    name == x.GetProperty("displayName").GetString() &&
+                    x.GetProperty("sourcePath").GetString() ==
+                    $"/student-management?studentId={x.GetProperty("sourceId").GetGuid():D}"),
+                "Student search did not return ten minimal source-linked rows.");
+        }
+        PentaRequire(provider.Calls == 0, "Student search invoked the model or synthetic provider.");
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+            PentaRequire(await db.AuditLogs.CountAsync(x => x.Action == "PentaStudentSearchRead" &&
+                x.AcademyId == academyA) == 1 &&
+                await db.AuditLogs.CountAsync(x => x.Action == "PentaStudentSearchRead" &&
+                    x.AcademyId == academyB) == 0 &&
+                await db.PentaExecutions.CountAsync() == 0,
+                "Student search was not audited exactly once or created a PENTA execution.");
+        }
+        using (var faultFactory = new QaApiFactory(manifest,
+            new Dictionary<string, string?> { ["Penta:Enabled"] = "true" },
+            isolatedDomainInterceptor: new PentaAuditFaultInterceptor()))
+        {
+            using var faultClient = faultFactory.CreateClient();
+            PentaRequire(faultFactory.PreflightPassed, "Student search audit-fault host missed SQL preflight.");
+            var failed = false;
+            try
+            {
+                await using var scope = faultFactory.Services.CreateAsyncScope();
+                var users = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+                var actorId = (await users.FindByEmailAsync("penta-admin-a@example.invalid"))!.Id;
+                await scope.ServiceProvider.GetRequiredService<PentaStudentSearchService>()
+                    .ReadAsync(academyA, actorId, "Meera", CancellationToken.None);
+            }
+            catch (DbUpdateException ex) when (ex.InnerException?.Message.Contains("QA PENTA audit-store write fault") == true)
+            { failed = true; }
+            catch (InvalidOperationException ex) when (ex.Message.Contains("QA PENTA audit-store write fault"))
+            { failed = true; }
+            PentaRequire(failed, "Student search returned data despite audit write failure.");
+        }
+        Console.WriteLine("PENTA STUDENT SEARCH PASS: real SQL bounded own-academy source rows, 401/403, no private fields/provider call, audit rollback.");
     }
 
     private static async Task VerifyPentaProbeCoordinationAsync(QaRunManifest manifest,

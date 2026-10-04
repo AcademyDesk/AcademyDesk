@@ -11,8 +11,21 @@ namespace AcademyDesk.Api.Controllers;
 [Route("api/academies/{academyId:guid}/penta")]
 public sealed class PentaController(PentaPilotPolicy policy, PentaExecutionService executions,
     PentaDraftApprovalService drafts, PentaAcademyContextService academyContext,
-    UserManager<ApplicationUser> users) : ControllerBase
+    PentaStudentSearchService studentSearch, UserManager<ApplicationUser> users) : ControllerBase
 {
+    [HttpGet("student-search")]
+    public async Task<ActionResult<PentaStudentSearchResult>> StudentSearch(Guid academyId,
+        [FromQuery] string? q, CancellationToken token)
+    {
+        if (!policy.IsAvailable) return NotFound();
+        if (!await policy.AllowsAsync(User, academyId, token)) return Forbid();
+        if (!PentaStudentSearchService.TryNormalizeQuery(q, out var query))
+            return BadRequest(new { message = "Enter 2 to 80 searchable characters." });
+        var actorId = (await users.GetUserAsync(User))!.Id;
+        var result = await studentSearch.ReadAsync(academyId, actorId, query, token);
+        return result is null ? NotFound() : Ok(result);
+    }
+
     [HttpGet("academy-context")]
     public async Task<ActionResult<PentaAcademyContext>> AcademyContext(Guid academyId, CancellationToken token)
     {
