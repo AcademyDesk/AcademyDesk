@@ -28,6 +28,7 @@ builder.Services.AddScoped<PentaPilotPolicy>();
 builder.Services.AddSingleton<IPentaSyntheticProvider, FixedPentaSyntheticProvider>();
 builder.Services.AddScoped<PentaSyntheticDispatcher>();
 builder.Services.AddScoped<PentaExecutionService>();
+builder.Services.AddScoped<PentaBudgetService>();
 builder.Services.AddControllers(options => options.Filters.AddService<AcademyAccessFilter>());
 builder.Services.AddPrivateMediaStorage(builder.Configuration, builder.Environment);
 builder.Services.AddScoped<ClassMaterialAccess>();

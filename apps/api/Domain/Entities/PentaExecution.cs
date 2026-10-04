@@ -51,6 +51,15 @@ public sealed class PentaUsageReservation : AcademyEntity
     public decimal? ActualCost { get; set; }
     public required string Currency { get; set; }
     public required string PriceVersion { get; set; }
+    // Populated only for a priced model reservation. SyntheticCall remains unpriced.
+    public string? ProviderName { get; set; }
+    public string? ModelName { get; set; }
+    public int? InputTokensReserved { get; set; }
+    public int? OutputTokensReserved { get; set; }
+    public int? InputTokensObserved { get; set; }
+    public int? OutputTokensObserved { get; set; }
+    public decimal? InputUsdPerMillion { get; set; }
+    public decimal? OutputUsdPerMillion { get; set; }
 }
 
 public sealed class PentaUsageEntry : AcademyEntity

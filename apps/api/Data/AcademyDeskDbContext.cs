@@ -119,6 +119,10 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
             entity.Property(x => x.Status).HasMaxLength(30).IsRequired();
             entity.Property(x => x.Currency).HasMaxLength(3).IsRequired();
             entity.Property(x => x.PriceVersion).HasMaxLength(40).IsRequired();
+            entity.Property(x => x.ProviderName).HasMaxLength(80);
+            entity.Property(x => x.ModelName).HasMaxLength(80);
+            entity.Property(x => x.InputUsdPerMillion).HasPrecision(18, 6);
+            entity.Property(x => x.OutputUsdPerMillion).HasPrecision(18, 6);
             entity.Property(x => x.EstimatedCost).HasPrecision(18, 6);
             entity.Property(x => x.ActualCost).HasPrecision(18, 6);
             entity.HasAlternateKey(x => new { x.AcademyId, x.Id });

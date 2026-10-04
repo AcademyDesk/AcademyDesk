@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Data.Common;
 using AcademyDesk.Api.Data;
 using AcademyDesk.Api.Domain.Entities;
 using AcademyDesk.Api.Domain.Identity;
@@ -8,10 +9,22 @@ using AcademyDesk.Api.Intelligence.Penta;
 using AcademyDesk.Api.Tests.Infrastructure;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 
 internal static partial class SqlHarnessEntryPoint
 {
+    private sealed class PentaAuditFaultInterceptor : DbCommandInterceptor
+    {
+        public override ValueTask<InterceptionResult<DbDataReader>> ReaderExecutingAsync(
+            DbCommand command, CommandEventData eventData, InterceptionResult<DbDataReader> result,
+            CancellationToken cancellationToken = default)
+        {
+            if (command.CommandText.Contains("INSERT INTO [AuditLogs]", StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("QA PENTA audit-store write fault.");
+            return base.ReaderExecutingAsync(command, eventData, result, cancellationToken);
+        }
+    }
     private sealed class CountingPentaProvider : IPentaSyntheticProvider
     {
         private readonly FixedPentaSyntheticProvider inner = new();
@@ -370,7 +383,235 @@ internal static partial class SqlHarnessEntryPoint
                 x.ExecutionId == unknown.Id) == 1, "Unknown outcome did not record exactly one attempt.");
         }
         PentaRequire(provider.Calls == 7, "Restarted unknown outcome invoked provider.");
+        await VerifyPentaPricedBudgetAsync(manifest, enabledFactory, academyA);
+        await VerifyPentaCompletionFaultAsync(manifest, enabledFactory, academyA, tokenA);
+        await VerifyPentaRecoveryCompletionRaceAsync(manifest, enabledFactory, academyA, tokenA);
         Console.WriteLine("PENTA PASS: real Identity/SQL, single dispatch/restart, concurrent tenant/user quota, scoped approval FK, known usage and unknown-outcome retention.");
+    }
+
+    private static async Task VerifyPentaPricedBudgetAsync(QaRunManifest manifest, QaApiFactory factory, Guid academyId)
+    {
+        Guid actorId;
+        var executionIds = new[] { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+            var users = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+            actorId = (await users.FindByEmailAsync("penta-admin-a@example.invalid"))!.Id;
+            foreach (var executionId in executionIds)
+            {
+                var task = new PentaTask { AcademyId = academyId, ActorUserId = actorId,
+                    Capability = "pulse", Status = "Executing", CreatedAtUtc = DateTime.UtcNow.AddMinutes(-10) };
+                db.PentaTasks.Add(task);
+                db.PentaExecutions.Add(new PentaExecution { Id = executionId, AcademyId = academyId,
+                    ActorUserId = actorId, TaskId = task.Id, ToolName = "qa.priced.contract",
+                    IdempotencyKey = $"priced-{executionId}", InputDigest = new string('A', 64),
+                    Status = "Executing", CreatedAtUtc = DateTime.UtcNow.AddMinutes(-10) });
+            }
+            await db.SaveChangesAsync();
+        }
+        var policy = new PentaPricedPolicy("qa.fake", "qa.fake-model", "qa.v1", 300m, 300m,
+            1000, 1000, 1m, 1m); // Test-only pricing, not an approved live model.
+        async Task<PentaBudgetResult> Reserve(Guid id, PentaPricedPolicy quote)
+        {
+            await using var scope = factory.Services.CreateAsyncScope();
+            return await scope.ServiceProvider.GetRequiredService<PentaBudgetService>()
+                .ReserveAsync(academyId, actorId, id, quote, CancellationToken.None);
+        }
+        PentaRequire(await Reserve(executionIds[0], policy with { PriceVersion = "" }) ==
+            PentaBudgetResult.InvalidPolicy, "Missing price version did not fail closed.");
+        var claims = await Task.WhenAll(Reserve(executionIds[0], policy), Reserve(executionIds[1], policy));
+        PentaRequire(claims.Count(x => x == PentaBudgetResult.Reserved) == 1 &&
+            claims.Count(x => x == PentaBudgetResult.Exhausted) == 1,
+            "Concurrent priced budget admitted more than one 0.6 USD reservation under 1 USD cap.");
+        var winner = claims[0] == PentaBudgetResult.Reserved ? executionIds[0] : executionIds[1];
+        var loser = claims[0] == PentaBudgetResult.Reserved ? executionIds[1] : executionIds[0];
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var budget = scope.ServiceProvider.GetRequiredService<PentaBudgetService>();
+            PentaRequire(!await budget.MarkStaleUnknownAsync(academyId, winner, DateTime.UtcNow.AddMinutes(-1),
+                CancellationToken.None), "Recovery accepted a too-recent cutoff.");
+            PentaRequire(await budget.MarkStaleUnknownAsync(academyId, winner, DateTime.UtcNow.AddMinutes(-5),
+                CancellationToken.None), "Stale claim was not marked unknown.");
+        }
+        PentaRequire(await Reserve(loser, policy) == PentaBudgetResult.Exhausted,
+            "Unknown usage released a priced reservation.");
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+            var budget = scope.ServiceProvider.GetRequiredService<PentaBudgetService>();
+            PentaRequire(await budget.ReconcileAsync(academyId, winner, "qa-observed", 500, 500,
+                policy with { InputUsdPerMillion = 1m }, CancellationToken.None) == PentaBudgetResult.InvalidPolicy,
+                "Repriced observation bypassed original price snapshot.");
+            PentaRequire(await budget.ReconcileAsync(academyId, winner, "qa-observed", 1001, 0,
+                policy, CancellationToken.None) == PentaBudgetResult.InvalidUsage,
+                "Over-limit token observation was accepted.");
+            PentaRequire(await budget.ReconcileAsync(academyId, winner, "qa-observed", 500, 500,
+                policy, CancellationToken.None) == PentaBudgetResult.Reconciled,
+                "Known usage did not reconcile.");
+            PentaRequire(await budget.ReconcileAsync(academyId, winner, "qa-observed", 500, 500,
+                policy, CancellationToken.None) == PentaBudgetResult.AlreadyReconciled,
+                "Duplicate usage reconciliation was accepted.");
+            var row = await db.PentaUsageReservations.AsNoTracking().SingleAsync(x => x.ExecutionId == winner);
+            PentaRequire(row.EstimatedCost == .6m && row.ActualCost == .3m &&
+                row.Status == "Reconciled" && row.InputTokensObserved == 500 &&
+                await db.PentaUsageEntries.CountAsync(x => x.ReservationId == row.Id) == 1,
+                "Priced usage snapshot or reconciliation ledger is incorrect.");
+            PentaRequire(await db.PentaExecutions.AnyAsync(x => x.Id == winner && x.Status == "OutcomeUnknown") &&
+                await db.PentaAttempts.CountAsync(x => x.ExecutionId == winner) == 1,
+                "Stale execution was not durably blocked from blind retry.");
+        }
+        PentaRequire(await Reserve(loser, policy) == PentaBudgetResult.Reserved,
+            "Reconciled lower actual cost did not release unused budget.");
+
+        // Command interception is scoped to a second preflighted QA host and
+        // requires no DDL or permission elevation on the run-owned SQL store.
+        using (var faultFactory = new QaApiFactory(manifest,
+            isolatedDomainInterceptor: new PentaAuditFaultInterceptor()))
+        {
+            using var faultClient = faultFactory.CreateClient();
+            PentaRequire(faultFactory.PreflightPassed, "Audit-fault host missed SQL preflight.");
+            var failed = false;
+            try
+            {
+                await using var faultScope = faultFactory.Services.CreateAsyncScope();
+                await faultScope.ServiceProvider.GetRequiredService<PentaBudgetService>()
+                    .ReserveAsync(academyId, actorId, executionIds[2],
+                        policy with { DailyUserUsd = 2m, DailyAcademyUsd = 2m }, CancellationToken.None);
+            }
+            catch (DbUpdateException ex) when (ex.InnerException?.Message.Contains("QA PENTA audit-store write fault") == true)
+            { failed = true; }
+            catch (InvalidOperationException ex) when (ex.Message.Contains("QA PENTA audit-store write fault"))
+            { failed = true; }
+            PentaRequire(failed, "Injected audit fault did not fail the reservation transaction.");
+        }
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+            PentaRequire(!await db.PentaUsageReservations.AnyAsync(x => x.ExecutionId == executionIds[2]),
+                "Audit fault left an unaudited priced reservation.");
+        }
+        Console.WriteLine("PENTA PRICED PASS: version fail-closed, concurrent cap, unknown retention, snapshot reconciliation, stale recovery and audit rollback.");
+    }
+
+    private static async Task VerifyPentaCompletionFaultAsync(QaRunManifest manifest,
+        QaApiFactory factory, Guid academyId, string bearer)
+    {
+        var provider = new CountingPentaProvider();
+        var key = $"qa-completion-fault-{Guid.NewGuid():N}";
+        Guid actorId;
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var users = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+            actorId = (await users.FindByEmailAsync("penta-admin-a@example.invalid"))!.Id;
+        }
+        using (var faultFactory = new QaApiFactory(manifest,
+            new Dictionary<string, string?> { ["Penta:Enabled"] = "true" },
+            isolatedPentaProvider: provider, isolatedDomainInterceptor: new PentaAuditFaultInterceptor()))
+        {
+            using var client = faultFactory.CreateClient();
+            PentaRequire(faultFactory.PreflightPassed, "Completion-fault host missed SQL preflight.");
+            var failed = false;
+            try
+            {
+                await using var scope = faultFactory.Services.CreateAsyncScope();
+                await scope.ServiceProvider.GetRequiredService<PentaExecutionService>()
+                    .RunAsync(academyId, actorId, "pulse", "qa completion fault", key, CancellationToken.None);
+            }
+            catch (DbUpdateException ex) when (ex.InnerException?.Message.Contains("QA PENTA audit-store write fault") == true)
+            { failed = true; }
+            PentaRequire(failed && provider.Calls == 1, "Completion audit fault did not occur after one fake dispatch.");
+        }
+        Guid executionId;
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+            var execution = await db.PentaExecutions.SingleAsync(x => x.AcademyId == academyId && x.IdempotencyKey == key);
+            executionId = execution.Id;
+            PentaRequire(execution.Status == "Executing" &&
+                await db.PentaAttempts.CountAsync(x => x.ExecutionId == executionId) == 0 &&
+                await db.AuditLogs.CountAsync(x => x.EntityType == "PentaExecution" && x.EntityId == executionId) == 0 &&
+                await db.PentaUsageReservations.AnyAsync(x => x.ExecutionId == executionId && x.Status == "Reserved"),
+                "Completion fault did not leave an unreconciled durable claim.");
+            execution.CreatedAtUtc = DateTime.UtcNow.AddMinutes(-10);
+            await db.SaveChangesAsync();
+        }
+        using (var client = factory.CreateClient(new() { AllowAutoRedirect = false }))
+        {
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", bearer);
+            using var pending = await PentaPostAsync(client, $"/api/academies/{academyId}/penta/turns", key,
+                "qa completion fault");
+            PentaRequire(pending.StatusCode == HttpStatusCode.Accepted && provider.Calls == 1,
+                "Restart replay redispatched an ambiguous completion.");
+        }
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var budget = scope.ServiceProvider.GetRequiredService<PentaBudgetService>();
+            PentaRequire(await budget.MarkStaleUnknownAsync(academyId, executionId,
+                DateTime.UtcNow.AddMinutes(-5), CancellationToken.None),
+                "Ambiguous completion could not be conservatively recovered.");
+        }
+        using (var client = factory.CreateClient(new() { AllowAutoRedirect = false }))
+        {
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", bearer);
+            using var unknown = await PentaPostAsync(client, $"/api/academies/{academyId}/penta/turns", key,
+                "qa completion fault");
+            PentaRequire(unknown.StatusCode == HttpStatusCode.BadGateway && provider.Calls == 1,
+                "Unknown completion was replayed as a successful new dispatch.");
+        }
+        Console.WriteLine("PENTA RECOVERY PASS: completion audit fault held claim/usage, restart did not redispatch, stale claim marked unknown.");
+    }
+
+    private static async Task VerifyPentaRecoveryCompletionRaceAsync(QaRunManifest manifest,
+        QaApiFactory normalFactory, Guid academyId, string bearer)
+    {
+        var provider = new CountingPentaProvider();
+        using var runningFactory = new QaApiFactory(manifest,
+            new Dictionary<string, string?> { ["Penta:Enabled"] = "true" }, isolatedPentaProvider: provider);
+        using var client = runningFactory.CreateClient(new() { AllowAutoRedirect = false });
+        PentaRequire(runningFactory.PreflightPassed, "Recovery race host missed SQL preflight.");
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", bearer);
+        var key = $"qa-recovery-race-{Guid.NewGuid():N}";
+        var entered = provider.BlockNextAsync();
+        var running = PentaPostAsync(client, $"/api/academies/{academyId}/penta/turns", key,
+            "qa recovery race");
+        await entered.WaitAsync(TimeSpan.FromSeconds(20));
+        try
+        {
+            Guid executionId;
+            await using (var scope = normalFactory.Services.CreateAsyncScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+                var execution = await db.PentaExecutions.SingleAsync(x => x.AcademyId == academyId &&
+                    x.IdempotencyKey == key);
+                executionId = execution.Id;
+                execution.CreatedAtUtc = DateTime.UtcNow.AddMinutes(-10);
+                await db.SaveChangesAsync();
+            }
+            await using (var scope = normalFactory.Services.CreateAsyncScope())
+            {
+                var budget = scope.ServiceProvider.GetRequiredService<PentaBudgetService>();
+                PentaRequire(await budget.MarkStaleUnknownAsync(academyId, executionId,
+                    DateTime.UtcNow.AddMinutes(-5), CancellationToken.None),
+                    "Recovery could not mark held fake dispatch unknown.");
+            }
+            provider.Release();
+            using var result = await running;
+            PentaRequire(result.StatusCode == HttpStatusCode.BadGateway && provider.Calls == 1,
+                "Late fake completion overwrote the recovered unknown outcome.");
+            await using var verifyScope = normalFactory.Services.CreateAsyncScope();
+            var verify = verifyScope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+            var reservation = await verify.PentaUsageReservations.AsNoTracking()
+                .SingleAsync(x => x.ExecutionId == executionId);
+            PentaRequire(await verify.PentaExecutions.AnyAsync(x => x.Id == executionId &&
+                x.Status == "OutcomeUnknown") &&
+                reservation.Status == "UsageUnknown" && reservation.ActualCost == null &&
+                !await verify.PentaUsageEntries.AnyAsync(x => x.AcademyId == academyId &&
+                    x.ReservationId == reservation.Id),
+                "Late completion changed the recovery ledger.");
+        }
+        finally { provider.Release(); }
+        Console.WriteLine("PENTA RECOVERY RACE PASS: late fake-provider completion could not overwrite unknown state or release usage.");
     }
 
     private static void PentaRequire(bool condition, string message)

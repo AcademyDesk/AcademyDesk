@@ -109,6 +109,17 @@ public sealed class PentaExecutionService(AcademyDeskDbContext db, PentaSyntheti
             status = "OutcomeUnknown";
         }
 
+        await using var completionTransaction = db.Database.IsSqlServer()
+            ? await db.Database.BeginTransactionAsync(CancellationToken.None) : null;
+        if (completionTransaction is not null)
+        {
+            await db.Academies.FromSqlInterpolated(
+                $"SELECT * FROM [Academies] WITH (UPDLOCK, HOLDLOCK) WHERE [Id] = {academyId}")
+                .AsNoTracking().SingleAsync(CancellationToken.None);
+            var persisted = await FindAsync(academyId, actorId, key, CancellationToken.None);
+            if (persisted is not null && persisted.Value.Execution.Status != "Executing")
+                return Replay(persisted.Value.Execution, persisted.Value.Task, digest);
+        }
         task.Status = status;
         execution.Status = status;
         execution.ResultCorrelationId = result?.CorrelationId;
@@ -130,6 +141,7 @@ public sealed class PentaExecutionService(AcademyDeskDbContext db, PentaSyntheti
             MetadataJson = JsonSerializer.Serialize(new { taskId = task.Id, status, tool = execution.ToolName }) });
         // Outcome, known usage, attempt and audit are committed together; never log prompt text.
         await db.SaveChangesAsync(CancellationToken.None);
+        if (completionTransaction is not null) await completionTransaction.CommitAsync(CancellationToken.None);
         return Replay(execution, task, digest);
     }
 
