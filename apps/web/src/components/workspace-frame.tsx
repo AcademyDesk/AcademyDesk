@@ -23,7 +23,10 @@ function WorkspaceSessionBoundary({ children, workspace }: { children: React.Rea
 export function WorkspaceFrame({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   if (pathname === "/login" || pathname === "/register") return <>{children}</>;
-  const content = publicRoutes.has(pathname) || pathname.startsWith("/platform/") ? children : <EnterpriseShell>{children}</EnterpriseShell>;
+  const content =
+    publicRoutes.has(pathname) || pathname.startsWith("/platform/") || pathname.startsWith("/penta")
+      ? children
+      : <EnterpriseShell>{children}</EnterpriseShell>;
   // Route-keyed boundary discards obsolete UI state when a new workspace is opened.
   return <WorkspaceSessionBoundary key={pathname} workspace={portalWorkspaceForPath(pathname)}>{content}</WorkspaceSessionBoundary>;
 }
