@@ -30,6 +30,7 @@ builder.Services.AddScoped<PentaSyntheticDispatcher>();
 builder.Services.AddScoped<PentaExecutionService>();
 builder.Services.AddScoped<PentaBudgetService>();
 builder.Services.AddScoped<PentaDraftApprovalService>();
+builder.Services.AddScoped<PentaAcademyContextService>();
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddControllers(options => options.Filters.AddService<AcademyAccessFilter>());
 builder.Services.AddPrivateMediaStorage(builder.Configuration, builder.Environment);

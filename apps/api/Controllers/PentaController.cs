@@ -10,9 +10,19 @@ namespace AcademyDesk.Api.Controllers;
 [Authorize]
 [Route("api/academies/{academyId:guid}/penta")]
 public sealed class PentaController(PentaPilotPolicy policy, PentaExecutionService executions,
-    PentaDraftApprovalService drafts,
+    PentaDraftApprovalService drafts, PentaAcademyContextService academyContext,
     UserManager<ApplicationUser> users) : ControllerBase
 {
+    [HttpGet("academy-context")]
+    public async Task<ActionResult<PentaAcademyContext>> AcademyContext(Guid academyId, CancellationToken token)
+    {
+        if (!policy.IsAvailable) return NotFound();
+        if (!await policy.AllowsAsync(User, academyId, token)) return Forbid();
+        var actorId = (await users.GetUserAsync(User))!.Id;
+        var result = await academyContext.ReadAsync(academyId, actorId, token);
+        return result is null ? NotFound() : Ok(result);
+    }
+
     [HttpPost("turns")]
     [RequestSizeLimit(16 * 1024)]
     public async Task<ActionResult<PentaTurnState>> Turn(Guid academyId, PentaTurnRequest? request, CancellationToken token)

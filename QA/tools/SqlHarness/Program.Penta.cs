@@ -140,6 +140,81 @@ internal static partial class SqlHarnessEntryPoint
         var teacher = await LoginAsync(enabled, "penta-teacher-a@example.invalid", "Synthetic!39Ab");
         var platform = await LoginAsync(enabled, "penta-platform@example.invalid", "Synthetic!39Ab");
 
+        var contextA = $"/api/academies/{academyA}/penta/academy-context";
+        var contextB = $"/api/academies/{academyB}/penta/academy-context";
+        using (var anonymous = await enabled.GetAsync(contextA))
+            PentaRequire(anonymous.StatusCode == HttpStatusCode.Unauthorized,
+                "Anonymous R0 academy read was not 401.");
+        enabled.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", teacher);
+        using (var denied = await enabled.GetAsync(contextA))
+            PentaRequire(denied.StatusCode == HttpStatusCode.Forbidden,
+                "Teacher R0 academy read was not 403.");
+        enabled.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", platform);
+        using (var denied = await enabled.GetAsync(contextA))
+            PentaRequire(denied.StatusCode == HttpStatusCode.Forbidden,
+                "Platform owner R0 academy read was not 403.");
+        enabled.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenB);
+        using (var denied = await enabled.GetAsync(contextA))
+            PentaRequire(denied.StatusCode == HttpStatusCode.Forbidden,
+                "Foreign academy R0 read was not 403.");
+        enabled.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenA);
+        using (var denied = await enabled.GetAsync(contextB))
+            PentaRequire(denied.StatusCode == HttpStatusCode.Forbidden,
+                "Admin R0 read crossed academy scope.");
+        using (var read = await enabled.GetAsync(contextA))
+        {
+            PentaRequire(read.StatusCode == HttpStatusCode.OK,
+                "Authorized R0 academy read failed.");
+            var state = await read.Content.ReadFromJsonAsync<PentaAcademyContext>();
+            PentaRequire(state is { AcademyId: var id, Name: "PENTA synthetic A", Capability: "twin",
+                Tool: PentaAcademyContextService.ToolName, Source: "Academy" } && id == academyA &&
+                state.SourcePath == "/api/academies" && state.AsOfUtc != default,
+                "R0 projection was not the fixed, sourced own-academy context.");
+        }
+        PentaRequire(provider.Calls == 0, "R0 read called the synthetic provider.");
+        await using (var scope = enabledFactory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+            PentaRequire(await db.AuditLogs.CountAsync(x => x.Action == "PentaAcademyContextRead" &&
+                x.AcademyId == academyA && x.EntityId == academyA) == 1,
+                "R0 read did not persist exactly one own-academy audit entry.");
+            PentaRequire(await db.AuditLogs.CountAsync(x => x.Action == "PentaAcademyContextRead" &&
+                x.AcademyId == academyB) == 0,
+                "Denied R0 read wrote a foreign-academy audit entry.");
+            PentaRequire(await db.PentaExecutions.CountAsync() == 0 &&
+                await db.PentaAttempts.CountAsync() == 0 &&
+                await db.AdminWorkItems.CountAsync() == 0,
+                "R0 read wrote a domain action or execution.");
+        }
+        using (var faultFactory = new QaApiFactory(manifest,
+            new Dictionary<string, string?> { ["Penta:Enabled"] = "true" },
+            isolatedDomainInterceptor: new PentaAuditFaultInterceptor()))
+        {
+            using var faultClient = faultFactory.CreateClient();
+            PentaRequire(faultFactory.PreflightPassed, "R0 audit-fault host missed SQL preflight.");
+            var auditFailed = false;
+            try
+            {
+                await using var faultScope = faultFactory.Services.CreateAsyncScope();
+                var users = faultScope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+                var actorId = (await users.FindByEmailAsync("penta-admin-a@example.invalid"))!.Id;
+                await faultScope.ServiceProvider.GetRequiredService<PentaAcademyContextService>()
+                    .ReadAsync(academyA, actorId, CancellationToken.None);
+            }
+            catch (DbUpdateException ex) when (ex.InnerException?.Message.Contains("QA PENTA audit-store write fault") == true)
+            { auditFailed = true; }
+            catch (InvalidOperationException ex) when (ex.Message.Contains("QA PENTA audit-store write fault"))
+            { auditFailed = true; }
+            PentaRequire(auditFailed, "R0 read did not fail closed on audit write failure.");
+        }
+        await using (var scope = enabledFactory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+            PentaRequire(await db.AuditLogs.CountAsync(x => x.Action == "PentaAcademyContextRead" &&
+                x.AcademyId == academyA) == 1,
+                "R0 audit fault changed the successful read's durable evidence.");
+        }
+
         enabled.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenA);
         using (var foreign = await enabled.PostAsJsonAsync(pathB, valid))
             PentaRequire(foreign.StatusCode == HttpStatusCode.Forbidden, "Foreign academy PENTA call was not 403.");

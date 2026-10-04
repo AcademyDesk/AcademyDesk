@@ -1,5 +1,7 @@
 # AcademyDesk QA control centre — Phase 1
 
+Latest checkpoint (2026-10-04): [PENTA AI0-S3b academy-context R0 read](REPORTS/PENTA_AI0_S3B_ACADEMY_CONTEXT_READ.md). Default-off local own-academy minimal projection with source/as-of and required audit passed 1,059/1,059 API and guarded real Identity/HTTP/SQL role/tenant/audit-fault checks. No model, execution or academy domain effect; run-owned SQL removed. Student/batch reads, provider/privacy, browser/device, P0 and release gates remain open; no push/merge/Azure. `QA/EVIDENCE` stays local.
+
 Latest checkpoint (2026-10-04): [PENTA AI0-S3a synthetic draft approval](REPORTS/PENTA_AI0_S3A_SYNTHETIC_DRAFT_APPROVAL.md). Default-off local preview/confirm now verifies exact actor/academy/payload/policy/expiry and records approval with no domain action. Full API 1,057/1,057 and guarded SQL concurrency, tamper, expiry and audit rollback PASS; owned resources removed. Live AI, real R1 writes and enterprise P0/release gates remain open; no push/merge/Azure. `QA/EVIDENCE` stays local.
 
 Latest checkpoint (2026-10-04): [PENTA AI0-S2c priced budget/recovery](REPORTS/PENTA_AI0_S2C_PRICED_BUDGET_RECOVERY.md). Internal-only versioned worst-case USD reservation, finite tenant/user SQL-serialized caps, observed reconciliation and conservative stale-claim recovery passed 1,055/1,055 API plus run-owned SQL concurrency/audit-fault/restart checks. This does not enable a live model, R1 approval, or Azure release. Existing P0/security/browser/device gates remain open; no push/merge/deploy; local `QA/EVIDENCE` untouched.
