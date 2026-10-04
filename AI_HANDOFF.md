@@ -100,3 +100,17 @@ Azure deployment waits for the pre-Azure quality gate in `ENTERPRISE_TESTING_ROA
 | Commit state | These governance files are ready for review and are not committed by this handoff. |
 
 Update this file after substantial work. Record the branch, commit, what changed, what was validated, what remains open, and the next route.
+
+## Checkpoint: /penta design preview (branch `v0/penta-preview`)
+
+| | |
+| --- | --- |
+| Branch | `v0/penta-preview` |
+| Commit | `8faf473` |
+| What changed | Added a new, isolated `/penta` route: a read-only student/batch lookup design preview. Not wired into existing navigation or routing used by other pages. |
+| Data source | Synthetic demo data only, hardcoded in the page. No real API or SQL integration. No live AI involved. |
+| Authorization | Owner/Admin gating shown in the UI is conceptual/visual only — it is not backed by real authentication, session, role, or tenant checks. Treat as unverified authorization. |
+| Validated | TypeScript validation passed. Reported browser flows (single-match result, multi-match disambiguation, empty state) were exercised in the preview and passed, including a fix for incorrect pluralization in the disambiguation count text. |
+| Explicitly NOT validated | Real API integration against PENTA's existing contracts, role/tenant security enforcement, source/data-provenance links, mobile layout, accessibility (screen reader/keyboard), and full regression acceptance. These remain open before this can be treated as production-ready. |
+| Next route | 1. Codex reviews this diff against `AI_MODEL_ROUTING.md` and existing PENTA API contracts. 2. Cursor integrates the approved design against the real PENTA API/SQL data layer, adds real authorization checks, and closes the open validation gaps above. |
+| Merge/deploy state | Not merged to `main`. Not deployed. This checkpoint covers documentation only — no merge or deployment was performed. |
