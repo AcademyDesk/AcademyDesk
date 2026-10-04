@@ -20,15 +20,17 @@ internal sealed class QaApiFactory : WebApplicationFactory<Program>
     private readonly IMediaBlobStore? isolatedMediaStore;
     private readonly IInterceptor? isolatedIdentityInterceptor;
     private readonly IInterceptor? isolatedDomainInterceptor;
+    private readonly TimeProvider? isolatedClock;
     private readonly IPentaSyntheticProvider? isolatedPentaProvider;
 
-    public QaApiFactory(QaRunManifest manifest, IReadOnlyDictionary<string, string?>? overrides = null, IMediaBlobStore? isolatedMediaStore = null, IInterceptor? isolatedIdentityInterceptor = null, IPentaSyntheticProvider? isolatedPentaProvider = null, IInterceptor? isolatedDomainInterceptor = null)
+    public QaApiFactory(QaRunManifest manifest, IReadOnlyDictionary<string, string?>? overrides = null, IMediaBlobStore? isolatedMediaStore = null, IInterceptor? isolatedIdentityInterceptor = null, IPentaSyntheticProvider? isolatedPentaProvider = null, IInterceptor? isolatedDomainInterceptor = null, TimeProvider? isolatedClock = null)
     {
         this.manifest = manifest;
         this.overrides = overrides ?? new Dictionary<string, string?>();
         this.isolatedMediaStore = isolatedMediaStore;
         this.isolatedIdentityInterceptor = isolatedIdentityInterceptor;
         this.isolatedDomainInterceptor = isolatedDomainInterceptor;
+        this.isolatedClock = isolatedClock;
         this.isolatedPentaProvider = isolatedPentaProvider;
     }
 
@@ -100,6 +102,11 @@ internal sealed class QaApiFactory : WebApplicationFactory<Program>
                 services.ConfigureDbContext<IdentityDbContext>(options => options.AddInterceptors(isolatedIdentityInterceptor));
             if (isolatedDomainInterceptor is not null)
                 services.ConfigureDbContext<AcademyDeskDbContext>(options => options.AddInterceptors(isolatedDomainInterceptor));
+            if (isolatedClock is not null)
+            {
+                services.RemoveAll<TimeProvider>();
+                services.AddSingleton(isolatedClock);
+            }
 
             // Trusted harness injection only, after its labelled loopback emulator
             // guard. Configuration still cannot enable any live Azure provider.

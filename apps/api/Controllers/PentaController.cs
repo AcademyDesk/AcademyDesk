@@ -10,6 +10,7 @@ namespace AcademyDesk.Api.Controllers;
 [Authorize]
 [Route("api/academies/{academyId:guid}/penta")]
 public sealed class PentaController(PentaPilotPolicy policy, PentaExecutionService executions,
+    PentaDraftApprovalService drafts,
     UserManager<ApplicationUser> users) : ControllerBase
 {
     [HttpPost("turns")]
@@ -47,4 +48,58 @@ public sealed class PentaController(PentaPilotPolicy policy, PentaExecutionServi
         var state = await executions.GetAsync(academyId, actorId, taskId, token);
         return state is null ? NotFound() : Ok(state);
     }
+
+    [HttpPost("draft-previews")]
+    [RequestSizeLimit(4 * 1024)]
+    public async Task<ActionResult<PentaDraftPreviewState>> PrepareDraft(Guid academyId,
+        PentaDraftPreviewRequest? request, CancellationToken token)
+    {
+        if (!policy.IsAvailable) return NotFound();
+        if (request is null || request.AdditionalProperties is { Count: > 0 })
+            return BadRequest(new { message = "Invalid draft preview request." });
+        return DraftOutcome(await drafts.PrepareAsync(User, academyId, request.Title,
+            Request.Headers["Idempotency-Key"].ToString(), token));
+    }
+
+    [HttpGet("draft-previews/{approvalId:guid}")]
+    public async Task<ActionResult<PentaDraftPreviewState>> DraftPreview(Guid academyId,
+        Guid approvalId, CancellationToken token)
+    {
+        if (!policy.IsAvailable) return NotFound();
+        return DraftOutcome(await drafts.GetAsync(User, academyId, approvalId, token));
+    }
+
+    [HttpPost("draft-previews/{approvalId:guid}/confirm")]
+    [RequestSizeLimit(4 * 1024)]
+    public async Task<ActionResult<PentaDraftPreviewState>> ConfirmDraft(Guid academyId,
+        Guid approvalId, PentaDraftConfirmRequest? request, CancellationToken token)
+    {
+        if (!policy.IsAvailable) return NotFound();
+        if (request is null || request.AdditionalProperties is { Count: > 0 })
+            return BadRequest(new { message = "Invalid draft confirmation request." });
+        return DraftOutcome(await drafts.ConfirmAsync(User, academyId, approvalId, request.Digest, token));
+    }
+
+    private ActionResult<PentaDraftPreviewState> DraftOutcome(PentaDraftApprovalOutcome outcome) =>
+        outcome.HttpStatus switch
+        {
+            403 => Forbid(),
+            404 => NotFound(),
+            409 => Conflict(new { message = outcome.Error }),
+            400 => BadRequest(new { message = outcome.Error }),
+            _ => StatusCode(outcome.HttpStatus, outcome.State is null
+                ? new { message = outcome.Error } : outcome.State)
+        };
+}
+
+public sealed record PentaDraftPreviewRequest(string? Title)
+{
+    [System.Text.Json.Serialization.JsonExtensionData]
+    public Dictionary<string, System.Text.Json.JsonElement>? AdditionalProperties { get; init; }
+}
+
+public sealed record PentaDraftConfirmRequest(string? Digest)
+{
+    [System.Text.Json.Serialization.JsonExtensionData]
+    public Dictionary<string, System.Text.Json.JsonElement>? AdditionalProperties { get; init; }
 }

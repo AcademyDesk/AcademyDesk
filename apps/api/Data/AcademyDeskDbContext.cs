@@ -91,6 +91,7 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
             entity.Property(x => x.Status).HasMaxLength(30).IsRequired();
             entity.Property(x => x.ApprovalMode).HasMaxLength(20).HasDefaultValue("None").IsRequired();
             entity.Property(x => x.ResultMessage).HasMaxLength(250);
+            entity.Property(x => x.ProposalPayloadJson).HasMaxLength(600);
             entity.HasIndex(x => new { x.AcademyId, x.ActorUserId, x.ToolName, x.IdempotencyKey }).IsUnique();
             entity.HasAlternateKey(x => new { x.AcademyId, x.Id });
             entity.HasOne<PentaTask>().WithMany().HasForeignKey(x => new { x.AcademyId, x.TaskId })

@@ -20,10 +20,12 @@ public sealed class PentaExecution : AcademyEntity
     public string ApprovalMode { get; set; } = "None";
     public Guid? ResultCorrelationId { get; set; }
     public string? ResultMessage { get; set; }
+    // Pilot-only bounded canonical proposal; never a model transcript.
+    public string? ProposalPayloadJson { get; set; }
     public DateTime? CompletedAtUtc { get; set; }
 }
 
-// No approval endpoint or authorizing transition is enabled in the pilot.
+// Pilot approval is confined to a local draft preview; it cannot execute a domain action.
 public sealed class PentaApproval : AcademyEntity
 {
     public Guid ExecutionId { get; set; }

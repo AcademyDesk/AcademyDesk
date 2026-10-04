@@ -21,6 +21,12 @@ namespace AcademyDesk.Api.Tests;
 
 public sealed class PentaFoundationTests
 {
+    private sealed class AdvancingClock : TimeProvider
+    {
+        private DateTimeOffset now = DateTimeOffset.UtcNow;
+        public override DateTimeOffset GetUtcNow() => now;
+        public void Advance(TimeSpan duration) => now = now.Add(duration);
+    }
     private sealed class LocalEnvironment(string name) : IHostEnvironment
     {
         public string EnvironmentName { get; set; } = name;
@@ -47,7 +53,7 @@ public sealed class PentaFoundationTests
     }
 
     private sealed class Factory(bool enabled, FakeProvider provider, int? userLimit = null,
-        int? academyLimit = null, string? userLimitText = null) : WebApplicationFactory<Program>
+        int? academyLimit = null, string? userLimitText = null, TimeProvider? clock = null) : WebApplicationFactory<Program>
     {
         private readonly string database = $"penta-{Guid.NewGuid():N}";
 
@@ -76,8 +82,115 @@ public sealed class PentaFoundationTests
                 services.AddDbContext<IdentityDbContext>(options => options.UseInMemoryDatabase(database + "-identity"));
                 services.RemoveAll<IPentaSyntheticProvider>();
                 services.AddSingleton<IPentaSyntheticProvider>(provider);
+                if (clock is not null)
+                {
+                    services.RemoveAll<TimeProvider>();
+                    services.AddSingleton(clock);
+                }
             });
         }
+    }
+
+    [Fact]
+    public async Task Draft_preview_requires_current_authority_exact_confirmation_and_has_no_domain_effect()
+    {
+        var provider = new FakeProvider();
+        using var factory = new Factory(true, provider);
+        using var client = factory.CreateClient(new() { AllowAutoRedirect = false });
+        var academyA = Guid.NewGuid();
+        var academyB = Guid.NewGuid();
+        await SeedAsync(factory, academyA, academyB);
+        var path = $"/api/academies/{academyA}/penta/draft-previews";
+        async Task<HttpResponseMessage> Preview(string title, string key)
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Post, path)
+            { Content = JsonContent.Create(new { title }) };
+            request.Headers.Add("Idempotency-Key", key);
+            return await client.SendAsync(request);
+        }
+        Assert.Equal(HttpStatusCode.Unauthorized, (await Preview("Review schedule", "draft-test-one")).StatusCode);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", await LoginAsync(client, "teacher-a"));
+        Assert.Equal(HttpStatusCode.Forbidden, (await Preview("Review schedule", "draft-test-one")).StatusCode);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", await LoginAsync(client, "platform"));
+        Assert.Equal(HttpStatusCode.Forbidden, (await Preview("Review schedule", "draft-test-one")).StatusCode);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", await LoginAsync(client, "admin-b"));
+        Assert.Equal(HttpStatusCode.Forbidden, (await Preview("Review schedule", "draft-test-one")).StatusCode);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", await LoginAsync(client, "admin-a"));
+        Assert.Equal(HttpStatusCode.BadRequest, (await client.PostAsJsonAsync(path,
+            new { title = "Review schedule", actorUserId = Guid.NewGuid() })).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await Preview(new string('X', 121), "draft-test-one")).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await Preview("Call student about fees", "draft-test-one")).StatusCode);
+        using var prepared = await Preview("  Review schedule  ", "draft-test-one");
+        Assert.Equal(HttpStatusCode.Created, prepared.StatusCode);
+        var state = await prepared.Content.ReadFromJsonAsync<PentaDraftPreviewState>();
+        Assert.NotNull(state);
+        Assert.Equal("Review schedule", state.Title);
+        Assert.Equal("AwaitingApproval", state.Status);
+        Assert.Contains("No academy work item", state.Effect);
+        using var replay = await Preview("Review schedule", "draft-test-one");
+        Assert.Equal(HttpStatusCode.OK, replay.StatusCode);
+        Assert.Equal(state.ApprovalId, (await replay.Content.ReadFromJsonAsync<PentaDraftPreviewState>())!.ApprovalId);
+        Assert.Equal(HttpStatusCode.Conflict, (await Preview("Review attendance", "draft-test-one")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync($"{path}/{state.ApprovalId}")).StatusCode);
+        Assert.Equal(HttpStatusCode.Conflict, (await client.PostAsJsonAsync(
+            $"{path}/{state.ApprovalId}/confirm", new { digest = new string('0', 64) })).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await client.PostAsJsonAsync(
+            $"{path}/{state.ApprovalId}/confirm", new { digest = state.Digest, title = "Changed" })).StatusCode);
+        using var confirmed = await client.PostAsJsonAsync($"{path}/{state.ApprovalId}/confirm",
+            new { digest = state.Digest });
+        Assert.Equal(HttpStatusCode.OK, confirmed.StatusCode);
+        Assert.Equal("Approved", (await confirmed.Content.ReadFromJsonAsync<PentaDraftPreviewState>())!.Status);
+        Assert.Equal(HttpStatusCode.OK, (await client.PostAsJsonAsync(
+            $"{path}/{state.ApprovalId}/confirm", new { digest = state.Digest })).StatusCode);
+        Assert.Equal(0, provider.Calls);
+        await using var scope = factory.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+        Assert.Equal(1, await db.PentaApprovals.CountAsync());
+        Assert.Equal(1, await db.PentaExecutions.CountAsync(x => x.Status == "Approved"));
+        Assert.Equal(2, await db.AuditLogs.CountAsync(x => x.EntityType == "PentaApproval"));
+        Assert.Empty(await db.AdminWorkItems.ToListAsync());
+        Assert.Empty(await db.PentaAttempts.ToListAsync());
+    }
+
+    [Fact]
+    public async Task Draft_confirmation_denies_revoked_actor_and_expired_preview()
+    {
+        var clock = new AdvancingClock();
+        using var factory = new Factory(true, new FakeProvider(), clock: clock);
+        using var client = factory.CreateClient(new() { AllowAutoRedirect = false });
+        var academy = Guid.NewGuid();
+        await SeedAsync(factory, academy, Guid.NewGuid());
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", await LoginAsync(client, "admin-a"));
+        var path = $"/api/academies/{academy}/penta/draft-previews";
+        using var request = new HttpRequestMessage(HttpMethod.Post, path)
+        { Content = JsonContent.Create(new { title = "Review schedule" }) };
+        request.Headers.Add("Idempotency-Key", "draft-expire-one");
+        using var prepared = await client.SendAsync(request);
+        Assert.Equal(HttpStatusCode.Created, prepared.StatusCode);
+        var state = (await prepared.Content.ReadFromJsonAsync<PentaDraftPreviewState>())!;
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var users = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+            var actor = (await users.FindByEmailAsync("penta-admin-a@example.invalid"))!;
+            actor.IsActive = false;
+            Assert.True((await users.UpdateAsync(actor)).Succeeded);
+        }
+        Assert.Equal(HttpStatusCode.Forbidden, (await client.PostAsJsonAsync(
+            $"{path}/{state.ApprovalId}/confirm", new { digest = state.Digest })).StatusCode);
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var users = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+            var actor = (await users.FindByEmailAsync("penta-admin-a@example.invalid"))!;
+            actor.IsActive = true;
+            Assert.True((await users.UpdateAsync(actor)).Succeeded);
+        }
+        clock.Advance(TimeSpan.FromMinutes(11));
+        Assert.Equal(HttpStatusCode.Gone, (await client.PostAsJsonAsync(
+            $"{path}/{state.ApprovalId}/confirm", new { digest = state.Digest })).StatusCode);
+        await using var verify = factory.Services.CreateAsyncScope();
+        var db = verify.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+        Assert.Equal("Expired", (await db.PentaApprovals.SingleAsync()).Status);
+        Assert.Empty(await db.AdminWorkItems.ToListAsync());
     }
 
     [Fact]
@@ -188,6 +301,8 @@ public sealed class PentaFoundationTests
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", await LoginAsync(client, "admin-a"));
         Assert.Equal(HttpStatusCode.NotFound, (await client.PostAsJsonAsync(
             $"/api/academies/{academy}/penta/turns", new { text = "x", capability = "pulse" })).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await client.PostAsJsonAsync(
+            $"/api/academies/{academy}/penta/draft-previews", new { title = "Review schedule" })).StatusCode);
         Assert.Equal(0, provider.Calls);
     }
 

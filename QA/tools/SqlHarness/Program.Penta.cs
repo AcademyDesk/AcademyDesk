@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Data.Common;
+using System.Security.Claims;
 using AcademyDesk.Api.Data;
 using AcademyDesk.Api.Domain.Entities;
 using AcademyDesk.Api.Domain.Identity;
@@ -14,6 +15,12 @@ using Microsoft.Extensions.DependencyInjection;
 
 internal static partial class SqlHarnessEntryPoint
 {
+    private sealed class PentaQaClock : TimeProvider
+    {
+        private DateTimeOffset now = DateTimeOffset.UtcNow;
+        public override DateTimeOffset GetUtcNow() => now;
+        public void Advance(TimeSpan duration) => now = now.Add(duration);
+    }
     private sealed class PentaAuditFaultInterceptor : DbCommandInterceptor
     {
         public override ValueTask<InterceptionResult<DbDataReader>> ReaderExecutingAsync(
@@ -386,6 +393,8 @@ internal static partial class SqlHarnessEntryPoint
         await VerifyPentaPricedBudgetAsync(manifest, enabledFactory, academyA);
         await VerifyPentaCompletionFaultAsync(manifest, enabledFactory, academyA, tokenA);
         await VerifyPentaRecoveryCompletionRaceAsync(manifest, enabledFactory, academyA, tokenA);
+        await VerifyPentaDraftApprovalAsync(manifest, enabledFactory, academyA, academyB,
+            tokenA, tokenC, tokenB, teacher, platform);
         Console.WriteLine("PENTA PASS: real Identity/SQL, single dispatch/restart, concurrent tenant/user quota, scoped approval FK, known usage and unknown-outcome retention.");
     }
 
@@ -612,6 +621,144 @@ internal static partial class SqlHarnessEntryPoint
         }
         finally { provider.Release(); }
         Console.WriteLine("PENTA RECOVERY RACE PASS: late fake-provider completion could not overwrite unknown state or release usage.");
+    }
+
+    private static async Task VerifyPentaDraftApprovalAsync(QaRunManifest manifest,
+        QaApiFactory normalFactory, Guid academyA, Guid academyB, string tokenA,
+        string tokenC, string tokenB, string teacher, string platform)
+    {
+        var clock = new PentaQaClock();
+        using var factory = new QaApiFactory(manifest,
+            new Dictionary<string, string?> { ["Penta:Enabled"] = "true" }, isolatedClock: clock);
+        using var adminA = factory.CreateClient(new() { AllowAutoRedirect = false });
+        using var adminC = factory.CreateClient(new() { AllowAutoRedirect = false });
+        using var deniedClient = factory.CreateClient(new() { AllowAutoRedirect = false });
+        PentaRequire(factory.PreflightPassed, "Draft approval host missed SQL preflight.");
+        adminA.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenA);
+        adminC.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenC);
+        var path = $"/api/academies/{academyA}/penta/draft-previews";
+        async Task<HttpResponseMessage> Preview(HttpClient client, string key, string title = "Review schedule")
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Post, path)
+            { Content = JsonContent.Create(new { title }) };
+            request.Headers.Add("Idempotency-Key", key);
+            return await client.SendAsync(request);
+        }
+        using (var anonymous = await Preview(deniedClient, "qa-draft-denied"))
+            PentaRequire(anonymous.StatusCode == HttpStatusCode.Unauthorized, "Anonymous preview was not 401.");
+        foreach (var (token, label) in new[] { (teacher, "teacher"), (platform, "platform"), (tokenB, "foreign") })
+        {
+            deniedClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            using var denied = await Preview(deniedClient, $"qa-draft-{label}");
+            PentaRequire(denied.StatusCode == HttpStatusCode.Forbidden, $"{label} preview was not denied.");
+        }
+        var sameKey = "qa-draft-concurrent-preview";
+        var pair = await Task.WhenAll(Preview(adminA, sameKey), Preview(adminA, sameKey));
+        using var first = pair[0];
+        using var second = pair[1];
+        PentaRequire(new[] { first.StatusCode, second.StatusCode }.Count(x => x == HttpStatusCode.Created) == 1 &&
+            new[] { first.StatusCode, second.StatusCode }.Count(x => x == HttpStatusCode.OK) == 1,
+            "Concurrent preview did not create once and replay once.");
+        var firstState = await first.Content.ReadFromJsonAsync<PentaDraftPreviewState>();
+        var secondState = await second.Content.ReadFromJsonAsync<PentaDraftPreviewState>();
+        PentaRequire(firstState is not null && secondState is not null &&
+            firstState.ApprovalId == secondState.ApprovalId && firstState.Digest == secondState.Digest,
+            "Concurrent preview did not return one bound approval.");
+        var approvalId = firstState!.ApprovalId;
+        using (var changed = await Preview(adminA, sameKey, "Review attendance"))
+            PentaRequire(changed.StatusCode == HttpStatusCode.Conflict, "Changed preview arguments were accepted.");
+        using (var foreignActor = await adminC.GetAsync($"{path}/{approvalId}"))
+            PentaRequire(foreignActor.StatusCode == HttpStatusCode.NotFound, "Second admin read another actor's preview.");
+        using (var foreignTenant = await deniedClient.GetAsync($"/api/academies/{academyB}/penta/draft-previews/{approvalId}"))
+            PentaRequire(foreignTenant.StatusCode != HttpStatusCode.OK, "Foreign tenant read approval.");
+        using (var wrong = await adminA.PostAsJsonAsync($"{path}/{approvalId}/confirm",
+            new { digest = new string('0', 64) }))
+            PentaRequire(wrong.StatusCode == HttpStatusCode.Conflict, "Wrong digest confirmed preview.");
+        using (var other = await adminC.PostAsJsonAsync($"{path}/{approvalId}/confirm",
+            new { digest = firstState.Digest }))
+            PentaRequire(other.StatusCode == HttpStatusCode.NotFound,
+                "Another academy admin confirmed the initiating actor's preview.");
+        var confirmations = await Task.WhenAll(
+            adminA.PostAsJsonAsync($"{path}/{approvalId}/confirm", new { digest = firstState.Digest }),
+            adminA.PostAsJsonAsync($"{path}/{approvalId}/confirm", new { digest = firstState.Digest }));
+        using (var retryA = confirmations[0]) using (var retryB = confirmations[1])
+            PentaRequire(retryA.StatusCode == HttpStatusCode.OK && retryB.StatusCode == HttpStatusCode.OK,
+                "Concurrent matching confirmations did not replay approved state.");
+        await using (var scope = normalFactory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+            PentaRequire(await db.PentaApprovals.CountAsync(x => x.Id == approvalId && x.Status == "Approved") == 1 &&
+                await db.AuditLogs.CountAsync(x => x.EntityType == "PentaApproval" && x.EntityId == approvalId) == 2 &&
+                !await db.AdminWorkItems.AnyAsync(x => x.AcademyId == academyA),
+                "Confirmation duplicated audit or created a domain work item.");
+        }
+        using var integrity = await Preview(adminA, "qa-draft-integrity", "Review attendance");
+        PentaRequire(integrity.StatusCode == HttpStatusCode.Created, "Integrity fixture preview failed.");
+        var integrityState = (await integrity.Content.ReadFromJsonAsync<PentaDraftPreviewState>())!;
+        await using (var scope = normalFactory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+            var execution = await db.PentaExecutions.SingleAsync(x => x.Id == integrityState.ExecutionId);
+            execution.ProposalPayloadJson = System.Text.Json.JsonSerializer.Serialize(new[] { "Review schedule" });
+            await db.SaveChangesAsync();
+        }
+        using (var tampered = await adminA.PostAsJsonAsync($"{path}/{integrityState.ApprovalId}/confirm",
+            new { digest = integrityState.Digest }))
+            PentaRequire(tampered.StatusCode == HttpStatusCode.Conflict,
+                "Stored proposal changed without requiring a new preview.");
+        using var expiring = await Preview(adminA, "qa-draft-expiring");
+        PentaRequire(expiring.StatusCode == HttpStatusCode.Created, "Expiry fixture preview failed.");
+        var expiringState = (await expiring.Content.ReadFromJsonAsync<PentaDraftPreviewState>())!;
+        clock.Advance(TimeSpan.FromMinutes(11));
+        using (var expired = await adminA.PostAsJsonAsync($"{path}/{expiringState.ApprovalId}/confirm",
+            new { digest = expiringState.Digest }))
+            PentaRequire(expired.StatusCode == HttpStatusCode.Gone, "Expired preview was confirmed.");
+
+        // Force preparation's audit insert to fail; no task/execution/approval may survive.
+        int beforeTasks, beforeExecutions, beforeApprovals;
+        await using (var scope = normalFactory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+            beforeTasks = await db.PentaTasks.CountAsync();
+            beforeExecutions = await db.PentaExecutions.CountAsync();
+            beforeApprovals = await db.PentaApprovals.CountAsync();
+        }
+        using (var faultFactory = new QaApiFactory(manifest,
+            new Dictionary<string, string?> { ["Penta:Enabled"] = "true" },
+            isolatedDomainInterceptor: new PentaAuditFaultInterceptor()))
+        {
+            using var client = faultFactory.CreateClient();
+            PentaRequire(faultFactory.PreflightPassed, "Draft audit-fault host missed SQL preflight.");
+            Guid actorId;
+            await using (var scope = normalFactory.Services.CreateAsyncScope())
+            {
+                var users = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+                actorId = (await users.FindByEmailAsync("penta-admin-a@example.invalid"))!.Id;
+            }
+            var principal = new ClaimsPrincipal(new ClaimsIdentity(
+                [new Claim(ClaimTypes.NameIdentifier, actorId.ToString())], "QA"));
+            var failed = false;
+            try
+            {
+                await using var scope = faultFactory.Services.CreateAsyncScope();
+                await scope.ServiceProvider.GetRequiredService<PentaDraftApprovalService>()
+                    .PrepareAsync(principal, academyA, "Review attendance",
+                        "qa-draft-audit-fault", CancellationToken.None);
+            }
+            catch (DbUpdateException ex) when (ex.InnerException?.Message.Contains("QA PENTA audit-store write fault") == true)
+            { failed = true; }
+            PentaRequire(failed, "Draft audit fault did not interrupt preparation.");
+        }
+        await using (var scope = normalFactory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+            PentaRequire(!await db.PentaExecutions.AnyAsync(x => x.IdempotencyKey == "qa-draft-audit-fault") &&
+                await db.PentaTasks.CountAsync() == beforeTasks &&
+                await db.PentaExecutions.CountAsync() == beforeExecutions &&
+                await db.PentaApprovals.CountAsync() == beforeApprovals,
+                "Audit fault left an unaudited preview.");
+        }
+        Console.WriteLine("PENTA DRAFT APPROVAL PASS: actor/tenant denial, concurrent replay/confirm, digest/expiry, no domain effect, audit rollback.");
     }
 
     private static void PentaRequire(bool condition, string message)
