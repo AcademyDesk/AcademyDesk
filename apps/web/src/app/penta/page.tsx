@@ -54,6 +54,11 @@ const scenarioOptions = [
   { value: "expired", label: "Force: expired session" },
 ];
 
+const PROMPT_SUGGESTIONS: Record<Domain, string[]> = {
+  students: ["Aarav Mehta", "Meera Krishnan", "STU-1130"],
+  batches: ["Guitar Beginners", "Vocals Advanced", "GTR-B02"],
+};
+
 function matchesOf(domain: Domain, query: string) {
   const pool = domain === "students" ? STUDENTS : BATCHES;
   const needle = query.trim().toLowerCase();
@@ -62,7 +67,7 @@ function matchesOf(domain: Domain, query: string) {
 }
 
 export default function PentaPreviewPage() {
-  const [domain, setDomain] = useState<Domain | null>(null);
+  const [domain, setDomain] = useState<Domain>("students");
   const [scenario, setScenario] = useState<Scenario>("live");
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<Status>("idle");
@@ -85,20 +90,15 @@ export default function PentaPreviewPage() {
   }
 
   function chooseDomain(next: Domain) {
+    if (next === domain) return;
     setDomain(next);
     setQuery("");
     resetSearch();
     requestAnimationFrame(() => inputRef.current?.focus());
   }
 
-  function changeSearchType() {
-    setDomain(null);
-    setQuery("");
-    resetSearch();
-  }
-
   function performSearch(trimmedQuery: string) {
-    if (!domain || !trimmedQuery) return;
+    if (!trimmedQuery) return;
     setStatus("loading");
     setResults([]);
     setSelectedId("");
@@ -152,6 +152,11 @@ export default function PentaPreviewPage() {
     performSearch(trimmed);
   }
 
+  function askSuggestion(text: string) {
+    setQuery(text);
+    performSearch(text);
+  }
+
   function cancelSearch() {
     if (timerRef.current) clearTimeout(timerRef.current);
     setStatus("idle");
@@ -189,7 +194,7 @@ export default function PentaPreviewPage() {
     );
   } else if (scenario === "unavailable") {
     body = (
-      <TakeoverState icon="⚠" eyebrow="Temporarily unavailable" title="PENTA preview is temporarily unavailable.">
+      <TakeoverState icon="✦" eyebrow="Temporarily unavailable" title="PENTA AI is temporarily unavailable.">
         <p>We&apos;ve recorded this and are looking into it. In the meantime, use these pages to find what you need.</p>
         <div className="penta-fallback-links">
           <Link href="/students">Open Students</Link>
@@ -197,12 +202,11 @@ export default function PentaPreviewPage() {
         </div>
       </TakeoverState>
     );
-  } else if (!domain) {
-    body = <StartChoices onChoose={chooseDomain} />;
   } else {
     body = (
-      <SearchWorkspace
+      <AskWorkspace
         domain={domain}
+        onChooseDomain={chooseDomain}
         query={query}
         setQuery={setQuery}
         status={status}
@@ -216,9 +220,9 @@ export default function PentaPreviewPage() {
         queryFieldId={queryFieldId}
         examplesId={examplesId}
         onSubmit={onSubmit}
+        onAskSuggestion={askSuggestion}
         onCancel={cancelSearch}
         onRetry={() => performSearch(query.trim())}
-        onChangeType={changeSearchType}
         onInputKeyDown={onInputKeyDown}
       />
     );
@@ -226,17 +230,16 @@ export default function PentaPreviewPage() {
 
   return (
     <main className="enterprise-settings penta-standard">
-      <header className="penta-heading">
-        <span className="penta-icon" aria-hidden="true">⬡</span>
-        <div>
-          <p>PENTA preview · Recorded data</p>
-          <h1>Find students &amp; batches</h1>
-        </div>
+      <header className="penta-ai-hero">
+        <span className="penta-ai-badge">
+          <span aria-hidden="true">✦</span> PENTA AI
+        </span>
+        <h1>Ask PENTA</h1>
+        <p className="penta-subtitle">
+          Your AI assistant for finding students and batches already recorded in AcademyDesk. Ask in plain language —
+          PENTA grounds every answer in academy records and never invents fees, attendance, or schedules.
+        </p>
       </header>
-      <p className="penta-subtitle">
-        PENTA looks up active students and batches already recorded in AcademyDesk. It does not create, change, send, or
-        schedule anything. Visible to Academy Owner and Academy Admin roles.
-      </p>
       <section className="penta-demo-bar" aria-label="Design preview controls">
         <div>
           <span className="penta-demo-label">Preview state</span>
@@ -251,6 +254,10 @@ export default function PentaPreviewPage() {
         />
       </section>
       {body}
+      <footer className="penta-manual-footer">
+        Prefer to browse without asking? <Link href="/students">Open Students</Link> ·{" "}
+        <Link href="/batches">Open Batches</Link>
+      </footer>
     </main>
   );
 }
@@ -270,27 +277,9 @@ function TakeoverState({ icon, eyebrow, title, children }: { icon: string; eyebr
   );
 }
 
-function StartChoices({ onChoose }: { onChoose: (domain: Domain) => void }) {
-  return (
-    <section className="penta-choices" aria-label="Choose what to search">
-      <button type="button" className="penta-choice-card" onClick={() => onChoose("students")}>
-        <span aria-hidden="true">♙</span>
-        <h2>Search students</h2>
-        <p>Find an active student by name or student code.</p>
-        <small>Search students →</small>
-      </button>
-      <button type="button" className="penta-choice-card" onClick={() => onChoose("batches")}>
-        <span aria-hidden="true">♫</span>
-        <h2>Search batches</h2>
-        <p>Find an active batch by name or batch code.</p>
-        <small>Search batches →</small>
-      </button>
-    </section>
-  );
-}
-
-function SearchWorkspace({
+function AskWorkspace({
   domain,
+  onChooseDomain,
   query,
   setQuery,
   status,
@@ -304,12 +293,13 @@ function SearchWorkspace({
   queryFieldId,
   examplesId,
   onSubmit,
+  onAskSuggestion,
   onCancel,
   onRetry,
-  onChangeType,
   onInputKeyDown,
 }: {
   domain: Domain;
+  onChooseDomain: (domain: Domain) => void;
   query: string;
   setQuery: (value: string) => void;
   status: Status;
@@ -323,119 +313,159 @@ function SearchWorkspace({
   queryFieldId: string;
   examplesId: string;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+  onAskSuggestion: (text: string) => void;
   onCancel: () => void;
   onRetry: () => void;
-  onChangeType: () => void;
   onInputKeyDown: (event: KeyboardEvent<HTMLInputElement>) => void;
 }) {
   const noun = domain === "students" ? "student" : "batch";
-  const examples = domain === "students" ? `Try "Aarav", "Meera K." or a student code like "STU-1130".` : `Try "Guitar", "Vocals" or a batch code like "GTR-B02".`;
   const requiresSelection = status === "success" && results.length > 1;
   const selectableAction = domain === "students" ? "Open Student 360" : "Open batch list";
 
   return (
-    <section className="penta-search-panel">
-      <div className="penta-panel-top">
-        <p className="penta-domain-label">Searching {domain === "students" ? "students" : "batches"}</p>
-        <button type="button" className="penta-link-action" onClick={onChangeType}>Change search type</button>
+    <section className="penta-ask-panel">
+      <div className="penta-ai-domain-toggle" role="group" aria-label="What PENTA should search">
+        <span>Ask about</span>
+        <button
+          type="button"
+          className={domain === "students" ? "penta-ai-domain-pill is-active" : "penta-ai-domain-pill"}
+          aria-pressed={domain === "students"}
+          onClick={() => onChooseDomain("students")}
+        >
+          Students
+        </button>
+        <button
+          type="button"
+          className={domain === "batches" ? "penta-ai-domain-pill is-active" : "penta-ai-domain-pill"}
+          aria-pressed={domain === "batches"}
+          onClick={() => onChooseDomain("batches")}
+        >
+          Batches
+        </button>
       </div>
-      <form onSubmit={onSubmit} className="penta-field-row">
-        <label htmlFor={queryFieldId}>{domain === "students" ? "Student name or code" : "Batch name or code"}</label>
-        <div className="penta-input-row">
-          <input
-            id={queryFieldId}
-            ref={inputRef}
-            className="field"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            onKeyDown={onInputKeyDown}
-            placeholder={domain === "students" ? "e.g. Aarav Mehta" : "e.g. Guitar Beginners"}
-            aria-describedby={examplesId}
-            autoComplete="off"
-          />
-          {status === "loading" ? (
-            <button type="button" className="penta-secondary-action" onClick={onCancel}>Cancel search</button>
-          ) : (
-            <button type="submit" className="penta-primary-action">Search</button>
-          )}
-        </div>
-        <p id={examplesId} className="penta-examples">{examples}</p>
+
+      <form onSubmit={onSubmit} className="penta-ai-ask-row">
+        <label htmlFor={queryFieldId} className="sr-only">
+          {domain === "students" ? "Ask about a student" : "Ask about a batch"}
+        </label>
+        <span className="penta-ai-input-icon" aria-hidden="true">✦</span>
+        <input
+          id={queryFieldId}
+          ref={inputRef}
+          className="penta-ai-input"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          onKeyDown={onInputKeyDown}
+          placeholder={domain === "students" ? "Ask PENTA, e.g. “Find Aarav Mehta”" : "Ask PENTA, e.g. “Find the Guitar Beginners batch”"}
+          aria-describedby={examplesId}
+          autoComplete="off"
+        />
+        {status === "loading" ? (
+          <button type="button" className="penta-secondary-action" onClick={onCancel}>Cancel</button>
+        ) : (
+          <button type="submit" className="penta-primary-action">
+            <span aria-hidden="true">✦</span> Ask
+          </button>
+        )}
       </form>
+      <p id={examplesId} className="penta-examples">Try a name or a {noun} code — PENTA understands either.</p>
+      <div className="penta-prompt-chips">
+        {PROMPT_SUGGESTIONS[domain].map((prompt) => (
+          <button key={prompt} type="button" className="penta-prompt-chip" onClick={() => onAskSuggestion(prompt)}>
+            <span aria-hidden="true">✦</span> {prompt}
+          </button>
+        ))}
+      </div>
 
       <div role="status" aria-live="polite" className="penta-live-region">
         {status === "loading" && (
-          <p className="penta-status-row">
-            <span className="penta-spinner" aria-hidden="true" />
-            Searching recorded academy data…
-          </p>
+          <AiBubble>
+            <p className="penta-ai-thinking">
+              <span className="penta-spinner" aria-hidden="true" /> Searching recorded academy data…
+            </p>
+          </AiBubble>
         )}
         {status === "success" && results.length === 0 && (
-          <p className="penta-empty">No active {noun}s matched &ldquo;{query.trim()}&rdquo;. Try a different name or code.</p>
+          <AiBubble>
+            <p>I couldn&apos;t find an active {noun} matching &ldquo;{query.trim()}&rdquo;. Try a different name or code.</p>
+          </AiBubble>
         )}
         {status === "success" && results.length === 1 && (
-          <ResultCard item={results[0]} domain={domain} asOf={asOf} action={<ItemAction domain={domain} item={results[0]} />} />
+          <AiBubble>
+            <p>I found 1 active match for &ldquo;{query.trim()}&rdquo;.</p>
+            <ResultCard item={results[0]} asOf={asOf} action={<ItemAction domain={domain} item={results[0]} />} />
+          </AiBubble>
         )}
         {requiresSelection && (
-          <fieldset className="penta-disambiguation">
-            <legend>
-              {results.length} matching {noun === "batch" ? "batches" : `${noun}s`} found. Select the one you mean
-        before continuing.
-            </legend>
-            <ul>
-              {results.map((item) => (
-                <li key={item.id}>
-                  <label className="penta-option">
-                    <input
-                      type="radio"
-                      name="penta-selection"
-                      value={item.id}
-                      checked={selectedId === item.id}
-                      onChange={() => setSelectedId(item.id)}
-                    />
-                    <span>
-                      <strong>{item.name}</strong>
-                      <small>{item.code} · Active</small>
-                    </span>
-                  </label>
-                </li>
-              ))}
-            </ul>
-            {capped && <p className="penta-cap-note">Showing the first 10 matches. Refine your search to narrow the list.</p>}
-            <div className="penta-confirm-row">
-              {selectedId && domain === "students" ? (
-                <Link href={`/student-profile?id=${selectedId}`} className="penta-primary-action">{selectableAction}</Link>
-              ) : selectedId ? (
-                <Link href="/batches" className="penta-primary-action">{selectableAction}</Link>
-              ) : (
-                <button type="button" className="penta-primary-action" disabled aria-disabled="true">{selectableAction}</button>
-              )}
-            </div>
-          </fieldset>
+          <AiBubble>
+            <fieldset className="penta-disambiguation">
+              <legend>
+                I found {results.length} matching {noun === "batch" ? "batches" : `${noun}s`} — which one did you mean?
+              </legend>
+              <ul>
+                {results.map((item) => (
+                  <li key={item.id}>
+                    <label className="penta-option">
+                      <input
+                        type="radio"
+                        name="penta-selection"
+                        value={item.id}
+                        checked={selectedId === item.id}
+                        onChange={() => setSelectedId(item.id)}
+                      />
+                      <span>
+                        <strong>{item.name}</strong>
+                        <small>{item.code} · Active</small>
+                      </span>
+                    </label>
+                  </li>
+                ))}
+              </ul>
+              {capped && <p className="penta-cap-note">Showing the first 10 matches. Refine your question to narrow the list.</p>}
+              <div className="penta-confirm-row">
+                {selectedId && domain === "students" ? (
+                  <Link href={`/student-profile?id=${selectedId}`} className="penta-primary-action">{selectableAction}</Link>
+                ) : selectedId ? (
+                  <Link href="/batches" className="penta-primary-action">{selectableAction}</Link>
+                ) : (
+                  <button type="button" className="penta-primary-action" disabled aria-disabled="true">{selectableAction}</button>
+                )}
+              </div>
+            </fieldset>
+          </AiBubble>
         )}
       </div>
 
       {status === "error" && (
-        <div className="penta-error-card" role="alert">
+        <AiBubble tone="error">
           <p>{networkErrorMessage}</p>
           <div className="penta-confirm-row">
             <button type="button" className="penta-primary-action" onClick={onRetry}>Try again</button>
           </div>
-          <p className="penta-fallback-note">
-            Prefer to browse directly?{" "}
-            <Link href="/students">Open Students</Link> or <Link href="/batches">Open Batches</Link>.
-          </p>
-        </div>
+        </AiBubble>
       )}
 
       <p className="penta-footer-note">
-        PENTA preview shows information already recorded in AcademyDesk. It does not calculate fees, attendance, or
+        PENTA AI only shows information already recorded in AcademyDesk. It does not calculate fees, attendance, or
         schedules.
       </p>
     </section>
   );
 }
 
-function ResultCard({ item, domain, asOf, action }: { item: SearchItem; domain: Domain; asOf: string; action: ReactNode }) {
+function AiBubble({ children, tone = "default" }: { children: ReactNode; tone?: "default" | "error" }) {
+  return (
+    <div className={tone === "error" ? "penta-ai-bubble is-error" : "penta-ai-bubble"} role={tone === "error" ? "alert" : undefined}>
+      <span className="penta-ai-avatar" aria-hidden="true">✦</span>
+      <div className="penta-ai-bubble-body">
+        <span className="penta-ai-bubble-name">PENTA AI</span>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function ResultCard({ item, asOf, action }: { item: SearchItem; asOf: string; action: ReactNode }) {
   return (
     <article className="penta-result-card">
       <div>
