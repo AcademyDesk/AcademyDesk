@@ -1,6 +1,6 @@
 # Academy Desk PENTA — AI implementation plan
 
-Status: proposed implementation plan, 2026-10-04. Planning branch: codex/enterprise-p0-continuation. This document authorizes no live AI capability, production data disclosure, GitHub merge, or Azure deployment.
+Status: retained PENTA technical plan, 2026-10-04. Planning branch: codex/enterprise-p0-continuation. Current cross-product sequencing and vertical-delivery rule are in [ACADEMY_DESK_PRODUCT_ROADMAP.md](ACADEMY_DESK_PRODUCT_ROADMAP.md). AI1-S1a/b scoped read backends are locally tested, but the user-facing pilot is not complete. This document authorizes no live AI capability, production data disclosure, GitHub merge, or Azure deployment. Validated feature-branch commits may be pushed after scope/secret checks.
 
 Naming is confirmed: Pulse, Executor, Navigator, Twin and Autopilot form Academy Desk PENTA. The focused architecture design is recorded in [PENTA_ARCHITECTURE_DECISION.md](PENTA_ARCHITECTURE_DECISION.md). AI0-S1 is now locally implemented with bounded API and real SQL/HTTP evidence in [its report](QA/REPORTS/PENTA_AI0_S1_FOUNDATION.md); the next engineering task is AI0-S2. Historical Operator/Growth names map to Executor/Navigator without changing existing business or subscription names.
 
