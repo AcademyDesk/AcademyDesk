@@ -21,6 +21,7 @@ internal static partial class SqlHarnessEntryPoint
         private TaskCompletionSource<bool>? release;
         public int Calls => Volatile.Read(ref calls);
         public bool Malformed { get; set; }
+        public bool Throw { get; set; }
 
         public Task BlockNextAsync()
         {
@@ -40,6 +41,7 @@ internal static partial class SqlHarnessEntryPoint
                 entered!.TrySetResult(true);
                 await release!.Task.WaitAsync(token);
             }
+            if (Throw) throw new InvalidOperationException("Synthetic provider fault.");
             return Malformed
                 ? new PentaSyntheticResult(Guid.NewGuid(), capability, "unregistered.tool", "bad", true)
                 : await inner.ExecuteAsync(capability, token);
@@ -83,6 +85,7 @@ internal static partial class SqlHarnessEntryPoint
             foreach (var (name, academyId, role, isPlatform) in new[]
             {
                 ("admin-a", (Guid?)academyA, "AcademyAdmin", false),
+                ("admin-c", (Guid?)academyA, "AcademyAdmin", false),
                 ("admin-b", (Guid?)academyB, "AcademyAdmin", false),
                 ("teacher-a", (Guid?)academyA, "Teacher", false),
                 ("platform", (Guid?)null, "", true)
@@ -112,6 +115,7 @@ internal static partial class SqlHarnessEntryPoint
         PentaRequire(provider.Calls == 0, "Anonymous call reached PENTA provider.");
 
         var tokenA = await LoginAsync(enabled, "penta-admin-a@example.invalid", "Synthetic!39Ab");
+        var tokenC = await LoginAsync(enabled, "penta-admin-c@example.invalid", "Synthetic!39Ab");
         var tokenB = await LoginAsync(enabled, "penta-admin-b@example.invalid", "Synthetic!39Ab");
         var teacher = await LoginAsync(enabled, "penta-teacher-a@example.invalid", "Synthetic!39Ab");
         var platform = await LoginAsync(enabled, "penta-platform@example.invalid", "Synthetic!39Ab");
@@ -250,7 +254,123 @@ internal static partial class SqlHarnessEntryPoint
                 x.ExecutionId == rows[0].Id) == 1, "Concurrent key stored duplicate attempts.");
         }
         PentaRequire(provider.Calls == 4, "Concurrent key reached provider more than once.");
-        Console.WriteLine("PENTA PASS: real Identity/SQL, tenant/role denial, bounded synthetic output, atomic ledger/audit, replay/conflict, concurrent single dispatch.");
+
+        // This factory changes only guarded pilot limits; it shares the same
+        // run-owned SQL so the prior three academy-A reservations still count.
+        using (var budgetFactory = new QaApiFactory(manifest,
+            new Dictionary<string, string?>
+            {
+                ["Penta:Enabled"] = "true", ["Penta:SyntheticDailyUserLimit"] = "20",
+                ["Penta:SyntheticDailyAcademyLimit"] = "4"
+            }, isolatedPentaProvider: provider))
+        using (var budgetA = budgetFactory.CreateClient(new() { AllowAutoRedirect = false }))
+        using (var budgetC = budgetFactory.CreateClient(new() { AllowAutoRedirect = false }))
+        {
+            PentaRequire(budgetFactory.PreflightPassed, "Budget host missed QA preflight.");
+            budgetA.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenA);
+            budgetC.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenC);
+            var calls = await Task.WhenAll(
+                PentaPostAsync(budgetA, pathA, "tenant-budget-a"),
+                PentaPostAsync(budgetC, pathA, "tenant-budget-c"));
+            using var responseA = calls[0];
+            using var responseC = calls[1];
+            PentaRequire(calls.Count(x => x.StatusCode == HttpStatusCode.OK) == 1 &&
+                calls.Count(x => x.StatusCode == HttpStatusCode.TooManyRequests) == 1,
+                "Concurrent academy quota did not admit exactly one call.");
+            var winner = responseA.StatusCode == HttpStatusCode.OK ? budgetA : budgetC;
+            var winnerKey = responseA.StatusCode == HttpStatusCode.OK ? "tenant-budget-a" : "tenant-budget-c";
+            using var replay = await PentaPostAsync(winner, pathA, winnerKey);
+            PentaRequire(replay.StatusCode == HttpStatusCode.OK, "Quota-exhausted replay did not return saved result.");
+            PentaRequire(provider.Calls == 5, "Concurrent budget boundary dispatched more than one call.");
+        }
+        using (var userBudgetFactory = new QaApiFactory(manifest,
+            new Dictionary<string, string?>
+            {
+                ["Penta:Enabled"] = "true", ["Penta:SyntheticDailyUserLimit"] = "3",
+                ["Penta:SyntheticDailyAcademyLimit"] = "100"
+            }, isolatedPentaProvider: provider))
+        using (var userA = userBudgetFactory.CreateClient(new() { AllowAutoRedirect = false }))
+        using (var userC = userBudgetFactory.CreateClient(new() { AllowAutoRedirect = false }))
+        {
+            userA.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenA);
+            userC.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenC);
+            using var denied = await PentaPostAsync(userA, pathA, "user-budget-denied");
+            PentaRequire(denied.StatusCode == HttpStatusCode.TooManyRequests,
+                "User quota did not reject actor A.");
+            using var accepted = await PentaPostAsync(userC, pathA, "user-budget-allowed");
+            PentaRequire(accepted.StatusCode == HttpStatusCode.OK,
+                "User quota incorrectly rejected a second academy admin.");
+            PentaRequire(provider.Calls == 6, "User quota dispatched an extra call.");
+        }
+        await using (var scope = enabledFactory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+            PentaRequire(await db.PentaUsageReservations.CountAsync(x => x.AcademyId == academyA) == 5,
+                "Academy quota created an incorrect reservation count.");
+            PentaRequire(await db.PentaUsageEntries.CountAsync(x => x.AcademyId == academyA) == 5,
+                "Known synthetic outcomes did not reconcile usage exactly once.");
+            var execution = await db.PentaExecutions.AsNoTracking()
+                .FirstAsync(x => x.AcademyId == academyA);
+            db.PentaApprovals.Add(new PentaApproval
+            {
+                AcademyId = academyB, ExecutionId = execution.Id, InitiatorUserId = Guid.NewGuid(),
+                Status = "AwaitingApproval", DecisionDigest = new string('0', 64),
+                PolicyVersion = "qa-only", ExpiresAtUtc = DateTime.UtcNow.AddMinutes(10)
+            });
+            var foreignLinkRejected = false;
+            try { await db.SaveChangesAsync(); }
+            catch (DbUpdateException) { foreignLinkRejected = true; }
+            PentaRequire(foreignLinkRejected, "Cross-academy approval FK was accepted.");
+        }
+        await using (var scope = enabledFactory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+            PentaRequire(!await db.PentaApprovals.AnyAsync(), "Synthetic R0 created an approval record.");
+        }
+        await using (var scope = enabledFactory.Services.CreateAsyncScope())
+        {
+            var users = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+            var user = await users.FindByEmailAsync("penta-admin-b@example.invalid")
+                ?? throw new InvalidOperationException("Synthetic admin B vanished.");
+            user.IsActive = true;
+            PentaRequire((await users.UpdateAsync(user)).Succeeded, "Could not reactivate synthetic admin B.");
+        }
+        provider.Throw = true;
+        enabled.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenB);
+        using (var unknown = await PentaPostAsync(enabled, pathB, "sql-penta-unknown"))
+            PentaRequire(unknown.StatusCode == HttpStatusCode.BadGateway,
+                "Provider fault was not recorded as an unavailable outcome.");
+        provider.Throw = false;
+        using (var replay = await PentaPostAsync(enabled, pathB, "sql-penta-unknown"))
+            PentaRequire(replay.StatusCode == HttpStatusCode.BadGateway,
+                "Unknown outcome was blindly replayed.");
+        PentaRequire(provider.Calls == 7, "Unknown outcome invoked provider more than once.");
+        using (var restartedFactory = new QaApiFactory(manifest,
+            new Dictionary<string, string?> { ["Penta:Enabled"] = "true" }, isolatedPentaProvider: provider))
+        using (var restarted = restartedFactory.CreateClient(new() { AllowAutoRedirect = false }))
+        {
+            restarted.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenB);
+            using var replay = await PentaPostAsync(restarted, pathB, "sql-penta-unknown");
+            PentaRequire(replay.StatusCode == HttpStatusCode.BadGateway,
+                "Restarted host re-executed an unknown outcome.");
+        }
+        await using (var scope = enabledFactory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+            var unknown = await db.PentaExecutions.AsNoTracking()
+                .SingleAsync(x => x.AcademyId == academyB && x.IdempotencyKey == "sql-penta-unknown");
+            var reservation = await db.PentaUsageReservations.AsNoTracking()
+                .SingleAsync(x => x.AcademyId == academyB && x.ExecutionId == unknown.Id);
+            PentaRequire(unknown.Status == "OutcomeUnknown" && reservation.Status == "UsageUnknown" &&
+                reservation.UnitsReserved == 1 && reservation.ActualCost is null,
+                "Unknown outcome released or incorrectly reconciled its reservation.");
+            PentaRequire(!await db.PentaUsageEntries.AnyAsync(x => x.AcademyId == academyB &&
+                x.ReservationId == reservation.Id), "Unknown usage acquired a false actual entry.");
+            PentaRequire(await db.PentaAttempts.CountAsync(x => x.AcademyId == academyB &&
+                x.ExecutionId == unknown.Id) == 1, "Unknown outcome did not record exactly one attempt.");
+        }
+        PentaRequire(provider.Calls == 7, "Restarted unknown outcome invoked provider.");
+        Console.WriteLine("PENTA PASS: real Identity/SQL, single dispatch/restart, concurrent tenant/user quota, scoped approval FK, known usage and unknown-outcome retention.");
     }
 
     private static void PentaRequire(bool condition, string message)

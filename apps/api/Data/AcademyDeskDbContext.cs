@@ -68,6 +68,9 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
     public DbSet<PentaTask> PentaTasks => Set<PentaTask>();
     public DbSet<PentaExecution> PentaExecutions => Set<PentaExecution>();
     public DbSet<PentaAttempt> PentaAttempts => Set<PentaAttempt>();
+    public DbSet<PentaApproval> PentaApprovals => Set<PentaApproval>();
+    public DbSet<PentaUsageReservation> PentaUsageReservations => Set<PentaUsageReservation>();
+    public DbSet<PentaUsageEntry> PentaUsageEntries => Set<PentaUsageEntry>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -86,6 +89,7 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
             entity.Property(x => x.IdempotencyKey).HasMaxLength(128).IsRequired();
             entity.Property(x => x.InputDigest).HasMaxLength(64).IsRequired();
             entity.Property(x => x.Status).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.ApprovalMode).HasMaxLength(20).HasDefaultValue("None").IsRequired();
             entity.Property(x => x.ResultMessage).HasMaxLength(250);
             entity.HasIndex(x => new { x.AcademyId, x.ActorUserId, x.ToolName, x.IdempotencyKey }).IsUnique();
             entity.HasAlternateKey(x => new { x.AcademyId, x.Id });
@@ -97,6 +101,40 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
             entity.Property(x => x.Outcome).HasMaxLength(30).IsRequired();
             entity.HasIndex(x => new { x.AcademyId, x.ExecutionId }).IsUnique();
             entity.HasOne<PentaExecution>().WithMany().HasForeignKey(x => new { x.AcademyId, x.ExecutionId })
+                .HasPrincipalKey(x => new { x.AcademyId, x.Id }).OnDelete(DeleteBehavior.Restrict);
+        });
+        modelBuilder.Entity<PentaApproval>(entity =>
+        {
+            entity.Property(x => x.Status).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.DecisionDigest).HasMaxLength(64).IsRequired();
+            entity.Property(x => x.PolicyVersion).HasMaxLength(40).IsRequired();
+            entity.Property(x => x.RowVersion).IsRowVersion();
+            entity.HasIndex(x => new { x.AcademyId, x.ExecutionId }).IsUnique();
+            entity.HasOne<PentaExecution>().WithMany().HasForeignKey(x => new { x.AcademyId, x.ExecutionId })
+                .HasPrincipalKey(x => new { x.AcademyId, x.Id }).OnDelete(DeleteBehavior.Restrict);
+        });
+        modelBuilder.Entity<PentaUsageReservation>(entity =>
+        {
+            entity.Property(x => x.UnitKind).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.Status).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.Currency).HasMaxLength(3).IsRequired();
+            entity.Property(x => x.PriceVersion).HasMaxLength(40).IsRequired();
+            entity.Property(x => x.EstimatedCost).HasPrecision(18, 6);
+            entity.Property(x => x.ActualCost).HasPrecision(18, 6);
+            entity.HasAlternateKey(x => new { x.AcademyId, x.Id });
+            entity.HasIndex(x => new { x.AcademyId, x.ExecutionId }).IsUnique();
+            entity.HasIndex(x => new { x.AcademyId, x.WindowStartUtc, x.ActorUserId });
+            entity.HasOne<PentaExecution>().WithMany().HasForeignKey(x => new { x.AcademyId, x.ExecutionId })
+                .HasPrincipalKey(x => new { x.AcademyId, x.Id }).OnDelete(DeleteBehavior.Restrict);
+        });
+        modelBuilder.Entity<PentaUsageEntry>(entity =>
+        {
+            entity.Property(x => x.EventKey).HasMaxLength(60).IsRequired();
+            entity.Property(x => x.Outcome).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.Currency).HasMaxLength(3).IsRequired();
+            entity.Property(x => x.ActualCost).HasPrecision(18, 6);
+            entity.HasIndex(x => new { x.AcademyId, x.ReservationId, x.EventKey }).IsUnique();
+            entity.HasOne<PentaUsageReservation>().WithMany().HasForeignKey(x => new { x.AcademyId, x.ReservationId })
                 .HasPrincipalKey(x => new { x.AcademyId, x.Id }).OnDelete(DeleteBehavior.Restrict);
         });
 

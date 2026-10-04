@@ -33,18 +33,21 @@ public sealed class PentaFoundationTests
     {
         public int Calls { get; private set; }
         public bool Malformed { get; set; }
+        public bool Throw { get; set; }
 
         public Task<PentaSyntheticResult> ExecuteAsync(string capability, CancellationToken token)
         {
             Calls++;
             token.ThrowIfCancellationRequested();
+            if (Throw) throw new InvalidOperationException("Synthetic provider failure.");
             return Task.FromResult(new PentaSyntheticResult(Guid.NewGuid(), capability,
                 Malformed ? "arbitrary.tool" : PentaSyntheticDispatcher.ToolName,
                 "Synthetic result", true));
         }
     }
 
-    private sealed class Factory(bool enabled, FakeProvider provider) : WebApplicationFactory<Program>
+    private sealed class Factory(bool enabled, FakeProvider provider, int? userLimit = null,
+        int? academyLimit = null, string? userLimitText = null) : WebApplicationFactory<Program>
     {
         private readonly string database = $"penta-{Guid.NewGuid():N}";
 
@@ -55,6 +58,8 @@ public sealed class PentaFoundationTests
                 new Dictionary<string, string?>
                 {
                     ["Penta:Enabled"] = enabled.ToString(),
+                    ["Penta:SyntheticDailyUserLimit"] = userLimitText ?? userLimit?.ToString(),
+                    ["Penta:SyntheticDailyAcademyLimit"] = academyLimit?.ToString(),
                     ["Database:ApplyMigrationsOnStartup"] = "false",
                     ["Bootstrap:PlatformOwnerEmail"] = "",
                     ["Bootstrap:PlatformOwnerPassword"] = ""
@@ -151,6 +156,10 @@ public sealed class PentaFoundationTests
             Assert.Equal(2, await db.AuditLogs.CountAsync(x => x.AcademyId == academyA && x.EntityType == "PentaExecution"));
             Assert.Equal(2, await db.PentaExecutions.CountAsync(x => x.AcademyId == academyA));
             Assert.Equal(2, await db.PentaAttempts.CountAsync(x => x.AcademyId == academyA));
+            Assert.Equal(2, await db.PentaUsageReservations.CountAsync(x => x.AcademyId == academyA));
+            Assert.Equal(2, await db.PentaUsageEntries.CountAsync(x => x.AcademyId == academyA));
+            Assert.Equal(0, await db.PentaApprovals.CountAsync());
+            Assert.All(await db.PentaExecutions.ToListAsync(), x => Assert.Equal("None", x.ApprovalMode));
         }
 
         provider.Malformed = false;
@@ -219,6 +228,64 @@ public sealed class PentaFoundationTests
         Assert.Equal(1, await db.PentaExecutions.CountAsync());
         Assert.Equal(1, await db.PentaAttempts.CountAsync());
         Assert.Equal(1, await db.AuditLogs.CountAsync(x => x.EntityType == "PentaExecution"));
+        Assert.Equal(1, await db.PentaUsageReservations.CountAsync());
+        Assert.Equal(1, await db.PentaUsageEntries.CountAsync());
+    }
+
+    [Fact]
+    public async Task Unknown_outcome_holds_quota_and_matching_retry_never_dispatches()
+    {
+        var provider = new FakeProvider { Throw = true };
+        using var factory = new Factory(true, provider, userLimit: 1, academyLimit: 2);
+        using var client = factory.CreateClient(new() { AllowAutoRedirect = false });
+        var academy = Guid.NewGuid();
+        await SeedAsync(factory, academy, Guid.NewGuid());
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", await LoginAsync(client, "admin-a"));
+        var path = $"/api/academies/{academy}/penta/turns";
+        async Task<HttpResponseMessage> Post(string key)
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Post, path)
+            {
+                Content = JsonContent.Create(new { text = "synthetic", capability = "pulse" })
+            };
+            request.Headers.Add("Idempotency-Key", key);
+            return await client.SendAsync(request);
+        }
+        using var first = await Post("unknown-one");
+        using var replay = await Post("unknown-one");
+        using var denied = await Post("unknown-two");
+        Assert.Equal(HttpStatusCode.BadGateway, first.StatusCode);
+        Assert.Equal(HttpStatusCode.BadGateway, replay.StatusCode);
+        Assert.Equal(HttpStatusCode.TooManyRequests, denied.StatusCode);
+        Assert.Equal(1, provider.Calls);
+        await using var scope = factory.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+        var reservation = await db.PentaUsageReservations.SingleAsync();
+        Assert.Equal("UsageUnknown", reservation.Status);
+        Assert.Equal(1, reservation.UnitsReserved);
+        Assert.Empty(await db.PentaUsageEntries.ToListAsync());
+        Assert.Equal(1, await db.PentaAttempts.CountAsync());
+    }
+
+    [Theory]
+    [InlineData("0")]
+    [InlineData("not-a-number")]
+    public async Task Invalid_budget_configuration_denies_new_claim_before_dispatch(string invalidLimit)
+    {
+        var provider = new FakeProvider();
+        using var factory = new Factory(true, provider, userLimitText: invalidLimit);
+        using var client = factory.CreateClient(new() { AllowAutoRedirect = false });
+        var academy = Guid.NewGuid();
+        await SeedAsync(factory, academy, Guid.NewGuid());
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", await LoginAsync(client, "admin-a"));
+        using var denied = await client.PostAsJsonAsync($"/api/academies/{academy}/penta/turns",
+            new { text = "synthetic", capability = "pulse" });
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, denied.StatusCode);
+        Assert.Equal(0, provider.Calls);
+        await using var scope = factory.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+        Assert.Empty(await db.PentaExecutions.ToListAsync());
+        Assert.Empty(await db.PentaUsageReservations.ToListAsync());
     }
 
     [Fact]

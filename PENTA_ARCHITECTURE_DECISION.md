@@ -2,7 +2,7 @@
 
 Date: 2026-10-04. Design baseline: `9265e72` on `codex/enterprise-p0-continuation`, `D:\AcademyDesk-codex-p0`.
 
-Status: architecture selected for the disabled local foundation. Naming is owner-confirmed. AI0-S1 and synthetic-only AI0-S2a are locally implemented and tested; approval/usage controls, broader security acceptance and live enablement are pending. See [AI0-S1 evidence](QA/REPORTS/PENTA_AI0_S1_FOUNDATION.md) and [AI0-S2a evidence](QA/REPORTS/PENTA_AI0_S2A_EXECUTION_LEDGER.md). This decision is not release certification or approval to disclose academy data to an external model.
+Status: architecture selected for the disabled local foundation. Naming is owner-confirmed. AI0-S1, S2a and synthetic-only S2b are locally implemented and tested; priced usage controls, actionable approvals, broader security acceptance and live enablement are pending. See [AI0-S1 evidence](QA/REPORTS/PENTA_AI0_S1_FOUNDATION.md), [AI0-S2a evidence](QA/REPORTS/PENTA_AI0_S2A_EXECUTION_LEDGER.md) and [AI0-S2b evidence](QA/REPORTS/PENTA_AI0_S2B_SYNTHETIC_QUOTA.md). This decision is not release certification or approval to disclose academy data to an external model.
 
 Read with [product vision](AI_PRODUCT_VISION.md), [delivery plan](ACADEMY_DESK_AI_IMPLEMENTATION_PLAN.md), [existing enterprise roadmap](ENTERPRISE_TESTING_ROADMAP.md) and [release gates](QA/09_RELEASE_GATES.md). Historical audit results remain evidence; this adds the PENTA boundary and its tests to the existing program.
 
@@ -205,7 +205,8 @@ Premium visual exploration can begin once these states and the first API contrac
 | --- | --- | --- |
 | AI0-S1 — LOCAL PASS | Disabled gateway, explicit current actor policy, five capability IDs, code-only registry, bounded dispatcher and fake provider/synthetic tool | API and real Identity/HTTP/two-academy SQL checks passed; evidence in AI0-S1 report. Release remains open. |
 | AI0-S2a — LOCAL PASS | Synthetic-only task/execution/attempt ledger, idempotency claim/replay and PENTA-owned audit | Migration, targeted/full API and guarded SQL concurrency evidence in S2a report; no domain mutation tool. |
-| AI0-S2b — NEXT | Approval and usage schema, budget reservation, fault/recovery and remaining execution-state gates | Run-owned SQL replay/concurrency/rollback/restart/fault tests; no domain mutation tool. Sol High. |
+| AI0-S2b — LOCAL PASS | Tenant-linked approval/usage schema and finite, atomic synthetic work quota | Full API and run-owned SQL tenant/user concurrency, scoped FK, unknown outcome and restart checks. This is not priced model usage or an actionable approval. |
+| AI0-S2c — NEXT | Priced model budget and conservative crash/audit fault recovery contract; actionable approval only with the first R1 pilot | No live call until provider/policy/privacy choices, run-owned SQL fault and concurrency evidence. Sol High. |
 | AI0-S3 | Real provider adapter behind independent disabled flag, redaction/limits/error mapping and evaluation harness | Fake/fault tests; synthetic external calls only after approved provider configuration. Sol High. |
 | AI1-S1 | First narrow search/read projection and source-linked PENTA result UI | Per-tool role/field/tenant checks, browser/mobile and golden-answer evidence; privacy decisions before customer data/model enablement. Sol High for boundary, Sol Medium/Cursor for bounded UI. |
 | AI1-S2 | Recorded schedule/batch reads and first deterministic Pulse card | Known source defects excluded/fixed, factual metrics and no unintended writes; existing domain tests retained. |

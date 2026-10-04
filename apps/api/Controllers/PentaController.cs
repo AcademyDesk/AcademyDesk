@@ -33,6 +33,8 @@ public sealed class PentaController(PentaPilotPolicy policy, PentaExecutionServi
             request.Text!, key, token);
         if (outcome.HttpStatus == 409) return Conflict(new { message = outcome.Error });
         if (outcome.HttpStatus == 502) return StatusCode(502, new { message = outcome.Error, outcome.State });
+        if (outcome.HttpStatus is 403 or 429 or 503)
+            return StatusCode(outcome.HttpStatus, new { message = outcome.Error });
         return StatusCode(outcome.HttpStatus, outcome.State);
     }
 
