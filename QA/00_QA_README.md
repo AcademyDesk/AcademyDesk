@@ -1,5 +1,7 @@
 # AcademyDesk QA control centre — Phase 1
 
+Latest checkpoint (2026-10-04): [PENTA AI1-S1b batch search read](REPORTS/PENTA_AI1_S1B_BATCH_SEARCH_READ.md). Current Owner/Admin, own active academy, ten-row maximum, minimal active-batch ID/name/code, truthful batch-list destination and required audit passed 1,084/1,084 API and guarded real Identity/HTTP/SQL run `937e950a62d041919a8b09ddf2043206`. No external model call or customer-data disclosure; UI acceptance, merge/push/Azure and P0 closure remain open. `QA/EVIDENCE` stays local.
+
 Latest checkpoint (2026-10-04): [PENTA AI1-S1a student search read](REPORTS/PENTA_AI1_S1A_STUDENT_SEARCH_READ.md). Current Owner/Admin, own active academy, ten-row maximum, minimal active-student fields, source links and required audit passed 1,083/1,083 API and guarded real Identity/HTTP/SQL run `f0d21a0912b846a0a683e0300dfb7244`. No external model call or external customer-data disclosure; UI acceptance, merge/push/Azure and P0 closure remain open. `QA/EVIDENCE` stays local.
 
 Latest checkpoint (2026-10-04): [PENTA AI0-S4b internal budgeted synthetic probe](REPORTS/PENTA_AI0_S4B_BUDGETED_SYNTHETIC_PROBE.md). The adapter remains unrouted and has no live key or external/customer-data call. Fake-provider SQL run `c7caa731a1934fd2ba8683ddf6233853` covers budget-before-dispatch, identity mismatch/disabled denial, known/unknown usage, cap exhaustion and completion audit rollback; 1,082/1,082 API tests pass. Provider/privacy and enterprise release gates remain open; no push/merge/Azure. `QA/EVIDENCE` stays local.

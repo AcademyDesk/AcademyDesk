@@ -256,6 +256,100 @@ public sealed class PentaFoundationTests
     }
 
     [Fact]
+    public async Task Batch_search_is_bounded_minimal_tenant_scoped_audited_and_model_free()
+    {
+        var provider = new FakeProvider();
+        using var factory = new Factory(true, provider);
+        using var client = factory.CreateClient(new() { AllowAutoRedirect = false });
+        var academyA = Guid.NewGuid();
+        var academyB = Guid.NewGuid();
+        await SeedAsync(factory, academyA, academyB);
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+            var courseA = new ProgramCourse { AcademyId = academyA, Name = "Piano" };
+            var courseB = new ProgramCourse { AcademyId = academyB, Name = "Piano" };
+            db.Courses.AddRange(courseA, courseB);
+            for (var number = 0; number < 12; number++)
+                db.Batches.Add(new Batch { AcademyId = academyA, CourseId = courseA.Id,
+                    Name = $"Piano Batch {number:00}", BatchCode = $"PI-{number:00}",
+                    AdminNotes = "private batch note", MeetingLink = "https://private.invalid/meeting" });
+            db.Batches.Add(new Batch { AcademyId = academyA, CourseId = courseA.Id,
+                Name = "Piano Inactive", IsActive = false });
+            db.Batches.Add(new Batch { AcademyId = academyB, CourseId = courseB.Id,
+                Name = "Piano Foreign" });
+            await db.SaveChangesAsync();
+        }
+        var pathA = $"/api/academies/{academyA}/penta/batch-search?q=Piano";
+        var pathB = $"/api/academies/{academyB}/penta/batch-search?q=Piano";
+        Assert.Equal(HttpStatusCode.Unauthorized, (await client.GetAsync(pathA)).StatusCode);
+        foreach (var identity in new[] { "teacher-a", "platform", "admin-b" })
+        {
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", await LoginAsync(client, identity));
+            Assert.Equal(HttpStatusCode.Forbidden, (await client.GetAsync(pathA)).StatusCode);
+        }
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", await LoginAsync(client, "admin-a"));
+        Assert.Equal(HttpStatusCode.Forbidden, (await client.GetAsync(pathB)).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await client.GetAsync(
+            $"/api/academies/{academyA}/penta/batch-search?q=x")).StatusCode);
+        using (var response = await client.GetAsync(pathA))
+        {
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var body = await response.Content.ReadAsStringAsync();
+            Assert.DoesNotContain("private batch note", body);
+            Assert.DoesNotContain("private.invalid", body);
+            Assert.DoesNotContain("Inactive", body);
+            Assert.DoesNotContain("Foreign", body);
+            using var json = System.Text.Json.JsonDocument.Parse(body);
+            var root = json.RootElement;
+            Assert.Equal(new[] { "tool", "capability", "academyId", "asOfUtc", "timeZone",
+                "source", "maxRows", "hasMore", "rows" },
+                root.EnumerateObject().Select(x => x.Name));
+            Assert.Equal(PentaBatchSearchService.ToolName, root.GetProperty("tool").GetString());
+            Assert.Equal("executor", root.GetProperty("capability").GetString());
+            Assert.Equal(academyA, root.GetProperty("academyId").GetGuid());
+            Assert.Equal("Batches", root.GetProperty("source").GetString());
+            Assert.Equal(10, root.GetProperty("maxRows").GetInt32());
+            Assert.True(root.GetProperty("hasMore").GetBoolean());
+            var rows = root.GetProperty("rows").EnumerateArray().ToArray();
+            Assert.Equal(10, rows.Length);
+            Assert.All(rows, row =>
+            {
+                Assert.Equal(new[] { "sourceId", "name", "batchCode", "sourcePath" },
+                    row.EnumerateObject().Select(x => x.Name));
+                Assert.StartsWith("Piano Batch", row.GetProperty("name").GetString());
+                Assert.StartsWith("PI-", row.GetProperty("batchCode").GetString());
+                Assert.Equal("/batch-setup", row.GetProperty("sourcePath").GetString());
+            });
+        }
+        using (var code = await client.GetAsync($"/api/academies/{academyA}/penta/batch-search?q=PI-11"))
+        {
+            Assert.Equal(HttpStatusCode.OK, code.StatusCode);
+            using var json = await System.Text.Json.JsonDocument.ParseAsync(await code.Content.ReadAsStreamAsync());
+            Assert.Single(json.RootElement.GetProperty("rows").EnumerateArray());
+        }
+        using (var empty = await client.GetAsync($"/api/academies/{academyA}/penta/batch-search?q=Absent"))
+        {
+            Assert.Equal(HttpStatusCode.OK, empty.StatusCode);
+            using var json = await System.Text.Json.JsonDocument.ParseAsync(await empty.Content.ReadAsStreamAsync());
+            Assert.Empty(json.RootElement.GetProperty("rows").EnumerateArray());
+        }
+        Assert.Equal(0, provider.Calls);
+        await using var verify = factory.Services.CreateAsyncScope();
+        var audit = verify.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+        Assert.Equal(3, await audit.AuditLogs.CountAsync(x => x.Action == "PentaBatchSearchRead" && x.AcademyId == academyA));
+        Assert.Equal(0, await audit.AuditLogs.CountAsync(x => x.Action == "PentaBatchSearchRead" && x.AcademyId == academyB));
+        Assert.Empty(await audit.PentaExecutions.ToListAsync());
+        Assert.Empty(await audit.PentaUsageReservations.ToListAsync());
+        var users = verify.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var actor = (await users.FindByEmailAsync("penta-admin-a@example.invalid"))!;
+        actor.IsActive = false;
+        Assert.True((await users.UpdateAsync(actor)).Succeeded);
+        Assert.Equal(HttpStatusCode.Forbidden, (await client.GetAsync(pathA)).StatusCode);
+        Assert.Equal(3, await audit.AuditLogs.CountAsync(x => x.Action == "PentaBatchSearchRead"));
+    }
+
+    [Fact]
     public async Task Draft_preview_requires_current_authority_exact_confirmation_and_has_no_domain_effect()
     {
         var provider = new FakeProvider();
@@ -471,6 +565,8 @@ public sealed class PentaFoundationTests
             $"/api/academies/{academy}/penta/academy-context")).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync(
             $"/api/academies/{academy}/penta/student-search?q=Meera")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync(
+            $"/api/academies/{academy}/penta/batch-search?q=Piano")).StatusCode);
         Assert.Equal(0, provider.Calls);
     }
 

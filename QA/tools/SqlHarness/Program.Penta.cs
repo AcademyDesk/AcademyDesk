@@ -232,6 +232,8 @@ internal static partial class SqlHarnessEntryPoint
         }
         await VerifyPentaStudentSearchAsync(manifest, enabledFactory, enabled,
             academyA, academyB, tokenA, tokenB, teacher, platform, provider);
+        await VerifyPentaBatchSearchAsync(manifest, enabledFactory, enabled,
+            academyA, academyB, tokenA, tokenB, teacher, platform, provider);
 
         enabled.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenA);
         using (var foreign = await enabled.PostAsJsonAsync(pathB, valid))
@@ -594,6 +596,127 @@ internal static partial class SqlHarnessEntryPoint
             PentaRequire(failed, "Student search returned data despite audit write failure.");
         }
         Console.WriteLine("PENTA STUDENT SEARCH PASS: real SQL bounded own-academy source rows, 401/403, no private fields/provider call, audit rollback.");
+    }
+
+    private static async Task VerifyPentaBatchSearchAsync(QaRunManifest manifest,
+        QaApiFactory factory, HttpClient client, Guid academyA, Guid academyB,
+        string tokenA, string tokenB, string teacher, string platform, CountingPentaProvider provider)
+    {
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+            var courseA = new ProgramCourse { AcademyId = academyA, Name = "QA Piano" };
+            var courseB = new ProgramCourse { AcademyId = academyB, Name = "QA Piano" };
+            db.Courses.AddRange(courseA, courseB);
+            for (var number = 0; number < 12; number++)
+                db.Batches.Add(new Batch { AcademyId = academyA, CourseId = courseA.Id,
+                    Name = $"QA Piano Batch {number:00}", BatchCode = $"QA-PI-{number:00}",
+                    AdminNotes = "private batch note", MeetingLink = "https://private.invalid/meeting" });
+            db.Batches.Add(new Batch { AcademyId = academyA, CourseId = courseA.Id,
+                Name = "QA Piano Inactive", IsActive = false });
+            db.Batches.Add(new Batch { AcademyId = academyB, CourseId = courseB.Id,
+                Name = "QA Piano Foreign" });
+            await db.SaveChangesAsync();
+        }
+        var pathA = $"/api/academies/{academyA}/penta/batch-search?q=QA%20Piano";
+        var pathB = $"/api/academies/{academyB}/penta/batch-search?q=QA%20Piano";
+        Dictionary<Guid, (string Name, string? Code)> ownBatches;
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+            ownBatches = await db.Batches.AsNoTracking()
+                .Where(x => x.AcademyId == academyA && x.IsActive)
+                .ToDictionaryAsync(x => x.Id, x => ValueTuple.Create(x.Name, x.BatchCode));
+        }
+        client.DefaultRequestHeaders.Authorization = null;
+        using (var denied = await client.GetAsync(pathA))
+            PentaRequire(denied.StatusCode == HttpStatusCode.Unauthorized,
+                "Anonymous batch search was not 401.");
+        foreach (var (bearer, label) in new[] { (teacher, "Teacher"), (platform, "Platform owner"),
+            (tokenB, "Foreign academy admin") })
+        {
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", bearer);
+            using var denied = await client.GetAsync(pathA);
+            PentaRequire(denied.StatusCode == HttpStatusCode.Forbidden,
+                $"{label} batch search was not 403.");
+        }
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenA);
+        using (var denied = await client.GetAsync(pathB))
+            PentaRequire(denied.StatusCode == HttpStatusCode.Forbidden,
+                "Batch search crossed academy scope.");
+        using (var invalid = await client.GetAsync($"/api/academies/{academyA}/penta/batch-search?q=x"))
+            PentaRequire(invalid.StatusCode == HttpStatusCode.BadRequest,
+                "Single-character batch search was accepted.");
+        using (var read = await client.GetAsync(pathA))
+        {
+            PentaRequire(read.StatusCode == HttpStatusCode.OK, "Own-academy batch search failed.");
+            var body = await read.Content.ReadAsStringAsync();
+            PentaRequire(!body.Contains("private batch note", StringComparison.Ordinal) &&
+                !body.Contains("private.invalid", StringComparison.Ordinal) &&
+                !body.Contains("Inactive", StringComparison.Ordinal) &&
+                !body.Contains("Foreign", StringComparison.Ordinal),
+                "Batch search disclosed a private, foreign or inactive field.");
+            using var json = JsonDocument.Parse(body);
+            var root = json.RootElement;
+            var rows = root.GetProperty("rows");
+            PentaRequire(root.GetProperty("tool").GetString() == PentaBatchSearchService.ToolName &&
+                root.GetProperty("academyId").GetGuid() == academyA &&
+                root.GetProperty("maxRows").GetInt32() == 10 &&
+                root.GetProperty("hasMore").GetBoolean() && rows.GetArrayLength() == 10 &&
+                rows.EnumerateArray().All(x => x.EnumerateObject().Count() == 4 &&
+                    ownBatches.TryGetValue(x.GetProperty("sourceId").GetGuid(), out var batch) &&
+                    batch.Name == x.GetProperty("name").GetString() &&
+                    batch.Code == x.GetProperty("batchCode").GetString() &&
+                    x.GetProperty("sourcePath").GetString() == "/batch-setup"),
+                "Batch search did not return ten minimal source rows.");
+        }
+        using (var code = await client.GetAsync($"/api/academies/{academyA}/penta/batch-search?q=QA-PI-11"))
+        {
+            PentaRequire(code.StatusCode == HttpStatusCode.OK, "Batch code search failed.");
+            using var json = JsonDocument.Parse(await code.Content.ReadAsStringAsync());
+            PentaRequire(json.RootElement.GetProperty("rows").GetArrayLength() == 1,
+                "Batch code search did not identify one row.");
+        }
+        using (var empty = await client.GetAsync($"/api/academies/{academyA}/penta/batch-search?q=Absent"))
+        {
+            PentaRequire(empty.StatusCode == HttpStatusCode.OK, "Zero-result batch search failed.");
+            using var json = JsonDocument.Parse(await empty.Content.ReadAsStringAsync());
+            PentaRequire(json.RootElement.GetProperty("rows").GetArrayLength() == 0,
+                "Zero-result batch search disclosed a row.");
+        }
+        PentaRequire(provider.Calls == 0, "Batch search invoked the model or synthetic provider.");
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+            PentaRequire(await db.AuditLogs.CountAsync(x => x.Action == "PentaBatchSearchRead" &&
+                x.AcademyId == academyA) == 3 &&
+                await db.AuditLogs.CountAsync(x => x.Action == "PentaBatchSearchRead" &&
+                    x.AcademyId == academyB) == 0 &&
+                await db.PentaExecutions.CountAsync() == 0,
+                "Batch search audit or execution boundary failed.");
+        }
+        using (var faultFactory = new QaApiFactory(manifest,
+            new Dictionary<string, string?> { ["Penta:Enabled"] = "true" },
+            isolatedDomainInterceptor: new PentaAuditFaultInterceptor()))
+        {
+            using var faultClient = faultFactory.CreateClient();
+            PentaRequire(faultFactory.PreflightPassed, "Batch search audit-fault host missed SQL preflight.");
+            var failed = false;
+            try
+            {
+                await using var scope = faultFactory.Services.CreateAsyncScope();
+                var users = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+                var actorId = (await users.FindByEmailAsync("penta-admin-a@example.invalid"))!.Id;
+                await scope.ServiceProvider.GetRequiredService<PentaBatchSearchService>()
+                    .ReadAsync(academyA, actorId, "QA Piano", CancellationToken.None);
+            }
+            catch (DbUpdateException ex) when (ex.InnerException?.Message.Contains("QA PENTA audit-store write fault") == true)
+            { failed = true; }
+            catch (InvalidOperationException ex) when (ex.Message.Contains("QA PENTA audit-store write fault"))
+            { failed = true; }
+            PentaRequire(failed, "Batch search returned data despite audit write failure.");
+        }
+        Console.WriteLine("PENTA BATCH SEARCH PASS: real SQL bounded own-academy source rows, 401/403, no private fields/provider call, audit rollback.");
     }
 
     private static async Task VerifyPentaProbeCoordinationAsync(QaRunManifest manifest,
