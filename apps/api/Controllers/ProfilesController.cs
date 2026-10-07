@@ -1,4 +1,5 @@
 using AcademyDesk.Api.Data;
+using AcademyDesk.Api.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
@@ -7,7 +8,7 @@ namespace AcademyDesk.Api.Controllers;
 
 [ApiController]
 [Route("api/academies/{academyId:guid}")]
-public sealed class ProfilesController(AcademyDeskDbContext dbContext) : ControllerBase
+public sealed class ProfilesController(AcademyDeskDbContext dbContext, OutstandingFeesService? fees = null) : ControllerBase
 {
     [HttpGet("guardians/{guardianId:guid}/profile")]
     public async Task<ActionResult<GuardianProfileSummary>> Guardian(Guid academyId, Guid guardianId, CancellationToken token)
@@ -44,7 +45,11 @@ public sealed class ProfilesController(AcademyDeskDbContext dbContext) : Control
             .GroupBy(x => x.Status)
             .Select(x => new StatusCount(x.Key, x.Count()))
             .ToListAsync(token);
-        var invoices = await dbContext.Invoices.AsNoTracking().Where(x => x.AcademyId == academyId && x.StudentId == studentId).OrderByDescending(x => x.DueDate).Take(10).Select(x => new InvoiceProfileSummary(
+        var invoices = await (from x in dbContext.Invoices.AsNoTracking()
+            join ledger in (fees ?? new OutstandingFeesService(dbContext, TimeProvider.System)).Ledger(academyId) on x.Id equals ledger.Id
+            where x.AcademyId == academyId && x.StudentId == studentId
+            orderby x.DueDate descending
+            select new InvoiceProfileSummary(
             x.InvoiceNumber,
             x.TotalAmount,
             x.Currency,
@@ -53,8 +58,8 @@ public sealed class ProfilesController(AcademyDeskDbContext dbContext) : Control
             x.FeePlanId.HasValue
                 ? dbContext.FeePlans.Where(plan => plan.AcademyId == academyId && plan.Id == x.FeePlanId.Value).Select(plan => plan.Name).FirstOrDefault()
                 : "General fee",
-            dbContext.Payments.Where(payment => payment.AcademyId == academyId && payment.InvoiceId == x.Id && payment.Status != "Voided").Sum(payment => (decimal?)payment.Amount) ?? 0,
-            dbContext.Payments.Where(payment => payment.AcademyId == academyId && payment.InvoiceId == x.Id && payment.Status != "Voided").Max(payment => (DateTime?)payment.PaidAtUtc))).ToListAsync(token);
+            ledger.Collected,
+            dbContext.Payments.Where(payment => payment.AcademyId == academyId && payment.InvoiceId == x.Id && (payment.Status == "Completed" || payment.Status == "Reconciled")).Max(payment => (DateTime?)payment.PaidAtUtc), ledger.Adjusted)).Take(10).ToListAsync(token);
         var progress = await (from item in dbContext.StudentMusicProgress.AsNoTracking()
                               join piece in dbContext.MusicPieces.AsNoTracking() on item.MusicPieceId equals piece.Id
                               where item.AcademyId == academyId && item.StudentId == studentId
@@ -190,7 +195,7 @@ public sealed class ProfilesController(AcademyDeskDbContext dbContext) : Control
 public sealed record ContactSummary(Guid Id, string Name, string? Email, string? Phone, string? Relationship);
 public sealed record EnrollmentProfileSummary(string BatchName, string CourseName, string Status, DateOnly StartDate, DateOnly? EndDate);
 public sealed record StatusCount(string Status, int Count);
-public sealed record InvoiceProfileSummary(string InvoiceNumber, decimal TotalAmount, string Currency, DateOnly DueDate, string Status, string? SubjectName, decimal PaidAmount, DateTime? LastPaidAtUtc);
+public sealed record InvoiceProfileSummary(string InvoiceNumber, decimal TotalAmount, string Currency, DateOnly DueDate, string Status, string? SubjectName, decimal PaidAmount, DateTime? LastPaidAtUtc, decimal AdjustedAmount = 0);
 public sealed record MusicProgressProfileSummary(string Title, string? Instrument, string Status, decimal? Score);
 public sealed record PracticeProfileSummary(DateOnly PracticeDate, int MinutesPracticed, string? FocusArea, string? Notes, string Status);
 public sealed record CommunicationProfileSummary(string Title, string Channel, string Status, DateTime CreatedAtUtc);

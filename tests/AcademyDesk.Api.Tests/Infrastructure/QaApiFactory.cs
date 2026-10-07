@@ -22,8 +22,9 @@ internal sealed class QaApiFactory : WebApplicationFactory<Program>
     private readonly IInterceptor? isolatedDomainInterceptor;
     private readonly TimeProvider? isolatedClock;
     private readonly IPentaSyntheticProvider? isolatedPentaProvider;
+    private readonly IPentaProvider? isolatedMiniProvider;
 
-    public QaApiFactory(QaRunManifest manifest, IReadOnlyDictionary<string, string?>? overrides = null, IMediaBlobStore? isolatedMediaStore = null, IInterceptor? isolatedIdentityInterceptor = null, IPentaSyntheticProvider? isolatedPentaProvider = null, IInterceptor? isolatedDomainInterceptor = null, TimeProvider? isolatedClock = null)
+    public QaApiFactory(QaRunManifest manifest, IReadOnlyDictionary<string, string?>? overrides = null, IMediaBlobStore? isolatedMediaStore = null, IInterceptor? isolatedIdentityInterceptor = null, IPentaSyntheticProvider? isolatedPentaProvider = null, IInterceptor? isolatedDomainInterceptor = null, TimeProvider? isolatedClock = null, IPentaProvider? isolatedMiniProvider = null)
     {
         this.manifest = manifest;
         this.overrides = overrides ?? new Dictionary<string, string?>();
@@ -32,6 +33,7 @@ internal sealed class QaApiFactory : WebApplicationFactory<Program>
         this.isolatedDomainInterceptor = isolatedDomainInterceptor;
         this.isolatedClock = isolatedClock;
         this.isolatedPentaProvider = isolatedPentaProvider;
+        this.isolatedMiniProvider = isolatedMiniProvider;
     }
 
     public bool PreflightPassed { get; private set; }
@@ -124,6 +126,11 @@ internal sealed class QaApiFactory : WebApplicationFactory<Program>
             }
 
             services.AddDataProtection().PersistKeysToFileSystem(new DirectoryInfo(manifest.DataProtectionRoot));
+            if (isolatedMiniProvider is not null)
+            {
+                services.RemoveAll<IPentaProvider>();
+                services.AddSingleton(isolatedMiniProvider);
+            }
         });
     }
 

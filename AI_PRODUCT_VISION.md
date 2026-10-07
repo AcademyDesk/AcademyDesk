@@ -1,5 +1,11 @@
 # Academy Desk PENTA — product vision
 
+## Current conversational requirement — 2026-10-04
+
+Academy Desk **PENTA AI** is a prompt-first, continuous conversational operating layer, not just CRUD or a domain-selector search form. Pulse, Executor, Navigator, Twin and Autopilot work within one conversation with verified context, minimal clarification, rich source-backed replies and governed actions. The top switch is **PENTA AI | Workspace**; selecting Executor opens chat, each capability has accessible clickable `!` help, and a collapsible context rail supports the conversation. Manual operations remain clearly listed and available for fallback and precision.
+
+See [PENTA-002](PENTA_CONVERSATIONAL_ARCHITECTURE.md) for the conversation/message/context, runtime, authority, tools, approval, history/privacy, cost, streaming and UI contracts, and the [complete requirement map](QA/REPORTS/PENTA_CONVERSATIONAL_GAP_MAP.md) for implementation gaps. Broader scheduling, finance, communications, growth, learning, explanation and automation follow source-specific gates. Owning PENTA does not require training a foundation model from scratch; the live conversational runtime is still undecided and disabled. These requirements supersede narrower command/search wording below without replacing the enterprise program or deterministic ERP.
+
 Academy Desk should evolve into an **AI-native academy operating system**.
 
 The target is not traditional ERP plus a chatbot.

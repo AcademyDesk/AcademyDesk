@@ -33,6 +33,13 @@ builder.Services.AddScoped<PentaDraftApprovalService>();
 builder.Services.AddScoped<PentaAcademyContextService>();
 builder.Services.AddScoped<PentaStudentSearchService>();
 builder.Services.AddScoped<PentaBatchSearchService>();
+builder.Services.AddScoped<PentaConversationService>();
+builder.Services.AddScoped<OutstandingFeesService>();
+builder.Services.AddScoped<PentaFinancePolicy>();
+builder.Services.AddScoped<AcademyDeskConnector>();
+builder.Services.AddScoped<PentaMiniOrchestrator>();
+builder.Services.AddHttpClient<IPentaProvider, PentaMiniProvider>(client => client.Timeout = TimeSpan.FromSeconds(130))
+    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false, UseProxy = false });
 builder.Services.AddHttpClient<IPentaModelProvider, PentaOpenAiProbeAdapter>()
     .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
 builder.Services.AddSingleton(TimeProvider.System);

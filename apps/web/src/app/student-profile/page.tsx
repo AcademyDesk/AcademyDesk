@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { academyApi } from "@/lib/api";
 import { StudentAdminProfile } from "@/components/student-admin-profile";
@@ -43,7 +44,7 @@ type Profile = {
 type Guardian = { id: string; name: string; email?: string | null; phone?: string | null; relationship?: string | null };
 type Enrollment = { batchName: string; courseName: string; status: string; startDate: string; endDate?: string | null };
 type StatusCount = { status: string; count: number };
-type Invoice = { invoiceNumber: string; totalAmount: number; currency: string; dueDate: string; status: string; subjectName?: string | null; paidAmount?: number; lastPaidAtUtc?: string | null };
+type Invoice = { invoiceNumber: string; totalAmount: number; adjustedAmount?: number; currency: string; dueDate: string; status: string; subjectName?: string | null; paidAmount?: number; lastPaidAtUtc?: string | null };
 type StudentDetail = "enrolments" | "attendance" | "fees" | "family";
 
 const count = (items?: unknown[]) => items?.length ?? 0;
@@ -81,10 +82,7 @@ function StudentDetailList({ rows, empty }: { rows: [string, string][]; empty: s
 }
 
 export default function StudentProfilePage() {
-  const search =
-    typeof window === "undefined"
-      ? new URLSearchParams()
-      : new URLSearchParams(window.location.search);
+  const search = useSearchParams();
   const requested = search.get("studentId") ?? "";
   const createdNotice = search.get("notice") === "student-created";
   const [academyId, setAcademyId] = useState("");
@@ -132,7 +130,7 @@ export default function StudentProfilePage() {
     if (response.ok) setProfile(await response.json());
   }
   const student = students.find((item) => item.id === studentId);
-  const balance = (item: Invoice) => Math.max(0, item.totalAmount - (item.paidAmount ?? 0));
+  const balance = (item: Invoice) => item.status === "Cancelled" ? 0 : Math.max(0, item.totalAmount - (item.adjustedAmount ?? 0) - (item.paidAmount ?? 0));
   const outstanding = (profile?.invoices ?? [])
     .reduce((sum, item) => sum + balance(item), 0);
   const today = new Date().toISOString().slice(0, 10);

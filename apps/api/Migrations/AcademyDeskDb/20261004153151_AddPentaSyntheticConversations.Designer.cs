@@ -4,16 +4,19 @@ using AcademyDesk.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace AcademyDesk.Api.Migrations
+namespace AcademyDesk.Api.Migrations.AcademyDeskDb
 {
     [DbContext(typeof(AcademyDeskDbContext))]
-    partial class AcademyDeskDbContextModelSnapshot : ModelSnapshot
+    [Migration("20261004153151_AddPentaSyntheticConversations")]
+    partial class AddPentaSyntheticConversations
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2716,97 +2719,6 @@ namespace AcademyDesk.Api.Migrations
                     b.ToTable("PentaExecutions");
                 });
 
-            modelBuilder.Entity("AcademyDesk.Api.Domain.Entities.PentaMiniSession", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("AcademyId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ActorUserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("ExpiresAtUtc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("PendingRequestId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("ProtectedState")
-                        .IsRequired()
-                        .HasMaxLength(12000)
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("UpdatedAtUtc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<long>("Version")
-                        .IsConcurrencyToken()
-                        .HasColumnType("bigint");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AcademyId", "ActorUserId", "CreatedAtUtc");
-
-                    b.ToTable("PentaMiniSessions");
-                });
-
-            modelBuilder.Entity("AcademyDesk.Api.Domain.Entities.PentaMiniTurn", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("AcademyId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ActorUserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<long>("ExpectedVersion")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("InputDigest")
-                        .IsRequired()
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
-                    b.Property<string>("ProtectedReceipt")
-                        .HasMaxLength(60000)
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("RequestId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("SessionId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
-
-                    b.Property<DateTime?>("UpdatedAtUtc")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AcademyId", "ActorUserId", "CreatedAtUtc");
-
-                    b.HasIndex("AcademyId", "ActorUserId", "SessionId", "RequestId")
-                        .IsUnique();
-
-                    b.ToTable("PentaMiniTurns");
-                });
-
             modelBuilder.Entity("AcademyDesk.Api.Domain.Entities.PentaTask", b =>
                 {
                     b.Property<Guid>("Id")
@@ -4061,25 +3973,6 @@ namespace AcademyDesk.Api.Migrations
                         .WithMany()
                         .HasForeignKey("AcademyId", "TaskId")
                         .HasPrincipalKey("AcademyId", "Id")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("AcademyDesk.Api.Domain.Entities.PentaMiniSession", b =>
-                {
-                    b.HasOne("AcademyDesk.Api.Domain.Entities.Academy", null)
-                        .WithMany()
-                        .HasForeignKey("AcademyId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("AcademyDesk.Api.Domain.Entities.PentaMiniTurn", b =>
-                {
-                    b.HasOne("AcademyDesk.Api.Domain.Entities.PentaMiniSession", null)
-                        .WithMany()
-                        .HasForeignKey("AcademyId", "ActorUserId", "SessionId")
-                        .HasPrincipalKey("AcademyId", "ActorUserId", "Id")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

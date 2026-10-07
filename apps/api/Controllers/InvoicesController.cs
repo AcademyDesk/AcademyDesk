@@ -1,5 +1,6 @@
 using AcademyDesk.Api.Data;
 using AcademyDesk.Api.Domain.Entities;
+using AcademyDesk.Api.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,10 +8,17 @@ namespace AcademyDesk.Api.Controllers;
 
 [ApiController]
 [Route("api/academies/{academyId:guid}/invoices")]
-public sealed class InvoicesController(AcademyDeskDbContext dbContext) : ControllerBase
+public sealed class InvoicesController(AcademyDeskDbContext dbContext, OutstandingFeesService? fees = null) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<InvoiceSummary>>> List(Guid academyId, CancellationToken cancellationToken) => Ok(await dbContext.Invoices.AsNoTracking().Where(x => x.AcademyId == academyId).OrderByDescending(x => x.IssuedDate).Select(x => new InvoiceSummary(x.Id, x.InvoiceNumber, x.StudentId, x.FeePlanId, x.TotalAmount, x.AdjustedAmount, dbContext.Payments.Where(payment => payment.InvoiceId == x.Id && payment.Status != "Voided").Sum(payment => (decimal?)payment.Amount) ?? 0, x.Currency, x.IssuedDate, x.DueDate, x.Status)).ToListAsync(cancellationToken));
+    public async Task<ActionResult<IReadOnlyList<InvoiceSummary>>> List(Guid academyId, CancellationToken cancellationToken) => Ok(await
+        (from invoice in dbContext.Invoices.AsNoTracking()
+         join ledger in (fees ?? new OutstandingFeesService(dbContext, TimeProvider.System)).Ledger(academyId) on invoice.Id equals ledger.Id
+         where invoice.AcademyId == academyId
+         orderby invoice.IssuedDate descending
+         select new InvoiceSummary(invoice.Id, invoice.InvoiceNumber, invoice.StudentId, invoice.FeePlanId,
+             ledger.Total, ledger.Adjusted, ledger.Collected, ledger.Currency, invoice.IssuedDate, invoice.DueDate, invoice.Status))
+        .ToListAsync(cancellationToken));
 
     // Finance screens need billing identities, not student-management/profile access.
     // This action inherits the existing Invoices finance permission and module gate.

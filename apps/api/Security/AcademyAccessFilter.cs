@@ -109,7 +109,9 @@ public sealed class AcademyAccessFilter(UserManager<ApplicationUser> userManager
         var controller = controllerName.Replace("Controller", string.Empty, StringComparison.Ordinal);
         // PENTA writes its own outcome/attempt/audit atomically in its ledger.
         if (string.Equals(controller, "AuditLogs", StringComparison.Ordinal) ||
-            string.Equals(controller, "Penta", StringComparison.Ordinal))
+            string.Equals(controller, "Penta", StringComparison.Ordinal) ||
+            string.Equals(controller, "PentaConversations", StringComparison.Ordinal) ||
+            string.Equals(controller, "PentaChat", StringComparison.Ordinal))
         {
             await next();
             return;

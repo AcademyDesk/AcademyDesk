@@ -71,10 +71,61 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
     public DbSet<PentaApproval> PentaApprovals => Set<PentaApproval>();
     public DbSet<PentaUsageReservation> PentaUsageReservations => Set<PentaUsageReservation>();
     public DbSet<PentaUsageEntry> PentaUsageEntries => Set<PentaUsageEntry>();
+    public DbSet<PentaConversation> PentaConversations => Set<PentaConversation>();
+    public DbSet<PentaConversationTurn> PentaConversationTurns => Set<PentaConversationTurn>();
+    public DbSet<PentaConversationMessage> PentaConversationMessages => Set<PentaConversationMessage>();
+    public DbSet<PentaMiniSession> PentaMiniSessions => Set<PentaMiniSession>();
+    public DbSet<PentaMiniTurn> PentaMiniTurns => Set<PentaMiniTurn>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<PentaMiniSession>(entity =>
+        {
+            entity.Property(x => x.Version).IsConcurrencyToken();
+            entity.Property(x => x.ProtectedState).HasMaxLength(12000).IsRequired();
+            entity.HasAlternateKey(x => new { x.AcademyId, x.ActorUserId, x.Id });
+            entity.HasOne<Academy>().WithMany().HasForeignKey(x => x.AcademyId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasIndex(x => new { x.AcademyId, x.ActorUserId, x.CreatedAtUtc });
+        });
+        modelBuilder.Entity<PentaMiniTurn>(entity =>
+        {
+            entity.Property(x => x.InputDigest).HasMaxLength(300).IsRequired();
+            entity.Property(x => x.Status).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.ProtectedReceipt).HasMaxLength(60000);
+            entity.HasIndex(x => new { x.AcademyId, x.ActorUserId, x.SessionId, x.RequestId }).IsUnique();
+            entity.HasIndex(x => new { x.AcademyId, x.ActorUserId, x.CreatedAtUtc });
+            entity.HasOne<PentaMiniSession>().WithMany().HasForeignKey(x => new { x.AcademyId, x.ActorUserId, x.SessionId })
+                .HasPrincipalKey(x => new { x.AcademyId, x.ActorUserId, x.Id }).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<PentaConversation>(entity =>
+        {
+            entity.Property(x => x.ContextVersion).IsConcurrencyToken();
+            entity.HasAlternateKey(x => new { x.AcademyId, x.ActorUserId, x.Id });
+            entity.HasIndex(x => new { x.AcademyId, x.ActorUserId, x.RequestId }).IsUnique();
+            entity.HasIndex(x => new { x.AcademyId, x.ActorUserId, x.ExpiresAtUtc });
+        });
+        modelBuilder.Entity<PentaConversationTurn>(entity =>
+        {
+            entity.Property(x => x.Capability).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.InputDigest).HasMaxLength(64).IsRequired();
+            entity.HasAlternateKey(x => new { x.AcademyId, x.ActorUserId, x.ConversationId, x.Id });
+            entity.HasIndex(x => new { x.AcademyId, x.ActorUserId, x.ConversationId, x.RequestId }).IsUnique();
+            entity.HasIndex(x => new { x.AcademyId, x.ActorUserId, x.ConversationId, x.CompletedContextVersion }).IsUnique();
+            entity.HasOne<PentaConversation>().WithMany().HasForeignKey(x => new { x.AcademyId, x.ActorUserId, x.ConversationId })
+                .HasPrincipalKey(x => new { x.AcademyId, x.ActorUserId, x.Id }).OnDelete(DeleteBehavior.Restrict);
+        });
+        modelBuilder.Entity<PentaConversationMessage>(entity =>
+        {
+            entity.Property(x => x.Role).HasMaxLength(20).IsRequired();
+            entity.Property(x => x.Content).HasMaxLength(250).IsRequired();
+            entity.HasIndex(x => new { x.AcademyId, x.ActorUserId, x.ConversationId, x.Sequence }).IsUnique();
+            entity.HasOne<PentaConversationTurn>().WithMany()
+                .HasForeignKey(x => new { x.AcademyId, x.ActorUserId, x.ConversationId, x.TurnId })
+                .HasPrincipalKey(x => new { x.AcademyId, x.ActorUserId, x.ConversationId, x.Id }).OnDelete(DeleteBehavior.Restrict);
+        });
 
         modelBuilder.Entity<PentaTask>(entity =>
         {

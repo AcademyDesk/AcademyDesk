@@ -1,0 +1,15 @@
+.page { max-width: 1300px; padding: 28px; margin: 0 auto; }
+.page header > span { color: var(--ad-accent); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+.page h1 { font-size: var(--ad-page-title-size); margin: 12px 0; }
+.page p { color: var(--ad-text-muted); font-size: 13px; }
+.grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 24px; }
+.grid section { padding: 22px; border: 1px solid var(--ad-border); border-radius: 14px; background: var(--ad-surface); }
+.grid h2 { font-size: 18px; margin: 0 0 8px; }
+.grid nav { display: grid; gap: 2px; margin-top: 20px; }
+.grid a, .unavailable { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 0; font-size: 14px; border-bottom: 1px solid var(--ad-border); }
+.grid a { color: var(--ad-accent); }
+.grid a:focus-visible { outline: 3px solid var(--ad-accent); outline-offset: 3px; }
+.unavailable { color: var(--ad-text-muted); }
+.unavailable small { font-size: 10px; text-align: right; }
+@media(max-width: 1050px) { .grid { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+@media(max-width: 600px) { .page { padding: 16px; } .grid { grid-template-columns: minmax(0,1fr); } }

@@ -491,7 +491,13 @@ internal static partial class SqlHarnessEntryPoint
         await VerifyPentaRecoveryCompletionRaceAsync(manifest, enabledFactory, academyA, tokenA);
         await VerifyPentaDraftApprovalAsync(manifest, enabledFactory, academyA, academyB,
             tokenA, tokenC, tokenB, teacher, platform);
+        await VerifyPentaConversationsAsync(manifest, academyA, academyB,
+            tokenA, tokenC, tokenB, teacher, platform);
+        if (Environment.GetEnvironmentVariable("QA_PENTA_MINI") == "1")
+            await VerifyPentaMiniAsync(manifest, academyA, academyB, tokenA, tokenC, tokenB, teacher);
         Console.WriteLine("PENTA PASS: real Identity/SQL, single dispatch/restart, concurrent tenant/user quota, scoped approval FK, known usage and unknown-outcome retention.");
+        if (Environment.GetEnvironmentVariable("QA_PENTA_BROWSER") == "1")
+            await ServePentaBrowserAsync(manifest, academyA);
     }
 
     private static async Task VerifyPentaStudentSearchAsync(QaRunManifest manifest,

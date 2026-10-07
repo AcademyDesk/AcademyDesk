@@ -5,6 +5,9 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { academyApi, apiUrl, clearPortalTokens } from "@/lib/api";
+import PentaWorkspace from "@/components/penta/penta-workspace";
+import { WorkspaceDirectory } from "@/components/penta/workspace-directory";
+import pentaShell from "@/components/penta/penta-shell.module.css";
 
 type NavigationItem = readonly [label: string, href: string];
 type AcademySubscription = {
@@ -25,6 +28,7 @@ const navigationGroups: readonly NavigationGroup[] = [
     icon: "▦",
     links: [
       ["Overview", "/dashboard"],
+      ["PENTA AI", "/penta"],
       ["Calendar", "/calendar"],
       ["Activity log", "/activity"],
       ["Reports", "/reports"],
@@ -193,7 +197,12 @@ export function EnterpriseShell({
     displayName: string;
     roles: string[];
     profileImageUrl?: string | null;
+    isPlatformOwner?: boolean;
   }>();
+  const [view, setView] = useState<"penta" | "workspace">(pathname === "/penta" ? "penta" : "workspace");
+  const [pentaVisited, setPentaVisited] = useState(pathname === "/penta");
+  const pentaEligible = !account?.isPlatformOwner && !!account?.roles.some(role => role === "Owner" || role === "AcademyAdmin");
+  const pentaView = view === "penta" && (pentaEligible || pathname === "/penta");
   const [profileOpen, setProfileOpen] = useState(false);
   const [profileMessage, setProfileMessage] = useState("");
   const [announcements, setAnnouncements] = useState<{ id: string; title: string; message: string }[]>([]);
@@ -216,15 +225,12 @@ export function EnterpriseShell({
   const activeSearchItems = financeOnly
     ? activeNavigationGroups.flatMap((group) => group.links ?? group.sections?.flatMap((section) => section.links) ?? [])
     : searchItems;
-  const results = useMemo(
-    () =>
-      activeSearchItems
+  const results = activeSearchItems
+        .filter(([, href]) => href !== "/penta" || pentaEligible)
         .filter(([label]) =>
           label.toLowerCase().includes(query.trim().toLowerCase()),
         )
-        .slice(0, 7),
-    [query, financeOnly],
-  );
+        .slice(0, 7);
   const resolvedAcademyName =
     academyName || workspaceName || "Academy workspace";
   const resolvedUserName =
@@ -281,10 +287,10 @@ export function EnterpriseShell({
     } catch {
       return new Set<string>(["Core"]);
     }
-  }, [subscription?.enabledModulesJson]);
+  }, [subscription]);
   const moduleIncluded = (href: string) => {
-    const module = routeModule(href);
-    return module === "Core" || enabledModules.has(module);
+    const moduleName = routeModule(href);
+    return moduleName === "Core" || enabledModules.has(moduleName);
   };
   const currentModuleIncluded = moduleIncluded(pathname);
   const moduleLabel = (module: string) => ({
@@ -324,6 +330,7 @@ export function EnterpriseShell({
 
   function LockedNavigationItem({ item }: { item: NavigationItem }) {
     const [label, href] = item;
+    if (href === "/penta" && !pentaEligible) return null;
     const included = moduleIncluded(href);
     if (included) return <Link href={href} data-active={isNavigationActive(href)}>{label}</Link>;
     return <button type="button" className="enterprise-locked-link" onClick={() => setUpgradeModule(routeModule(href))} aria-label={`${label} requires an upgrade`}><span>{label}</span><i aria-hidden="true">⌁</i></button>;
@@ -354,8 +361,7 @@ export function EnterpriseShell({
     return () => { document.removeEventListener("mousedown", closeOnOutsidePress); document.removeEventListener("keydown", closeOnEscape); };
   }, [notificationsOpen]);
 
-  useEffect(() => setProfileOpen(false), [pathname]);
-  useEffect(() => setNotificationsOpen(false), [pathname]);
+  // WorkspaceFrame keys the session boundary by pathname, resetting these menus on navigation.
   useEffect(() => {
     const menu = mobileWorkspaceNavRef.current?.querySelector("details");
     if (menu) menu.open = false;
@@ -389,7 +395,7 @@ export function EnterpriseShell({
 
   return (
     <EnterpriseShellContext.Provider value>
-      <div className="enterprise-app-shell">
+      <div className={`enterprise-app-shell ${pentaView ? pentaShell.aiShell : ""}`}>
         <aside className="enterprise-sidebar">
           <Link href="/dashboard" className="enterprise-brand">
             <span>A</span>
@@ -533,6 +539,7 @@ export function EnterpriseShell({
               </div>
             )}
           </header>
+          {(pentaEligible || pathname === "/penta") && <div className={pentaShell.banner}><div className={pentaShell.identity}><span aria-hidden="true">P</span><div><strong>Academy Desk PENTA AI</strong><small>{resolvedAcademyName}</small></div></div><div className={pentaShell.switcher} role="group" aria-label="Work view"><button type="button" aria-pressed={pentaView} onClick={() => { setPentaVisited(true); setView("penta"); }}>PENTA AI</button><button type="button" aria-pressed={!pentaView} onClick={() => setView("workspace")}>Workspace <small>Manual</small></button></div></div>}
           <nav
             ref={mobileWorkspaceNavRef}
             className="enterprise-mobile-workspace-nav"
@@ -570,9 +577,10 @@ export function EnterpriseShell({
             </details>
           </nav>
           {announcements.length > 0 && <div className="learner-announcement enterprise-admin-announcement" role="status"><span>Important</span><div><p>{announcements.map(item => `${item.title}: ${item.message}`).join("   •   ")}   •   {announcements.map(item => `${item.title}: ${item.message}`).join("   •   ")}</p></div></div>}
-          <div className={currentModuleIncluded ? undefined : "enterprise-locked-content"} aria-disabled={!currentModuleIncluded}>
-            {children}
-            {!currentModuleIncluded && <button type="button" className="enterprise-locked-content-overlay" onClick={() => setUpgradeModule(routeModule(pathname))} aria-label="Upgrade to use this feature"><span>Preview only · Upgrade to use this feature</span></button>}
+          <div className={currentModuleIncluded || pentaView ? undefined : "enterprise-locked-content"} aria-disabled={!currentModuleIncluded && !pentaView}>
+            <div hidden={pentaView}>{pathname === "/penta" ? <WorkspaceDirectory included={moduleIncluded} /> : children}</div>
+            <div hidden={!pentaView}>{pentaVisited && <PentaWorkspace active={pentaView} />}</div>
+            {!currentModuleIncluded && !pentaView && <button type="button" className="enterprise-locked-content-overlay" onClick={() => setUpgradeModule(routeModule(pathname))} aria-label="Upgrade to use this feature"><span>Preview only · Upgrade to use this feature</span></button>}
           </div>
           {upgradeModule && <div className="enterprise-upgrade-backdrop" role="presentation" onMouseDown={() => setUpgradeModule(undefined)}><section className="enterprise-upgrade-dialog" role="dialog" aria-modal="true" aria-labelledby="upgrade-title" onMouseDown={(event) => event.stopPropagation()}><span className="enterprise-upgrade-icon" aria-hidden="true">✦</span><p>PLAN UPGRADE</p><h2 id="upgrade-title">Unlock {moduleLabel(upgradeModule)}</h2><span>{moduleLabel(upgradeModule)} is not included with the {subscriptionLabel} plan. Your academy administrator can upgrade the subscription to activate it.</span><div><button type="button" className="enterprise-action-button enterprise-action-button-secondary" onClick={() => setUpgradeModule(undefined)}>Keep browsing</button><Link href="/admin/control" className="enterprise-action-button" onClick={() => setUpgradeModule(undefined)}>View subscription</Link></div></section></div>}
         </section>
