@@ -17,7 +17,7 @@ public sealed record InvoiceLedger
 }
 public sealed record LearnerBalance(string Currency, decimal Outstanding);
 public sealed record OutstandingLearner(Guid SourceId, string DisplayName, string[] Subjects,
-    LearnerBalance[] Balances, string SourcePath);
+    LearnerBalance[] Balances, string SourcePath, string? RecordCode = null);
 public sealed record OutstandingResult(int Count, bool HasMore, OutstandingLearner[] Rows, DateTime AsOfUtc,
     string Source = "Invoices / Completed + Reconciled payments / Active enrollments",
     string BalanceScope = "All outstanding fees for each student; subject filters select students, not course-specific invoices.");
@@ -53,7 +53,10 @@ public sealed class OutstandingFeesService(AcademyDeskDbContext db, TimeProvider
     {
         var students = db.Students.AsNoTracking().Where(s => s.AcademyId == academyId && s.IsActive);
         if (selected is { } id) students = students.Where(s => s.Id == id);
-        if (filters.TryGetValue("name", out var name)) students = students.Where(s => (s.FirstName + " " + s.LastName).Contains(name));
+        // The existing generic name argument can identify a learner by their academy
+        // record code too. Codes are not assumed unique and never confer authority.
+        if (filters.TryGetValue("name", out var name)) students = students.Where(s =>
+            (s.FirstName + " " + s.LastName).Contains(name) || s.StudentNumber != null && s.StudentNumber.Contains(name));
         if (filters.TryGetValue("subject", out var subject)) students = students.Where(s =>
             (from e in db.Enrollments
              join b in db.Batches on e.BatchId equals b.Id
@@ -85,7 +88,7 @@ public sealed class OutstandingFeesService(AcademyDeskDbContext db, TimeProvider
             ? students.OrderByDescending(s => grouped.Where(g => g.StudentId == s.Id).Sum(g => (decimal?)g.Outstanding) ?? 0).ThenBy(s => s.LastName).ThenBy(s => s.FirstName).ThenBy(s => s.Id)
             : students.OrderBy(s => s.LastName).ThenBy(s => s.FirstName).ThenBy(s => s.Id);
         var count = await students.CountAsync(token);
-        var page = await ordered.Select(s => new { s.Id, s.FirstName, s.LastName }).Take(10).ToArrayAsync(token);
+        var page = await ordered.Select(s => new { s.Id, s.FirstName, s.LastName, s.StudentNumber }).Take(10).ToArrayAsync(token);
         var ids = page.Select(s => s.Id).ToArray();
         var balances = await grouped.Where(g => ids.Contains(g.StudentId)).ToArrayAsync(token);
         var subjects = await (from e in db.Enrollments.AsNoTracking()
@@ -97,6 +100,6 @@ public sealed class OutstandingFeesService(AcademyDeskDbContext db, TimeProvider
         return new(count, count > page.Length, page.Select(s => new OutstandingLearner(s.Id,
             $"{s.FirstName} {s.LastName}", subjects.Where(c => c.StudentId == s.Id).Select(c => c.Name).Order().Take(5).ToArray(),
             balances.Where(g => g.StudentId == s.Id).OrderBy(g => g.Currency).Select(g => new LearnerBalance(g.Currency, g.Outstanding)).ToArray(),
-            $"/student-management?studentId={s.Id:D}")).ToArray(), clock.GetUtcNow().UtcDateTime);
+            $"/student-management?studentId={s.Id:D}", s.StudentNumber)).ToArray(), clock.GetUtcNow().UtcDateTime);
     }
 }

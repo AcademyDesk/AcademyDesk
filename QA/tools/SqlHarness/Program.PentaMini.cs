@@ -56,13 +56,13 @@ internal static partial class SqlHarnessEntryPoint
         var pianoBatch = new Batch { AcademyId = academyA, CourseId = piano.Id, Name = "Piano QA" };
         var extraPiano = new Batch { AcademyId = academyA, CourseId = piano.Id, Name = "Piano extra QA" };
         var guitarBatch = new Batch { AcademyId = academyA, CourseId = guitar.Id, Name = "Guitar QA" };
-        var ananya = new Student { AcademyId = academyA, FirstName = "Ananya", LastName = "Piano", Email = "private@example.invalid" };
-        var meera = new Student { AcademyId = academyA, FirstName = "Meera", LastName = "Piano" };
-        var duplicate = new Student { AcademyId = academyA, FirstName = "Meera", LastName = "Piano" };
+        var ananya = new Student { AcademyId = academyA, FirstName = "Ananya", LastName = "Piano", StudentNumber = "AD-A001", Email = "private@example.invalid" };
+        var meera = new Student { AcademyId = academyA, FirstName = "Meera", LastName = "Piano", StudentNumber = "AD-M001" };
+        var duplicate = new Student { AcademyId = academyA, FirstName = "Meera", LastName = "Piano", StudentNumber = "AD-M002" };
         var rohan = new Student { AcademyId = academyA, FirstName = "Rohan", LastName = "Guitar" };
         var clear = new Student { AcademyId = academyA, FirstName = "Clear", LastName = "Piano" };
         var inactive = new Student { AcademyId = academyA, FirstName = "Inactive", LastName = "Piano", IsActive = false };
-        var foreign = new Student { AcademyId = academyB, FirstName = "Foreign", LastName = "Private" };
+        var foreign = new Student { AcademyId = academyB, FirstName = "Foreign", LastName = "Private", StudentNumber = "AD-FOREIGN" };
         var fixtures = new[] { ananya, meera, duplicate, rohan, clear, inactive, foreign };
         var invoices = new[] {
             new Invoice { AcademyId = academyA, StudentId = ananya.Id, InvoiceNumber = "MINI-A", TotalAmount = 600, AdjustedAmount = 100, Status = "Paid" },
@@ -134,6 +134,26 @@ internal static partial class SqlHarnessEntryPoint
         var fourth = await Turn(admin, session with { Version = third.Version }, "Show the second one.");
         PentaRequire(fourth.Kind == "RESULT" && fourth.Result!.Rows.Single().SourceId == ananya.Id && fourth.Context.CurrentLearnerId == ananya.Id.ToString("D"), "REAL Mini ordinal did not resolve the second trusted current record.");
         Console.WriteLine("PENTA MINI REAL FLOW PASS: SQL pending=4 piano=3 sorted=400,300,200 second=Ananya balance=300; actual Qwen planning, no mock inference.");
+        var namedSession = await Create(admin);
+        var broad = await Turn(admin, namedSession, "Show students named Meera.");
+        PentaRequire(broad.Kind == "CLARIFICATION_REQUIRED" && broad.Result is { Count: 14, HasMore: true, Rows.Length: 10 } &&
+            broad.Context.CurrentLearnerId is null && broad.Context.CurrentResultIds.Length == 10,
+            "Broad ambiguous name search lost the total, bounded page or unselected state.");
+        var named = await Turn(admin, namedSession with { Version = broad.Version }, "Show students named Meera Piano.");
+        PentaRequire(named.Kind == "CLARIFICATION_REQUIRED" && named.Result is { Count: 2 } && named.Context.CurrentLearnerId is null &&
+            named.Result.Rows.Select(x => x.RecordCode).Order().SequenceEqual(new[] { "AD-M001", "AD-M002" }) &&
+            named.Context.CurrentResultIds.SequenceEqual(named.Result.Rows.Select(x => x.SourceId.ToString("D"))), "Ambiguous identity did not clarify with codes and trusted ordered references.");
+        var choice = await Turn(admin, namedSession with { Version = named.Version }, "Show the second one.");
+        PentaRequire(choice.Kind == "RESULT" && choice.Result!.Rows.Single().SourceId == named.Result!.Rows[1].SourceId,
+            "Clarified ordinal did not resolve the displayed current record.");
+        PentaRequire(!JsonSerializer.Serialize(named).Contains("private@example.invalid"), "Clarification leaked contact information.");
+        Console.WriteLine("PENTA MINI REAL NAME PASS: duplicate Meera clarified with two source codes; explicit ordinal selected the second trusted record.");
+        var codePrompt = await Turn(admin, await Create(admin), "Find student AD-M001.");
+        // Known real-model planning gap: evidence must never be relabelled a working
+        // code lookup. GetLearner receives an opaque code, not a displayed GUID.
+        PentaRequire(codePrompt.Kind == "CLARIFICATION_REQUIRED" && codePrompt.Result is null && codePrompt.Context.CurrentLearnerId is null,
+            "Known code-planning miss opened a record instead of failing safely.");
+        Console.WriteLine("PENTA MINI REAL CODE GAP: Find student AD-M001 proposes opaque GetLearner; guarded clarification/no source. Code-prompt product acceptance remains OPEN.");
         var emptyConversation = await Create(admin);
         var ordinal = await Turn(admin, emptyConversation, "Show the second one.");
         PentaRequire(ordinal.Result is null && ordinal.Kind is "CLARIFICATION_REQUIRED" or "UNSUPPORTED", "Ordinal without state triggered a read.");
@@ -170,6 +190,18 @@ internal static partial class SqlHarnessEntryPoint
             fake.Next = null;
             var offline = await Turn(client, await Create(client), "Check unavailable engine.");
             PentaRequire(offline.Kind == "ERROR" && offline.Result is null, "Provider outage did not yield safe manual fallback.");
+            foreach (var hint in new[] { "AD-M001", "AD-FOREIGN", "AD-NOTFOUND" })
+            {
+                fake.Next = new("0.1", "TOOL_REQUEST", "Request prepared.", new("SearchLearners", new() { ["name"] = JsonSerializer.SerializeToElement(hint) }), "READ", MiniState.Empty);
+                var lookup = await Turn(client, await Create(client), "Synthetic typed code search.");
+                PentaRequire(lookup.Kind == "RESULT" && lookup.Result!.Count == (hint == "AD-M001" ? 1 : 0) &&
+                    (hint != "AD-M001" || lookup.Result.Rows.Single().SourceId == meera.Id && lookup.Result.Rows.Single().RecordCode == hint),
+                    "Typed code filter returned the wrong source or crossed academy scope.");
+            }
+            fake.Next = new("0.1", "TOOL_REQUEST", "Request prepared.", new("GetLearner", new() { ["learner_id"] = JsonSerializer.SerializeToElement("AD-M001") }), "READ", MiniState.Empty);
+            var opaqueId = await Turn(client, await Create(client), "Synthetic invalid selected-ID proposal.");
+            PentaRequire(opaqueId.Kind == "CLARIFICATION_REQUIRED" && opaqueId.Result is null, "Opaque record code bypassed the current displayed-ID guard.");
+            Console.WriteLine("PENTA MINI CODE ADAPTER PASS: synthetic typed search verified own/foreign/unknown code SQL results; opaque GetLearner remains denied. Real-model code planning is NOT accepted.");
             fake.Next = new("0.1", "TOOL_REQUEST", "Request prepared.", new("SearchLearners", new() { ["balance_status"] = JsonSerializer.SerializeToElement("Pending") }), "READ", MiniState.Empty);
             fake.Entered = new(TaskCreationOptions.RunContinuationsAsynchronously);
             fake.Release = new(TaskCreationOptions.RunContinuationsAsynchronously);

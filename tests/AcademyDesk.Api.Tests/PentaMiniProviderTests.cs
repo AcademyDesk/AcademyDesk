@@ -77,6 +77,18 @@ public sealed class PentaMiniProviderTests
         Assert.False(PentaMiniTools.TrySearch(new("SearchLearners", new() { ["name"] = JsonSerializer.SerializeToElement(10) }), out _));
         Assert.False(PentaMiniTools.ValidState(new(null, [Guid.NewGuid().ToString("D"), "invented"], [], null)));
     }
+    [Theory]
+    [InlineData("Meera")]
+    [InlineData("AD-M001")]
+    [InlineData("AD-M002")]
+    public void Generic_search_accepts_names_and_record_codes_as_untrusted_filters(string hint)
+    {
+        Assert.True(PentaMiniTools.TrySearch(new("SearchLearners", new() { ["name"] = JsonSerializer.SerializeToElement(hint) }), out var state));
+        Assert.Equal(hint, state.Filters["name"]);
+        Assert.Empty(state.CurrentResultIds);
+        Assert.Null(state.CurrentLearnerId);
+        Assert.True(PentaMiniTools.ValidState(state));
+    }
     [Fact]
     public async Task Oversized_and_http_failure_are_bounded()
     {

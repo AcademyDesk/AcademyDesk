@@ -5,6 +5,9 @@ const { chromium } = require(process.env.QA_PLAYWRIGHT_MODULE || 'C:/Users/Admin
 const root = path.resolve(__dirname, '../..');
 const run = process.env.QA_PENTA_RUN;
 assert.match(run || '', /^[a-f0-9]{32}$/);
+// Fresh synthetic actor for a deliberate retest; never raise production quotas.
+const admin = process.env.QA_PENTA_BROWSER_ADMIN || 'a';
+assert.ok(['a', 'c'].includes(admin), 'Only the two owned same-academy fixture admins are allowed');
 const marker = path.join(process.env.TEMP, 'AcademyDesk-QA', run, '.qa-owner');
 assert.equal(fs.readFileSync(marker, 'utf8').split(/\r?\n/)[0], run, 'Exact disposable fixture ownership required');
 const origin = 'http://127.0.0.1:49542', api = 'http://127.0.0.1:49541';
@@ -28,7 +31,7 @@ const pass = name => { checks.push(name); console.log('PENTA MINI BROWSER PASS '
     await page.goto(origin + '/login');
     await page.getByRole('button', { name: 'Show password' }).click();
     await page.getByRole('button', { name: 'Hide password' }).click();
-    await page.getByLabel('User name', { exact: true }).fill('penta-admin-a@example.invalid');
+    await page.getByLabel('User name', { exact: true }).fill(`penta-admin-${admin}@example.invalid`);
     await page.getByLabel('Password', { exact: true }).fill('Synthetic!39Ab');
     const login = page.waitForResponse(r => r.url().startsWith(api + '/api/auth/login') && r.request().method() === 'POST');
     await page.getByRole('button', { name: 'Sign in', exact: true }).click();
@@ -37,14 +40,14 @@ const pass = name => { checks.push(name); console.log('PENTA MINI BROWSER PASS '
     await page.goto(origin + '/penta');
     await page.getByText('● Mini connected').waitFor({ timeout: 60000 });
     pass('real Identity login and Mini readiness');
-    async function send(text) {
+    async function send(text, kind = 'RESULT') {
       await page.getByLabel('Message PENTA AI', { exact: true }).fill(text);
       const native = page.waitForResponse(r => r.url().startsWith(api) && /\/penta\/chat\/conversations\/[^/]+\/turns$/.test(new URL(r.url()).pathname) && r.request().method() === 'POST', { timeout: 140000 });
       await page.getByRole('button', { name: 'Send ↑', exact: true }).click();
       const response = await native;
       assert.equal(response.status(), 201, 'Real turn response');
       const receipt = await response.json();
-      assert.equal(receipt.kind, 'RESULT', 'Must be a real verified tool result, not text or a canned answer');
+      assert.equal(receipt.kind, kind, 'Must be the expected source-backed result or guarded clarification');
       await page.getByRole('button', { name: 'Send ↑', exact: true }).waitFor();
       return receipt;
     }
@@ -79,10 +82,28 @@ const pass = name => { checks.push(name); console.log('PENTA MINI BROWSER PASS '
     await page.getByRole('button', { name: 'T Twin', exact: true }).click();
     assert.equal(await panel.getByText('Here is the selected student\'s verified fee summary.', { exact: true }).count(), 1);
     pass('capability help and shared conversation retained across capability switch');
+    assert.equal(http.filter(x => x.method === 'POST' && /\/turns$/.test(x.path)).length, 4, 'Original four turns remain unchanged');
+    await page.getByRole('button', { name: 'New conversation', exact: true }).click();
+    const named = await send('Show students named Meera Piano.', 'CLARIFICATION_REQUIRED');
+    assert.equal(named.result.count, 2);
+    assert.deepEqual(named.result.rows.map(row => row.recordCode).sort(), ['AD-M001', 'AD-M002']);
+    await panel.getByText('Student code: AD-M001', { exact: true }).waitFor();
+    await panel.getByText('Student code: AD-M002', { exact: true }).waitFor();
+    const choose = panel.getByRole('button', { name: /^Choose student 2:/ });
+    assert.equal(await choose.count(), 1);
+    const touch = await choose.boundingBox();
+    console.log('PENTA MINI CHOICE TARGET ' + JSON.stringify(await choose.evaluate(el => ({ width: el.getBoundingClientRect().width, height: el.getBoundingClientRect().height, minHeight: getComputedStyle(el).minHeight }))));
+    assert.ok(touch.height >= 44, 'Choice control has a touch-friendly target');
+    await choose.click();
+    assert.equal(await page.getByLabel('Message PENTA AI', { exact: true }).inputValue(), 'Show the second one.');
+    assert.equal(http.filter(x => x.method === 'POST' && /\/turns$/.test(x.path)).length, 5, 'Choosing only prepares a prompt; no silent model call');
+    pass('duplicate-name source cards and choice prepare explicit follow-up without automatic selection');
     for (const width of [320, 390, 1440]) {
       await page.setViewportSize({ width, height: width < 600 ? 844 : 1000 });
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, 'No horizontal overflow at ' + width);
       assert.ok(await page.getByLabel('Message PENTA AI', { exact: true }).isVisible());
+      const mobileTouch = await choose.boundingBox();
+      assert.ok(mobileTouch.height >= 44 && mobileTouch.width >= 44, 'Choice touch target at ' + width);
       await page.screenshot({ path: path.join(evidence, `penta-${width}-light.png`), fullPage: true });
       await page.getByLabel('Message PENTA AI', { exact: true }).scrollIntoViewIfNeeded();
       await page.screenshot({ path: path.join(evidence, `penta-${width}-latest-light.png`) });
@@ -93,10 +114,21 @@ const pass = name => { checks.push(name); console.log('PENTA MINI BROWSER PASS '
     await page.waitForTimeout(300); // allow existing 160–180ms theme transitions to finish
     await page.screenshot({ path: path.join(evidence, 'penta-1440-dark.png'), fullPage: true });
     await page.getByRole('button', { name: 'Use light theme', exact: true }).click();
+    const choice = await send('Show the second one.');
+    assert.equal(choice.result.rows[0].sourceId, named.result.rows[1].sourceId);
+    await panel.getByText('Here is the selected student\'s verified fee summary.', { exact: true }).waitFor();
+    assert.equal(await panel.getByRole('button', { name: /^Choose student / }).count(), 0, 'Old cards cannot select against new conversation state');
+    pass('explicit Send selects the current trusted ordinal; stale choice buttons removed');
+    await page.getByRole('button', { name: 'New conversation', exact: true }).click();
+    const codeGap = await send('Find student AD-M001.', 'CLARIFICATION_REQUIRED');
+    assert.equal(codeGap.result, null);
+    await panel.getByText('That identifier cannot be opened directly in this pilot. Search by student name first, then choose a displayed student. No record was opened.', { exact: true }).waitFor();
+    pass('known real-model code lookup gap fails safely with useful clarification, not a false success');
     fs.writeFileSync(path.join(evidence, 'browser-console.json'), JSON.stringify(errors, null, 2));
     assert.equal(errors.length, 0, 'No runtime/hydration exceptions');
-    assert.equal(http.filter(x => x.method === 'POST' && /\/turns$/.test(x.path)).length, 4, 'No automatic duplicate model calls');
-    pass('no browser runtime errors and exactly four turn POSTs');
+    assert.equal(http.filter(x => x.method === 'POST' && /\/turns$/.test(x.path)).length, 7, 'No automatic duplicate model calls');
+    assert.ok(http.filter(x => /\/turns$/.test(x.path)).every(x => x.status === 201), 'No 429 or failed HTTP turns');
+    pass('no browser runtime errors and exactly seven explicit turn POSTs');
     // Open the source after same-page preservation assertions: Next's development
     // route compilation may refresh peer tabs; navigation intentionally resets chat.
     const sourcePage = await context.newPage();
@@ -108,6 +140,6 @@ const pass = name => { checks.push(name); console.log('PENTA MINI BROWSER PASS '
     await sourcePage.close();
     assert.equal(errors.length, 0, 'Source link must not introduce console/hydration errors');
     pass('verified source opens Ananya Student 360 with matching adjusted INR 300 and no hydration error');
-    fs.writeFileSync(path.join(evidence, 'browser-result.json'), JSON.stringify({ run, checks, errors, http, sourceIds: third.result.rows.map(row => row.sourceId), ordinal: fourth.result.rows[0].sourceId, physicalDevices: 'NOT RUN' }, null, 2));
+    fs.writeFileSync(path.join(evidence, 'browser-result.json'), JSON.stringify({ run, fixtureAdmin: admin, checks, errors, http, sourceIds: third.result.rows.map(row => row.sourceId), ordinal: fourth.result.rows[0].sourceId, physicalDevices: 'NOT RUN' }, null, 2));
   } finally { await browser.close(); }
 })().catch(error => { console.error('PENTA MINI BROWSER FAIL ' + error.message); process.exitCode = 1; });

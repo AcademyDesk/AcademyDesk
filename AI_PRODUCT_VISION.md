@@ -1,10 +1,20 @@
 # Academy Desk PENTA — product vision
 
+## Standing priority — 2026-10-08
+
+The owner reaffirmed **90% AI-assisted / approved-automated eligible academy operations and 10% manual control** as the product target. Build frontend, shared domain services, protected tools and tests together, not a finished-looking chat over missing backend actions. One continuous conversational PENTA AI is the primary workspace; the manual directory remains available for precision, exceptions and recovery. Pulse, Executor, Navigator, Twin and Autopilot are five capabilities of that one experience.
+
+Plan a conversational route for every permitted operational workflow, beyond CRUD: search, explanations, onboarding, enrollment, classes, attendance, fees, payroll, communications, learning, growth, reporting and approved automation. Missing details are collected in chat; structured cards/previews and optional contextual controls support complex input. Reuse already supplied, verified details. Secure credentials stay outside model/chat storage. Destructive, financial, security, external-send and bulk operations retain explicit policy/approval gates; the 90% goal never overrides authority or safety.
+
+The visual target is a premium familiar AI-chat interaction: conversation-first canvas, accessible composer, New/Recent conversations when private history is implemented, source-backed rich answers, clear real progress, clickable capability help and collapsible contextual controls. Manual operations are discoverable without dominating the AI mode. Do not copy another product's branding or pretend unavailable features are live.
+
+"As smart as other AI" is a quality ambition, not an established capability. Current private Qwen3.5-2B Mini is a narrow tool planner, not demonstrated general-assistant parity. Establish held-out academy-language/reasoning/clarification evaluations, tool/argument accuracy, fact grounding, latency and useful task outcomes before claiming intelligence improvements. Genuine engine limitations return with evidence to the existing Mini project; no automatic hosted-model fallback, replacement engine or training. See [paired delivery plan](ACADEMY_DESK_PRODUCT_ROADMAP.md#paired-delivery-plan--2026-10-08).
+
 ## Current conversational requirement — 2026-10-04
 
 Academy Desk **PENTA AI** is a prompt-first, continuous conversational operating layer, not just CRUD or a domain-selector search form. Pulse, Executor, Navigator, Twin and Autopilot work within one conversation with verified context, minimal clarification, rich source-backed replies and governed actions. The top switch is **PENTA AI | Workspace**; selecting Executor opens chat, each capability has accessible clickable `!` help, and a collapsible context rail supports the conversation. Manual operations remain clearly listed and available for fallback and precision.
 
-See [PENTA-002](PENTA_CONVERSATIONAL_ARCHITECTURE.md) for the conversation/message/context, runtime, authority, tools, approval, history/privacy, cost, streaming and UI contracts, and the [complete requirement map](QA/REPORTS/PENTA_CONVERSATIONAL_GAP_MAP.md) for implementation gaps. Broader scheduling, finance, communications, growth, learning, explanation and automation follow source-specific gates. Owning PENTA does not require training a foundation model from scratch; the live conversational runtime is still undecided and disabled. These requirements supersede narrower command/search wording below without replacing the enterprise program or deterministic ERP.
+See [PENTA-002](PENTA_CONVERSATIONAL_ARCHITECTURE.md) for the conversation/message/context, runtime, authority, tools, approval, history/privacy, cost, streaming and UI contracts, and the [complete requirement map](QA/REPORTS/PENTA_CONVERSATIONAL_GAP_MAP.md) for implementation gaps. Broader scheduling, finance, communications, growth, learning, explanation and automation follow source-specific gates. Owning PENTA does not require training a foundation model from scratch; the existing private Mini now supports the bounded local read pilot, while production runtime approval remains open. These requirements supersede narrower command/search wording below without replacing the enterprise program or deterministic ERP.
 
 Academy Desk should evolve into an **AI-native academy operating system**.
 
@@ -12,7 +22,7 @@ The target is not traditional ERP plus a chatbot.
 
 ## Target experience
 
-The target is 80–90% of eligible daily operations completed with AI assistance or approved automation, with 10–20% manual control for precision, exceptions, fallback, administration, and governance. Measure these outcomes; this is not a claim of current automation or a mandate to automate every decision.
+The current target is **90%** of eligible daily operations completed with AI assistance or approved automation, with **10%** manual control for precision, exceptions, fallback, administration, and governance. Measure these outcomes; this is not a claim of current automation or a mandate to automate every decision. User confirmations within a conversational workflow count as human oversight, not autonomous execution.
 
 The existing ERP is not discarded. The existing Next.js frontend, ASP.NET Core backend, database, APIs, permissions, business rules, and workflows remain the deterministic platform and control foundation.
 

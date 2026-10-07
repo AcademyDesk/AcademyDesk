@@ -42,6 +42,10 @@
 .ordinal { color:var(--ad-accent); font-weight:700; }
 .active { color:var(--ad-text-muted); font-size:11px; border:1px solid var(--ad-border); padding:3px 8px; border-radius:12px; }
 .cards p { color:var(--ad-text-muted); font-size:12px; }
+.cards .recordCode { color:var(--ad-accent); font-weight:600; overflow-wrap:anywhere; }
+/* The shared legacy workspace forces compact button sizing. Keep this new chat
+   choice touch-friendly without changing other portals' controls. */
+.page .cards footer button { color:var(--ad-accent); background:var(--ad-accent-soft); font-size:12px; min-height:44px!important; min-width:44px; box-sizing:border-box; padding:10px 14px; }
 .balances { display:flex; flex-wrap:wrap; gap:16px; padding:10px 0; }
 .balances strong { font-size:20px; letter-spacing:-.03em; }
 .balances small { display:block; font-size:11px; font-weight:400; letter-spacing:0; color:var(--ad-text-muted); margin-top:5px; }

@@ -31,7 +31,9 @@ public sealed class AcademyDeskConnector(PentaFinancePolicy policy, OutstandingF
         else if (call.Name == "GetLearner")
         {
             if (call.Arguments.Count != 1 || !call.Arguments.TryGetValue("learner_id", out var id) ||
-                id.ValueKind != System.Text.Json.JsonValueKind.String || !Guid.TryParse(id.GetString(), out var value)) return Invalid(trusted);
+                id.ValueKind != System.Text.Json.JsonValueKind.String) return Invalid(trusted);
+            if (!Guid.TryParse(id.GetString(), out var value))
+                return new("CLARIFICATION_REQUIRED", "That identifier cannot be opened directly in this pilot. Search by student name first, then choose a displayed student. No record was opened.", trusted);
             // Model IDs have no authority. Only a current displayed, private result may be opened.
             if (!trusted.CurrentResultIds.Contains(value.ToString("D")))
                 return new("CLARIFICATION_REQUIRED", "Search first, then choose a student from the displayed results.", trusted);
@@ -48,6 +50,8 @@ public sealed class AcademyDeskConnector(PentaFinancePolicy policy, OutstandingF
                 next = next with { CurrentResultIds = [result.Rows[0].SourceId.ToString("D")] };
             }
             else next = next with { CurrentResultIds = result.Rows.Select(x => x.SourceId.ToString("D")).ToArray(), CurrentLearnerId = null };
+            if (selected is null && next.Filters.ContainsKey("name") && result.Count > 1)
+                return new("CLARIFICATION_REQUIRED", "More than one student matches. Compare the record codes and references below, then choose a displayed student or refine your search. No student has been selected.", next, result);
             return new("RESULT", selected is not null ? "Here is the selected student's verified fee summary." :
                 result.Count == 0 ? "No students match these filters." : $"Found {result.Count} matching student{(result.Count == 1 ? "" : "s")}. Showing {result.Rows.Length}.", next, result);
         }

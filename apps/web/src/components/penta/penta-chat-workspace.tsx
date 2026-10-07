@@ -7,7 +7,7 @@ import styles from "./penta-chat.module.css";
 
 type Context = { academyId: string; name: string; timeZone: string };
 type Session = { conversationId: string; version: number; expiresAtUtc: string };
-type Row = { sourceId: string; displayName: string; subjects: string[]; balances: { currency: string; outstanding: number }[]; sourcePath: string };
+type Row = { sourceId: string; displayName: string; recordCode?: string | null; subjects: string[]; balances: { currency: string; outstanding: number }[]; sourcePath: string };
 type Receipt = { conversationId: string; requestId: string; version: number; kind: string; message: string; capability: string; provider: string; protocol: string; context: { filters: Record<string, string>; sort_by: string | null }; result: null | { count: number; hasMore: boolean; rows: Row[]; asOfUtc: string; source: string; balanceScope: string } };
 type Turn = { prompt: string; receipt: Receipt };
 const caps = [
@@ -18,6 +18,7 @@ const caps = [
   ["autopilot", "A", "Autopilot", "Controlled, approved automation, planned. No background actions are enabled."],
 ] as const;
 const guid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const ordinals = ["first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth", "tenth"];
 function validReceipt(value: Receipt, session: Session, requestId: string) {
   return value && value.conversationId === session.conversationId && value.requestId === requestId && value.version === session.version + 1 &&
     value.protocol === "0.1" && value.provider === "PENTA Mini" && typeof value.message === "string" && value.context &&
@@ -25,7 +26,7 @@ function validReceipt(value: Receipt, session: Session, requestId: string) {
     (value.result === null || Number.isSafeInteger(value.result.count) && value.result.count >= 0 &&
       Number.isFinite(Date.parse(value.result.asOfUtc)) && Array.isArray(value.result.rows) && value.result.rows.length <= 10 &&
       new Set(value.result.rows.map(row => row.sourceId)).size === value.result.rows.length && value.result.rows.every(row =>
-        guid.test(row.sourceId) && typeof row.displayName === "string" && row.sourcePath === `/student-management?studentId=${row.sourceId}` &&
+        guid.test(row.sourceId) && typeof row.displayName === "string" && (row.recordCode == null || typeof row.recordCode === "string") && row.sourcePath === `/student-management?studentId=${row.sourceId}` &&
         Array.isArray(row.subjects) && row.subjects.every(subject => typeof subject === "string") && Array.isArray(row.balances) && row.balances.every(balance =>
           /^[A-Z]{3}$/.test(balance.currency) && Number.isFinite(balance.outstanding) && balance.outstanding >= 0)));
 }
@@ -130,12 +131,33 @@ export default function PentaChatWorkspace({ active = true }: { active?: boolean
     <div className={styles.layout}><section className={styles.conversation} aria-label="PENTA conversation">
       <div className={styles.chatHead}><span>{context?.name || "Checking academy access…"}</span><button type="button" disabled={busy} onClick={startNew}>New conversation</button></div>
       <div className={styles.messages} aria-live="polite" aria-relevant="additions" aria-busy={busy}>
-        {!turns.length && !busy && <div className={styles.welcome}><span className={styles.orb}>P</span><h2>What needs your attention?</h2><p>Start with outstanding fees. Then narrow, sort or open a student without leaving the conversation.</p><button type="button" disabled={!context || blocked} onClick={() => { setPrompt("Show students with pending fees."); input.current?.focus(); }}>Show students with pending fees ↗</button><small>Active students only · Up to 10 results per read</small></div>}
-        {turns.map((turn, index) => <article key={turn.receipt.requestId} className={styles.turn}><p className={styles.user}><span>You</span>{turn.prompt}</p><div className={styles.assistant}><span className={styles.byline}>PENTA AI · {turn.receipt.kind === "RESULT" ? "Verified read" : turn.receipt.kind.replaceAll("_", " ")}</span><p>{turn.receipt.message}</p>{turn.receipt.result && <><p className={styles.source}>As of {new Date(turn.receipt.result.asOfUtc).toLocaleString("en-IN", { timeZone: context?.timeZone || "Asia/Kolkata" })} · {turn.receipt.result.source}</p><ol className={styles.cards}>{turn.receipt.result.rows.map((row, rowIndex) => <li key={row.sourceId}><div><span className={styles.ordinal}>{rowIndex + 1}</span><h3>{row.displayName}</h3><span className={styles.active}>Active</span></div><p>{row.subjects.join(" · ") || "No active course"}</p><div className={styles.balances}>{row.balances.length ? row.balances.map(balance => <strong key={balance.currency}>{balance.currency} {balance.outstanding.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<small>Outstanding</small></strong>) : <strong>No outstanding fees</strong>}</div><footer><details><summary>Record reference</summary><code>{row.sourceId}</code></details><Link href={row.sourcePath}>Open Student 360 ↗</Link></footer></li>)}</ol>{turn.receipt.result.hasMore && <p className={styles.source}>Showing the first 10. Refine your prompt to find fewer students.</p>}<p className={styles.scope}>{turn.receipt.result.balanceScope}</p></>}{index === turns.length - 1 && latest?.result && <p className={styles.followup}>Try “Only piano”, “Highest first”, or “Show the second one”.</p>}</div></article>)}
+        {!turns.length && !busy && <div className={styles.welcome}><span className={styles.orb}>P</span><h2>What needs your attention?</h2><p>Find a student by name, check fees, then refine your request in conversation. If several students match, you choose using their record codes and references.</p><button type="button" disabled={!context || blocked} onClick={() => { setPrompt("Show students with pending fees."); input.current?.focus(); }}>Show students with pending fees ↗</button><small>Or ask “Show students named [name]” · Active students only · Up to 10 results</small><small>Direct student-code prompts are not supported reliably yet.</small></div>}
+        {turns.map((turn, index) => <article key={turn.receipt.requestId} className={styles.turn}>
+          <p className={styles.user}><span>You</span>{turn.prompt}</p>
+          <div className={styles.assistant}>
+            <span className={styles.byline}>PENTA AI · {turn.receipt.kind === "RESULT" ? "Verified read" : turn.receipt.kind.replaceAll("_", " ")}</span><p>{turn.receipt.message}</p>
+            {turn.receipt.result && <>
+              <p className={styles.source}>As of {new Date(turn.receipt.result.asOfUtc).toLocaleString("en-IN", { timeZone: context?.timeZone || "Asia/Kolkata" })} · {turn.receipt.result.source}</p>
+              <ol className={styles.cards}>{turn.receipt.result.rows.map((row, rowIndex) => <li key={row.sourceId}>
+                <div><span className={styles.ordinal}>{rowIndex + 1}</span><h3>{row.displayName}</h3><span className={styles.active}>Active</span></div>
+                <p className={styles.recordCode}>Student code: {row.recordCode || "Not assigned"}</p>
+                <p>{row.subjects.join(" · ") || "No active course"}</p>
+                <div className={styles.balances}>{row.balances.length ? row.balances.map(balance => <strong key={balance.currency}>{balance.currency} {balance.outstanding.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<small>Outstanding</small></strong>) : <strong>No outstanding fees</strong>}</div>
+                <footer>
+                  <details><summary>Record reference</summary><code>{row.sourceId}</code></details><Link href={row.sourcePath}>Open Student 360 ↗</Link>
+                  {index === turns.length - 1 && turn.receipt.kind === "CLARIFICATION_REQUIRED" && <button type="button" disabled={busy || blocked || !active} aria-label={`Choose student ${rowIndex + 1}: ${row.displayName}${row.recordCode ? ` (${row.recordCode})` : ""}`} onClick={() => { setPrompt(`Show the ${ordinals[rowIndex]} one.`); input.current?.focus(); }}>Choose student {rowIndex + 1}</button>}
+                </footer>
+              </li>)}</ol>
+              {turn.receipt.result.hasMore && <p className={styles.source}>Showing the first 10. Refine your prompt to find fewer students.</p>}
+              <p className={styles.scope}>{turn.receipt.result.balanceScope}</p>
+            </>}
+            {index === turns.length - 1 && latest?.result && <p className={styles.followup}>{latest.kind === "CLARIFICATION_REQUIRED" ? "Choose a student to prepare your follow-up, then press Send. Nothing is selected automatically." : "Try “Only piano”, “Highest first”, or “Show the second one”."}</p>}
+          </div>
+        </article>)}
         {busy && <div className={styles.turn}><p className={styles.user}><span>You</span>{pendingPrompt}</p><p role="status" className={styles.thinking}>PENTA Mini is interpreting your request. Academy Desk will authorize and verify the read…</p></div>}
         <div ref={tail} />
       </div>
-      <form className={styles.composer} onSubmit={send}><label htmlFor="penta-prompt">Message PENTA AI</label><textarea ref={input} id="penta-prompt" rows={2} maxLength={2000} value={prompt} disabled={busy || !context || blocked} placeholder="Ask about your academy’s pending fees…" onChange={event => setPrompt(event.target.value)} onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} /><div><small>Enter to send · Shift + Enter for a new line</small><button type="submit" disabled={busy || !context || blocked || !prompt.trim()}>{busy ? "Thinking…" : "Send ↑"}</button></div><p className={styles.privacy}>Prompts are not saved to SQL. This view stays in memory; reload starts a new conversation. No automatic retries or actions.</p>{error && <p role="alert" className={styles.error}>{error}</p>}</form>
+      <form className={styles.composer} onSubmit={send}><label htmlFor="penta-prompt">Message PENTA AI</label><textarea ref={input} id="penta-prompt" rows={2} maxLength={2000} value={prompt} disabled={busy || !context || blocked} placeholder="Find a student by name, or ask about fees…" onChange={event => setPrompt(event.target.value)} onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} /><div><small>Enter to send · Shift + Enter for a new line</small><button type="submit" disabled={busy || !context || blocked || !prompt.trim()}>{busy ? "Thinking…" : "Send ↑"}</button></div><p className={styles.privacy}>Prompts are not saved to SQL. This view stays in memory; reload starts a new conversation. No automatic retries or actions.</p>{error && <p role="alert" className={styles.error}>{error}</p>}</form>
     </section><aside className={styles.rail}><details open><summary>Context & control</summary><dl><dt>Academy</dt><dd>{context?.name || "Unverified"}</dd><dt>Available tools</dt><dd>Search students · Read selected student</dd><dt>Current filters</dt><dd>{latest ? Object.entries(latest.context.filters).map(([key, value]) => `${key.replaceAll("_", " ")}: ${value}`).join(" · ") || "None" : "None"}</dd><dt>Sort</dt><dd>{latest?.context.sort_by === "outstanding_desc" ? "Outstanding · highest first" : "Student name"}</dd><dt>Authority</dt><dd>Current Owner/Admin + Finance. Your own academy only.</dd><dt>Model</dt><dd>Private PENTA Mini · Protocol 0.1</dd></dl></details><details open><summary>Manual workspace</summary><p>Direct control remains available. AI does not change your records.</p><Link href="/invoices">Invoices ↗</Link><Link href="/payments">Payments ↗</Link><Link href="/students">Students ↗</Link><Link href="/batch-setup">Classes & batches ↗</Link></details></aside></div>
   </main>;
 }
