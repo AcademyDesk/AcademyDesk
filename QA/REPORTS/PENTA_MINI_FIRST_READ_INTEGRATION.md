@@ -1,6 +1,6 @@
 # PENTA Mini — first real read integration
 
-Date: 2026-10-07. Worktree `D:\AcademyDesk-codex-p0`; branch `codex/penta-search`; starting HEAD `f8389a77ff731ebc5a095f42a1d72d2671f22e18`. Implementation commit is recorded in the latest `AI_HANDOFF.md` checkpoint after publication.
+Date: 2026-10-07. Worktree `D:\AcademyDesk-codex-p0`; branch `codex/penta-search`; starting HEAD `f8389a77ff731ebc5a095f42a1d72d2671f22e18`. Validated implementation commit `856058dd613c757abf0812baffe5c078b5e9d88a`; subsequent documentation checkpoint records this SHA before normal feature-branch publication. Verify the current remote tip; no main merge or Azure deployment.
 
 Scope: **Outstanding Fees Conversational Search**, one continuous prompt-first PENTA AI experience with a preserved Manual Workspace. Local/private, default-off, Development/Testing-only, current own-academy Owner/Admin + Finance. This is the first read-only local product slice, **not production acceptance or completion of enterprise testing**.
 
