@@ -50,6 +50,8 @@ Known limitations: CPU inference latency; narrow phrase/tool pilot, not guarante
 
 Starting branch tip `bd1422e31687e50dfa63c6f17233c8041ac9ae0b`. The owner authorized continuation and reaffirmed the 90% AI-assisted / approved-automated eligible-workflow target, 10% manual control, and frontend/backend delivery together. [The existing product roadmap](../../ACADEMY_DESK_PRODUCT_ROADMAP.md#paired-delivery-plan--2026-10-08) now retains completed checkpoints and separates nine remaining delivery packages, not nine small jobs. No claim of general-assistant parity or current 90% automation.
 
+Validated implementation commit: `4bdaf71537099327aff2036ecb1478a9285a8a5a`. Twelve-file staged scope/secret scan found no probable real credentials; local evidence excluded. Documentation checkpoint and normal feature-branch publication follow; no main merge or Azure authorization.
+
 ### Changes and boundaries
 
 - Shared source read accepts the existing generic `name` argument against student name or StudentNumber; returns nullable source record code. Exact codes remain academy-scoped, and partial-code searches can match more than one record. No new protocol, permission, model runtime or financial arithmetic.
