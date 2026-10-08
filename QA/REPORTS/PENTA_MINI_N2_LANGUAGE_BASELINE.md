@@ -71,3 +71,83 @@ Prioritize a separately authorized, bounded **Mini planning-contract improvement
 Existing N1 API/SQL/browser evidence is retained, not rerun or overwritten by a planning-only benchmark. Its temporary owned SQL/browser bridge and final teardown are separate from this run. No new SQL container is created or removed here; no other container is pruned. QA/EVIDENCE remains intentionally local. All existing enterprise/P0, privacy/history/key-ring, physical-device and Azure gates remain open.
 
 Model route: Sol High for consequential planning/context integration fixes; Sol Medium for routine repeat evaluation or bounded reviewed UI work. No Astra audit repeat or external-tool handoff. Genuine engine failures need a separately scoped change in the **existing** Mini project and frozen regression plus fresh held-out validation, not a silent host-side parser or authority relaxation.
+
+## N2a continuation — 2026-10-08
+
+After the owner's continuation, raw evidence established genuine engine/tool-description
+failures. The existing Mini was reopened **only** for code-versus-ID planning,
+explicit-code guard handling and sort-context protection, plus the regression
+guard described below. This follows the supplied Mini directive's engine-repair
+exception; the original QA-only packet above did not itself modify or authorize
+engine edits. No replacement engine, weights, training, hosted fallback,
+Academy application code, schemas, credentials or permissions changed.
+
+Mini candidate: `71c2cc5aea7e580d55bbb66aa9307df043f1ba5c`, branch
+`codex/academy-language-contract`, repository `D:\PENTA AI Models`. Candidate
+service/package 0.1.1, prompt planner-0.2, protocol 0.1. Source report:
+`D:\PENTA AI Models\docs\academy-language-2026-10-08.md`.
+
+Eight raw baseline replays scored 0/8 exact: N2-15 stopped in the pronoun guard,
+N2-16 rejected code-as-name semantics, N2-25/26 proposed opaque GetLearner,
+N2-19 proposed sort-only without context; N2-08/11/14 showed the separate
+correction/reset failures. Code hints now reach inference; prompt/tool metadata
+direct codes to SearchLearners(name), and sort-only plans cannot silently drop
+filters. There is no host regex prompt rewrite, relaxed displayed-ID guard or
+automatic invalid GetLearner conversion. All source/tenant/finance checks remain
+owned by the existing Academy gateway/connector.
+
+The initial candidate scored 22/26 and introduced a safe N2-20 classification
+miss (unsupported removal became clarification). It remains in evidence. The
+existing Mini mutation guard was extended for remove/permanently remove/delete;
+the final candidate returns UNSUPPORTED without inference. This does not enable
+any destructive tool or claim comprehensive natural-language safety.
+
+| Final candidate measurement | Observed |
+| --- | ---: |
+| Frozen regression, unchanged expectations | 23/26 exact |
+| Previously new phrases / known-code controls after repair | 21/24 / 2/2 |
+| Diagnostic contract / state / displayed-ID compatibility | 26/26 each |
+| Original five prohibited/restricted no-call probes | 5/5 |
+| Median / nearest-rank p95, final sequential planning run | 8.530 s / 14.398 s |
+| Fresh eight unique phrase observations | 7/8 exact |
+| Complete Mini Python tests / unchanged Academy evaluator checks | 71 / 25 PASS |
+| Existing real-inference six-turn synthetic mock chain | 6/6; final send not executed |
+
+The 23/26 score is **regression after repair**, not new held-out accuracy.
+N2-08 (subject correction), N2-11 (corrected ordinal) and N2-14 (clear filters)
+still fail. Fresh FRESH-04 (new code lookup plus clearing old filters) also fails;
+no prompt was retuned or expected result changed after observing it. Fresh suite
+digest `2b52d29034b294e1d639d25b14a24db1ef16e9ace2d59bea29a2942bc21eb26a`
+was frozen before inference. Six observations completed before a host/Docker
+interruption; the remaining two completed once afterward. The count is not one
+continuous run and no pooled latency is reported. FRESH-07 tests generic Mini
+L003 compatibility, not an authorized Academy displayed-GUID read. The unchanged
+Academy grader explicitly rejects its host identity compatibility.
+
+Final tested orchestrator digest:
+`87815b3d0dbf76a0cb3a545ffd1dd9e72517dcce75e97528c88c243540504fc1`.
+The unchanged Academy grader reproduced all final 26 exact grades. Local
+evidence under `QA/EVIDENCE/penta-mini-n2a-20261008/` includes baseline raw
+plans, first candidate failures, final regression, interrupted fresh segment,
+remaining fresh segment, six-turn synthetic receipt and offline `regrade.json`.
+Mini's corresponding `results/` artifacts remain ignored. Neither is committed.
+Compilation/diff checks pass; staged Mini 12-file scan found no probable real
+secrets. Older 50/230-case inference and 1,107 Academy API/build/SQL/browser
+evidence are retained, **not rerun** in this engine packet.
+
+Candidate tests imported temporary owned source inside the existing API container
+against the existing private inference. Docker Desktop was safely restarted;
+no other container was pruned or removed. Serving Mini remains **0.1.0 /
+planner-0.1**, not this candidate. The prior disposable viewing bridge is now
+unavailable/expired after the interruption; its final SQL snapshot/teardown is
+not newly asserted. Preserve its stopped owned container and local evidence
+until controlled reconciliation/cleanup, never blanket prune.
+
+**N1 and N2 remain PARTIAL / OPEN.** Next: rebuild only the existing local Mini
+API from the pinned candidate, verify runtime identity/readiness, then require
+real authenticated gateway + disposable SQL + browser code-lookup/source
+acceptance while preserving foreign/unknown-code and opaque-ID denials. Only
+then update the user-visible capability wording. Separately repair the remaining
+correction/ordinal/reset failures with frozen and new fresh cases. No main merge,
+Azure, production data, new role/tool access, domain writes, physical-device or
+enterprise-gate closure. Stay on the repository's Sol High engineering route.
