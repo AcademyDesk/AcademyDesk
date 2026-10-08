@@ -96,16 +96,31 @@ try {
             $qaHarness = Join-Path $qaRepo ".build-check/$qaArtifact/bin/SqlHarness/debug/SqlHarness.dll"
             if (!(Test-Path -LiteralPath $qaHarness)) { throw 'Build the isolated Course SQL harness first.' }
             $qaCommand = @($qaHarness, $qaRun, $qaPort, $qaContainer, $qaSwitch)
+        } elseif ($Module -eq 'PentaFoundation') {
+            $qaHarness = Join-Path $qaRepo '.build-check/penta-mini-sql/bin/SqlHarness/debug/SqlHarness.dll'
+            if (!(Test-Path -LiteralPath $qaHarness)) { throw 'Build the isolated PENTA harness with --artifacts-path .build-check/penta-mini-sql first.' }
+            $qaCommand = @($qaHarness, $qaRun, $qaPort, $qaContainer, $qaSwitch)
         } else { $qaCommand = @('run', '--project', 'QA/tools/SqlHarness/SqlHarness.csproj', '--no-build', '--', $qaRun, $qaPort, $qaContainer, $qaSwitch) }
+        # Windows PowerShell must not turn native stderr into a terminating
+        # error before the regression's exit code and stack trace are captured.
+        $qaPriorErrorAction = $ErrorActionPreference
+        try {
+        $ErrorActionPreference = 'Continue'
+        $qaUnhandled = $false
+        $qaHarnessCompleted = $false
         dotnet @qaCommand 2>&1 | ForEach-Object {
             $qaLine=$_.ToString()
+            if ($qaLine -match '^Unhandled exception') { $qaUnhandled = $true }
+            if ($qaLine -match '^PASS: application migrations=\d+, identity migrations=\d+, scoped runtime login verified; run-owned database and login removed\.$') { $qaHarnessCompleted = $true }
             if ($qaLine -match '^(PENTA|GRADE|ROSTER|ACADEMICACCESS|ACADEMICOPTIONS|ATTENDANCENOTES|CALENDARDETAILS|SCHEDULEDEFAULTS|LEAVEIDENTITY|MAKEUPLOCATION|CHANNELROUNDTRIP|CHANNELCHOICE|INBOXLIFE|CONSENTACCESS|TEMPLATESTATE|MARKETING|REVIEWCONTEXT|SUBMISSIONIDENTITY|PRACTICEIDENTITY|RESOURCESCOPE|COMPLIANCE|CERTIFICATE|CERTFAMILY|GUARDIANFLAGS|ANNOUNCEMENTAUDIENCE|ACTIVITYDELETE|PLATFORMBILLING|TENANTPLAN|TRIALDURATION|PLATFORMPROVISION|PORTALPROVISION|ACADEMYPROVISION|PROVISIONRACE|PROVISIONCONFLICT|ROLEREPLACE|ROLESESSION|PROVISIONUI|CERTPORTAL|PAYPORTAL|SESSIONBROWSER|SESSIONREVOCATION|SESSIONREFRESH|REFRESHFLIGHT)') { Write-Output $qaLine; return }
-            if ($qaLine -match '^(SECURITY-FILE|CLASSMATERIAL|Runtime inventory|Created run-owned|HTTP controls|Tenant controls|FINANCE|ADJUSTMENT|PAYROLL|TRANSITION|CONSUMER|ACCESS|AUDIT|PEOPLE|LINKED|BRANCH|BATCHPRESERVE|BATCHTIMES|COURSEPRESERVE|PREREQUISITE|YEARCLOSURE|PROMOTION|LOOKUP|GOVERNANCE|COLLECTIONS|INVOICESETTINGS|Negative cleanup|PASS:|Unhandled exception)' -or $_ -is [System.Management.Automation.ErrorRecord]) { Write-Output $qaLine }
+            if ($qaLine -match '^(SECURITY-FILE|CLASSMATERIAL|Runtime inventory|Created run-owned|HTTP controls|Tenant controls|FINANCE|ADJUSTMENT|PAYROLL|TRANSITION|CONSUMER|ACCESS|AUDIT|PEOPLE|LINKED|BRANCH|BATCHPRESERVE|BATCHTIMES|COURSEPRESERVE|PREREQUISITE|YEARCLOSURE|PROMOTION|LOOKUP|GOVERNANCE|COLLECTIONS|INVOICESETTINGS|Negative cleanup|PASS:|Unhandled exception)' -or ($qaUnhandled -and $qaLine -match '^\s+at SqlHarnessEntryPoint\.') -or $_ -is [System.Management.Automation.ErrorRecord]) { Write-Output $qaLine }
         }
         $qaExit=$LASTEXITCODE
+        } finally { $ErrorActionPreference = $qaPriorErrorAction }
     } finally { Pop-Location }
     Write-Output "QA $Module exit=$qaExit elapsedSeconds=$([Math]::Round(([DateTime]::UtcNow-$qaStarted).TotalSeconds,1))"
     if ($qaExit -ne 0) { throw "Regression failed; retained exact owned container $qaContainer" }
+    if (!$qaHarnessCompleted) { throw "Harness did not confirm final database/login teardown; retained exact owned container $qaContainer" }
     $qaInspect=docker inspect $qaContainer | ConvertFrom-Json
     if ($LASTEXITCODE -ne 0 -or $qaInspect[0].Name -ne "/$qaContainer" -or $qaInspect[0].Config.Labels.'academydesk.qa.run' -ne $qaRun -or $qaInspect[0].NetworkSettings.Ports.'1433/tcp'[0].HostIp -ne '127.0.0.1') { throw 'Refused container cleanup: ownership mismatch.' }
     docker stop $qaContainer

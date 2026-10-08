@@ -149,11 +149,25 @@ internal static partial class SqlHarnessEntryPoint
         PentaRequire(!JsonSerializer.Serialize(named).Contains("private@example.invalid"), "Clarification leaked contact information.");
         Console.WriteLine("PENTA MINI REAL NAME PASS: duplicate Meera clarified with two source codes; explicit ordinal selected the second trusted record.");
         var codePrompt = await Turn(admin, await Create(admin), "Find student AD-M001.");
-        // Known real-model planning gap: evidence must never be relabelled a working
-        // code lookup. GetLearner receives an opaque code, not a displayed GUID.
-        PentaRequire(codePrompt.Kind == "CLARIFICATION_REQUIRED" && codePrompt.Result is null && codePrompt.Context.CurrentLearnerId is null,
-            "Known code-planning miss opened a record instead of failing safely.");
-        Console.WriteLine("PENTA MINI REAL CODE GAP: Find student AD-M001 proposes opaque GetLearner; guarded clarification/no source. Code-prompt product acceptance remains OPEN.");
+        PentaRequire(codePrompt.Kind == "RESULT" && codePrompt.Result is { Count: 1, Rows.Length: 1 } &&
+            codePrompt.Result.Rows[0].SourceId == meera.Id && codePrompt.Result.Rows[0].RecordCode == "AD-M001" &&
+            codePrompt.Result.Rows[0].Balances.Single().Outstanding == 400 &&
+            codePrompt.Context.Filters.GetValueOrDefault("name") == "AD-M001" &&
+            codePrompt.Context.CurrentResultIds.SequenceEqual(new[] { meera.Id.ToString("D") }) &&
+            codePrompt.Context.CurrentLearnerId is null,
+            "Real code prompt did not return exactly the authorized SQL source and ledger balance via name search.");
+        foreach (var hint in new[] { "AD-M001", "AD-FOREIGN", "AD-NOTFOUND" })
+        {
+            var lookup = await Turn(admin, await Create(admin), $"Search students named {hint}.");
+            PentaRequire(lookup.Kind == "RESULT" && lookup.Result is not null &&
+                lookup.Result.Count == (hint == "AD-M001" ? 1 : 0) &&
+                lookup.Result.Rows.Length == lookup.Result.Count &&
+                lookup.Context.Filters.GetValueOrDefault("name") == hint &&
+                (hint != "AD-M001" || lookup.Result.Rows.Single().SourceId == meera.Id &&
+                    lookup.Result.Rows.Single().RecordCode == hint && lookup.Result.Rows.Single().Balances.Single().Outstanding == 400),
+                $"Real-model code search failed case={hint} kind={lookup.Kind} count={lookup.Result?.Count} rows={lookup.Result?.Rows.Length} name={lookup.Context.Filters.GetValueOrDefault("name")}; expected exact scoped source search.");
+        }
+        Console.WriteLine("PENTA MINI REAL CODE PASS: both own-code phrasings return AD-M001/Meera/INR400 from SQL; foreign and unknown codes return zero records.");
         var emptyConversation = await Create(admin);
         var ordinal = await Turn(admin, emptyConversation, "Show the second one.");
         PentaRequire(ordinal.Result is null && ordinal.Kind is "CLARIFICATION_REQUIRED" or "UNSUPPORTED", "Ordinal without state triggered a read.");
@@ -201,7 +215,7 @@ internal static partial class SqlHarnessEntryPoint
             fake.Next = new("0.1", "TOOL_REQUEST", "Request prepared.", new("GetLearner", new() { ["learner_id"] = JsonSerializer.SerializeToElement("AD-M001") }), "READ", MiniState.Empty);
             var opaqueId = await Turn(client, await Create(client), "Synthetic invalid selected-ID proposal.");
             PentaRequire(opaqueId.Kind == "CLARIFICATION_REQUIRED" && opaqueId.Result is null, "Opaque record code bypassed the current displayed-ID guard.");
-            Console.WriteLine("PENTA MINI CODE ADAPTER PASS: synthetic typed search verified own/foreign/unknown code SQL results; opaque GetLearner remains denied. Real-model code planning is NOT accepted.");
+            Console.WriteLine("PENTA MINI CODE ADAPTER PASS: synthetic typed search verified own/foreign/unknown code SQL results; opaque GetLearner remains denied separately from real-model code acceptance.");
             fake.Next = new("0.1", "TOOL_REQUEST", "Request prepared.", new("SearchLearners", new() { ["balance_status"] = JsonSerializer.SerializeToElement("Pending") }), "READ", MiniState.Empty);
             fake.Entered = new(TaskCreationOptions.RunContinuationsAsynchronously);
             fake.Release = new(TaskCreationOptions.RunContinuationsAsynchronously);

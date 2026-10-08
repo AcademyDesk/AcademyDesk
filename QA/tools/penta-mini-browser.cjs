@@ -120,15 +120,36 @@ const pass = name => { checks.push(name); console.log('PENTA MINI BROWSER PASS '
     assert.equal(await panel.getByRole('button', { name: /^Choose student / }).count(), 0, 'Old cards cannot select against new conversation state');
     pass('explicit Send selects the current trusted ordinal; stale choice buttons removed');
     await page.getByRole('button', { name: 'New conversation', exact: true }).click();
-    const codeGap = await send('Find student AD-M001.', 'CLARIFICATION_REQUIRED');
-    assert.equal(codeGap.result, null);
-    await panel.getByText('That identifier cannot be opened directly in this pilot. Search by student name first, then choose a displayed student. No record was opened.', { exact: true }).waitFor();
-    pass('known real-model code lookup gap fails safely with useful clarification, not a false success');
+    const code = await send('Find student AD-M001.');
+    assert.equal(code.result.count, 1);
+    assert.equal(code.result.rows.length, 1);
+    assert.equal(code.result.rows[0].sourceId, third.result.rows[0].sourceId);
+    assert.equal(code.result.rows[0].recordCode, 'AD-M001');
+    assert.equal(code.result.rows[0].displayName, 'Meera Piano');
+    assert.equal(code.result.rows[0].balances[0].outstanding, 400);
+    assert.equal(code.context.filters.name, 'AD-M001');
+    assert.equal(code.context.current_learner_id, null, 'Code search cannot bypass displayed-record selection');
+    await panel.getByText('Student code: AD-M001', { exact: true }).waitFor();
+    assert.equal(await panel.getByRole('link', { name: 'Open Student 360 ↗' }).last().getAttribute('href'), code.result.rows[0].sourcePath);
+    await page.setViewportSize({ width: 390, height: 844 });
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+    await page.getByLabel('Message PENTA AI', { exact: true }).scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(evidence, 'penta-code-390-light.png') });
+    pass('actual Mini code prompt returns exactly the authorized Meera source and INR 400 ledger balance');
+    for (const hint of ['AD-FOREIGN', 'AD-NOTFOUND']) {
+      await page.getByRole('button', { name: 'New conversation', exact: true }).click();
+      const empty = await send(`Search students named ${hint}.`);
+      assert.equal(empty.result.count, 0);
+      assert.deepEqual(empty.result.rows, []);
+      assert.equal(empty.context.filters.name, hint);
+      assert.equal(await panel.getByRole('link', { name: 'Open Student 360 ↗' }).count(), 0);
+    }
+    pass('foreign and unknown code searches show zero source cards without disclosure');
     fs.writeFileSync(path.join(evidence, 'browser-console.json'), JSON.stringify(errors, null, 2));
     assert.equal(errors.length, 0, 'No runtime/hydration exceptions');
-    assert.equal(http.filter(x => x.method === 'POST' && /\/turns$/.test(x.path)).length, 7, 'No automatic duplicate model calls');
+    assert.equal(http.filter(x => x.method === 'POST' && /\/turns$/.test(x.path)).length, 9, 'No automatic duplicate model calls');
     assert.ok(http.filter(x => /\/turns$/.test(x.path)).every(x => x.status === 201), 'No 429 or failed HTTP turns');
-    pass('no browser runtime errors and exactly seven explicit turn POSTs');
+    pass('no browser runtime errors and exactly nine explicit turn POSTs');
     // Open the source after same-page preservation assertions: Next's development
     // route compilation may refresh peer tabs; navigation intentionally resets chat.
     const sourcePage = await context.newPage();
@@ -137,9 +158,12 @@ const pass = name => { checks.push(name); console.log('PENTA MINI BROWSER PASS '
     await sourcePage.goto(origin + fourth.result.rows[0].sourcePath);
     await sourcePage.getByRole('heading', { name: 'Ananya Piano', exact: true }).waitFor({ timeout: 60000 });
     await sourcePage.getByRole('button', { name: /Fees.*₹300/ }).waitFor({ timeout: 60000 });
+    await sourcePage.goto(origin + code.result.rows[0].sourcePath);
+    await sourcePage.getByRole('heading', { name: 'Meera Piano', exact: true }).waitFor({ timeout: 60000 });
+    await sourcePage.getByRole('button', { name: /Fees.*₹400/ }).waitFor({ timeout: 60000 });
     await sourcePage.close();
     assert.equal(errors.length, 0, 'Source link must not introduce console/hydration errors');
-    pass('verified source opens Ananya Student 360 with matching adjusted INR 300 and no hydration error');
-    fs.writeFileSync(path.join(evidence, 'browser-result.json'), JSON.stringify({ run, fixtureAdmin: admin, checks, errors, http, sourceIds: third.result.rows.map(row => row.sourceId), ordinal: fourth.result.rows[0].sourceId, physicalDevices: 'NOT RUN' }, null, 2));
+    pass('verified Student 360 sources match adjusted Ananya INR 300 and code-selected Meera INR 400 without hydration errors');
+    fs.writeFileSync(path.join(evidence, 'browser-result.json'), JSON.stringify({ run, fixtureAdmin: admin, checks, errors, http, sourceIds: third.result.rows.map(row => row.sourceId), ordinal: fourth.result.rows[0].sourceId, codeSourceId: code.result.rows[0].sourceId, codeRecord: code.result.rows[0].recordCode, codeOutstanding: 400, emptyCodeCases: 2, physicalDevices: 'NOT RUN' }, null, 2));
   } finally { await browser.close(); }
 })().catch(error => { console.error('PENTA MINI BROWSER FAIL ' + error.message); process.exitCode = 1; });

@@ -151,3 +151,15 @@ then update the user-visible capability wording. Separately repair the remaining
 correction/ordinal/reset failures with frozen and new fresh cases. No main merge,
 Azure, production data, new role/tool access, domain writes, physical-device or
 enterprise-gate closure. Stay on the repository's Sol High engineering route.
+
+## N2b superseding runtime pointer — 2026-10-08
+
+The above N2a activation instructions and serving version are historical.
+[N2b local runtime checkpoint](PENTA_MINI_N2B_CODE_RUNTIME_ACCEPTANCE.md) records
+Mini `e3ef442` serving 0.1.2/planner-0.3, actual code lookup through SQL/browser,
+72 unit tests, 24/26 frozen regressions and final code/fresh sets 4/4 each.
+The final owned run completed teardown; the older interrupted container remains
+preserved. N1/N2 remain PARTIAL/OPEN: corrected ordinal/reset, earlier combined
+code/reset and the unresolved same-source sequence failure still need work.
+Next reproduce that failure with safe per-turn diagnostics, not another N2a
+activation or a retry-until-green closure. No main merge or Azure.
