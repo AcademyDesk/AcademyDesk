@@ -153,3 +153,14 @@ domain write, model training or external specialist handoff.
 
 Next route: repository Sol High for consequential context/runtime debugging;
 Sol Medium for bounded visual/docs work after contracts pass. No Astra audit repeat.
+
+## Superseding checkpoint — N2c, 2026-10-08
+
+[N2c positional-read report](PENTA_MINI_N2C_POSITIONAL_RUNTIME_GUARD.md)
+now records three reproduced baseline failures with safe provider/receipt evidence
+and three final repaired SQL trials, plus nine browser turns and owned teardown.
+The historical missing-receipt failure is not retroactively proven. Existing Mini
+serves 0.1.3/planner-0.4; frozen language remains 24/26. Complex corrected ordinal,
+reset and earlier combined code/reset remain open. Continue those gaps with Sol
+High; the instruction above to reproduce the sequence is now historical. No
+enterprise/P0/privacy/device/release closure, main merge or Azure.

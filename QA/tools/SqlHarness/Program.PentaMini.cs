@@ -13,9 +13,32 @@ using AcademyDesk.Api.Tests.Infrastructure;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.TestHost;
 
 internal static partial class SqlHarnessEntryPoint
 {
+    // QA-only decorator: delegates exactly once to the registered real provider.
+    // Synthetic receipt diagnostics survive key-ring teardown; never log bearer
+    // tokens, connection settings, model prose, contacts or production prompts.
+    private sealed class MiniSequenceTrace
+    {
+        public Dictionary<string, object> Plans { get; } = [];
+        public int Turn { get; set; }
+        public required string Folder { get; init; }
+    }
+    private sealed class MiniTraceProvider(IPentaProvider inner, MiniSequenceTrace trace) : IPentaProvider
+    {
+        public async Task<MiniProviderOutcome> PlanAsync(MiniPlanRequest request, CancellationToken token)
+        {
+            var outcome = await inner.PlanAsync(request, token);
+            trace.Plans[request.ConversationId] = new {
+                inputState = request.State, kind = outcome.Plan?.Kind, error = outcome.Error,
+                tool = outcome.Plan?.ToolCall, returnedState = outcome.Plan?.State
+            };
+            return outcome;
+        }
+        public Task<string> ReadinessAsync(CancellationToken token) => inner.ReadinessAsync(token);
+    }
     private sealed class MiniAuditFault : DbCommandInterceptor
     {
         public bool Enabled { get; set; }
@@ -45,11 +68,21 @@ internal static partial class SqlHarnessEntryPoint
         string tokenA, string tokenC, string tokenB, string teacher)
     {
         var settings = new Dictionary<string, string?> { ["Penta:Enabled"] = "true", ["Penta:Mini:Enabled"] = "true" };
-        using var factory = new QaApiFactory(manifest, settings);
+        var trace = new MiniSequenceTrace { Folder = Path.GetFullPath(Path.Combine("QA", "EVIDENCE", $"penta-mini-{manifest.RunId:N}", "sequence")) };
+        using var ownedFactory = new QaApiFactory(manifest, settings);
+        using var factory = ownedFactory.WithWebHostBuilder(builder => builder.ConfigureTestServices(services => {
+            var real = services.Last(x => x.ServiceType == typeof(IPentaProvider));
+            PentaRequire(real.ImplementationFactory is not null, "Real Mini provider registration changed; diagnostic decoration refused.");
+            services.Remove(real);
+            services.AddTransient<IPentaProvider>(sp => new MiniTraceProvider((IPentaProvider)real.ImplementationFactory!(sp), trace));
+        }));
         using var admin = factory.CreateClient();
         admin.Timeout = TimeSpan.FromSeconds(140);
         admin.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenA);
-        PentaRequire(factory.PreflightPassed, "Mini host missed owned SQL preflight.");
+        using var trialAdmin = factory.CreateClient();
+        trialAdmin.Timeout = TimeSpan.FromSeconds(140);
+        trialAdmin.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenC);
+        PentaRequire(ownedFactory.PreflightPassed, "Mini host missed owned SQL preflight.");
         var path = $"/api/academies/{academyA}/penta/chat";
         var piano = new ProgramCourse { AcademyId = academyA, Name = "Piano", SubjectArea = "Piano" };
         var guitar = new ProgramCourse { AcademyId = academyA, Name = "Guitar", SubjectArea = "Guitar" };
@@ -113,26 +146,69 @@ internal static partial class SqlHarnessEntryPoint
         {
             using var response = await client.PostAsJsonAsync($"{path}/conversations/{session.ConversationId}/turns", new MiniTurnInput(requestId ?? Guid.NewGuid(), session.Version, prompt, "executor"));
             PentaRequire(response.StatusCode == HttpStatusCode.Created, $"Mini turn returned {(int)response.StatusCode}.");
-            return (await response.Content.ReadFromJsonAsync<MiniReceipt>())!;
+            var receipt = (await response.Content.ReadFromJsonAsync<MiniReceipt>())!;
+            if (ReferenceEquals(client, admin) || ReferenceEquals(client, trialAdmin))
+            {
+                Directory.CreateDirectory(trace.Folder);
+                var number = ++trace.Turn;
+                var diagnostic = new {
+                    run = manifest.RunId, turn = number, conversation = session.ConversationId,
+                    expectedVersion = session.Version, status = (int)response.StatusCode,
+                    plan = trace.Plans.GetValueOrDefault(session.ConversationId.ToString("D")),
+                    receipt = new { receipt.Version, receipt.Kind, receipt.Context, count = receipt.Result?.Count,
+                        rows = receipt.Result?.Rows.Select(x => new { x.SourceId, x.RecordCode, x.DisplayName, x.Balances }) }
+                };
+                File.WriteAllText(Path.Combine(trace.Folder, $"turn-{number:D2}.json"), JsonSerializer.Serialize(diagnostic, new JsonSerializerOptions { WriteIndented = true }));
+                Console.WriteLine($"PENTA MINI TRACE turn={number} version={receipt.Version} kind={receipt.Kind} count={receipt.Result?.Count} rows={receipt.Result?.Rows.Length}; synthetic plan/state retained locally.");
+            }
+            return receipt;
         }
         using (var ready = await admin.GetAsync(path + "/health"))
         {
             var state = await ready.Content.ReadAsStringAsync();
             PentaRequire(ready.StatusCode == HttpStatusCode.OK && state.Contains("Available"), $"REAL Mini readiness failed: HTTP {(int)ready.StatusCode}; {state}");
         }
-        var session = await Create(admin);
-        var first = await Turn(admin, session, "Show students with pending fees.");
+        async Task<(MiniSessionView Session, MiniReceipt Fourth)> FourTurnFlow(HttpClient flowAdmin)
+        {
+        var session = await Create(flowAdmin);
+        var first = await Turn(flowAdmin, session, "Show students with pending fees.");
         PentaRequire(first.Kind == "RESULT" && first.Result is { Count: 4 } && first.Result.Rows.All(x => x.SourceId != foreign.Id && x.SourceId != inactive.Id && x.SourceId != clear.Id), "Pending SQL result was not exactly the four authorized active owing learners.");
         PentaRequire(first.Result!.Rows.Single(x => x.SourceId == meera.Id).Balances.Single().Outstanding == 400 &&
             first.Result.Rows.Single(x => x.SourceId == ananya.Id).Balances.Single().Outstanding == 300, "Completed/Reconciled/adjusted source balances are incorrect.");
-        var second = await Turn(admin, session with { Version = first.Version }, "Only piano.");
+        var second = await Turn(flowAdmin, session with { Version = first.Version }, "Only piano.");
         PentaRequire(second.Kind == "RESULT" && second.Result is { Count: 3 } && second.Context.Filters.GetValueOrDefault("balance_status") == "Pending" &&
             second.Result.Rows.Count(x => x.DisplayName == "Meera Piano") == 2, "Piano refinement lost state or duplicated enrollment amounts/names.");
-        var third = await Turn(admin, session with { Version = second.Version }, "Highest first.");
+        var third = await Turn(flowAdmin, session with { Version = second.Version }, "Highest first.");
         PentaRequire(third.Kind == "RESULT" && third.Result!.Rows.Select(x => x.SourceId).SequenceEqual(new[] { meera.Id, ananya.Id, duplicate.Id }) &&
             third.Result.Rows.Select(x => x.Balances.Single().Outstanding).SequenceEqual(new decimal[] { 400, 300, 200 }), "Authoritative source sort was incorrect.");
-        var fourth = await Turn(admin, session with { Version = third.Version }, "Show the second one.");
-        PentaRequire(fourth.Kind == "RESULT" && fourth.Result!.Rows.Single().SourceId == ananya.Id && fourth.Context.CurrentLearnerId == ananya.Id.ToString("D"), "REAL Mini ordinal did not resolve the second trusted current record.");
+        var fourth = await Turn(flowAdmin, session with { Version = third.Version }, "Show the second one.");
+        PentaRequire(fourth.Kind == "RESULT" && fourth.Result is { Count: 1, Rows.Length: 1 } && fourth.Result.Rows[0].SourceId == ananya.Id && fourth.Context.CurrentLearnerId == ananya.Id.ToString("D"), "REAL Mini ordinal did not resolve exactly the second trusted current record.");
+        return (session, fourth);
+        }
+        // Fixed before inference, not a retry loop: every trial counts and any
+        // failure makes the diagnostic batch fail. No successful-trial selection.
+        var flows = new List<(MiniSessionView Session, MiniReceipt Fourth)>();
+        var failures = new List<string>();
+        var trialCount = Environment.GetEnvironmentVariable("QA_PENTA_SEQUENCE_TRIALS") == "3" ? 3 : 1;
+        for (var trial = 1; trial <= trialCount; trial++)
+        {
+            // Existing second same-academy fixture admin owns extra diagnostic
+            // sessions, so the original actor's security/fault checks retain
+            // their unchanged quota budget. Never raise a production limit.
+            try { flows.Add(await FourTurnFlow(trial == 1 ? admin : trialAdmin)); Console.WriteLine($"PENTA MINI SEQUENCE trial={trial}/{trialCount} PASS"); }
+            catch (InvalidOperationException ex) { failures.Add($"trial={trial}: {ex.Message}"); Console.WriteLine($"PENTA MINI SEQUENCE trial={trial}/{trialCount} FAIL: {ex.Message}"); }
+        }
+        if (failures.Count > 0)
+        {
+            await using var scope = factory.Services.CreateAsyncScope();
+            var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+            var invoiceCount = await db.Invoices.CountAsync(x => invoices.Select(i => i.Id).Contains(x.Id));
+            var paymentCount = await db.Payments.CountAsync(x => invoices.Select(i => i.Id).Contains(x.InvoiceId));
+            Console.WriteLine($"PENTA MINI SEQUENCE failed={failures.Count}/{trialCount}; synthetic invoices={invoiceCount} payments={paymentCount}; no failed observation discarded.");
+            PentaRequire(invoiceCount == 8 && paymentCount == 7, "Diagnostic reads mutated finance rows.");
+        }
+        PentaRequire(failures.Count == 0, $"Fixed Mini sequence diagnostic failed {failures.Count}/{trialCount}: {string.Join("; ", failures)}");
+        var (session, fourth) = flows[0];
         Console.WriteLine("PENTA MINI REAL FLOW PASS: SQL pending=4 piano=3 sorted=400,300,200 second=Ananya balance=300; actual Qwen planning, no mock inference.");
         var namedSession = await Create(admin);
         var broad = await Turn(admin, namedSession, "Show students named Meera.");
