@@ -1,5 +1,9 @@
 # Academy Desk PENTA — product vision
 
+## Shared visual identity — 2026-10-09
+
+Academy Desk PENTA and standalone PENTA AI are independently sellable products with one Core/Mini/protocol/design language, not a standalone dependency on Academy Desk. Academy is initial integrated design authority. [PENTA design system 0.1](PENTA_DESIGN_SYSTEM.md) governs conversation/composer/results/status, future actions/approvals/feedback, accessible responsive themes and eventual compatible components in distinct shells. Validate the integrated first real read before package extraction or standalone commercial screens. One assistant/five capability contexts; manual ERP remains fully available. Initial local UI token/help/touch/focus improvements are not five-capability/model/production completion.
+
 ## Lead ownership — 2026-10-09
 
 Academy Desk owns the full integrated PENTA frontend/UX, connector, host authorization/domain execution and end-to-end quality. Mini owns reusable Core/inference, shared canonical Tool Protocol, conversational interpretation/model-level context and learning interfaces. One shared engine serves multiple products; Academy is the first connector, not a mandatory Core dependency. The standalone commercial frontend is a later separate track. This supersedes the earlier frontend-skip instruction. Read [current dependency and return packet](PENTA_HANDOFF_TO_MINI.md); shared draft contracts are not enabled runtimes.

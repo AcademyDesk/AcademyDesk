@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { academyApi, isPortalSignOutEvent } from "@/lib/api";
 import styles from "./penta-chat.module.css";
+import design from "./penta-design.module.css";
 
 type Context = { academyId: string; name: string; timeZone: string };
 type Session = { conversationId: string; version: number; expiresAtUtc: string };
@@ -125,7 +126,7 @@ export default function PentaChatWorkspace({ active = true }: { active?: boolean
     } finally { if (revision === generation.current) { setBusy(false); input.current?.focus(); } }
   }
 
-  return <main className={styles.page}>
+  return <main className={`${design.system} ${styles.page}`} data-penta-ui="0.1">
     <header className={styles.heading}><div><span className={styles.eyebrow}>Academy Desk PENTA AI</span><h1>Your academy. One conversation.</h1><p>Ask naturally. Follow up. Every fee amount comes from your academy’s ledger.</p></div><span className={styles.status}>{health === "Available" ? "● Mini connected" : `Mini · ${health}`}<small>Private · Read-only pilot</small></span></header>
     <nav className={styles.capabilities} aria-label="PENTA capabilities">{caps.map(([id, letter, title, description]) => <div key={id}><button type="button" aria-pressed={capability === id} onClick={() => { setCapability(id); input.current?.focus(); }}><span>{letter}</span>{title}</button><button type="button" className={styles.help} aria-label={`About ${title}`} aria-expanded={help === id} onClick={event => { helpTrigger.current = event.currentTarget; setHelp(help === id ? null : id); }}>!</button>{help === id && <div className={styles.helpText} role="note"><strong>{title}</strong><p>{description}</p><button type="button" onClick={() => { setHelp(null); helpTrigger.current?.focus(); }}>Close</button></div>}</div>)}</nav>
     <div className={styles.layout}><section className={styles.conversation} aria-label="PENTA conversation">
