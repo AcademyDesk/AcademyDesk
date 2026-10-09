@@ -10,7 +10,7 @@ namespace AcademyDesk.Api.Controllers;
 public sealed class MakeupClassesController(AcademyDeskDbContext db) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult> List(Guid academyId, CancellationToken token) => Ok(await db.MakeupClasses.AsNoTracking().Where(x => x.AcademyId == academyId).OrderBy(x => x.StartUtc).Select(x => new MakeupSummary(x.Id, x.StudentId, x.BatchId, x.TeacherId, x.StartUtc, x.EndUtc, x.DeliveryMode, x.Venue, x.MeetingLink, x.UsesNextScheduledClass, x.Status, x.Notes)).ToListAsync(token));
+    public async Task<ActionResult> List(Guid academyId, CancellationToken token) => Ok(await db.MakeupClasses.AsNoTracking().Where(x => x.AcademyId == academyId).OrderBy(x => x.StartUtc).Select(x => new MakeupSummary(x.Id, x.StudentId, x.BatchId, x.TeacherId, DateTime.SpecifyKind(x.StartUtc, DateTimeKind.Utc), DateTime.SpecifyKind(x.EndUtc, DateTimeKind.Utc), x.DeliveryMode, x.Venue, x.MeetingLink, x.UsesNextScheduledClass, x.Status, x.Notes)).ToListAsync(token));
 
     [HttpPost]
     public async Task<ActionResult> Create(Guid academyId, CreateMakeupRequest request, CancellationToken token)

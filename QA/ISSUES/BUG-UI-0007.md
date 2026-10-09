@@ -4,7 +4,7 @@
 | --- | --- |
 | Status | OPEN |
 | Confirmation status | CONTROLLED-TSX REPRODUCED; EXPORTED-DOM RETEST PASS |
-| Final verification | PARTIAL: class HTTP/SQL UTC + captured-response DOM PASS; other sources/live browser/critical/device OPEN |
+| Final verification | PARTIAL: all three calendar GET UTC sources + 16 live browser combinations PASS; critical/device OPEN |
 | Severity | Major schedule date inconsistency |
 | Priority | P1 |
 | Category | UI |
@@ -36,6 +36,17 @@
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
 ## Current repair checkpoint — 2026-10-09
+
+[Direct live retest](../REPORTS/PHASE_2B_CALENDAR_LIVE_SQL_BROWSER.md): Events
+and Makeup GET projections now mark known SQL UTC values without changing ticks.
+Fresh SQL checks both start/end and unchanged row/status/count snapshots. Real
+login→Schedule cancellation→Calendar/reload PASS across 16 combinations, all
+three sources displaying consistent IST month/year/day/time. 840 forwarded
+responses all 200, no console/429; full 1,130 API / 332 controlled / 32 original
+synthetic browser / 18 guards PASS and owned cleanup verified. Critical/physical
+gates remain OPEN. Narrow visual readability is separately OPEN as BUG-UI-0008.
+
+### Earlier class-only SQL checkpoint
 
 [Class cancellation SQL retest](../REPORTS/PHASE_2B_CALENDAR_CANCELLATION_SQL_RETEST.md)
 exposed missing UTC Z after SQL datetime2 readback. Class and Teacher session

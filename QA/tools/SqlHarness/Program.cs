@@ -264,7 +264,9 @@ static async Task VerifyRealHttpAsync(QaRunManifest manifest, bool classMediaOnl
     try
     {
         var linkedFault = auditMode is "--audit-linked-baseline" or "--audit-linked-fixed" or "--audit-branch-fixed" ? new LinkedIdentitySqlFault() : null;
-        using var factory = new QaApiFactory(manifest, isolatedIdentityInterceptor: linkedFault);
+        var calendarBrowser = auditMode == "--audit-calendar-details" && Environment.GetEnvironmentVariable("QA_CALENDAR_BROWSER") == "1";
+        var calendarOrigin = calendarBrowser ? ValidateCalendarBrowserOrigin() : null;
+        using var factory = new QaApiFactory(manifest, calendarOrigin is null ? null : new Dictionary<string,string?> { ["Cors:AllowedOrigins:0"] = calendarOrigin.GetLeftPart(UriPartial.Authority) }, isolatedIdentityInterceptor: linkedFault);
         using var client = factory.CreateClient(new() { AllowAutoRedirect = false });
         if (!factory.PreflightPassed)
             throw new InvalidOperationException("The HTTP host did not pass the QA preflight.");
@@ -409,6 +411,7 @@ static async Task VerifyRealHttpAsync(QaRunManifest manifest, bool classMediaOnl
             if (auditMode == "--audit-calendar-details")
             {
                 await VerifyCalendarDetailsAsync(factory, client);
+                if(calendarBrowser)await ServeCalendarBrowserAsync(factory,client,manifest,calendarOrigin!);
                 return;
             }
             if (auditMode == "--audit-attendance-notes")

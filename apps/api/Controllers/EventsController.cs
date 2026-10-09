@@ -10,7 +10,7 @@ namespace AcademyDesk.Api.Controllers;
 public sealed class EventsController(AcademyDeskDbContext dbContext) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<EventSummary>>> List(Guid academyId, CancellationToken token) => Ok(await dbContext.AcademyEvents.AsNoTracking().Where(x => x.AcademyId == academyId).OrderBy(x => x.StartUtc).Select(x => new EventSummary(x.Id, x.Title, x.Type, x.BranchId, x.StartUtc, x.EndUtc, x.Venue, x.Capacity, x.Status, x.Notes)).ToListAsync(token));
+    public async Task<ActionResult<IReadOnlyList<EventSummary>>> List(Guid academyId, CancellationToken token) => Ok(await dbContext.AcademyEvents.AsNoTracking().Where(x => x.AcademyId == academyId).OrderBy(x => x.StartUtc).Select(x => new EventSummary(x.Id, x.Title, x.Type, x.BranchId, DateTime.SpecifyKind(x.StartUtc, DateTimeKind.Utc), DateTime.SpecifyKind(x.EndUtc, DateTimeKind.Utc), x.Venue, x.Capacity, x.Status, x.Notes)).ToListAsync(token));
     [HttpPost]
     public async Task<ActionResult<EventSummary>> Create(Guid academyId, CreateEventRequest request, CancellationToken token)
     {

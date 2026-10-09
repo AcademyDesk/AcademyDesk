@@ -2,7 +2,7 @@
 param([ValidateSet('PentaFoundation','Reconciliation','Adjustment','Payroll','Transition','TransitionRace','ReconcileVoidRace','ApprovalRace','Consumers','Access','AuditBaseline','AuditFixed','PeopleBaseline','PeopleFixed','LinkedBaseline','LinkedFixed','BranchBaseline','BranchFixed','Lookups','Governance','CollectionsBaseline','Collections','InvoiceSettingsBaseline','InvoiceSettings','BranchAddressBaseline','BranchAddress','BatchTimesBaseline','BatchTimes','YearClosure','CoursePrerequisites','CoursePreservation','PromotionDecisions','AssessmentGrades','AssessmentRoster','AssessmentAccess','AssessmentOptions','AttendanceNotes','CalendarDetails','ScheduleDefaults','LeaveIdentity','MakeupLocation','RoleReplacement','RoleRevocation','SessionRevocationRepair','SessionRevocation','RefreshConcurrency','SessionRefresh','BrowserPayments','BrowserApproval','BrowserCertificate','BrowserSession','BrowserProvisioning','CollectionRace','AdjustmentRace','ProvisioningConflict','ProvisioningConcurrency','AcademyProvisioning','PortalProvisioning','PlatformProvisioning','TrialDuration','TenantPlan','PlatformBilling','ActivityDeletion','AnnouncementAudience','GuardianFlags','CertificateFamily','CertificateEnrollment','ComplianceIdentity','ResourceScope','PracticeIdentity','SubmissionIdentity','ReviewContext','MarketingConsent','TemplateState','PreferenceAccess','InboxLifecycle','NotificationChannel','CommunicationRoundtrip','BatchPreservationBaseline','BatchPreservation')][string]$Module = 'Reconciliation')
 $ErrorActionPreference = 'Stop'
 $qaRepo = (Resolve-Path (Join-Path $PSScriptRoot '../../..')).Path
-if ($Module -eq 'PentaFoundation' -and $env:QA_PENTA_BROWSER -eq '1') {
+if (($Module -eq 'PentaFoundation' -and $env:QA_PENTA_BROWSER -eq '1') -or ($Module -eq 'CalendarDetails' -and $env:QA_CALENDAR_BROWSER -eq '1')) {
     $qaBrowserPort = 0
     [Uri]$qaBrowserOrigin = $null
     if (![int]::TryParse($env:QA_BROWSER_API_PORT, [ref]$qaBrowserPort) -or $qaBrowserPort -lt 1024 -or $qaBrowserPort -gt 65535 -or
@@ -10,7 +10,7 @@ if ($Module -eq 'PentaFoundation' -and $env:QA_PENTA_BROWSER -eq '1') {
         $qaBrowserOrigin.Scheme -ne 'http' -or $qaBrowserOrigin.Host -ne '127.0.0.1' -or
         $qaBrowserOrigin.Port -lt 1024 -or $qaBrowserOrigin.Port -gt 65535 -or $qaBrowserOrigin.Port -eq $qaBrowserPort -or
         $qaBrowserOrigin.AbsolutePath -ne '/' -or $qaBrowserOrigin.Query -ne '' -or $qaBrowserOrigin.Fragment -ne '' -or $qaBrowserOrigin.UserInfo -ne '') {
-        throw 'PENTA browser requires exact distinct loopback API port and origin before creating SQL.'
+        throw 'Browser requires exact distinct loopback API port and origin before creating SQL.'
     }
 }
 $qaRun = [Guid]::NewGuid().ToString('N')

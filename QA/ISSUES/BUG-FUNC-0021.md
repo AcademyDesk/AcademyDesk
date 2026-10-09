@@ -4,7 +4,7 @@
 | --- | --- |
 | Status | OPEN |
 | Confirmation status | CONTROLLED-TSX REPRODUCED; EXPORTED-DOM RETEST PASS |
-| Final verification | PARTIAL: 19 HTTP/SQL and captured-response DOM PASS; direct live browser/critical/device OPEN |
+| Final verification | PARTIAL: 19 HTTP/SQL + 16 directly live browser combinations PASS; critical/device OPEN |
 | Severity | Major misleading schedule state |
 | Priority | P1 |
 | Category | FUNC |
@@ -36,6 +36,17 @@
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
 ## Current repair checkpoint — 2026-10-09
+
+[Direct live retest](../REPORTS/PHASE_2B_CALENDAR_LIVE_SQL_BROWSER.md): real UI
+login and Schedule cancellation PUT through loopback ASP.NET/SQL, fresh SQL then
+Calendar navigation/hard reload PASS in all 16 timezone/viewport/theme cases.
+History remains, meeting actions disappear, original fields/other listed domain
+rows stay unchanged. 840 real forwarded responses all 200, no console/429;
+1,130 API / 332 controlled / 32 original synthetic browser / 18 capture guards
+PASS, exact owned teardown. This is not captured-response replay. Physical and
+critical gates remain OPEN; observed mobile readability BUG-UI-0008 is separate.
+
+### Earlier class-only HTTP/SQL checkpoint
 
 [HTTP/SQL retest](../REPORTS/PHASE_2B_CALENDAR_CANCELLATION_SQL_RETEST.md):
 19/19 actual Identity/HTTP/disposable-SQL cases PASS, including original 11,
