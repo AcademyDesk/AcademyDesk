@@ -5,13 +5,13 @@ const source=fs.readFileSync('apps/web/src/app/makeup/page.tsx','utf8'),code=ts.
 function nodes(n){return Array.isArray(n)?n.flatMap(nodes):!n||typeof n!=='object'?[]:[n,...nodes(n.props?.children)];}
 function text(n){return Array.isArray(n)?n.map(text).join(''):n==null||typeof n==='boolean'?'':typeof n==='object'?text(n.props?.children):String(n);}
 async function page(config={}){
- let index=0,effectIndex=0;const state=new Map(),deps=[],effects=[],calls=[],module={exports:{}};
- const react={useState:v=>{const k=index++;if(!state.has(k))state.set(k,typeof v==='function'?v():v);return[state.get(k),v=>state.set(k,typeof v==='function'?v(state.get(k)):v)];},useEffect:(fn,next)=>{const k=effectIndex++;if(!deps[k]||next.some((v,i)=>v!==deps[k][i])){deps[k]=next;effects.push(fn);}}};
+ let index=0,refIndex=0,effectIndex=0;const state=new Map(),refs=[],deps=[],effects=[],calls=[],module={exports:{}};
+ const react={useState:v=>{const k=index++;if(!state.has(k))state.set(k,typeof v==='function'?v():v);return[state.get(k),v=>state.set(k,typeof v==='function'?v(state.get(k)):v)];},useRef:v=>{const k=refIndex++;return refs[k]??(refs[k]={current:v});},useEffect:(fn,next)=>{const k=effectIndex++;if(!deps[k]||next.some((v,i)=>v!==deps[k][i])){deps[k]=next;effects.push(fn);}}};
  const Controls={StandardSelectField(){},StandardDateField(){},StandardTimeField(){}};
  const data={students:[{id:'student',firstName:'Synthetic',lastName:'Student'}],batches:[{id:'batch',name:'Synthetic batch'}],teachers:[], 'makeup-classes':config.rows??[]};
  const api=async(url,init={})=>{calls.push({url,...init});return{ok:true,status:200,json:async()=>init.method?{}:url==='/api/academies'?[{id:'owned'}]:data[url.split('/').at(-1)]};};
  new Function('require','module','exports',code)(n=>n==='react/jsx-runtime'?jsx:n==='react'?react:n==='@/lib/api'?{academyApi:api,apiHeaders:()=>({})}:n==='@/components/workspace-nav'?{WorkspaceNav(){}}:n==='@/components/design-system/controls'?Controls:(()=>{throw Error(n)})(),module,module.exports);
- const render=()=>{index=effectIndex=0;return module.exports.default();};
+ const render=()=>{index=refIndex=effectIndex=0;return module.exports.default();};
  render();for(let i=0;i<4;i++){for(const fn of effects.splice(0))fn();await new Promise(r=>setImmediate(r));render();}
  const control=name=>nodes(render()).find(n=>n.props?.name===name),input=placeholder=>nodes(render()).find(n=>n.props?.placeholder===placeholder);
  control('student').props.onChange('student');control('batch').props.onChange('batch');
