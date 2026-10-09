@@ -6,7 +6,7 @@ Bounded runtime follow-up [DRAFT-ISOLATION-UX-001](../REPORTS/PHASE_2B_TEACHER_S
 
 | Issue ID | Title | Priority | Severity | Evidence type | Regression test |
 | --- | --- | --- | --- | --- | --- |
-| [BUG-UI-0008](BUG-UI-0008.md) | Narrow calendar agenda cuts short useful subject/date/make-up detail | P2 | Moderate readability | OPEN / observed 320px live-loopback screenshot; geometry/repair/device pending | SCHEDULE-AGENDA-READABILITY-001 |
+| [BUG-UI-0008](BUG-UI-0008.md) | Narrow calendar agenda cuts short useful subject/date/make-up detail | P2 | Moderate readability | OPEN / local CSS repair and 10 emulated readability cases PASS; physical/broader responsive pending | SCHEDULE-AGENDA-READABILITY-001 |
 | [BUG-DATA-0056](BUG-DATA-0056.md) | Editing a payroll profile rewrites the worker name shown on historical payouts | P1 | Major payroll history attribution integrity | STATIC FINDING / reproduction pending | PAYROLL-HISTORY-IDENTITY-001 |
 | [BUG-FUNC-0033](BUG-FUNC-0033.md) | Payroll Print / Save PDF has no visible selected payslip in print output | P1 | Major payroll document workflow failure | STATIC FINDING / reproduction pending | PAYROLL-PRINT-001 |
 | [BUG-DATA-0055](BUG-DATA-0055.md) | Direct invoice status edit can mark an unpaid invoice Paid | P1 | Major invoice-ledger status integrity | STATIC FINDING / reproduction pending | FINANCE-INVOICE-STATUS-001 |

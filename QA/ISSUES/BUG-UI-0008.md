@@ -11,7 +11,7 @@
 | Role | Entitled same-tenant AcademyAdmin |
 | Device/viewport | Edge emulated 320 × 900; physical devices NOT RUN |
 | Discovery | 2026-10-09 live calendar integration screenshot review |
-| Root-cause confidence | MEDIUM; constrained layout/nowrap observed, geometry diagnosis pending |
+| Root-cause confidence | HIGH; reproduced grid intrinsic sizing overflow and nowrap/ellipsis in exported DOM |
 | Related source | apps/web/src/app/globals.css:1949; calendar AgendaItem |
 
 ## Observed evidence
@@ -37,3 +37,16 @@ Do not shorten fixture strings or hide useful data to satisfy layout checks.
 Next route: Sol Medium for bounded layout diagnosis/repair and exported-DOM
 verification; Sol High only if domain/source contracts become involved. No
 physical-mobile, full responsive or release acceptance is claimed by discovery.
+
+## Local repair — 2026-10-09
+
+The long-name baseline at 320px measured a 274px agenda containing 2453px rows,
+clipped by its ancestor. Calendar-scoped CSS now constrains the implicit grid
+track and rows, wraps headings/details/student names/URLs, and uses one detail
+column at widths up to 480px. No records, actions, timestamps or permissions changed.
+Ten exported-DOM cases (320/375/390/768/1440, light/dark) pass geometry, full text
+wrapping, filters, collapse/reload and cancelled nonactionability checks.
+Evidence: `QA/EVIDENCE/calendar-readability-1791564825807`.
+See [repair report](../REPORTS/PHASE_2B_CALENDAR_AGENDA_READABILITY.md).
+Remain OPEN for physical-device and broader responsive acceptance; synthetic GET
+fixtures are not fresh live API/SQL acceptance.
