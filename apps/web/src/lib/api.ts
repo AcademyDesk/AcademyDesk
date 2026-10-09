@@ -1,6 +1,7 @@
 export const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5092";
 
 export type PortalWorkspace = "AcademyAdmin" | "Teacher" | "Portal" | "Platform";
+export const portalSignOutEvent = "academydesk:portal-sign-out";
 
 type Session = { accessToken: string | null; refreshToken: string | null; generation: number };
 type RenewedSession = Session & { accessToken: string };
@@ -66,6 +67,8 @@ export function clearPortalTokens(workspace = currentWorkspace()) {
     window.localStorage.removeItem("academydesk.accessToken");
     window.localStorage.removeItem("academydesk.refreshToken");
   }
+  // Storage events reach other tabs only. Notify the current tab before navigation too.
+  window.dispatchEvent(new CustomEvent(portalSignOutEvent, { detail: workspace }));
 }
 
 export function portalAccessToken(workspace = currentWorkspace()) {

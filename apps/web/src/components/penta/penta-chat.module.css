@@ -56,6 +56,7 @@
 .cards code { font-size:11px; overflow-wrap:anywhere; }
 .scope { padding:12px; border-left:2px solid var(--penta-accent); }
 .thinking { color:var(--penta-text-muted); padding:16px; line-height:1.6; font-size:13px; }
+.stopWaiting { min-height:var(--penta-touch-target); padding:10px 16px; margin:0 16px 8px; color:var(--penta-accent); border:1px solid var(--penta-border); border-radius:var(--penta-radius-control); background:var(--penta-surface); font-size:12px; font-weight:700; }
 .composer { border-top:1px solid var(--penta-border); padding:20px; background:var(--penta-surface); }
 .composer label { display:block; font-size:12px; font-weight:600; margin-bottom:8px; }
 .composer textarea { resize:vertical; width:100%; min-height:88px; max-height:240px; border:1px solid var(--penta-border); border-radius:var(--penta-radius-card); padding:14px; background:var(--penta-input); color:var(--penta-text); font:inherit; font-size:14px; box-sizing:border-box; }

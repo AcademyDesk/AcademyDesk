@@ -2,15 +2,12 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { academyApi, isPortalSignOutEvent } from "@/lib/api";
+import { academyApi, isPortalSignOutEvent, portalSignOutEvent } from "@/lib/api";
+import { validPentaAccount, validPentaContext, validPentaHealth, validPentaReceipt, validPentaSession, type PentaContext as Context, type PentaSession as Session, type PentaReceipt as Receipt } from "@/lib/penta-chat-contract";
 import styles from "./penta-chat.module.css";
 import design from "./penta-design.module.css";
 import PentaResultView from "./penta-result-view";
 
-type Context = { academyId: string; name: string; timeZone: string };
-type Session = { conversationId: string; version: number; expiresAtUtc: string };
-type Row = { sourceId: string; displayName: string; recordCode?: string | null; subjects: string[]; balances: { currency: string; outstanding: number }[]; sourcePath: string };
-type Receipt = { conversationId: string; requestId: string; version: number; kind: string; message: string; capability: string; provider: string; protocol: string; context: { filters: Record<string, string>; sort_by: string | null }; result: null | { count: number; hasMore: boolean; rows: Row[]; asOfUtc: string; source: string; balanceScope: string } };
 type Turn = { prompt: string; receipt: Receipt };
 const caps = [
   ["pulse", "P", "Pulse", "See what needs attention. This first pilot provides fee lookup; proactive briefings come later."],
@@ -19,20 +16,8 @@ const caps = [
   ["twin", "T", "Twin", "Understand your academy using verified context. Deeper analysis and simulations are planned."],
   ["autopilot", "A", "Autopilot", "Controlled, approved automation, planned. No background actions are enabled."],
 ] as const;
-const guid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const ordinals = ["first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth", "tenth"];
-function validReceipt(value: Receipt, session: Session, requestId: string) {
-  return value && value.conversationId === session.conversationId && value.requestId === requestId && value.version === session.version + 1 &&
-    value.protocol === "0.1" && value.provider === "PENTA Mini" && typeof value.message === "string" && value.context &&
-    ["RESULT", "ERROR", "REFUSAL", "UNSUPPORTED", "TEXT_RESPONSE", "CLARIFICATION_REQUIRED", "APPROVAL_REQUIRED"].includes(value.kind) &&
-    (value.result === null || Number.isSafeInteger(value.result.count) && value.result.count >= 0 &&
-      Number.isFinite(Date.parse(value.result.asOfUtc)) && Array.isArray(value.result.rows) && value.result.rows.length <= 10 &&
-      new Set(value.result.rows.map(row => row.sourceId)).size === value.result.rows.length && value.result.rows.every(row =>
-        guid.test(row.sourceId) && typeof row.displayName === "string" && (row.recordCode == null || typeof row.recordCode === "string") && row.sourcePath === `/student-management?studentId=${row.sourceId}` &&
-        Array.isArray(row.subjects) && row.subjects.every(subject => typeof subject === "string") && Array.isArray(row.balances) && row.balances.every(balance =>
-          /^[A-Z]{3}$/.test(balance.currency) && Number.isFinite(balance.outstanding) && balance.outstanding >= 0)));
-}
-const failure = (status: number) => status === 401 ? "Sign in again to continue." : status === 403 ? "This pilot needs current Academy Owner/Admin access and the Finance module." : status === 404 ? "PENTA Mini is not enabled here, or this private conversation is unavailable." : status === 409 ? "This conversation is busy or stale. Start a new conversation; no request will be automatically repeated." : status === 429 ? "The local pilot limit has been reached. Your manual workspace remains available." : "The request could not be completed. Start a new conversation or use the manual workspace.";
+const failure = (status: number) => status === 401 ? "Sign in again to continue." : status === 403 ? "This pilot needs current Academy Owner/Admin access and the Finance module." : status === 404 ? "PENTA Mini is not enabled here, or this private conversation is unavailable." : status === 409 ? "This conversation is busy or stale. Start a new conversation; no request will be automatically repeated." : status === 410 ? "This conversation expired. Start a new conversation; your manual workspace remains available." : status === 429 ? "The local pilot limit has been reached. Your manual workspace remains available." : "The request could not be completed. Start a new conversation or use the manual workspace.";
 
 export default function PentaChatWorkspace({ active = true }: { active?: boolean }) {
   const [context, setContext] = useState<Context | null>(null);
@@ -60,24 +45,31 @@ export default function PentaChatWorkspace({ active = true }: { active?: boolean
         const response = await academyApi("/api/auth/session", { signal: controller.signal });
         if (!response.ok) throw new Error(failure(response.status));
         const account = await response.json();
-        if (!guid.test(account.academyId ?? "") || account.isPlatformOwner || !account.roles?.some((role: string) => ["Owner", "AcademyAdmin"].includes(role))) throw new Error(failure(403));
+        if (!validPentaAccount(account)) throw new Error(failure(403));
         const own = await academyApi(`/api/academies/${account.academyId}/penta/academy-context`, { signal: controller.signal });
         if (!own.ok) throw new Error(failure(own.status));
         const data = await own.json();
-        if (data.academyId !== account.academyId || typeof data.name !== "string") throw new Error("Academy context could not be verified.");
+        if (!validPentaContext(data, account.academyId)) throw new Error("Academy context could not be verified. Use the manual workspace.");
         const status = await academyApi(`/api/academies/${data.academyId}/penta/chat/health`, { signal: controller.signal });
         if (!status.ok) throw new Error(failure(status.status));
         const readiness = await status.json();
-        if (!controller.signal.aborted) { setContext(data); setHealth(["Available", "Degraded", "Unavailable"].includes(readiness.status) ? readiness.status : "Unavailable"); }
+        if (!validPentaHealth(readiness)) throw new Error("Mini readiness could not be verified. Use the manual workspace.");
+        if (!controller.signal.aborted) { setContext(data); setHealth(readiness.status); }
       } catch (cause) { if (!controller.signal.aborted) { setHealth("Unavailable"); setError(cause instanceof Error ? cause.message : failure(500)); } }
     }
     void boot();
-    function signout(event: StorageEvent) {
-      if (!isPortalSignOutEvent(event, "AcademyAdmin")) return;
+    function clearSignedOutConversation() {
       controller.abort(); flight.current?.abort(); generation.current++; setContext(null); setSession(null); setTurns([]); setPrompt(""); setPendingPrompt(""); setBusy(false); setBlocked(true); setError("Signed out. Sign in to continue.");
     }
+    function signout(event: StorageEvent) {
+      if (isPortalSignOutEvent(event, "AcademyAdmin")) clearSignedOutConversation();
+    }
+    function localSignout(event: Event) {
+      if ((event as CustomEvent).detail === "AcademyAdmin") clearSignedOutConversation();
+    }
     window.addEventListener("storage", signout);
-    return () => { controller.abort(); flight.current?.abort(); sessionGeneration.current++; window.removeEventListener("storage", signout); };
+    window.addEventListener(portalSignOutEvent, localSignout);
+    return () => { controller.abort(); flight.current?.abort(); sessionGeneration.current++; window.removeEventListener("storage", signout); window.removeEventListener(portalSignOutEvent, localSignout); };
   }, []);
   useEffect(() => { if (active) input.current?.focus(); }, [active]);
   useEffect(() => {
@@ -93,6 +85,12 @@ export default function PentaChatWorkspace({ active = true }: { active?: boolean
     if (busy) return;
     generation.current++; setSession(null); setTurns([]); setPrompt(""); setPendingPrompt(""); setError(""); setBlocked(false); input.current?.focus();
   }
+  function stopWaiting() {
+    if (!busy) return;
+    flight.current?.abort(); flight.current = null; generation.current++;
+    setBusy(false); setPendingPrompt(""); setBlocked(true);
+    setError("Stopped waiting. Start a new conversation to continue. This request will not be sent again automatically.");
+  }
   async function send(event: React.FormEvent) {
     event.preventDefault();
     if (!context || busy || blocked || !active || !prompt.trim()) return;
@@ -106,10 +104,13 @@ export default function PentaChatWorkspace({ active = true }: { active?: boolean
       if (!current) {
         const response = await academyApi(`/api/academies/${context.academyId}/penta/chat/conversations`, { method: "POST", signal: controller.signal });
         if (!response.ok) throw new Error(failure(response.status));
-        current = await response.json();
-        if (!current || !guid.test(current.conversationId) || current.version !== 0) throw new Error("The conversation could not be verified.");
+        const created: unknown = await response.json();
+        if (controller.signal.aborted || revision !== generation.current) return;
+        if (!validPentaSession(created)) throw new Error("The conversation could not be verified. Use the manual workspace.");
+        current = created;
         if (revision === generation.current) setSession(current);
       }
+      if (controller.signal.aborted || revision !== generation.current) return;
       const requestId = crypto.randomUUID();
       const response = await academyApi(`/api/academies/${context.academyId}/penta/chat/conversations/${current.conversationId}/turns`, {
         method: "POST", headers: { "Content-Type": "application/json" }, signal: controller.signal,
@@ -117,14 +118,15 @@ export default function PentaChatWorkspace({ active = true }: { active?: boolean
       });
       if (!response.ok) throw new Error(failure(response.status));
       const receipt = await response.json();
-      if (!validReceipt(receipt, current, requestId)) throw new Error("The result could not be verified. Start a new conversation.");
+      if (controller.signal.aborted || revision !== generation.current) return;
+      if (!validPentaReceipt(receipt, current, requestId, capability)) throw new Error("The result could not be verified. Start a new conversation or use the manual workspace.");
       if (revision === generation.current && !controller.signal.aborted) {
         setTurns(previous => [...previous, { prompt: text, receipt }]); setPrompt(""); setPendingPrompt("");
         setSession({ ...current, version: receipt.version });
       }
     } catch (cause) {
-      if (revision === generation.current) { setBlocked(true); setPendingPrompt(""); setError(cause instanceof Error ? cause.message : failure(500)); }
-    } finally { if (revision === generation.current) { setBusy(false); input.current?.focus(); } }
+      if (revision === generation.current && !controller.signal.aborted) { setBlocked(true); setPendingPrompt(""); setError(cause instanceof Error ? cause.message : failure(500)); }
+    } finally { if (flight.current === controller) flight.current = null; if (revision === generation.current) { setBusy(false); input.current?.focus(); } }
   }
 
   return <main className={`${design.system} ${styles.page}`} data-penta-ui="0.1">
@@ -164,7 +166,7 @@ export default function PentaChatWorkspace({ active = true }: { active?: boolean
             {index === turns.length - 1 && latest?.result && <p className={styles.followup}>{latest.kind === "CLARIFICATION_REQUIRED" ? "Choose a student to prepare your follow-up, then press Send. Nothing is selected automatically." : "Try “Only piano”, “Highest first”, or “Show the second one”."}</p>}
           </div>
         </article>)}
-        {busy && <div className={styles.turn}><p className={styles.user}><span>You</span>{pendingPrompt}</p><p role="status" className={styles.thinking}>PENTA Mini is interpreting your request. Academy Desk will authorize and verify the read…</p></div>}
+        {busy && <div className={styles.turn}><p className={styles.user}><span>You</span>{pendingPrompt}</p><p role="status" className={styles.thinking}>PENTA Mini is interpreting your request. Academy Desk will authorize and verify the read…</p><button type="button" className={styles.stopWaiting} onClick={stopWaiting}>Stop waiting</button></div>}
         <div ref={tail} />
       </div>
       <form className={styles.composer} onSubmit={send}><label htmlFor="penta-prompt">Message PENTA AI</label><textarea ref={input} id="penta-prompt" rows={2} maxLength={2000} value={prompt} disabled={busy || !context || blocked} placeholder="Find a student by name, or ask about fees…" onChange={event => setPrompt(event.target.value)} onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} /><div><small>Enter to send · Shift + Enter for a new line</small><button type="submit" disabled={busy || !context || blocked || !prompt.trim()}>{busy ? "Thinking…" : "Send ↑"}</button></div><p className={styles.privacy}>Prompts are not saved to SQL. This view stays in memory; reload starts a new conversation. No automatic retries or actions.</p>{error && <p role="alert" className={styles.error}>{error}</p>}</form>

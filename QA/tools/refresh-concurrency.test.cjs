@@ -3,7 +3,8 @@ const fs=require('node:fs'),vm=require('node:vm'),a=require('node:assert/strict'
 const ts=require('../../apps/web/node_modules/typescript'),deferred=()=>{let resolve;const promise=new Promise(r=>resolve=r);return{promise,resolve};};
 async function tick(){await new Promise(r=>setImmediate(r));}
 function harness(config={}){
- const storage=new Map(),calls=[],refreshes=[],window={location:{pathname:'/portal-accounts'},localStorage:{getItem:k=>storage.get(k)??null,setItem:(k,v)=>storage.set(k,String(v)),removeItem:k=>storage.delete(k)}};
+ const events=new EventTarget();
+ const storage=new Map(),calls=[],refreshes=[],window={location:{pathname:'/portal-accounts'},localStorage:{getItem:k=>storage.get(k)??null,setItem:(k,v)=>storage.set(k,String(v)),removeItem:k=>storage.delete(k)},addEventListener:events.addEventListener.bind(events),removeEventListener:events.removeEventListener.bind(events),dispatchEvent:events.dispatchEvent.bind(events)};
  const fetch=async(url,init={})=>{
   const call={url,init,headers:new Headers(init.headers)};calls.push(call);
   if(url.endsWith('/refresh')){const gate=deferred(),number=refreshes.length+1;refreshes.push({gate,call,number});await new Promise((resolve,reject)=>{const abort=()=>reject(Error('synthetic abort'));if(init.signal?.aborted)return abort();init.signal?.addEventListener('abort',abort,{once:true});gate.promise.then(()=>{init.signal?.removeEventListener('abort',abort);resolve();});});if(config.network)throw Error('synthetic transport');return {ok:!config.denied,json:async()=>config.badJson?Promise.reject(Error('JSON')):config.tokens??{accessToken:'new-'+number,refreshToken:'refresh-new-'+number}};}
@@ -12,7 +13,7 @@ function harness(config={}){
   return{ok:false,status:401};
  };
  const mod={exports:{}};const code=ts.transpileModule(fs.readFileSync(process.env.QA_REFRESH_CONCURRENCY_SOURCE||'apps/web/src/lib/api.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
- vm.runInNewContext(code,{module:mod,exports:mod.exports,process:{env:{}},window,Headers,AbortController,fetch});const api=mod.exports;
+ vm.runInNewContext(code,{module:mod,exports:mod.exports,process:{env:{}},window,Headers,AbortController,CustomEvent,fetch});const api=mod.exports;
  const seed=(workspace,access='old',refresh='refresh-old')=>api.savePortalTokens(workspace,access,refresh);
  const route=workspace=>window.location.pathname=workspace==='AcademyAdmin'?'/portal-accounts':workspace==='Teacher'?'/teacher':workspace==='Portal'?'/portal':'/platform';
  const request=(name,signal)=>api.academyApi('/api/'+name,{method:'POST',body:JSON.stringify({name}),headers:api.apiHeaders(true),signal});
