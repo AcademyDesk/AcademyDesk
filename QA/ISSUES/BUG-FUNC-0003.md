@@ -35,6 +35,16 @@
 | Regression result | 209 current combined controlled frontend PASS; no new backend/SQL run; Course lint FAIL (1 error/1 warning after improvement), not all-form/critical acceptance |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
+## Attendance effect-lint checkpoint — 2026-10-09
+
+[Report](../REPORTS/PHASE_2B_ATTENDANCE_EFFECT_LINT.md): inherited effect lint
+cleared (HEAD1 error/2 warnings, final0/0), without suppression or read/write
+contract changes. Original32 plus2 lifecycle guards34/34 PASS on both HEAD and
+final;16 synthetic exported-browser cases, TypeScript/83-page export PASS.
+Session-scoped notes/readback/uncertainty/pending protection retained; no automatic
+refetch from drafts/notices/saving state. No new SQL/Identity/device acceptance.
+Issue OPEN for remaining forms/linked/device/critical gates. Next Make-up gap check.
+
 ## Attendance feedback checkpoint — 2026-10-09
 
 [Gap check](../REPORTS/PHASE_2B_ATTENDANCE_FEEDBACK_CHECK.md): earlier durable

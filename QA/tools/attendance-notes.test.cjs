@@ -88,3 +88,25 @@ test('Readback remains guarded against repeated saves and status changes',async(
  finally {release();}
  await tick();await tick();assert.equal(p.input().props.disabled,false);assert.equal(p.writes().length,1);assert.deepEqual(p.state.get(9),{});
 });
+
+test('Draft edits, notices and saves do not restart workspace or session effects',async()=>{
+ const p=await page();
+ const reads=()=>p.calls.filter(c=>c.method!=='POST');
+ const workspace=()=>reads().filter(c=>!c.url.endsWith('/attendance'));
+ assert.equal(workspace().length,5);assert.equal(reads().length,6);
+ p.edit('Lifecycle draft');await p.settle();assert.equal(reads().length,6);
+ await p.save();await p.settle();assert.equal(workspace().length,5);assert.equal(reads().length,7);
+ assert.equal(p.writes().length,1);assert.equal(p.state.get(7),'Attendance saved.');
+ p.select('session').props.onChange('two');await p.settle();assert.equal(reads().length,8);
+ assert.equal(p.input().props.value,'Session two note');
+ p.select('session').props.onChange('one');await p.settle();assert.equal(reads().length,9);
+ assert.equal(p.input().props.value,'Lifecycle draft');assert.equal(workspace().length,5);
+ p.render();await p.settle();assert.equal(reads().length,9);
+});
+
+test('Failure notices and retained drafts do not trigger automatic refetch or retry',async()=>{
+ const p=await page({postStatus:503,commitBeforeError:true});p.edit('Uncertain lifecycle draft');await p.save();await p.settle();
+ assert.equal(p.calls.length,7);assert.equal(p.writes().length,1);
+ assert.equal(p.input().props.value,'Uncertain lifecycle draft');assert.match(p.state.get(7),/could not be confirmed/);
+ p.render();await p.settle();assert.equal(p.calls.length,7);
+});

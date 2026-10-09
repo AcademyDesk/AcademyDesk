@@ -35,6 +35,15 @@
 | Regression result |24 controlled handlers/16 real HTTP-SQL PASS; full critical not run; inherited lint FAIL |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
+## Effect-lint regression checkpoint — 2026-10-09
+
+[Report](../REPORTS/PHASE_2B_ATTENDANCE_EFFECT_LINT.md): page lint now0 errors/0
+warnings, no suppression.34 actual-TSX checks (all32 retained plus2 lifecycle
+guards) and16 synthetic exported-browser viewport/theme/fault cases PASS;
+TypeScript/83-page export PASS. Notes/null/clear/session isolation and delayed
+readback protections unchanged. Historical16 HTTP/SQL cases retained, not rerun.
+Issue OPEN for linked live/browser/device/critical acceptance; no Azure deployment.
+
 ## Exact reproduction
 
 ## Current local repair checkpoint — 2026-10-01

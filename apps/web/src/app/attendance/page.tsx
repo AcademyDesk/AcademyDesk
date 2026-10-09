@@ -13,6 +13,14 @@ type Session = { id: string; batchId: string; startUtc: string };
 type Attendance = { studentId: string; status: string; notes?: string | null };
 const statuses = ["Present", "Absent", "Late", "Excused", "Online"];
 
+async function fetchRecords(academyId: string, sessionId: string): Promise<Attendance[]> {
+  const response = await academyApi(`/api/academies/${academyId}/sessions/${sessionId}/attendance`, { cache: "no-store" });
+  if (!response.ok) throw new Error();
+  const data: Attendance[] = await response.json();
+  if (!Array.isArray(data)) throw new Error("Invalid attendance records response.");
+  return data;
+}
+
 function sessionLabel(session: Session, batches: Batch[]) {
   const batch = batches.find((item) => item.id === session.batchId)?.name ?? "Unknown batch";
   const time = new Intl.DateTimeFormat("en-IN", { dateStyle: "medium", timeStyle: "short" }).format(new Date(session.startUtc));
@@ -32,30 +40,50 @@ export default function AttendancePage() {
   const [notesByStudent, setNotesByStudent] = useState<Record<string, string>>({});
   const pendingSave = useRef(false);
 
-  async function loadWorkspace(academyId?: string) {
-    const id = academyId ?? academy?.id;
-    if (!id) return;
-    const [studentResponse, batchResponse, enrollmentResponse, sessionResponse] = await Promise.all([
-      academyApi(`/api/academies/${id}/students`, { cache: "no-store" }), academyApi(`/api/academies/${id}/batches`, { cache: "no-store" }), academyApi(`/api/academies/${id}/enrollments`, { cache: "no-store" }), academyApi(`/api/academies/${id}/sessions`, { cache: "no-store" }),
-    ]);
-    if (![studentResponse, batchResponse, enrollmentResponse, sessionResponse].every((response) => response.ok)) throw new Error();
-    const sessionData: Session[] = await sessionResponse.json();
-    setStudents(await studentResponse.json()); setBatches(await batchResponse.json()); setEnrollments(await enrollmentResponse.json()); setSessions(sessionData);
-    if (!sessionId && sessionData.length) setSessionId(sessionData[0].id);
-    setMessage("");
-  }
+  useEffect(() => {
+    async function loadWorkspace(id: string) {
+      const [studentResponse, batchResponse, enrollmentResponse, sessionResponse] = await Promise.all([
+        academyApi(`/api/academies/${id}/students`, { cache: "no-store" }), academyApi(`/api/academies/${id}/batches`, { cache: "no-store" }), academyApi(`/api/academies/${id}/enrollments`, { cache: "no-store" }), academyApi(`/api/academies/${id}/sessions`, { cache: "no-store" }),
+      ]);
+      if (![studentResponse, batchResponse, enrollmentResponse, sessionResponse].every((response) => response.ok)) throw new Error();
+      const sessionData: Session[] = await sessionResponse.json();
+      setStudents(await studentResponse.json()); setBatches(await batchResponse.json()); setEnrollments(await enrollmentResponse.json()); setSessions(sessionData);
+      if (sessionData.length) setSessionId((current) => current || sessionData[0].id);
+      setMessage("");
+    }
+
+    async function initialise() {
+      try {
+        const response = await academyApi("/api/academies", { cache: "no-store" });
+        if (response.status === 401) return setMessage("Please sign in before marking attendance.");
+        if (!response.ok) throw new Error();
+        const academies: Academy[] = await response.json();
+        if (!academies[0]) return setMessage("Create an academy, batch, and class session before marking attendance.");
+        setAcademy(academies[0]);
+        await loadWorkspace(academies[0].id);
+      } catch { setMessage("Attendance could not be loaded. Confirm the API is running on port 5092."); }
+    }
+    void initialise();
+  }, []);
+
+  const academyId = academy?.id;
+  useEffect(() => {
+    if (!academyId || !sessionId) return;
+    async function refreshRecords(id: string) {
+      try {
+        const data = await fetchRecords(id, sessionId);
+        setRecords((current) => ({ ...current, [sessionId]: data }));
+      } catch { setMessage("Attendance records could not be loaded."); }
+    }
+    void refreshRecords(academyId);
+  }, [sessionId, academyId]);
 
   async function loadRecords(id: string) {
     if (!academy || !id) return;
-    const response = await academyApi(`/api/academies/${academy.id}/sessions/${id}/attendance`, { cache: "no-store" });
-    if (!response.ok) throw new Error();
-    const data: Attendance[] = await response.json();
-    if (!Array.isArray(data)) throw new Error("Invalid attendance records response.");
+    const data = await fetchRecords(academy.id, id);
     setRecords((current) => ({ ...current, [id]: data }));
   }
 
-  useEffect(() => { async function initialise() { try { const response = await academyApi("/api/academies", { cache: "no-store" }); if (response.status === 401) return setMessage("Please sign in before marking attendance."); if (!response.ok) throw new Error(); const academies: Academy[] = await response.json(); if (!academies[0]) return setMessage("Create an academy, batch, and class session before marking attendance."); setAcademy(academies[0]); await loadWorkspace(academies[0].id); } catch { setMessage("Attendance could not be loaded. Confirm the API is running on port 5092."); } } void initialise(); }, []);
-  useEffect(() => { void loadRecords(sessionId).catch(() => setMessage("Attendance records could not be loaded.")); }, [sessionId, academy]);
 
   const selectedSession = sessions.find((session) => session.id === sessionId);
   const roster = selectedSession ? enrollments.filter((item) => item.batchId === selectedSession.batchId && item.status === "Active").map((item) => students.find((student) => student.id === item.studentId)).filter((student): student is Student => Boolean(student)) : [];

@@ -2,6 +2,10 @@
 
 ## Current state
 
+## Attendance effect-lint cleanup — 2026-10-09
+
+[Report](QA/REPORTS/PHASE_2B_ATTENDANCE_EFFECT_LINT.md): scoped mount loader, functional initial session selection and pure attendance fetch separate async effect reads from state updates. No dependency suppression, new retries, domain/API/permission or visual change. Independently linted HEAD:1 error/2 warnings; final0/0. All32 retained +2 lifecycle guards PASS against both HEAD and final source (34/34);16 synthetic exported-browser viewport/theme/fault cases, TypeScript/83-page export PASS. No fresh SQL/Identity/device/enterprise acceptance. BUG-FUNC-0003/BUG-DATA-0035 OPEN; unrelated Mini/evidence/main/Azure untouched. Starting f57696a, codex/penta-search; scoped publication only. NEXT Sol Medium: inspect existing Make-up feedback and repair only remaining gaps; Sol High if domain/access/persistence changes. Mini saved86/94 CONTRACT READY / ENGINE BLOCKED and qualification handoff unchanged.
+
 ## Attendance feedback gap check — 2026-10-09 (BUG-FUNC-0003)
 
 [Attendance report](QA/REPORTS/PHASE_2B_ATTENDANCE_FEEDBACK_CHECK.md): prior durable success/draft/readback handling already exists, original24 PASS, not reimplemented. Only 5xx outcome guidance changed to unconfirmed/check-before-retry while retaining drafts/server messages. Final frozen baseline21/32 PASS/11 FAIL; final32 controlled +16 exported-DOM synthetic API viewport/theme/failure cases PASS; TypeScript/83-page export PASS. Lint FAIL: same inherited effect error/two dependency warnings independently confirmed against HEAD, no suppression. No fresh live SQL/Identity/device/backend suite, new domain/default/timezone/authority/AI behaviour or gate closure. Starting fdcaeb2, codex/penta-search; scoped publication only, unrelated work/evidence/main/Mini/Azure unchanged. NEXT Sol Medium: bounded Attendance effect-lint cleanup with existing session/draft/failure/browser guards; Sol High if authority/persistence needed. Mini saved86/94 CONTRACT READY / ENGINE BLOCKED and existing qualification handoff unchanged.
