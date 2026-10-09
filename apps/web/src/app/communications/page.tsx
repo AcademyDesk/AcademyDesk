@@ -1,5 +1,5 @@
 "use client";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { WorkspaceNav } from "@/components/workspace-nav";
 import {
   StandardDateField,
@@ -35,6 +35,23 @@ const variablesFrom = (value: string) => [
 // Disabled overrides availability; Draft/Approved retain the existing local policy.
 const templateAvailable = (template: Template) =>
   template.isActive && template.status?.trim().toLowerCase() !== "disabled";
+async function fetchWorkspace(academyId: string) {
+  const responses = await Promise.all([
+    academyApi(`/api/academies/${academyId}/students`),
+    academyApi(`/api/academies/${academyId}/guardians`),
+    academyApi(`/api/academies/${academyId}/teachers`),
+    academyApi(`/api/academies/${academyId}/communication-templates`),
+    academyApi(`/api/academies/${academyId}/notifications`),
+  ]);
+  if (!responses.every((response) => response.ok)) throw Error();
+  return {
+    students: (await responses[0].json()) as Person[],
+    guardians: (await responses[1].json()) as Person[],
+    teachers: (await responses[2].json()) as Teacher[],
+    templates: (await responses[3].json()) as Template[],
+    items: (await responses[4].json()) as Notification[],
+  };
+}
 export default function CommunicationsPage() {
   const [academy, setAcademy] = useState<Academy>();
   const [students, setStudents] = useState<Person[]>([]);
@@ -57,6 +74,8 @@ export default function CommunicationsPage() {
   const [announcementAudience, setAnnouncementAudience] =
     useState("Student,Teacher");
   const [message, setMessage] = useState("Loading messages…");
+  const [saving, setSaving] = useState(false);
+  const pending = useRef(false);
   const isAnnouncement = recipientType === "Academy";
   const people = recipientType === "Student" ? students : recipientType === "Teacher" ? teachers : guardians;
   const selectedTemplate = templates.find((item) => item.id === templateId);
@@ -64,24 +83,6 @@ export default function CommunicationsPage() {
     () => (selectedTemplate ? variablesFrom(selectedTemplate.body) : []),
     [selectedTemplate],
   );
-  async function load(id?: string) {
-    const academyId = id ?? academy?.id;
-    if (!academyId) return;
-    const responses = await Promise.all([
-      academyApi(`/api/academies/${academyId}/students`),
-      academyApi(`/api/academies/${academyId}/guardians`),
-      academyApi(`/api/academies/${academyId}/teachers`),
-      academyApi(`/api/academies/${academyId}/communication-templates`),
-      academyApi(`/api/academies/${academyId}/notifications`),
-    ]);
-    if (!responses.every((response) => response.ok)) throw Error();
-    setStudents(await responses[0].json());
-    setGuardians(await responses[1].json());
-    setTeachers(await responses[2].json());
-    setTemplates(await responses[3].json());
-    setItems(await responses[4].json());
-    setMessage("");
-  }
   useEffect(() => {
     void academyApi("/api/academies")
       .then(async (response) => {
@@ -89,7 +90,13 @@ export default function CommunicationsPage() {
         const academies: Academy[] = await response.json();
         if (!academies[0]) throw Error();
         setAcademy(academies[0]);
-        await load(academies[0].id);
+        const workspace = await fetchWorkspace(academies[0].id);
+        setStudents(workspace.students);
+        setGuardians(workspace.guardians);
+        setTeachers(workspace.teachers);
+        setTemplates(workspace.templates);
+        setItems(workspace.items);
+        setMessage("");
       })
       .catch(() => setMessage("Messages could not be loaded."));
   }, []);
@@ -124,57 +131,82 @@ export default function CommunicationsPage() {
   }
   async function create(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (pending.current) return;
     if (!academy || (!isAnnouncement && !recipientId)) return;
     if (!isAnnouncement && templateId && (!selectedTemplate || !templateAvailable(selectedTemplate)))
       return setMessage("The selected template is unavailable. Choose another template or remove it.");
     if (!isAnnouncement && templateId && selectedTemplate?.channel !== channel)
       return setMessage("The selected template does not match this channel. Choose a matching template or remove it.");
-    const scheduledAtUtc = isAnnouncement
-      ? announcementStartDate
-        ? new Date(`${announcementStartDate}T${announcementStartTime}:00`).toISOString()
-        : null
-      : scheduledDate && scheduledTime
-        ? new Date(`${scheduledDate}T${scheduledTime}:00`).toISOString()
-        : null;
-    const response = await academyApi(
-      `/api/academies/${academy.id}/notifications`,
-      {
-        method: "POST",
-        headers: apiHeaders(true),
-        body: JSON.stringify({
-          recipientId: isAnnouncement ? null : recipientId,
-          recipientType,
-          title,
-          message: body,
-          channel: isAnnouncement ? "InApp" : channel,
-          scheduledAtUtc,
-          templateId: isAnnouncement ? null : templateId || null,
-          variables: isAnnouncement
-            ? { audiences: announcementAudience }
-            : variables,
-          isImportant: isAnnouncement,
-          displayHours: isAnnouncement ? Number(displayHours) : null,
-        }),
-      },
-    );
-    const result = await response.json().catch(() => null);
-    if (!response.ok)
-      return setMessage(result?.message ?? "Message could not be queued.");
-    setMessage(
-      isAnnouncement
-        ? `Important announcement will run for ${displayHours} hours.`
-        : `Message ${result.status?.toLowerCase() ?? "queued"}.`,
-    );
-    setRecipientId("");
-    setTemplateId("");
-    setVariables({});
-    setTitle("");
-    setBody("");
-    setScheduledDate("");
-    setScheduledTime("");
-    setAnnouncementStartDate("");
-    setAnnouncementStartTime("09:00");
-    await load();
+    pending.current = true;
+    setSaving(true);
+    setMessage("");
+    try {
+      const scheduledAtUtc = isAnnouncement
+        ? announcementStartDate
+          ? new Date(`${announcementStartDate}T${announcementStartTime}:00`).toISOString()
+          : null
+        : scheduledDate && scheduledTime
+          ? new Date(`${scheduledDate}T${scheduledTime}:00`).toISOString()
+          : null;
+      const response = await academyApi(
+        `/api/academies/${academy.id}/notifications`,
+        {
+          method: "POST",
+          headers: apiHeaders(true),
+          body: JSON.stringify({
+            recipientId: isAnnouncement ? null : recipientId,
+            recipientType,
+            title,
+            message: body,
+            channel: isAnnouncement ? "InApp" : channel,
+            scheduledAtUtc,
+            templateId: isAnnouncement ? null : templateId || null,
+            variables: isAnnouncement
+              ? { audiences: announcementAudience }
+              : variables,
+            isImportant: isAnnouncement,
+            displayHours: isAnnouncement ? Number(displayHours) : null,
+          }),
+        },
+      );
+      const result = await response.json().catch(() => null);
+      if (!response.ok) {
+        const detail = typeof result?.message === "string" && result.message.trim()
+          ? result.message.trim() : "Message could not be queued.";
+        return setMessage(response.status >= 500
+          ? `Message save could not be confirmed. Check the message log before retrying. ${detail}`
+          : detail);
+      }
+      const notice =
+        isAnnouncement
+          ? `Important announcement will run for ${displayHours} hours.`
+          : `Message ${typeof result?.status === "string" && result.status.trim() ? result.status.trim().toLowerCase() : "queued"}.`;
+      setRecipientId("");
+      setTemplateId("");
+      setVariables({});
+      setTitle("");
+      setBody("");
+      setScheduledDate("");
+      setScheduledTime("");
+      setAnnouncementStartDate("");
+      setAnnouncementStartTime("09:00");
+      try {
+        const workspace = await fetchWorkspace(academy.id);
+        setStudents(workspace.students);
+        setGuardians(workspace.guardians);
+        setTeachers(workspace.teachers);
+        setTemplates(workspace.templates);
+        setItems(workspace.items);
+        setMessage(notice);
+      } catch {
+        setMessage(`${notice} The message log could not be refreshed; do not repeat the save. Refresh the page to check the saved message.`);
+      }
+    } catch {
+      setMessage("Message save could not be confirmed. Check the message log before retrying.");
+    } finally {
+      pending.current = false;
+      setSaving(false);
+    }
   }
   const recipientOptions = people.map((person) => ({
     value: person.id,
@@ -194,7 +226,7 @@ export default function CommunicationsPage() {
           </div>
         </header>
         {message && (
-          <p className="messages-notice" role="status">
+          <p className="messages-notice" role="status" aria-live="polite">
             {message}
           </p>
         )}
@@ -206,7 +238,7 @@ export default function CommunicationsPage() {
                 {isAnnouncement ? "Portal banner message" : "New message"}
               </h2>
             </header>
-            <div className="messages-fields">
+            <fieldset className="messages-fields m-0 min-w-0 border-0 p-0" disabled={saving}>
               <label>
                 Message type
                 <StandardSelectField
@@ -320,6 +352,7 @@ export default function CommunicationsPage() {
               <label className="messages-wide">
                 Message
                 <textarea
+                  aria-label="Message"
                   value={body}
                   onChange={(event) => setBody(event.target.value)}
                   required
@@ -356,12 +389,12 @@ export default function CommunicationsPage() {
                 </>
               )}
               <button
-                disabled={!academy || (!isAnnouncement && !recipientId)}
+                disabled={saving || !academy || (!isAnnouncement && !recipientId)}
                 className="enterprise-action-button messages-wide"
               >
-                {isAnnouncement ? "Publish announcement" : "Queue message"}
+                {saving ? "Saving…" : isAnnouncement ? "Publish announcement" : "Queue message"}
               </button>
-            </div>
+            </fieldset>
           </form>
           <section className="messages-panel messages-log">
             <header className="messages-panel-header">

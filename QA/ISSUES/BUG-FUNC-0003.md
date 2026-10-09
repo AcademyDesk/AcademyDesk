@@ -35,6 +35,10 @@
 | Regression result | 209 current combined controlled frontend PASS; no new backend/SQL run; Course lint FAIL (1 error/1 warning after improvement), not all-form/critical acceptance |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
+## Communications feedback checkpoint — 2026-10-10
+
+[Report](../REPORTS/PHASE_2B_COMMUNICATIONS_FEEDBACK_REPAIR.md): direct/banner durable confirmation, empty-body safety, saved/readback-failure distinction, retained rejected/unconfirmed drafts and synchronous pending guard. Existing50 channel assertions retained; frozen72 baseline51 PASS/21 FAIL, final72 +32 synthetic browser PASS, lint0/0, TypeScript/83-page export PASS. Stable Message name fixes browser-observed error-state accessibility. Delivery/consent/authority/timezone unchanged; no new live sends/SQL/device or release acceptance. Issue OPEN; next Communication Preferences feedback gap check.
+
 ## Communication Settings feedback check — 2026-10-10
 
 [Report](../REPORTS/PHASE_2B_COMMUNICATION_SETTINGS_FEEDBACK_CHECK.md): existing durable channel confirmation and draft/pending repair reused; mount dependency warning removed without suppression.90/90 controlled before/after (87 retained +3 lifecycle/accessibility),24 synthetic exported-browser channel cases PASS; lint0/0, TypeScript/83-page export PASS. Missing historical receipt resolved via read-only original/main path, assertions unchanged; no fresh SQL/device/provider-security acceptance. Payload/authority/credentials unchanged, issue and related BUG-DATA-0041 remain OPEN. Next Communications existing-feedback gap check.
