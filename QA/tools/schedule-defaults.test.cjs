@@ -8,7 +8,8 @@ function text(n){return Array.isArray(n)?n.map(text).join(''):n==null||typeof n=
 async function page(config={}){
  let index=0,effectIndex=0;const state=new Map(),deps=[],effects=[],calls=[],module={exports:{}},sessions=[];
  const data=config.batches??batches;
- const react={useState:v=>{const k=index++;if(!state.has(k))state.set(k,typeof v==='function'?v():v);return[state.get(k),v=>state.set(k,typeof v==='function'?v(state.get(k)):v)];},useEffect:(fn,next)=>{const k=effectIndex++;if(!deps[k]||next.some((v,i)=>v!==deps[k][i])){deps[k]=next;effects.push(fn);}}};
+ const pendingRef={current:false};
+ const react={useRef:()=>pendingRef,useState:v=>{const k=index++;if(!state.has(k))state.set(k,typeof v==='function'?v():v);return[state.get(k),v=>state.set(k,typeof v==='function'?v(state.get(k)):v)];},useEffect:(fn,next)=>{const k=effectIndex++;if(!deps[k]||next.some((v,i)=>v!==deps[k][i])){deps[k]=next;effects.push(fn);}}};
  const api=async(url,init={})=>{
   calls.push({url,...init});
   if(init.method==='POST'){

@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { WorkspaceNav } from "@/components/workspace-nav";
 import { academyApi, apiHeaders } from "@/lib/api";
 
@@ -53,8 +53,9 @@ export default function SchedulePage() {
   const [roomName, setRoomName] = useState("");
   const [message, setMessage] = useState("Loading schedule…");
   const [savingId, setSavingId] = useState<string | null>(null);
+  const saving = useRef(false);
 
-  async function load(academyId?: string) {
+  async function load(academyId?: string, confirmation = "") {
     const id = academyId ?? academy?.id;
     if (!id) return;
     const [batchResponse, teacherResponse, branchResponse, sessionResponse] =
@@ -81,7 +82,16 @@ export default function SchedulePage() {
       setTeacherId(initialBatch.teacherId ?? "");
       setBranchId(initialBatch.branchId ?? "");
     }
-    setMessage("");
+    setMessage(confirmation);
+  }
+
+  async function refreshAfterSave(confirmation: string) {
+    setMessage(confirmation);
+    try {
+      await load(academy?.id, confirmation);
+    } catch {
+      setMessage(`${confirmation} The schedule could not be refreshed. Reload to view the latest classes; do not submit the saved action again.`);
+    }
   }
 
   useEffect(() => {
@@ -110,6 +120,7 @@ export default function SchedulePage() {
   }, []);
 
   function applyBatchDefaults(id: string) {
+    if (saving.current) return;
     if (id === batchId) return;
     setBatchId(id);
     const batch = batches.find((item) => item.id === id);
@@ -119,56 +130,79 @@ export default function SchedulePage() {
 
   async function createSession(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (saving.current) return;
     if (!academy || !batchId || !startLocal || !endLocal) return;
     if (["Online", "Hybrid"].includes(deliveryMode) && !roomName.trim())
       return setMessage(
         "A meeting link is required for online and hybrid classes.",
       );
-    const response = await academyApi(`/api/academies/${academy.id}/sessions`, {
-      method: "POST",
-      headers: apiHeaders(true),
-      body: JSON.stringify({
-        batchId,
-        teacherId: teacherId || null,
-        branchId: branchId || null,
-        startUtc: istInputToUtc(startLocal),
-        endUtc: istInputToUtc(endLocal),
-        deliveryMode,
-        roomName: roomName || null,
-      }),
-    });
-    if (!response.ok)
-      return setMessage(
-        "The session could not be saved. Ensure the end time is after the start time.",
-      );
-    setStartLocal("");
-    setEndLocal("");
-    setRoomName("");
-    setMessage("");
-    await load();
-  }
-  async function updateStatus(session: Session, status: string) {
-    if (!academy) return;
-    setSavingId(session.id);
-    const response = await academyApi(
-      `/api/academies/${academy.id}/sessions/${session.id}`,
-      {
-        method: "PUT",
+    saving.current = true;
+    setSavingId("create");
+    setMessage("Saving class…");
+    try {
+      const response = await academyApi(`/api/academies/${academy.id}/sessions`, {
+        method: "POST",
         headers: apiHeaders(true),
         body: JSON.stringify({
-          startUtc: session.startUtc,
-          endUtc: session.endUtc,
-          deliveryMode: session.deliveryMode,
-          roomName: session.roomName,
-          status,
+          batchId,
+          teacherId: teacherId || null,
+          branchId: branchId || null,
+          startUtc: istInputToUtc(startLocal),
+          endUtc: istInputToUtc(endLocal),
+          deliveryMode,
+          roomName: roomName || null,
         }),
-      },
-    );
-    setSavingId(null);
-    if (!response.ok)
-      return setMessage("The session status could not be updated.");
-    setMessage("Session updated.");
-    await load();
+      });
+      if (!response.ok) {
+        setMessage(response.status >= 500
+          ? "The save could not be confirmed. Your details are retained. Check the schedule before trying again."
+          : "The session could not be saved. Ensure the end time is after the start time.");
+        return;
+      }
+      setStartLocal("");
+      setEndLocal("");
+      setRoomName("");
+      await refreshAfterSave("Class scheduled successfully.");
+    } catch {
+      setMessage("The save could not be confirmed. Your details are retained. Check the schedule before trying again.");
+    } finally {
+      saving.current = false;
+      setSavingId(null);
+    }
+  }
+  async function updateStatus(session: Session, status: string) {
+    if (!academy || saving.current) return;
+    saving.current = true;
+    setSavingId(session.id);
+    setMessage("Updating class status…");
+    try {
+      const response = await academyApi(
+        `/api/academies/${academy.id}/sessions/${session.id}`,
+        {
+          method: "PUT",
+          headers: apiHeaders(true),
+          body: JSON.stringify({
+            startUtc: session.startUtc,
+            endUtc: session.endUtc,
+            deliveryMode: session.deliveryMode,
+            roomName: session.roomName,
+            status,
+          }),
+        },
+      );
+      if (!response.ok) {
+        setMessage(response.status >= 500
+          ? "The status update could not be confirmed. Check the schedule before trying again."
+          : "The session status could not be updated.");
+        return;
+      }
+      await refreshAfterSave(`Class status updated to ${status}.`);
+    } catch {
+      setMessage("The status update could not be confirmed. Check the schedule before trying again.");
+    } finally {
+      saving.current = false;
+      setSavingId(null);
+    }
   }
 
   const batchName = (id: string) =>
@@ -195,7 +229,7 @@ export default function SchedulePage() {
           Time (IST) and are stored safely in UTC.
         </p>
         {message && (
-          <p className="mt-6 rounded-lg border border-amber-700/50 bg-amber-950/40 p-4 text-sm text-amber-100">
+          <p role="status" aria-live="polite" aria-atomic="true" className="mt-6 rounded-lg border border-slate-700 bg-slate-900 p-4 text-sm text-slate-100">
             {message}
           </p>
         )}
@@ -203,10 +237,13 @@ export default function SchedulePage() {
           <form
             onSubmit={createSession}
             className="rounded-2xl border border-slate-800 bg-slate-900 p-6"
+            aria-busy={savingId === "create"}
           >
             <h2 className="text-xl font-semibold">Schedule a class</h2>
             <select
               value={batchId}
+              disabled={savingId !== null}
+              aria-label="Batch"
               onChange={(event) => applyBatchDefaults(event.target.value)}
               className="mt-5 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
               required
@@ -220,6 +257,8 @@ export default function SchedulePage() {
             </select>
             <select
               value={teacherId}
+              disabled={savingId !== null}
+              aria-label="Teacher"
               onChange={(event) => setTeacherId(event.target.value)}
               className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
             >
@@ -232,6 +271,8 @@ export default function SchedulePage() {
             </select>
             <select
               value={branchId}
+              disabled={savingId !== null}
+              aria-label="Branch"
               onChange={(event) => setBranchId(event.target.value)}
               className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
             >
@@ -246,6 +287,8 @@ export default function SchedulePage() {
               <input
                 type="datetime-local"
                 value={startLocal}
+                disabled={savingId !== null}
+                aria-label="Start time (IST)"
                 onChange={(event) => setStartLocal(event.target.value)}
                 className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
                 required
@@ -253,6 +296,8 @@ export default function SchedulePage() {
               <input
                 type="datetime-local"
                 value={endLocal}
+                disabled={savingId !== null}
+                aria-label="End time (IST)"
                 onChange={(event) => setEndLocal(event.target.value)}
                 className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
                 required
@@ -260,6 +305,8 @@ export default function SchedulePage() {
             </div>
             <select
               value={deliveryMode}
+              disabled={savingId !== null}
+              aria-label="Delivery mode"
               onChange={(event) => setDeliveryMode(event.target.value)}
               className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
             >
@@ -269,6 +316,8 @@ export default function SchedulePage() {
             </select>
             <input
               value={roomName}
+              disabled={savingId !== null}
+              aria-label={["Online", "Hybrid"].includes(deliveryMode) ? "Meeting link" : "Room"}
               onChange={(event) => setRoomName(event.target.value)}
               required={["Online", "Hybrid"].includes(deliveryMode)}
               placeholder={
@@ -279,10 +328,10 @@ export default function SchedulePage() {
               className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
             />
             <button
-              disabled={!academy || batches.length === 0}
+              disabled={!academy || batches.length === 0 || savingId !== null}
               className="mt-5 w-full rounded-lg bg-cyan-400 px-4 py-2.5 font-semibold text-slate-950 hover:bg-cyan-300 disabled:opacity-60"
             >
-              Schedule class
+              {savingId === "create" ? "Saving class…" : "Schedule class"}
             </button>
           </form>
           <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
@@ -329,7 +378,8 @@ export default function SchedulePage() {
                         onChange={(event) =>
                           void updateStatus(session, event.target.value)
                         }
-                        disabled={savingId === session.id}
+                        disabled={savingId !== null}
+                        aria-label={`Status for ${batchName(session.batchId)}`}
                         className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 text-sm"
                       >
                         <option>Scheduled</option>

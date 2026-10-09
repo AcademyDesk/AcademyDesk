@@ -3,8 +3,8 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | Governance/Branches/Batch/Course variants CONTROLLED-REPRODUCED / local repair; other original forms STATIC-FINDING |
-| Final verification | Course49 / combined209 controlled frontend PASS; browser/device/other forms/critical NOT RUN |
+| Confirmation status | Governance/Branches/Batch/Course/Schedule variants CONTROLLED-REPRODUCED / local repair; other original forms STATIC-FINDING |
+| Final verification | Prior Course49/combined209 retained; Schedule41 controlled +12 synthetic browser PASS; linked/device/other forms/critical OPEN |
 | Severity | Major feedback |
 | Priority | P1 |
 | Category | FUNC |
@@ -34,6 +34,19 @@
 | Retest result | Course durable confirmations/reset/error/pending guards controlled PASS; browser/device/other forms pending |
 | Regression result | 209 current combined controlled frontend PASS; no new backend/SQL run; Course lint FAIL (1 error/1 warning after improvement), not all-form/critical acceptance |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
+
+## Schedule feedback checkpoint — 2026-10-09
+
+[Schedule repair](../REPORTS/PHASE_2B_SCHEDULE_FEEDBACK_REPAIR.md): baseline 4/23
+PASS, 19 FAIL; final 23 new feedback/failure/pending checks plus all 18 existing
+Schedule-default checks PASS (41/41). Accessible create/status confirmations survive
+readback, confirmed-save refresh failures retain success with reload/no-repeat
+guidance, failed/unconfirmed writes retain inputs, and synchronous guards prevent
+duplicate/opposing requests through refresh. Twelve synthetic exported-DOM cases
+PASS at 320/1440 light/dark, no unexpected console errors; not live SQL/device proof.
+TypeScript/83-page export PASS; lint exit 0, zero errors/one inherited warning.
+No backend/domain/default/timezone/permission changes. Issue remains OPEN for
+other forms, linked acceptance, physical devices and critical regressions.
 
 ## Course feedback checkpoint — 2026-10-01
 

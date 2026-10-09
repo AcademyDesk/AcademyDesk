@@ -2,6 +2,10 @@
 
 ## Current state
 
+## Schedule success feedback — 2026-10-09 (BUG-FUNC-0003)
+
+[Schedule report](QA/REPORTS/PHASE_2B_SCHEDULE_FEEDBACK_REPAIR.md): actual-handler baseline 4/23 PASS, 19 FAIL; repaired durable create/status confirmations, committed-save/readback-failure guidance, unconfirmed 5xx/network outcomes, retained rejected inputs and synchronous duplicate/opposing guards through refresh. 23 new +18 original defaults checks (41/41), 12 exported-DOM synthetic API mobile/desktop/light-dark cases, TypeScript/83-page export PASS; Schedule lint exit0, zero errors/one inherited warning. Initial blocked-fixture baseline retained/corrected without weakened assertions. No domain/API/SQL/permission/timezone/default change or fresh linked/device/backend-suite acceptance. BUG-FUNC-0003 and enterprise/release gates OPEN. Starting 602d08a, codex/penta-search; scoped publication only, unrelated work/evidence/main/Mini/Azure unchanged. NEXT Sol Medium: Attendance feedback; Sol High if domain/access integration needed. Mini saved 86/94 CONTRACT READY / ENGINE BLOCKED and existing qualification handoff unchanged, no new tools/history/training.
+
 ## Calendar agenda readability — 2026-10-09 (BUG-UI-0008)
 
 [Repair report](QA/REPORTS/PHASE_2B_CALENDAR_AGENDA_READABILITY.md): reproduced 2453px rows inside a 274px card; constrained calendar grid/rows, wrapped full titles/details/names/URLs, one detail column <=480px. Ten exported-DOM width/theme readability cases, 332 retained timezone/cancellation checks, TypeScript/calendar lint/83-page export PASS. Final original browser matrix receipt follows in the report. Synthetic GET fixtures, not new live SQL/device acceptance; earlier interrupted export-serving run retained. Issue OPEN for physical/broader responsive gates. Starting b829971, codex/penta-search; unrelated work/evidence/main/Mini/Azure unchanged. NEXT Sol Medium: Schedule success-feedback BUG-FUNC-0003; Sol High if domain/access needed. Mini saved 86/94 CONTRACT READY / ENGINE BLOCKED and existing handoff unchanged; no new AI actions/history/training or release claim.
