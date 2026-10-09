@@ -2,6 +2,10 @@
 
 ## Current state
 
+## Communication Preferences success feedback — 2026-10-10
+
+[Report](QA/REPORTS/PHASE_2B_PREFERENCES_FEEDBACK_REPAIR.md): durable save/readback-failure notices, retained rejected/unconfirmed consent draft and synchronous write/readback guard. Narrow fetch/scoped mount and event-based contact hydration clear inherited1 lint error/1 warning without suppression; stable notes name. Original10 assertions +18 new28 controls, frozen baseline12 PASS/16 FAIL; final28 +32 synthetic exported-browser cases PASS, lint0/0, TypeScript/83-page export PASS. Existing narrow lookup/type/default/optional-notes/full consent payload/access unchanged; historical74 HTTP-SQL/609 backend not rerun. Hidden-input browser harness wait failure retained/corrected, no new auth/SQL/device/send acceptance. Starting5935e18, scoped feature publication only; BUG-FUNC-0003/BUG-FUNC-0028/release OPEN, main/Mini/Azure/unrelated/evidence preserved; Mini86/94 blocked/handoff unchanged. NEXT Sol Medium: Assignments feedback; Sol High for authority/domain/persistence.
+
 ## Communications success feedback — 2026-10-10
 
 [Report](QA/REPORTS/PHASE_2B_COMMUNICATIONS_FEEDBACK_REPAIR.md): retained50 delivery-channel controls reused, durable direct/banner confirmations, safe empty-body handling, saved/readback-failure guidance, retained rejected/unconfirmed drafts and synchronous write/readback guard. Pure workspace fetch clears inherited dependency warning; stable Message textarea name fixes observed error-state accessibility. Frozen72 baseline51 PASS/21 FAIL; final72/72 +32 synthetic exported-browser cases PASS, lint0/0, TypeScript/83-page export PASS. Payload/default/reset/template/consent/timezone/authority unchanged; no real send/backend/SQL/device/provider acceptance. Prior56 HTTP-SQL/557 backend historical not rerun, browser failures retained. Starting63b556b, scoped feature publication only; BUG-FUNC-0003/release OPEN, main/Mini/Azure/unrelated/evidence preserved; Mini86/94 blocked/handoff unchanged. NEXT Sol Medium: Communication Preferences feedback; Sol High for consent policy/authority/external-send/persistence.

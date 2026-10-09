@@ -35,6 +35,10 @@
 | Regression result | 209 current combined controlled frontend PASS; no new backend/SQL run; Course lint FAIL (1 error/1 warning after improvement), not all-form/critical acceptance |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
+## Communication Preferences feedback checkpoint — 2026-10-10
+
+[Report](../REPORTS/PHASE_2B_PREFERENCES_FEEDBACK_REPAIR.md): durable save/readback-failure distinction, retained rejected/unconfirmed consent and synchronous pending guard. Narrow lookup/complete consent payload/default/access retained; mount/contact hydration lint errors repaired without suppression. Original10 +18 new controls28/28 and32 synthetic browser PASS; baseline12/28 PASS, lint0/0, TypeScript/83-page export PASS. No new live SQL/auth/device/consent-delivery or release acceptance. Issue and related BUG-FUNC-0028 OPEN; next Assignments feedback.
+
 ## Communications feedback checkpoint — 2026-10-10
 
 [Report](../REPORTS/PHASE_2B_COMMUNICATIONS_FEEDBACK_REPAIR.md): direct/banner durable confirmation, empty-body safety, saved/readback-failure distinction, retained rejected/unconfirmed drafts and synchronous pending guard. Existing50 channel assertions retained; frozen72 baseline51 PASS/21 FAIL, final72 +32 synthetic browser PASS, lint0/0, TypeScript/83-page export PASS. Stable Message name fixes browser-observed error-state accessibility. Delivery/consent/authority/timezone unchanged; no new live sends/SQL/device or release acceptance. Issue OPEN; next Communication Preferences feedback gap check.
