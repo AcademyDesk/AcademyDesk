@@ -35,6 +35,17 @@
 | Regression result | 209 current combined controlled frontend PASS; no new backend/SQL run; Course lint FAIL (1 error/1 warning after improvement), not all-form/critical acceptance |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
+## Attendance feedback checkpoint — 2026-10-09
+
+[Gap check](../REPORTS/PHASE_2B_ATTENDANCE_FEEDBACK_CHECK.md): earlier durable
+Attendance success/draft/readback handling already exists and original 24 controls
+pass; not reimplemented. Narrow 5xx outcome guidance now says unconfirmed/check
+before retry, retaining server guidance and drafts. Final 32 controlled and 16
+synthetic exported-browser width/theme/fault cases PASS, TypeScript/export PASS.
+Lint remains FAIL with the same one inherited effect error/two warnings as HEAD.
+No new live SQL/Identity/device/critical proof; issue OPEN. Next bounded effect-lint
+cleanup, Sol Medium; Sol High only if authority/persistence contracts change.
+
 ## Schedule feedback checkpoint — 2026-10-09
 
 [Schedule repair](../REPORTS/PHASE_2B_SCHEDULE_FEEDBACK_REPAIR.md): baseline 4/23

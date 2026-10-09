@@ -1,7 +1,7 @@
 // Executes the actual TSX handlers with controlled hooks/API, not browser/device evidence.
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs');
 const ts=require('../../apps/web/node_modules/typescript'),jsx=require('../../apps/web/node_modules/react/jsx-runtime');
-const source=fs.readFileSync('apps/web/src/app/attendance/page.tsx','utf8');
+const source=process.env.QA_ATTENDANCE_BASELINE==='1'?require('node:child_process').execFileSync('git',['show','HEAD:apps/web/src/app/attendance/page.tsx'],{encoding:'utf8'}):fs.readFileSync('apps/web/src/app/attendance/page.tsx','utf8');
 const code=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX}}).outputText;
 function nodes(n){return Array.isArray(n)?n.flatMap(nodes):!n||typeof n!=='object'?[]:[n,...nodes(n.props?.children)];}
 function text(n){return Array.isArray(n)?n.map(text).join(''):n==null||typeof n==='boolean'?'':typeof n==='object'?text(n.props?.children):String(n);}
@@ -17,7 +17,7 @@ async function page(config={}){
    if(init.method==='POST'){
     if(config.postGate)await config.postGate;
     if(config.network)throw Error('Synthetic network failure');
-    if(config.postStatus)return{ok:false,status:config.postStatus,json:async()=>({message:config.message})};
+    if(config.postStatus){if(config.commitBeforeError){const body=JSON.parse(init.body);stored[id]=[{studentId:body.studentId,status:body.status,notes:body.notes}];}return{ok:false,status:config.postStatus,json:async()=>{if(config.jsonFault)throw Error('Synthetic malformed error');return{message:config.message};}};}
     const body=JSON.parse(init.body);stored[id]=[{studentId:body.studentId,status:body.status,notes:body.notes?.trim()??null}];
     return{ok:true,status:200,json:async()=>stored[id][0]};
    }
@@ -68,10 +68,23 @@ test('Unloaded or malformed records cannot be saved as empty notes',async()=>{co
 test('Same-tick repeated saves produce one request and disable all editable controls',async()=>{
  let release;const postGate=new Promise(r=>release=r),p=await page({postGate});const click=p.button().props.onClick;click();click();await tick();assert.equal(p.writes().length,1);assert.equal(p.select('session').props.disabled,true);assert.equal(p.select('attendance-s').props.disabled,true);assert.equal(p.input().props.disabled,true);assert.equal(p.button().props.disabled,true);release();await tick();await tick();assert.equal(p.button().props.disabled,false);
 });
-for(const code of [400,403,500])test(`HTTP ${code} retains draft and displays server guidance`,async()=>{const p=await page({postStatus:code,message:'Synthetic access/validation guidance'});p.edit('Keep my draft');await p.save();assert.equal(p.state.get(9)['one:s'],'Keep my draft');assert.equal(p.state.get(7),'Synthetic access/validation guidance');assert.equal(p.state.get(8),'');});
-test('Empty server guidance falls back to a visible failure message',async()=>{const p=await page({postStatus:500});p.edit('Keep');await p.save();assert.match(p.state.get(7),/could not be saved/);assert.equal(p.state.get(9)['one:s'],'Keep');});
-for(const message of ['', '  '])test('Blank server guidance remains visible '+JSON.stringify(message),async()=>{const p=await page({postStatus:500,message});await p.save();assert.match(p.state.get(7),/could not be saved/);});
+for(const code of [400,403,500])test(`HTTP ${code} retains draft and displays server guidance`,async()=>{const p=await page({postStatus:code,message:'Synthetic access/validation guidance'});p.edit('Keep my draft');await p.save();assert.equal(p.state.get(9)['one:s'],'Keep my draft');assert.equal(p.state.get(7),code>=500?'Synthetic access/validation guidance Attendance could not be confirmed. Your notes have been retained; check the saved record before retrying.':'Synthetic access/validation guidance');assert.equal(p.state.get(8),'');});
+test('Empty server guidance falls back to a visible failure message',async()=>{const p=await page({postStatus:500});p.edit('Keep');await p.save();assert.match(p.state.get(7),/could not be confirmed.*before retrying/);assert.equal(p.state.get(9)['one:s'],'Keep');});
+for(const message of ['', '  '])test('Blank server guidance remains visible '+JSON.stringify(message),async()=>{const p=await page({postStatus:500,message});await p.save();assert.match(p.state.get(7),/could not be confirmed.*before retrying/);});
 test('Saving one student leaves other student drafts untouched',async()=>{const p=await page();p.state.set(9,{'one:s':'First draft','one:t':'Second draft'});await p.save();assert.equal(p.stored.one[0].notes,'First draft');assert.deepEqual(p.state.get(9),{'one:t':'Second draft'});});
 test('Network uncertainty retains draft and does not claim success',async()=>{const p=await page({network:true});p.edit('Keep');await p.save();assert.match(p.state.get(7),/could not be confirmed/);assert.equal(p.state.get(9)['one:s'],'Keep');});
 test('Saved but failed readback reports saved state and retains draft',async()=>{const p=await page({refreshFailure:true});p.edit('Keep');await p.save();assert.match(p.state.get(7),/saved, but records could not be refreshed/);assert.equal(p.state.get(9)['one:s'],'Keep');assert.equal(p.stored.one[0].notes,'Keep');});
 test('Input respects existing 500-character contract; success is announced',async()=>{const p=await page();assert.equal(p.input().props.maxLength,500);await p.save();const notice=nodes(p.render()).find(n=>n.props?.role==='status');assert.equal(notice.props['aria-live'],'polite');assert.equal(text(notice),'Attendance saved.');});
+
+for(const code of [500,502,503])for(const committed of [false,true])test(`HTTP ${code} uncertain outcome committed=${committed} retains draft and never retries`,async()=>{
+ const p=await page({postStatus:code,commitBeforeError:committed,message:'Synthetic service unavailable'});p.edit('Keep uncertain note');await p.save();
+ assert.match(p.state.get(7),/could not be confirmed.*check the saved record before retrying/);assert.match(p.state.get(7),/Synthetic service unavailable/);assert.doesNotMatch(p.state.get(7),/Attendance saved\./);
+ assert.equal(p.state.get(9)['one:s'],'Keep uncertain note');assert.equal(p.input().props.value,'Keep uncertain note');assert.equal(p.writes().length,1);assert.equal(p.state.get(8),'');assert.equal(p.stored.one[0].notes,committed?'Keep uncertain note':'Saved note');
+});
+test('Malformed 5xx error body remains unconfirmed without losing draft',async()=>{const p=await page({postStatus:500,jsonFault:true});p.edit('Retain HTML-error note');await p.save();assert.match(p.state.get(7),/could not be confirmed/);assert.equal(p.input().props.value,'Retain HTML-error note');assert.equal(p.writes().length,1);});
+test('Readback remains guarded against repeated saves and status changes',async()=>{
+ let release,hold=false;const gate=new Promise(r=>release=r),p=await page({getGate:()=>hold?gate:Promise.resolve()});p.edit('Retain slow note');hold=true;
+ try {await p.save();await p.save('Absent');assert.equal(p.writes().length,1);assert.equal(p.input().props.disabled,true);assert.equal(p.button().props.disabled,true);assert.equal(p.select('session').props.disabled,true);assert.equal(p.select('attendance-s').props.disabled,true);assert.equal(p.state.get(7),'Attendance saved.');assert.equal(p.state.get(9)['one:s'],'Retain slow note');}
+ finally {release();}
+ await tick();await tick();assert.equal(p.input().props.disabled,false);assert.equal(p.writes().length,1);assert.deepEqual(p.state.get(9),{});
+});

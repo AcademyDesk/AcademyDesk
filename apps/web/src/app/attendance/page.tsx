@@ -74,7 +74,9 @@ export default function AttendancePage() {
       if (!response.ok) {
         const details = await response.json().catch(() => null);
         const detailMessage = typeof details?.message === "string" ? details.message.trim() : "";
-        setMessage(detailMessage || "Attendance could not be saved. Your notes have been retained.");
+        setMessage(response.status >= 500
+          ? `${detailMessage ? `${detailMessage} ` : ""}Attendance could not be confirmed. Your notes have been retained; check the saved record before retrying.`
+          : detailMessage || "Attendance could not be saved. Your notes have been retained.");
         return;
       }
       setMessage("Attendance saved.");
