@@ -15,7 +15,9 @@ public sealed class ClassSessionsController(AcademyDeskDbContext dbContext) : Co
         var query = dbContext.ClassSessions.AsNoTracking().Where(x => x.AcademyId == academyId);
         if (fromUtc.HasValue) query = query.Where(x => x.StartUtc >= fromUtc.Value);
         if (toUtc.HasValue) query = query.Where(x => x.StartUtc < toUtc.Value);
-        var sessions = await query.OrderBy(x => x.StartUtc).Select(x => new ClassSessionSummary(x.Id, x.BatchId, x.TeacherId, x.BranchId, x.StartUtc, x.EndUtc, x.DeliveryMode, x.RoomName, x.Status)).ToListAsync(cancellationToken);
+        // SQL datetime2 returns Unspecified Kind. These columns are UTC instants,
+        // so retain their ticks and explicitly emit Z instead of browser-local time.
+        var sessions = await query.OrderBy(x => x.StartUtc).Select(x => new ClassSessionSummary(x.Id, x.BatchId, x.TeacherId, x.BranchId, DateTime.SpecifyKind(x.StartUtc, DateTimeKind.Utc), DateTime.SpecifyKind(x.EndUtc, DateTimeKind.Utc), x.DeliveryMode, x.RoomName, x.Status)).ToListAsync(cancellationToken);
         return Ok(sessions);
     }
 

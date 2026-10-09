@@ -42,9 +42,26 @@ test('Two sessions from one batch retain separate teacher/location values',async
 test('Events/make-ups retain internal actions and do not inherit meeting links',async()=>{const p=await page({events:[{id:'e',title:'Synthetic event',type:'Recital',startUtc:fixedTime,venue:'Hall'}],makeups:[{id:'m',studentId:'s',batchId:'b',startUtc:fixedTime,venue:'Room'}]});const event=p.rows().find(x=>x.props.item.type==='Event'),makeup=p.rows().find(x=>x.props.item.type==='Make-up');assert.equal(event.props.item.href,'/events');assert.equal(makeup.props.item.href,'/makeup');for(const id of ['e','m']){const link=nodes(p.agenda(id)).find(n=>n.type==='a');assert.equal(link.props.target,undefined);}});
 test('Filters and agenda collapse/expand retain session-specific projection',async()=>{const p=await page();const button=(label)=>nodes(p.render()).find(n=>n.type==='button'&&text(n)===label);button('Event').props.onClick();assert.equal(p.rows().length,0);button('Class').props.onClick();assert.equal(p.item().teacher,'Session Teacher');const toggle=()=>nodes(p.render()).find(n=>n.props?.['aria-controls']==='calendar-month-agenda-list');toggle().props.onClick();assert.equal(toggle().props['aria-expanded'],false);assert.equal(p.rows().length,0);toggle().props.onClick();assert.equal(p.item().href,session.roomName);assert.equal(toggle().props['aria-expanded'],true);assert.ok(p.calls.every(x=>!x.method));});
 if(process.env.QA_CALENDAR_SQL==='1')test('Captured real HTTP/SQL fixture reaches actual calendar grid/agenda unchanged',async()=>{
- const log=fs.readFileSync('QA/EVIDENCE/logs/phase-2b-calendar-details-sql.log','utf8');const capture=log.match(/^CALENDARDETAILS FIXTURE (.+)$/m);assert.ok(capture);const fixture=JSON.parse(capture[1]);
+ const log=fs.readFileSync(process.env.QA_CALENDAR_SQL_LOG||'QA/EVIDENCE/logs/phase-2b-calendar-details-sql.log','utf8');const capture=log.match(/^CALENDARDETAILS FIXTURE (.+)$/m);assert.ok(capture);const fixture=JSON.parse(capture[1]);
  const p=await page(fixture);const row=p.rows().find(x=>x.props.item.id===fixture.expected.sessionId);assert.ok(row);assert.equal(row.props.item.teacher,fixture.expected.teacher);assert.equal(row.props.item.href,fixture.expected.location);const grid=p.grid().find(x=>x.key==='Class-'+fixture.expected.sessionId);assert.equal(grid.props.href,fixture.expected.location);const agenda=p.agenda(fixture.expected.sessionId);assert.match(text(agenda),new RegExp(fixture.expected.teacher));assert.equal(nodes(agenda).find(x=>x.type==='a').props.href,fixture.expected.location);
  for(const session of fixture.sessions){const rendered=p.rows().find(x=>x.props.item.id===session.id).props.item;if(session.teacherId===null){assert.equal(rendered.teacher,'Unassigned');assert.equal(rendered.href,fixture.batches.find(x=>x.id===session.batchId).meetingLink);}if(session.deliveryMode==='InPerson'){assert.equal(rendered.href,undefined);assert.equal(rendered.location,session.roomName);}}
+});
+if(process.env.QA_CALENDAR_CANCELLATION_LOG)test('Completed real HTTP/SQL cancellation capture removes only the target meeting action in actual TSX',async()=>{
+ const {fixture}=require('./calendar-sql-fixture.cjs')(process.env.QA_CALENDAR_CANCELLATION_LOG),e=fixture.expected;
+ for(const [sessions,status]of [[fixture.beforeSessions,'Scheduled'],[fixture.afterSessions,'Cancelled']]){
+  const p=await page({...fixture,sessions}),item=p.rows().find(x=>x.props.item.id===e.sessionId)?.props.item;
+  assert.ok(item);assert.equal(item.status,status);assert.equal(item.teacher,e.teacher);assert.equal(item.location,e.location);
+  const grid=p.grid().find(x=>x.key==='Class-'+e.sessionId),agenda=p.agenda(e.sessionId);assert.ok(grid);
+  assert.equal(grid.props['data-session-status'],status);assert.equal(agenda.props['data-session-status'],status);
+  assert.equal(item.href,status==='Scheduled'?e.location:undefined);assert.equal(grid.type,status==='Scheduled'?'a':'div');
+  assert.equal(nodes(agenda).filter(x=>x.type==='a').length,status==='Scheduled'?1:0);
+  if(status==='Cancelled')assert.match(text(agenda),/This class is cancelled\. Meeting access is unavailable\./);
+  assert.ok(p.calls.every(x=>!x.method),'Presentation never changes lifecycle');
+  for(const other of sessions.filter(x=>x.id!==e.sessionId)){
+   const rendered=p.rows().find(x=>x.props.item.id===other.id)?.props.item;if(!rendered)continue;
+   assert.equal(rendered.status,other.status);if(other.deliveryMode==='Online')assert.equal(rendered.href,other.roomName||fixture.batches.find(x=>x.id===other.batchId).meetingLink);
+  }
+ }
 });
 
 // Run the unchanged projection cases and this boundary matrix in each browser

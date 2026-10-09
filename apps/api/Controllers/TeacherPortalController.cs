@@ -39,7 +39,7 @@ public sealed class TeacherPortalController(
             .Where(x => x.AcademyId == user.AcademyId && batchIds.Contains(x.BatchId) && x.TeacherId == user.TeacherId && x.StartUtc >= DateTime.UtcNow.AddDays(-1))
             .OrderBy(x => x.StartUtc)
             .Take(30)
-            .Select(x => new TeacherSessionSummary(x.Id, x.BatchId, x.StartUtc, x.EndUtc, x.DeliveryMode, x.RoomName, x.Status, x.TeacherAttendanceStatus))
+            .Select(x => new TeacherSessionSummary(x.Id, x.BatchId, DateTime.SpecifyKind(x.StartUtc, DateTimeKind.Utc), DateTime.SpecifyKind(x.EndUtc, DateTimeKind.Utc), x.DeliveryMode, x.RoomName, x.Status, x.TeacherAttendanceStatus))
             .ToListAsync(cancellationToken);
 
         return Ok(new TeacherPortalSummary(teacher.FirstName, teacher.LastName, batches, sessions, user.Id));
@@ -55,7 +55,7 @@ public sealed class TeacherPortalController(
         var sessions = await dbContext.ClassSessions.AsNoTracking()
             .Where(x => x.AcademyId == user.AcademyId && x.TeacherId == user.TeacherId && x.StartUtc >= start && x.StartUtc < end)
             .OrderBy(x => x.StartUtc)
-            .Select(x => new TeacherSessionSummary(x.Id, x.BatchId, x.StartUtc, x.EndUtc, x.DeliveryMode, x.RoomName, x.Status, x.TeacherAttendanceStatus))
+            .Select(x => new TeacherSessionSummary(x.Id, x.BatchId, DateTime.SpecifyKind(x.StartUtc, DateTimeKind.Utc), DateTime.SpecifyKind(x.EndUtc, DateTimeKind.Utc), x.DeliveryMode, x.RoomName, x.Status, x.TeacherAttendanceStatus))
             .ToListAsync(cancellationToken);
         var holidays = await dbContext.AcademyHolidays.AsNoTracking()
             .Where(x => x.AcademyId == user.AcademyId && x.HolidayDate >= DateOnly.FromDateTime(start) && x.HolidayDate < DateOnly.FromDateTime(end))

@@ -68,6 +68,7 @@ internal static partial class SqlHarnessEntryPoint
             foreach(var row in sessions.EnumerateArray()) {
                 var stored=rows.Single(x=>x.Id==row.GetProperty("id").GetGuid());Guid? assigned=row.GetProperty("teacherId").ValueKind==JsonValueKind.Null?null:row.GetProperty("teacherId").GetGuid();
                 if(assigned!=stored.TeacherId||row.GetProperty("roomName").GetString()!=stored.RoomName||row.GetProperty("batchId").GetGuid()!=stored.BatchId)throw new InvalidOperationException("Session list details differ from fresh SQL");
+                RequireUtc(row,"startUtc",stored.StartUtc);RequireUtc(row,"endUtc",stored.EndUtc);
             }
             var b=batches.EnumerateArray().Single(x=>x.GetProperty("id").GetGuid()==batch);if(b.GetProperty("teacherId").GetGuid()!=teacherA||b.GetProperty("meetingLink").GetString()!=batchLink)throw new InvalidOperationException("Batch defaults changed");
             var t=teachers.EnumerateArray().Single(x=>x.GetProperty("id").GetGuid()==teacherB);if(t.GetProperty("firstName").GetString()!="Session"||t.GetProperty("lastName").GetString()!="Teacher")throw new InvalidOperationException("Teacher lookup differs from SQL");
@@ -76,6 +77,7 @@ internal static partial class SqlHarnessEntryPoint
         var substituteCalendar=(await Read("substitute-teacher-calendar","/api/teacher/calendar?year=2026&month=10",substituteToken,HttpStatusCode.OK))!.Value;
         var defaultCalendar=(await Read("default-teacher-calendar","/api/teacher/calendar?year=2026&month=10",batchToken,HttpStatusCode.OK))!.Value;
         var substituteRow=substituteCalendar.GetProperty("sessions").EnumerateArray().Single(x=>x.GetProperty("id").GetGuid()==sessionId);
+        RequireUtc(substituteRow,"startUtc",start);RequireUtc(substituteRow,"endUtc",start.AddHours(1));
         if(substituteRow.GetProperty("roomName").GetString()!=sessionLink||defaultCalendar.GetProperty("sessions").EnumerateArray().Any(x=>x.GetProperty("id").GetGuid()==sessionId))throw new InvalidOperationException("Teacher calendar assignment/location mismatch");
         count++;Console.WriteLine("CALENDARDETAILS CASE teacher-calendar-session-ownership-and-location PASS.");
         await Read("foreign-sessions-route",$"/api/academies/{foreign}/sessions",token,HttpStatusCode.Forbidden);
@@ -83,6 +85,69 @@ internal static partial class SqlHarnessEntryPoint
         await Read("anonymous-sessions",route+"/sessions",null,HttpStatusCode.Unauthorized);
         Console.WriteLine("CALENDARDETAILS FIXTURE "+JsonSerializer.Serialize(new {sessions,batches,teachers,expected=new {sessionId,teacher="Session Teacher",location=sessionLink}},new JsonSerializerOptions(JsonSerializerDefaults.Web)));
         if(count!=11)throw new InvalidOperationException("Unexpected calendar case count: "+count);
-        Console.WriteLine("CALENDARDETAILS REGRESSION PASS:11 cases; actual Create override/fresh SQL, unchanged batch defaults, owned read projections, two real teacher calendars, cross-tenant/anonymous no-write denials; synthetic HTTP fixture emitted for actual TSX integration. Browser/device pending.");
+        // Keep the original positive fixture intact; cancellation is a subsequent real HTTP transition.
+        var scheduled=sessions.EnumerateArray().Single(x=>x.GetProperty("id").GetGuid()==sessionId);
+        if(scheduled.GetProperty("status").GetString()!="Scheduled")throw new InvalidOperationException("Cancellation prerequisite is not Scheduled");
+        object Update(string status)=>new {startUtc=start,endUtc=start.AddHours(1),deliveryMode="Online",roomName=sessionLink,status};
+        async Task RejectWrite(string label,HttpMethod method,string path,string? auth,object payload,HttpStatusCode expected) {
+            await Task.Delay(550);var before=await Snapshot();using var request=new HttpRequestMessage(method,path);
+            if(auth is not null)request.Headers.Authorization=new AuthenticationHeaderValue("Bearer",auth);
+            request.Content=JsonContent.Create(payload);using var response=await client.SendAsync(request);RequireFinanceStatus(response,expected,label);
+            if(before!=await Snapshot())throw new InvalidOperationException("Rejected cancellation changed calendar data: "+label);
+            count++;Console.WriteLine($"CALENDARDETAILS CASE {label} PASS.");
+        }
+        await RejectWrite("foreign-cancellation-no-write",HttpMethod.Put,$"/api/academies/{foreign}/sessions/{sessionId}",token,Update("Cancelled"),HttpStatusCode.Forbidden);
+        await RejectWrite("anonymous-cancellation-no-write",HttpMethod.Put,route+$"/sessions/{sessionId}",null,Update("Cancelled"),HttpStatusCode.Unauthorized);
+        await RejectWrite("unassigned-teacher-cancellation-no-write",HttpMethod.Patch,$"/api/teacher/sessions/{sessionId}/status",batchToken,new {status="Cancelled"},HttpStatusCode.Forbidden);
+        await RejectWrite("invalid-cancellation-status-no-write",HttpMethod.Put,route+$"/sessions/{sessionId}",token,Update("Invalid"),HttpStatusCode.BadRequest);
+        var beforeCancellation=await Snapshot();await Task.Delay(550);
+        using var cancel=new HttpRequestMessage(HttpMethod.Put,route+$"/sessions/{sessionId}");cancel.Headers.Authorization=new AuthenticationHeaderValue("Bearer",token);cancel.Content=JsonContent.Create(Update("Cancelled"));
+        using var cancelled=await client.SendAsync(cancel);RequireFinanceStatus(cancelled,HttpStatusCode.OK,"owned-cancellation");
+        using var cancelledJson=JsonDocument.Parse(await cancelled.Content.ReadAsStringAsync());
+        using(var scope=factory.Services.CreateScope()) {
+            var db=scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+            var row=await db.ClassSessions.AsNoTracking().SingleAsync(x=>x.AcademyId==academy&&x.Id==sessionId);
+            if(row.Status!="Cancelled"||row.TeacherId!=teacherB||row.BatchId!=batch||row.BranchId!=scheduled.GetProperty("branchId").Deserialize<Guid?>()||row.StartUtc!=start||row.EndUtc!=start.AddHours(1)||row.RoomName!=sessionLink||row.DeliveryMode!="Online")
+                throw new InvalidOperationException("Cancellation fresh SQL lost status or original session details");
+            using var before=JsonDocument.Parse(beforeCancellation);using var after=JsonDocument.Parse(await Snapshot());
+            // Compare every other session and all defaults, not only the target's selected columns.
+            foreach(var entity in new[]{"Sessions","Batches","Teachers"}) {
+                var a=before.RootElement.GetProperty(entity).EnumerateArray().Where(x=>entity!="Sessions"||x.GetProperty("Id").GetGuid()!=sessionId).Select(x=>x.GetRawText());
+                var b=after.RootElement.GetProperty(entity).EnumerateArray().Where(x=>entity!="Sessions"||x.GetProperty("Id").GetGuid()!=sessionId).Select(x=>x.GetRawText());
+                if(!a.SequenceEqual(b))throw new InvalidOperationException("Cancellation changed unrelated rows/defaults: "+entity);
+            }
+        }
+        var cancelledRow=cancelledJson.RootElement.Clone();
+        foreach(var property in scheduled.EnumerateObject()) {
+            var expected=property.Name=="status"?"\"Cancelled\"":property.Value.GetRawText();
+            if(cancelledRow.GetProperty(property.Name).GetRawText()!=expected)throw new InvalidOperationException("Cancellation response changed original fields: "+property.Name);
+        }
+        count++;Console.WriteLine("CALENDARDETAILS CASE owned-cancellation-response-fresh-SQL-preserved-history PASS.");
+        var cancelledSessions=(await Read("cancelled-owned-sessions-read",route+"/sessions",token,HttpStatusCode.OK))!.Value;
+        var cancelledTeacherCalendar=(await Read("cancelled-substitute-teacher-calendar","/api/teacher/calendar?year=2026&month=10",substituteToken,HttpStatusCode.OK))!.Value;
+        using(var scope=factory.Services.CreateScope()) {
+            var db=scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();var rows=await db.ClassSessions.AsNoTracking().Where(x=>x.AcademyId==academy).ToListAsync();
+            if(cancelledSessions.GetArrayLength()!=sessions.GetArrayLength()||cancelledSessions.GetArrayLength()!=rows.Count)throw new InvalidOperationException("Cancellation dropped history or added rows");
+            foreach(var responseRow in cancelledSessions.EnumerateArray()) {
+                var row=rows.Single(x=>x.Id==responseRow.GetProperty("id").GetGuid());
+                if(row.Status!=responseRow.GetProperty("status").GetString())throw new InvalidOperationException("Cancelled GET status differs from fresh SQL");
+                var prior=sessions.EnumerateArray().Single(x=>x.GetProperty("id").GetGuid()==row.Id);
+                foreach(var property in prior.EnumerateObject()) {
+                    var expected=row.Id==sessionId&&property.Name=="status"?"\"Cancelled\"":property.Value.GetRawText();
+                    if(responseRow.GetProperty(property.Name).GetRawText()!=expected)throw new InvalidOperationException("Cancelled GET changed original details/history");
+                }
+            }
+            var teacherRow=cancelledTeacherCalendar.GetProperty("sessions").EnumerateArray().Single(x=>x.GetProperty("id").GetGuid()==sessionId);
+            if(teacherRow.GetProperty("status").GetString()!="Cancelled"||teacherRow.GetProperty("roomName").GetString()!=sessionLink)throw new InvalidOperationException("Teacher cancelled readback mismatch");
+        }
+        count++;Console.WriteLine("CALENDARDETAILS CASE cancelled-admin-teacher-projections-match-fresh-SQL PASS.");
+        Console.WriteLine("CALENDARDETAILS CANCELLATION FIXTURE "+JsonSerializer.Serialize(new {academyId=academy,beforeSessions=sessions,afterSessions=cancelledSessions,batches,teachers,expected=new {sessionId,teacher="Session Teacher",location=sessionLink,beforeStatus="Scheduled",afterStatus="Cancelled",cancelHttpStatus=200,freshSqlVerified=true}},new JsonSerializerOptions(JsonSerializerDefaults.Web)));
+        if(count!=19)throw new InvalidOperationException("Unexpected extended calendar case count: "+count);
+        Console.WriteLine("CALENDARDETAILS REGRESSION PASS:19 cases; original 11 retained; real Scheduled-to-Cancelled HTTP/fresh SQL/history, read-only admin/teacher projections and four denied no-write transitions; captured HTTP fixtures emitted for TSX/browser replay. Physical device pending.");
+        static void RequireUtc(JsonElement row,string field,DateTime expected) {
+            var raw=row.GetProperty(field).GetString();
+            if(raw is null||!raw.EndsWith('Z')||row.GetProperty(field).GetDateTime().Kind!=DateTimeKind.Utc||row.GetProperty(field).GetDateTime()!=DateTime.SpecifyKind(expected,DateTimeKind.Utc))
+                throw new InvalidOperationException("Calendar response must preserve the SQL UTC instant with explicit Z: "+field);
+        }
     }
 }

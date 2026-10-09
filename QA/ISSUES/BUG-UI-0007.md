@@ -4,7 +4,7 @@
 | --- | --- |
 | Status | OPEN |
 | Confirmation status | CONTROLLED-TSX REPRODUCED; EXPORTED-DOM RETEST PASS |
-| Final verification | PARTIAL: controlled and synthetic browser PASS; linked API/critical/device OPEN |
+| Final verification | PARTIAL: class HTTP/SQL UTC + captured-response DOM PASS; other sources/live browser/critical/device OPEN |
 | Severity | Major schedule date inconsistency |
 | Priority | P1 |
 | Category | UI |
@@ -36,6 +36,16 @@
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
 ## Current repair checkpoint — 2026-10-09
+
+[Class cancellation SQL retest](../REPORTS/PHASE_2B_CALENDAR_CANCELLATION_SQL_RETEST.md)
+exposed missing UTC Z after SQL datetime2 readback. Class and Teacher session
+projections now preserve stored ticks and explicitly mark UTC. 19 real HTTP/SQL
+cases, 4 new serializer / 1,126 API tests, 332 TSX checks and 16 captured-response
+DOM timezone/viewport/theme combinations PASS; class time remains 3:30 pm IST
+in all four timezones. Other event/make-up timestamp sources, directly live
+browser/API, original critical suite and physical devices remain OPEN.
+
+### Earlier frontend-only checkpoint (before SQL retest)
 
 [Repair report](../REPORTS/PHASE_2B_CALENDAR_TIMEZONE_REPAIR.md): India civil-day
 grouping, UTC marker arithmetic, initial month, heading, Today and agenda now

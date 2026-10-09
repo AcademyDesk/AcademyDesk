@@ -4,7 +4,7 @@
 | --- | --- |
 | Status | OPEN |
 | Confirmation status | CONTROLLED-TSX REPRODUCED; EXPORTED-DOM RETEST PASS |
-| Final verification | PARTIAL: controlled/synthetic browser PASS; linked SQL/critical/device OPEN |
+| Final verification | PARTIAL: 19 HTTP/SQL and captured-response DOM PASS; direct live browser/critical/device OPEN |
 | Severity | Major misleading schedule state |
 | Priority | P1 |
 | Category | FUNC |
@@ -36,6 +36,16 @@
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
 ## Current repair checkpoint — 2026-10-09
+
+[HTTP/SQL retest](../REPORTS/PHASE_2B_CALENDAR_CANCELLATION_SQL_RETEST.md):
+19/19 actual Identity/HTTP/disposable-SQL cases PASS, including original 11,
+four rejected no-write transitions, cancellation persistence/history and fresh
+admin/teacher projections. Discovered and fixed missing UTC Z in SQL readback.
+332 controlled checks, 16 captured-response browser combinations, 18 capture
+guards and 1,126 API tests PASS. Captured browser replay is not a directly live
+browser/API mutation; critical/physical-device and remaining gates stay OPEN.
+
+### Earlier frontend-only checkpoint (before SQL retest)
 
 [Repair report](../REPORTS/PHASE_2B_CALENDAR_CANCELLATION_REPAIR.md): returned
 session lifecycle is now retained and displayed in grid/agenda. Cancelled
