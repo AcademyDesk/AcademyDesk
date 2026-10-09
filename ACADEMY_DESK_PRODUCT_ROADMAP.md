@@ -1,5 +1,9 @@
 # Academy Desk product delivery roadmap
 
+## Lead coordination — 2026-10-09 (N2u)
+
+Academy Desk owns the integrated PENTA frontend and complete customer feature; Mini owns shared Core/inference/protocol and engine qualification. [Outgoing Mini packet](PENTA_HANDOFF_TO_MINI.md) is the controlling dependency/return checkpoint. N2t fixtures/draft validators and synthetic Core boundary now exist; do not repeat or activate them as a real conversational service. Current N2r 86/94 blocks linked read acceptance. Next Mini Sol High candidate/decoder/resource decision from saved evidence; Academy can continue isolated consumer tests and defined UI independently without copying intelligence. Resume exact source-linked SQL/browser/visual acceptance after engine return; no READY TO VIEW, main merge or Azure while gates remain open. Older next pointers below are history where superseded.
+
 Status: active direction, updated 2026-10-08. This coordinates existing work; it does not replace [enterprise testing](ENTERPRISE_TESTING_ROADMAP.md), [QA release gates](QA/09_RELEASE_GATES.md), the [PENTA architecture](PENTA_ARCHITECTURE_DECISION.md), or historical reports. GitHub `main` remains the accepted product line; this feature branch is not a release.
 
 Current authority: **Codex-first full product development**. Codex owns design, application implementation and QA; external tools are optional and cannot block continuation. Sol High owns consequential work, Sol Medium bounded implementation, Terra optional mechanical work and Astra optional independent consequential review. The first external v0 preview is preserved for design reference, not treated as integrated functionality.

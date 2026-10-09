@@ -1,5 +1,9 @@
 # Academy Desk PENTA — product vision
 
+## Lead ownership — 2026-10-09
+
+Academy Desk owns the full integrated PENTA frontend/UX, connector, host authorization/domain execution and end-to-end quality. Mini owns reusable Core/inference, shared canonical Tool Protocol, conversational interpretation/model-level context and learning interfaces. One shared engine serves multiple products; Academy is the first connector, not a mandatory Core dependency. The standalone commercial frontend is a later separate track. This supersedes the earlier frontend-skip instruction. Read [current dependency and return packet](PENTA_HANDOFF_TO_MINI.md); shared draft contracts are not enabled runtimes.
+
 ## Standing priority — 2026-10-08
 
 The owner reaffirmed **90% AI-assisted / approved-automated eligible academy operations and 10% manual control** as the product target. Build frontend, shared domain services, protected tools and tests together, not a finished-looking chat over missing backend actions. One continuous conversational PENTA AI is the primary workspace; the manual directory remains available for precision, exceptions and recovery. Pulse, Executor, Navigator, Twin and Autopilot are five capabilities of that one experience.
