@@ -3,8 +3,8 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | STATIC-FINDING |
-| Final verification | NOT RUN |
+| Confirmation status | CONTROLLED-TSX REPRODUCED; EXPORTED-DOM RETEST PASS |
+| Final verification | PARTIAL: controlled and synthetic browser PASS; linked API/critical/device OPEN |
 | Severity | Major schedule date inconsistency |
 | Priority | P1 |
 | Category | UI |
@@ -30,12 +30,23 @@
 | API response | Not captured for this issue; use synthetic request/response in isolated reproduction |
 | Database before/after | Not executed; fixture and fresh-context assertions defined below |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | Not implemented (Phase 1) |
-| Retest result | NOT RUN |
-| Regression result | NOT RUN |
+| Fix commit | Scoped feature-branch repair; see 2026-10-09 report and file history |
+| Retest result | 200 controlled checks / 16 exported-browser combinations PASS |
+| Regression result | All 39 previous calendar projection checks retained per timezone; broader critical suite NOT RUN |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
-## Exact reproduction
+## Current repair checkpoint — 2026-10-09
+
+[Repair report](../REPORTS/PHASE_2B_CALENDAR_TIMEZONE_REPAIR.md): India civil-day
+grouping, UTC marker arithmetic, initial month, heading, Today and agenda now
+agree independently of browser timezone. Month header visibly declares IST.
+200 controlled TSX checks and 16 desktop/mobile exported-DOM combinations
+PASS; TypeScript/lint/83-page export PASS. Synthetic transport only: no new
+API/SQL or physical-device proof. Issue remains OPEN for linked, original
+critical-regression and applicable device acceptance. Historical source
+snapshot below describes the original defect, not the repaired code.
+
+## Original reproduction
 
 In a UTC browser use a session at2026-09-30T19:00:00Z, which is October1 at00:30 IST. Inspect September grid, October agenda and rendered item date/time. Repeat in India and a timezone east of India.
 

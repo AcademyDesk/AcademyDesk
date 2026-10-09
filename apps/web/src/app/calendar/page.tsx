@@ -57,8 +57,22 @@ type CalendarItem = {
   location?: string;
 };
 const names = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+// Grid dates are civil-day markers, not instants. UTC arithmetic on these
+// markers avoids the viewer's timezone/DST; real item instants stay unchanged.
+const indiaDayFormat = new Intl.DateTimeFormat("en-CA", {
+  year: "numeric", month: "2-digit", day: "2-digit", timeZone: "Asia/Kolkata",
+});
+function calendarDay(instant: Date): Date {
+  const parts = indiaDayFormat.formatToParts(instant);
+  const number = (type: string) => Number(parts.find((part) => part.type === type)?.value);
+  return new Date(Date.UTC(number("year"), number("month") - 1, number("day")));
+}
+function calendarMonth(instant: Date): Date {
+  const day = calendarDay(instant);
+  return new Date(Date.UTC(day.getUTCFullYear(), day.getUTCMonth(), 1));
+}
 const monthName = (date: Date) =>
-  new Intl.DateTimeFormat("en-IN", { month: "long", year: "numeric", timeZone: "Asia/Kolkata" }).format(
+  new Intl.DateTimeFormat("en-IN", { month: "long", year: "numeric", timeZone: "UTC" }).format(
     date,
   );
 const time = (date: Date) =>
@@ -150,14 +164,15 @@ export default function CalendarPage() {
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
-  const today = new Date();
-  const [month, setMonth] = useState(
-    () => new Date(today.getFullYear(), today.getMonth(), 1),
-  );
+  const today = calendarDay(new Date());
+  // Static-export HTML must not bake the build machine's current month into
+  // hydration. Resolve the India month only after mounting in the browser.
+  const [month, setMonth] = useState<Date | null>(null);
   const [filter, setFilter] = useState<"All" | CalendarItem["type"]>("All");
   const [message, setMessage] = useState("Loading calendar…");
   const [agendaExpanded, setAgendaExpanded] = useState(true);
   useEffect(() => {
+    const monthTimer = setTimeout(() => setMonth(calendarMonth(new Date())), 0);
     void (async () => {
       try {
         const academyResponse = await academyApi("/api/academies");
@@ -186,6 +201,7 @@ export default function CalendarPage() {
         setMessage("Calendar could not be loaded.");
       }
     })();
+    return () => clearTimeout(monthTimer);
   }, []);
   const items = useMemo<CalendarItem[]>(() => {
     const batchName = (id: string) =>
@@ -260,37 +276,37 @@ export default function CalendarPage() {
     ].filter((item) => filter === "All" || item.type === filter);
   }, [batches, sessions, events, makeups, students, teachers, courses, enrollments, filter]);
   const days = useMemo(() => {
-    const offset = (month.getDay() + 6) % 7;
+    if (!month) return [];
+    const offset = (month.getUTCDay() + 6) % 7;
     const start = new Date(month);
-    start.setDate(1 - offset);
+    start.setUTCDate(1 - offset);
     return Array.from({ length: 42 }, (_, index) => {
       const date = new Date(start);
-      date.setDate(start.getDate() + index);
+      date.setUTCDate(start.getUTCDate() + index);
       return date;
     });
   }, [month]);
   const byDay = (date: Date) =>
     items
-      .filter((item) => item.start.toDateString() === date.toDateString())
+      .filter((item) => +calendarDay(item.start) === +date)
       .sort((a, b) => +a.start - +b.start);
   const agenda = items
     .filter(
-      (item) =>
-        item.start.getFullYear() === month.getFullYear() &&
-        item.start.getMonth() === month.getMonth(),
+      (item) => month && +calendarMonth(item.start) === +month,
     )
     .sort((a, b) => +a.start - +b.start);
+  if (!month) return <main className="enterprise-settings workspace-calendar" aria-busy="true"><p>Loading calendar…</p></main>;
   return (
     <main className="enterprise-settings workspace-calendar">
         <header className="workspace-calendar-heading">
           <div className="workspace-calendar-title">
             <span className="workspace-calendar-title-icon" aria-hidden="true">▦</span>
-            <div><p>Workspace</p><h1>Calendar</h1><span>Classes, make-ups and academy events in one view.</span></div>
+            <div><p>Workspace</p><h1>Calendar</h1><span>Classes, make-ups and academy events in one view. All dates and times use India time (IST).</span></div>
           </div>
           <div className="workspace-calendar-month-actions" aria-label="Calendar navigation">
             <button
               onClick={() =>
-                setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))
+                setMonth(new Date(Date.UTC(month.getUTCFullYear(), month.getUTCMonth() - 1, 1)))
               }
               className="calendar-nav"
               aria-label="Previous month"
@@ -299,7 +315,7 @@ export default function CalendarPage() {
             </button>
             <button
               onClick={() =>
-                setMonth(new Date(today.getFullYear(), today.getMonth(), 1))
+                setMonth(calendarMonth(new Date()))
               }
               className="calendar-today"
             >
@@ -307,7 +323,7 @@ export default function CalendarPage() {
             </button>
             <button
               onClick={() =>
-                setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))
+                setMonth(new Date(Date.UTC(month.getUTCFullYear(), month.getUTCMonth() + 1, 1)))
               }
               className="calendar-nav"
               aria-label="Next month"
@@ -318,7 +334,7 @@ export default function CalendarPage() {
         </header>
         <section className="workspace-calendar-panel">
           <header className="workspace-calendar-panel-header">
-            <div><p>Month view</p><h2>{monthName(month)}</h2></div>
+            <div><p>Month view · IST</p><h2>{monthName(month)}</h2></div>
             <div className="workspace-calendar-filters" aria-label="Filter calendar items">
               {(["All", "Class", "Make-up", "Event"] as const).map((value) => (
                 <button
@@ -341,14 +357,14 @@ export default function CalendarPage() {
           ))}
           {days.map((date) => {
             const dayItems = byDay(date);
-            const inMonth = date.getMonth() === month.getMonth();
-            const isToday = date.toDateString() === today.toDateString();
+            const inMonth = date.getUTCMonth() === month.getUTCMonth();
+            const isToday = +date === +today;
             return (
               <div
                 key={date.toISOString()}
                 className={`calendar-day ${inMonth ? "" : "outside"} ${isToday ? "today" : ""}`}
               >
-                <span className="calendar-date">{date.getDate()}</span>
+                <span className="calendar-date">{date.getUTCDate()}</span>
                 <div className="calendar-events">
                   {dayItems.slice(0, 3).map((item) => (
                     item.href ? <a
