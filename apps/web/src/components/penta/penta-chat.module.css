@@ -8,7 +8,7 @@
 .page button { cursor:pointer; font:inherit; border:1px solid var(--penta-border); border-radius:var(--penta-radius-control); background:var(--penta-surface); color:var(--penta-text); min-height:var(--penta-touch-target); padding:8px 14px; }
 .page button:disabled { opacity:.5; cursor:default; }
 /* Isolate PENTA from the legacy ERP's compact, !important button rules. */
-.page .composer button,.page .chatHead button,.page .welcome button,.page .capabilities button,.page .helpText button,.page .stopWaiting { min-height:var(--penta-touch-target)!important; min-width:var(--penta-touch-target); height:auto!important; max-height:none!important; box-sizing:border-box; }
+.page .composer button,.page .chatHead button,.page .welcome button,.page .capabilities button,.page .helpText button,.page .stopWaiting,.page .jumpBar button { min-height:var(--penta-touch-target)!important; min-width:var(--penta-touch-target); height:auto!important; max-height:none!important; box-sizing:border-box; }
 .page :is(button,a,textarea,summary):focus-visible { outline:3px solid var(--penta-accent)!important; outline-offset:3px!important; }
 .capabilities { position:relative; display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px; }
 .capabilities > div { display:flex; align-items:center; border:1px solid var(--penta-border); border-radius:12px; background:var(--penta-surface); }
@@ -23,7 +23,11 @@
 .chatHead { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 20px; border-bottom:1px solid var(--penta-border); font-size:13px; }
 .chatHead span { overflow-wrap:anywhere; }
 .chatHead button { font-size:12px; flex-shrink:0; }
-.messages { padding:24px; }
+.messages { padding:24px; max-height:65vh; max-height:65dvh; overflow-y:auto; overflow-anchor:none; scroll-behavior:auto; }
+.messages:focus-visible { outline:3px solid var(--penta-accent); outline-offset:-3px; }
+.announcement { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; border:0; }
+.jumpBar { display:flex; justify-content:center; padding:8px 16px; border-top:1px solid var(--penta-border); }
+.jumpBar button { color:var(--penta-accent); font-size:12px; }
 .welcome { padding:48px 16px; text-align:center; max-width:550px; margin:auto; }
 .orb { display:grid; place-items:center; width:56px; height:56px; margin:auto; border-radius:18px; color:var(--penta-accent); background:var(--penta-accent-soft); font-size:28px; font-weight:700; }
 .welcome h2 { font-size:24px; letter-spacing:-.03em; margin:20px 0 12px; }

@@ -31,10 +31,12 @@ export default function PentaChatWorkspace({ active = true }: { active?: boolean
   const [error, setError] = useState("");
   const [health, setHealth] = useState("Checking");
   const [blocked, setBlocked] = useState(false);
+  const [followingLatest, setFollowingLatest] = useState(true);
   const flight = useRef<AbortController | null>(null);
   const generation = useRef(0);
   const input = useRef<HTMLTextAreaElement>(null);
-  const tail = useRef<HTMLDivElement>(null);
+  const messages = useRef<HTMLDivElement>(null);
+  const followLatest = useRef(true);
   const helpTrigger = useRef<HTMLButtonElement | null>(null);
   const latest = turns.at(-1)?.receipt;
   useEffect(() => {
@@ -59,6 +61,7 @@ export default function PentaChatWorkspace({ active = true }: { active?: boolean
     }
     void boot();
     function clearSignedOutConversation() {
+      followLatest.current = true; setFollowingLatest(true);
       controller.abort(); flight.current?.abort(); generation.current++; setContext(null); setSession(null); setTurns([]); setPrompt(""); setPendingPrompt(""); setBusy(false); setBlocked(true); setError("Signed out. Sign in to continue.");
     }
     function signout(event: StorageEvent) {
@@ -80,9 +83,21 @@ export default function PentaChatWorkspace({ active = true }: { active?: boolean
     window.addEventListener("keydown", close);
     return () => window.removeEventListener("keydown", close);
   }, [help]);
-  useEffect(() => { if (active && (turns.length || busy)) tail.current?.scrollIntoView({ block: "nearest" }); }, [turns, busy, active]);
+  useEffect(() => {
+    if (active && followLatest.current && messages.current) messages.current.scrollTop = messages.current.scrollHeight;
+  }, [turns, busy, active]);
+  function trackReadingPosition(event: React.UIEvent<HTMLDivElement>) {
+    const viewport = event.currentTarget;
+    const following = viewport.scrollHeight - viewport.clientHeight - viewport.scrollTop <= 64;
+    followLatest.current = following; setFollowingLatest(following);
+  }
+  function jumpToLatest() {
+    followLatest.current = true; setFollowingLatest(true);
+    if (messages.current) { messages.current.scrollTop = messages.current.scrollHeight; messages.current.focus({ preventScroll: true }); }
+  }
   function startNew() {
     if (busy) return;
+    followLatest.current = true; setFollowingLatest(true);
     generation.current++; setSession(null); setTurns([]); setPrompt(""); setPendingPrompt(""); setError(""); setBlocked(false); input.current?.focus();
   }
   function stopWaiting() {
@@ -98,6 +113,7 @@ export default function PentaChatWorkspace({ active = true }: { active?: boolean
     if (text.length > 2000) { setError("Keep prompts under 2,000 characters."); return; }
     const controller = new AbortController(); flight.current = controller;
     const revision = ++generation.current;
+    followLatest.current = true; setFollowingLatest(true);
     setBusy(true); setError(""); setPendingPrompt(text);
     try {
       let current = session;
@@ -126,7 +142,7 @@ export default function PentaChatWorkspace({ active = true }: { active?: boolean
       }
     } catch (cause) {
       if (revision === generation.current && !controller.signal.aborted) { setBlocked(true); setPendingPrompt(""); setError(cause instanceof Error ? cause.message : failure(500)); }
-    } finally { if (flight.current === controller) flight.current = null; if (revision === generation.current) { setBusy(false); input.current?.focus(); } }
+    } finally { if (flight.current === controller) flight.current = null; if (revision === generation.current) { setBusy(false); if (followLatest.current) input.current?.focus({ preventScroll: true }); } }
   }
 
   return <main className={`${design.system} ${styles.page}`} data-penta-ui="0.1">
@@ -134,7 +150,8 @@ export default function PentaChatWorkspace({ active = true }: { active?: boolean
     <nav className={styles.capabilities} aria-label="PENTA capabilities">{caps.map(([id, letter, title, description]) => <div key={id}><button type="button" aria-pressed={capability === id} onClick={() => { setCapability(id); input.current?.focus(); }}><span>{letter}</span>{title}</button><button type="button" className={styles.help} aria-label={`About ${title}`} aria-expanded={help === id} onClick={event => { helpTrigger.current = event.currentTarget; setHelp(help === id ? null : id); }}>!</button>{help === id && <div className={styles.helpText} role="note"><strong>{title}</strong><p>{description}</p><button type="button" onClick={() => { setHelp(null); helpTrigger.current?.focus(); }}>Close</button></div>}</div>)}</nav>
     <div className={styles.layout}><section className={styles.conversation} aria-label="PENTA conversation">
       <div className={styles.chatHead}><span>{context?.name || "Checking academy access…"}</span><button type="button" disabled={busy} onClick={startNew}>New conversation</button></div>
-      <div className={styles.messages} aria-live="polite" aria-relevant="additions" aria-busy={busy}>
+      <p className={styles.announcement} role="status" aria-live="polite" aria-atomic="true">{busy ? "PENTA is preparing a verified read." : error ? "" : latest ? `Reply ${turns.length} ready. ${latest.kind === "RESULT" ? `Verified read. ${latest.result?.rows.length ?? 0} students displayed.` : latest.kind === "CLARIFICATION_REQUIRED" ? "Choose a student to continue." : "Review PENTA's response."}` : ""}</p>
+      <div ref={messages} className={styles.messages} role="region" aria-label="Conversation messages" tabIndex={0} onScroll={trackReadingPosition}>
         {!turns.length && !busy && <div className={styles.welcome}><span className={styles.orb}>P</span><h2>What needs your attention?</h2><p>Find a student by name or student code, check fees, then refine your request in conversation. If several students match, you choose using their record codes and references.</p><button type="button" disabled={!context || blocked} onClick={() => { setPrompt("Show students with pending fees."); input.current?.focus(); }}>Show students with pending fees ↗</button><small>Or ask “Show students named [name]” or “Find student [code]” · Active students only · Up to 10 results</small><small>Start a new conversation for a different search. Corrections and combined filter resets are still limited in this pilot.</small></div>}
         {turns.map((turn, index) => <article key={turn.receipt.requestId} className={styles.turn}>
           <p className={styles.user}><span>You</span>{turn.prompt}</p>
@@ -166,9 +183,9 @@ export default function PentaChatWorkspace({ active = true }: { active?: boolean
             {index === turns.length - 1 && latest?.result && <p className={styles.followup}>{latest.kind === "CLARIFICATION_REQUIRED" ? "Choose a student to prepare your follow-up, then press Send. Nothing is selected automatically." : "Try “Only piano”, “Highest first”, or “Show the second one”."}</p>}
           </div>
         </article>)}
-        {busy && <div className={styles.turn}><p className={styles.user}><span>You</span>{pendingPrompt}</p><p role="status" className={styles.thinking}>PENTA Mini is interpreting your request. Academy Desk will authorize and verify the read…</p><button type="button" className={styles.stopWaiting} onClick={stopWaiting}>Stop waiting</button></div>}
-        <div ref={tail} />
+        {busy && <div className={styles.turn}><p className={styles.user}><span>You</span>{pendingPrompt}</p><p className={styles.thinking}>PENTA Mini is interpreting your request. Academy Desk will authorize and verify the read…</p><button type="button" className={styles.stopWaiting} onClick={stopWaiting}>Stop waiting</button></div>}
       </div>
+      {!followingLatest && <div className={styles.jumpBar}><button type="button" onClick={jumpToLatest}>Jump to latest ↓</button></div>}
       <form className={styles.composer} onSubmit={send}><label htmlFor="penta-prompt">Message PENTA AI</label><textarea ref={input} id="penta-prompt" rows={2} maxLength={2000} value={prompt} disabled={busy || !context || blocked} placeholder="Find a student by name, or ask about fees…" onChange={event => setPrompt(event.target.value)} onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} /><div><small>Enter to send · Shift + Enter for a new line</small><button type="submit" disabled={busy || !context || blocked || !prompt.trim()}>{busy ? "Thinking…" : "Send ↑"}</button></div><p className={styles.privacy}>Prompts are not saved to SQL. This view stays in memory; reload starts a new conversation. No automatic retries or actions.</p>{error && <p role="alert" className={styles.error}>{error}</p>}</form>
     </section><aside className={styles.rail}><details open><summary>Context & control</summary><dl><dt>Academy</dt><dd>{context?.name || "Unverified"}</dd><dt>Available tools</dt><dd>Search students · Read selected student</dd><dt>Current filters</dt><dd>{latest ? Object.entries(latest.context.filters).map(([key, value]) => `${key.replaceAll("_", " ")}: ${value}`).join(" · ") || "None" : "None"}</dd><dt>Sort</dt><dd>{latest?.context.sort_by === "outstanding_desc" ? "Outstanding · highest first" : "Student name"}</dd><dt>Authority</dt><dd>Current Owner/Admin + Finance. Your own academy only.</dd><dt>Model</dt><dd>Private PENTA Mini · Protocol 0.1</dd></dl></details><details open><summary>Manual workspace</summary><p>Direct control remains available. AI does not change your records.</p><Link href="/invoices">Invoices ↗</Link><Link href="/payments">Payments ↗</Link><Link href="/students">Students ↗</Link><Link href="/batch-setup">Classes & batches ↗</Link></details></aside></div>
   </main>;

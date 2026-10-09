@@ -80,6 +80,15 @@ Composer: persistent in the conversation flow, visible label, multiline text,
 Disable duplicate submission while busy. Stop waiting and new-conversation
 recovery do not automatically retry; stopping wait does not prove server cancellation.
 Retain an unsent prompt after errors; no invisible submission or speculative result.
+The N2y transcript is a named keyboard-scrollable region bounded to 65% of the
+current viewport height; the page, composer and manual rail remain separately
+reachable. Auto-follow updates only that region. Reading more than 64px from
+its end pauses following and preserves focus when replies arrive; a 44px
+Jump to latest control explicitly resumes it and focuses the reading region.
+Scrolling is instant, including reduced motion. A separate atomic polite status
+announces preparation/reply number/type/displayed count, not entire result tables
+or control changes. Errors retain their existing alerts. DOM/keyboard testing is
+not proof of real screen-reader speech or physical mobile-keyboard behaviour.
 Private history/recent conversations/streaming are **pending** their server-side
 retention and contract gates, not decorative enabled controls.
 

@@ -47,7 +47,7 @@ function contrast(a, b) {
   try {
     browser = await chromium.launch({ headless:true, executablePath:process.env.QA_BROWSER_EXECUTABLE || 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe' });
     for (const width of [320, 768, 1440]) for (const theme of ['light', 'dark']) {
-      const context = await browser.newContext({ viewport:{width, height:1000} });
+      const context = await browser.newContext({ viewport:{width, height:1000}, reducedMotion:'reduce' });
       const page = currentPage = await context.newPage();
       page.on('pageerror', error => errors.push({width,theme,message:error.message}));
       page.on('console', message => { if (message.type() === 'error') errors.push({width,theme,message:message.text()}); });
@@ -55,7 +55,7 @@ function contrast(a, b) {
         localStorage.setItem('academydesk.theme', theme);
         localStorage.setItem('academydesk.accessToken.AcademyAdmin', 'synthetic-ui-token');
       }, theme);
-      let mode = 'result', calls = 0;
+      let mode = 'result', calls = 0, holdNext = false, releaseTurn;
       await context.route('**/*', async route => {
         const url = new URL(route.request().url());
         if (url.pathname.startsWith('/api/') && ['localhost','127.0.0.1'].includes(url.hostname)) {
@@ -69,6 +69,7 @@ function contrast(a, b) {
           if (url.pathname.endsWith('/turns')) {
             calls++;
             const input = route.request().postDataJSON();
+            if (holdNext) { holdNext=false; await new Promise(resolve=>{releaseTurn=resolve;}); }
             const rows = mode === 'comparison' ? comparison : mode === 'capped' ? capped : mode === 'result' ? [{sourceId:learner,displayName:'Synthetic learner with a deliberately long readable display name',recordCode:'SYN-001',subjects:['Piano'],balances:[{currency:'INR',outstanding:400}],sourcePath:`/student-management?studentId=${learner}`}] : [];
             return respond({conversationId:conversation,requestId:input.requestId,version:input.expectedVersion+1,kind:mode === 'error' ? 'ERROR' : mode === 'comparison' ? 'CLARIFICATION_REQUIRED' : 'RESULT',message:mode === 'error' ? 'Synthetic provider unavailable. Use the manual workspace.' : rows.length ? 'Synthetic verified read.' : 'No matching active students.',capability:input.capability,provider:'PENTA Mini',protocol:'0.1',context:{filters:{},sort_by:null,current_learner_id:null,current_result_ids:rows.map(row=>row.sourceId)},result:mode === 'error' ? null : {count:mode === 'capped'?14:rows.length,hasMore:mode === 'capped',rows,asOfUtc:'2026-10-09T10:00:00Z',source:'Synthetic ledger',balanceScope:'Synthetic student fees; currencies kept separate. No combined total.'}});
           }
@@ -191,11 +192,52 @@ function contrast(a, b) {
       assert.equal(await table.getByRole('button',{name:/Choose student/}).count(),0,'RESULT is not a disambiguation action');
       assert.equal(calls,5,'No automatic retries or view requests');
       await assertBounds();
+      // An actual late reply must not move a reader or steal keyboard focus.
+      const transcript=panel.getByRole('region',{name:'Conversation messages',exact:true});
+      assert.equal(await transcript.count(),1,'Named keyboard-scrollable transcript');
+      assert.equal(await transcript.getAttribute('tabindex'),'0');
+      assert.equal(await transcript.getAttribute('aria-live'),null,'Result controls are not a live announcement');
+      const announcement=panel.getByRole('status');
+      assert.equal(await announcement.count(),1,'One concise polite status, no nested live regions');
+      assert.equal(await announcement.getAttribute('aria-atomic'),'true');
+      assert.equal(await announcement.textContent(),'Reply 1 ready. Verified read. 10 students displayed.');
+      assert.equal(await transcript.evaluate(el=>getComputedStyle(el).scrollBehavior),'auto','No animated auto-scroll under reduced motion');
+      holdNext=true;
+      await prompt.fill('Synthetic held follow-up'); await send.click();
+      await panel.getByRole('button',{name:'Stop waiting',exact:true}).waitFor();
+      await announcement.filter({hasText:/^PENTA is preparing a verified read\.$/}).waitFor();
+      await transcript.focus(); await transcript.press('Control+Home');
+      await page.waitForFunction(()=>document.querySelector('[aria-label="Conversation messages"]').scrollTop<1);
+      const jump=panel.getByRole('button',{name:'Jump to latest ↓',exact:true});
+      await jump.waitFor();
+      const beforeReading=await transcript.evaluate(el=>({top:el.scrollTop,pageTop:document.scrollingElement.scrollTop,ancestors:(()=>{const values=[];for(let p=el.parentElement;p;p=p.parentElement)values.push(p.scrollTop);return values;})()}));
+      assert.ok(beforeReading.top<1,'Reading older messages');
+      assert.ok(releaseTurn,'Held synthetic response reached fixture'); releaseTurn();
+      await announcement.filter({hasText:/^Reply 2 ready\. Verified read\. 10 students displayed\.$/}).waitFor();
+      assert.equal(await transcript.evaluate(el=>el===document.activeElement),true,'Reply does not steal reading focus');
+      const afterReading=await transcript.evaluate(el=>({top:el.scrollTop,pageTop:document.scrollingElement.scrollTop,ancestors:(()=>{const values=[];for(let p=el.parentElement;p;p=p.parentElement)values.push(p.scrollTop);return values;})()}));
+      assert.deepEqual(afterReading,beforeReading,'Reply preserves transcript and outer-page reading position');
+      assert.ok((await jump.boundingBox()).height>=44,'Jump touch target');
+      await jump.focus(); await jump.press('Enter');
+      assert.equal(await transcript.evaluate(el=>el===document.activeElement),true,'Jump returns keyboard focus to reading region');
+      assert.ok(await transcript.evaluate(el=>el.scrollHeight-el.clientHeight-el.scrollTop<=64),'Explicit jump reaches latest reply');
+      await jump.waitFor({state:'detached'});
+      assert.equal(await jump.count(),0,'Following latest hides jump control');
+      const announced=await announcement.textContent();
+      await prompt.fill('Unsent synthetic draft');
+      await panel.getByRole('group',{name:'Result display',exact:true}).last().getByRole('button',{name:'Table',exact:true}).click();
+      assert.equal(await announcement.textContent(),announced,'Typing and changing views do not announce entire result again');
+      assert.equal(calls,6,'Reading, jump, typing and table display never dispatch a tool');
+      await assertBounds();
+      await page.screenshot({path:path.join(evidence,`reading-${width}-${theme}.png`),fullPage:true});
+      await panel.getByRole('button',{name:'New conversation',exact:true}).click();
+      assert.equal(await announcement.textContent(),'','New conversation clears reply announcement');
+      assert.equal(await panel.getByRole('link',{name:'Open Student 360 ↗'}).count(),0,'New conversation clears source results');
       await page.getByRole('button',{name:/^Workspace/}).click();
       assert.equal(await system.isVisible(),false,'Manual switch hides AI workspace');
       await page.getByRole('button',{name:'PENTA AI',exact:true}).click();
       assert.equal(await system.isVisible(),true);
-      checks.push({width,theme,helpChecks,ratio,palette,focus,states:['result','empty','error','comparison','capped'],table:{sourceOrder:true,separateCurrencies:true,escapedText:true,preparedChoiceOnly:true,dimensions},manualSwitch:true,synthetic:true});
+      checks.push({width,theme,helpChecks,ratio,palette,focus,states:['result','empty','error','comparison','capped'],table:{sourceOrder:true,separateCurrencies:true,escapedText:true,preparedChoiceOnly:true,dimensions},reading:{positionPreserved:true,focusPreserved:true,keyboardJump:true,conciseAnnouncements:true,reducedMotion:true,noToolDispatch:true},manualSwitch:true,synthetic:true});
       console.log(`PASS PENTA DESIGN ${width} ${theme} contrast ${ratio.toFixed(2)}`);
       await context.close();
     }
