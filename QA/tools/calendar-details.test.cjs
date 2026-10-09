@@ -10,14 +10,14 @@ const session={id:'x',batchId:'b',teacherId:'z',startUtc:fixedTime,deliveryMode:
 function nodes(n){return Array.isArray(n)?n.flatMap(nodes):!n||typeof n!=='object'?[]:[n,...nodes(n.props?.children)];}
 function text(n){return Array.isArray(n)?n.map(text).join(''):n==null||typeof n==='boolean'?'':typeof n==='object'?text(n.props?.children):String(n);}
 async function page(config={}){
- let index=0,effectIndex=0;const state=new Map(),deps=[],effects=[],calls=[],module={exports:{}};
+ let index=0,effectIndex=0,timerId=0;const state=new Map(),deps=[],effects=[],calls=[],timers=new Map(),module={exports:{}};
  const react={useState:v=>{const k=index++;if(!state.has(k))state.set(k,typeof v==='function'?v():v);return[state.get(k),v=>state.set(k,typeof v==='function'?v(state.get(k)):v)];},useMemo:fn=>fn(),useEffect:(fn,next)=>{const k=effectIndex++;if(!deps[k]||next.some((v,i)=>v!==deps[k][i])){deps[k]=next;effects.push(fn);}}};
  const data={batches:config.batches??batches,sessions:config.sessions??[{...session,...config.session}],events:config.events??[], 'makeup-classes':config.makeups??[],students:[{id:'s',firstName:'Synthetic',lastName:'Student'}],teachers:config.teachers??teachers,courses:[{id:'c',name:'Synthetic subject'}],enrollments:[{batchId:'b',studentId:'s',status:'Active'}]};
  const api=async(url,init={})=>{calls.push({url,...init});const key=url.split('/').at(-1);return{ok:true,status:200,json:async()=>url==='/api/academies'?[{id:'owned'}]:data[key]};};
  const clock=config.now?class extends Date{constructor(...args){super(...(args.length?args:[config.now]));}}:Date;
- new Function('require','module','exports','Date',code)(n=>n==='react/jsx-runtime'?jsx:n==='react'?react:n==='@/lib/api'?{academyApi:api}:(()=>{throw Error(n)})(),module,module.exports,clock);
+ new Function('require','module','exports','Date','setTimeout','clearTimeout',code)(n=>n==='react/jsx-runtime'?jsx:n==='react'?react:n==='@/lib/api'?{academyApi:api}:(()=>{throw Error(n)})(),module,module.exports,clock,fn=>{timers.set(++timerId,fn);return timerId;},id=>timers.delete(id));
  const render=()=>{index=effectIndex=0;return module.exports.default();};
- const initial=render();for(let i=0;i<4;i++){for(const fn of effects.splice(0))fn();await new Promise(r=>setImmediate(r));render();}
+ const initial=render();for(let i=0;i<4;i++){for(const fn of effects.splice(0))fn();for(const [id,fn]of timers){timers.delete(id);fn();}await new Promise(r=>setImmediate(r));render();}
  if(!config.keepCurrentMonth)state.set(8,new Date(config.month??'2026-10-01T00:00:00Z'));
  const rows=()=>nodes(render()).filter(n=>typeof n.type==='function'&&n.type.name==='AgendaItem');
  const item=()=>rows()[0]?.props.item;
@@ -100,4 +100,42 @@ for(const deliveryMode of ['Offline','InPerson','Online','Hybrid',' online ',' h
  const p=await page({sessions:[],makeups:[row]}),item=p.item();assert.equal(item.location,virtual?row.meetingLink:row.venue);assert.equal(item.detail,item.location);assert.equal(item.href,'/makeup');assert.equal(item.opensExternally,undefined);assert.ok(text(p.agenda()).includes(item.location));const link=nodes(p.agenda()).find(n=>n.type==='a');assert.equal(link.props.href,'/makeup');assert.equal(link.props.target,undefined);
 });
 for(const deliveryMode of ['Offline','Online','Hybrid'])test(`Make-up ${deliveryMode} missing correct location never substitutes opposite field`,async()=>{const p=await page({sessions:[],makeups:[{id:'m',studentId:'s',batchId:'b',startUtc:fixedTime,deliveryMode,venue:deliveryMode==='Offline'?null:'Wrong room',meetingLink:deliveryMode==='Offline'?'Wrong link':null}]});assert.equal(p.item().location,undefined);assert.equal(p.item().detail,'Make-up class');});
+
+for(const status of ['Cancelled','cancelled','CANCELLED',' Cancelled '])for(const deliveryMode of ['Online','Hybrid','InPerson'])test(`${status}/${deliveryMode} stays in history with explicit status and no meeting action`,async()=>{
+ const p=await page({session:{status,deliveryMode}}),item=p.item(),agenda=p.agenda(),grid=p.grid()[0];
+ assert.equal(p.rows().length,1);assert.equal(p.grid().length,1);assert.equal(item.status,'Cancelled');
+ assert.equal(item.href,undefined);assert.equal(item.actionLabel,undefined);assert.equal(item.opensExternally,false);
+ assert.equal(grid.type,'div');assert.equal(grid.props['data-session-status'],'Cancelled');assert.match(text(grid),/Cancelled/);
+ assert.equal(agenda.props['data-session-status'],'Cancelled');assert.ok(!nodes(agenda).some(n=>n.type==='a'));
+ assert.match(text(agenda),/StatusCancelled/);assert.match(text(agenda),/This class is cancelled\. Meeting access is unavailable\./);
+ assert.equal(item.location,session.roomName,'Stored location remains visible as history');
+ assert.equal(+item.start,+new Date(session.startUtc));assert.equal(item.teacher,'Session Teacher');
+ assert.ok(p.calls.every(x=>!x.method),'No writes or status updates from presentation');
+});
+for(const roomName of [null,undefined,'','  '])test(`Cancelled legacy fallback ${JSON.stringify(roomName)} never exposes the batch meeting action`,async()=>{
+ const p=await page({session:{status:'Cancelled',roomName}});assert.equal(p.item().location,batches[0].meetingLink);
+ assert.equal(p.item().href,undefined);assert.equal(p.grid()[0].type,'div');assert.ok(!nodes(p.agenda()).some(n=>n.type==='a'));
+});
+for(const status of ['Scheduled','Completed','NoShow','InProgress','Rescheduled','scheduled',' completed ',null,undefined,'','LegacyStatus','constructor','__proto__'])test(`Non-cancelled/legacy status ${JSON.stringify(status)} retains existing meeting behavior without inventing lifecycle policy`,async()=>{
+ const p=await page({session:{status}});assert.equal(p.item().href,session.roomName);assert.equal(p.grid()[0].type,'a');
+ assert.equal(nodes(p.agenda()).find(n=>n.type==='a').props.href,session.roomName);
+ assert.equal(p.item().status,new Map([['scheduled','Scheduled'],['completed','Completed'],['noshow','No show'],['inprogress','In progress'],['rescheduled','Rescheduled']]).get(status?.trim().toLowerCase())??(status?.trim()||'Not specified'));
+ assert.ok(!text(p.agenda()).includes('This class is cancelled'));
+});
+test('Cancellation preserves counts, chronological order, filters and collapse without affecting events/make-ups',async()=>{
+ const p=await page({sessions:[{...session,id:'cancelled',status:'Cancelled',startUtc:'2026-10-08T09:00:00Z'},{...session,status:'Scheduled'}],events:[{id:'e',title:'Recital',type:'Recital',startUtc:fixedTime}],makeups:[{id:'m',studentId:'s',batchId:'b',startUtc:fixedTime}]});
+ assert.deepEqual(p.rows().map(n=>n.props.item.id),['cancelled','x','m','e']);assert.equal(p.grid().length,3);
+ assert.match(text(nodes(p.render()).find(n=>n.props?.className==='calendar-more')),/\+1 more/,'Existing three-item grid cap is retained');
+ const button=label=>nodes(p.render()).find(n=>n.type==='button'&&text(n)===label);
+ button('Class').props.onClick();assert.deepEqual(p.rows().map(n=>n.props.item.id),['cancelled','x']);
+ assert.equal(p.grid().length,2);assert.equal(p.grid().filter(n=>n.type==='a').length,1);
+ const toggle=()=>nodes(p.render()).find(n=>n.props?.['aria-controls']==='calendar-month-agenda-list');toggle().props.onClick();assert.equal(p.rows().length,0);
+ toggle().props.onClick();assert.equal(p.rows().length,2);assert.equal(p.rows()[0].props.item.href,undefined);
+ for(const kind of ['Make-up','Event']){button(kind).props.onClick();assert.equal(p.rows().length,1);assert.ok(p.item().href);assert.equal(p.item().status,undefined);}
+ button('All').props.onClick();assert.equal(p.rows().length,4);assert.ok(p.calls.every(x=>!x.method));
+});
+test('Unknown status is literal text, not a scheduled claim or injected markup',async()=>{
+ const status='<img src=x onerror=alert(1)>',p=await page({session:{status}});
+ assert.equal(p.item().status,status);assert.ok(text(p.agenda()).includes(status));assert.ok(!nodes(p.agenda()).some(n=>n.type==='img'));
+});
 if(process.env.QA_MAKEUP_SQL==='1')test('Captured make-up SQL fixture reaches actual calendar location projections',async()=>{const log=fs.readFileSync('QA/EVIDENCE/logs/phase-2b-makeup-location-sql.log','utf8'),fixture=JSON.parse(log.match(/^MAKEUPLOCATION FIXTURE (.+)$/m)[1]);const p=await page({sessions:[],makeups:fixture.makeups,now:fixture.makeups[0].startUtc,keepCurrentMonth:true});for(const row of fixture.makeups){const item=p.rows().find(x=>x.props.item.id===row.id)?.props.item;assert.ok(item);assert.equal(item.location,(row.deliveryMode==='Offline'?row.venue:row.meetingLink)||undefined);assert.equal(item.href,'/makeup');}});

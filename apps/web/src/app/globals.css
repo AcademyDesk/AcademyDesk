@@ -1962,6 +1962,10 @@ html[data-theme="light"] .field-label { color: #475569; }
 .workspace-calendar-student-list { display: flex; flex-wrap: wrap; gap: 7px; margin: 10px 0 0; padding: 0; list-style: none; }
 .workspace-calendar-student-list li { padding: 5px 8px; border-radius: 999px; background: var(--ad-accent-soft); color: var(--ad-accent); font-size: .72rem; font-weight: 700; }
 .workspace-calendar-agenda-summary { display: flex; flex-wrap: wrap; gap: 8px; margin: 11px 0 0; color: var(--ad-text-muted); font-size: .78rem; }.workspace-calendar-agenda-summary time { color: var(--ad-text); font-weight: 700; }
+.workspace-calendar .calendar-session-status { color: var(--ad-text); font-size: .65rem; font-weight: 800; }
+.workspace-calendar .calendar-event[data-session-status="Cancelled"] { border-left-color: var(--ad-danger); background: color-mix(in srgb, var(--ad-danger) 8%, var(--ad-surface)); }
+.workspace-calendar .calendar-event[data-session-status="Cancelled"] .calendar-session-status { color: var(--ad-danger); }
+.workspace-calendar-cancelled-note { margin: 12px 0 0; padding: 10px 12px; border-left: 3px solid var(--ad-danger); border-radius: 6px; background: color-mix(in srgb, var(--ad-danger) 8%, var(--ad-surface)); color: var(--ad-text); font-size: .78rem; line-height: 1.5; }
 
 /* Admin content is intentionally self-explanatory. Remove decorative helper
    copy from page identities while preserving form labels, records, alerts and

@@ -19,6 +19,7 @@ type Session = {
   startUtc: string;
   deliveryMode: string;
   roomName?: string | null;
+  status?: string | null;
 };
 type Event = {
   id: string;
@@ -55,8 +56,13 @@ type CalendarItem = {
   meetingPattern?: string;
   deliveryMode?: string;
   location?: string;
+  status?: string;
 };
 const names = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const sessionStatusLabels = new Map([
+  ["scheduled", "Scheduled"], ["completed", "Completed"], ["cancelled", "Cancelled"],
+  ["noshow", "No show"], ["inprogress", "In progress"], ["rescheduled", "Rescheduled"],
+]);
 // Grid dates are civil-day markers, not instants. UTC arithmetic on these
 // markers avoids the viewer's timezone/DST; real item instants stay unchanged.
 const indiaDayFormat = new Intl.DateTimeFormat("en-CA", {
@@ -106,7 +112,7 @@ function AgendaItem({ item }: { item: CalendarItem }) {
   }).format(item.start);
 
   return (
-    <li className="workspace-calendar-agenda-item">
+    <li className="workspace-calendar-agenda-item" data-session-status={item.status}>
       <div className="workspace-calendar-agenda-item-heading">
         <div>
           <span className="calendar-kind">{item.type}</span>
@@ -123,7 +129,9 @@ function AgendaItem({ item }: { item: CalendarItem }) {
       </div>
       {isClass ? (
         <>
+          {item.status === "Cancelled" && <p className="workspace-calendar-cancelled-note">This class is cancelled. Meeting access is unavailable.</p>}
           <dl className="workspace-calendar-agenda-details">
+            <div><dt>Status</dt><dd>{item.status}</dd></div>
             <div><dt>Subject</dt><dd>{item.subject ?? "Not assigned"}</dd></div>
             <div><dt>Time</dt><dd>{time(item.start)}</dd></div>
             <div><dt>Schedule</dt><dd>{item.meetingPattern || schedule}</dd></div>
@@ -224,12 +232,16 @@ export default function CalendarPage() {
     return [
       ...sessions.map((row) => {
         const assignedBatch = batch(row.batchId);
+        const rawStatus = row.status?.trim();
+        const status = sessionStatusLabels.get(rawStatus?.toLowerCase() ?? "") ?? (rawStatus || "Not specified");
         const isVirtualClass = ["online", "hybrid"].includes(row.deliveryMode.trim().toLowerCase());
         // A stored session teacher is authoritative (including null/unassigned).
         // Only an absent session location uses a legacy batch link; never
         // replace a supplied location with a different meeting destination.
         const location = row.roomName?.trim() || (isVirtualClass ? assignedBatch?.meetingLink?.trim() : undefined);
-        const meetingLink = isVirtualClass
+        // Retain cancellation history, but never expose the stored or legacy
+        // batch meeting destination as an actionable link for this session.
+        const meetingLink = isVirtualClass && status !== "Cancelled"
           ? meetingUrl(location)
           : undefined;
         return ({
@@ -245,6 +257,7 @@ export default function CalendarPage() {
         teacher: teacherName(row.teacherId),
         deliveryMode: row.deliveryMode,
         location,
+        status,
         students: classStudents(row.batchId),
         meetingPattern: assignedBatch?.meetingPattern ?? undefined,
       });
@@ -370,20 +383,24 @@ export default function CalendarPage() {
                     item.href ? <a
                       key={`${item.type}-${item.id}`}
                       href={item.href}
+                      data-session-status={item.status}
                       className={`calendar-event ${item.type.toLowerCase().replace("-", "")}`}
                       title={`${item.title} · ${item.detail}`}
                       target={item.opensExternally ? "_blank" : undefined}
                       rel={item.opensExternally ? "noreferrer" : undefined}
                     >
                       <span><time>{time(item.start)}</time>{item.title}</span>
+                      {item.status && <span className="calendar-session-status">{item.status}</span>}
                       {item.actionLabel && <strong>{item.actionLabel}</strong>}
                     </a>
                     : <div
                       key={`${item.type}-${item.id}`}
                       className={`calendar-event ${item.type.toLowerCase().replace("-", "")}`}
+                      data-session-status={item.status}
                       title={`${item.title} · ${item.detail}`}
                     >
                       <span><time>{time(item.start)}</time>{item.title}</span>
+                      {item.status && <span className="calendar-session-status">{item.status}</span>}
                     </div>
                   ))}
                   {dayItems.length > 3 && (

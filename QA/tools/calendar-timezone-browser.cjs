@@ -27,16 +27,23 @@ const server=http.createServer((req,res)=>{
   for(const timezoneId of ['UTC','Asia/Kolkata','America/Los_Angeles','Australia/Sydney'])for(const width of [320,1440])for(const boundary of [
    {now:'2026-09-30T19:00:00Z',heading:'October 2026',previous:'September 2026',next:'November 2026',date:'Thu, 01 Oct, 2026'},
    {now:'2026-12-31T19:00:00Z',heading:'January 2027',previous:'December 2026',next:'February 2027',date:'Fri, 01 Jan, 2027'},
-  ]){
+  ])for(const theme of ['light','dark']){
    const context=await browser.newContext({timezoneId,viewport:{width,height:900}});
    const page=currentPage=await context.newPage(),calls=[];
    page.on('pageerror',e=>errors.push({timezoneId,width,error:e.message}));
    page.on('console',m=>{if(m.type()==='error')errors.push({timezoneId,width,error:m.text()});});
    await page.clock.setFixedTime(new Date(boundary.now));
-   await context.addInitScript(()=>{
-    localStorage.setItem('academydesk.theme','light');
+   await context.addInitScript(theme=>{
+    localStorage.setItem('academydesk.theme',theme);
     localStorage.setItem('academydesk.accessToken.AcademyAdmin','synthetic-calendar-token');
-   });
+   },theme);
+   let lifecycle=false;
+   const statuses=['Scheduled','Completed','Cancelled','NoShow','InProgress','Rescheduled',' cancelled ',null,'__proto__'];
+   const modes=['Online','Hybrid','InPerson'];
+   const lifecycleSessions=statuses.flatMap((status,index)=>modes.map((deliveryMode,mode)=>{
+    const id=`life-${index}-${mode}`;
+    return{id,batchId:id,teacherId:null,status,startUtc:new Date(Date.parse(boundary.now)+(index*3+mode)*86400000).toISOString(),deliveryMode,roomName:deliveryMode==='InPerson'?'Studio A':`https://meeting.example.invalid/${id}`};
+   }));
    await context.route('**/*',async route=>{
     const request=route.request(),url=new URL(request.url());
     if(url.pathname.startsWith('/api/')&&['localhost','127.0.0.1'].includes(url.hostname)){
@@ -45,10 +52,10 @@ const server=http.createServer((req,res)=>{
       '/api/academies':[{id:'owned',name:'Synthetic academy',enabledModulesJson:'["Core"]'}],
       '/api/auth/session':{academyId:'owned',displayName:'Synthetic admin',roles:['AcademyAdmin'],isPlatformOwner:false},
       '/api/portal/announcements':[],
-      '/api/academies/owned/batches':[{id:'b',name:'Boundary class',courseId:'c'}],
-      '/api/academies/owned/sessions':[{id:'s',batchId:'b',teacherId:null,startUtc:boundary.now,deliveryMode:'InPerson',roomName:'Studio A'}],
-      '/api/academies/owned/events':[{id:'e',title:'Boundary recital',type:'Recital',startUtc:boundary.now}],
-      '/api/academies/owned/makeup-classes':[{id:'m',studentId:'student',batchId:'b',startUtc:boundary.now,deliveryMode:'Offline',venue:'Studio B'}],
+      '/api/academies/owned/batches':lifecycle?lifecycleSessions.map(row=>({id:row.id,name:row.id,courseId:'c',meetingLink:`https://batch.example.invalid/${row.id}`})):[{id:'b',name:'Boundary class',courseId:'c'}],
+      '/api/academies/owned/sessions':lifecycle?lifecycleSessions:[{id:'s',batchId:'b',teacherId:null,startUtc:boundary.now,deliveryMode:'InPerson',roomName:'Studio A'}],
+      '/api/academies/owned/events':lifecycle?[]:[{id:'e',title:'Boundary recital',type:'Recital',startUtc:boundary.now}],
+      '/api/academies/owned/makeup-classes':lifecycle?[]:[{id:'m',studentId:'student',batchId:'b',startUtc:boundary.now,deliveryMode:'Offline',venue:'Studio B'}],
       '/api/academies/owned/students':[{id:'student',firstName:'Synthetic',lastName:'Student'}],
       '/api/academies/owned/teachers':[],
       '/api/academies/owned/courses':[{id:'c',name:'Piano'}],
@@ -96,9 +103,40 @@ const server=http.createServer((req,res)=>{
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'No whole-page horizontal overflow');
    if(width===320)assert.ok(await page.locator('.calendar-grid').evaluate(grid=>{grid.scrollLeft=grid.scrollWidth;return grid.scrollLeft>0;}),'Mobile grid scrolls horizontally without changing dates');
    for(const endpoint of ['sessions','events','makeup-classes'])assert.equal(calls.filter(x=>x.endsWith('/'+endpoint)).length,1,'Navigation/filter only changes presentation');
-   const label=`${timezoneId.replaceAll('/','-')}-${width}-${boundary.heading.replaceAll(' ','-')}`;
+   const label=`${timezoneId.replaceAll('/','-')}-${width}-${boundary.heading.replaceAll(' ','-')}-${theme}`;
    await page.screenshot({path:path.join(evidence,label+'.png'),fullPage:true});
-   checks.push({timezoneId,width,boundary:boundary.now,gridDay:1,agendaCount:3,today:true,initialMonth:true,navigation:true,filterParity:true,collapse:true,synthetic:true});
+   lifecycle=true;await page.reload();
+   await page.locator('.workspace-calendar-agenda-item').nth(26).waitFor();
+   assert.equal(await page.locator('.workspace-calendar-agenda-item').count(),27,'All lifecycle records remain in history');
+   assert.equal(await page.locator('.calendar-event').count(),27);
+   for(const session of lifecycleSessions){
+    const cancelled=session.status?.trim().toLowerCase()==='cancelled';
+    const row=page.locator('.workspace-calendar-agenda-item').filter({has:page.getByRole('heading',{name:session.id,exact:true})});
+    const grid=page.locator('.calendar-event').filter({hasText:session.id});
+    const canonical=new Map([['scheduled','Scheduled'],['completed','Completed'],['cancelled','Cancelled'],['noshow','No show'],['inprogress','In progress'],['rescheduled','Rescheduled']]).get(session.status?.trim().toLowerCase())??(session.status||'Not specified');
+    assert.equal(await grid.count(),1);assert.equal(await grid.getAttribute('data-session-status'),canonical);
+    assert.equal(await grid.locator('.calendar-session-status').textContent(),canonical);
+    assert.equal(await row.getAttribute('data-session-status'),canonical);
+    const expectedLinks=cancelled||session.deliveryMode==='InPerson'?0:1;
+    assert.equal(await row.getByRole('link').count(),expectedLinks,'Agenda link policy for '+session.id);
+    assert.equal(await grid.evaluate(element=>element.tagName==='A'?1:0),expectedLinks,'Grid link policy for '+session.id);
+    if(cancelled){assert.ok(await row.getByText('This class is cancelled. Meeting access is unavailable.',{exact:true}).isVisible());assert.equal(await grid.getAttribute('href'),null);}
+    if(expectedLinks){assert.equal(await row.getByRole('link').getAttribute('href'),session.roomName);assert.equal(await grid.getAttribute('href'),session.roomName);}
+   }
+   const cancelledRows=page.locator('.workspace-calendar-agenda-item[data-session-status="Cancelled"]');
+   assert.equal(await cancelledRows.count(),6);
+   await page.getByRole('button',{name:'Class',exact:true}).click();assert.equal(await cancelledRows.count(),6);
+   await page.getByRole('button',{name:'Event',exact:true}).click();assert.equal(await cancelledRows.count(),0);
+   await page.getByRole('button',{name:'All',exact:true}).click();assert.equal(await cancelledRows.count(),6);
+   await page.getByRole('button',{name:'Collapse',exact:true}).click();assert.equal(await cancelledRows.count(),0);
+   await page.getByRole('button',{name:'Expand',exact:true}).click();assert.equal(await cancelledRows.count(),6);
+   assert.equal(await page.locator('a[href*="life-2-"]').count(),0,'No hidden cancelled link');
+   assert.equal(await page.locator('a[href*="life-6-"]').count(),0,'Case/space variant also has no hidden cancelled link');
+   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+   for(const endpoint of ['sessions','events','makeup-classes'])assert.equal(calls.filter(x=>x.endsWith('/'+endpoint)).length,2,'No reads on filters/collapse');
+   await cancelledRows.first().scrollIntoViewIfNeeded();
+   await page.screenshot({path:path.join(evidence,'cancelled-'+label+'.png'),fullPage:false});
+   checks.push({timezoneId,width,theme,boundary:boundary.now,gridDay:1,agendaCount:3,today:true,initialMonth:true,navigation:true,filterParity:true,collapse:true,lifecycle:{records:27,cancelled:6,allStatusesRetained:true,nonactionableCancelled:true,otherActionsPreserved:true},synthetic:true});
    console.log('PASS CALENDAR '+label);await context.close();
   }
   assert.deepEqual(errors,[],'No console/hydration errors');

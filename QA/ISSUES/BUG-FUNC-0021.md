@@ -3,8 +3,8 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | STATIC-FINDING |
-| Final verification | NOT RUN |
+| Confirmation status | CONTROLLED-TSX REPRODUCED; EXPORTED-DOM RETEST PASS |
+| Final verification | PARTIAL: controlled/synthetic browser PASS; linked SQL/critical/device OPEN |
 | Severity | Major misleading schedule state |
 | Priority | P1 |
 | Category | FUNC |
@@ -30,12 +30,24 @@
 | API response | Not captured for this issue; use synthetic request/response in isolated reproduction |
 | Database before/after | Not executed; fixture and fresh-context assertions defined below |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | Not implemented (Phase 1) |
-| Retest result | NOT RUN |
-| Regression result | NOT RUN |
+| Fix commit | Scoped feature-branch repair; see 2026-10-09 report and file history |
+| Retest result | 324 controlled checks / 32 exported-browser viewport-timezone-theme combinations PASS |
+| Regression result | All 50 preceding projection/timezone cases retained per zone; critical/physical-device NOT RUN |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
-## Exact reproduction
+## Current repair checkpoint — 2026-10-09
+
+[Repair report](../REPORTS/PHASE_2B_CALENDAR_CANCELLATION_REPAIR.md): returned
+session lifecycle is now retained and displayed in grid/agenda. Cancelled
+records remain in history, with explicit cancellation text and no meeting
+action, including legacy batch-link fallback and case variants. Other actions,
+source timestamps and location/teacher precedence remain unchanged. 324
+controlled tests and 32 synthetic exported-DOM desktop/mobile/light/dark
+combinations PASS; TypeScript/calendar lint/83-page build PASS. Real cancellation
+HTTP/SQL transition, linked browser/critical and device retests remain OPEN.
+Historical source/evidence below describes the original defect, not current code.
+
+## Original reproduction
 
 Create a synthetic Online session with a meeting URL, cancel it through authorized session status update, then reload calendar. Compare stored/API status and the grid/agenda class entry.
 
