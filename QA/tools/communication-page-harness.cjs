@@ -1,7 +1,8 @@
 // Actual channel-page TSX handlers with controlled hooks/API. Not browser/React/device evidence.
 const fs=require('node:fs');
 const ts=require('../../apps/web/node_modules/typescript'),jsx=require('../../apps/web/node_modules/react/jsx-runtime');
-const code=ts.transpileModule(fs.readFileSync('apps/web/src/app/communication-settings/page.tsx','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX}}).outputText;
+const source=process.env.QA_SETTINGS_BASELINE==='1'?require('node:child_process').execFileSync('git',['show','HEAD:apps/web/src/app/communication-settings/page.tsx'],{encoding:'utf8'}):fs.readFileSync('apps/web/src/app/communication-settings/page.tsx','utf8');
+const code=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX}}).outputText;
 const channels=['Email','WhatsApp','Meeting'],fields=['provider','status','senderName','senderAddress','replyToAddress','phoneNumber','externalAccountReference','messagesEnabled'];
 const base=channels.map(channel=>({channel,provider:channel==='WhatsApp'?'MetaCloudApi':'GoogleWorkspace',status:'Configured',senderName:channel+' sender',senderAddress:channel.toLowerCase()+'@example.invalid',replyToAddress:'reply-'+channel.toLowerCase()+'@example.invalid',phoneNumber:'+910000000001',externalAccountReference:'synthetic-'+channel,messagesEnabled:true,hasSecureConnection:true}));
 function nodes(n){return Array.isArray(n)?n.flatMap(nodes):!n||typeof n!=='object'?[]:[n,...nodes(n.props?.children)];}

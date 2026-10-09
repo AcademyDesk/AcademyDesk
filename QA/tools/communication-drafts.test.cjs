@@ -52,7 +52,7 @@ for(const channel of channels)test(`${channel} existing optional clear/defaults 
  p.edit(channel,'senderName','   ');await p.save(channel);assert.equal(p.draft(channel)[channel==='Meeting'?'organizerName':'senderName'],'');for(const other of channels.filter(x=>x!==channel))assert.equal(p.draft(other)[other==='Meeting'?'organizerName':'senderName'],'Keep '+other);
 });
 for(const channel of channels)test(`${channel} historical real HTTP summary renders and preserves independent drafts`,async()=>{
- const log=fs.readFileSync('QA/EVIDENCE/logs/phase-2b-communication-roundtrip-sql.log','utf8'),rows=JSON.parse(log.match(/^CHANNELROUNDTRIP FIXTURE (.+)$/m)[1]).rows,p=await page({rows});
+ const log=fs.readFileSync(process.env.QA_CHANNEL_HISTORY_LOG||'QA/EVIDENCE/logs/phase-2b-communication-roundtrip-sql.log','utf8'),rows=JSON.parse(log.match(/^CHANNELROUNDTRIP FIXTURE (.+)$/m)[1]).rows,p=await page({rows});
  for(const other of channels.filter(x=>x!==channel))p.edit(other,'senderName','Keep captured '+other);p.edit(channel,'senderName','Saved captured '+channel);await p.save(channel);
  for(const other of channels.filter(x=>x!==channel))assert.equal(p.draft(other)[other==='Meeting'?'organizerName':'senderName'],'Keep captured '+other);
  const payload=JSON.parse(p.writes()[0].body),row=rows.find(x=>x.channel===channel);for(const key of ['replyToAddress','phoneNumber','externalAccountReference'])assert.equal(payload[key],row[key]);

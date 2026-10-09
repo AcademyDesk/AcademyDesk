@@ -36,22 +36,30 @@ export default function CommunicationSettingsPage() {
   const notice = (channel: ChannelName, value: string) => setNotices((current) => ({ ...current, [channel]: value }));
   const editSender = (channel: "Email" | "WhatsApp", value: Draft) => { revisions.current[channel]++; if (channel === "Email") setEmail(value); else setWhatsApp(value); };
   const editMeeting = (value: MeetingProviderDraft) => { revisions.current.Meeting++; setMeeting(value); };
-  async function load(id?: string) {
-    const academyId = id ?? academy?.id; if (!academyId) return;
-    setLoaded(false);
-    const response = await academyApi(`/api/academies/${academyId}/communication-settings`, { cache: "no-store" });
-    if (!response.ok) throw new Error("Channel settings could not be loaded.");
-    const rows: unknown = await response.json();
-    if (!Array.isArray(rows) || !rows.every(isChannel) || new Set(rows.map((row) => row.channel)).size !== rows.length)
-      throw new Error("Channel settings response is incomplete. Reload before saving.");
-    setItems(rows);
-    setEmail(toDraft(rows.find((row) => row.channel === "Email"), "GoogleWorkspace"));
-    setWhatsApp(toDraft(rows.find((row) => row.channel === "WhatsApp"), "MetaCloudApi"));
-    const row = rows.find((item) => item.channel === "Meeting");
-    setMeeting(row ? toMeetingDraft(row) : meetingBlank);
-    setLoaded(true); setMessage("");
-  }
-  useEffect(() => { void (async () => { try { const response = await academyApi("/api/academies", { cache: "no-store" }); const academies: Academy[] = await response.json(); if (!response.ok || !academies[0]) throw new Error(); setAcademy(academies[0]); await load(academies[0].id); } catch { setMessage("Settings could not be loaded. Confirm the API is running on port 5092."); } })(); }, []);
+  useEffect(() => {
+    void (async () => {
+      try {
+        const response = await academyApi("/api/academies", { cache: "no-store" });
+        const academies: Academy[] = await response.json();
+        if (!response.ok || !academies[0]) throw new Error();
+        setAcademy(academies[0]);
+        const settingsResponse = await academyApi(`/api/academies/${academies[0].id}/communication-settings`, { cache: "no-store" });
+        if (!settingsResponse.ok) throw new Error("Channel settings could not be loaded.");
+        const rows: unknown = await settingsResponse.json();
+        if (!Array.isArray(rows) || !rows.every(isChannel) || new Set(rows.map((row) => row.channel)).size !== rows.length)
+          throw new Error("Channel settings response is incomplete. Reload before saving.");
+        setItems(rows);
+        setEmail(toDraft(rows.find((row) => row.channel === "Email"), "GoogleWorkspace"));
+        setWhatsApp(toDraft(rows.find((row) => row.channel === "WhatsApp"), "MetaCloudApi"));
+        const row = rows.find((item) => item.channel === "Meeting");
+        setMeeting(row ? toMeetingDraft(row) : meetingBlank);
+        setLoaded(true);
+        setMessage("");
+      } catch {
+        setMessage("Settings could not be loaded. Confirm the API is running on port 5092.");
+      }
+    })();
+  }, []);
   async function persist(channel: ChannelName, payload: ChannelPayload, applySaved: (row: Channel) => void) {
     if (!academy || !loaded) return notice(channel, "Load complete channel settings before saving. Your entries are kept.");
     if (pendingChannels.current.has(channel)) return;

@@ -2,6 +2,10 @@
 
 ## Current state
 
+## Communication Settings feedback check — 2026-10-10
+
+[Report](QA/REPORTS/PHASE_2B_COMMUNICATION_SETTINGS_FEEDBACK_CHECK.md): accepted durable channel notices/pending/draft reconciliation reused, not rewritten. Only app change scopes mount loader inside effect to clear inherited warning without reload loops/suppression. Original87 +3 lifecycle/accessibility90/90 on HEAD and final;24 synthetic exported-browser channel cases PASS, lint0/0, TypeScript/83-page export PASS. Initial81/84 run had3 missing-local-receipt failures; original receipt located read-only in main, explicit optional history path added with unchanged assertions. Browser dynamic-button locator failure retained/corrected. Provider/payload/hidden optional/status/credentials/access/child unchanged; no new SQL/device/backend/secure-provider acceptance. BUG-FUNC-0003/BUG-DATA-0041/release OPEN. Startingfe7c693, scoped feature publication only, main/Mini/Azure/unrelated/evidence preserved; Mini86/94 blocked/handoff unchanged. NEXT Sol Medium: Communications existing-feedback gap check; Sol High for external-send/credentials/authority/domain/persistence.
+
 ## Events success feedback — 2026-10-10 (BUG-FUNC-0003)
 
 [Report](QA/REPORTS/PHASE_2B_EVENTS_FEEDBACK_REPAIR.md): durable create confirmation, saved/readback-failure guidance, retained rejected/unconfirmed inputs and synchronous pending write/readback guard. Pure workspace fetch/scoped mount clears loader dependency without suppression. Frozen15 baseline2 PASS/13 FAIL; final15 controlled +16 exported-browser synthetic width/theme/fault cases PASS, lint0/0, TypeScript/83-page export PASS. Payload/default/null/reset/access and existing local-time conversion unchanged; timezone policy caveat recorded, no new status UI/backend/SQL/device acceptance. Starting6ca567d, codex/penta-search; scoped publication only, main/Mini/Azure/unrelated work/evidence preserved. BUG-FUNC-0003/release OPEN, Mini saved86/94 CONTRACT READY / ENGINE BLOCKED and qualification handoff unchanged. NEXT Sol Medium: Communication Settings gap check, reuse existing repair; Sol High for domain/credentials/access/persistence.
