@@ -35,6 +35,16 @@
 | Regression result | 209 current combined controlled frontend PASS; no new backend/SQL run; Course lint FAIL (1 error/1 warning after improvement), not all-form/critical acceptance |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
+## Leave feedback checkpoint — 2026-10-09
+
+[Report](../REPORTS/PHASE_2B_LEAVE_FEEDBACK_REPAIR.md): frozen23 baseline2 PASS/
+21 FAIL; final23 actual-TSX and16 synthetic exported-browser cases PASS. Durable
+create/approve/reject, checked decision rejection, retained uncertain/rejected
+inputs, saved/readback-failure guidance and shared synchronous pending protection.
+Lint0/0 and TypeScript/export PASS. Student/Teacher identity and domain/backend
+contracts unchanged; prior SQL receipts retained, not rerun. Issue OPEN for other
+forms, linked live/browser/device/critical gates. Next Holidays feedback gaps.
+
 ## Make-up effect-lint checkpoint — 2026-10-09
 
 [Report](../REPORTS/PHASE_2B_MAKEUP_EFFECT_LINT.md): inherited dependency warning
