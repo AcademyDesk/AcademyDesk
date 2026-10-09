@@ -35,6 +35,16 @@
 | Regression result | 209 current combined controlled frontend PASS; no new backend/SQL run; Course lint FAIL (1 error/1 warning after improvement), not all-form/critical acceptance |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
+## Holidays feedback checkpoint — 2026-10-09
+
+[Report](../REPORTS/PHASE_2B_HOLIDAYS_FEEDBACK_REPAIR.md): create/default-add/remove
+feedback and pending protection fixed;22 controlled +16 synthetic exported-browser
+cases PASS, lint0/0, TypeScript/export PASS. Saved/readback failures and uncertain
+writes distinguished; rejected form retained. Dates/default endpoint/domain/access
+unchanged. Initial browser fixture lacked Certificates module and correctly stayed
+locked; corrected fixture passes, failures retained. No new SQL/device/critical
+acceptance; issue OPEN for remaining forms and broader gates. Next Events feedback.
+
 ## Leave feedback checkpoint — 2026-10-09
 
 [Report](../REPORTS/PHASE_2B_LEAVE_FEEDBACK_REPAIR.md): frozen23 baseline2 PASS/

@@ -2,6 +2,10 @@
 
 ## Current state
 
+## Holidays success feedback — 2026-10-09 (BUG-FUNC-0003)
+
+[Report](QA/REPORTS/PHASE_2B_HOLIDAYS_FEEDBACK_REPAIR.md): durable create/default-add/remove notices, confirmed-save/failed-refresh guidance, retained rejected/uncertain form and shared pending write/readback protection. Scoped pure fetch clears inherited dependency warning; initial non-OK academy response rejected. Frozen22 baseline1 PASS/21 FAIL; final22 controlled +16 exported-browser synthetic viewport/theme/fault cases PASS, lint0/0, TypeScript/83-page export PASS. Existing dates/form defaults/India2026 endpoint/removal/authority unchanged; blocked browser fixture corrected to include existing Certificates module, failures preserved. No new live SQL/device/enterprise acceptance. Startingd226715, codex/penta-search; scoped publication only, main/Mini/Azure/unrelated work/evidence preserved. NEXT Sol Medium: Events feedback gaps; Sol High if domain/access/persistence changes. BUG-FUNC-0003/release OPEN; Mini saved86/94 CONTRACT READY / ENGINE BLOCKED and handoff unchanged.
+
 ## Leave success feedback — 2026-10-09 (BUG-FUNC-0003)
 
 [Report](QA/REPORTS/PHASE_2B_LEAVE_FEEDBACK_REPAIR.md): durable submit/approve/reject notices, checked decision failures, confirmed-save/failed-refresh guidance, retained rejected/uncertain inputs and shared synchronous write/readback guard. Pure fetch/scoped mount also clears inherited dependency warning without suppression. Frozen23 baseline2 PASS/21 FAIL; final23 controlled and16 final exported-browser synthetic cases PASS, lint0/0, TypeScript/83-page export PASS. Canonical Student/Teacher matching identity, same-day dates, raw reason, notes:null decisions and empty200 success unchanged; backend/authority untouched. Prior51/63 identity receipts retained, not rerun; no new live SQL/device or issue/release closure. Starting716fca9, codex/penta-search; scoped publication only, main/Mini/Azure/unrelated work/evidence preserved. NEXT Sol Medium: Holidays feedback gaps; Sol High if domain/access/persistence changes. Mini saved86/94 CONTRACT READY / ENGINE BLOCKED and qualification handoff unchanged.

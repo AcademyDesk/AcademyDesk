@@ -1,12 +1,18 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { WorkspaceNav } from "@/components/workspace-nav";
 import { StandardDateField } from "@/components/design-system/controls";
 import { academyApi, apiHeaders } from "@/lib/api";
 
 type Academy = { id: string };
 type Holiday = { id: string; name: string; holidayDate: string };
+
+async function fetchHolidays(academyId: string): Promise<Holiday[]> {
+  const response = await academyApi(`/api/academies/${academyId}/holidays`);
+  if (!response.ok) throw new Error();
+  return response.json();
+}
 type FormState = {
   name: string;
   holidayDate: string;
@@ -25,61 +31,65 @@ export default function HolidaysPage() {
     scope: "Custom",
   });
   const [message, setMessage] = useState("Loading holidays…");
-  async function load(item?: Academy) {
-    const current = item ?? academy;
-    if (!current) return;
-    const response = await academyApi(`/api/academies/${current.id}/holidays`);
-    if (!response.ok) throw new Error();
-    setHolidays(await response.json());
-    setMessage("");
-  }
+  const [saving, setSaving] = useState(false);
+  const pendingWrite = useRef(false);
   useEffect(() => {
     void academyApi("/api/academies")
       .then(async (response) => {
+        if (!response.ok) throw new Error();
         const academies: Academy[] = await response.json();
         if (!academies[0]) return setMessage("Create an academy first.");
         setAcademy(academies[0]);
-        await load(academies[0]);
+        setHolidays(await fetchHolidays(academies[0].id));
+        setMessage("");
       })
       .catch(() => setMessage("Holidays could not be loaded."));
   }, []);
+
+  async function write(url: string, init: RequestInit, success: string, fallback: string, clearForm = false) {
+    if (!academy || pendingWrite.current) return;
+    pendingWrite.current = true; setSaving(true); setMessage("");
+    try {
+      const response = await academyApi(url, init);
+      if (!response.ok) {
+        const result = await response.json().catch(() => null);
+        const detail = typeof result?.message === "string" ? result.message.trim() : "";
+        setMessage(response.status >= 500
+          ? `${detail ? `${detail} ` : ""}The holiday change could not be confirmed; check the saved record before retrying.`
+          : detail || fallback);
+        return;
+      }
+      if (clearForm) setForm({ name: "", holidayDate: "", notes: "", isClosed: true, scope: "Custom" });
+      setMessage(success);
+      try { setHolidays(await fetchHolidays(academy.id)); }
+      catch { setMessage(`${success} The register could not be refreshed; refresh to see the saved record and do not repeat the action.`); }
+    } catch { setMessage("The holiday change could not be confirmed; check the saved record before retrying."); }
+    finally { pendingWrite.current = false; setSaving(false); }
+  }
   async function addDefaults() {
     if (!academy) return;
-    const response = await academyApi(
+    await write(
       `/api/academies/${academy.id}/holidays/india-2026-defaults`,
       { method: "POST", headers: apiHeaders(true) },
+      "Official India holidays added.", "Official holidays could not be added.",
     );
-    if (!response.ok)
-      return setMessage("Official holidays could not be added.");
-    setMessage("Official India holidays added.");
-    await load();
   }
   async function create(event: FormEvent) {
     event.preventDefault();
     if (!academy || !form.name || !form.holidayDate) return;
-    const response = await academyApi(`/api/academies/${academy.id}/holidays`, {
+    await write(`/api/academies/${academy.id}/holidays`, {
       method: "POST",
       headers: apiHeaders(true),
       body: JSON.stringify(form),
-    });
-    if (!response.ok) return setMessage("Holiday could not be added.");
-    setForm({
-      name: "",
-      holidayDate: "",
-      notes: "",
-      isClosed: true,
-      scope: "Custom",
-    });
-    await load();
+    }, "Holiday added.", "Holiday could not be added.", true);
   }
   async function remove(id: string) {
     if (!academy) return;
-    const response = await academyApi(
+    await write(
       `/api/academies/${academy.id}/holidays/${id}`,
       { method: "DELETE", headers: apiHeaders() },
+      "Holiday removed.", "Holiday could not be removed.",
     );
-    if (!response.ok) return setMessage("Holiday could not be removed.");
-    await load();
   }
   return (
     <main className="enterprise-settings holidays-standard min-h-screen">
@@ -97,14 +107,14 @@ export default function HolidaysPage() {
           </div>
           <button
             type="button"
-            onClick={() => void addDefaults()}
-            disabled={!academy}
+            onClick={() => addDefaults()}
+            disabled={!academy || saving}
           >
             Add India holidays 2026
           </button>
         </header>
         {message && (
-          <p className="enterprise-page-state holidays-message">{message}</p>
+          <p role="status" aria-live="polite" className="enterprise-page-state holidays-message">{message}</p>
         )}
         <section className="holidays-layout">
           <form onSubmit={create} className="holidays-panel">
@@ -118,6 +128,7 @@ export default function HolidaysPage() {
               <label>
                 <span>Holiday name</span>
                 <input
+                  disabled={saving}
                   required
                   value={form.name}
                   onChange={(event) =>
@@ -126,15 +137,15 @@ export default function HolidaysPage() {
                   placeholder="Custom or regional holiday"
                 />
               </label>
-              <StandardDateField
+              <fieldset disabled={saving} className="m-0 min-w-0 border-0 p-0"><StandardDateField
                 name="holiday-date"
                 label="Date"
                 value={form.holidayDate}
                 onChange={(holidayDate) => setForm({ ...form, holidayDate })}
                 required
-              />
-              <button className="enterprise-action-button holidays-action">
-                Add holiday
+              /></fieldset>
+              <button disabled={saving} className="enterprise-action-button holidays-action">
+                {saving ? "Saving…" : "Add holiday"}
               </button>
             </div>
           </form>
@@ -163,7 +174,8 @@ export default function HolidaysPage() {
                     </div>
                     <button
                       type="button"
-                      onClick={() => void remove(holiday.id)}
+                      disabled={saving}
+                      onClick={() => remove(holiday.id)}
                     >
                       Remove
                     </button>
