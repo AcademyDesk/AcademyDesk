@@ -91,7 +91,7 @@ retention and contract gates, not decorative enabled controls.
 | Result card | Verified display name, code, status, subject, each currency balance, source, as-of and source link | Existing student read pilot |
 | Clarification | Show verified candidate records and explicit choice; no automatic selection | Existing student ambiguity pilot |
 | Status / recovery | Text and semantic state; provider readiness is not accuracy or authorization | Existing pilot |
-| Result table | Typed columns/cells and stable source keys; sortable only where API supports it | Specified; not implemented in this slice |
+| Result table | Typed columns/cells and stable source keys; preserve server order, no client totals or sorting | N2w integrated Cards/Table pilot; synthetic browser evidence only |
 | Action preview | Exact operation, targets, before/after, risk, source revision, expiry and approval requirement | Future real action gate |
 | Approval panel | Trusted pending action; confirm/reject with fresh host authority, idempotency and audit | Future real action gate |
 | Feedback | Minimal tenant-scoped correction categories matching Mini learning-event schema | Existing metadata foundation; customer collection UI pending |
@@ -102,6 +102,14 @@ action callbacks; they must not import EF models, Academy routes or raw provider
 clients. Reuse stable patterns first in this app. Extract a versioned shared
 PENTA UI package only after integrated visual/function acceptance and an actual
 second consumer justify it; no third repository or uncontrolled component copy.
+
+N2w's `PentaResultView` is a local presentation component accepting labels,
+stable keyed cells and host-rendered links/actions. It imports no Academy domain
+types/routes, provider or API client. Cards are the default for each new receipt;
+switching to a semantic table preserves source identity, order, balances and
+unsent text without a request. Its named keyboard-scroll region contains mobile
+horizontal overflow; currencies remain separate, with no inferred totals. This
+is not a released shared package or validation of Mini's draft artifact protocol.
 
 ## Context, manual access and command centre
 

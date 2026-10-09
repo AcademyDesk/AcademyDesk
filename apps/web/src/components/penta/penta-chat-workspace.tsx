@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { academyApi, isPortalSignOutEvent } from "@/lib/api";
 import styles from "./penta-chat.module.css";
 import design from "./penta-design.module.css";
+import PentaResultView from "./penta-result-view";
 
 type Context = { academyId: string; name: string; timeZone: string };
 type Session = { conversationId: string; version: number; expiresAtUtc: string };
@@ -139,6 +140,13 @@ export default function PentaChatWorkspace({ active = true }: { active?: boolean
             <span className={styles.byline}>PENTA AI · {turn.receipt.kind === "RESULT" ? "Verified read" : turn.receipt.kind.replaceAll("_", " ")}</span><p>{turn.receipt.message}</p>
             {turn.receipt.result && <>
               <p className={styles.source}>As of {new Date(turn.receipt.result.asOfUtc).toLocaleString("en-IN", { timeZone: context?.timeZone || "Asia/Kolkata" })} · {turn.receipt.result.source}</p>
+              <PentaResultView caption="Verified students · Source order" columns={["Reference", "Student", "Courses", "Outstanding", "Source & follow-up"]} rows={turn.receipt.result.rows.map((row, rowIndex) => ({ key: row.sourceId, cells: [
+                rowIndex + 1,
+                <div key="student"><strong>{row.displayName}</strong><small>Student code: {row.recordCode || "Not assigned"} · Active</small></div>,
+                row.subjects.join(" · ") || "No active course",
+                <div key="balances">{row.balances.length ? row.balances.map(balance => <strong key={balance.currency}>{balance.currency} {balance.outstanding.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>) : "No outstanding fees"}</div>,
+                <div key="source"><Link href={row.sourcePath}>Open Student 360 ↗</Link><details><summary>Record reference</summary><code>{row.sourceId}</code></details>{index === turns.length - 1 && turn.receipt.kind === "CLARIFICATION_REQUIRED" && <button type="button" disabled={busy || blocked || !active} aria-label={`Choose student ${rowIndex + 1}: ${row.displayName}${row.recordCode ? ` (${row.recordCode})` : ""}`} onClick={() => { setPrompt(`Show the ${ordinals[rowIndex]} one.`); input.current?.focus(); }}>Choose student {rowIndex + 1}</button>}</div>,
+              ] }))}>
               <ol className={styles.cards}>{turn.receipt.result.rows.map((row, rowIndex) => <li key={row.sourceId}>
                 <div><span className={styles.ordinal}>{rowIndex + 1}</span><h3>{row.displayName}</h3><span className={styles.active}>Active</span></div>
                 <p className={styles.recordCode}>Student code: {row.recordCode || "Not assigned"}</p>
@@ -149,7 +157,8 @@ export default function PentaChatWorkspace({ active = true }: { active?: boolean
                   {index === turns.length - 1 && turn.receipt.kind === "CLARIFICATION_REQUIRED" && <button type="button" disabled={busy || blocked || !active} aria-label={`Choose student ${rowIndex + 1}: ${row.displayName}${row.recordCode ? ` (${row.recordCode})` : ""}`} onClick={() => { setPrompt(`Show the ${ordinals[rowIndex]} one.`); input.current?.focus(); }}>Choose student {rowIndex + 1}</button>}
                 </footer>
               </li>)}</ol>
-              {turn.receipt.result.hasMore && <p className={styles.source}>Showing the first 10. Refine your prompt to find fewer students.</p>}
+              </PentaResultView>
+              {turn.receipt.result.hasMore && <p className={styles.source}>Showing the first {turn.receipt.result.rows.length}. Refine your prompt to find fewer students.</p>}
               <p className={styles.scope}>{turn.receipt.result.balanceScope}</p>
             </>}
             {index === turns.length - 1 && latest?.result && <p className={styles.followup}>{latest.kind === "CLARIFICATION_REQUIRED" ? "Choose a student to prepare your follow-up, then press Send. Nothing is selected automatically." : "Try “Only piano”, “Highest first”, or “Show the second one”."}</p>}

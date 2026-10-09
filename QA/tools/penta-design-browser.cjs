@@ -22,6 +22,15 @@ const server = http.createServer((req, res) => {
 const id = '11111111-1111-4111-8111-111111111111';
 const conversation = '22222222-2222-4222-8222-222222222222';
 const learner = '33333333-3333-4333-8333-333333333333';
+const comparison = [
+  {sourceId:learner,displayName:'Synthetic duplicate',recordCode:'SYN-002',subjects:['Piano','Voice'],balances:[{currency:'INR',outstanding:400.5},{currency:'USD',outstanding:12.25}]},
+  {sourceId:'44444444-4444-4444-8444-444444444444',displayName:'Synthetic duplicate',recordCode:'SYN-001',subjects:['Piano'],balances:[{currency:'EUR',outstanding:300.75}]},
+  {sourceId:'55555555-5555-4555-8555-555555555555',displayName:'<img src=x onerror=alert(1)>',recordCode:null,subjects:[],balances:[]},
+].map(row=>({...row,sourcePath:`/student-management?studentId=${row.sourceId}`}));
+const capped = [...comparison,...Array.from({length:7},(_,i)=>{
+  const sourceId=`66666666-6666-4666-8666-${String(i+1).padStart(12,'0')}`;
+  return {sourceId,displayName:`Synthetic extra ${i+1}`,recordCode:`SYN-X${i+1}`,subjects:[],balances:[],sourcePath:`/student-management?studentId=${sourceId}`};
+})];
 function luminance(rgb) {
   return rgb.map(n => { n /= 255; return n <= .04045 ? n / 12.92 : ((n + .055) / 1.055) ** 2.4; }).reduce((sum, n, i) => sum + n * [.2126,.7152,.0722][i], 0);
 }
@@ -60,8 +69,8 @@ function contrast(a, b) {
           if (url.pathname.endsWith('/turns')) {
             calls++;
             const input = route.request().postDataJSON();
-            const rows = mode === 'result' ? [{sourceId:learner,displayName:'Synthetic learner with a deliberately long readable display name',recordCode:'SYN-001',subjects:['Piano'],balances:[{currency:'INR',outstanding:400}],sourcePath:`/student-management?studentId=${learner}`}] : [];
-            return respond({conversationId:conversation,requestId:input.requestId,version:input.expectedVersion+1,kind:mode === 'error' ? 'ERROR' : 'RESULT',message:mode === 'error' ? 'Synthetic provider unavailable. Use the manual workspace.' : rows.length ? 'Synthetic verified read.' : 'No matching active students.',capability:input.capability,provider:'PENTA Mini',protocol:'0.1',context:{filters:{balance_status:'Pending'},sort_by:null,current_learner_id:null,current_result_ids:rows.map(row=>row.sourceId)},result:mode === 'error' ? null : {count:rows.length,hasMore:false,rows,asOfUtc:'2026-10-09T10:00:00Z',source:'Synthetic ledger',balanceScope:'Synthetic student fees.'}});
+            const rows = mode === 'comparison' ? comparison : mode === 'capped' ? capped : mode === 'result' ? [{sourceId:learner,displayName:'Synthetic learner with a deliberately long readable display name',recordCode:'SYN-001',subjects:['Piano'],balances:[{currency:'INR',outstanding:400}],sourcePath:`/student-management?studentId=${learner}`}] : [];
+            return respond({conversationId:conversation,requestId:input.requestId,version:input.expectedVersion+1,kind:mode === 'error' ? 'ERROR' : mode === 'comparison' ? 'CLARIFICATION_REQUIRED' : 'RESULT',message:mode === 'error' ? 'Synthetic provider unavailable. Use the manual workspace.' : rows.length ? 'Synthetic verified read.' : 'No matching active students.',capability:input.capability,provider:'PENTA Mini',protocol:'0.1',context:{filters:{},sort_by:null,current_learner_id:null,current_result_ids:rows.map(row=>row.sourceId)},result:mode === 'error' ? null : {count:mode === 'capped'?14:rows.length,hasMore:mode === 'capped',rows,asOfUtc:'2026-10-09T10:00:00Z',source:'Synthetic ledger',balanceScope:'Synthetic student fees; currencies kept separate. No combined total.'}});
           }
           throw Error('Unexpected synthetic API path ' + url.pathname);
         }
@@ -117,15 +126,76 @@ function contrast(a, b) {
         await send.click();
         await panel.getByText(next==='empty'?'No matching active students.':'Synthetic provider unavailable. Use the manual workspace.',{exact:true}).waitFor();
         assert.equal(await panel.getByRole('link',{name:'Open Student 360 ↗'}).count(),0);
+        assert.equal(await panel.getByRole('group',{name:'Result display'}).count(),0,'No view switch for empty/error');
         await assertBounds();
         await page.screenshot({path:path.join(evidence,`${next}-${width}-${theme}.png`),fullPage:true});
       }
-      assert.equal(calls,3,'No automatic retries');
+      mode='comparison';
+      await panel.getByRole('button',{name:'New conversation',exact:true}).click();
+      await prompt.fill('Find synthetic duplicates');
+      await send.click();
+      const display=panel.getByRole('group',{name:'Result display',exact:true});
+      await display.waitFor();
+      const cards=display.getByRole('button',{name:'Cards',exact:true}), tableButton=display.getByRole('button',{name:'Table',exact:true});
+      assert.equal(await cards.getAttribute('aria-pressed'),'true','Cards default for each receipt');
+      const cardBalanceText=await panel.locator('ol li').evaluateAll(rows=>rows.map(row=>[...row.querySelectorAll('strong')].map(el=>el.textContent.replace(/Outstanding/g,'')).join('')));
+      assert.deepEqual(cardBalanceText,['INR 400.50USD 12.25','EUR 300.75','No outstanding fees']);
+      assert.deepEqual(await panel.getByRole('link',{name:'Open Student 360 ↗'}).evaluateAll(links=>links.map(link=>link.getAttribute('href'))),comparison.map(row=>row.sourcePath));
+      await tableButton.click();
+      const table=panel.getByRole('table',{name:'Verified students · Source order',exact:true});
+      await table.waitFor();
+      assert.equal(await tableButton.getAttribute('aria-pressed'),'true');
+      assert.equal(await cards.getAttribute('aria-pressed'),'false');
+      assert.deepEqual(await table.getByRole('columnheader').allTextContents(),['Reference','Student','Courses','Outstanding','Source & follow-up']);
+      assert.deepEqual(await table.getByRole('rowheader').allTextContents(),['1','2','3']);
+      const tableRows=table.locator('tbody tr');
+      assert.deepEqual(await tableRows.locator('td:nth-child(2) strong').allTextContents(),comparison.map(row=>row.displayName));
+      assert.deepEqual(await tableRows.locator('td:nth-child(4)').allTextContents(),['INR 400.50USD 12.25','EUR 300.75','No outstanding fees']);
+      assert.deepEqual(await tableRows.locator('td:nth-child(4)').allTextContents(),cardBalanceText,'Cards/table balance parity');
+      assert.deepEqual(await table.getByRole('link',{name:'Open Student 360 ↗'}).evaluateAll(links=>links.map(link=>link.getAttribute('href'))),comparison.map(row=>row.sourcePath),'Same source links/order');
+      assert.equal(await table.locator('img,script').count(),0,'Source text never becomes executable markup');
+      assert.ok((await tableRows.nth(2).textContent()).includes('Not assigned'));
+      await tableRows.nth(1).getByText('Record reference',{exact:true}).click();
+      await tableRows.nth(1).getByText(comparison[1].sourceId,{exact:true}).waitFor();
+      const scroll=panel.getByRole('region',{name:'Scrollable verified results',exact:true});
+      const dimensions=await scroll.evaluate(el=>({width:el.clientWidth,scrollWidth:el.scrollWidth}));
+      if(dimensions.scrollWidth>dimensions.width) {
+        await scroll.focus();
+        await scroll.press('ArrowRight');
+        await page.waitForFunction(()=>document.querySelector('[aria-label="Scrollable verified results"]').scrollLeft>0);
+      }
+      await assertBounds();
+      for(const control of [cards,tableButton,tableRows.nth(1).getByRole('button',{name:'Choose student 2: Synthetic duplicate (SYN-001)',exact:true})]) assert.ok((await control.boundingBox()).height>=44,'44px result actions');
+      const choose=tableRows.nth(1).getByRole('button',{name:'Choose student 2: Synthetic duplicate (SYN-001)',exact:true});
+      await choose.click();
+      assert.equal(await prompt.inputValue(),'Show the second one.');
+      assert.equal(await prompt.evaluate(el=>el===document.activeElement),true,'Choice focuses composer');
+      assert.equal(calls,4,'View/choice must not send tools or replay');
+      await page.screenshot({path:path.join(evidence,`table-${width}-${theme}.png`),fullPage:true});
+      await scroll.evaluate(el=>{el.scrollLeft=0;});
+      await tableButton.scrollIntoViewIfNeeded();
+      await page.screenshot({path:path.join(evidence,`table-start-${width}-${theme}.png`),fullPage:true});
+      await cards.click();
+      assert.equal(await table.count(),0);
+      assert.deepEqual(await panel.getByRole('link',{name:'Open Student 360 ↗'}).evaluateAll(links=>links.map(link=>link.getAttribute('href'))),comparison.map(row=>row.sourcePath));
+      assert.equal(await prompt.inputValue(),'Show the second one.','Display switch retains prepared follow-up');
+      await page.screenshot({path:path.join(evidence,`comparison-cards-${width}-${theme}.png`),fullPage:true});
+      mode='capped';
+      await panel.getByRole('button',{name:'New conversation',exact:true}).click();
+      await prompt.fill('Synthetic capped read'); await send.click();
+      await panel.getByText('Showing the first 10. Refine your prompt to find fewer students.',{exact:true}).waitFor();
+      assert.equal(await panel.getByRole('link',{name:'Open Student 360 ↗'}).count(),10);
+      assert.equal(await display.getByRole('button',{name:'Cards',exact:true}).getAttribute('aria-pressed'),'true','New receipt resets display');
+      await display.getByRole('button',{name:'Table',exact:true}).click();
+      assert.equal(await table.getByRole('rowheader').count(),10,'Partial list never invents missing rows');
+      assert.equal(await table.getByRole('button',{name:/Choose student/}).count(),0,'RESULT is not a disambiguation action');
+      assert.equal(calls,5,'No automatic retries or view requests');
+      await assertBounds();
       await page.getByRole('button',{name:/^Workspace/}).click();
       assert.equal(await system.isVisible(),false,'Manual switch hides AI workspace');
       await page.getByRole('button',{name:'PENTA AI',exact:true}).click();
       assert.equal(await system.isVisible(),true);
-      checks.push({width,theme,helpChecks,ratio,palette,focus,states:['result','empty','error'],manualSwitch:true,synthetic:true});
+      checks.push({width,theme,helpChecks,ratio,palette,focus,states:['result','empty','error','comparison','capped'],table:{sourceOrder:true,separateCurrencies:true,escapedText:true,preparedChoiceOnly:true,dimensions},manualSwitch:true,synthetic:true});
       console.log(`PASS PENTA DESIGN ${width} ${theme} contrast ${ratio.toFixed(2)}`);
       await context.close();
     }

@@ -4,6 +4,27 @@ Date: 2026-10-09. Packet **N2u: read-language qualification dependency**.
 Development route: **GPT-6.1 Sol High / Codex**, in the existing Mini project.
 Status: **BLOCKED real-read acceptance; precise engine handoff**.
 
+## Returned contract acknowledged — 2026-10-09 (N2w)
+
+Academy reviewed Mini's local `PENTA_RETURN_TO_ACADEMY_DESK.md`, frontend
+synchronization contract, usage-interface draft and N2u candidate decision.
+Return status is **CONTRACT READY / ENGINE BLOCKED**, not a fixed planner or
+permission to activate drafts. Mini HEAD remains `a50bbd3`; returned documents
+are local/uncommitted, not a published artifact manifest. Saved 86/94 and all
+eight semantic failures remain controlling; no unchanged inference rerun here.
+
+Academy continues bounded source-backed UI work under active host receipts and
+protocol 0.1. N2w adds a local generic Cards/Table renderer without host-domain,
+route or inference dependencies; it does not implement draft artifacts, usage
+metering, billing, memory or new tools. [N2w report](QA/REPORTS/PENTA_N2W_VERIFIED_RESULT_VIEWS.md)
+records synthetic browser/build checks, not model/SQL acceptance.
+
+Mini's separately scoped pinned Qwen3.5-4B trial is a proposal only: acquisition,
+runtime and training approval are missing, and observed free memory was below
+the proposed start guard. Academy downloaded/activated nothing and made no Mini
+edits. A qualified 94/94 plus strict safety/provenance return is still required
+before the existing linked SQL/security/15-turn browser and owner-view gate.
+
 ## 1. Ownership, branch and current integration
 
 Academy Desk is the lead product and owns the complete integrated frontend,
