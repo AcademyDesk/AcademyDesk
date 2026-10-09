@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { WorkspaceNav } from "@/components/workspace-nav";
 import {
   StandardDateField,
@@ -24,6 +24,17 @@ type Event = {
   notes?: string | null;
 };
 const eventTypes = ["Recital", "Workshop", "Exam", "Concert", "Masterclass"];
+async function fetchWorkspace(academyId: string) {
+  const [eventResponse, branchResponse] = await Promise.all([
+    academyApi(`/api/academies/${academyId}/events`),
+    academyApi(`/api/academies/${academyId}/branches`),
+  ]);
+  if (!eventResponse.ok || !branchResponse.ok) throw new Error();
+  return {
+    events: (await eventResponse.json()) as Event[],
+    branches: (await branchResponse.json()) as Branch[],
+  };
+}
 export default function EventsPage() {
   const [academy, setAcademy] = useState<Academy>();
   const [branches, setBranches] = useState<Branch[]>([]);
@@ -37,18 +48,8 @@ export default function EventsPage() {
   const [endTime, setEndTime] = useState("11:00");
   const [venue, setVenue] = useState("");
   const [message, setMessage] = useState("Loading events…");
-  async function load(id?: string) {
-    const academyId = id ?? academy?.id;
-    if (!academyId) return;
-    const [eventResponse, branchResponse] = await Promise.all([
-      academyApi(`/api/academies/${academyId}/events`),
-      academyApi(`/api/academies/${academyId}/branches`),
-    ]);
-    if (!eventResponse.ok || !branchResponse.ok) throw new Error();
-    setEvents(await eventResponse.json());
-    setBranches(await branchResponse.json());
-    setMessage("");
-  }
+  const [saving, setSaving] = useState(false);
+  const pending = useRef(false);
   useEffect(() => {
     void (async () => {
       try {
@@ -57,7 +58,10 @@ export default function EventsPage() {
         const academies: Academy[] = await response.json();
         if (!academies[0]) return setMessage("Create your academy first.");
         setAcademy(academies[0]);
-        await load(academies[0].id);
+        const workspace = await fetchWorkspace(academies[0].id);
+        setEvents(workspace.events);
+        setBranches(workspace.branches);
+        setMessage("");
       } catch {
         setMessage("Events could not be loaded.");
       }
@@ -65,29 +69,59 @@ export default function EventsPage() {
   }, []);
   async function create(event: FormEvent) {
     event.preventDefault();
+    if (pending.current) return;
     if (!academy || !startDate || !endDate)
       return setMessage("Enter a title, start, and end time.");
-    const response = await academyApi(`/api/academies/${academy.id}/events`, {
-      method: "POST",
-      headers: apiHeaders(true),
-      body: JSON.stringify({
-        title,
-        type,
-        branchId: branchId || null,
-        startUtc: new Date(`${startDate}T${startTime}:00`).toISOString(),
-        endUtc: new Date(`${endDate}T${endTime}:00`).toISOString(),
-        venue: venue || null,
-        capacity: null,
-        notes: null,
-      }),
-    });
-    if (!response.ok)
-      return setMessage("Enter a title and valid start/end times.");
-    setTitle("");
-    setStartDate("");
-    setEndDate("");
-    setVenue("");
-    await load();
+    pending.current = true;
+    setSaving(true);
+    setMessage("");
+    try {
+      const response = await academyApi(`/api/academies/${academy.id}/events`, {
+        method: "POST",
+        headers: apiHeaders(true),
+        body: JSON.stringify({
+          title,
+          type,
+          branchId: branchId || null,
+          startUtc: new Date(`${startDate}T${startTime}:00`).toISOString(),
+          endUtc: new Date(`${endDate}T${endTime}:00`).toISOString(),
+          venue: venue || null,
+          capacity: null,
+          notes: null,
+        }),
+      });
+      if (!response.ok) {
+        let detail = "Enter a title and valid start/end times.";
+        try {
+          const body = await response.json();
+          if (typeof body?.message === "string" && body.message.trim()) {
+            detail = body.message.trim();
+          }
+        } catch {
+          // Rejections can have empty or non-JSON bodies.
+        }
+        return setMessage(response.status >= 500
+          ? `Event save could not be confirmed. Check upcoming events before retrying. ${detail}`
+          : detail);
+      }
+      setTitle("");
+      setStartDate("");
+      setEndDate("");
+      setVenue("");
+      try {
+        const workspace = await fetchWorkspace(academy.id);
+        setEvents(workspace.events);
+        setBranches(workspace.branches);
+        setMessage("Event planned.");
+      } catch {
+        setMessage("Event planned. Upcoming events could not be refreshed; do not repeat the save. Refresh the page to check the saved event.");
+      }
+    } catch {
+      setMessage("Event save could not be confirmed. Check upcoming events before retrying.");
+    } finally {
+      pending.current = false;
+      setSaving(false);
+    }
   }
   return (
     <main className="enterprise-settings events-standard min-h-screen">
@@ -105,7 +139,7 @@ export default function EventsPage() {
           </div>
         </header>
         {message && (
-          <p className="enterprise-page-state events-message">{message}</p>
+          <p className="enterprise-page-state events-message" role="status" aria-live="polite">{message}</p>
         )}
         <section className="events-layout">
           <form onSubmit={create} className="events-panel">
@@ -120,6 +154,7 @@ export default function EventsPage() {
                 <span>Event title</span>
                 <input
                   value={title}
+                  disabled={saving}
                   onChange={(event) => setTitle(event.target.value)}
                   placeholder="Event title"
                   required
@@ -127,6 +162,7 @@ export default function EventsPage() {
               </label>
               <StandardSelectField
                 name="event-type"
+                disabled={saving}
                 value={type}
                 onChange={setType}
                 placeholder="Event type"
@@ -134,6 +170,7 @@ export default function EventsPage() {
               />
               <StandardSelectField
                 name="branch"
+                disabled={saving}
                 value={branchId}
                 onChange={setBranchId}
                 placeholder="No branch"
@@ -142,7 +179,7 @@ export default function EventsPage() {
                   label: branch.name,
                 }))}
               />
-              <div className="events-date-time">
+              <fieldset className="events-date-time m-0 min-w-0 border-0 p-0" disabled={saving}>
                 <StandardDateField
                   name="start-date"
                   label="Start date"
@@ -156,8 +193,8 @@ export default function EventsPage() {
                   value={startTime}
                   onChange={setStartTime}
                 />
-              </div>
-              <div className="events-date-time">
+              </fieldset>
+              <fieldset className="events-date-time m-0 min-w-0 border-0 p-0" disabled={saving}>
                 <StandardDateField
                   name="end-date"
                   label="End date"
@@ -171,17 +208,18 @@ export default function EventsPage() {
                   value={endTime}
                   onChange={setEndTime}
                 />
-              </div>
+              </fieldset>
               <label>
                 <span>Venue or meeting link</span>
                 <input
                   value={venue}
+                  disabled={saving}
                   onChange={(event) => setVenue(event.target.value)}
                   placeholder="Venue or meeting link"
                 />
               </label>
-              <button className="enterprise-action-button events-action">
-                Plan event
+              <button className="enterprise-action-button events-action" disabled={saving}>
+                {saving ? "Saving…" : "Plan event"}
               </button>
             </div>
           </form>

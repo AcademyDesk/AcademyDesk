@@ -35,6 +35,10 @@
 | Regression result | 209 current combined controlled frontend PASS; no new backend/SQL run; Course lint FAIL (1 error/1 warning after improvement), not all-form/critical acceptance |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
+## Events feedback checkpoint — 2026-10-10
+
+[Report](../REPORTS/PHASE_2B_EVENTS_FEEDBACK_REPAIR.md): durable create/save-readback-failure notice, retained rejected/unconfirmed inputs, shared synchronous write/readback guard and pure mount loader. Frozen15 baseline2 PASS/13 FAIL; final15 controlled +16 synthetic browser PASS, lint0/0, TypeScript/83-page export PASS. Existing payload/default/null/access/time conversion retained; timezone caveat recorded. No fresh linked SQL/device/critical acceptance; issue remains OPEN. Next Communication Settings gap check, reuse existing guards.
+
 ## Holidays feedback checkpoint — 2026-10-09
 
 [Report](../REPORTS/PHASE_2B_HOLIDAYS_FEEDBACK_REPAIR.md): create/default-add/remove

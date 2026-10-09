@@ -2,6 +2,10 @@
 
 ## Current state
 
+## Events success feedback — 2026-10-10 (BUG-FUNC-0003)
+
+[Report](QA/REPORTS/PHASE_2B_EVENTS_FEEDBACK_REPAIR.md): durable create confirmation, saved/readback-failure guidance, retained rejected/unconfirmed inputs and synchronous pending write/readback guard. Pure workspace fetch/scoped mount clears loader dependency without suppression. Frozen15 baseline2 PASS/13 FAIL; final15 controlled +16 exported-browser synthetic width/theme/fault cases PASS, lint0/0, TypeScript/83-page export PASS. Payload/default/null/reset/access and existing local-time conversion unchanged; timezone policy caveat recorded, no new status UI/backend/SQL/device acceptance. Starting6ca567d, codex/penta-search; scoped publication only, main/Mini/Azure/unrelated work/evidence preserved. BUG-FUNC-0003/release OPEN, Mini saved86/94 CONTRACT READY / ENGINE BLOCKED and qualification handoff unchanged. NEXT Sol Medium: Communication Settings gap check, reuse existing repair; Sol High for domain/credentials/access/persistence.
+
 ## Holidays success feedback — 2026-10-09 (BUG-FUNC-0003)
 
 [Report](QA/REPORTS/PHASE_2B_HOLIDAYS_FEEDBACK_REPAIR.md): durable create/default-add/remove notices, confirmed-save/failed-refresh guidance, retained rejected/uncertain form and shared pending write/readback protection. Scoped pure fetch clears inherited dependency warning; initial non-OK academy response rejected. Frozen22 baseline1 PASS/21 FAIL; final22 controlled +16 exported-browser synthetic viewport/theme/fault cases PASS, lint0/0, TypeScript/83-page export PASS. Existing dates/form defaults/India2026 endpoint/removal/authority unchanged; blocked browser fixture corrected to include existing Certificates module, failures preserved. No new live SQL/device/enterprise acceptance. Startingd226715, codex/penta-search; scoped publication only, main/Mini/Azure/unrelated work/evidence preserved. NEXT Sol Medium: Events feedback gaps; Sol High if domain/access/persistence changes. BUG-FUNC-0003/release OPEN; Mini saved86/94 CONTRACT READY / ENGINE BLOCKED and handoff unchanged.
