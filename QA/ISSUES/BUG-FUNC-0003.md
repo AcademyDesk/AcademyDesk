@@ -35,6 +35,15 @@
 | Regression result | 209 current combined controlled frontend PASS; no new backend/SQL run; Course lint FAIL (1 error/1 warning after improvement), not all-form/critical acceptance |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
+## Make-up effect-lint checkpoint — 2026-10-09
+
+[Report](../REPORTS/PHASE_2B_MAKEUP_EFFECT_LINT.md): inherited dependency warning
+cleared; final0 errors/0 warnings with no suppression. All31 retained plus2
+lifecycle controls33/33 PASS before/after;16 synthetic exported-browser cases,
+TypeScript/83-page export PASS. No draft/notice-triggered reload or automatic retry,
+business/API/location/authority change or fresh SQL/device acceptance. Issue OPEN
+for remaining forms and linked/device/critical gates. Next Leave feedback gaps.
+
 ## Make-up feedback checkpoint — 2026-10-09
 
 [Repair](../REPORTS/PHASE_2B_MAKEUP_FEEDBACK_REPAIR.md): frozen actual-handler

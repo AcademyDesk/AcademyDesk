@@ -11,6 +11,12 @@ type Makeup = { id: string; studentId: string; batchId: string; startUtc: string
 const toUtc = (value: string) => new Date(`${value.length === 16 ? `${value}:00` : value}+05:30`).toISOString();
 const dateTime = (value: string) => new Intl.DateTimeFormat("en-IN", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Kolkata" }).format(new Date(value));
 
+async function fetchWorkspace(academyId: string): Promise<{ students: Person[]; batches: Person[]; teachers: Person[]; makeups: Makeup[] }> {
+  const responses = await Promise.all(["students", "batches", "teachers", "makeup-classes"].map((path) => academyApi(`/api/academies/${academyId}/${path}`, { cache: "no-store" })));
+  if (responses.some((response) => !response.ok)) throw new Error();
+  return { students: await responses[0].json(), batches: await responses[1].json(), teachers: await responses[2].json(), makeups: await responses[3].json() };
+}
+
 export default function MakeupPage() {
   const [academy, setAcademy] = useState<Academy>();
   const [students, setStudents] = useState<Person[]>([]); const [batches, setBatches] = useState<Person[]>([]); const [teachers, setTeachers] = useState<Person[]>([]); const [makeups, setMakeups] = useState<Makeup[]>([]);
@@ -19,8 +25,26 @@ export default function MakeupPage() {
   const name = (items: Person[], id?: string) => { const item = items.find((row) => row.id === id); return item?.name ?? (`${item?.firstName ?? ""} ${item?.lastName ?? ""}`.trim() || "Unknown"); };
   const setDate = (date: string) => setStart(date ? `${date}T${start.slice(11) || "09:00"}` : "");
 
-  async function load(id?: string) { const academyId = id ?? academy?.id; if (!academyId) return; const responses = await Promise.all(["students", "batches", "teachers", "makeup-classes"].map((path) => academyApi(`/api/academies/${academyId}/${path}`, { cache: "no-store" }))); if (responses.some((response) => !response.ok)) throw new Error(); setStudents(await responses[0].json()); setBatches(await responses[1].json()); setTeachers(await responses[2].json()); setMakeups(await responses[3].json()); }
-  useEffect(() => { void (async () => { try { const response = await academyApi("/api/academies", { cache: "no-store" }); const academies: Academy[] = await response.json(); if (!response.ok || !academies[0]) throw new Error(); setAcademy(academies[0]); await load(academies[0].id); setMessage(""); } catch { setMessage("Make-up classes could not be loaded."); } })(); }, []);
+  async function load() {
+    if (!academy) return;
+    const data = await fetchWorkspace(academy.id);
+    setStudents(data.students); setBatches(data.batches); setTeachers(data.teachers); setMakeups(data.makeups);
+  }
+
+  useEffect(() => {
+    async function initialise() {
+      try {
+        const response = await academyApi("/api/academies", { cache: "no-store" });
+        const academies: Academy[] = await response.json();
+        if (!response.ok || !academies[0]) throw new Error();
+        setAcademy(academies[0]);
+        const data = await fetchWorkspace(academies[0].id);
+        setStudents(data.students); setBatches(data.batches); setTeachers(data.teachers); setMakeups(data.makeups);
+        setMessage("");
+      } catch { setMessage("Make-up classes could not be loaded."); }
+    }
+    void initialise();
+  }, []);
 
   async function refreshAfterSave(success: string) {
     setMessage(success);

@@ -2,6 +2,10 @@
 
 ## Current state
 
+## Make-up effect lint — 2026-10-09
+
+[Report](QA/REPORTS/PHASE_2B_MAKEUP_EFFECT_LINT.md): pure workspace fetch shared by scoped mount effect and save readback clears inherited dependency warning without suppression/reload loop. All31 retained +2 lifecycle controls33/33 PASS before/after;16 existing synthetic exported-browser cases, TypeScript/83-page export PASS, final lint0 errors/0 warnings. No API/domain/location/timezone/default/permission/visual change or fresh SQL/Identity/device acceptance. BUG-FUNC-0003 and enterprise/release gates OPEN. Starting6fba640, codex/penta-search; scoped publication only, main/Mini/Azure/unrelated work/evidence preserved. NEXT Sol Medium: existing Leave-request feedback gaps; Sol High if domain/access/persistence changes. Mini saved86/94 CONTRACT READY / ENGINE BLOCKED and qualification handoff unchanged.
+
 ## Make-up success feedback — 2026-10-09 (BUG-FUNC-0003)
 
 [Report](QA/REPORTS/PHASE_2B_MAKEUP_FEEDBACK_REPAIR.md): retained prior delivery/location repair; fixed erased scheduling success, missing status confirmation, committed-save/readback-failure guidance and unhandled status faults. Shared synchronous pending guard covers create/status/readback, inputs disabled, rejected/uncertain drafts retained; no automatic retry. Frozen20-case baseline5 PASS/15 FAIL; final20 new +11 retained location checks31/31 and16 exported-DOM synthetic API viewport/theme/fault cases PASS, TypeScript/83-page export PASS. Lint zero errors/one inherited dependency warning, unchanged from HEAD, remains OPEN. No backend/domain/location/default/authority change or new live SQL/Identity/device acceptance. BUG-FUNC-0003/enterprise/release gates OPEN. Starting22cb2bd, codex/penta-search; scoped publication only, unrelated Mini/evidence/main/Azure unchanged. NEXT Sol Medium: bounded Make-up mount-effect lint cleanup with these guards, then existing Leave feedback gaps; Sol High if domain/access/persistence changes. Mini saved86/94 CONTRACT READY / ENGINE BLOCKED and qualification handoff unchanged.

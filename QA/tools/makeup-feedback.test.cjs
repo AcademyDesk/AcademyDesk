@@ -71,3 +71,18 @@ test('Status-first guard blocks duplicate/opposing status and create requests',a
 test('Online rejected scheduling keeps its link and manual mode',async()=>{
  const p=await page({status:400});p.control('delivery-mode').props.onChange('Online');p.input('Meeting link').props.onChange({target:{value:'https://meeting.example.invalid/draft'}});await p.submit();assert.equal(p.state.get(12),'https://meeting.example.invalid/draft');assert.equal(p.state.get(8),'Manual');assert.equal(p.writes().length,1);
 });
+
+test('Drafts, notices and mode switches never restart the mount loader',async()=>{
+ const p=await page();assert.equal(p.calls.length,5);
+ p.control('delivery-mode').props.onChange('Hybrid');p.control('scheduling-mode').props.onChange('NextScheduled');await p.settle();
+ assert.equal(p.calls.length,5);await p.submit();await p.settle();
+ assert.equal(p.calls.length,10);assert.equal(p.writes().length,1);assert.equal(p.state.get(13),'Make-up class scheduled.');
+ await p.status('Completed');await p.settle();assert.equal(p.calls.length,15);assert.equal(p.writes().length,2);
+ assert.equal(p.state.get(13),'Make-up status updated to Completed.');p.render();await p.settle();assert.equal(p.calls.length,15);
+});
+
+test('Uncertain write keeps the draft without automatic reload or retry',async()=>{
+ const p=await page({status:503,committed:true});assert.equal(p.calls.length,5);await p.submit();await p.settle();
+ assert.equal(p.calls.length,6);assert.equal(p.writes().length,1);assert.equal(p.input('Room or venue (optional)').props.value,'Draft room');
+ assert.match(p.state.get(13),/could not be confirmed/);p.render();await p.settle();assert.equal(p.calls.length,6);
+});
