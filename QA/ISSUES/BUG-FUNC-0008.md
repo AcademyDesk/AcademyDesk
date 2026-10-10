@@ -39,6 +39,8 @@
 
 ### Bounded repair checkpoint — 2026-10-10
 
+Successor [loading/feedback report](../REPORTS/PHASE_2B_SUBJECT_FEE_FEEDBACK_REPAIR.md): target lint now0/0;17 handler/72 synthetic feedback cases and unchanged88 decimal checks PASS. Minimum1/step0.01/payload/backend retained; live SQL/role/device/critical acceptance still OPEN. Earlier decimal-only lint result below remains historical evidence.
+
 [Report](../REPORTS/PHASE_2B_SUBJECT_FEE_DECIMAL_REPAIR.md): pre-fix native browser reproduction72 checks; fixed shared step0.01,88 synthetic responsive browser checks PASS on both consuming routes. Existing minimum1/payload/backend policy retained. TypeScript/export83 PASS. Target lint still fails with the same pre-existing effect error/dependency warning before and after; not suppressed. Live SQL/HTTP/role/device/critical acceptance remains NOT RUN; **OPEN**. Historical table/source snapshot above describes discovery, not current repair state.
 
 Enter a valid subject, Monthly frequency and amount 1250.50, then submit via browser. Compare 1250 and an API request for 1250.50; inspect input stepMismatch and whether POST is dispatched.

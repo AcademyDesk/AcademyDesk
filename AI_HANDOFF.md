@@ -2,6 +2,10 @@
 
 ## Current state
 
+## Shared subject-fee loading/save feedback — 2026-10-10
+
+[Report](QA/REPORTS/PHASE_2B_SUBJECT_FEE_FEEDBACK_REPAIR.md): checked uncached initial list, durable polite confirmed/denied/uncertain/readback feedback, failed draft retention, synchronous duplicate guard through readback and matching-only reset. Fresh keyed student editor ignores late unmounted responses; no backend/payload/minimum/precision/domain change.17 actual TSX/72 synthetic browser/retained88 decimal checks PASS; lint0/0 removes prior effect error/warning without suppression, types/export83 PASS. BUG-FUNC-0003/0008 and live SQL/role/device/critical acceptance OPEN; original28-route count retained. NEXT Sol Medium Student Fee Details admission-fee save-feedback gap; High for authority/domain/finance/release decisions. Mini/FW1/enterprise gates remain pending; no project switch/main/Azure. Unrelated32/28 continuity/evidence preserved; maintain/display [checklist](ACADEMY_PROGRESS_CHECKLIST.md).
+
 ## Shared subject-fee decimal repair — 2026-10-10
 
 [Report](QA/REPORTS/PHASE_2B_SUBJECT_FEE_DECIMAL_REPAIR.md): one step0.01 attribute, minimum1 and existing API/payload retained;72 pre-fix native browser checks reproduced defect,88 fixed synthetic responsive checks PASS on student-fees/student-profile. TypeScript/export83 PASS; target lint NOT PASS, same existing load-effect error/dependency warning before/after, no suppression. BUG-FUNC-0008 OPEN for real SQL/HTTP/role/device/critical acceptance; no backend/finance-policy changes. NEXT Sol Medium shared fee loading/feedback lint gap; High for authority/domain decisions. Earlier enterprise/PENTA checkpoints retained; shared FW1/Mini/release remain OPEN. Unrelated32/28 continuity/evidence preserved; no main/Azure/project switch; maintain/display [checklist](ACADEMY_PROGRESS_CHECKLIST.md).
