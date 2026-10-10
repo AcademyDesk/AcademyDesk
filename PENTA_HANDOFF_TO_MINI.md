@@ -4,6 +4,36 @@ Date: 2026-10-09. Packet **N2u: read-language qualification dependency**.
 Development route: **GPT-6.1 Sol High / Codex**, in the existing Mini project.
 Status: **BLOCKED real-read acceptance; precise engine handoff**.
 
+## Permanent independent host enforcement — 2026-10-10
+
+The owner's non-negotiable security directive now lives in Academy's
+[host policy](PENTA_HOST_SECURITY_POLICY.md), policy ID `academy-host-security/1.0`.
+It applies independently of Mini/Plus/Pro/Ultra. Core may reject unsafe plans,
+but Academy still resolves the authenticated actor/current tenant, validates
+allowed tools, reauthorizes, requires any domain approval, invokes existing
+services and records required audit. No role/tenant/memory/model-tier assertion
+can authorize an operation. Customer connector hosts need the same independence.
+
+This policy adds no wire change: Tool Protocol 0.1 and the two read tools remain
+unchanged. No genuine breaking Core change was identified in this slice. Future
+policy/tool/learning/approval changes require the established versioned paired
+handoff; do not silently activate drafts or new tools. Feedback/memory may not
+override host policy, finance, permissions, approvals or security configuration.
+
+Academy's [report](QA/REPORTS/PENTA_HOST_SECURITY_ENFORCEMENT.md) records 32 passing
+hostile-planner controls through real disposable SQL/Identity/HTTP, 78 targeted
+backend tests and 16 synthetic frontend recovery cases. These do not qualify
+actual Mini reasoning or Plus/Pro/Ultra engines. Existing 86/94 semantic failure,
+qualified-candidate return and linked security/browser/release gates stay OPEN.
+No Mini source/runtime/model changes or automatic cross-project messages here.
+
+Read-only synchronization observed Mini now at `e2f89dc7fcbdaa087d19f193ef90763009065e7e`
+after independent model-library/provisional-tier registry commits. Its new
+`docs/PENTA_FOUR_TIER_HANDOFF.md` explicitly retains protocol0.1, the same tools,
+unchanged authority and 86/94 NOT ACCEPTED. No enabled tier picker or new catalog
+is authorized by metadata. Historical Mini HEADs below are earlier observations,
+not a claim this task froze another project's branch. Academy changed no Mini file.
+
 ## Returned contract acknowledged — 2026-10-09 (N2w)
 
 Academy reviewed Mini's local `PENTA_RETURN_TO_ACADEMY_DESK.md`, frontend

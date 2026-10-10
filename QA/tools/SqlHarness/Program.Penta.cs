@@ -493,6 +493,8 @@ internal static partial class SqlHarnessEntryPoint
             tokenA, tokenC, tokenB, teacher, platform);
         await VerifyPentaConversationsAsync(manifest, academyA, academyB,
             tokenA, tokenC, tokenB, teacher, platform);
+        if (Environment.GetEnvironmentVariable("QA_PENTA_HOST_SECURITY") == "1")
+            await VerifyPentaHostSecurityAsync(manifest, academyA, academyB, tokenA, tokenC, tokenB, teacher);
         if (Environment.GetEnvironmentVariable("QA_PENTA_MINI") == "1")
             await VerifyPentaMiniAsync(manifest, academyA, academyB, tokenA, tokenC, tokenB, teacher);
         Console.WriteLine("PENTA PASS: real Identity/SQL, single dispatch/restart, concurrent tenant/user quota, scoped approval FK, known usage and unknown-outcome retention.");

@@ -64,6 +64,7 @@ Framer work for the public marketing site stays logically separate from the secu
 
 ## Boundaries
 
+- PENTA security is independently enforced by Academy Desk, never by model promises, returned roles/tenant IDs, conversation memory or model tier. Follow `PENTA_HOST_SECURITY_POLICY.md` before changing PENTA tools, authorization, approvals, learning or action UI. Preserve its host-security regression and the existing RBAC/tenant/finance release gates. A new model or contract version does not authorize a new tool.
 - Do not reintroduce hard-coded credentials. Development seeder credentials were removed from current source, and local development values were rotated using secure local secrets.
 - Do not deploy to Azure unless the task explicitly instructs deployment and the pre-Azure quality gate in `ENTERPRISE_TESTING_ROADMAP.md` is satisfied.
 - Do not delete or replace useful QA work because GitHub governance now exists. `QA/EVIDENCE` remains primarily local and is intentionally not broadly committed.
