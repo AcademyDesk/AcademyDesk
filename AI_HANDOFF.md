@@ -2,6 +2,10 @@
 
 ## Current state
 
+## Assignments success feedback — 2026-10-10
+
+[Report](QA/REPORTS/PHASE_2B_ASSIGNMENTS_FEEDBACK_REPAIR.md): durable create/readback-failure notices, retained rejected/unconfirmed draft and synchronous write/readback duplicate guard. Scoped mount/pure workspace fetch, exact payload/defaults/optional nulls/local-time conversion and selected batch/type/publication settings preserved. Frozen15 baseline2 PASS/13 FAIL; final15 controlled +16 synthetic exported-browser cases PASS, lint0/0, TypeScript/83-page export PASS. No fresh SQL/auth/device or enterprise acceptance; BUG-FUNC-0003/release OPEN, main/Mini/Azure/unrelated/evidence preserved. Starting3c24ea2, scoped feature publication only; Mini86/94 blocked/handoff unchanged. NEXT Sol Medium: Lesson Plans feedback gap check; Sol High for authority/domain/persistence.
+
 ## Communication Preferences success feedback — 2026-10-10
 
 [Report](QA/REPORTS/PHASE_2B_PREFERENCES_FEEDBACK_REPAIR.md): durable save/readback-failure notices, retained rejected/unconfirmed consent draft and synchronous write/readback guard. Narrow fetch/scoped mount and event-based contact hydration clear inherited1 lint error/1 warning without suppression; stable notes name. Original10 assertions +18 new28 controls, frozen baseline12 PASS/16 FAIL; final28 +32 synthetic exported-browser cases PASS, lint0/0, TypeScript/83-page export PASS. Existing narrow lookup/type/default/optional-notes/full consent payload/access unchanged; historical74 HTTP-SQL/609 backend not rerun. Hidden-input browser harness wait failure retained/corrected, no new auth/SQL/device/send acceptance. Starting5935e18, scoped feature publication only; BUG-FUNC-0003/BUG-FUNC-0028/release OPEN, main/Mini/Azure/unrelated/evidence preserved; Mini86/94 blocked/handoff unchanged. NEXT Sol Medium: Assignments feedback; Sol High for authority/domain/persistence.

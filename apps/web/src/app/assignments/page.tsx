@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { WorkspaceNav } from "@/components/workspace-nav";
 import { academyApi, apiHeaders } from "@/lib/api";
 
@@ -8,6 +8,14 @@ type Academy = { id: string };
 type Batch = { id: string; name: string };
 type Assignment = { id: string; batchId: string; title: string; description?: string | null; dueAtUtc?: string | null; type: string; isPublished: boolean };
 
+async function fetchWorkspace(id: string) {
+  const [batchResponse, assignmentResponse] = await Promise.all([
+    academyApi(`/api/academies/${id}/batches`, { cache: "no-store" }),
+    academyApi(`/api/academies/${id}/assignments`, { cache: "no-store" }),
+  ]);
+  if (!batchResponse.ok || !assignmentResponse.ok) throw new Error();
+  return { batches: (await batchResponse.json()) as Batch[], assignments: (await assignmentResponse.json()) as Assignment[] };
+}
 export default function AssignmentsPage() {
   const [academy, setAcademy] = useState<Academy>();
   const [batches, setBatches] = useState<Batch[]>([]);
@@ -20,10 +28,69 @@ export default function AssignmentsPage() {
   const [published, setPublished] = useState(true);
   const [message, setMessage] = useState("Loading assignments…");
 
-  async function load(academyId?: string) { const id = academyId ?? academy?.id; if (!id) return; const [batchResponse, assignmentResponse] = await Promise.all([academyApi(`/api/academies/${id}/batches`, { cache: "no-store" }), academyApi(`/api/academies/${id}/assignments`, { cache: "no-store" })]); if (!batchResponse.ok || !assignmentResponse.ok) throw new Error(); const batchData: Batch[] = await batchResponse.json(); setBatches(batchData); setAssignments(await assignmentResponse.json()); if (!batchId && batchData.length) setBatchId(batchData[0].id); setMessage(""); }
-  useEffect(() => { async function initialise() { try { const response = await academyApi("/api/academies", { cache: "no-store" }); if (response.status === 401) return setMessage("Please sign in before managing assignments."); if (!response.ok) throw new Error(); const academies: Academy[] = await response.json(); if (!academies[0]) return setMessage("Create an academy and batch first."); setAcademy(academies[0]); await load(academies[0].id); } catch { setMessage("Assignments could not be loaded. Confirm the API is running on port 5092."); } } void initialise(); }, []);
-  async function createAssignment(event: FormEvent<HTMLFormElement>) { event.preventDefault(); if (!academy || !batchId) return; const response = await academyApi(`/api/academies/${academy.id}/assignments`, { method: "POST", headers: apiHeaders(true), body: JSON.stringify({ batchId, title, description: description || null, dueAtUtc: dueAt ? new Date(dueAt).toISOString() : null, type, isPublished: published }) }); if (!response.ok) return setMessage("The assignment could not be saved."); setTitle(""); setDescription(""); setDueAt(""); setMessage(""); await load(); }
+  const [saving, setSaving] = useState(false);
+  const pending = useRef(false);
+  useEffect(() => {
+    async function initialise() {
+      try {
+        const response = await academyApi("/api/academies", { cache: "no-store" });
+        if (response.status === 401) return setMessage("Please sign in before managing assignments.");
+        if (!response.ok) throw new Error();
+        const academies: Academy[] = await response.json();
+        if (!academies[0]) return setMessage("Create an academy and batch first.");
+        setAcademy(academies[0]);
+        const workspace = await fetchWorkspace(academies[0].id);
+        setBatches(workspace.batches);
+        setAssignments(workspace.assignments);
+        setBatchId((current) => current || workspace.batches[0]?.id || "");
+        setMessage("");
+      } catch {
+        setMessage("Assignments could not be loaded. Confirm the API is running on port 5092.");
+      }
+    }
+    void initialise();
+  }, []);
+  async function createAssignment(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (pending.current || !academy || !batchId) return;
+    pending.current = true;
+    setSaving(true);
+    setMessage("");
+    try {
+      const response = await academyApi(`/api/academies/${academy.id}/assignments`, {
+        method: "POST", headers: apiHeaders(true),
+        body: JSON.stringify({ batchId, title, description: description || null, dueAtUtc: dueAt ? new Date(dueAt).toISOString() : null, type, isPublished: published }),
+      });
+      if (!response.ok) {
+        let detail = "The assignment could not be saved.";
+        try {
+          const result = await response.json();
+          if (typeof result?.message === "string" && result.message.trim()) detail = result.message.trim();
+        } catch { /* Empty or non-JSON rejection retains the fallback. */ }
+        return setMessage(response.status >= 500
+          ? `Assignment save could not be confirmed. Check the assignment list before retrying. ${detail}`
+          : detail);
+      }
+      setTitle("");
+      setDescription("");
+      setDueAt("");
+      try {
+        const workspace = await fetchWorkspace(academy.id);
+        setBatches(workspace.batches);
+        setAssignments(workspace.assignments);
+        setBatchId((current) => current || workspace.batches[0]?.id || "");
+        setMessage("Assignment created.");
+      } catch {
+        setMessage("Assignment created. The assignment list could not be refreshed; do not repeat the save. Refresh the page to check the saved assignment.");
+      }
+    } catch {
+      setMessage("Assignment save could not be confirmed. Check the assignment list before retrying.");
+    } finally {
+      pending.current = false;
+      setSaving(false);
+    }
+  }
   const batchName = (id: string) => batches.find((batch) => batch.id === id)?.name ?? "Unknown batch";
   const date = (value?: string | null) => value ? new Intl.DateTimeFormat("en-IN", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value)) : "No due date";
-  return <main className="enterprise-settings enterprise-legacy-standard min-h-screen bg-slate-950 text-slate-100"><WorkspaceNav /><div className="mx-auto max-w-6xl px-6 py-10"><p className="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-300">Learning</p><h1 className="mt-3 text-4xl font-semibold tracking-tight">Homework assigned &amp; progress</h1><p className="mt-3 text-slate-300">Create homework, practice tasks, theory work, or coaching assignments for each batch.</p>{message && <p className="mt-6 rounded-lg border border-amber-700/50 bg-amber-950/40 p-4 text-sm text-amber-100">{message}</p>}<section className="mt-8 grid gap-6 lg:grid-cols-[0.85fr_1.15fr]"><form onSubmit={createAssignment} className="rounded-2xl border border-slate-800 bg-slate-900 p-6"><h2 className="text-xl font-semibold">Create assignment</h2><select value={batchId} onChange={(event) => setBatchId(event.target.value)} className="mt-5 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" required><option value="">Select batch</option>{batches.map((batch) => <option key={batch.id} value={batch.id}>{batch.name}</option>)}</select><input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Assignment title" className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" required /><textarea value={description} onChange={(event) => setDescription(event.target.value)} placeholder="Instructions or practice notes (optional)" className="mt-3 min-h-28 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" /><div className="mt-3 grid gap-3 sm:grid-cols-2"><select value={type} onChange={(event) => setType(event.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"><option>Homework</option><option>Practice</option><option>Theory</option><option>Project</option></select><input type="datetime-local" value={dueAt} onChange={(event) => setDueAt(event.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" /></div><label className="mt-4 flex items-center gap-2 text-sm text-slate-300"><input type="checkbox" checked={published} onChange={(event) => setPublished(event.target.checked)} /> Publish for students</label><button disabled={!academy || !batchId} className="mt-5 w-full rounded-lg bg-cyan-400 px-4 py-2.5 font-semibold text-slate-950 hover:bg-cyan-300 disabled:opacity-60">Create assignment</button></form><section className="rounded-2xl border border-slate-800 bg-slate-900 p-6"><h2 className="text-xl font-semibold">Assignments</h2>{assignments.length === 0 ? <p className="mt-6 text-slate-400">No assignments yet.</p> : <ul className="mt-5 space-y-3">{assignments.map((assignment) => <li key={assignment.id} className="rounded-lg border border-slate-700 bg-slate-950 p-4"><div className="flex justify-between gap-3"><div><div className="font-medium">{assignment.title}</div><div className="mt-1 text-sm text-cyan-200">{batchName(assignment.batchId)} · {assignment.type}</div></div><span className="text-sm text-slate-400">{assignment.isPublished ? "Published" : "Draft"}</span></div>{assignment.description && <p className="mt-2 text-sm text-slate-300">{assignment.description}</p>}<div className="mt-2 text-sm text-slate-400">Due: {date(assignment.dueAtUtc)}</div></li>)}</ul>}</section></section></div></main>;
+  return <main className="enterprise-settings enterprise-legacy-standard min-h-screen bg-slate-950 text-slate-100"><WorkspaceNav /><div className="mx-auto max-w-6xl px-6 py-10"><p className="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-300">Learning</p><h1 className="mt-3 text-4xl font-semibold tracking-tight">Homework assigned &amp; progress</h1><p className="mt-3 text-slate-300">Create homework, practice tasks, theory work, or coaching assignments for each batch.</p>{message && <p role="status" aria-live="polite" className="mt-6 rounded-lg border border-amber-700/50 bg-amber-950/40 p-4 text-sm text-amber-100">{message}</p>}<section className="mt-8 grid gap-6 lg:grid-cols-[0.85fr_1.15fr]"><form onSubmit={createAssignment} className="rounded-2xl border border-slate-800 bg-slate-900 p-6"><h2 className="text-xl font-semibold">Create assignment</h2><fieldset className="m-0 min-w-0 border-0 p-0" disabled={saving}><select value={batchId} onChange={(event) => setBatchId(event.target.value)} className="mt-5 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" required><option value="">Select batch</option>{batches.map((batch) => <option key={batch.id} value={batch.id}>{batch.name}</option>)}</select><input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Assignment title" className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" required /><textarea value={description} onChange={(event) => setDescription(event.target.value)} placeholder="Instructions or practice notes (optional)" className="mt-3 min-h-28 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" /><div className="mt-3 grid gap-3 sm:grid-cols-2"><select value={type} onChange={(event) => setType(event.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"><option>Homework</option><option>Practice</option><option>Theory</option><option>Project</option></select><input type="datetime-local" value={dueAt} onChange={(event) => setDueAt(event.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" /></div><label className="mt-4 flex items-center gap-2 text-sm text-slate-300"><input type="checkbox" checked={published} onChange={(event) => setPublished(event.target.checked)} /> Publish for students</label><button disabled={saving || !academy || !batchId} className="mt-5 w-full rounded-lg bg-cyan-400 px-4 py-2.5 font-semibold text-slate-950 hover:bg-cyan-300 disabled:opacity-60">{saving ? "Saving…" : "Create assignment"}</button></fieldset></form><section className="rounded-2xl border border-slate-800 bg-slate-900 p-6"><h2 className="text-xl font-semibold">Assignments</h2>{assignments.length === 0 ? <p className="mt-6 text-slate-400">No assignments yet.</p> : <ul className="mt-5 space-y-3">{assignments.map((assignment) => <li key={assignment.id} className="rounded-lg border border-slate-700 bg-slate-950 p-4"><div className="flex justify-between gap-3"><div><div className="font-medium">{assignment.title}</div><div className="mt-1 text-sm text-cyan-200">{batchName(assignment.batchId)} · {assignment.type}</div></div><span className="text-sm text-slate-400">{assignment.isPublished ? "Published" : "Draft"}</span></div>{assignment.description && <p className="mt-2 text-sm text-slate-300">{assignment.description}</p>}<div className="mt-2 text-sm text-slate-400">Due: {date(assignment.dueAtUtc)}</div></li>)}</ul>}</section></section></div></main>;
 }

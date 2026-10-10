@@ -35,6 +35,10 @@
 | Regression result | 209 current combined controlled frontend PASS; no new backend/SQL run; Course lint FAIL (1 error/1 warning after improvement), not all-form/critical acceptance |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
+## Assignments feedback checkpoint — 2026-10-10
+
+[Report](../REPORTS/PHASE_2B_ASSIGNMENTS_FEEDBACK_REPAIR.md): durable create/readback-failure distinction, retained rejected/unconfirmed draft and synchronous pending guard. Exact payload, optional nulls, batch/type/publication defaults and local-time conversion preserved; scoped mount/pure fetch. Frozen15 baseline2 PASS/13 FAIL; final15 controlled +16 synthetic browser PASS, lint0/0, TypeScript/83-page export PASS. No fresh live SQL/auth/device/critical acceptance; issue OPEN. Next Lesson Plans feedback gap check.
+
 ## Communication Preferences feedback checkpoint — 2026-10-10
 
 [Report](../REPORTS/PHASE_2B_PREFERENCES_FEEDBACK_REPAIR.md): durable save/readback-failure distinction, retained rejected/unconfirmed consent and synchronous pending guard. Narrow lookup/complete consent payload/default/access retained; mount/contact hydration lint errors repaired without suppression. Original10 +18 new controls28/28 and32 synthetic browser PASS; baseline12/28 PASS, lint0/0, TypeScript/83-page export PASS. No new live SQL/auth/device/consent-delivery or release acceptance. Issue and related BUG-FUNC-0028 OPEN; next Assignments feedback.
