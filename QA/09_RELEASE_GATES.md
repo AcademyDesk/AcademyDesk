@@ -42,3 +42,10 @@ blocking severity and next review. Separate DESIGNED, IMPLEMENTED, TESTED,
 SECURITY REVIEWED, LEGAL REVIEWED and PRODUCTION APPROVED. Drafts and voluntary
 standards must not masquerade as enacted universal requirements or certifications.
 No focused PASS overrides OPEN P0/critical P1, device, full-runtime or legal gates.
+
+Key-ring foundation [K1](REPORTS/PENTA_PROTECTED_KEY_RING.md) is opt-in and disabled,
+with 24 framework recovery/configuration tests and retained host SQL controls verified.
+It does not satisfy Azure's durable-key gate: reviewed namespace/key migration,
+private storage/certificate ACLs, actual container/replica login and receipt recovery,
+certificate/key rotation, expiry monitoring, backup restore and rollback are required
+before enabling it. Never silently invalidate existing protected state or erase keys.

@@ -47,7 +47,7 @@ Evidence IDs S1/S2/H1 below link to source/tests rather than an unexplained PASS
 | --- | --- | --- | --- |
 | REG001–002 now + future / review | India purposes; this map, release gates, pinned shared register | DESIGNED date/applicability process; primary checks above | Corrected rules, entity roles, scheduled source review / H+M / HIGH |
 | REG003 future + current SPDI/contract review | `Controllers/ComplianceController.cs`, `Domain/Entities/ConsentRecord.cs`, marketing preferences | S1: IMPLEMENTED generic consent/withdrawal, not purpose/versioned notice approval | Reviewed notices, basis and consent evidence by purpose; withdrawal propagation / A+H / HIGH before personal-data pilot |
-| REG004 future + current safeguards | Program.cs Identity; AcademyAccessFilter; PENTA policy/connector/orchestrator; private media | S1+H1: IMPLEMENTED/TARGETED TESTED current read boundary | Durable key management, deployed encryption/backup/network proof, mandatory privileged MFA / A+H / CRITICAL pre-Azure |
+| REG004 future + current safeguards | Program.cs Identity; AcademyAccessFilter; PENTA policy/connector/orchestrator; private media | S1+H1: IMPLEMENTED/TARGETED TESTED current read boundary; opt-in encrypted key-ring foundation [K1](../QA/REPORTS/PENTA_PROTECTED_KEY_RING.md) TESTED, disabled | Actual durable key provisioning/migration/rotation/restore, deployed encryption/network proof, mandatory privileged MFA / A+H / CRITICAL pre-Azure |
 | REG005 future DPDP | No verified personal-data-breach workflow | DESIGNED response requirements below, NOT IMPLEMENTED | Separate applicable DPDP notices/board deadlines; legal-approved templates and rehearsal / A+H / HIGH |
 | REG006 future children + current child safety | `Student.DateOfBirth`, `StudentGuardian` access flags, consent records | S1: IMPLEMENTED relationships/flags; no verified parental-consent/age assurance | Unknown DOB is not adult; authority verification, consent evidence, age transition, minimized minor-data purpose / A+H / CRITICAL before minor-data AI |
 | REG007 future + current contract/retention | Compliance create/withdraw; platform retention setting; PENTA24h expiry | S1: PARTIAL; expiry is not erasure | Rights case management, reviewed schedule/holds and deletion across copies/backups / A+M+H / HIGH |
@@ -146,9 +146,11 @@ location/transfer, versioned notice/consent, retention/hold and accountable owne
 ## Azure/configuration assessment — source only
 
 `Program.cs` uses ASP.NET Identity opaque bearer tokens (not JWT), current active-user
-and security-stamp checks, SQL and authorized routes. Custom durable DataProtection
-key-ring persistence and required privileged MFA were not found in this inspected
-configuration. Forwarded-header trust and rate-limiter ordering need a focused
+and security-stamp checks, SQL and authorized routes. The initial assessment found
+no custom durable DataProtection configuration. [K1](../QA/REPORTS/PENTA_PROTECTED_KEY_RING.md)
+now implements/tests opt-in certificate-encrypted persistence, disabled by default;
+actual provisioning, migration, rotation/restore and required privileged MFA remain
+unverified. Forwarded-header trust and rate-limiter ordering need a focused
 deployment-boundary assessment; their presence alone is not proof of effective limits.
 
 Private Blob code requires PublicAccess.None and production ManagedIdentityCredential.

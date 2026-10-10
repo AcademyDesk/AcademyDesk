@@ -16,6 +16,9 @@ var builder = WebApplication.CreateBuilder(args);
 var developmentSeedCredentials = builder.Environment.IsDevelopment()
     ? DevelopmentSeedCredentials.FromConfiguration(builder.Configuration)
     : null;
+// Opt-in key-ring validation precedes directory writes, migrations and bootstrap.
+// Existing local configuration is unchanged until explicitly provisioned/enabled.
+builder.Services.AddProtectedKeyRing(builder.Configuration, builder.Environment);
 var webRootPath = Path.Combine(builder.Environment.ContentRootPath, "wwwroot");
 // The isolated test host supplies its own web root. Do not create a directory
 // until that host has validated its final effective configuration.
