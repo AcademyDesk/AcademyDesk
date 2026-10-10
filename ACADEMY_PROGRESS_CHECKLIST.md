@@ -69,7 +69,7 @@ Scope: success/refresh/error/draft/pending feedback only. Existing payloads/doma
 - [x] [Report](QA/REPORTS/PHASE_2B_ASSESSMENT_CREATE_FEEDBACK_REPAIR.md), route reconciliation and scoped handoff prepared.
 - [ ] Real SQL/role/tenant, physical Android/iOS and full-workflow acceptance remain separate; BUG-FUNC-0003 OPEN.
 
-## Current batch — Enrollment lifecycle-reason workflow
+## Past batch — Enrollment lifecycle-reason workflow
 
 - [x] Inline review: select status, enter required reason for non-Active changes, Save or Cancel; selection alone sends no write.
 - [x] Reason/status draft retention on denied/uncertain responses; matching-only reset after confirmation; original creation/end-date semantics and server safeguard retained.
@@ -78,6 +78,15 @@ Scope: success/refresh/error/draft/pending feedback only. Existing payloads/doma
 - [x]28 real Identity/HTTP/disposable-SQL cases PASS,88/7 migrations, scoped persistence/readback/no-write controls; owned cleanup verified.
 - [x] [Report](QA/REPORTS/PHASE_2B_ENROLLMENT_LIFECYCLE_REASON_REPAIR.md), issue evidence and scoped handoff prepared.
 - [ ] Direct live browser-to-SQL, physical Android/iOS, stale-record/concurrent and full critical workflow acceptance; BUG-FUNC-0016 remains OPEN.
+
+## Current batch — Shared subject-fee decimal input
+
+- [x] Native browser reproduced fractional stepMismatch before source repair;72 baseline checks.
+- [x] One shared step0.01 attribute fixes both routes; existing minimum1 and backend/payload policy unchanged.
+- [x]88 synthetic browser checks PASS across both routes,320/1440px,light/dark; valid exact requests and invalid no-write behavior verified; two mobile screenshots inspected.
+- [x] TypeScript and83-page webpack export PASS; [report](QA/REPORTS/PHASE_2B_SUBJECT_FEE_DECIMAL_REPAIR.md) and OPEN issue updated.
+- [ ] Existing effect lint error/dependency warning remains unchanged; next bounded loading/feedback task, not a clean-lint claim.
+- [ ] Real SQL/HTTP/role/tenant, physical Android/iOS and critical regression acceptance; BUG-FUNC-0008 OPEN.
 
 ## Original feedback routes — bounded checkpoint list
 
@@ -120,7 +129,8 @@ Current bounded feedback count: **28/28 checkpointed**, after the Assessments cr
 - [x] Enrollments + Batch Promotions feedback — bounded checkpoints completed; broader lifecycle/workflow acceptance remains open.
 - [x] Assessments creation feedback — existing grade/result/option/roster repairs retained.
 - [x] Enrollment required lifecycle-reason UI/native SQL integration (BUG-FUNC-0016) — server safeguard intact; direct browser/device/critical gates remain OPEN.
-- [ ] **Next: shared subject-fee fractional-input gap (BUG-FUNC-0008)** — Sol Medium, retain existing minimum/decimal storage/domain policy; reproduce native validity before bounded repair.
+- [x] Shared subject-fee fractional-input repair (BUG-FUNC-0008) — bounded browser proof; broader issue acceptance OPEN.
+- [ ] **Next: shared fee editor loading/feedback lint gap** — Sol Medium, preserve domain/minimum/payload; pending/draft/error/readback proof before acceptance.
 - [ ] Shared PENTA/Manual visual foundation: consume versioned FW1 delivery when available, continue independent Manual controls without claiming the shared AI frontend is delivered.
 - [ ] FP1/FP2/FP3 explicit owner decisions and legacy disposition — pending, not inferred from “continue.”
 - [ ] Approved financial implementation — Sol High; accounting/tax/payroll review before applicable release. Policy-pending finance need not block safe feedback work.

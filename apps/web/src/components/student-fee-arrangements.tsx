@@ -97,6 +97,7 @@ export function StudentFeeArrangements({
           onChange={(event) => setAmount(event.target.value)}
           type="number"
           min="1"
+          step="0.01"
           placeholder="Amount"
           required
         />
