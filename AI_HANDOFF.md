@@ -2,6 +2,10 @@
 
 ## Current state
 
+## Academic Governance + Academic Periods feedback — 2026-10-10
+
+[Report](QA/REPORTS/PHASE_2B_GOVERNANCE_PERIODS_FEEDBACK_REPAIR.md): bounded create/prerequisite/status/year/term/close feedback repaired; captured native forms, matching-only reset, durable notices, separate confirmed-save/readback warning, uncertainty/draft retention, shared synchronous pending guard and checked initial loads. Exact payloads and existing prerequisite/year-closure authority unchanged; no API/domain/Mini changes.72 controlled PASS, starting commit7 PASS/65 FAIL, lint0/0, TypeScript/export83 PASS; responsive evidence recorded in report. Queue25/28 after this bounded checkpoint,3 remaining, not enterprise acceptance. NEXT Sol Medium Enrollments+Batch Promotions then Assessments creation. Financial proposals unapproved; FW1 prepared/not delivered; no project switch/main/Azure. Unrelated32/28 continuity and local evidence preserved. Maintain/display [progress checklist](ACADEMY_PROGRESS_CHECKLIST.md) each batch.
+
 ## Trial Bookings + Curriculum feedback and progress tracker — 2026-10-10
 
 [Report](QA/REPORTS/PHASE_2B_TRIAL_CURRICULUM_FEEDBACK_REPAIR.md): two bounded routes repaired; original feedback queue23/28 checkpoints,5 remaining. Durable create/status/publication notices, confirmed-write/failed-readback distinction, draft retention, synchronous pending guards and checked mount; exact payload/null/date-time/sequence0 semantics retained, no API/domain/RBAC/Mini changes.52 controlled/64 synthetic browser PASS, lint0/0, TypeScript/export83 PASS; two mobile screenshots inspected. Not real SQL/domain/auth/device/enterprise acceptance. [Progress checklist](ACADEMY_PROGRESS_CHECKLIST.md) is now required at each batch: update/display past completed, current tick marks, next tasks and evidence limits. FP1/FP2/FP3 remain proposed, no inferred approval. NEXT Sol Medium Academic Governance+Academic Periods feedback; High for real authority/domain/transaction decisions. Unrelated32/28 continuity/financial proposal/evidence/main/Azure preserved; no project switch.

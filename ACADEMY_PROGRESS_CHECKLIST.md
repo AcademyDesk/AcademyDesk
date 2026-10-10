@@ -23,7 +23,7 @@ Updated:2026-10-10. Worktree `D:\AcademyDesk-codex-p0`, branch `codex/penta-sear
 - [x] Earlier28-route feedback queue reconciled;21 routes checkpointed before this batch. Full prior route evidence remains in [BUG-FUNC-0003](QA/ISSUES/BUG-FUNC-0003.md).
 - [x] Existing bounded PENTA read/host-security and conversation foundations checkpointed in [handoff](AI_HANDOFF.md); not broad CRUD/action coverage, Mini qualification or90% AI readiness.
 
-## Current batch — Trial Bookings + Curriculum feedback
+## Past batch — Trial Bookings + Curriculum feedback
 
 Scope: success/refresh/error/draft/pending feedback only. Existing payloads/domain/RBAC/tenant rules preserved; no API, database, finance policy or Mini changes.
 
@@ -36,6 +36,17 @@ Scope: success/refresh/error/draft/pending feedback only. Existing payloads/doma
 - [x] Desktop/mobile browser matrix:320/1440px × light/dark × both actions × four response scenarios × two pages,64/64 synthetic cases PASS; two mobile screenshots visually reviewed.
 - [x] [Final batch report](QA/REPORTS/PHASE_2B_TRIAL_CURRICULUM_FEEDBACK_REPAIR.md), route-count reconciliation and completed-batch handoff.
 - [ ] Real SQL/domain/role/tenant acceptance and physical Android/iOS remain outside this feedback-only batch.
+
+## Current batch — Academic Governance + Academic Periods feedback
+
+- [x] Durable scheme/prerequisite/status and year/term/create/close feedback; captured native forms reset only after confirmed writes.
+- [x] Draft retention, confirmed-write/failed-readback warning, uncertain result/no automatic retry and synchronous shared write guard.
+- [x] Checked uncached initial lists before enabling forms; readback stays on the captured academy; existing prerequisite/year-closure authority unchanged.
+- [x] Actual-handler checks:72/72 PASS; frozen starting commit7 PASS/65 FAIL. Counts are assertions, not65 distinct defects.
+- [x] Target lint0/0, TypeScript and production83-page export PASS.
+- [x] Responsive light/dark browser matrix:112/112 synthetic cases PASS; three mobile screenshots inspected, horizontal register scrolling retained.
+- [x] [Final report](QA/REPORTS/PHASE_2B_GOVERNANCE_PERIODS_FEEDBACK_REPAIR.md), route reconciliation and handoff prepared for scoped feature publication.
+- [ ] Real SQL/domain/role/tenant and physical Android/iOS acceptance remain separate.
 
 ## Original feedback routes — bounded checkpoint list
 
@@ -64,18 +75,18 @@ Tick marks below mean a feedback checkpoint, **not full enterprise workflow acce
 - [x] Sales Campaigns
 - [x] Trial Bookings — controlled/build/synthetic browser checkpoint
 - [x] Curriculum — controlled/build/synthetic browser checkpoint
-- [ ] Academic Governance
-- [ ] Academic Periods
+- [x] Academic Governance — controlled/build/synthetic browser checkpoint
+- [x] Academic Periods — controlled/build/synthetic browser checkpoint
 - [ ] Enrollments
 - [ ] Batch Promotions
 - [ ] Assessments — creation feedback only; prior result-save repair retained
 
-Current bounded feedback count: **23/28 checkpointed,5 remaining**, after the Trial Bookings+Curriculum report. Never interpret this percentage as whole-app readiness.
+Current bounded feedback count: **25/28 checkpointed,3 remaining**, after the Governance+Periods report. Never interpret this percentage as whole-app readiness.
 
 ## Next implementation batches
 
-- [ ] **Next: Academic Governance + Academic Periods feedback** — Sol Medium; preserve prerequisite and year-closure repairs, no policy/transaction rewrite.
-- [ ] **Then: Enrollments + Batch Promotions feedback** — Sol Medium; preserve lifecycle/terminal-decision safeguards, escalate actual domain/authority gaps to High.
+- [x] Academic Governance + Academic Periods feedback — bounded checks completed; prerequisite and year-closure safeguards retained.
+- [ ] **Next: Enrollments + Batch Promotions feedback** — Sol Medium; preserve lifecycle/terminal-decision safeguards, escalate actual domain/authority gaps to High.
 - [ ] **Then: Assessments creation feedback** — Sol Medium; do not redo accepted grade/result/option/roster repairs.
 - [ ] FP1/FP2/FP3 explicit owner decisions and legacy disposition — pending, not inferred from “continue.”
 - [ ] Approved financial implementation — Sol High; accounting/tax/payroll review before applicable release. Policy-pending finance need not block safe feedback work.

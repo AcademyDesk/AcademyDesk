@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { WorkspaceNav } from "@/components/workspace-nav";
 import { StandardSelectField } from "@/components/design-system/controls";
 import { academyApi, apiHeaders } from "@/lib/api";
@@ -17,6 +17,18 @@ type Scheme = {
 };
 type Prerequisite = { id: string; courseId: string; requiredCourseId: string };
 
+async function fetchGovernance(id: string) {
+  const responses = await Promise.all([
+    academyApi(`/api/academies/${id}/courses`, { cache: "no-store" }),
+    academyApi(`/api/academies/${id}/academic-governance/grading-schemes`, { cache: "no-store" }),
+    academyApi(`/api/academies/${id}/academic-governance/prerequisites`, { cache: "no-store" }),
+  ]);
+  if (!responses.every((response) => response.ok)) throw new Error();
+  const [courses, schemes, prerequisites] = await Promise.all(responses.map((response) => response.json()));
+  if (![courses, schemes, prerequisites].every(Array.isArray)) throw new Error();
+  return { courses, schemes, prerequisites };
+}
+
 export default function AcademicGovernancePage() {
   const [academy, setAcademy] = useState<Academy>();
   const [courses, setCourses] = useState<Course[]>([]);
@@ -26,62 +38,63 @@ export default function AcademicGovernancePage() {
   const [saving, setSaving] = useState(false);
   const [courseId, setCourseId] = useState("");
   const [requiredCourseId, setRequiredCourseId] = useState("");
-  async function load(id?: string) {
-    try {
-      const academyId = id ?? academy?.id;
-      if (!academyId) return;
-      const [courseResponse, schemeResponse, prerequisiteResponse] =
-        await Promise.all([
-          academyApi(`/api/academies/${academyId}/courses`),
-          academyApi(
-            `/api/academies/${academyId}/academic-governance/grading-schemes`,
-          ),
-          academyApi(
-            `/api/academies/${academyId}/academic-governance/prerequisites`,
-          ),
-        ]);
-      if (
-        ![courseResponse, schemeResponse, prerequisiteResponse].every(
-          (response) => response.ok,
-        )
-      )
-        throw new Error();
-      setCourses(await courseResponse.json());
-      setSchemes(await schemeResponse.json());
-      setPrerequisites(await prerequisiteResponse.json());
-      setNotice("");
-    } catch {
-      setNotice(
-        "Academic governance could not be loaded. Confirm that the API is running and that you have academic administration access.",
-      );
-    }
+  const pending = useRef(false);
+  function applyGovernance(data: Awaited<ReturnType<typeof fetchGovernance>>) {
+    setCourses(data.courses);
+    setSchemes(data.schemes);
+    setPrerequisites(data.prerequisites);
   }
   useEffect(() => {
+    let active = true;
     void (async () => {
       try {
-        const response = await academyApi("/api/academies");
+        const response = await academyApi("/api/academies", { cache: "no-store" });
         if (!response.ok) throw new Error();
         const academies: Academy[] = await response.json();
-        if (!academies[0])
-          return setNotice(
-            "Create an academy and courses before configuring governance.",
-          );
+        if (!Array.isArray(academies) || !academies[0]?.id) throw new Error();
+        const data = await fetchGovernance(academies[0].id);
+        if (!active) return;
+        applyGovernance(data);
         setAcademy(academies[0]);
-        await load(academies[0].id);
+        setNotice("");
       } catch {
-        setNotice(
-          "Academic governance could not be loaded. Please sign in and restart the API if needed.",
-        );
+        if (active) setNotice("Academic governance could not be loaded. Please refresh or check your access.");
       }
     })();
+    return () => { active = false; };
   }, []);
+  async function mutate(request: () => Promise<Response>, success: string, reset?: () => void) {
+    if (!academy || pending.current) return;
+    pending.current = true;
+    setSaving(true);
+    setNotice("");
+    try {
+      const response = await request();
+      if (!response.ok) {
+        if (response.status >= 500) throw new Error();
+        const error = await response.json().catch(() => null);
+        setNotice(typeof error?.message === "string" ? error.message : "Governance change was not accepted. Your draft has been retained.");
+        return;
+      }
+      reset?.();
+      setNotice(success);
+      try { applyGovernance(await fetchGovernance(academy.id)); }
+      catch { setNotice(`${success} The register could not be refreshed. Do not repeat the action; refresh to check the saved record.`); }
+    } catch {
+      setNotice("The result could not be confirmed. Your draft has been retained. Check the register before trying again.");
+    } finally {
+      pending.current = false;
+      setSaving(false);
+    }
+  }
   async function submit(
     event: FormEvent<HTMLFormElement>,
     path: "grading-schemes" | "prerequisites",
   ) {
     event.preventDefault();
-    if (!academy) return;
-    const data = new FormData(event.currentTarget);
+    if (!academy || pending.current) return;
+    const form = event.currentTarget;
+    const data = new FormData(form);
     if (path === "prerequisites" && (!courseId || !requiredCourseId))
       return setNotice("Select both courses for the prerequisite.");
     const body =
@@ -92,67 +105,35 @@ export default function AcademicGovernancePage() {
             bandsJson: data.get("bandsJson") || "[]",
           }
         : { courseId, requiredCourseId };
-    setSaving(true);
-    try {
-      const response = await academyApi(
+    await mutate(() => academyApi(
         `/api/academies/${academy.id}/academic-governance/${path}`,
         {
           method: "POST",
           headers: apiHeaders(true),
           body: JSON.stringify(body),
         },
-      );
-      if (!response.ok) {
-        const error = await response.json().catch(() => null);
-        throw new Error(
-          error?.message || "Governance rule could not be saved.",
-        );
-      }
-      event.currentTarget.reset();
+      ), path === "grading-schemes" ? "Grading scheme created." : "Course prerequisite saved.", () => {
+      form.reset();
       if (path === "prerequisites") {
         setCourseId("");
         setRequiredCourseId("");
       }
-      setNotice(
-        path === "grading-schemes"
-          ? "Grading scheme created."
-          : "Course prerequisite saved.",
-      );
-      await load();
-    } catch (error) {
-      setNotice(
-        error instanceof Error
-          ? error.message
-          : "Governance rule could not be saved.",
-      );
-    } finally {
-      setSaving(false);
-    }
+    });
   }
   async function toggleScheme(item: Scheme) {
-    if (!academy) return;
-    setSaving(true);
-    try {
-      const response = await academyApi(
+    if (!academy || pending.current) return;
+    await mutate(() => academyApi(
         `/api/academies/${academy.id}/grading-schemes/${item.id}/status`,
         {
           method: "PATCH",
           headers: apiHeaders(true),
           body: JSON.stringify({ isActive: !item.isActive }),
         },
-      );
-      if (!response.ok) throw new Error();
-      setNotice(
+      ),
         item.isActive
           ? "Grading scheme made inactive."
           : "Grading scheme activated.",
       );
-      await load();
-    } catch {
-      setNotice("Scheme status could not be updated.");
-    } finally {
-      setSaving(false);
-    }
   }
   const courseName = (id: string) =>
     courses.find((item) => item.id === id)?.name ?? "Course unavailable";
@@ -181,7 +162,7 @@ export default function AcademicGovernancePage() {
           </nav>
         </header>
         {notice && (
-          <p className="enterprise-page-state governance-message" role="status">
+          <p className="enterprise-page-state governance-message" role="status" aria-live="polite">
             {notice}
           </p>
         )}
@@ -210,7 +191,7 @@ export default function AcademicGovernancePage() {
                 <h2>Create grading scheme</h2>
               </div>
             </header>
-            <div className="governance-fields">
+            <fieldset disabled={saving || !academy} className="governance-fields m-0 min-w-0 border-0">
               <label>
                 <span>Scheme name</span>
                 <input
@@ -240,7 +221,7 @@ export default function AcademicGovernancePage() {
               >
                 Create scheme
               </button>
-            </div>
+            </fieldset>
           </form>
           <form
             onSubmit={(event) => void submit(event, "prerequisites")}
@@ -252,9 +233,10 @@ export default function AcademicGovernancePage() {
                 <h2>Add course prerequisite</h2>
               </div>
             </header>
-            <div className="governance-fields">
+            <fieldset disabled={saving || !academy} className="governance-fields m-0 min-w-0 border-0">
               <StandardSelectField
                 name="courseId"
+                disabled={saving || !academy}
                 value={courseId}
                 onChange={setCourseId}
                 placeholder="Course to unlock"
@@ -262,6 +244,7 @@ export default function AcademicGovernancePage() {
               />
               <StandardSelectField
                 name="requiredCourseId"
+                disabled={saving || !academy}
                 value={requiredCourseId}
                 onChange={setRequiredCourseId}
                 placeholder="Required completed course"
@@ -273,7 +256,7 @@ export default function AcademicGovernancePage() {
               >
                 Save prerequisite
               </button>
-            </div>
+            </fieldset>
           </form>
         </section>
         <section className="governance-register-grid">

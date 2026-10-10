@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { WorkspaceNav } from "@/components/workspace-nav";
 import {
   StandardDateField,
@@ -26,6 +26,14 @@ type Term = {
   isClosed: boolean;
 };
 
+async function fetchPeriods(id: string) {
+  const response = await academyApi(`/api/academies/${id}/academic-periods`, { cache: "no-store" });
+  if (!response.ok) throw new Error();
+  const data = await response.json();
+  if (!Array.isArray(data?.years) || !Array.isArray(data?.terms)) throw new Error();
+  return data as { years: Year[]; terms: Term[] };
+}
+
 export default function AcademicPeriods() {
   const [academy, setAcademy] = useState<Academy>();
   const [years, setYears] = useState<Year[]>([]);
@@ -36,33 +44,63 @@ export default function AcademicPeriods() {
   const [termYearId, setTermYearId] = useState("");
   const [termStart, setTermStart] = useState("");
   const [termEnd, setTermEnd] = useState("");
-  async function load() {
-    try {
-      const rows: Academy[] = await (await academyApi("/api/academies")).json();
-      if (!rows[0]) throw Error();
-      setAcademy(rows[0]);
-      const response = await academyApi(
-        `/api/academies/${rows[0].id}/academic-periods`,
-      );
-      if (!response.ok) throw Error();
-      const data = await response.json();
+  const [saving, setSaving] = useState(false);
+  const pending = useRef(false);
+  function applyPeriods(data: Awaited<ReturnType<typeof fetchPeriods>>) {
       setYears(data.years);
       setTerms(data.terms);
-      setMessage("");
-    } catch {
-      setMessage("Academic governance could not be loaded.");
-    }
   }
   useEffect(() => {
-    void load();
+    let active = true;
+    void (async () => {
+      try {
+        const response = await academyApi("/api/academies", { cache: "no-store" });
+        if (!response.ok) throw new Error();
+        const rows: Academy[] = await response.json();
+        if (!Array.isArray(rows) || !rows[0]?.id) throw new Error();
+        const data = await fetchPeriods(rows[0].id);
+        if (!active) return;
+        applyPeriods(data);
+        setAcademy(rows[0]);
+        setMessage("");
+      } catch {
+        if (active) setMessage("Academic periods could not be loaded. Please refresh or check your access.");
+      }
+    })();
+    return () => { active = false; };
   }, []);
+  async function mutate(request: () => Promise<Response>, success: string, reset?: () => void) {
+    if (!academy || pending.current) return;
+    pending.current = true;
+    setSaving(true);
+    setMessage("");
+    try {
+      const response = await request();
+      if (!response.ok) {
+        if (response.status >= 500) throw new Error();
+        const payload = await response.json().catch(() => null);
+        setMessage(typeof payload?.message === "string" ? payload.message : "Period change was not accepted. Your draft has been retained.");
+        return;
+      }
+      reset?.();
+      setMessage(success);
+      try { applyPeriods(await fetchPeriods(academy.id)); }
+      catch { setMessage(`${success} The register could not be refreshed. Do not repeat the action; refresh to check the saved record.`); }
+    } catch {
+      setMessage("The result could not be confirmed. Your draft has been retained. Check the register before trying again.");
+    } finally {
+      pending.current = false;
+      setSaving(false);
+    }
+  }
   async function save(
     event: FormEvent<HTMLFormElement>,
     kind: "years" | "terms",
   ) {
     event.preventDefault();
-    if (!academy) return;
-    const form = new FormData(event.currentTarget);
+    if (!academy || pending.current) return;
+    const element = event.currentTarget;
+    const form = new FormData(element);
     if (kind === "years" && (!yearStart || !yearEnd))
       return setMessage("Select the year start and end dates.");
     if (kind === "terms" && (!termYearId || !termStart || !termEnd))
@@ -81,15 +119,11 @@ export default function AcademicPeriods() {
             startDate: termStart,
             endDate: termEnd,
           };
-    const response = await academyApi(
+    await mutate(() => academyApi(
       `/api/academies/${academy.id}/academic-periods/${kind}`,
       { method: "POST", headers: apiHeaders(true), body: JSON.stringify(body) },
-    );
-    if (!response.ok) {
-      const payload = await response.json().catch(() => null);
-      return setMessage(payload?.message || "Period could not be saved.");
-    }
-    event.currentTarget.reset();
+    ), `${kind === "years" ? "Academic year" : "Term"} created.`, () => {
+    element.reset();
     if (kind === "years") {
       setYearStart("");
       setYearEnd("");
@@ -98,21 +132,14 @@ export default function AcademicPeriods() {
       setTermStart("");
       setTermEnd("");
     }
-    setMessage(`${kind === "years" ? "Academic year" : "Term"} created.`);
-    await load();
+    });
   }
   async function close(kind: "years" | "terms", id: string) {
-    if (!academy) return;
-    const response = await academyApi(
+    if (!academy || pending.current) return;
+    await mutate(() => academyApi(
       `/api/academies/${academy.id}/academic-periods/${kind}/${id}/close`,
       { method: "PATCH", headers: apiHeaders(true) },
-    );
-    if (!response.ok) {
-      const payload = await response.json().catch(() => null);
-      return setMessage(payload?.message || "Period could not be closed.");
-    }
-    setMessage("Period closed and retained for audit.");
-    await load();
+    ), "Period closed and retained for audit.");
   }
   const formatDate = (value: string) =>
     new Intl.DateTimeFormat("en-IN", {
@@ -135,7 +162,7 @@ export default function AcademicPeriods() {
           </div>
         </header>
         {message && (
-          <p className="enterprise-page-state periods-message">{message}</p>
+          <p className="enterprise-page-state periods-message" role="status" aria-live="polite">{message}</p>
         )}
         <section className="periods-form-grid">
           <form
@@ -148,7 +175,7 @@ export default function AcademicPeriods() {
                 <h2>Create academic year</h2>
               </div>
             </header>
-            <div className="periods-fields">
+            <fieldset disabled={saving || !academy} className="periods-fields m-0 min-w-0 border-0">
               <label>
                 <span>Year name</span>
                 <input required name="name" placeholder="2026–27" />
@@ -176,7 +203,7 @@ export default function AcademicPeriods() {
               <button className="enterprise-action-button periods-action">
                 Create year
               </button>
-            </div>
+            </fieldset>
           </form>
           <form
             onSubmit={(event) => void save(event, "terms")}
@@ -188,9 +215,10 @@ export default function AcademicPeriods() {
                 <h2>Create term / semester</h2>
               </div>
             </header>
-            <div className="periods-fields">
+            <fieldset disabled={saving || !academy} className="periods-fields m-0 min-w-0 border-0">
               <StandardSelectField
                 name="academicYearId"
+                disabled={saving || !academy}
                 value={termYearId}
                 onChange={setTermYearId}
                 placeholder="Select academic year"
@@ -221,7 +249,7 @@ export default function AcademicPeriods() {
               <button className="enterprise-action-button periods-action">
                 Create term
               </button>
-            </div>
+            </fieldset>
           </form>
         </section>
         <section className="periods-panel periods-year-register">
@@ -269,6 +297,7 @@ export default function AcademicPeriods() {
                         ) : (
                           <button
                             type="button"
+                            disabled={saving}
                             onClick={() => void close("years", year.id)}
                           >
                             Close year
@@ -312,6 +341,7 @@ export default function AcademicPeriods() {
                   ) : (
                     <button
                       type="button"
+                      disabled={saving}
                       onClick={() => void close("terms", term.id)}
                     >
                       Close term

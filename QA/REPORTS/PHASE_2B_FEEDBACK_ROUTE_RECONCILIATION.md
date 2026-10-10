@@ -6,6 +6,8 @@ Current progress after [Access Review Sign-off](PHASE_2B_SIGN_OFF_FEEDBACK_REPAI
 
 ## Retained checkpoints
 
+2026-10-10 latest successor: [Academic Governance+Academic Periods](PHASE_2B_GOVERNANCE_PERIODS_FEEDBACK_REPAIR.md) adds2 bounded feedback checkpoints: **25/28 checkpointed,3 remaining** — Enrollments, Batch Promotions, Assessments creation only.72 controlled/lint/typecheck/83-page export PASS; browser evidence in report. Historical23/5,21/7 and17/11 snapshots below remain unchanged. NEXT Sol Medium Enrollments+Batch Promotions; [progress tracker](../../ACADEMY_PROGRESS_CHECKLIST.md) records per-batch evidence and open enterprise gates.
+
 2026-10-10 batch successor: [Trial Bookings+Curriculum](PHASE_2B_TRIAL_CURRICULUM_FEEDBACK_REPAIR.md) adds2 bounded feedback checkpoints: **23/28 routes checkpointed,5 remaining**. Historical21/7 and17/11 records below are retained, not current totals. Remaining: Academic Governance, Academic Periods, Enrollments, Batch Promotions, Assessments creation only. [Owner progress tracker](../../ACADEMY_PROGRESS_CHECKLIST.md) carries per-batch ticks and next tasks. NEXT Sol Medium Academic Governance+Academic Periods; no inference of live/domain/device or enterprise completion.
 
 | Original routes | Existing evidence / decision |
