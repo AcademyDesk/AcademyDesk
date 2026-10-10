@@ -1,0 +1,32 @@
+// Actual TSX with controlled hooks/transport, not live SQL/device acceptance.
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs');
+const ts=require('../../apps/web/node_modules/typescript'),jsx=require('../../apps/web/node_modules/react/jsx-runtime');
+const source=process.env.QA_LESSON_PLANS_BASELINE==='1'?require('node:child_process').execFileSync('git',['show','HEAD:apps/web/src/app/lesson-plans/page.tsx'],{encoding:'utf8'}):fs.readFileSync('apps/web/src/app/lesson-plans/page.tsx','utf8');
+const code=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX}}).outputText;
+function nodes(n){return Array.isArray(n)?n.flatMap(nodes):!n||typeof n!=='object'?[]:[n,...nodes(n.props?.children)];}
+function text(n){return Array.isArray(n)?n.map(text).join(''):n==null||typeof n==='boolean'?'':typeof n==='object'?text(n.props?.children):String(n);}
+const tick=()=>new Promise(r=>setImmediate(r));
+async function page(config={}){
+ let index=0,refIndex=0,effectIndex=0;const state=new Map(),refs=[],deps=[],effects=[],calls=[],module={exports:{}};
+ const react={useState:v=>{const k=index++;if(!state.has(k))state.set(k,v);return[state.get(k),v=>state.set(k,typeof v==='function'?v(state.get(k)):v)];},useRef:v=>{const k=refIndex++;return refs[k]??(refs[k]={current:v});},useEffect:(fn,next)=>{const k=effectIndex++;if(!deps[k]||next.some((v,i)=>v!==deps[k][i])){deps[k]=next;effects.push(fn);}}};
+ const api=async(url,init={})=>{
+  calls.push({url,...init});if(init.method){if(config.writeGate)await config.writeGate;if(config.network)throw Error('Synthetic network');return{ok:!config.status,status:config.status||200,json:async()=>{if(config.malformed)throw Error('Malformed');return{message:config.message};}};}
+  if(url==='/api/academies')return{ok:true,json:async()=>[{id:'owned'}]};
+  if(calls.some(c=>c.method)){if(config.readGate)await config.readGate;if(config.refreshFailure)return{ok:false,status:503};}
+  assert.ok(['/api/academies/owned/lesson-plans','/api/academies/owned/batches'].includes(url));return{ok:true,json:async()=>url.endsWith('/batches')?[{id:'first',name:'First batch'},{id:'second',name:'Second batch'}]:[]};
+ };
+ new Function('require','module','exports',code)(n=>n==='react/jsx-runtime'?jsx:n==='react'?react:n==='@/lib/api'?{academyApi:api,apiHeaders:()=>({})}:n==='@/components/workspace-nav'?{WorkspaceNav:'nav'}:n==='@/components/design-system/controls'?{StandardDateField:'date',StandardTimeField:'time',StandardSelectField:'select'}:(()=>{throw Error(n)})(),module,module.exports);
+ const render=()=>{index=refIndex=effectIndex=0;return module.exports.default();};
+ async function settle(){for(let i=0;i<4;i++){for(const fn of effects.splice(0))fn();await tick();render();}}
+ const action=()=>nodes(render()).find(n=>n.type==='form').props.onSubmit({preventDefault(){}});
+ render();await settle();assert.equal(state.get(3),'first');for(const[k,v]of[[3,'second'],[4,'Draft plan'],[5,'Practice instructions']])state.set(k,v);
+ return{state,calls,render,settle,action,writes:()=>calls.filter(c=>c.method)};
+}
+test('Durable accessible success and original payload/reset contract',async()=>{const p=await page();await p.action();await p.settle();assert.equal(p.state.get(6),'Lesson plan created.');assert.equal(p.state.get(7),false);const n=nodes(p.render()).find(n=>n.props?.role==='status');assert.equal(n.props['aria-live'],'polite');assert.deepEqual(JSON.parse(p.writes()[0].body),{batchId:'second',title:'Draft plan',courseModuleId:null,classSessionId:null,objectives:'Practice instructions'});for(const k of[4,5])assert.equal(p.state.get(k),'');assert.equal(p.state.get(3),'second');});
+test('Saved/readback failure is not a failed write',async()=>{const p=await page({refreshFailure:true});await p.action();assert.match(p.state.get(6),/^Lesson plan created.*could not be refreshed.*do not repeat/);assert.equal(p.state.get(4),'');assert.equal(p.state.get(7),false);assert.equal(p.writes().length,1);});
+for(const status of[400,403,500,503])test('HTTP '+status+' retains draft and guidance without retries',async()=>{const p=await page({status,message:'Synthetic guidance'});await p.action();assert.match(p.state.get(6),/Synthetic guidance/);if(status>=500)assert.match(p.state.get(6),/could not be confirmed.*before retrying/);assert.equal(p.state.get(4),'Draft plan');assert.equal(p.state.get(5),'Practice instructions');assert.equal(p.state.get(7),false);assert.equal(p.calls.length,4);assert.equal(p.writes().length,1);});
+test('Network uncertainty caught and draft retained',async()=>{const p=await page({network:true});await p.action();assert.match(p.state.get(6),/could not be confirmed.*before retrying/);assert.equal(p.state.get(4),'Draft plan');assert.equal(p.state.get(7),false);});
+for(const config of[{malformed:true},{message:''},{message:'   '},{message:123}])test('Rejection fallback '+JSON.stringify(config),async()=>{const p=await page({status:400,...config});await p.action();assert.equal(p.state.get(6),'Valid batch and title required.');assert.equal(p.state.get(7),false);});
+for(const stage of['write','readback'])test(stage+' pending includes same-tick stale handler',async()=>{let release;const gate=new Promise(r=>release=r),p=await page(stage==='write'?{writeGate:gate}:{readGate:gate});const handler=nodes(p.render()).find(n=>n.type==='form').props.onSubmit,first=handler({preventDefault(){}});await tick();const second=handler({preventDefault(){}});try{assert.equal(p.writes().length,1);assert.equal(nodes(p.render()).find(n=>n.type==='fieldset').props.disabled,true);assert.equal(nodes(p.render()).find(n=>n.type==='button').props.disabled,true);}finally{release();}await Promise.all([first,second]);assert.equal(p.writes().length,1);assert.equal(p.state.get(7),false);});
+test('Optional objectives and null module/session references retained',async()=>{const p=await page();p.state.set(5,'');await p.action();assert.deepEqual(JSON.parse(p.writes()[0].body),{batchId:'second',courseModuleId:null,classSessionId:null,title:'Draft plan',objectives:null});});
+test('State changes do not reload mount or reset selected batch',async()=>{const p=await page();await p.settle();assert.equal(p.calls.length,3);await p.action();await p.settle();assert.equal(p.calls.length,6);assert.equal(p.state.get(3),'second');await p.settle();assert.equal(p.calls.length,6);});

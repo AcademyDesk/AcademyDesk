@@ -2,6 +2,10 @@
 
 ## Current state
 
+## Lesson Plans success feedback — 2026-10-10
+
+[Report](QA/REPORTS/PHASE_2B_LESSON_PLANS_FEEDBACK_REPAIR.md): durable create/readback-failure notices, retained rejected/unconfirmed draft and synchronous write/readback guard. Scoped mount checks academy response/empty list before enabling save; exact payload/null optional references/objectives and selected batch preserved. Frozen15 baseline2 PASS/13 FAIL; final15 controlled +16 synthetic exported-browser cases PASS, lint0/0, TypeScript/83-page export PASS. No fresh SQL/auth/device or enterprise acceptance; BUG-FUNC-0003/release OPEN, main/Mini/Azure/unrelated/evidence preserved. Startinga86571c, scoped feature publication only; Mini86/94 blocked/handoff unchanged. NEXT Sol Medium: Submission Review feedback gap check; Sol High for authority/domain/persistence.
+
 ## Assignments success feedback — 2026-10-10
 
 [Report](QA/REPORTS/PHASE_2B_ASSIGNMENTS_FEEDBACK_REPAIR.md): durable create/readback-failure notices, retained rejected/unconfirmed draft and synchronous write/readback duplicate guard. Scoped mount/pure workspace fetch, exact payload/defaults/optional nulls/local-time conversion and selected batch/type/publication settings preserved. Frozen15 baseline2 PASS/13 FAIL; final15 controlled +16 synthetic exported-browser cases PASS, lint0/0, TypeScript/83-page export PASS. No fresh SQL/auth/device or enterprise acceptance; BUG-FUNC-0003/release OPEN, main/Mini/Azure/unrelated/evidence preserved. Starting3c24ea2, scoped feature publication only; Mini86/94 blocked/handoff unchanged. NEXT Sol Medium: Lesson Plans feedback gap check; Sol High for authority/domain/persistence.
