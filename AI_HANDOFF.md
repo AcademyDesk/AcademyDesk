@@ -2,6 +2,10 @@
 
 ## Current state
 
+## Platform Services feedback — 2026-10-10
+
+[Report](QA/REPORTS/PHASE_2B_PLATFORM_SERVICES_FEEDBACK_REPAIR.md): original BUG-FUNC-0003 queue now19 feedback checkpoints/9 routes with gaps, not enterprise completion. Payment-submission/support-create/reply retain confirmed success or refresh warning, failed/other drafts preserved, form captured, synchronous pending guard and checked mount. Exact POST/null reference/whitespace/priority, access/domain rules unchanged; payment means submitted for review, not paid.34 controlled/48 synthetic browser PASS, lint0/0, TypeScript/83-page export PASS. No fresh live SQL/payment/provider/auth/device/security/production acceptance/full-suite rerun. Only current8-file UI/QA/continuity scope publishable; unrelated32/28 continuity lines/Mini/evidence/main/Azure preserved. Issue/Mini86/94/enterprise/release gates OPEN. NEXT **Sol Medium**, same Academy project, Leads feedback only; High for genuine authority/domain/transaction/privacy decisions. No project switch needed.
+
 ## Access Review Sign-off feedback — 2026-10-10
 
 [Report](QA/REPORTS/PHASE_2B_SIGN_OFF_FEEDBACK_REPAIR.md): original BUG-FUNC-0003 queue now18 feedback checkpoints/10 routes with gaps, not enterprise completion. Sign-off only: durable success and confirmed-write/failed-refresh distinction, captured native form, failed notes/checkbox retained, synchronous page-local pending guard, checked initial reads, polite notice. Exact POST/whitespace/follow-up bool and domain/tenant/access rules unchanged.15 controlled +16 synthetic browser PASS, lint0/0, TypeScript/83-page export PASS; no fresh live SQL/auth/device/security/production acceptance or full-suite rerun. Only current8-file UI/QA/continuity scope publishable; unrelated32/28 continuity lines/Mini/evidence/main/Azure preserved. Issue/Mini86/94/enterprise/release gates OPEN. NEXT **Sol Medium**, same Academy project, Platform Services payment-submission/support feedback only; High for genuine authority/domain/transaction/privacy decisions, no project switch needed.
