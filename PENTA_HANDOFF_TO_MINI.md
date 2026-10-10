@@ -6,6 +6,61 @@ Status: **BLOCKED real-read acceptance; precise engine handoff**.
 
 ## Permanent independent host enforcement — 2026-10-10
 
+### FW1 — shared AI frontend delivery dependency — 2026-10-10
+
+Owner explicitly confirms PENTA AI's frontend is not ready and must still be
+implemented in the PENTA project. Latest local
+`docs/PENTA_FRONTEND_DELIVERY_PLAN.md` supersedes older frontend-ownership text:
+Mini owns reusable customer AI frontend/design system/standalone shell;
+Academy owns Manual Workspace, integrated host adapter and domain authority.
+Academy currently `codex/penta-search` at `fc0354134790adb482727dcb3075ea9faabe2f30`.
+See [execution path](ACADEMY_EXECUTION_PATH.md) and
+[E0 queue](QA/REPORTS/EXECUTION_E0_RECONCILIATION.md). Request prepared here,
+not automatically delivered to another chat, not a project switch or release.
+
+**Required next PENTA frontend slice:** preserve current dirty engine/model/
+policy/benchmark work; inventory the existing Academy pilot and build a coded,
+interactive synthetic prototype using Orbit integrated/Prism light/Aurora
+standalone directions. Raster mockups alone do not satisfy delivery. Supplied
+gallery values/logos are illustrations, not production facts. Reconcile older
+ownership docs to the latest directive rather than publishing conflicting copies.
+
+Prototype must demonstrate conversation/composer, five capability help popovers,
+typed result cards/tables/work canvas, verified-source/as-of labels, clarification,
+empty/denied/stale/error/offline/unknown-outcome recovery and explicit unavailable
+features. Real text/status only, no fake token streaming or reasoning. Approval/
+draft views may be visibly synthetic; do not enable CRUD/send/delete/Autopilot
+or persist customer transcripts on the basis of mockups or draft schemas.
+
+Integrated prototype supplies host extension points for academy/current actor/
+capability context; Academy owns PENTA AI / Manual Workspace switch and draft
+handling. Standalone has no manual switch and no Academy ERP route/type imports;
+optional connected-app destinations come from trusted adapters, not model URLs.
+All4 Academy roles need separate host-supplied capability projections. Selecting
+a role/academy in a prototype must not be portrayed as granting permission.
+
+Return first **PROTOTYPE READY FOR VISUAL REVIEW**, with exact source/files,
+local viewing steps, explicitly synthetic state inventory and responsive/theme/
+keyboard/focus/overlay/no-overflow evidence. Then version reusable components
+after accepted migration checks; return frontend source/version, token revision,
+component registry/props, supported Tool Protocol/response versions, peer/build
+requirements, adapter integration instructions, tests/limitations and rollback.
+No unversioned copy or pilot replacement. Academy retains own Manual forms and
+protected operation rules while adopting matching visual foundations.
+
+**Independent engine gate:** existing saved86/94 NOT ACCEPTED remains N2u's
+dependency. UI delivery does not fix or qualify language planning. Use the
+existing candidate/contract handoff; do not rerun unchanged failed inference,
+add hosted fallback, obtain weights or change runtime without authority.
+Mini/Core may reject unsafe plans; Academy independently authenticates/current-
+scope-authorizes every actual operation. No roles/security/finance-policy changes
+from conversation or memory. No Azure/customer data/tool enablement in FW1.
+
+Model routing: Sol High for ownership/versioned adapter/security decisions;
+Sol Medium for settled prototype/components/styling. Return an explicit handoff
+at shared interface changes or prototype/package delivery, then Academy consumes
+only the accepted version and runs its integration/manual fallback regressions.
+
 ### Shared regulatory/policy register acknowledged — 2026-10-10
 
 Observed and remote-verified Mini commit `2f8806967709a1a7ec29e5176e7c31968adbf6aa`,

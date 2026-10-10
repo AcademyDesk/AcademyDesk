@@ -1,5 +1,7 @@
 # AI readiness — reconciled remediation register
 
+Current routing successor2026-10-10: [E0 continuation](EXECUTION_E0_RECONCILIATION.md) reuses this register, adds BUG-UI-0008 and preserves the refresh alias:118 records/117 distinct groups, not118 untouched fixes. Calendar cancellation/timezone and feedback successors replace stale next-actions only; policy/device/live/release gates remain OPEN. Routing is56 inherited REPRODUCE candidates/55 RETEST/3 POLICY+RETEST/2 VERIFY/1 bounded feedback FIX+RETEST, not a new acceptance census. Historic56/58/2 and source/hash claims below remain pinned to their dates; no tests rerun here. Next Sol High: existing Teacher lifecycle/security reproduction, not another Astra audit. PENTA frontend FW1 delivery dependency recorded in existing handoff; AI frontend still not ready.
+
 Successor2026-10-03: [bounded staff-role repair](PHASE_2B_STAFF_ROLE_REPLACEMENT.md) is locally verified. Current totals below update one existing P1 group only:56 partial,58 open,2 unable/116 distinct/0 full closures. The assessment-only source-check rules remain historical;this successor ran targeted tests and changed one product action,not a repeat audit. No AI implementation or Azure deployment.
 
 2026-10-03. Documentation-only reconciliation against the accepted audit, later repair reports and current source. All 116 distinct known issue groups are listed below, including every Critical/High finding. This does not reopen completed repairs or alter historical issue files.
