@@ -333,5 +333,6 @@ internal static partial class SqlHarnessEntryPoint
                 await db.Students.AnyAsync(x => x.Id == foreign.Id && x.AcademyId == academyB), "Hostile plans left source ledger and foreign student unchanged");
         }
         Console.WriteLine($"PENTA HOST SECURITY PASS: {checks} checked controls, real Identity/HTTP/disposable SQL; hostile fake planner, no inference acceptance, no domain writes.");
+        await VerifyPentaReadPrivacyAsync(manifest, academyA, academyB, tokenC);
     }
 }

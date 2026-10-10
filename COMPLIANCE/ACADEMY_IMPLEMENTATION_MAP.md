@@ -41,7 +41,7 @@ Unfetched/full-text and applicability gaps are explicit release-review dependenc
 
 Owner A = Academy engineering; M = Mini/Core; H = human legal/privacy/security owner.
 Production criticality means launch risk, not an invented statutory defect severity.
-Evidence IDs S1/S2/H1 below link to source/tests rather than an unexplained PASS.
+Evidence IDs S1/S2/H1, K1 and H2 link to source/tests rather than an unexplained PASS.
 
 | Canonical ID / classification | Academy applicability / control location | Evidence and present status | Gap / owner / criticality |
 | --- | --- | --- | --- |
@@ -49,7 +49,7 @@ Evidence IDs S1/S2/H1 below link to source/tests rather than an unexplained PASS
 | REG003 future + current SPDI/contract review | `Controllers/ComplianceController.cs`, `Domain/Entities/ConsentRecord.cs`, marketing preferences | S1: IMPLEMENTED generic consent/withdrawal, not purpose/versioned notice approval | Reviewed notices, basis and consent evidence by purpose; withdrawal propagation / A+H / HIGH before personal-data pilot |
 | REG004 future + current safeguards | Program.cs Identity; AcademyAccessFilter; PENTA policy/connector/orchestrator; private media | S1+H1: IMPLEMENTED/TARGETED TESTED current read boundary; opt-in encrypted key-ring foundation [K1](../QA/REPORTS/PENTA_PROTECTED_KEY_RING.md) TESTED, disabled | Actual durable key provisioning/migration/rotation/restore, deployed encryption/network proof, mandatory privileged MFA / A+H / CRITICAL pre-Azure |
 | REG005 future DPDP | No verified personal-data-breach workflow | DESIGNED response requirements below, NOT IMPLEMENTED | Separate applicable DPDP notices/board deadlines; legal-approved templates and rehearsal / A+H / HIGH |
-| REG006 future children + current child safety | `Student.DateOfBirth`, `StudentGuardian` access flags, consent records | S1: IMPLEMENTED relationships/flags; no verified parental-consent/age assurance | Unknown DOB is not adult; authority verification, consent evidence, age transition, minimized minor-data purpose / A+H / CRITICAL before minor-data AI |
+| REG006 future children + current child safety | `Student.DateOfBirth`, `StudentGuardian` access flags, consent records | S1 relationships/flags; [H2](../QA/REPORTS/PENTA_READ_PRIVACY_BOUNDARY.md) 16 synthetic HTTP/SQL minimization/claim-denial tests PASS, not parental-consent/age assurance | Unknown DOB is not adult; reviewed authority/consent/purpose, age transition and actual inference minimization / A+H / CRITICAL before minor-data AI |
 | REG007 future + current contract/retention | Compliance create/withdraw; platform retention setting; PENTA24h expiry | S1: PARTIAL; expiry is not erasure | Rights case management, reviewed schedule/holds and deletion across copies/backups / A+M+H / HIGH |
 | REG008 future + conditional current transfer rules | Local Mini HTTP provider, private media managed identity | S1: configured destination boundary, no location certification | Map actual SQL/Blob/inference/log/backup/support regions/subprocessors and contracts / A+M+H / CRITICAL before customer data |
 | REG009 now + transition | Medical/accessibility notes and personnel/financial records may enter current SPDI scope | S1: authentication/least privilege present; legal classification UNREVIEWED | Privacy policy/consent/security/transfer contractual assessment during transition / H+A / HIGH |
@@ -116,7 +116,7 @@ location/transfer, versioned notice/consent, retention/hold and accountable owne
 | Audit failure or uncertain/replayed outcome | SQL atomic result/state/audit; H1 completion fault and replay checks | Production audit durability, alerting and tamper-resistant retention proof | Pre-Azure |
 | Current mini meaning/planning mismatch | Existing 86/94 qualification NOT ACCEPTED | Mini returns qualified pinned candidate, then host retest; don't repeat unchanged failed run | First real feature |
 | Prompt/training/learning leakage | No activated memory/training tools; endpoint redirects/proxy disabled | Core runtime egress/log/retention and redacted validated feedback evidence | Customer-data pilot |
-| Unverified minors/consent/purpose | Existing guardian flags/generic consent only | Reviewed child-data purpose and verification workflow; minimum-data read scope | Minor-data pilot |
+| Unverified minors/consent/purpose | Existing guardian flags/generic consent; H2 tests minimal fee projection/planner context, rejected caller claims and unchanged unknown DOB/guardian rights | Reviewed child-data purpose/verification workflow and actual inference/retention proof; synthetic tests are not approval | Minor-data pilot |
 | Host key/session infrastructure weakness | Identity + protected receipts; existing revocation tests historical | Persist/rotate protected key ring safely; privileged MFA, trusted forwarding and effective rate-limit tests | Pre-Azure |
 | Exposed media / unsafe formats/uploads | Private Blob guard/managed identity and retained media QA | Close SEC0001 with actual private-network, malware/quarantine, recovery/browser/physical-device evidence | Existing release gates |
 | Finance races / lifecycle / policy | Deterministic fee source; historical collection/adjustment race repairs | Keep DATA0001/2/3/10 OPEN through required browser/device/policy acceptance | Existing P0 gate |
