@@ -3,8 +3,8 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | STATIC-FINDING |
-| Final verification | NOT RUN |
+| Confirmation status | RUNTIME-CONFIRMED; bounded repair verified 2026-10-10 |
+| Final verification | PARTIAL:90 native SQL/HTTP cases PASS; browser/device/concurrent/broader critical pending |
 | Severity | Major access revocation failure |
 | Priority | P1 |
 | Category | SEC |
@@ -30,10 +30,14 @@
 | API response | Not captured for this issue; use synthetic request/response in isolated reproduction |
 | Database before/after | Not executed; fixture and fresh-context assertions defined below |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | Not implemented (Phase 1) |
-| Retest result | NOT RUN |
-| Regression result | NOT RUN |
+| Fix commit | SetPortalAccess explicit authority repair; see scoped report/history |
+| Retest result | 90/90 strict cases; run f717a944a28847deaa1703f522c895c8 |
+| Regression result | Existing GuardianFlags native gate and targeted unit tests; results in report |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
+
+## Current bounded repair — 2026-10-10
+
+[Report](../REPORTS/PHASE_2B_GUARDIAN_REVOCATION_REPAIR.md): baseline `bce44b1494ef485f83b7b620faf06dba` confirmed explicitfalse and omitted-subpermission revocations silently retained the minor's grant and child-detail/Me access with the same guardian token. SetPortalAccess now respects the explicit AllowPortalAccess independently of age; initial Link minor defaults and grant subpermission defaults stay unchanged. Final native SQL/HTTP90 cases PASS, checking minor/adult/18th-birthday/unknown-DOB, explicit/omitted revoke, restricted/default regrant, unlink, current-token read visibility, authorization/tenant controls and captured SQL/file preservation. Discovered and separately tracked [BUG-API-0009](BUG-API-0009.md) child-list500 query failure repaired in the same bounded flow. **OPEN** for browser/device, concurrent revocation, broader lifecycle/role and release gates. Historical static evidence below retained, not the current verdict.
 
 ## Exact reproduction
 

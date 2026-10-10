@@ -9,6 +9,8 @@ Latest execution: [Teacher lifecycle repair](QA/REPORTS/PHASE_2B_TEACHER_LIFECYC
 
 ## 1. Product outcome and boundaries
 
+Execution update: [Guardian revocation/child-list repair](QA/REPORTS/PHASE_2B_GUARDIAN_REVOCATION_REPAIR.md) completes the bounded E0 rank2 native gate:90 new SQL/HTTP cases +55 unchanged guardian permission cases +24 unit tests PASS. Both issues OPEN; new BUG-API-0009 adds1 record/group to the frozen census (now119/118 with refresh alias). Initial minor linking policy retained; browser/device/concurrent/broader acceptance pending. Next **Sol High**, proposed financial-policy contracts/review; **Sol Medium** seven feedback routes/settled visuals remain available. No main/Azure/Mini/shared frontend change or project switch.
+
 Deliver a complete academy application with PENTA AI as the primary conversational operating layer and a fully usable Manual Workspace. The 90% AI /10% manual target concerns eligible operational workflows completed safely, not screens, tool declarations or model calls. Manual fallback, correction, approval and emergency control remain first-class.
 
 Academy owns ERP domain rules, authenticated gateway, current actor/tenant permissions, approved operations, transactions and audit. PENTA Mini owns shared intelligence/Core/inference and the reusable frontend under its latest delivery direction. Consume explicitly versioned packages/contracts; do not duplicate its engine. Customer data must not become automatic training or cross-tenant memory. No model-supplied role, tenant, SQL, code or URL is authoritative.

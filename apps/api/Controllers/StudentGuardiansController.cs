@@ -50,8 +50,8 @@ public sealed class StudentGuardiansController(AcademyDeskDbContext dbContext) :
     {
         var link = await dbContext.StudentGuardians.Include(x => x.Guardian).Include(x => x.Student).SingleOrDefaultAsync(x => x.AcademyId == academyId && x.StudentId == studentId && x.GuardianId == guardianId, token);
         if (link?.Guardian is null || link.Student is null) return NotFound();
-        var isMinor = link.Student.DateOfBirth.HasValue && link.Student.DateOfBirth.Value.AddYears(18) > DateOnly.FromDateTime(DateTime.UtcNow);
-        var access = isMinor || request.AllowPortalAccess;
+        // Initial minor linking defaults do not override an explicit grant/revoke command.
+        var access = request.AllowPortalAccess;
         link.CanAccessPortal = access;
         link.CanViewAcademicProgress = access && request.AllowAcademicProgress;
         link.CanViewFinance = access && request.AllowFinance;

@@ -6,6 +6,7 @@ Bounded runtime follow-up [DRAFT-ISOLATION-UX-001](../REPORTS/PHASE_2B_TEACHER_S
 
 | Issue ID | Title | Priority | Severity | Evidence type | Regression test |
 | --- | --- | --- | --- | --- | --- |
+| [BUG-API-0009](BUG-API-0009.md) | Guardian child list fails SQL query translation | P1 | Major child-list workflow unavailable | OPEN / runtime-confirmed, bounded query repair and21 native list checks PASS; broader gates pending | GUARDIAN-CHILDREN-SQL-001 |
 | [BUG-UI-0008](BUG-UI-0008.md) | Narrow calendar agenda cuts short useful subject/date/make-up detail | P2 | Moderate readability | OPEN / local CSS repair and 10 emulated readability cases PASS; physical/broader responsive pending | SCHEDULE-AGENDA-READABILITY-001 |
 | [BUG-DATA-0056](BUG-DATA-0056.md) | Editing a payroll profile rewrites the worker name shown on historical payouts | P1 | Major payroll history attribution integrity | STATIC FINDING / reproduction pending | PAYROLL-HISTORY-IDENTITY-001 |
 | [BUG-FUNC-0033](BUG-FUNC-0033.md) | Payroll Print / Save PDF has no visible selected payslip in print output | P1 | Major payroll document workflow failure | STATIC FINDING / reproduction pending | PAYROLL-PRINT-001 |
@@ -81,7 +82,7 @@ Bounded runtime follow-up [DRAFT-ISOLATION-UX-001](../REPORTS/PHASE_2B_TEACHER_S
 | [BUG-FUNC-0008](BUG-FUNC-0008.md) | Subject-fee form rejects fractional amounts accepted by the API | P2 | Moderate fee entry limitation | STATIC FINDING / reproduction pending | FEES-AMOUNT-001 |
 | [BUG-DATA-0019](BUG-DATA-0019.md) | Fee reminders can request payment for cancelled invoices | P1 | Major erroneous collection notification | STATIC FINDING / reproduction pending | FEES-REMINDER-001 |
 | [BUG-SEC-0008](BUG-SEC-0008.md) | Fee reminder queue bypasses external-channel consent and connection checks | P1 | Major notification policy inconsistency | STATIC FINDING / reproduction pending | SECURITY-NOTIFICATION-001 |
-| [BUG-SEC-0006](BUG-SEC-0006.md) | Minor guardian portal-access revocation is overridden by age rule | P1 | Major access revocation failure | STATIC FINDING / reproduction pending | SECURITY-GUARDIAN-003 |
+| [BUG-SEC-0006](BUG-SEC-0006.md) | Minor guardian portal-access revocation is overridden by age rule | P1 | Major access revocation failure | OPEN / runtime-confirmed,90 native revocation/grant/scope cases PASS; browser/device/critical pending | SECURITY-GUARDIAN-003 |
 | [BUG-SEC-0007](BUG-SEC-0007.md) | New portal accounts can restore access to inactive guardian records | P1 | Major guardian lifecycle bypass | STATIC FINDING / reproduction pending | SECURITY-GUARDIAN-004 |
 | [BUG-DATA-0018](BUG-DATA-0018.md) | Record selection can overwrite another record with stale or unloaded data | P1 | Major wrong-record overwrite risk | STATIC FINDING / reproduction pending | GUARDIAN-PROFILE-001 |
 | [BUG-DATA-0016](BUG-DATA-0016.md) | Finance and platform summaries combine currencies and present totals as INR | P1 | Major financial reporting integrity | STATIC FINDING / reproduction pending | FINANCE-CURRENCY-001 |

@@ -148,9 +148,10 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
         var children = await db.StudentGuardians.AsNoTracking()
             .Where(x => x.AcademyId == user.AcademyId && x.GuardianId == guardianId && x.CanAccessPortal && x.AccessRevokedAtUtc == null)
             .Join(db.Students.AsNoTracking(), x => x.StudentId, s => s.Id, (x, s) => new { s.Id, s.FirstName, s.LastName, s.Email, s.Phone, s.IsActive })
+            .OrderBy(x => x.FirstName + " " + x.LastName)
             .Select(x => new PortalChildSummary(x.Id, x.FirstName + " " + x.LastName, x.Email, x.Phone, x.IsActive,
                 db.Enrollments.Count(e => e.AcademyId == user.AcademyId && e.StudentId == x.Id && e.Status == "Active")))
-            .OrderBy(x => x.Name).ToListAsync(token);
+            .ToListAsync(token);
         return Ok(children);
     }
 
