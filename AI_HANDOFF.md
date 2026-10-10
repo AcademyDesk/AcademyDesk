@@ -2,6 +2,10 @@
 
 ## Current state
 
+## Enrollments + Batch Promotions feedback — 2026-10-10
+
+[Report](QA/REPORTS/PHASE_2B_ENROLLMENT_PROMOTION_FEEDBACK_REPAIR.md): five feedback actions repaired with durable success/readback distinction, uncertain/draft retention, synchronous pending guard, checked mount and exact prior payload/reset semantics. Promotion prompt cancel now sends no approval/rejection; required rejection/optional approval preserved.59 handler PASS, baseline5 PASS/54 FAIL; lint0/0, TypeScript/export83 PASS, responsive evidence in report. Queue27/28 after responsive checkpoint, Assessments creation next Sol Medium. BUG-FUNC-0016 lifecycle reason stays OPEN: real non-Active enrollment updates still require an absent field; synthetic feedback success is not workflow acceptance. Existing backend lifecycle/terminal/SQL safeguards unchanged. No API/Mini/main/Azure or financial-policy approval; unrelated32/28 continuity/evidence preserved. Maintain/display [checklist](ACADEMY_PROGRESS_CHECKLIST.md); no project switch.
+
 ## Academic Governance + Academic Periods feedback — 2026-10-10
 
 [Report](QA/REPORTS/PHASE_2B_GOVERNANCE_PERIODS_FEEDBACK_REPAIR.md): bounded create/prerequisite/status/year/term/close feedback repaired; captured native forms, matching-only reset, durable notices, separate confirmed-save/readback warning, uncertainty/draft retention, shared synchronous pending guard and checked initial loads. Exact payloads and existing prerequisite/year-closure authority unchanged; no API/domain/Mini changes.72 controlled PASS, starting commit7 PASS/65 FAIL, lint0/0, TypeScript/export83 PASS; responsive evidence recorded in report. Queue25/28 after this bounded checkpoint,3 remaining, not enterprise acceptance. NEXT Sol Medium Enrollments+Batch Promotions then Assessments creation. Financial proposals unapproved; FW1 prepared/not delivered; no project switch/main/Azure. Unrelated32/28 continuity and local evidence preserved. Maintain/display [progress checklist](ACADEMY_PROGRESS_CHECKLIST.md) each batch.

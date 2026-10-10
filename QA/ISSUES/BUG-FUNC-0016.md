@@ -1,5 +1,7 @@
 # BUG-FUNC-0016 — Enrollment status selector omits the required lifecycle reason
 
+2026-10-10 feedback-only successor: [Enrollment/Promotion report](../REPORTS/PHASE_2B_ENROLLMENT_PROMOTION_FEEDBACK_REPAIR.md) now displays backend validation messages, retains draft and guards duplicate writes. The status/endDate payload deliberately remains unchanged; LifecycleReason input/integration is still missing. This issue remains OPEN and is not closed by synthetic successful status-response feedback cases. Next bounded domain-linked UI reason/confirmation and real SQL/browser verification; do not relax the existing server requirement.
+
 | Field | Value |
 | --- | --- |
 | Status | OPEN |

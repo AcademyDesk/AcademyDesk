@@ -37,7 +37,7 @@ Scope: success/refresh/error/draft/pending feedback only. Existing payloads/doma
 - [x] [Final batch report](QA/REPORTS/PHASE_2B_TRIAL_CURRICULUM_FEEDBACK_REPAIR.md), route-count reconciliation and completed-batch handoff.
 - [ ] Real SQL/domain/role/tenant acceptance and physical Android/iOS remain outside this feedback-only batch.
 
-## Current batch — Academic Governance + Academic Periods feedback
+## Past batch — Academic Governance + Academic Periods feedback
 
 - [x] Durable scheme/prerequisite/status and year/term/create/close feedback; captured native forms reset only after confirmed writes.
 - [x] Draft retention, confirmed-write/failed-readback warning, uncertain result/no automatic retry and synchronous shared write guard.
@@ -47,6 +47,17 @@ Scope: success/refresh/error/draft/pending feedback only. Existing payloads/doma
 - [x] Responsive light/dark browser matrix:112/112 synthetic cases PASS; three mobile screenshots inspected, horizontal register scrolling retained.
 - [x] [Final report](QA/REPORTS/PHASE_2B_GOVERNANCE_PERIODS_FEEDBACK_REPAIR.md), route reconciliation and handoff prepared for scoped feature publication.
 - [ ] Real SQL/domain/role/tenant and physical Android/iOS acceptance remain separate.
+
+## Current batch — Enrollments + Batch Promotions feedback
+
+- [x] Durable create/status/decision notices; confirmed-write/readback warning and uncertain-result draft retention without automatic retry.
+- [x] Shared synchronous pending guard, disabled forms/row actions, checked initial lists and same-academy uncached readback.
+- [x] Exact payloads/optional nulls/draft resets retained; promotion prompt cancellation now performs no decision, rejection reason remains required.
+- [x]59 actual-handler cases PASS; frozen starting commit5 PASS/54 FAIL. Target lint0/0, TypeScript and83-page production export PASS.
+- [x] Responsive synthetic browser matrix80/80 PASS; two mobile screenshots inspected.
+- [x] [Report](QA/REPORTS/PHASE_2B_ENROLLMENT_PROMOTION_FEEDBACK_REPAIR.md) and continuity prepared for scoped feature publication.
+- [ ] Enrollment lifecycle-reason input/integration — [BUG-FUNC-0016](QA/ISSUES/BUG-FUNC-0016.md) remains OPEN; synthetic update success is not live domain acceptance.
+- [ ] Real SQL/role/tenant and physical Android/iOS/full-workflow acceptance remain separate.
 
 ## Original feedback routes — bounded checkpoint list
 
@@ -77,17 +88,18 @@ Tick marks below mean a feedback checkpoint, **not full enterprise workflow acce
 - [x] Curriculum — controlled/build/synthetic browser checkpoint
 - [x] Academic Governance — controlled/build/synthetic browser checkpoint
 - [x] Academic Periods — controlled/build/synthetic browser checkpoint
-- [ ] Enrollments
-- [ ] Batch Promotions
+- [x] Enrollments — feedback only; lifecycle-reason workflow remains OPEN
+- [x] Batch Promotions — controlled/build/synthetic browser feedback checkpoint
 - [ ] Assessments — creation feedback only; prior result-save repair retained
 
-Current bounded feedback count: **25/28 checkpointed,3 remaining**, after the Governance+Periods report. Never interpret this percentage as whole-app readiness.
+Current bounded feedback count: **27/28 checkpointed,1 remaining**, after the Enrollments+Promotions report. Never interpret this percentage as whole-app readiness.
 
 ## Next implementation batches
 
 - [x] Academic Governance + Academic Periods feedback — bounded checks completed; prerequisite and year-closure safeguards retained.
-- [ ] **Next: Enrollments + Batch Promotions feedback** — Sol Medium; preserve lifecycle/terminal-decision safeguards, escalate actual domain/authority gaps to High.
-- [ ] **Then: Assessments creation feedback** — Sol Medium; do not redo accepted grade/result/option/roster repairs.
+- [x] Enrollments + Batch Promotions feedback — bounded checkpoints completed; broader lifecycle/workflow acceptance remains open.
+- [ ] **Next: Assessments creation feedback** — Sol Medium; do not redo accepted grade/result/option/roster repairs.
+- [ ] Enrollment required lifecycle-reason UI/domain integration (BUG-FUNC-0016) — separate bounded task; server safeguard must remain intact.
 - [ ] FP1/FP2/FP3 explicit owner decisions and legacy disposition — pending, not inferred from “continue.”
 - [ ] Approved financial implementation — Sol High; accounting/tax/payroll review before applicable release. Policy-pending finance need not block safe feedback work.
 

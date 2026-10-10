@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { WorkspaceNav } from "@/components/workspace-nav";
 import {
   StandardDateField,
@@ -39,58 +39,53 @@ export default function BatchPromotionsPage() {
   const [sourceBatchId, setSourceBatchId] = useState("");
   const [targetBatchId, setTargetBatchId] = useState("");
   const [effectiveDate, setEffectiveDate] = useState("");
-  async function load(id?: string) {
-    try {
-      const academyId = id ?? academy?.id;
-      if (!academyId) return;
-      const [
-        studentResponse,
-        batchResponse,
-        enrollmentResponse,
-        promotionResponse,
-      ] = await Promise.all([
-        academyApi(`/api/academies/${academyId}/students`),
-        academyApi(`/api/academies/${academyId}/batches`),
-        academyApi(`/api/academies/${academyId}/enrollments`),
-        academyApi(`/api/academies/${academyId}/batch-promotions`),
-      ]);
-      if (
-        ![
-          studentResponse,
-          batchResponse,
-          enrollmentResponse,
-          promotionResponse,
-        ].every((response) => response.ok)
-      )
-        throw new Error();
-      setStudents(await studentResponse.json());
-      setBatches(await batchResponse.json());
-      setEnrolments(await enrollmentResponse.json());
-      setPromotions(await promotionResponse.json());
-      setNotice("");
-    } catch {
-      setNotice("Promotion data could not be loaded.");
-    }
+
+  const pending = useRef(false);
+
+  async function fetchWorkspace(id: string) {
+    const responses = await Promise.all([academyApi(`/api/academies/${id}/students`, { cache: "no-store" }), academyApi(`/api/academies/${id}/batches`, { cache: "no-store" }), academyApi(`/api/academies/${id}/enrollments`, { cache: "no-store" }), academyApi(`/api/academies/${id}/batch-promotions`, { cache: "no-store" })]);
+    if (!responses.every(response => response.ok)) throw new Error();
+    const data = await Promise.all(responses.map(response => response.json()));
+    if (!data.every(Array.isArray)) throw new Error();
+    return data;
+  }
+  function applyWorkspace(data: Awaited<ReturnType<typeof fetchWorkspace>>) {
+    setStudents(data[0]); setBatches(data[1]); setEnrolments(data[2]); setPromotions(data[3]);
   }
   useEffect(() => {
+    let active = true;
     void (async () => {
       try {
-        const response = await academyApi("/api/academies");
+        const response = await academyApi("/api/academies", { cache: "no-store" });
         if (!response.ok) throw new Error();
-        const academies: Academy[] = await response.json();
-        if (!academies[0])
-          return setNotice(
-            "Create an academy, learner and batch before using promotions.",
-          );
-        setAcademy(academies[0]);
-        await load(academies[0].id);
-      } catch {
-        setNotice(
-          "Promotion data could not be loaded. Please sign in and restart the API if needed.",
-        );
-      }
+        const rows: Academy[] = await response.json();
+        if (!Array.isArray(rows) || !rows[0]?.id) throw new Error();
+        const data = await fetchWorkspace(rows[0].id);
+        if (!active) return;
+        setStudents(data[0]); setBatches(data[1]); setEnrolments(data[2]); setPromotions(data[3]); setAcademy(rows[0]);
+
+        setNotice("");
+      } catch { if (active) setNotice("Promotion data could not be loaded. Please refresh or check your access."); }
     })();
+    return () => { active = false; };
   }, []);
+  async function mutate(request: () => Promise<Response>, success: string, reset?: () => void) {
+    if (!academy || pending.current) return;
+    pending.current = true; setSaving(true); setNotice("");
+    try {
+      const response = await request();
+      if (!response.ok) {
+        if (response.status >= 500) throw new Error();
+        const payload = await response.json().catch(() => null);
+        setNotice(typeof payload?.message === "string" ? payload.message : "The change was not accepted. Your draft has been retained.");
+        return;
+      }
+      reset?.(); setNotice(success);
+      try { applyWorkspace(await fetchWorkspace(academy.id)); }
+      catch { setNotice(`${success} The register could not be refreshed. Do not repeat the action; refresh to check the saved record.`); }
+    } catch { setNotice("The result could not be confirmed. Your draft has been retained. Check the register before trying again."); }
+    finally { pending.current = false; setSaving(false);  }
+  }
   const activeSourceBatches = useMemo(
     () =>
       studentId
@@ -115,62 +110,21 @@ export default function BatchPromotionsPage() {
       return setNotice(
         "Select the learner, source, target, and effective date.",
       );
-    setSaving(true);
-    try {
-      const data = new FormData(event.currentTarget);
-      const response = await academyApi(
-        `/api/academies/${academy.id}/batch-promotions`,
-        {
-          method: "POST",
-          headers: apiHeaders(true),
-          body: JSON.stringify({
-            studentId,
-            sourceBatchId,
-            targetBatchId,
-            effectiveDate,
-            notes: data.get("notes") || null,
-          }),
-        },
-      );
-      if (!response.ok) throw new Error();
-      setNotice("Promotion request recorded.");
-      setTargetBatchId("");
-      setEffectiveDate("");
-      await load();
-    } catch {
-      setNotice(
-        "Promotion could not be created. Select an active enrolment, different target batch, and valid date.",
-      );
-    } finally {
-      setSaving(false);
-    }
+    if (pending.current) return;
+    const form = event.currentTarget;
+    const data = new FormData(form);
+    await mutate(() => academyApi(`/api/academies/${academy.id}/batch-promotions`, {
+      method: "POST", headers: apiHeaders(true), body: JSON.stringify({ studentId, sourceBatchId, targetBatchId, effectiveDate, notes: data.get("notes") || null }),
+    }), "Promotion request recorded.", () => { setTargetBatchId(""); setEffectiveDate(""); });
   }
   async function decide(item: Promotion, status: "Approved" | "Rejected") {
-    if (!academy) return;
-    const notes =
-      window.prompt(
-        status === "Approved" ? "Approval note (optional)" : "Rejection reason",
-      ) ?? "";
-    if (status === "Rejected" && !notes.trim())
-      return setNotice("A rejection reason is required.");
-    setSaving(true);
-    try {
-      const response = await academyApi(
-        `/api/academies/${academy.id}/batch-promotions/${item.id}/decision`,
-        {
-          method: "PATCH",
-          headers: apiHeaders(true),
-          body: JSON.stringify({ status, notes }),
-        },
-      );
-      if (!response.ok) throw new Error();
-      setNotice(`Promotion ${status.toLowerCase()}.`);
-      await load();
-    } catch {
-      setNotice("Promotion decision could not be saved.");
-    } finally {
-      setSaving(false);
-    }
+    if (!academy || pending.current) return;
+    const notes = window.prompt(status === "Approved" ? "Approval note (optional)" : "Rejection reason");
+    if (notes === null) return;
+    if (status === "Rejected" && !notes.trim()) return setNotice("A rejection reason is required.");
+    await mutate(() => academyApi(`/api/academies/${academy.id}/batch-promotions/${item.id}/decision`, {
+      method: "PATCH", headers: apiHeaders(true), body: JSON.stringify({ status, notes }),
+    }), `Promotion ${status.toLowerCase()}.`);
   }
   const name = (id: string) => {
     const student = students.find((item) => item.id === id);
@@ -196,7 +150,7 @@ export default function BatchPromotionsPage() {
           </div>
         </header>
         {notice && (
-          <p className="enterprise-page-state governance-message">{notice}</p>
+          <p role="status" aria-live="polite" className="enterprise-page-state governance-message">{notice}</p>
         )}
         <section className="governance-form-grid">
           <form onSubmit={create} className="governance-panel">
@@ -206,9 +160,10 @@ export default function BatchPromotionsPage() {
                 <h2>New promotion request</h2>
               </div>
             </header>
-            <div className="governance-fields">
+            <fieldset disabled={saving || !academy} className="governance-fields m-0 min-w-0 border-0">
               <StandardSelectField
                 name="student"
+                disabled={saving || !academy}
                 value={studentId}
                 onChange={(id) => {
                   setStudentId(id);
@@ -222,6 +177,7 @@ export default function BatchPromotionsPage() {
               />
               <StandardSelectField
                 name="source"
+                disabled={saving || !academy}
                 value={sourceBatchId}
                 onChange={setSourceBatchId}
                 placeholder="Select active source batch"
@@ -232,6 +188,7 @@ export default function BatchPromotionsPage() {
               />
               <StandardSelectField
                 name="target"
+                disabled={saving || !academy}
                 value={targetBatchId}
                 onChange={setTargetBatchId}
                 placeholder="Select target batch"
@@ -262,7 +219,7 @@ export default function BatchPromotionsPage() {
               >
                 {saving ? "Saving…" : "Request promotion"}
               </button>
-            </div>
+            </fieldset>
           </form>
           <section className="governance-panel promotions-register">
             <header className="governance-panel-header">
