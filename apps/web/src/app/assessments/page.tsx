@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { WorkspaceNav } from "@/components/workspace-nav";
 import {
   StandardDateField,
@@ -43,6 +43,25 @@ type AssessmentOptions = {
 };
 const assessmentTypes = ["Performance", "Exam", "Recital", "Test", "Practical"];
 
+async function fetchAssessments(id: string) {
+    const [optionsResponse, assessmentResponse] = await Promise.all([
+      academyApi(`/api/academies/${id}/assessments/options`, { cache: "no-store" }),
+      academyApi(`/api/academies/${id}/assessments`, { cache: "no-store" }),
+    ]);
+    if (![optionsResponse, assessmentResponse].every((response) => response.ok)) {
+      const denied = [optionsResponse, assessmentResponse].some((response) => response.status === 403);
+      throw new Error(denied
+        ? "Assessments could not be loaded. Your account needs academic access and an enabled academic module."
+        : "Assessments could not be loaded. Please try again.");
+    }
+    const [options, assessmentData]: [AssessmentOptions, Assessment[]] = await Promise.all([
+      optionsResponse.json(), assessmentResponse.json(),
+    ]);
+    if (!options || ![options.batches, options.students, options.enrollments, options.gradingSchemes, assessmentData].every(Array.isArray))
+      throw new Error("Assessment options could not be loaded completely. Please try again.");
+    return { options, assessmentData };
+}
+
 export default function AssessmentsPage() {
   const [academy, setAcademy] = useState<Academy>();
   const [batches, setBatches] = useState<Batch[]>([]);
@@ -61,33 +80,12 @@ export default function AssessmentsPage() {
   const [gradingSchemeId, setGradingSchemeId] = useState("");
   const [message, setMessage] = useState("Loading assessments…");
   const [savingStudentId, setSavingStudentId] = useState("");
-  async function load(academyId?: string) {
-    const id = academyId ?? academy?.id;
-    if (!id) return;
-    const [optionsResponse, assessmentResponse] = await Promise.all([
-      academyApi(`/api/academies/${id}/assessments/options`, { cache: "no-store" }),
-      academyApi(`/api/academies/${id}/assessments`, { cache: "no-store" }),
-    ]);
-    if (![optionsResponse, assessmentResponse].every((response) => response.ok)) {
-      const denied = [optionsResponse, assessmentResponse].some((response) => response.status === 403);
-      throw new Error(denied
-        ? "Assessments could not be loaded. Your account needs academic access and an enabled academic module."
-        : "Assessments could not be loaded. Please try again.");
-    }
-    const [options, assessmentData]: [AssessmentOptions, Assessment[]] = await Promise.all([
-      optionsResponse.json(), assessmentResponse.json(),
-    ]);
-    if (!options || ![options.batches, options.students, options.enrollments, options.gradingSchemes, assessmentData].every(Array.isArray))
-      throw new Error("Assessment options could not be loaded completely. Please try again.");
-    setBatches(options.batches);
-    setStudents(options.students);
-    setEnrollments(options.enrollments);
-    setAssessments(assessmentData);
-    setGradingSchemes(options.gradingSchemes);
-    if (!batchId && options.batches.length) setBatchId(options.batches[0].id);
-    if (!assessmentId && assessmentData.length)
-      setAssessmentId(assessmentData[0].id);
-    setMessage("");
+  const [creating, setCreating] = useState(false);
+  const pendingWrite = useRef(false);
+  function applyWorkspace(data: Awaited<ReturnType<typeof fetchAssessments>>) {
+    setBatches(data.options.batches); setStudents(data.options.students);
+    setEnrollments(data.options.enrollments); setGradingSchemes(data.options.gradingSchemes);
+    setAssessments(data.assessmentData);
   }
   async function loadResults(id: string) {
     if (!academy || !id) return setResults([]);
@@ -99,57 +97,72 @@ export default function AssessmentsPage() {
     setResults(await response.json());
   }
   useEffect(() => {
+    let active = true;
     void (async () => {
       try {
-        const response = await academyApi("/api/academies", {
-          cache: "no-store",
-        });
+        const response = await academyApi("/api/academies", { cache: "no-store" });
         if (!response.ok) throw new Error();
         const academies: Academy[] = await response.json();
-        if (!academies[0])
-          return setMessage("Create your academy and batch first.");
-        setAcademy(academies[0]);
-        await load(academies[0].id);
+        if (!Array.isArray(academies)) throw new Error();
+        if (!academies[0]?.id) {
+          if (active) setMessage("Create your academy and batch first.");
+          return;
+        }
+        const { options, assessmentData } = await fetchAssessments(academies[0].id);
+        if (!active) return;
+        setBatches(options.batches); setStudents(options.students); setEnrollments(options.enrollments);
+        setAssessments(assessmentData); setGradingSchemes(options.gradingSchemes);
+        setBatchId(options.batches[0]?.id ?? ""); setAssessmentId(assessmentData[0]?.id ?? "");
+        setAcademy(academies[0]); setMessage("");
       } catch (error) {
-        setMessage(
-          error instanceof Error && error.message ? error.message : "Assessments could not be loaded. Please try again.",
-        );
+        if (active) setMessage(error instanceof Error && error.message ? error.message : "Assessments could not be loaded. Please try again.");
       }
     })();
+    return () => { active = false; };
   }, []);
   useEffect(() => {
-    void loadResults(assessmentId).catch(() =>
-      setMessage("Assessment results could not be loaded."),
-    );
+    let active = true;
+    void (async () => {
+      if (!academy || !assessmentId) { if (active) setResults([]); return; }
+      try {
+        const response = await academyApi(`/api/academies/${academy.id}/assessments/${assessmentId}/results`, { cache: "no-store" });
+        if (!response.ok) throw new Error();
+        const rows = await response.json();
+        if (active) setResults(rows);
+      } catch {
+        if (active) setMessage(previous => previous ? `${previous} Assessment results could not be loaded.` : "Assessment results could not be loaded.");
+      }
+    })();
+    return () => { active = false; };
   }, [academy, assessmentId]);
   async function createAssessment(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!academy || !batchId) return;
-    const response = await academyApi(
-      `/api/academies/${academy.id}/assessments`,
-      {
-        method: "POST",
-        headers: apiHeaders(true),
+    if (!academy || !batchId || pendingWrite.current) return;
+    pendingWrite.current = true; setCreating(true); setMessage("");
+    try {
+      const response = await academyApi(`/api/academies/${academy.id}/assessments`, {
+        method: "POST", headers: apiHeaders(true),
         body: JSON.stringify({
-          batchId,
-          title,
-          type,
-          maxScore: Number(maxScore),
-          gradingSchemeId: gradingSchemeId || null,
-          scheduledAtUtc: scheduledDate
-            ? new Date(`${scheduledDate}T${scheduledTime}:00`).toISOString()
-            : null,
+          batchId, title, type, maxScore: Number(maxScore), gradingSchemeId: gradingSchemeId || null,
+          scheduledAtUtc: scheduledDate ? new Date(`${scheduledDate}T${scheduledTime}:00`).toISOString() : null,
           isPublished: true,
         }),
-      },
-    );
-    if (!response.ok)
-      return setMessage("Enter a title and positive maximum score.");
-    setTitle("");
-    setScheduledDate("");
-    setGradingSchemeId("");
-    setMessage("");
-    await load();
+      });
+      if (!response.ok) {
+        if (response.status >= 500) throw new Error();
+        const details = await response.json().catch(() => null);
+        setMessage(typeof details?.message === "string" ? details.message : "Assessment could not be created. Your entries have been retained.");
+        return;
+      }
+      setTitle(""); setScheduledDate(""); setGradingSchemeId("");
+      setMessage("Assessment created.");
+      try {
+        const data = await fetchAssessments(academy.id);
+        applyWorkspace(data);
+        if (!assessmentId && data.assessmentData.length) setAssessmentId(data.assessmentData[0].id);
+      } catch { setMessage("Assessment created. The register could not be refreshed. Do not repeat the action; refresh to check the saved record."); }
+    } catch { setMessage("Assessment creation could not be confirmed. Your entries have been retained; check the register before retrying."); }
+    finally { pendingWrite.current = false; setCreating(false); }
   }
   const selected = assessments.find((item) => item.id === assessmentId);
   const roster = selected
@@ -172,7 +185,8 @@ export default function AssessmentsPage() {
     remarks: string,
     isGradeManual: boolean,
   ) {
-    if (!academy || !selected || Number.isNaN(score)) return;
+    if (!academy || !selected || Number.isNaN(score) || pendingWrite.current) return;
+    pendingWrite.current = true;
     setSavingStudentId(studentId);
     setMessage("");
     try {
@@ -205,6 +219,7 @@ export default function AssessmentsPage() {
     } catch {
       setMessage("Assessment result could not be confirmed. Your entries have been retained; check the saved result before retrying.");
     } finally {
+      pendingWrite.current = false;
       setSavingStudentId("");
     }
   }
@@ -236,9 +251,10 @@ export default function AssessmentsPage() {
                 <h2>Create assessment</h2>
               </div>
             </header>
-            <div className="assessments-fields">
+            <fieldset disabled={creating || Boolean(savingStudentId) || !academy} className="assessments-fields m-0 min-w-0 border-0">
               <StandardSelectField
                 name="batch"
+                disabled={creating || Boolean(savingStudentId) || !academy}
                 value={batchId}
                 onChange={setBatchId}
                 placeholder="Select batch"
@@ -259,6 +275,7 @@ export default function AssessmentsPage() {
               <div className="assessments-fields-two">
                 <StandardSelectField
                   name="assessment-type"
+                disabled={creating || Boolean(savingStudentId) || !academy}
                   value={type}
                   onChange={setType}
                   placeholder="Assessment type"
@@ -281,6 +298,7 @@ export default function AssessmentsPage() {
               </div>
               <StandardSelectField
                 name="grading-scheme"
+                disabled={creating || Boolean(savingStudentId) || !academy}
                 value={gradingSchemeId}
                 onChange={setGradingSchemeId}
                 placeholder="No scheme — manual grade"
@@ -304,12 +322,12 @@ export default function AssessmentsPage() {
                 />
               </div>
               <button
-                disabled={!academy || !batchId}
+                disabled={creating || Boolean(savingStudentId) || !academy || !batchId}
                 className="enterprise-action-button assessments-action"
               >
                 Create assessment
               </button>
-            </div>
+            </fieldset>
           </form>
           <section className="assessments-panel assessments-results-panel">
             <header className="assessments-panel-header">
@@ -321,6 +339,7 @@ export default function AssessmentsPage() {
             <div className="assessments-picker">
               <StandardSelectField
                 name="assessment"
+                disabled={creating || Boolean(savingStudentId) || !academy}
                 value={assessmentId}
                 onChange={setAssessmentId}
                 placeholder="Select assessment"
@@ -343,7 +362,7 @@ export default function AssessmentsPage() {
                       student={student}
                       result={currentResult(student.id)}
                       maxScore={selected.maxScore}
-                      saving={savingStudentId === student.id}
+                      saving={creating || Boolean(savingStudentId)}
                       onSave={saveResult}
                     />
                   ))}

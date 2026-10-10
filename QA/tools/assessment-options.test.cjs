@@ -8,8 +8,8 @@ const assessments=[{id:'x',batchId:'b',title:'Synthetic assessment',maxScore:100
 function nodes(n){return Array.isArray(n)?n.flatMap(nodes):!n||typeof n!=='object'?[]:[n,...nodes(n.props?.children)];}
 function text(n){return Array.isArray(n)?n.map(text).join(''):n==null||typeof n==='boolean'?'':typeof n==='object'?text(n.props?.children):String(n);}
 async function page(config={}) {
- let index=0,effectIndex=0;const state=new Map(),deps=[],pending=[],calls=[],module={exports:{}};
- const react={useState:v=>{const key=index++;if(!state.has(key))state.set(key,v);return[state.get(key),v=>state.set(key,typeof v==='function'?v(state.get(key)):v)];},useEffect:(fn,next)=>{const key=effectIndex++;if(!deps[key]||next.some((v,i)=>v!==deps[key][i])){deps[key]=next;pending.push(fn);}}};
+ let index=0,effectIndex=0,refIndex=0;const refs=[],state=new Map(),deps=[],pending=[],calls=[],module={exports:{}};
+ const react={useRef:v=>{const k=refIndex++;return refs[k]??(refs[k]={current:v});},useState:v=>{const key=index++;if(!state.has(key))state.set(key,v);return[state.get(key),v=>state.set(key,typeof v==='function'?v(state.get(key)):v)];},useEffect:(fn,next)=>{const key=effectIndex++;if(!deps[key]||next.some((v,i)=>v!==deps[key][i])){deps[key]=next;pending.push(fn);}}};
  const api=async(url,init={})=>{
   calls.push({url,...init});
   if(config.network&&url.endsWith('/options'))throw Error('Synthetic network outage');
@@ -24,7 +24,7 @@ async function page(config={}) {
   }};
  };
  new Function('require','module','exports',code)(n=>n==='react/jsx-runtime'?jsx:n==='react'?react:n==='@/components/design-system/controls'?{StandardSelectField:'select',StandardDateField:'date',StandardTimeField:'time'}:n==='@/components/workspace-nav'?{WorkspaceNav:'nav'}:n==='@/lib/api'?{academyApi:api,apiHeaders:()=>({})}:(()=>{throw Error(n)})(),module,module.exports);
- const render=()=>{index=0;effectIndex=0;return module.exports.default();};
+ const render=()=>{index=0;effectIndex=0;refIndex=0;return module.exports.default();};
  async function settle(){for(let i=0;i<4;i++){for(const fn of pending.splice(0))fn();await new Promise(r=>setImmediate(r));render();}}
  render();await settle();return{state,calls,render,settle};
 }

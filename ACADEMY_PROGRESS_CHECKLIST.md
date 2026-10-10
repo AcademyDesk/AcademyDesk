@@ -48,7 +48,7 @@ Scope: success/refresh/error/draft/pending feedback only. Existing payloads/doma
 - [x] [Final report](QA/REPORTS/PHASE_2B_GOVERNANCE_PERIODS_FEEDBACK_REPAIR.md), route reconciliation and handoff prepared for scoped feature publication.
 - [ ] Real SQL/domain/role/tenant and physical Android/iOS acceptance remain separate.
 
-## Current batch — Enrollments + Batch Promotions feedback
+## Past batch — Enrollments + Batch Promotions feedback
 
 - [x] Durable create/status/decision notices; confirmed-write/readback warning and uncertain-result draft retention without automatic retry.
 - [x] Shared synchronous pending guard, disabled forms/row actions, checked initial lists and same-academy uncached readback.
@@ -58,6 +58,16 @@ Scope: success/refresh/error/draft/pending feedback only. Existing payloads/doma
 - [x] [Report](QA/REPORTS/PHASE_2B_ENROLLMENT_PROMOTION_FEEDBACK_REPAIR.md) and continuity prepared for scoped feature publication.
 - [ ] Enrollment lifecycle-reason input/integration — [BUG-FUNC-0016](QA/ISSUES/BUG-FUNC-0016.md) remains OPEN; synthetic update success is not live domain acceptance.
 - [ ] Real SQL/role/tenant and physical Android/iOS/full-workflow acceptance remain separate.
+
+## Current batch — Assessments creation feedback
+
+- [x] Durable creation notice, confirmed-write/readback warning and uncertain-response draft retention; no automatic retry.
+- [x] Shared synchronous create/result pending guard; checked uncached initial workspace; exact create payload and matching-only reset preserved.
+- [x] Existing grading/options/roster/result-save safeguards retained:29 prior checks plus17 new checks,46/46 PASS; frozen creation baseline3 PASS/14 FAIL.
+- [x] Target lint0/0, TypeScript and83-page production export PASS.
+- [x] Responsive synthetic browser matrix32/32 PASS; light/dark mobile screenshots inspected.
+- [x] [Report](QA/REPORTS/PHASE_2B_ASSESSMENT_CREATE_FEEDBACK_REPAIR.md), route reconciliation and scoped handoff prepared.
+- [ ] Real SQL/role/tenant, physical Android/iOS and full-workflow acceptance remain separate; BUG-FUNC-0003 OPEN.
 
 ## Original feedback routes — bounded checkpoint list
 
@@ -90,23 +100,24 @@ Tick marks below mean a feedback checkpoint, **not full enterprise workflow acce
 - [x] Academic Periods — controlled/build/synthetic browser checkpoint
 - [x] Enrollments — feedback only; lifecycle-reason workflow remains OPEN
 - [x] Batch Promotions — controlled/build/synthetic browser feedback checkpoint
-- [ ] Assessments — creation feedback only; prior result-save repair retained
+- [x] Assessments — creation feedback checkpoint; prior result-save repair retained
 
-Current bounded feedback count: **27/28 checkpointed,1 remaining**, after the Enrollments+Promotions report. Never interpret this percentage as whole-app readiness.
+Current bounded feedback count: **28/28 checkpointed**, after the Assessments creation report. Live/domain/device acceptance remains open. Never interpret this as whole-app readiness.
 
 ## Next implementation batches
 
 - [x] Academic Governance + Academic Periods feedback — bounded checks completed; prerequisite and year-closure safeguards retained.
 - [x] Enrollments + Batch Promotions feedback — bounded checkpoints completed; broader lifecycle/workflow acceptance remains open.
-- [ ] **Next: Assessments creation feedback** — Sol Medium; do not redo accepted grade/result/option/roster repairs.
-- [ ] Enrollment required lifecycle-reason UI/domain integration (BUG-FUNC-0016) — separate bounded task; server safeguard must remain intact.
+- [x] Assessments creation feedback — existing grade/result/option/roster repairs retained.
+- [ ] **Next: Enrollment required lifecycle-reason UI/integration (BUG-FUNC-0016)** — Sol Medium for the existing contract; High for any authority/domain decision. Server safeguard must remain intact.
 - [ ] FP1/FP2/FP3 explicit owner decisions and legacy disposition — pending, not inferred from “continue.”
 - [ ] Approved financial implementation — Sol High; accounting/tax/payroll review before applicable release. Policy-pending finance need not block safe feedback work.
 
 ## Upcoming application-wide delivery gates
 
 - [ ] E1: finish remaining critical security/finance/media dispositions and missing fault/browser/device/SQL acceptance. Existing119 issue records/118 distinct groups are not119 untouched fixes; issues can have bounded repairs and remain OPEN.
-- [ ] E2: finish all28 original feedback-route checkpoints, then remaining live/role/device acceptance.
+- [x] E2 bounded portion: all28 original feedback-route checkpoints.
+- [ ] E2 remaining live/role/device/domain workflow acceptance; issue closure not inferred from synthetic checkpoints.
 - [ ] E3: shared PENTA prototype/component/token/version handoff; premium Manual visual foundation and Platform Owner → Admin → Teacher → Student rollout. Mini owns reusable AI UI; Academy owns Manual/host integration.
 - [ ] E4: Mini qualification; latest recorded86/94 is NOT accepted. Resolve failed language/context/provenance/capacity cases, then Academy linked inference/SQL/browser gate. No unchanged benchmark loops.
 - [ ] E5: complete conversation/history/context/artifact/privacy/recovery UX and versioned gateway contract.

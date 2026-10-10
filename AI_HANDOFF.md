@@ -2,6 +2,10 @@
 
 ## Current state
 
+## Assessments creation feedback — 2026-10-10
+
+[Report](QA/REPORTS/PHASE_2B_ASSESSMENT_CREATE_FEEDBACK_REPAIR.md): final original E2 route checkpoint,28/28 bounded feedback routes, not enterprise completion. Durable creation/readback distinction, retained uncertain/failed drafts and shared synchronous create/result guard; exact create/reset/grading/options/roster contracts preserved.46 handler checks PASS including29 unchanged prior assertions, frozen creation baseline3 PASS14 FAIL; lint0/0, TypeScript/export83 and32 synthetic responsive browser cases PASS. BUG-FUNC-0003 OPEN for live/role/device/domain gates. NEXT Sol Medium BUG-FUNC-0016 required enrollment lifecycle-reason UI/integration; High for authority/domain changes. No API/Mini/main/Azure or financial approval; unrelated32/28 continuity/evidence preserved. Maintain/display [checklist](ACADEMY_PROGRESS_CHECKLIST.md); no project switch required.
+
 ## Enrollments + Batch Promotions feedback — 2026-10-10
 
 [Report](QA/REPORTS/PHASE_2B_ENROLLMENT_PROMOTION_FEEDBACK_REPAIR.md): five feedback actions repaired with durable success/readback distinction, uncertain/draft retention, synchronous pending guard, checked mount and exact prior payload/reset semantics. Promotion prompt cancel now sends no approval/rejection; required rejection/optional approval preserved.59 handler PASS, baseline5 PASS/54 FAIL; lint0/0, TypeScript/export83 PASS, responsive evidence in report. Queue27/28 after responsive checkpoint, Assessments creation next Sol Medium. BUG-FUNC-0016 lifecycle reason stays OPEN: real non-Active enrollment updates still require an absent field; synthetic feedback success is not workflow acceptance. Existing backend lifecycle/terminal/SQL safeguards unchanged. No API/Mini/main/Azure or financial-policy approval; unrelated32/28 continuity/evidence preserved. Maintain/display [checklist](ACADEMY_PROGRESS_CHECKLIST.md); no project switch.

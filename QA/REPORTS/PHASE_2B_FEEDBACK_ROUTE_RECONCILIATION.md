@@ -6,6 +6,8 @@ Current progress after [Access Review Sign-off](PHASE_2B_SIGN_OFF_FEEDBACK_REPAI
 
 ## Retained checkpoints
 
+2026-10-10 latest successor: [Assessments creation](PHASE_2B_ASSESSMENT_CREATE_FEEDBACK_REPAIR.md) completes **28/28 original bounded feedback checkpoints**.46 handler checks (29 prior assertions retained),32 synthetic browser cases, lint/types/export83 PASS. Earlier snapshots preserved. BUG-FUNC-0003 remains OPEN for live/domain/role/device acceptance; next Sol Medium enrollment lifecycle-reason integration BUG-FUNC-0016, with server safeguard unchanged. Wider enterprise/AI/shared frontend/release gates remain open.
+
 2026-10-10 latest successor: [Enrollments+Batch Promotions](PHASE_2B_ENROLLMENT_PROMOTION_FEEDBACK_REPAIR.md) adds2 bounded checkpoints, **27/28 feedback routes checkpointed,1 remaining: Assessments creation** after responsive verification.59 handler/lint/types/export83 PASS; browser evidence in report. Earlier snapshots retained. Known lifecycle reason BUG-FUNC-0016 stays OPEN; do not confuse feedback checkpoint with domain/workflow acceptance. NEXT Sol Medium Assessments creation, then separate domain-reason integration; broader enterprise/AI/shared frontend/release gates remain open.
 
 2026-10-10 latest successor: [Academic Governance+Academic Periods](PHASE_2B_GOVERNANCE_PERIODS_FEEDBACK_REPAIR.md) adds2 bounded feedback checkpoints: **25/28 checkpointed,3 remaining** — Enrollments, Batch Promotions, Assessments creation only.72 controlled/lint/typecheck/83-page export PASS; browser evidence in report. Historical23/5,21/7 and17/11 snapshots below remain unchanged. NEXT Sol Medium Enrollments+Batch Promotions; [progress tracker](../../ACADEMY_PROGRESS_CHECKLIST.md) records per-batch evidence and open enterprise gates.
