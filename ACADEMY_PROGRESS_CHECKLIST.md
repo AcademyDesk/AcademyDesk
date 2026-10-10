@@ -104,7 +104,7 @@ Scope: success/refresh/error/draft/pending feedback only. Existing payloads/doma
 - [x] Target lint0/0, TypeScript and83-page webpack export PASS; [report](QA/REPORTS/PHASE_2B_ADMISSION_FEE_FEEDBACK_REPAIR.md), issue and scoped handoff prepared.
 - [ ] Real SQL/HTTP/role/tenant/physical-device/critical acceptance; existing issue and enterprise release gates OPEN.
 
-## Current batch — Student360 administrative-profile feedback
+## Past batch — Student360 administrative-profile feedback
 
 - [x] Durable polite success and distinct confirmed-write/display-failure guidance; denied/uncertain drafts retained without automatic retry.
 - [x] Synchronous duplicate guard and disabled fields/dates/notes; all13 fields and optional-date-null PUT preserved.
@@ -112,6 +112,14 @@ Scope: success/refresh/error/draft/pending feedback only. Existing payloads/doma
 - [x]18 controlled TSX checks and44 synthetic browser cases PASS (320/1440px, light/dark); mobile screenshots inspected.
 - [x] Target lint0/0, TypeScript and83-page webpack export PASS; [report](QA/REPORTS/PHASE_2B_STUDENT_PROFILE_FEEDBACK_REPAIR.md) and scoped handoff prepared.
 - [ ] Live SQL/Identity/role/tenant and physical Android/iOS/full-critical acceptance; BUG-FUNC-0003 remains OPEN.
+
+## Current batch — Teacher availability profile runtime repair
+
+- [x] BUG-API-0006 reproduced:4/26 controller failures; SQL stored-null GET500 after15 passing controls.
+- [x] One null-slot projection guard; optional storage/JSON fallback and valid slots preserved, no new schedule/permission rule.
+- [x]26 new+6 retained unit cases PASS;45 real SQL/Identity/HTTP cases PASS, fresh stored/readback and unauthorized no-write controls.
+- [x] Harness build0 warnings/0 errors;88/7 migrations, owned database/login cleanup and both owned-container removals verified; [report](QA/REPORTS/PHASE_2B_TEACHER_AVAILABILITY_REPAIR.md).
+- [ ] Teacher onboarding/profile browser, physical Android/iOS and full critical/release acceptance; issue OPEN.
 
 ## Original feedback routes — bounded checkpoint list
 
@@ -158,7 +166,8 @@ Current bounded feedback count: **28/28 checkpointed**, after the Assessments cr
 - [x] Shared fee editor loading/feedback lint gap — bounded proof complete, broader acceptance OPEN.
 - [x] Admission-fee loading/save feedback in Student Fee Details — bounded proof complete; broader acceptance OPEN.
 - [x] Student360 administrative-profile save feedback/pending/late-response gap — bounded UI proof; live privacy/role/SQL acceptance remains OPEN.
-- [ ] **Next: reconcile and execute the existing remaining live acceptance queue** — Sol High for authorization/privacy/SQL integration; Medium for bounded Manual UI implementation. Do not repeat completed synthetic feedback audits.
+- [x] Existing queue continuation: BUG-API-0006 teacher availability runtime reproduction/repair/native SQL acceptance; broader issue OPEN.
+- [ ] **Next: BUG-API-0001 optional onboarding date payload case** — inspect latest evidence and reproduce only the missing case; Medium for bounded form serialization, High for Identity/SQL/domain effects. Do not repeat accepted feedback audits.
 - [ ] Shared PENTA/Manual visual foundation: consume versioned FW1 delivery when available, continue independent Manual controls without claiming the shared AI frontend is delivered.
 - [ ] FP1/FP2/FP3 explicit owner decisions and legacy disposition — pending, not inferred from “continue.”
 - [ ] Approved financial implementation — Sol High; accounting/tax/payroll review before applicable release. Policy-pending finance need not block safe feedback work.

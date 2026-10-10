@@ -2,6 +2,10 @@
 
 ## Current state
 
+## Teacher availability profile runtime repair — 2026-10-10
+
+[Report](QA/REPORTS/PHASE_2B_TEACHER_AVAILABILITY_REPAIR.md): BUG-API-0006 reproduced (controller22 PASS/4 FAIL; native SQL15 controls then stored-null GET500), one null-slot projection guard preserves optional storage/JSON fallback/valid mixed slots. Fixed26 new+6 retained unit and45 real SQL/Identity/HTTP cases PASS; harness0/0,88/7 migrations and exact owned DB/login/container cleanup. Dirty Mini snapshot tested, unrelated changes not accepted/staged; evidence local. Issue/browser/device/full-critical/Mini/FW1/release OPEN, original28 feedback count retained. NEXT existing BUG-API-0001 optional onboarding date payload case; Medium bounded form serialization, High Identity/SQL/domain/privacy/release. No main/Azure/new plan/project switch; unrelated32/28 continuity preserved; maintain/display [checklist](ACADEMY_PROGRESS_CHECKLIST.md).
+
 ## Student360 administrative-profile feedback — 2026-10-10
 
 [Report](QA/REPORTS/PHASE_2B_STUDENT_PROFILE_FEEDBACK_REPAIR.md): keyed editor, durable polite success, confirmed-write/display-failure guidance, retained denied/uncertain drafts, synchronous duplicate/field/date/notes guards. Parent clears old profile while loading and ignores out-of-order reads; same-record draft retained. Exact13-field PUT/null dates/backend authority unchanged.18 controlled TSX/44 synthetic responsive cases PASS; lint0/0/types/export83 PASS, mobile screenshots reviewed. Initial test timing/name-selector errors fixed with assertions retained; local evidence preserved. BUG-FUNC-0003/live SQL/role/device/critical/Mini/FW1/release OPEN; original28 route count retained. NEXT reconcile existing live acceptance queue/shared visual delivery; Sol High for privacy/authorization/SQL, Medium for bounded UI. No main/Azure/project switch; unrelated32/28 continuity retained; maintain/display [checklist](ACADEMY_PROGRESS_CHECKLIST.md).

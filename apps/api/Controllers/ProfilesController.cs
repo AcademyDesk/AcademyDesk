@@ -185,7 +185,7 @@ public sealed class ProfilesController(AcademyDeskDbContext dbContext, Outstandi
         try
         {
             return (JsonSerializer.Deserialize<List<TeacherAvailabilitySummary>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? [])
-                .Where(slot => !string.IsNullOrWhiteSpace(slot.Day))
+                .Where(slot => slot is not null && !string.IsNullOrWhiteSpace(slot.Day))
                 .ToList();
         }
         catch (JsonException) { return []; }
