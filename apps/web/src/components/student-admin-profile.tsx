@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { academyApi, apiHeaders } from "@/lib/api";
 import { StandardDateField, StandardSelectField } from "@/components/design-system/controls";
 
@@ -48,13 +48,26 @@ export function StudentAdminProfile({
   profile,
   onSaved,
 }: Props) {
+  return <ProfileEditor key={JSON.stringify([academyId, studentId])} academyId={academyId} studentId={studentId} profile={profile} onSaved={onSaved} />;
+}
+
+function ProfileEditor({
+  academyId,
+  studentId,
+  profile,
+  onSaved,
+}: Props) {
   const [form, setForm] = useState(fromProfile(profile));
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
-  useEffect(() => setForm(fromProfile(profile)), [profile, studentId]);
+  const pending = useRef(false);
+  const mounted = useRef(false);
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
   const set = (key: keyof Profile, value: string) =>
-    setForm((current) => ({ ...current, [key]: value }));
+    { if (!pending.current) setForm((current) => ({ ...current, [key]: value })); };
   async function save() {
+    if (!mounted.current || pending.current || !academyId || !studentId) return;
+    pending.current = true;
     setSaving(true);
     setMessage("");
     try {
@@ -70,23 +83,31 @@ export function StudentAdminProfile({
           }),
         },
       );
-      const payload = await response.json().catch(() => null);
-      if (!response.ok)
-        throw new Error(payload?.message ?? "The profile could not be saved.");
-      onSaved(payload);
+      if (!mounted.current) return;
+      if (!response.ok) {
+        setMessage(response.status >= 500 ? "The profile change could not be confirmed. Your draft has been retained. Check the student record before retrying." : "The profile could not be saved. Check your access and entered details. Your draft has been retained.");
+        return;
+      }
       setMessage("Administrative profile saved.");
-    } catch (error) {
-      setMessage(
-        error instanceof Error
-          ? error.message
-          : "The profile could not be saved.",
-      );
+      try {
+        const payload: unknown = await response.json();
+        if (!payload || typeof payload !== "object" || Array.isArray(payload)) throw new Error();
+        const keys = Object.keys(fromProfile());
+        if (keys.some((key) => { const value = (payload as Record<string, unknown>)[key]; return !(key in payload) || value != null && typeof value !== "string"; })) throw new Error();
+        if (!mounted.current) return;
+        onSaved(payload as Profile);
+      } catch {
+        if (mounted.current) setMessage("Administrative profile saved. The updated profile could not be displayed; do not repeat the save. Refresh the student record to see the latest data.");
+      }
+    } catch {
+      if (mounted.current) setMessage("The profile change could not be confirmed. Your draft has been retained. Check the student record before retrying.");
     } finally {
-      setSaving(false);
+      pending.current = false;
+      if (mounted.current) setSaving(false);
     }
   }
   return (
-    <section className="surface-panel rounded-xl p-5">
+    <section className="surface-panel rounded-xl p-5 student-admin-profile-editor">
       <header className="student-admin-profile-header">
         <div className="min-w-0">
           <h3 className="font-semibold">Student 360 profile</h3>
@@ -99,7 +120,8 @@ export function StudentAdminProfile({
           {saving ? "Saving…" : "Save profile"}
         </button>
       </header>
-      {message && <p className="mt-3 text-sm text-amber-200">{message}</p>}
+      {message && <p role="status" aria-live="polite" className="mt-3 text-sm text-amber-200">{message}</p>}
+      <fieldset disabled={saving} className="min-w-0 border-0 p-0">
       <div className="mt-5 grid gap-3 md:grid-cols-2">
         <input
           value={form.studentNumber}
@@ -114,6 +136,7 @@ export function StudentAdminProfile({
           className="field"
         />
         <StandardSelectField
+          disabled={saving}
           name="student-gender"
           value={form.gender}
           onChange={(value) => set("gender", value)}
@@ -125,8 +148,8 @@ export function StudentAdminProfile({
             { value: "Prefer not to say", label: "Prefer not to say" },
           ]}
         />
-        <StandardDateField name="dateOfBirthDisplay" label="Date of birth" value={form.dateOfBirth} onChange={(value) => set("dateOfBirth", value)} />
-        <StandardDateField name="admissionDateDisplay" label="Admission date" value={form.admissionDate} onChange={(value) => set("admissionDate", value)} />
+        <StandardDateField key={saving ? "dob-saving" : "dob-editable"} name="dateOfBirthDisplay" label="Date of birth" value={form.dateOfBirth} onChange={(value) => set("dateOfBirth", value)} />
+        <StandardDateField key={saving ? "admission-saving" : "admission-editable"} name="admissionDateDisplay" label="Admission date" value={form.admissionDate} onChange={(value) => set("admissionDate", value)} />
         <input
           value={form.addressLine1}
           onChange={(e) => set("addressLine1", e.target.value)}
@@ -176,6 +199,7 @@ export function StudentAdminProfile({
         placeholder="Internal admin notes — never shown in portals"
         className="field mt-3 min-h-24"
       />
+      </fieldset>
     </section>
   );
 }

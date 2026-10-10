@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { academyApi } from "@/lib/api";
 import { StudentAdminProfile } from "@/components/student-admin-profile";
 import { StudentFeeArrangements } from "@/components/student-fee-arrangements";
@@ -85,17 +85,27 @@ export default function StudentProfilePage() {
   const search = useSearchParams();
   const requested = search.get("studentId") ?? "";
   const createdNotice = search.get("notice") === "student-created";
+  return <StudentProfileWorkspace key={requested} requested={requested} createdNotice={createdNotice} />;
+}
+
+function StudentProfileWorkspace({ requested, createdNotice }: { requested: string; createdNotice: boolean }) {
   const [academyId, setAcademyId] = useState("");
   const [students, setStudents] = useState<Student[]>([]);
   const [studentId, setStudentId] = useState(requested);
   const [profile, setProfile] = useState<Profile>();
   const [message, setMessage] = useState("Loading student records…");
   const [detail, setDetail] = useState<StudentDetail | null>(null);
+  const readVersion = useRef(0);
   useEffect(() => {
+    let active = true;
+    const version = ++readVersion.current;
+    const invalidateReads = () => { readVersion.current++; };
     void (async () => {
       try {
         const academies = await academyApi("/api/academies");
+        if (!academies.ok) throw new Error();
         const academy = (await academies.json())[0];
+        if (!active || version !== readVersion.current) return;
         if (!academy)
           return setMessage(
             "Create an academy before opening student records.",
@@ -105,6 +115,8 @@ export default function StudentProfilePage() {
           `/api/academies/${academy.id}/students`,
         );
         const rows: Student[] = await response.json();
+        if (!response.ok || !Array.isArray(rows)) throw new Error();
+        if (!active || version !== readVersion.current) return;
         setStudents(rows);
         const selected = requested || rows[0]?.id || "";
         setStudentId(selected);
@@ -112,22 +124,39 @@ export default function StudentProfilePage() {
           const detail = await academyApi(
             `/api/academies/${academy.id}/students/${selected}/profile`,
           );
-          if (detail.ok) setProfile(await detail.json());
+          if (!detail.ok) throw new Error();
+          const value: unknown = await detail.json();
+          if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error();
+          if (!active || version !== readVersion.current) return;
+          setProfile(value as Profile);
         }
         setMessage("");
       } catch {
-        setMessage("Student records could not be loaded.");
+        if (active && version === readVersion.current) setMessage("Student records could not be loaded.");
       }
     })();
+    return () => { active = false; invalidateReads(); };
   }, [requested]);
   async function select(id: string) {
+    const version = ++readVersion.current;
     setStudentId(id);
     setDetail(null);
+    setProfile(undefined);
+    setMessage(id ? "Loading student record…" : "Select a student.");
     if (!academyId || !id) return;
-    const response = await academyApi(
-      `/api/academies/${academyId}/students/${id}/profile`,
-    );
-    if (response.ok) setProfile(await response.json());
+    try {
+      const response = await academyApi(
+        `/api/academies/${academyId}/students/${id}/profile`,
+      );
+      if (!response.ok) throw new Error();
+      const value: unknown = await response.json();
+      if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error();
+      if (version !== readVersion.current) return;
+      setProfile(value as Profile);
+      setMessage("");
+    } catch {
+      if (version === readVersion.current) setMessage("Student record could not be loaded. Refresh the page before editing.");
+    }
   }
   const student = students.find((item) => item.id === studentId);
   const balance = (item: Invoice) => item.status === "Cancelled" ? 0 : Math.max(0, item.totalAmount - (item.adjustedAmount ?? 0) - (item.paidAmount ?? 0));
@@ -173,7 +202,7 @@ export default function StudentProfilePage() {
         </div>
       </section>
       {createdNotice && <p className="enterprise-page-state student-360-message" role="status">Student created successfully. You can now enrol the student, add fees, or update their profile.</p>}
-      {message && <p className="enterprise-page-state student-360-message">{message}</p>}
+      {message && <p role="status" aria-live="polite" className="enterprise-page-state student-360-message">{message}</p>}
       {student && profile && (
         <>
           <section className="student-360-summary-grid">

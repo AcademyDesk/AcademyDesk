@@ -96,13 +96,22 @@ Scope: success/refresh/error/draft/pending feedback only. Existing payloads/doma
 - [x] Target lint0/0, TypeScript and83-page webpack export PASS; [report](QA/REPORTS/PHASE_2B_SUBJECT_FEE_FEEDBACK_REPAIR.md) and scoped handoff prepared.
 - [ ] Live SQL/HTTP/role/tenant, physical Android/iOS and critical workflow acceptance remain separate; existing issues OPEN.
 
-## Current batch — Admission-fee loading/save feedback
+## Past batch — Admission-fee loading/save feedback
 
 - [x] Checked initial details/workspace; keyed editor isolates late loads/saves across students; failed reads cannot enable saving.
 - [x] Durable polite success, retained values/drafts, denied/uncertain guidance and synchronous duplicate/date/pending guards; optional nulls/zero/precision/PUT/domain unchanged.
 - [x]21 new +17 retained handler checks PASS;52 synthetic responsive cases and88 retained decimal cases PASS; mobile screenshots inspected.
 - [x] Target lint0/0, TypeScript and83-page webpack export PASS; [report](QA/REPORTS/PHASE_2B_ADMISSION_FEE_FEEDBACK_REPAIR.md), issue and scoped handoff prepared.
 - [ ] Real SQL/HTTP/role/tenant/physical-device/critical acceptance; existing issue and enterprise release gates OPEN.
+
+## Current batch — Student360 administrative-profile feedback
+
+- [x] Durable polite success and distinct confirmed-write/display-failure guidance; denied/uncertain drafts retained without automatic retry.
+- [x] Synchronous duplicate guard and disabled fields/dates/notes; all13 fields and optional-date-null PUT preserved.
+- [x] Keyed student editor preserves same-record draft; switching clears the old profile before loading, and late reads/writes cannot overwrite the new selection.
+- [x]18 controlled TSX checks and44 synthetic browser cases PASS (320/1440px, light/dark); mobile screenshots inspected.
+- [x] Target lint0/0, TypeScript and83-page webpack export PASS; [report](QA/REPORTS/PHASE_2B_STUDENT_PROFILE_FEEDBACK_REPAIR.md) and scoped handoff prepared.
+- [ ] Live SQL/Identity/role/tenant and physical Android/iOS/full-critical acceptance; BUG-FUNC-0003 remains OPEN.
 
 ## Original feedback routes — bounded checkpoint list
 
@@ -148,7 +157,8 @@ Current bounded feedback count: **28/28 checkpointed**, after the Assessments cr
 - [x] Shared subject-fee fractional-input repair (BUG-FUNC-0008) — bounded browser proof; broader issue acceptance OPEN.
 - [x] Shared fee editor loading/feedback lint gap — bounded proof complete, broader acceptance OPEN.
 - [x] Admission-fee loading/save feedback in Student Fee Details — bounded proof complete; broader acceptance OPEN.
-- [ ] **Next: Student360 administrative-profile save feedback/pending/late-response gap** — Sol Medium for bounded UI; High if privacy/authority/domain changes are needed.
+- [x] Student360 administrative-profile save feedback/pending/late-response gap — bounded UI proof; live privacy/role/SQL acceptance remains OPEN.
+- [ ] **Next: reconcile and execute the existing remaining live acceptance queue** — Sol High for authorization/privacy/SQL integration; Medium for bounded Manual UI implementation. Do not repeat completed synthetic feedback audits.
 - [ ] Shared PENTA/Manual visual foundation: consume versioned FW1 delivery when available, continue independent Manual controls without claiming the shared AI frontend is delivered.
 - [ ] FP1/FP2/FP3 explicit owner decisions and legacy disposition — pending, not inferred from “continue.”
 - [ ] Approved financial implementation — Sol High; accounting/tax/payroll review before applicable release. Policy-pending finance need not block safe feedback work.
