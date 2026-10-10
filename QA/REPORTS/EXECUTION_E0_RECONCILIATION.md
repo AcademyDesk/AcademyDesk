@@ -119,7 +119,7 @@ Legend: inherited states are prior bounded evidence, not new verification. REPRO
 | [BUG-FUNC-0013](../ISSUES/BUG-FUNC-0013.md) | REPRODUCE | Provide permission-appropriate teacher options for Sales trial booking. | Exact source SHA256 matches accepted audit |
 | [BUG-FUNC-0014](../ISSUES/BUG-FUNC-0014.md) | REPRODUCE | Normalize blank sequence consistently with minimum-one contract. | Exact source SHA256 matches accepted audit |
 | [BUG-FUNC-0015](../ISSUES/BUG-FUNC-0015.md) | REPRODUCE | Align scheme lifecycle controller permissions with delegated academic setup rights. | Exact source SHA256 matches accepted audit |
-| [BUG-FUNC-0016](../ISSUES/BUG-FUNC-0016.md) | REPRODUCE | Supply and validate lifecycle reason when changing enrollment status. | Exact source SHA256 matches accepted audit |
+| [BUG-FUNC-0016](../ISSUES/BUG-FUNC-0016.md) | RETEST | Inline lifecycle reason/explicit Save repaired;79 controlled,44 synthetic browser,28 native API/SQL PASS. Direct linked browser/device/stale-concurrent/critical acceptance pending. | [Lifecycle reason](PHASE_2B_ENROLLMENT_LIFECYCLE_REASON_REPAIR.md) |
 | [BUG-FUNC-0017](../ISSUES/BUG-FUNC-0017.md) | REPRODUCE | Honor waitlist-only enrollment policy without bypassing capacity/prerequisites. | Exact source SHA256 matches accepted audit |
 | [BUG-FUNC-0018](../ISSUES/BUG-FUNC-0018.md) | REPRODUCE | Replace forbidden broad lookup dependencies with scoped options; preserve action permissions. | Current source spot-check; no complete retest |
 | [BUG-FUNC-0019](../ISSUES/BUG-FUNC-0019.md) | RETEST | Teaching-time contract repaired; finish browser/full workflow acceptance. | [BATCH_TIMES_REPAIR ](PHASE_2B_BATCH_TIMES_REPAIR.md), [BATCH_PRESERVATION_REPAIR ](PHASE_2B_BATCH_PRESERVATION_REPAIR.md) |

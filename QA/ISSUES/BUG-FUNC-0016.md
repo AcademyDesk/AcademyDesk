@@ -1,12 +1,14 @@
 # BUG-FUNC-0016 — Enrollment status selector omits the required lifecycle reason
 
+2026-10-10 repair successor: [Lifecycle-reason report](../REPORTS/PHASE_2B_ENROLLMENT_LIFECYCLE_REASON_REPAIR.md) replaces immediate status writes with inline review/required reason/explicit Save/Cancel.79 controlled/44 synthetic browser/28 native SQL+Identity+HTTP cases PASS; persisted trimmed reasons and rejected/foreign/unauthorized no-write controls, existing backend unchanged. Failed/uncertain reason drafts retained, only confirmed row draft reset. Issue stays OPEN for directly linked browser/SQL, physical Android/iOS, stale/concurrent and complete critical regression; earlier static/feedback-only history below is retained, not the latest state.
+
 2026-10-10 feedback-only successor: [Enrollment/Promotion report](../REPORTS/PHASE_2B_ENROLLMENT_PROMOTION_FEEDBACK_REPAIR.md) now displays backend validation messages, retains draft and guards duplicate writes. The status/endDate payload deliberately remains unchanged; LifecycleReason input/integration is still missing. This issue remains OPEN and is not closed by synthetic successful status-response feedback cases. Next bounded domain-linked UI reason/confirmation and real SQL/browser verification; do not relax the existing server requirement.
 
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | STATIC-FINDING |
-| Final verification | NOT RUN |
+| Confirmation status | CONTROLLED-REPRODUCED / bounded UI repair / native API-SQL contract verified |
+| Final verification |79 controlled,44 synthetic browser,28 native SQL/HTTP PASS; direct linked/device/critical OPEN |
 | Severity | Major workflow blocked |
 | Priority | P1 |
 | Category | FUNC |
@@ -15,10 +17,10 @@
 | Screen / route | /enrollments |
 | API | PUT enrollments/{enrollmentId} |
 | Environment | Source review of local working tree; runtime production state not inferred |
-| Device/viewport | NOT RUN; use QA/06_DEVICE_VIEWPORT_MATRIX.md where UI applies |
+| Device/viewport |320/1440px light/dark synthetic browser PASS; physical Android/iOS NOT RUN |
 | Baseline | 20bb6047f9edf733ac8e2a226621cc582ec54b3c + pre-existing student UI diff |
 | Discovery test / review ID | BATCH-LIFECYCLE-001 |
-| Evidence classification | Static trace; runtime reproduction pending |
+| Evidence classification | Actual-handler UI, synthetic browser and separate real API/SQL contract; directly linked browser pending |
 | Preconditions | Isolated synthetic fixture from QA/10_TEST_DATA_STRATEGY.md; never customer data |
 | Reproduction frequency | Not measured; reproduction instructions are proposed |
 | Source | apps/web/src/app/enrollments/page.tsx:51 |
@@ -32,9 +34,9 @@
 | API response | Not captured for this issue; use synthetic request/response in isolated reproduction |
 | Database before/after | Not executed; fixture and fresh-context assertions defined below |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | Not implemented (Phase 1) |
-| Retest result | NOT RUN |
-| Regression result | NOT RUN |
+| Fix commit | Scoped lifecycle-reason UI repair; see successor report/feature history |
+| Retest result |20 lifecycle handlers,44 synthetic browser,28 native API/SQL PASS |
+| Regression result |59 retained feedback checks PASS; full critical/device/stale-concurrent pending |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
 ## Exact reproduction

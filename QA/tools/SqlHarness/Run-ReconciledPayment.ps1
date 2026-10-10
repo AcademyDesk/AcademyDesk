@@ -1,5 +1,5 @@
 # Fresh local owned SQL only. Real auth/API and strict selected finance regression.
-param([ValidateSet('GuardianRevocation','TeacherLifecycle','PentaFoundation','Reconciliation','Adjustment','Payroll','Transition','TransitionRace','ReconcileVoidRace','ApprovalRace','Consumers','Access','AuditBaseline','AuditFixed','PeopleBaseline','PeopleFixed','LinkedBaseline','LinkedFixed','BranchBaseline','BranchFixed','Lookups','Governance','CollectionsBaseline','Collections','InvoiceSettingsBaseline','InvoiceSettings','BranchAddressBaseline','BranchAddress','BatchTimesBaseline','BatchTimes','YearClosure','CoursePrerequisites','CoursePreservation','PromotionDecisions','AssessmentGrades','AssessmentRoster','AssessmentAccess','AssessmentOptions','AttendanceNotes','CalendarDetails','ScheduleDefaults','LeaveIdentity','MakeupLocation','RoleReplacement','RoleRevocation','SessionRevocationRepair','SessionRevocation','RefreshConcurrency','SessionRefresh','BrowserPayments','BrowserApproval','BrowserCertificate','BrowserSession','BrowserProvisioning','CollectionRace','AdjustmentRace','ProvisioningConflict','ProvisioningConcurrency','AcademyProvisioning','PortalProvisioning','PlatformProvisioning','TrialDuration','TenantPlan','PlatformBilling','ActivityDeletion','AnnouncementAudience','GuardianFlags','CertificateFamily','CertificateEnrollment','ComplianceIdentity','ResourceScope','PracticeIdentity','SubmissionIdentity','ReviewContext','MarketingConsent','TemplateState','PreferenceAccess','InboxLifecycle','NotificationChannel','CommunicationRoundtrip','BatchPreservationBaseline','BatchPreservation')][string]$Module = 'Reconciliation')
+param([ValidateSet('EnrollmentLifecycle','GuardianRevocation','TeacherLifecycle','PentaFoundation','Reconciliation','Adjustment','Payroll','Transition','TransitionRace','ReconcileVoidRace','ApprovalRace','Consumers','Access','AuditBaseline','AuditFixed','PeopleBaseline','PeopleFixed','LinkedBaseline','LinkedFixed','BranchBaseline','BranchFixed','Lookups','Governance','CollectionsBaseline','Collections','InvoiceSettingsBaseline','InvoiceSettings','BranchAddressBaseline','BranchAddress','BatchTimesBaseline','BatchTimes','YearClosure','CoursePrerequisites','CoursePreservation','PromotionDecisions','AssessmentGrades','AssessmentRoster','AssessmentAccess','AssessmentOptions','AttendanceNotes','CalendarDetails','ScheduleDefaults','LeaveIdentity','MakeupLocation','RoleReplacement','RoleRevocation','SessionRevocationRepair','SessionRevocation','RefreshConcurrency','SessionRefresh','BrowserPayments','BrowserApproval','BrowserCertificate','BrowserSession','BrowserProvisioning','CollectionRace','AdjustmentRace','ProvisioningConflict','ProvisioningConcurrency','AcademyProvisioning','PortalProvisioning','PlatformProvisioning','TrialDuration','TenantPlan','PlatformBilling','ActivityDeletion','AnnouncementAudience','GuardianFlags','CertificateFamily','CertificateEnrollment','ComplianceIdentity','ResourceScope','PracticeIdentity','SubmissionIdentity','ReviewContext','MarketingConsent','TemplateState','PreferenceAccess','InboxLifecycle','NotificationChannel','CommunicationRoundtrip','BatchPreservationBaseline','BatchPreservation')][string]$Module = 'Reconciliation')
 $ErrorActionPreference = 'Stop'
 $qaRepo = (Resolve-Path (Join-Path $PSScriptRoot '../../..')).Path
 if (($Module -eq 'PentaFoundation' -and $env:QA_PENTA_BROWSER -eq '1') -or ($Module -eq 'CalendarDetails' -and $env:QA_CALENDAR_BROWSER -eq '1')) {
@@ -64,6 +64,7 @@ try {
     if ($Module -eq 'SessionRefresh') { $qaSwitch = '--audit-session-refresh' }
     if ($Module -eq 'RefreshConcurrency') { $qaSwitch = '--audit-refresh-concurrency' }
     if ($Module -eq 'CertificateEnrollment') { $qaSwitch = '--audit-certificate-enrollment' }
+    if ($Module -eq 'EnrollmentLifecycle') { $qaSwitch = '--audit-enrollment-lifecycle' }
     if ($Module -eq 'ComplianceIdentity') { $qaSwitch = '--audit-compliance-identity' }
     if ($Module -eq 'PracticeIdentity') { $qaSwitch = '--audit-practice-identity' }
     if ($Module -eq 'SubmissionIdentity') { $qaSwitch = '--audit-submission-identity' }
@@ -112,6 +113,10 @@ try {
         } elseif ($Module -eq 'GuardianRevocation') {
             $qaHarness = Join-Path $qaRepo '.build-check/guardian-revocation-sql/bin/SqlHarness/debug/SqlHarness.dll'
             if (!(Test-Path -LiteralPath $qaHarness)) { throw 'Build the GuardianRevocation harness with --artifacts-path .build-check/guardian-revocation-sql first.' }
+            $qaCommand = @($qaHarness, $qaRun, $qaPort, $qaContainer, $qaSwitch)
+        } elseif ($Module -eq 'EnrollmentLifecycle') {
+            $qaHarness = Join-Path $qaRepo '.build-check/enrollment-lifecycle-sql/bin/SqlHarness/debug/SqlHarness.dll'
+            if (!(Test-Path -LiteralPath $qaHarness)) { throw 'Build the isolated enrollment lifecycle harness first.' }
             $qaCommand = @($qaHarness, $qaRun, $qaPort, $qaContainer, $qaSwitch)
         } elseif ($Module -eq 'TeacherLifecycle') {
             $qaHarness = Join-Path $qaRepo '.build-check/teacher-lifecycle-sql/bin/SqlHarness/debug/SqlHarness.dll'

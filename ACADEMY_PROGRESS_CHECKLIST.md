@@ -59,7 +59,7 @@ Scope: success/refresh/error/draft/pending feedback only. Existing payloads/doma
 - [ ] Enrollment lifecycle-reason input/integration — [BUG-FUNC-0016](QA/ISSUES/BUG-FUNC-0016.md) remains OPEN; synthetic update success is not live domain acceptance.
 - [ ] Real SQL/role/tenant and physical Android/iOS/full-workflow acceptance remain separate.
 
-## Current batch — Assessments creation feedback
+## Past batch — Assessments creation feedback
 
 - [x] Durable creation notice, confirmed-write/readback warning and uncertain-response draft retention; no automatic retry.
 - [x] Shared synchronous create/result pending guard; checked uncached initial workspace; exact create payload and matching-only reset preserved.
@@ -68,6 +68,16 @@ Scope: success/refresh/error/draft/pending feedback only. Existing payloads/doma
 - [x] Responsive synthetic browser matrix32/32 PASS; light/dark mobile screenshots inspected.
 - [x] [Report](QA/REPORTS/PHASE_2B_ASSESSMENT_CREATE_FEEDBACK_REPAIR.md), route reconciliation and scoped handoff prepared.
 - [ ] Real SQL/role/tenant, physical Android/iOS and full-workflow acceptance remain separate; BUG-FUNC-0003 OPEN.
+
+## Current batch — Enrollment lifecycle-reason workflow
+
+- [x] Inline review: select status, enter required reason for non-Active changes, Save or Cancel; selection alone sends no write.
+- [x] Reason/status draft retention on denied/uncertain responses; matching-only reset after confirmation; original creation/end-date semantics and server safeguard retained.
+- [x]79 controlled cases PASS:59 retained feedback cases adapted to explicit Save/reason contract plus20 new lifecycle checks.
+- [x]44 synthetic responsive browser cases PASS; mobile light/dark screenshots inspected; lint0/0, TypeScript and webpack export83 PASS.
+- [x]28 real Identity/HTTP/disposable-SQL cases PASS,88/7 migrations, scoped persistence/readback/no-write controls; owned cleanup verified.
+- [x] [Report](QA/REPORTS/PHASE_2B_ENROLLMENT_LIFECYCLE_REASON_REPAIR.md), issue evidence and scoped handoff prepared.
+- [ ] Direct live browser-to-SQL, physical Android/iOS, stale-record/concurrent and full critical workflow acceptance; BUG-FUNC-0016 remains OPEN.
 
 ## Original feedback routes — bounded checkpoint list
 
@@ -98,7 +108,7 @@ Tick marks below mean a feedback checkpoint, **not full enterprise workflow acce
 - [x] Curriculum — controlled/build/synthetic browser checkpoint
 - [x] Academic Governance — controlled/build/synthetic browser checkpoint
 - [x] Academic Periods — controlled/build/synthetic browser checkpoint
-- [x] Enrollments — feedback only; lifecycle-reason workflow remains OPEN
+- [x] Enrollments — feedback and lifecycle-reason UI/native SQL checkpoint; broader workflow acceptance OPEN
 - [x] Batch Promotions — controlled/build/synthetic browser feedback checkpoint
 - [x] Assessments — creation feedback checkpoint; prior result-save repair retained
 
@@ -109,7 +119,9 @@ Current bounded feedback count: **28/28 checkpointed**, after the Assessments cr
 - [x] Academic Governance + Academic Periods feedback — bounded checks completed; prerequisite and year-closure safeguards retained.
 - [x] Enrollments + Batch Promotions feedback — bounded checkpoints completed; broader lifecycle/workflow acceptance remains open.
 - [x] Assessments creation feedback — existing grade/result/option/roster repairs retained.
-- [ ] **Next: Enrollment required lifecycle-reason UI/integration (BUG-FUNC-0016)** — Sol Medium for the existing contract; High for any authority/domain decision. Server safeguard must remain intact.
+- [x] Enrollment required lifecycle-reason UI/native SQL integration (BUG-FUNC-0016) — server safeguard intact; direct browser/device/critical gates remain OPEN.
+- [ ] **Next: shared subject-fee fractional-input gap (BUG-FUNC-0008)** — Sol Medium, retain existing minimum/decimal storage/domain policy; reproduce native validity before bounded repair.
+- [ ] Shared PENTA/Manual visual foundation: consume versioned FW1 delivery when available, continue independent Manual controls without claiming the shared AI frontend is delivered.
 - [ ] FP1/FP2/FP3 explicit owner decisions and legacy disposition — pending, not inferred from “continue.”
 - [ ] Approved financial implementation — Sol High; accounting/tax/payroll review before applicable release. Policy-pending finance need not block safe feedback work.
 

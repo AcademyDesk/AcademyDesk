@@ -51,7 +51,7 @@ const server = http.createServer((req, res) => { try {
       });
       await page.goto(origin + '/' + (promo ? 'batch-promotions' : 'enrollments') + '?studentId=student');
       await page.getByRole('button', { name: promo ? 'Approve' : 'Enrol student', exact: true }).waitFor();
-      const form = page.locator('form');
+      const form = page.locator('form').first();
       if (promo) {
         for (const [index, label] of [[0, 'Synthetic Learner'], [1, 'Source'], [2, 'Target · 0/10']]) { await form.locator('.standard-select-trigger').nth(index).click(); await page.getByRole('option', { name: label, exact: true }).click(); }
         await form.locator('textarea').fill(' Draft note ');
@@ -59,7 +59,7 @@ const server = http.createServer((req, res) => { try {
       await form.locator('.standard-date-trigger').click(); await page.getByLabel('Select year').selectOption('2026'); await page.getByLabel('Select month').selectOption('9'); await page.locator('.standard-date-days button[data-current="true"]').filter({ hasText: /^20$/ }).click();
       if (action === 'create') await page.getByRole('button', { name: promo ? 'Request promotion' : 'Enrol student', exact: true }).click();
       else if (promo) await page.getByRole('button', { name: action === 'approve' ? 'Approve' : 'Reject', exact: true }).click();
-      else await page.locator('li select').selectOption('Paused');
+      else { await page.locator('li select').selectOption('Paused'); await page.getByLabel('Lifecycle reason (required)', {exact:true}).fill(' Decision note '); await page.getByRole('button', {name:'Save status',exact:true}).click(); }
       const success = promo ? action === 'create' ? 'Promotion request recorded.' : action === 'approve' ? 'Promotion approved.' : 'Promotion rejected.' : action === 'create' ? 'Enrolment created.' : 'Enrolment updated.';
       const failed = ['rejected', 'uncertain-committed'].includes(scenario), notice = page.getByRole('status');
       await notice.filter({ hasText: failed ? scenario === 'rejected' ? 'Synthetic policy refusal.' : 'could not be confirmed' : success }).waitFor(); await page.waitForFunction(() => !document.querySelector('fieldset').disabled);
@@ -68,7 +68,7 @@ const server = http.createServer((req, res) => { try {
       if (promo) { assert.equal(await form.locator('textarea').inputValue(), ' Draft note '); assert.equal(await form.locator('input[name="student"]').inputValue(), 'student'); assert.equal(await form.locator('input[name="source"]').inputValue(), 'source'); assert.equal(await form.locator('input[name="target"]').inputValue(), reset ? '' : 'target'); }
       else { assert.equal(await form.locator('select').nth(0).inputValue(), 'student'); assert.equal(await form.locator('select').nth(1).inputValue(), 'source'); assert.equal(await form.locator('select').nth(2).inputValue(), 'Waitlisted'); }
       const writes = calls.filter(c => ['POST', 'PUT', 'PATCH'].includes(c.method)); assert.equal(writes.length, 1);
-      assert.deepEqual(writes[0].body, promo ? action === 'create' ? { studentId: 'student', sourceBatchId: 'source', targetBatchId: 'target', effectiveDate: '2026-10-20', notes: ' Draft note ' } : { status: action === 'approve' ? 'Approved' : 'Rejected', notes: ' Decision note ' } : action === 'create' ? { studentId: 'student', batchId: 'source', startDate: '2026-10-20', status: 'Waitlisted' } : { status: 'Paused', endDate: null });
+      assert.deepEqual(writes[0].body, promo ? action === 'create' ? { studentId: 'student', sourceBatchId: 'source', targetBatchId: 'target', effectiveDate: '2026-10-20', notes: ' Draft note ' } : { status: action === 'approve' ? 'Approved' : 'Rejected', notes: ' Decision note ' } : action === 'create' ? { studentId: 'student', batchId: 'source', startDate: '2026-10-20', status: 'Waitlisted' } : { status: 'Paused', endDate: null, lifecycleReason: 'Decision note' });
       if (scenario === 'refresh-failure') assert.match(await notice.textContent(), /could not be refreshed.*Do not repeat/);
       assert.equal(await notice.getAttribute('aria-live'), 'polite'); await notice.scrollIntoViewIfNeeded(); assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
       const expectedError = scenario === 'rejected' ? '400' : scenario === 'refresh-failure' ? '503' : scenario === 'uncertain-committed' ? '500' : null;
@@ -76,7 +76,7 @@ const server = http.createServer((req, res) => { try {
       await page.screenshot({ path: path.join(evidence, domain + '-' + width + '-' + theme + '-' + action + '-' + scenario + '.png'), fullPage: true });
       checks.push({ domain, width, theme, action, scenario, calls, notice: await notice.textContent() }); console.log('PASS ' + [domain, width, theme, action, scenario].join(' ')); await context.close();
     }
-    assert.equal(checks.length, 80); fs.writeFileSync(path.join(evidence, 'result.json'), JSON.stringify({ checks, transport: 'synthetic API; not SQL/auth/tenant acceptance; non-Active enrollment update remains blocked by actual lifecycle reason requirement', physicalDevices: 'NOT RUN' }, null, 2)); console.log(JSON.stringify({ passed: checks.length, evidence }));
+    assert.equal(checks.length, 80); fs.writeFileSync(path.join(evidence, 'result.json'), JSON.stringify({ checks, transport: 'synthetic API; not SQL/auth/tenant acceptance; enrollment status now submits lifecycleReason', physicalDevices: 'NOT RUN' }, null, 2)); console.log(JSON.stringify({ passed: checks.length, evidence }));
   } catch (e) { fs.writeFileSync(path.join(evidence, 'failed.json'), JSON.stringify({ checks, failure: e.message }, null, 2)); throw e; }
   finally { if (browser) await browser.close(); await new Promise(r => server.close(r)); }
 })().catch(e => { console.error(e); process.exitCode = 1; server.close(); });

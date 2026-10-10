@@ -25,6 +25,7 @@ export default function EnrollmentsPage() {
 
   const pending = useRef(false);
   const [saving, setSaving] = useState(false);
+  const [lifecycleDrafts, setLifecycleDrafts] = useState<Record<string, { status: string; reason: string }>>({});
   async function fetchWorkspace(id: string) {
     const responses = await Promise.all([academyApi(`/api/academies/${id}/students`, { cache: "no-store" }), academyApi(`/api/academies/${id}/batches`, { cache: "no-store" }), academyApi(`/api/academies/${id}/enrollments`, { cache: "no-store" })]);
     if (!responses.every(response => response.ok)) throw new Error();
@@ -77,10 +78,23 @@ export default function EnrollmentsPage() {
     if (pending.current) return;
     await mutate(() => academyApi(`/api/academies/${academy.id}/enrollments`, { method: "POST", headers: apiHeaders(true), body: JSON.stringify({ studentId, batchId, startDate: startDate || null, status: initialStatus }) }), "Enrolment created.", () => setStartDate(""));
   }
-  async function updateStatus(enrollment: Enrollment, status: string) {
+  function chooseStatus(enrollment: Enrollment, status: string) {
     if (!academy || pending.current) return;
+    setLifecycleDrafts(previous => ({ ...previous, [enrollment.id]: { status, reason: previous[enrollment.id]?.reason ?? "" } }));
+  }
+  function cancelStatus(id: string) {
+    if (pending.current) return;
+    setLifecycleDrafts(previous => { const next = { ...previous }; delete next[id]; return next; });
+  }
+  async function updateStatus(enrollment: Enrollment, status: string, reason: string) {
+    if (!academy || pending.current) return;
+    const lifecycleReason = status === "Active" ? null : reason.trim();
+    if (status !== "Active" && !lifecycleReason) {
+      setMessage("A lifecycle reason is required for a non-Active enrolment status.");
+      return;
+    }
     setSavingId(enrollment.id);
-    await mutate(() => academyApi(`/api/academies/${academy.id}/enrollments/${enrollment.id}`, { method: "PUT", headers: apiHeaders(true), body: JSON.stringify({ status, endDate: status === "Active" ? null : enrollment.endDate }) }), "Enrolment updated.");
+    await mutate(() => academyApi(`/api/academies/${academy.id}/enrollments/${enrollment.id}`, { method: "PUT", headers: apiHeaders(true), body: JSON.stringify({ status, endDate: status === "Active" ? null : enrollment.endDate, lifecycleReason }) }), "Enrolment updated.", () => setLifecycleDrafts(previous => { const next = { ...previous }; delete next[enrollment.id]; return next; }));
   }
 
   const studentName = (id: string) => { const student = students.find((item) => item.id === id); return student ? `${student.firstName} ${student.lastName}` : "Unknown student"; };
@@ -95,7 +109,31 @@ export default function EnrollmentsPage() {
       <div className="mt-4"><StandardDateField name="startDate" label="Start date" value={startDate} onChange={setStartDate} /></div><select value={initialStatus} onChange={(event) => setInitialStatus(event.target.value)} className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"><option>Active</option><option>Waitlisted</option></select>
       <button disabled={saving || !academy || !students.length || !batches.length} className="mt-5 w-full rounded-lg bg-cyan-400 px-4 py-2.5 font-semibold text-slate-950 hover:bg-cyan-300 disabled:opacity-60">Enrol student</button></fieldset>
     </form>
-    <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6"><h2 className="text-xl font-semibold">Current enrolments</h2>{enrollments.length === 0 ? <p className="mt-6 text-slate-400">No students enrolled yet.</p> : <ul className="mt-5 space-y-3">{enrollments.map((enrollment) => <li key={enrollment.id} className="rounded-lg border border-slate-700 bg-slate-950 p-4"><div className="font-medium">{studentName(enrollment.studentId)}</div><div className="mt-1 text-sm text-cyan-200">{batchName(enrollment.batchId)}</div><div className="mt-2 text-sm text-slate-400">Started {enrollment.startDate}{enrollment.endDate ? ` · Ended ${enrollment.endDate}` : ""}</div><div className="mt-3 flex items-center gap-2"><select value={enrollment.status} onChange={(event) => void updateStatus(enrollment, event.target.value)} disabled={saving || savingId === enrollment.id} className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 text-sm"><option>Active</option><option>Waitlisted</option><option>Paused</option><option>Completed</option><option>Withdrawn</option><option>Cancelled</option></select><span className="text-xs text-slate-500">Lifecycle status</span></div></li>)}</ul>}</section>
+    <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6"><h2 className="text-xl font-semibold">Current enrolments</h2>{enrollments.length === 0 ? <p className="mt-6 text-slate-400">No students enrolled yet.</p> : <ul className="mt-5 space-y-3">{enrollments.map((enrollment) => {
+      const draft = lifecycleDrafts[enrollment.id];
+      return <li key={enrollment.id} className="rounded-lg border border-slate-700 bg-slate-950 p-4">
+        <div className="font-medium">{studentName(enrollment.studentId)}</div><div className="mt-1 text-sm text-cyan-200">{batchName(enrollment.batchId)}</div>
+        <div className="mt-2 text-sm text-slate-400">Started {enrollment.startDate}{enrollment.endDate ? ` · Ended ${enrollment.endDate}` : ""} · Current status: {enrollment.status}</div>
+        <form className="mt-3" onSubmit={(event) => { event.preventDefault(); if (draft) void updateStatus(enrollment, draft.status, draft.reason); }}>
+          <fieldset disabled={saving || !academy} className="m-0 min-w-0 border-0">
+            <label htmlFor={`status-${enrollment.id}`} className="block text-sm font-medium">Lifecycle status</label>
+            <select id={`status-${enrollment.id}`} value={draft?.status ?? enrollment.status} onChange={(event) => chooseStatus(enrollment, event.target.value)} disabled={saving || savingId === enrollment.id} className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm"><option>Active</option><option>Waitlisted</option><option>Paused</option><option>Completed</option><option>Withdrawn</option><option>Cancelled</option></select>
+            {draft && <div className="mt-3 space-y-3">
+              <p className="text-sm text-slate-300">Review change: {enrollment.status} → {draft.status}. Nothing changes until you save.</p>
+              {draft.status !== "Active" && <div>
+                <label htmlFor={`reason-${enrollment.id}`} className="block text-sm font-medium">Lifecycle reason (required)</label>
+                <textarea id={`reason-${enrollment.id}`} value={draft.reason} onChange={(event) => { const reason = event.target.value; if (!pending.current) setLifecycleDrafts(previous => ({ ...previous, [enrollment.id]: { ...draft, reason } })); }} required rows={3} className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm" aria-describedby={`reason-help-${enrollment.id}`} />
+                <p id={`reason-help-${enrollment.id}`} className="mt-1 text-xs text-slate-400">Explain this status change. Avoid unnecessary sensitive personal information.</p>
+              </div>}
+              <div className="flex flex-wrap gap-2">
+                <button type="submit" disabled={saving} className="rounded-lg bg-cyan-400 px-4 py-2 font-semibold text-slate-950 disabled:opacity-60">Save status</button>
+                <button type="button" disabled={saving} onClick={() => cancelStatus(enrollment.id)} className="rounded-lg border border-slate-700 px-4 py-2">Cancel change</button>
+              </div>
+            </div>}
+          </fieldset>
+        </form>
+      </li>;
+    })}</ul>}</section>
     </section>
   </div></main>;
 }

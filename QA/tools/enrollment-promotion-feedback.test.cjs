@@ -57,7 +57,13 @@ async function page(domain, config = {}) {
       const h = tree.find(n => n.type === 'form').props.onSubmit;
       return () => { let released = false; const event = { preventDefault() {}, get currentTarget() { if (released) throw Error('Released currentTarget'); return forms[0]; } }; const result = h(event); released = true; return result; };
     }
-    if (!promo) return () => tree.find(n => n.type === 'select' && n.props.value === 'Active').props.onChange({ target: { value: 'Paused' } });
+    if (!promo) return () => {
+      const select = nodes(render()).find(n => n.type === 'select' && n.props.id === 'status-enrollment');
+      if (!select) return tree.find(n => n.type === 'select' && n.props.value === 'Active').props.onChange({ target: { value: 'Paused' } });
+      select.props.onChange({ target: { value: 'Paused' } });
+      nodes(render()).find(n => n.type === 'textarea' && n.props.id === 'reason-enrollment')?.props.onChange({ target: { value: ' Decision note ' } });
+      return nodes(render()).filter(n => n.type === 'form')[1].props.onSubmit({ preventDefault() {} });
+    };
     return () => tree.find(n => n.type === 'button' && n.props.children === (action === 'approve' ? 'Approve' : 'Reject')).props.onClick();
   }
   return { d, state, calls, forms, render, settle, handler, prompts: () => prompts, writes: () => calls.filter(c => c.method), notice: () => state.get(d.notice) };
@@ -78,7 +84,7 @@ for (const [domain, d] of Object.entries(defs)) for (const action of d.actions) 
     assert.equal(p.writes().length, 1); const w = p.writes()[0];
     const expected = domain === 'enrollments' ? action === 'create'
       ? ['/enrollments', 'POST', { studentId: 'student', batchId: 'source', startDate: '2026-10-20', status: 'Waitlisted' }]
-      : ['/enrollments/enrollment', 'PUT', { status: 'Paused', endDate: null }]
+      : ['/enrollments/enrollment', 'PUT', { status: 'Paused', endDate: null, lifecycleReason: 'Decision note' }]
       : action === 'create' ? ['/batch-promotions', 'POST', { studentId: 'student', sourceBatchId: 'source', targetBatchId: 'target', effectiveDate: '2026-10-20', notes: ' Draft note ' }]
       : ['/batch-promotions/promotion/decision', 'PATCH', { status: action === 'approve' ? 'Approved' : 'Rejected', notes: ' Decision note ' }];
     assert.equal(w.url, '/api/academies/owned' + expected[0]); assert.equal(w.method, expected[1]); assert.deepEqual(w.body ? JSON.parse(w.body) : undefined, expected[2]);
@@ -108,4 +114,4 @@ test('Promotion rejection still requires a nonblank reason', async () => { const
 test('Promotion approval note remains optional and creation notes remain null when blank', async () => { const p = await page('promotions', { prompt: '', blank: true }); p.handler('approve')(); await p.settle(); assert.equal(JSON.parse(p.writes()[0].body).notes, ''); const q = await page('promotions', { blank: true }); q.handler('create')(); await q.settle(); assert.equal(JSON.parse(q.writes()[0].body).notes, null); });
 test('Enrollment duplicate409 remains understandable and draft is retained', async () => { const p = await page('enrollments', { status: 409 }); await p.handler('create')(); await p.settle(); assert.match(p.notice(), /already actively enrolled/); resets(p, 'create', false); });
 test('Enrollment optional start date remains null', async () => { const p = await page('enrollments'); p.state.set(6, ''); await p.handler('create')(); await p.settle(); assert.equal(JSON.parse(p.writes()[0].body).startDate, null); });
-test('Existing real API lifecycle reason validation is displayed, not bypassed or marked success', async () => { const reason = 'A lifecycle reason is required when changing an enrolment from Active.'; const p = await page('enrollments', { status: 400, message: reason }); p.handler('status')(); await p.settle(); assert.equal(p.notice(), reason); assert.deepEqual(JSON.parse(p.writes()[0].body), { status: 'Paused', endDate: null }); resets(p, 'status', false); });
+test('Existing real API lifecycle reason validation is displayed, not bypassed or marked success', async () => { const reason = 'A lifecycle reason is required when changing an enrolment from Active.'; const p = await page('enrollments', { status: 400, message: reason }); p.handler('status')(); await p.settle(); assert.equal(p.notice(), reason); assert.deepEqual(JSON.parse(p.writes()[0].body), { status: 'Paused', endDate: null, lifecycleReason: 'Decision note' }); resets(p, 'status', false); });
