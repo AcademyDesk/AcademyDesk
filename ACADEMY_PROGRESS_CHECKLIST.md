@@ -129,7 +129,7 @@ Scope: success/refresh/error/draft/pending feedback only. Existing payloads/doma
 - [x] Target lint0/0, TypeScript,83-page webpack export and harness0/0 PASS; [report](QA/REPORTS/PHASE_2B_ONBOARDING_DATE_REPAIR.md).
 - [ ] Linked browser-to-SQL, physical devices, optional-all-fields/onboarding Identity rollback/critical acceptance; issue OPEN.
 
-## Current batch — Student onboarding transaction integrity
+## Past batch — Student onboarding transaction integrity
 
 - [x] Existing BUG-DATA-0004 native invalid-second-password400/changed snapshot reproduced; no repeated accepted audit.
 - [x] Shared SQL domain/Identity/audit transaction replaces inner domain-only boundary; role creation/membership results checked, authorization unchanged.
@@ -137,6 +137,15 @@ Scope: success/refresh/error/draft/pending feedback only. Existing payloads/doma
 - [x]21 real SQL/Identity/HTTP failure/success/role/tenant cases and23 unchanged optional-date native regressions PASS;88/7 migrations and exact owned cleanup verified.
 - [x]56 targeted unit tests and isolated builds0/0 PASS; [report](QA/REPORTS/PHASE_2B_ONBOARDING_ATOMIC_REPAIR.md), issue and scoped handoff updated.
 - [ ] Linked browser/device/concurrent/cancellation/store-mismatch/full-critical acceptance; issue OPEN. Partial optional-credential created flags remain separate BUG-DATA-0007.
+
+## Current batch — Truthful onboarding account-created flags
+
+- [x] Existing BUG-DATA-0007 parent username-only false-positive200 flag reproduced; omitted-account control passed.
+- [x] Flags now reflect confirmed CreateAccount/role completion; original optional incomplete credentials and transaction/authority retained.
+- [x]33 real SQL/Identity/HTTP matrix cases PASS: both accounts partial/blank/complete, absent guardian/minor defaults, rejected no-write and exact successful row/role proof.
+- [x] Unchanged21 native rollback cases and56 targeted unit tests PASS; builds0/0,migrations88+7/owned cleanup; [report](QA/REPORTS/PHASE_2B_ONBOARDING_ACCOUNT_FLAGS_REPAIR.md).
+- [x] Issue/checkpoint/E0/handoff updated, source/receipt local; no frontend/Mini/main/Azure or unrelated publication.
+- [ ] Linked browser/physical devices/full critical acceptance; issue OPEN. Blank optional student numbers and broader intake pending/unknown-result UX remain separate.
 
 ## Original feedback routes — bounded checkpoint list
 
@@ -186,7 +195,8 @@ Current bounded feedback count: **28/28 checkpointed**, after the Assessments cr
 - [x] Existing queue continuation: BUG-API-0006 teacher availability runtime reproduction/repair/native SQL acceptance; broader issue OPEN.
 - [x] BUG-API-0001 optional onboarding dates — bounded serialization/browser/native SQL proof; broader acceptance OPEN.
 - [x] BUG-DATA-0004 onboarding domain/Identity transaction fault gate — bounded native repair/proof complete; wider acceptance OPEN.
-- [ ] **Next: existing BUG-DATA-0007 incomplete optional-credential created-account response flags** — truthful result/no-account controls; Sol High for Identity/domain integration. Broader onboarding pending/unknown-response UI remains open; Medium for settled UI.
+- [x] BUG-DATA-0007 incomplete optional-credential created-account flags — bounded native proof complete; broader acceptance OPEN.
+- [ ] **Next: existing BUG-DATA-0008 blank optional student-number collision** — preserve optional-field semantics and real unique-index protections; Sol High for SQL/constraint proof. Then queued onboarding pending/unknown-result feedback, Medium for settled UI.
 - [ ] Shared PENTA/Manual visual foundation: consume versioned FW1 delivery when available, continue independent Manual controls without claiming the shared AI frontend is delivered.
 - [ ] FP1/FP2/FP3 explicit owner decisions and legacy disposition — pending, not inferred from “continue.”
 - [ ] Approved financial implementation — Sol High; accounting/tax/payroll review before applicable release. Policy-pending finance need not block safe feedback work.
