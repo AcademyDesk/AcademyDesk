@@ -35,6 +35,10 @@
 | Regression result | 209 current combined controlled frontend PASS; no new backend/SQL run; Course lint FAIL (1 error/1 warning after improvement), not all-form/critical acceptance |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
+## Access Review Sign-off checkpoint — 2026-10-10
+
+[Report](../REPORTS/PHASE_2B_SIGN_OFF_FEEDBACK_REPAIR.md): durable confirmed sign-off and separate failed refresh, retained rejected/unconfirmed notes/checkbox, captured form element, synchronous pending guard and checked mount reads. Exact POST/whitespace/follow-up true/false/domain authority retained;15 controlled/16 synthetic exported-browser checks PASS, lint0/0, TypeScript/83-page export PASS. No new live SQL/auth/device/release acceptance; issue OPEN. Current original queue18 checkpointed/10 routes with remaining feedback gaps, not enterprise completion. Next Sol Medium, Platform Services feedback only.
+
 ## Original route reconciliation / Work Queue checkpoint — 2026-10-10
 
 [Reconciliation](../REPORTS/PHASE_2B_FEEDBACK_ROUTE_RECONCILIATION.md): 28 original routes, 17 route-level feedback checkpoints including this packet, 11 with remaining gaps; not enterprise/production completion. Compliance and Assessment result-save repairs retained, academic Governance not confused with finance Governance. [Work Queue report](../REPORTS/PHASE_2B_WORK_QUEUE_FEEDBACK_REPAIR.md): durable create/status notices, saved-but-refresh-failed guidance, retained rejected/unconfirmed drafts, captured form element and synchronous pending/stale-read guards.21 controlled/32 synthetic exported-browser checks PASS; lint0/0, TypeScript/83-page export PASS. No new live SQL/device/release acceptance. Issue OPEN. Next Sol Medium, Access Review Sign-off feedback only.

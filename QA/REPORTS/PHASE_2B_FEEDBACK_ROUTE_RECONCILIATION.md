@@ -2,6 +2,8 @@
 
 BUG-FUNC-0003 contains 28 original routes. Reconcile existing source and accepted checkpoints, not a new broad audit or a rerun of accepted evidence. Starting feature HEAD `2f57b1a3675b059c6f57e78000b70d358ddb9c75`, `codex/penta-search`, `D:\AcademyDesk-codex-p0`.
 
+Current progress after [Access Review Sign-off packet](PHASE_2B_SIGN_OFF_FEEDBACK_REPAIR.md): **18 route-level feedback checkpoints /10 routes with remaining gaps**. Next `/platform-services`, Sol Medium. The17/11 tables below are the preserved starting reconciliation snapshot, not the current count; remove `/access-review/sign-off` from its historical pending list. No accepted prior repair was repeated; enterprise/live/device/release gates stay open.
+
 ## Retained checkpoints
 
 | Original routes | Existing evidence / decision |
@@ -15,7 +17,7 @@ BUG-FUNC-0003 contains 28 original routes. Reconcile existing source and accepte
 
 These are **17 route-level feedback checkpoints**, not 17 fully accepted enterprise workflows or a production readiness percentage. Their existing limits remain in force.
 
-## Remaining 11 route-level gaps
+## Historical remaining 11 route-level gaps at reconciliation
 
 | Route | Source-confirmed feedback gap / avoid duplicating earlier work |
 | --- | --- |
