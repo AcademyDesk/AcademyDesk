@@ -3,8 +3,8 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | STATIC-FINDING |
-| Final verification | NOT RUN |
+| Confirmation status | RUNTIME-CONFIRMED; bounded host repair verified 2026-10-10 |
+| Final verification | PARTIAL: 62 native SQL/HTTP + 29 media regressions + 77 unit cases PASS; browser/device/module/broader critical pending |
 | Severity | Major authorization lifecycle gap |
 | Priority | P1 |
 | Category | SEC |
@@ -30,10 +30,14 @@
 | API response | Not captured for this issue; use synthetic request/response in isolated reproduction |
 | Database before/after | Not executed; fixture and fresh-context assertions defined below |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | Not implemented (Phase 1) |
-| Retest result | NOT RUN |
-| Regression result | NOT RUN |
+| Fix commit | TeacherPortalAccessFilter and controller attachment; see scoped repair report/history |
+| Retest result | 62/62 strict cases PASS; final run 7696f6a8fd8847d5919a5a6b185440de |
+| Regression result | 29 unchanged private-media HTTP + 77 existing media/resource unit tests PASS |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
+
+## Current bounded repair — 2026-10-10
+
+[Native reproduction and repair report](../REPORTS/PHASE_2B_TEACHER_LIFECYCLE_REPAIR.md): baseline `a629539092e44af7bf4d7fbb28120b40` confirmed both academy suspension and inactive domain Teacher retained all four200 direct operations, including persisted resources/notifications/files. The controller now independently requires current active Identity, persisted Teacher role, active server-linked own-academy Teacher and active academy before any action. Final strict run `7696f6a8fd8847d5919a5a6b185440de` passes62 cases, no429, with fresh no-write/file checks and active/restored controls. Initial calendar-fixture failure corrected and full gate rerun. **OPEN**: browser/physical devices, module policy, other teacher mutations/related portals, concurrent revocation and critical release acceptance remain. Historical static evidence below is retained, not the current runtime verdict.
 
 ## Exact reproduction
 

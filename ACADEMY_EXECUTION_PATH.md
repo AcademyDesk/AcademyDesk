@@ -5,6 +5,8 @@ Status: proposed consolidated execution sequence for owner review, not new runti
 
 Owner accepted starting this path on2026-10-10. [E0 routing continuation](QA/REPORTS/EXECUTION_E0_RECONCILIATION.md) preserves the existing register:118 records/117 distinct groups after the established refresh alias. PENTA AI frontend remains pending; [FW1 request](PENTA_HANDOFF_TO_MINI.md) specifies interactive shared prototype/versioned delivery, not approved raster references alone. Next Sol High: Teacher lifecycle reproduction; Sol Medium feedback/visual path stays available. The original planning snapshot below remains historical.
 
+Latest execution: [Teacher lifecycle repair](QA/REPORTS/PHASE_2B_TEACHER_LIFECYCLE_REPAIR.md) runtime-confirmed E0 rank1, then bounded host repair verified62 SQL/HTTP cases +29 unchanged private-media regressions +77 unit tests. Issue remains OPEN for browser/device/module/concurrent revocation/broader gates. E0 census above is the frozen routing snapshot, not a new failure count. Next **Sol High** rank2 BUG-SEC-0006 explicit minor-guardian portal revocation reproduction; **Sol Medium** seven remaining feedback routes (Trial Bookings first)/settled visuals stays available. Shared frontend FW1 still prepared, not delivered. No main/Azure/Mini change or enterprise closure.
+
 ## 1. Product outcome and boundaries
 
 Deliver a complete academy application with PENTA AI as the primary conversational operating layer and a fully usable Manual Workspace. The 90% AI /10% manual target concerns eligible operational workflows completed safely, not screens, tool declarations or model calls. Manual fallback, correction, approval and emergency control remain first-class.

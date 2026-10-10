@@ -2,6 +2,7 @@ using AcademyDesk.Api.Data;
 using AcademyDesk.Api.Domain.Entities;
 using AcademyDesk.Api.Domain.Identity;
 using AcademyDesk.Api.Infrastructure;
+using AcademyDesk.Api.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -11,6 +12,7 @@ namespace AcademyDesk.Api.Controllers;
 
 [ApiController]
 [Authorize]
+[TypeFilter(typeof(TeacherPortalAccessFilter))]
 [Route("api/teacher")]
 public sealed class TeacherPortalController(
     AcademyDeskDbContext dbContext,
