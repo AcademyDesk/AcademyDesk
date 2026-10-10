@@ -1,5 +1,7 @@
 # E0 — existing evidence reconciliation and actionable queue
 
+2026-10-10 successor: [onboarding optional dates](PHASE_2B_ONBOARDING_DATE_REPAIR.md),9 handler/32 synthetic browser/23 native SQL/HTTP cases PASS. BUG-API-0001 now RETEST for linked/device/full intake gates; original E0 counts remain historical. Next existing BUG-DATA-0004 domain/Identity rollback gate, Sol High; do not repeat accepted feedback audits.
+
 2026-10-10 successor: [BUG-API-0006 availability repair](PHASE_2B_TEACHER_AVAILABILITY_REPAIR.md) reproduced and fixed narrowly;26 new unit/45 SQL/HTTP/Identity cases PASS,6 retained branch checks. Its disposition is now RETEST for remaining browser/device/critical gates. Original routing totals below remain the dated E0 checkpoint, not recalculated current completion. Prior teacher/guardian/feedback successors are retained in the delivery checklist; next bounded original case is BUG-API-0001 optional onboarding date payloads, not a restarted audit.
 
 Date:2026-10-10. Branch `codex/penta-search`, starting HEAD `fc0354134790adb482727dcb3075ea9faabe2f30`. Academy worktree only. Sol High. Owner accepted [unified path](../../ACADEMY_EXECUTION_PATH.md); this is its E0 routing step, not a restarted enterprise audit or new product tests.
@@ -41,7 +43,7 @@ Legend: inherited states are prior bounded evidence, not new verification. REPRO
 
 | Group / linked record | Next disposition | Missing action or gate | Evidence / provenance |
 | --- | --- | --- | --- |
-| [BUG-API-0001](../ISSUES/BUG-API-0001.md) | REPRODUCE | Normalize omitted optional dates to null/omission; verify empty and valid inputs. | Exact source SHA256 matches accepted audit |
+| [BUG-API-0001](../ISSUES/BUG-API-0001.md) | RETEST | Optional blanks now null; required DOB unchanged. Finish linked browser/device/all-optional-fields/full intake acceptance. | [Date repair](PHASE_2B_ONBOARDING_DATE_REPAIR.md),9 handler/32 browser/23 native SQL HTTP PASS |
 | [BUG-API-0002](../ISSUES/BUG-API-0002.md) | RETEST | Extend proven atomic domain/Identity/audit boundaries only to affected unprotected mutations; test rollback and ambiguous outcomes. | [AUDIT_SAVE_REPAIR ](PHASE_2B_AUDIT_SAVE_REPAIR.md), [PEOPLE_CREATION_AUDIT_REPAIR ](PHASE_2B_PEOPLE_CREATION_AUDIT_REPAIR.md) |
 | [BUG-API-0003](../ISSUES/BUG-API-0003.md) | RETEST | Original stale-header bug repaired; finish outstanding cross-tab/pre-event/frozen-tab acceptance under the consolidated refresh record. | [SESSION_REFRESH ](PHASE_2B_SESSION_REFRESH.md) |
 | [BUG-API-0004](../ISSUES/BUG-API-0004.md) | REPRODUCE | Guard JSON value kinds before object access; preserve valid optional metadata. | Exact source SHA256 matches accepted audit |

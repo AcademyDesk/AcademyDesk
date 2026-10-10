@@ -113,13 +113,21 @@ Scope: success/refresh/error/draft/pending feedback only. Existing payloads/doma
 - [x] Target lint0/0, TypeScript and83-page webpack export PASS; [report](QA/REPORTS/PHASE_2B_STUDENT_PROFILE_FEEDBACK_REPAIR.md) and scoped handoff prepared.
 - [ ] Live SQL/Identity/role/tenant and physical Android/iOS/full-critical acceptance; BUG-FUNC-0003 remains OPEN.
 
-## Current batch — Teacher availability profile runtime repair
+## Past batch — Teacher availability profile runtime repair
 
 - [x] BUG-API-0006 reproduced:4/26 controller failures; SQL stored-null GET500 after15 passing controls.
 - [x] One null-slot projection guard; optional storage/JSON fallback and valid slots preserved, no new schedule/permission rule.
 - [x]26 new+6 retained unit cases PASS;45 real SQL/Identity/HTTP cases PASS, fresh stored/readback and unauthorized no-write controls.
 - [x] Harness build0 warnings/0 errors;88/7 migrations, owned database/login cleanup and both owned-container removals verified; [report](QA/REPORTS/PHASE_2B_TEACHER_AVAILABILITY_REPAIR.md).
 - [ ] Teacher onboarding/profile browser, physical Android/iOS and full critical/release acceptance; issue OPEN.
+
+## Current batch — Optional onboarding dates
+
+- [x] BUG-API-0001 serialized-empty-date defect reproduced;9 actual-handler tests baseline5 PASS/4 FAIL, fixed9 PASS.
+- [x] Teacher DOB/joining and student admission blanks now null; required student DOB/all other payloads retained. Captured native forms fix related async reset failures.
+- [x]32 synthetic responsive browser cases and23 real SQL/Identity/HTTP binding/persistence/no-write cases PASS;88/7 migrations and owned cleanup verified.
+- [x] Target lint0/0, TypeScript,83-page webpack export and harness0/0 PASS; [report](QA/REPORTS/PHASE_2B_ONBOARDING_DATE_REPAIR.md).
+- [ ] Linked browser-to-SQL, physical devices, optional-all-fields/onboarding Identity rollback/critical acceptance; issue OPEN.
 
 ## Original feedback routes — bounded checkpoint list
 
@@ -167,7 +175,8 @@ Current bounded feedback count: **28/28 checkpointed**, after the Assessments cr
 - [x] Admission-fee loading/save feedback in Student Fee Details — bounded proof complete; broader acceptance OPEN.
 - [x] Student360 administrative-profile save feedback/pending/late-response gap — bounded UI proof; live privacy/role/SQL acceptance remains OPEN.
 - [x] Existing queue continuation: BUG-API-0006 teacher availability runtime reproduction/repair/native SQL acceptance; broader issue OPEN.
-- [ ] **Next: BUG-API-0001 optional onboarding date payload case** — inspect latest evidence and reproduce only the missing case; Medium for bounded form serialization, High for Identity/SQL/domain effects. Do not repeat accepted feedback audits.
+- [x] BUG-API-0001 optional onboarding dates — bounded serialization/browser/native SQL proof; broader acceptance OPEN.
+- [ ] **Next: existing BUG-DATA-0004 onboarding domain/Identity transaction fault gate** — read current evidence and reproduce only missing rollback cases; Sol High. Broader onboarding pending/unknown-response UI also remains open.
 - [ ] Shared PENTA/Manual visual foundation: consume versioned FW1 delivery when available, continue independent Manual controls without claiming the shared AI frontend is delivered.
 - [ ] FP1/FP2/FP3 explicit owner decisions and legacy disposition — pending, not inferred from “continue.”
 - [ ] Approved financial implementation — Sol High; accounting/tax/payroll review before applicable release. Policy-pending finance need not block safe feedback work.

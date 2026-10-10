@@ -1,10 +1,12 @@
 # BUG-API-0001 — Blank optional dates sent as empty JSON strings
 
+2026-10-10 successor: [repair report](../REPORTS/PHASE_2B_ONBOARDING_DATE_REPAIR.md), teacher optional DOB/joining and student admission date serialized as null when blank; required student DOB unchanged. Captured form references also repair related post-await reset fault. Handler baseline5 PASS/4 FAIL, fixed9 PASS;32 synthetic responsive browser/23 real SQL/Identity/HTTP cases PASS,88/7 migrations/owned cleanup. Remains OPEN for linked browser-to-SQL, physical devices, all-optional-fields/full onboarding and critical acceptance.
+
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | STATIC-FINDING |
-| Final verification | NOT RUN |
+| Confirmation status | Handler-reproduced; HTTP binding verified; bounded repair |
+| Final verification | 9 handler/32 synthetic browser/23 native SQL HTTP PASS; remaining gates OPEN |
 | Severity | Major |
 | Priority | P1 |
 | Category | API |
@@ -16,7 +18,7 @@
 | Device/viewport | NOT RUN; use QA/06_DEVICE_VIEWPORT_MATRIX.md where UI applies |
 | Baseline | 20bb6047f9edf733ac8e2a226621cc582ec54b3c + pre-existing student UI diff |
 | Discovery test / review ID | FORM-OPTIONAL-001 |
-| Evidence classification | Static trace; runtime reproduction pending |
+| Evidence classification | Original static trace plus linked handler/browser and native SQL HTTP evidence |
 | Preconditions | Isolated synthetic fixture from QA/10_TEST_DATA_STRATEGY.md; never customer data |
 | Reproduction frequency | Not measured; reproduction instructions are proposed |
 | Source | apps/web/src/app/teacher-onboarding/page.tsx:55 |
@@ -30,9 +32,9 @@
 | API response | Not captured for this issue; use synthetic request/response in isolated reproduction |
 | Database before/after | Not executed; fixture and fresh-context assertions defined below |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | Not implemented (Phase 1) |
-| Retest result | NOT RUN |
-| Regression result | NOT RUN |
+| Fix commit | See successor report and feature history; optional-date normalization/form capture |
+| Retest result | 32 synthetic responsive browser and23 native SQL HTTP cases PASS |
+| Regression result | Required DOB/valid dates/malformed errors and denied no-write controls retained; full critical suite OPEN |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
 ## Exact reproduction

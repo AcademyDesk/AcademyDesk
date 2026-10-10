@@ -31,8 +31,10 @@ export default function StudentOnboardingPage() {
     event.preventDefault();
     if (!academy) return;
     setSaving(true);
-    const form = new FormData(event.currentTarget);
+    const submittedForm = event.currentTarget;
+    const form = new FormData(submittedForm);
     const body = Object.fromEntries(form) as Record<string, unknown>;
+    body.admissionDate = form.get("admissionDate") || null;
     for (const name of [
       "allowParentPortalAccess",
       "allowAcademicProgress",
@@ -53,7 +55,7 @@ export default function StudentOnboardingPage() {
       const result = await response.json().catch(() => null);
       if (!response.ok)
         throw new Error(result?.message || "Onboarding could not be saved.");
-      event.currentTarget.reset();
+      submittedForm.reset();
       setDob("");
       setAdmissionDate("");
       setGender("");

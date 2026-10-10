@@ -2,6 +2,10 @@
 
 ## Current state
 
+## Optional onboarding-date repair — 2026-10-10
+
+[Report](QA/REPORTS/PHASE_2B_ONBOARDING_DATE_REPAIR.md): teacher DOB/joining and student admission blanks now null; required student DOB/all other payloads unchanged. Captured native form fixes related async reset fault; teacher success/reset and student redirect preserved. Handler baseline5 PASS/4 FAIL, fixed9 PASS;32 synthetic responsive browser/23 real SQL/Identity/HTTP cases PASS; lint0/0/types/export83/harness0/0/88+7 migrations/owned cleanup PASS. Evidence local; separate browser and SQL, not linked/device/full intake acceptance. BUG-API-0001/0003/Mini/FW1/release OPEN; original28 count retained. NEXT existing BUG-DATA-0004 domain/Identity rollback gate, Sol High; broader onboarding pending/unknown-response UI remains. No main/Azure/project switch; unrelated Mini/32+28 continuity preserved; maintain/display [checklist](ACADEMY_PROGRESS_CHECKLIST.md).
+
 ## Teacher availability profile runtime repair — 2026-10-10
 
 [Report](QA/REPORTS/PHASE_2B_TEACHER_AVAILABILITY_REPAIR.md): BUG-API-0006 reproduced (controller22 PASS/4 FAIL; native SQL15 controls then stored-null GET500), one null-slot projection guard preserves optional storage/JSON fallback/valid mixed slots. Fixed26 new+6 retained unit and45 real SQL/Identity/HTTP cases PASS; harness0/0,88/7 migrations and exact owned DB/login/container cleanup. Dirty Mini snapshot tested, unrelated changes not accepted/staged; evidence local. Issue/browser/device/full-critical/Mini/FW1/release OPEN, original28 feedback count retained. NEXT existing BUG-API-0001 optional onboarding date payload case; Medium bounded form serialization, High Identity/SQL/domain/privacy/release. No main/Azure/new plan/project switch; unrelated32/28 continuity preserved; maintain/display [checklist](ACADEMY_PROGRESS_CHECKLIST.md).
