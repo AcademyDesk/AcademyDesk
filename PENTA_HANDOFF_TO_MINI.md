@@ -6,6 +6,49 @@ Status: **BLOCKED real-read acceptance; precise engine handoff**.
 
 ## Permanent independent host enforcement — 2026-10-10
 
+### Shared regulatory/policy register acknowledged — 2026-10-10
+
+Observed and remote-verified Mini commit `2f8806967709a1a7ec29e5176e7c31968adbf6aa`,
+register v0.1 blob `956e5b37b5fdfe982a23862e5a696f142e7205c0`, and preceding
+`18250d395ad89835afcb0c4f68e8eeac78c8d2f8` policy foundation. Read
+`COMPLIANCE/HANDOFF_TO_ACADEMY_DESK.md`, register/control plan and
+`docs/PENTA_POLICY_V1_HANDOFF_TO_ACADEMY.md`/non-negotiable policy. Academy keeps
+one [local implementation/evidence map](COMPLIANCE/ACADEMY_IMPLEMENTATION_MAP.md),
+not a competing regulatory register or duplicate model/learning engine.
+
+Reference `penta-non-negotiable-1.0` and compliance-profile modules are not wired
+into live `/v1/chat`. ReviewedProcessingFacts presence checks and fake ledger tests
+do not prove human/legal approval, durable audit/quota or actual runtime enforcement.
+Active Tool Protocol0.1/two reads remains unchanged. Do not add draft DTO fields or
+claim a deployed privacy profile merely because references exist in a test.
+
+Precise canonical-owner follow-ups (not permission to rewrite the engine):
+
+1. REG002: [G.S.R.892(E)](https://www.meity.gov.in/static/uploads/2025/12/3c7ebbae0e5456f493f486e6845df86b.pdf)
+   independently read here: dated10 December2025, Gazette11 December. The16 December
+   date is website listing, not the notification date. Map the corrected wording
+   and schedule lettering; retain phase lengths and require corrected-rule review.
+2. Add applicable telecom/DLT scope: [TRAI](https://trai.gov.in/release-publication/regulations/amendments-page/7617)
+   lists final Third Amendment18 September2026. Exact PDF commencement/exceptions
+   were not retrieved here; retain OPEN. Do not rely on March2026 draft or2025 alone.
+3. Add conditional RBI/payment/card-processing and UK-law profiles after official
+   source/applicability review; do not apply payment-provider rules to all fee ledgers.
+   Independently verify REG016 current consolidated EU AI Act/amendment timeline
+   before geographic/high-impact use; Academy has not accepted that date assertion.
+4. Before customer-data inference, pair a genuinely versioned reviewed-purpose/
+   child-data/minimization/retention/processor/egress contract and runtime evidence.
+   Keep no training/global memory by default. References must point to actual
+   accountable approvals; caller/model flags are not authority. No active DTO change
+   is required to run today's synthetic hostile-planner host regression.
+
+Existing read-language86/94 NOT ACCEPTED and qualified-candidate return remain
+the first real-feature dependency. Preserve the blocked-run evidence; no unchanged
+model rerun, inference upgrade or Mini/container edit from Academy. Shared policy
+never replaces Academy current DB authority, transactions, approvals and audit.
+The [new checkpoint](QA/REPORTS/PENTA_COMPLIANCE_PHASE0_SECURITY_CHECKPOINT.md)
+extends host completion-audit/revocation tests; fake planner is not engine acceptance.
+This is an in-repository handoff, not an automatic message to another chat.
+
 The owner's non-negotiable security directive now lives in Academy's
 [host policy](PENTA_HOST_SECURITY_POLICY.md), policy ID `academy-host-security/1.0`.
 It applies independently of Mini/Plus/Pro/Ultra. Core may reject unsafe plans,

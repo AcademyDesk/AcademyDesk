@@ -21,6 +21,33 @@ The model may suggest, request and learn. Academy Desk must verify and authorize
 No model upgrade, branding, claimed intelligence, prompt or returned policy can
 expand the code-owned tool allowlist or application permissions.
 
+## Three policy levels and permanent prohibitions
+
+Level A: platform security invariants in reviewed code/infrastructure, changed only
+through authorized engineering/security releases. Level B: academy business settings
+changed only by current authorized domain operations with audit, within Level A.
+Level C: tenant terminology, aliases, response style and verified learning preferences;
+these cannot alter A/B permissions, approvals, finance or security configuration.
+Do not build an alternative authority engine in the model or conversational memory.
+
+The twenty prohibited outcomes in the owner's directive map to host controls:
+
+| Invariants | Host control / present boundary |
+| --- | --- |
+| 1 self-permissions; 2 unauthorized roles; 6 security-policy changes; 13 memory authority; 15 model tenant; 20 tier bypass | Current server identity/role/tenant policy; strict tool/argument allowlist; never adopt model authority/state; independent connector checks |
+| 3 foreign tenant; 4 unauthorized person; 9 unavailable tools | Actor-bound sessions and source scope/current displayed identity; unknown tool/fields rejected; reauthorize current resource after planning |
+| 5 disable audit; 18 false success | No audit-config tool; required SQL completion/state/receipt/audit transaction; uncertain outcome remains pending and cannot blindly redispatch |
+| 7 secret-store access; 8 arbitrary SQL/shell/code; 16 arbitrary exfiltration | No credential/execution/URL/destination tools; only bounded domain reads; endpoint redirects/proxy disabled. Infrastructure egress enforcement remains a separate release gate |
+| 10 approvals; 11 prohibited finance; 12 protected deletion | No live write/send/delete tool; deterministic domain finance; future operations need scoped approval, lifecycle/transaction and failure tests before activation |
+| 14 production weights/releases; 19 deployments | No runtime model-training/release/deploy tool or credentials accessible through PENTA; changes require human-authorized engineering release |
+| 17 mandatory limits | Host session/turn quotas and request/state/receipt bounds; model/context cannot raise them; production ingress/quota evidence still required |
+
+These are code-owned restrictions for all Mini/Plus/Pro/Ultra versions, not a
+statement that every future tool or infrastructure scenario has already been tested.
+High-impact decisions, sensitive child profiling, unapproved biometrics/emotion
+analysis and global training on customer data are not enabled by this read pilot.
+Human review, purpose/consent and privacy/retention gates precede any such feature.
+
 ## Mandatory application controls
 
 - Keep teacher financial restrictions, student own-record restrictions, current
@@ -112,3 +139,7 @@ Physical-device, privacy, regression and pre-Azure gates remain mandatory.
 This policy or a passing focused suite never declares production readiness.
 
 Evidence and remaining gaps: [host-security report](QA/REPORTS/PENTA_HOST_SECURITY_ENFORCEMENT.md).
+
+India/commercial applicability and privacy/operational gaps are tracked against
+Mini/Core's canonical register in [Academy's implementation map](COMPLIANCE/ACADEMY_IMPLEMENTATION_MAP.md).
+Do not infer legal approval from this security policy or from a focused test pass.

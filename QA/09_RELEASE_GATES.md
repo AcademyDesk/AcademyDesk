@@ -15,3 +15,30 @@ Current blockers include `BUG-DATA-0001/0002/0003`, `BUG-SEC-0001`, missing SQL/
 The current `.github/workflows/deploy-azure.yml` builds/deploys but does not run xUnit or lint, does not validate the complete UI/database chain, and enables migrations on API startup. Future CI should run verification before deploying, preserve immutable artifacts, stage schema changes, record both context migration histories, then perform smoke checks. Do not apply this workflow redesign in Phase 1.
 
 Production smoke must be non-destructive: health, correct deployed commit/artifact, authenticated scope-limited reads, route loading, CORS and static assets. Never create payments, teachers or students in a customer tenant as deployment probes. Rollback of application code does not automatically roll back SQL schema; require a compatible migration plan and a tested restore path.
+
+## PENTA government-compliance and security extension — 2026-10-10
+
+The preceding records are historical gate definitions, not current proof that every
+listed infrastructure gap remains unchanged. Continue existing issues and evidence;
+do not restart the program or close an issue from a narrow PENTA pass. Canonical legal
+requirements live in Mini/Core; Academy maps them in
+[COMPLIANCE/ACADEMY_IMPLEMENTATION_MAP.md](../COMPLIANCE/ACADEMY_IMPLEMENTATION_MAP.md).
+
+| Activation boundary | Required evidence | Current outcome / owner |
+| --- | --- | --- |
+| Local synthetic/host security tests | Disposable owned data; no production writes/credentials or new model tools; precise source/test manifest | Permitted engineering work, not customer production acceptance / Academy |
+| First real PENTA read | Qualified pinned Mini language/security contract; real current host authority, tenant/resource scope, exact facts, malformed/context/replay/downtime/audit-fault tests; linked browser/manual fallback | NOT ACCEPTED; saved Mini86/94 remains blocking / Academy + Mini |
+| Customer personal/minor data pilot | Human-reviewed roles/purpose/basis/notices and child safeguards; minimal model context; processor/location/no-training/retention/egress evidence; actual guardian scope where relevant | OPEN; reference strings and generic consent rows are insufficient / legal/privacy + Academy + Mini |
+| Commercial India operation | Current-law applicability sign-off; CERT incident/PoC/clock/India ICT-log evidence and drill; applicable SPDI/contract/content/telecom/payment controls | OPEN; DPDP future duties distinct from current duties / legal/security/operations |
+| Privacy future dates | Corrected rule/provision mapping, accountable implementation owner and reviewed due date; tested rights/withdrawal/retention/deletion/holds before required commencement | OPEN; canonical one-year/eighteen-month phases retained, no blanket compliance claim / legal/privacy + engineering |
+| New writes/sends/deletes/autonomy | Independently authorized domain service, exact actor/tenant/payload approval, expiry/replay/revocation protection, transaction/idempotency/audit and financial/tenant tests | UNAVAILABLE; READ pilot's approval label is not execution authorization / Academy |
+| Learning/Academy Brain | Quarantined tenant-scoped validated provenance/purpose/ACL, reviewed basis/retention/deletion and safe feedback contract; no automatic policy/weights changes | UNAVAILABLE; metadata-only records are not training acceptance / Academy + Mini |
+| Azure | All prior developer/staging/production gates on exact release; durable key protection/rotation, privileged identity, effective trusted ingress/limits, least-privilege private media/SQL/inference, regions/logging/backups/restore, scans/SBOM/licenses, migration/rollback evidence | NOT APPROVED; source secret refs/managed identity are not deployed proof / engineering/security |
+| New geography/standalone/high-impact use | Applicable legal profile and intended-purpose risk review; independently enforcing customer connector, DPA/privacy and human oversight/appeals; current legislation verified | NOT ACTIVATED / legal + Mini + customer host |
+
+Every gate record must include source commit/artifact, canonical control IDs,
+implementation/evidence paths, owner, verification date, legal-review status,
+blocking severity and next review. Separate DESIGNED, IMPLEMENTED, TESTED,
+SECURITY REVIEWED, LEGAL REVIEWED and PRODUCTION APPROVED. Drafts and voluntary
+standards must not masquerade as enacted universal requirements or certifications.
+No focused PASS overrides OPEN P0/critical P1, device, full-runtime or legal gates.
