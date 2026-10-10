@@ -2,7 +2,7 @@
 
 BUG-FUNC-0003 contains 28 original routes. Reconcile existing source and accepted checkpoints, not a new broad audit or a rerun of accepted evidence. Starting feature HEAD `2f57b1a3675b059c6f57e78000b70d358ddb9c75`, `codex/penta-search`, `D:\AcademyDesk-codex-p0`.
 
-Current progress after [Access Review Sign-off](PHASE_2B_SIGN_OFF_FEEDBACK_REPAIR.md) and [Platform Services](PHASE_2B_PLATFORM_SERVICES_FEEDBACK_REPAIR.md): **19 route-level feedback checkpoints /9 routes with remaining gaps**. Next `/leads`, Sol Medium. The17/11 tables below are the preserved starting reconciliation snapshot, not the current count; remove `/access-review/sign-off` and `/platform-services` from its historical pending list. No accepted prior repair was repeated; enterprise/live/device/release gates stay open.
+Current progress after [Access Review Sign-off](PHASE_2B_SIGN_OFF_FEEDBACK_REPAIR.md), [Platform Services](PHASE_2B_PLATFORM_SERVICES_FEEDBACK_REPAIR.md) and [Leads](PHASE_2B_LEADS_FEEDBACK_REPAIR.md): **20 route-level feedback checkpoints /8 routes with remaining gaps**. Next `/sales-campaigns`, Sol Medium. The17/11 tables below are the preserved starting reconciliation snapshot, not the current count; remove `/access-review/sign-off`, `/platform-services` and `/leads` from its historical pending list. No accepted prior repair was repeated; enterprise/live/device/release gates stay open.
 
 ## Retained checkpoints
 
@@ -37,4 +37,4 @@ Count is routes, not forms/actions/tests or whole-release work. BUG-FUNC-0003 st
 
 ## Routing
 
-Continue **Sol Medium**, Academy Desk, next Leads feedback only. No new testing plan, Mini/runtime training, project switch or Azure deployment. Escalate to **Sol High** only if a real authorization, tenant, domain, transaction, privacy or persistence decision is required. Existing first real PENTA read, premium integrated frontend, Mini qualification, security and enterprise release gates continue in parallel; manual ERP improvements are not deferred until the entire compliance program finishes.
+Continue **Sol Medium**, Academy Desk, next Sales Campaigns feedback only. No new testing plan, Mini/runtime training, project switch or Azure deployment. Escalate to **Sol High** only if a real authorization, tenant, domain, transaction, privacy or persistence decision is required. Existing first real PENTA read, premium integrated frontend, Mini qualification, security and enterprise release gates continue in parallel; manual ERP improvements are not deferred until the entire compliance program finishes.

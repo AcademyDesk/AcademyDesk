@@ -2,6 +2,10 @@
 
 ## Current state
 
+## Leads feedback — 2026-10-10
+
+[Report](QA/REPORTS/PHASE_2B_LEADS_FEEDBACK_REPAIR.md): original BUG-FUNC-0003 queue20 feedback checkpoints/8 routes with gaps, not enterprise completion. Create/stage/conversion durable success/refresh distinction, failed/other draft preserved, page-local pending guard; native conversion confirmation/cancel and converted guard retained. Exact payload/nulls/source/time and admissions/access rules unchanged.37 controlled/52 synthetic browser PASS, lint0/0, TypeScript/83-page export PASS; Sales module fixture corrected, failed receipt retained. No fresh live SQL/admissions/auth/device/security/production acceptance/full-suite rerun. Only current8-file UI/QA/continuity scope publishable; unrelated32/28 continuity/Mini/evidence/main/Azure preserved. Issue/Mini86/94/enterprise/release OPEN. NEXT **Sol Medium**, same Academy project, Sales Campaigns feedback only; High for genuine authority/domain/transaction/privacy decisions, no project switch.
+
 ## Platform Services feedback — 2026-10-10
 
 [Report](QA/REPORTS/PHASE_2B_PLATFORM_SERVICES_FEEDBACK_REPAIR.md): original BUG-FUNC-0003 queue now19 feedback checkpoints/9 routes with gaps, not enterprise completion. Payment-submission/support-create/reply retain confirmed success or refresh warning, failed/other drafts preserved, form captured, synchronous pending guard and checked mount. Exact POST/null reference/whitespace/priority, access/domain rules unchanged; payment means submitted for review, not paid.34 controlled/48 synthetic browser PASS, lint0/0, TypeScript/83-page export PASS. No fresh live SQL/payment/provider/auth/device/security/production acceptance/full-suite rerun. Only current8-file UI/QA/continuity scope publishable; unrelated32/28 continuity lines/Mini/evidence/main/Azure preserved. Issue/Mini86/94/enterprise/release gates OPEN. NEXT **Sol Medium**, same Academy project, Leads feedback only; High for genuine authority/domain/transaction/privacy decisions. No project switch needed.

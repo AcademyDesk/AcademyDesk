@@ -1,0 +1,20 @@
+# Leads feedback repair — 2026-10-10
+
+BUG-FUNC-0003, bounded Sol Medium packet. Starting `ecbc33fe3712dbaabc19b92737c2b98b1b822687`, `codex/penta-search`, `D:\AcademyDesk-codex-p0`. Continue [existing route queue](PHASE_2B_FEEDBACK_ROUTE_RECONCILIATION.md), not a new audit/testing plan.
+
+## Application change
+
+Only [Leads page](../../apps/web/src/app/leads/page.tsx): create and stage-change now announce success; conversion keeps its existing confirmed-success wording through readback. Failed refresh retains confirmed success plus do-not-repeat guidance. HTTP rejection retains create draft; network/5xx outcome is unconfirmed with check-pipeline-before-retry guidance. No automatic retry. Only confirmed create clears its existing fields; selected source stays unchanged and follow-up time resets to10:00. Stage/conversion never clear the create draft. Exact POST/PATCH fields, whitespace, optional nulls, existing stage follow-up timestamp, local-time-to-UTC conversion and conversion `{firstName:null,lastName:null}` remain unchanged.
+
+Shared synchronous page-local lock/disabled fieldset and pipeline controls cover duplicate/opposing actions through readback. Conversion still requires native confirmation; cancellation preserves prior notice and draft and sends nothing. Already-converted lead guard retained. Checked mount HTTP/list shape enables create only after successful initial workspace; cleanup ignores obsolete reads. Existing401/create-academy guidance retained; generic failed-load advice no longer guesses a missing migration. Polite status added, existing layout/themes retained. No backend/admissions/RBAC/tenant/domain/transaction/Mini change; click guard is not server idempotency or live concurrent conversion proof.
+
+## Evidence
+
+- [Controlled actual TSX tests](../tools/leads-feedback.test.cjs): **37/37 PASS**, frozen HEAD **9 PASS/28 FAIL** under the same assertions. Counts are assertions, not distinct defects. Retained positives include cancellation, converted-lead blocking, null follow-up and optional payload behavior. New cases cover all three durable-success/readback/failure/network paths, exact payload/reset/source/time, synchronous duplicate/opposing controls and initial/lifecycle states. Existing accepted suites/backend unchanged/not rerun.
+- [Synthetic production-export browser](../tools/leads-feedback-browser.cjs): **52/52 PASS** —320/1440 × light/dark × create/stage/convert × success/readback503/rejection400/unconfirmed-but-fixture-committed500, plus four conversion-cancel cases. Actual confirm accept/dismiss and contextual text, already-converted disabled controls, one mutation/no cancel write, precise POST/PATCH/null payloads, retained other draft/source/default time, polite notice, restored controls, no horizontal overflow/unexpected console/hydration errors.
+- Final local receipt/screenshots: `QA/EVIDENCE/leads-feedback-browser-1791630903219/result.json`. First failed fixture `1791623074981` retained: synthetic module `SalesMarketing` was not the page's required `Sales`; form correctly stayed disabled. Corrected fixture module, not application access or assertions.
+- Target ESLint **0 errors/0 warnings**, TypeScript PASS, webpack/static export **83/83 pages PASS**. Initial typecheck rejected unsupported date/time `disabled` props; removed them, relying on native disabled fieldset, not shared-control API changes. Scoped diff/publication checks before commit/push.
+
+No live leads/student creation, Identity/SQL/auth/tenant/audit rollback/device/screen-reader/admissions/production inference or full-suite acceptance. BUG-FUNC-0003 and broader gates remain OPEN. Current original feedback queue **20 route-level checkpoints /8 routes with gaps**, not completed enterprise workflows or whole-project readiness. Unrelated dirty work/evidence/main/Mini/Azure preserved.
+
+NEXT **Sol Medium**, Academy Desk, `/sales-campaigns` feedback only; preserve budget/campaign/lifecycle/access contracts. High only for a genuine domain/authority/transaction/privacy decision. No project switch or Azure deployment.

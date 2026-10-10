@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { WorkspaceNav } from "@/components/workspace-nav";
 import {
   StandardDateField,
@@ -48,6 +48,14 @@ const display = (value: string) =>
       ? "Follow-up"
       : value;
 
+async function fetchLeads(academyId: string) {
+  const response = await academyApi(`/api/academies/${academyId}/leads`, { cache: "no-store" });
+  if (!response.ok) throw new Error();
+  const records: Lead[] = await response.json();
+  if (!Array.isArray(records)) throw new Error();
+  return records;
+}
+
 export default function LeadsPage() {
   const [academy, setAcademy] = useState<Academy>();
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -63,114 +71,77 @@ export default function LeadsPage() {
   const [notes, setNotes] = useState("");
   const [message, setMessage] = useState("Loading leads…");
   const [savingId, setSavingId] = useState("");
-  async function load(id?: string) {
-    const academyId = id ?? academy?.id;
-    if (!academyId) return;
-    const leadResponse = await academyApi(`/api/academies/${academyId}/leads`, {
-      cache: "no-store",
-    });
-    if (!leadResponse.ok) throw new Error();
-    setLeads(await leadResponse.json());
-    setMessage("");
-  }
+  const pending = useRef(false);
   useEffect(() => {
-    async function initialise() {
+    let active = true;
+    void (async () => {
       try {
-        const response = await academyApi("/api/academies", {
-          cache: "no-store",
-        });
-        if (response.status === 401)
-          return setMessage("Please sign in before using admissions.");
+        const response = await academyApi("/api/academies", { cache: "no-store" });
+        if (response.status === 401) {
+          if (active) setMessage("Please sign in before using admissions.");
+          return;
+        }
         if (!response.ok) throw new Error();
         const academies: Academy[] = await response.json();
-        if (!academies[0]) return setMessage("Create your academy first.");
-        setAcademy(academies[0]);
-        await load(academies[0].id);
+        if (!academies[0]) {
+          if (active) setMessage("Create your academy first.");
+          return;
+        }
+        const records = await fetchLeads(academies[0].id);
+        if (!active) return;
+        setAcademy(academies[0]); setLeads(records); setMessage("");
       } catch {
-        setMessage(
-          "Admissions could not be loaded. Apply the leads migration and restart the API.",
-        );
+        if (active) setMessage("Admissions could not be loaded. Refresh the page or contact your administrator.");
       }
-    }
-    void initialise();
+    })();
+    return () => { active = false; };
   }, []);
+
+  async function mutate(id: string, action: () => Promise<Response>, success: string, failure: string, reset?: () => void) {
+    if (!academy || pending.current) return;
+    pending.current = true; setSavingId(id); setMessage("");
+    try {
+      const response = await action();
+      if (!response.ok) return setMessage(response.status >= 500
+        ? "The action could not be confirmed. Your entries have been retained; check the lead pipeline before retrying."
+        : failure);
+      reset?.(); setMessage(success);
+      try {
+        setLeads(await fetchLeads(academy.id));
+      } catch {
+        setMessage(`${success} The lead pipeline could not be refreshed; do not repeat the action. Refresh the page to check the saved record.`);
+      }
+    } catch {
+      setMessage("The action could not be confirmed. Your entries have been retained; check the lead pipeline before retrying.");
+    } finally { pending.current = false; setSavingId(""); }
+  }
   async function create(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!academy) return;
-    const response = await academyApi(`/api/academies/${academy.id}/leads`, {
-      method: "POST",
-      headers: apiHeaders(true),
-      body: JSON.stringify({
-        fullName,
-        email: email || null,
-        phone: phone || null,
-        dateOfBirth: dateOfBirth || null,
-        parentName: parentName || null,
-        programInterest: programInterest || null,
-        source,
-        followUpAtUtc: followUpDate
-          ? new Date(`${followUpDate}T${followUpTime}:00`).toISOString()
-          : null,
+    if (!academy || pending.current) return;
+    await mutate("create", () => academyApi(`/api/academies/${academy.id}/leads`, {
+      method: "POST", headers: apiHeaders(true), body: JSON.stringify({
+        fullName, email: email || null, phone: phone || null, dateOfBirth: dateOfBirth || null,
+        parentName: parentName || null, programInterest: programInterest || null, source,
+        followUpAtUtc: followUpDate ? new Date(`${followUpDate}T${followUpTime}:00`).toISOString() : null,
         notes: notes || null,
       }),
+    }), "Lead added to the pipeline.", "The lead could not be saved. Your entries have been retained.", () => {
+      setFullName(""); setEmail(""); setPhone(""); setDateOfBirth(""); setParentName("");
+      setProgramInterest(""); setFollowUpDate(""); setFollowUpTime("10:00"); setNotes("");
     });
-    if (!response.ok) return setMessage("Lead name is required.");
-    setFullName("");
-    setEmail("");
-    setPhone("");
-    setDateOfBirth("");
-    setParentName("");
-    setProgramInterest("");
-    setFollowUpDate("");
-    setFollowUpTime("10:00");
-    setNotes("");
-    setMessage("");
-    await load();
   }
   async function setStage(lead: Lead, stage: string) {
     if (!academy || lead.convertedStudentId) return;
-    setSavingId(lead.id);
-    try {
-      const response = await academyApi(
-        `/api/academies/${academy.id}/leads/${lead.id}/stage`,
-        {
-          method: "PATCH",
-          headers: apiHeaders(true),
-          body: JSON.stringify({ stage, followUpAtUtc: lead.followUpAtUtc }),
-        },
-      );
-      if (!response.ok) throw new Error();
-      await load();
-    } catch {
-      setMessage("The lead stage could not be updated.");
-    } finally {
-      setSavingId("");
-    }
+    await mutate(lead.id, () => academyApi(`/api/academies/${academy.id}/leads/${lead.id}/stage`, {
+      method: "PATCH", headers: apiHeaders(true), body: JSON.stringify({ stage, followUpAtUtc: lead.followUpAtUtc }),
+    }), `${lead.fullName} moved to ${display(stage)}.`, "The lead stage could not be updated.");
   }
   async function convert(lead: Lead) {
-    if (!academy || lead.convertedStudentId) return;
-    if (!window.confirm(`Convert ${lead.fullName} into a student record?`))
-      return;
-    setSavingId(lead.id);
-    try {
-      const response = await academyApi(
-        `/api/academies/${academy.id}/leads/${lead.id}/convert`,
-        {
-          method: "POST",
-          headers: apiHeaders(true),
-          body: JSON.stringify({ firstName: null, lastName: null }),
-        },
-      );
-      if (!response.ok) throw new Error();
-      setMessage(
-        `${lead.fullName} was converted to a student. You can now enrol them in a batch.`,
-      );
-      await load();
-    } catch {
-      setMessage("The lead could not be converted.");
-    } finally {
-      setSavingId("");
-    }
+    if (!academy || pending.current || lead.convertedStudentId) return;
+    if (!window.confirm(`Convert ${lead.fullName} into a student record?`)) return;
+    await mutate(lead.id, () => academyApi(`/api/academies/${academy.id}/leads/${lead.id}/convert`, {
+      method: "POST", headers: apiHeaders(true), body: JSON.stringify({ firstName: null, lastName: null }),
+    }), `${lead.fullName} was converted to a student. You can now enrol them in a batch.`, "The lead could not be converted.");
   }
   return (
     <main className="enterprise-settings leads-standard min-h-screen">
@@ -188,7 +159,7 @@ export default function LeadsPage() {
           </div>
         </header>
         {message && (
-          <p className="enterprise-page-state leads-message">{message}</p>
+          <p className="enterprise-page-state leads-message" role="status" aria-live="polite">{message}</p>
         )}
         <section className="leads-layout">
           <form onSubmit={create} className="leads-panel">
@@ -198,7 +169,7 @@ export default function LeadsPage() {
                 <h2>Add lead</h2>
               </div>
             </header>
-            <div className="leads-fields">
+            <fieldset disabled={!academy || Boolean(savingId)} aria-busy={Boolean(savingId)} className="leads-fields" style={{ border: 0, margin: 0, minWidth: 0 }}>
               <label>
                 <span>Lead name</span>
                 <input
@@ -253,6 +224,7 @@ export default function LeadsPage() {
               </label>
               <StandardSelectField
                 name="source"
+                  disabled={!academy || Boolean(savingId)}
                 value={source}
                 onChange={setSource}
                 placeholder="Lead source"
@@ -284,12 +256,12 @@ export default function LeadsPage() {
                 />
               </label>
               <button
-                disabled={!academy}
+                disabled={!academy || Boolean(savingId)}
                 className="enterprise-action-button leads-add-button"
               >
                 Add lead
               </button>
-            </div>
+            </fieldset>
           </form>
           <section className="leads-panel leads-pipeline-panel">
             <header className="leads-panel-header">
@@ -324,7 +296,7 @@ export default function LeadsPage() {
                         }))}
                         disabled={
                           Boolean(lead.convertedStudentId) ||
-                          savingId === lead.id
+                          Boolean(savingId)
                         }
                       />
                     </div>
@@ -350,13 +322,13 @@ export default function LeadsPage() {
                     <button
                       type="button"
                       disabled={
-                        Boolean(lead.convertedStudentId) || savingId === lead.id
+                        Boolean(lead.convertedStudentId) || Boolean(savingId)
                       }
                       onClick={() => void convert(lead)}
                     >
                       {lead.convertedStudentId
                         ? "Converted to student"
-                        : savingId === lead.id
+                        : Boolean(savingId)
                           ? "Saving…"
                           : "Convert to student"}
                     </button>
