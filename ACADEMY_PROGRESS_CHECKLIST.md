@@ -138,7 +138,7 @@ Scope: success/refresh/error/draft/pending feedback only. Existing payloads/doma
 - [x]56 targeted unit tests and isolated builds0/0 PASS; [report](QA/REPORTS/PHASE_2B_ONBOARDING_ATOMIC_REPAIR.md), issue and scoped handoff updated.
 - [ ] Linked browser/device/concurrent/cancellation/store-mismatch/full-critical acceptance; issue OPEN. Partial optional-credential created flags remain separate BUG-DATA-0007.
 
-## Current batch — Truthful onboarding account-created flags
+## Past batch — Truthful onboarding account-created flags
 
 - [x] Existing BUG-DATA-0007 parent username-only false-positive200 flag reproduced; omitted-account control passed.
 - [x] Flags now reflect confirmed CreateAccount/role completion; original optional incomplete credentials and transaction/authority retained.
@@ -146,6 +146,15 @@ Scope: success/refresh/error/draft/pending feedback only. Existing payloads/doma
 - [x] Unchanged21 native rollback cases and56 targeted unit tests PASS; builds0/0,migrations88+7/owned cleanup; [report](QA/REPORTS/PHASE_2B_ONBOARDING_ACCOUNT_FLAGS_REPAIR.md).
 - [x] Issue/checkpoint/E0/handoff updated, source/receipt local; no frontend/Mini/main/Azure or unrelated publication.
 - [ ] Linked browser/physical devices/full critical acceptance; issue OPEN. Blank optional student numbers and broader intake pending/unknown-result UX remain separate.
+
+## Current batch — Optional student-number SQL normalization
+
+- [x] Existing BUG-DATA-0008 reproduced: first blank intake200/second400; fresh owned SQL one empty-number row.
+- [x] Blank/whitespace numbers now NULL; optional fields, explicit trimming/unique index/length limit and transaction/authority unchanged. No migration or historical-row rewrite.
+- [x]29 new native cases PASS, including null/blank repetitions, full minor/account chains, duplicates/tenant/role/length guards, legacy compatibility and one simultaneous blank pair.
+- [x] Unchanged33 account-flag and21 transaction native cases plus56 targeted unit tests PASS; builds0/0,88+7 migrations and exact owned cleanup; [report](QA/REPORTS/PHASE_2B_ONBOARDING_NUMBER_REPAIR.md).
+- [x] Issue/register/E0/checkpoint/handoff updated; evidence local, unrelated Mini work preserved. Feature publication only, not main/Azure.
+- [ ] Linked browser/physical devices/broader race/stale/full critical acceptance; issue OPEN. Queued intake feedback and visual work remain next.
 
 ## Original feedback routes — bounded checkpoint list
 
@@ -196,7 +205,8 @@ Current bounded feedback count: **28/28 checkpointed**, after the Assessments cr
 - [x] BUG-API-0001 optional onboarding dates — bounded serialization/browser/native SQL proof; broader acceptance OPEN.
 - [x] BUG-DATA-0004 onboarding domain/Identity transaction fault gate — bounded native repair/proof complete; wider acceptance OPEN.
 - [x] BUG-DATA-0007 incomplete optional-credential created-account flags — bounded native proof complete; broader acceptance OPEN.
-- [ ] **Next: existing BUG-DATA-0008 blank optional student-number collision** — preserve optional-field semantics and real unique-index protections; Sol High for SQL/constraint proof. Then queued onboarding pending/unknown-result feedback, Medium for settled UI.
+- [x] BUG-DATA-0008 optional-number collision — bounded29-case native normalization/uniqueness/chain proof; wider acceptance OPEN.
+- [ ] **Next: Student/Teacher onboarding pending/unknown-result/success feedback** — preserve payloads, optional fields, original navigation and backend authority; Sol Medium for settled UI, High if domain/security policy changes are required.
 - [ ] Shared PENTA/Manual visual foundation: consume versioned FW1 delivery when available, continue independent Manual controls without claiming the shared AI frontend is delivered.
 - [ ] FP1/FP2/FP3 explicit owner decisions and legacy disposition — pending, not inferred from “continue.”
 - [ ] Approved financial implementation — Sol High; accounting/tax/payroll review before applicable release. Policy-pending finance need not block safe feedback work.

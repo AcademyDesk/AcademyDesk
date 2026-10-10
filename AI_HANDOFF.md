@@ -2,6 +2,10 @@
 
 ## Current state
 
+## Optional student-number normalization — 2026-10-10
+
+[Report](QA/REPORTS/PHASE_2B_ONBOARDING_NUMBER_REPAIR.md): BUG-DATA-0008 baseline first blank200/second400 plus one empty SQL row confirmed; blank/whitespace now NULL, explicit unique index/trimming/length limit unchanged.29 new native cases, unchanged33 account/21 atomic cases and56 targeted unit PASS; builds0/0,migrations88+7/owned cleanup. Legacy blank preserved; one concurrent blank pair passed, not broad race acceptance. No frontend/date/authority/Mini/main/Azure; unrelated32/28 continuity/evidence preserved, issue/linked/device/critical/FW1/release OPEN. NEXT Student/Teacher onboarding pending/unknown-result/success feedback, Sol Medium; High for consequential host/domain/release work. Maintain/display [checklist](ACADEMY_PROGRESS_CHECKLIST.md), no whole-app readiness claim or project switch.
+
 ## Student onboarding account-created response repair — 2026-10-10
 
 [Report](QA/REPORTS/PHASE_2B_ONBOARDING_ACCOUNT_FLAGS_REPAIR.md): BUG-DATA-0007 parent username-only200/false-positive flag reproduced; flags now reflect successful account+role creation, optional incomplete credentials unchanged.33 native flag/domain/Identity cases, unchanged21 atomic cases and56 targeted unit PASS; builds0/0,88+7 migrations/owned cleanup. Baseline compiled ordering/query limits recorded; final fresh SQL exact deltas and actual roles verified. No date/frontend/permission/Mini/main/Azure/project switch; unrelated32/28 preserved, evidence local. Issue/linked browser/device/critical/FW1/release OPEN; original28 checkpoints retained. NEXT BUG-DATA-0008 blank optional student-number collision, Sol High; Medium queued onboarding feedback/settled Manual visuals. Maintain/display [checklist](ACADEMY_PROGRESS_CHECKLIST.md), no whole-app readiness claim.
