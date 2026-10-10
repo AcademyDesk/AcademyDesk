@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { WorkspaceNav } from "@/components/workspace-nav";
 import {
   StandardDateField,
@@ -28,6 +28,17 @@ const channels = [
   "Other",
 ];
 
+async function fetchCampaigns(academyId: string): Promise<Campaign[]> {
+  const response = await academyApi(
+    `/api/academies/${academyId}/sales-marketing/campaigns`,
+    { cache: "no-store" },
+  );
+  if (!response.ok) throw new Error();
+  const data: unknown = await response.json();
+  if (!Array.isArray(data)) throw new Error();
+  return data;
+}
+
 export default function SalesCampaignsPage() {
   const [academy, setAcademy] = useState<Academy>();
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
@@ -39,38 +50,68 @@ export default function SalesCampaignsPage() {
   );
   const [budget, setBudget] = useState("");
   const [status, setStatus] = useState("Draft");
-  async function load(academyId?: string) {
-    const id = academyId ?? academy?.id;
-    if (!id) return;
-    const response = await academyApi(
-      `/api/academies/${id}/sales-marketing/campaigns`,
-      { cache: "no-store" },
-    );
-    if (!response.ok) throw new Error();
-    setCampaigns(await response.json());
-    setMessage("");
-  }
+  const [saving, setSaving] = useState(false);
+  const pending = useRef(false);
   useEffect(() => {
+    let active = true;
     void (async () => {
       try {
         const response = await academyApi("/api/academies", {
           cache: "no-store",
         });
+        if (!response.ok) throw new Error();
         const academies: Academy[] = await response.json();
-        if (!response.ok || !academies[0]) throw new Error();
+        if (!academies[0]) throw new Error();
+        const data = await fetchCampaigns(academies[0].id);
+        if (!active) return;
         setAcademy(academies[0]);
-        await load(academies[0].id);
+        setCampaigns(data);
+        setMessage("");
       } catch {
+        if (!active) return;
         setMessage(
-          "Campaigns could not be loaded. Please sign in and restart the API if needed.",
+          "Campaigns could not be loaded. Please refresh or contact your administrator.",
         );
       }
     })();
+    return () => { active = false; };
   }, []);
+
+  async function mutate(
+    action: () => Promise<Response>,
+    success: string,
+    failure: string,
+    reset?: () => void,
+  ) {
+    if (!academy || pending.current) return;
+    pending.current = true;
+    setSaving(true);
+    setMessage("");
+    const uncertain = "The campaign change could not be confirmed. Your draft has been retained. Check the campaign register before retrying.";
+    try {
+      const response = await action();
+      if (!response.ok) {
+        setMessage(response.status >= 500 ? uncertain : failure);
+        return;
+      }
+      reset?.();
+      setMessage(success);
+      try {
+        setCampaigns(await fetchCampaigns(academy.id));
+      } catch {
+        setMessage(`${success} The campaign register could not be refreshed; do not repeat the action. Refresh the page to see the latest data.`);
+      }
+    } catch {
+      setMessage(uncertain);
+    } finally {
+      pending.current = false;
+      setSaving(false);
+    }
+  }
   async function create(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!academy) return;
-    const response = await academyApi(
+    await mutate(() => academyApi(
       `/api/academies/${academy.id}/sales-marketing/campaigns`,
       {
         method: "POST",
@@ -83,16 +124,14 @@ export default function SalesCampaignsPage() {
           status,
         }),
       },
-    );
-    if (!response.ok)
-      return setMessage("Enter a campaign name and valid budget.");
-    setName("");
-    setBudget("");
-    await load();
+    ), "Campaign created.", "Campaign could not be created. Enter a campaign name and valid budget. Your draft has been retained.", () => {
+      setName("");
+      setBudget("");
+    });
   }
   async function update(campaign: Campaign, nextStatus: string) {
     if (!academy) return;
-    const response = await academyApi(
+    await mutate(() => academyApi(
       `/api/academies/${academy.id}/sales-marketing/campaigns/${campaign.id}`,
       {
         method: "PATCH",
@@ -103,10 +142,7 @@ export default function SalesCampaignsPage() {
           endDate: campaign.endDate || null,
         }),
       },
-    );
-    if (!response.ok)
-      return setMessage("Campaign status could not be updated.");
-    await load();
+    ), `${campaign.name} moved to ${nextStatus}.`, "Campaign status could not be updated. Your draft has been retained.");
   }
   return (
     <main className="enterprise-settings campaigns-standard min-h-screen">
@@ -124,7 +160,7 @@ export default function SalesCampaignsPage() {
           </div>
         </header>
         {message && (
-          <p className="enterprise-page-state campaigns-message">{message}</p>
+          <p role="status" aria-live="polite" className="enterprise-page-state campaigns-message">{message}</p>
         )}
         <section className="campaigns-layout">
           <form onSubmit={create} className="campaigns-panel">
@@ -134,7 +170,7 @@ export default function SalesCampaignsPage() {
                 <h2>Create campaign</h2>
               </div>
             </header>
-            <div className="campaigns-fields">
+            <fieldset className="campaigns-fields" disabled={!academy || saving} aria-busy={saving} style={{ border: 0, margin: 0, minWidth: 0 }}>
               <label>
                 <span>Campaign name</span>
                 <input
@@ -149,6 +185,7 @@ export default function SalesCampaignsPage() {
                   <span>Channel</span>
                   <StandardSelectField
                     name="channel"
+                    disabled={!academy || saving}
                     value={channel}
                     onChange={setChannel}
                     placeholder="Channel"
@@ -179,6 +216,7 @@ export default function SalesCampaignsPage() {
                   <span>Status</span>
                   <StandardSelectField
                     name="status"
+                    disabled={!academy || saving}
                     value={status}
                     onChange={setStatus}
                     placeholder="Status"
@@ -188,11 +226,11 @@ export default function SalesCampaignsPage() {
               </div>
               <button
                 className="enterprise-action-button campaigns-create-button"
-                disabled={!academy}
+                disabled={!academy || saving}
               >
-                Create campaign
+                {saving ? "Saving…" : "Create campaign"}
               </button>
-            </div>
+            </fieldset>
           </form>
           <section className="campaigns-panel campaigns-list-panel">
             <header className="campaigns-panel-header">
@@ -223,6 +261,7 @@ export default function SalesCampaignsPage() {
                     </div>
                     <StandardSelectField
                       name={`campaign-status-${campaign.id}`}
+                      disabled={!academy || saving}
                       value={campaign.status}
                       onChange={(nextStatus) =>
                         void update(campaign, nextStatus)

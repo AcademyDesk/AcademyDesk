@@ -2,6 +2,10 @@
 
 ## Current state
 
+## Sales Campaigns feedback — 2026-10-10
+
+[Report](QA/REPORTS/PHASE_2B_CAMPAIGNS_FEEDBACK_REPAIR.md): original BUG-FUNC-0003 queue21 feedback checkpoints/7 routes with gaps, not enterprise completion. Create/status durable success, confirmed-write/failed-refresh distinction, failed/other drafts retained, synchronous pending guard and checked mount. Exact POST/PATCH budget/date/status/nulls and domain/access unchanged.26 controlled/32 synthetic browser PASS, lint0/0, local TypeScript/83-page export PASS. Fixture unavailable-row lookup corrected; root npx compiler resolution failed, installed web compiler verified. No fresh live SQL/campaign/auth/device/security/production acceptance/full-suite rerun. Only current8-file UI/QA/continuity scope publishable; unrelated32/28 continuity/Mini/evidence/main/Azure preserved. Issue/Mini86/94/enterprise/release OPEN. NEXT **Sol Medium**, same Academy project, Trial Bookings feedback only; High for genuine authority/domain/transaction/privacy decisions, no project switch.
+
 ## Leads feedback — 2026-10-10
 
 [Report](QA/REPORTS/PHASE_2B_LEADS_FEEDBACK_REPAIR.md): original BUG-FUNC-0003 queue20 feedback checkpoints/8 routes with gaps, not enterprise completion. Create/stage/conversion durable success/refresh distinction, failed/other draft preserved, page-local pending guard; native conversion confirmation/cancel and converted guard retained. Exact payload/nulls/source/time and admissions/access rules unchanged.37 controlled/52 synthetic browser PASS, lint0/0, TypeScript/83-page export PASS; Sales module fixture corrected, failed receipt retained. No fresh live SQL/admissions/auth/device/security/production acceptance/full-suite rerun. Only current8-file UI/QA/continuity scope publishable; unrelated32/28 continuity/Mini/evidence/main/Azure preserved. Issue/Mini86/94/enterprise/release OPEN. NEXT **Sol Medium**, same Academy project, Sales Campaigns feedback only; High for genuine authority/domain/transaction/privacy decisions, no project switch.

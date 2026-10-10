@@ -35,6 +35,10 @@
 | Regression result | 209 current combined controlled frontend PASS; no new backend/SQL run; Course lint FAIL (1 error/1 warning after improvement), not all-form/critical acceptance |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
+## Sales Campaigns checkpoint — 2026-10-10
+
+[Report](../REPORTS/PHASE_2B_CAMPAIGNS_FEEDBACK_REPAIR.md): durable create/status success and separate refresh warning, failed/other draft retained, synchronous page-local guard and checked mount. Exact POST/PATCH budget/date/status/end-date-null and domain/authority unchanged.26 controlled/32 synthetic browser PASS, lint0/0, installed TypeScript/83-page export PASS; test fixture absent-row lookup and root compiler resolution corrected. No live campaigns/SQL/auth/device/release acceptance. Issue OPEN, current queue21 checkpointed/7 routes with gaps, not enterprise completion. Next Sol Medium, Trial Bookings feedback only.
+
 ## Leads checkpoint — 2026-10-10
 
 [Report](../REPORTS/PHASE_2B_LEADS_FEEDBACK_REPAIR.md): durable create/stage/conversion success and separate refresh warning, failed/other draft retained, synchronous page-local guard, native conversion confirmation/cancellation retained. Exact payload/nulls/source/time/admissions/authority unchanged.37 controlled/52 synthetic browser PASS, lint0/0, TypeScript/83-page export PASS; fixture module error corrected without access changes. No live admissions/SQL/auth/device/release acceptance. Issue OPEN, current queue20 checkpointed/8 routes with gaps, not enterprise completion. Next Sol Medium, Sales Campaigns feedback only.
