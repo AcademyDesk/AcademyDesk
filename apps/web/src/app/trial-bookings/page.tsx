@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { WorkspaceNav } from "@/components/workspace-nav";
 import {
   StandardDateField,
@@ -24,6 +24,18 @@ const trialStatuses = ["Booked", "Completed", "Cancelled", "NoShow"];
 const statusLabel = (status: string) =>
   status === "NoShow" ? "No show" : status;
 
+async function fetchTrials(id: string) {
+  const responses = await Promise.all([
+    academyApi(`/api/academies/${id}/leads`, { cache: "no-store" }),
+    academyApi(`/api/academies/${id}/teachers`, { cache: "no-store" }),
+    academyApi(`/api/academies/${id}/sales-marketing/trials`, { cache: "no-store" }),
+  ]);
+  if (!responses.every((response) => response.ok)) throw new Error();
+  const rows: unknown[] = await Promise.all(responses.map((response) => response.json()));
+  if (!rows.every(Array.isArray)) throw new Error();
+  return { leads: rows[0] as Lead[], teachers: rows[1] as Teacher[], trials: rows[2] as Trial[] };
+}
+
 export default function TrialBookingsPage() {
   const [academy, setAcademy] = useState<Academy>();
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -35,46 +47,67 @@ export default function TrialBookingsPage() {
   const [scheduledDate, setScheduledDate] = useState("");
   const [scheduledTime, setScheduledTime] = useState("10:00");
   const [notes, setNotes] = useState("");
-  async function load(academyId?: string) {
-    const id = academyId ?? academy?.id;
-    if (!id) return;
-    const [leadResponse, teacherResponse, trialResponse] = await Promise.all([
-      academyApi(`/api/academies/${id}/leads`),
-      academyApi(`/api/academies/${id}/teachers`),
-      academyApi(`/api/academies/${id}/sales-marketing/trials`),
-    ]);
-    if (
-      ![leadResponse, teacherResponse, trialResponse].every(
-        (response) => response.ok,
-      )
-    )
-      throw new Error();
-    setLeads(await leadResponse.json());
-    setTeachers(await teacherResponse.json());
-    setTrials(await trialResponse.json());
-    setMessage("");
-  }
+  const [saving, setSaving] = useState(false);
+  const pending = useRef(false);
   useEffect(() => {
+    let active = true;
     void (async () => {
       try {
-        const response = await academyApi("/api/academies");
+        const response = await academyApi("/api/academies", { cache: "no-store" });
+        if (!response.ok) throw new Error();
         const academies: Academy[] = await response.json();
-        if (!response.ok || !academies[0]) throw new Error();
+        if (!academies[0]) throw new Error();
+        const data = await fetchTrials(academies[0].id);
+        if (!active) return;
         setAcademy(academies[0]);
-        await load(academies[0].id);
+        setLeads(data.leads);
+        setTeachers(data.teachers);
+        setTrials(data.trials);
+        setMessage("");
       } catch {
+        if (!active) return;
         setMessage(
-          "Trial bookings could not be loaded. Please sign in and restart the API if needed.",
+          "Trial bookings could not be loaded. Please refresh or contact your administrator.",
         );
       }
     })();
+    return () => { active = false; };
   }, []);
+  async function mutate(action: () => Promise<Response>, success: string, failure: string, reset?: () => void) {
+    if (!academy || pending.current) return;
+    pending.current = true;
+    setSaving(true);
+    setMessage("");
+    const uncertain = "The trial change could not be confirmed. Your draft has been retained. Check the trial register before retrying.";
+    try {
+      const response = await action();
+      if (!response.ok) {
+        setMessage(response.status >= 500 ? uncertain : failure);
+        return;
+      }
+      reset?.();
+      setMessage(success);
+      try {
+        const data = await fetchTrials(academy.id);
+        setLeads(data.leads);
+        setTeachers(data.teachers);
+        setTrials(data.trials);
+      } catch {
+        setMessage(`${success} The trial register could not be refreshed; do not repeat the action. Refresh the page to see the latest data.`);
+      }
+    } catch {
+      setMessage(uncertain);
+    } finally {
+      pending.current = false;
+      setSaving(false);
+    }
+  }
   async function create(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!academy) return;
+    if (!academy || pending.current) return;
     if (!leadId || !scheduledDate)
       return setMessage("Select a lead and date for the trial.");
-    const response = await academyApi(
+    await mutate(() => academyApi(
       `/api/academies/${academy.id}/sales-marketing/trials`,
       {
         method: "POST",
@@ -88,28 +121,24 @@ export default function TrialBookingsPage() {
           notes: notes || null,
         }),
       },
-    );
-    if (!response.ok)
-      return setMessage("Select a lead and a valid time for the trial.");
-    setLeadId("");
-    setTeacherId("");
-    setScheduledDate("");
-    setScheduledTime("10:00");
-    setNotes("");
-    await load();
+    ), "Trial class booked.", "Trial class could not be booked. Select a lead and a valid time. Your draft has been retained.", () => {
+      setLeadId("");
+      setTeacherId("");
+      setScheduledDate("");
+      setScheduledTime("10:00");
+      setNotes("");
+    });
   }
   async function update(trial: Trial, status: string) {
     if (!academy) return;
-    const response = await academyApi(
+    await mutate(() => academyApi(
       `/api/academies/${academy.id}/sales-marketing/trials/${trial.id}/status`,
       {
         method: "PATCH",
         headers: apiHeaders(true),
         body: JSON.stringify({ status }),
       },
-    );
-    if (!response.ok) return setMessage("Trial status could not be updated.");
-    await load();
+    ), `Trial status updated to ${statusLabel(status)}.`, "Trial status could not be updated. Your draft has been retained.");
   }
   const leadName = (id: string) =>
     leads.find((lead) => lead.id === id)?.fullName ?? "Lead";
@@ -133,7 +162,7 @@ export default function TrialBookingsPage() {
           </div>
         </header>
         {message && (
-          <p className="enterprise-page-state trials-message">{message}</p>
+          <p role="status" aria-live="polite" className="enterprise-page-state trials-message">{message}</p>
         )}
         <section className="trials-layout">
           <form onSubmit={create} className="trials-panel">
@@ -143,9 +172,10 @@ export default function TrialBookingsPage() {
                 <h2>Book trial class</h2>
               </div>
             </header>
-            <div className="trials-fields">
+            <fieldset disabled={!academy || saving} className="trials-fields min-w-0 border-0 m-0">
               <StandardSelectField
                 name="trial-lead"
+                disabled={!academy || saving}
                 value={leadId}
                 onChange={setLeadId}
                 placeholder="Select lead"
@@ -156,6 +186,7 @@ export default function TrialBookingsPage() {
               />
               <StandardSelectField
                 name="trial-teacher"
+                disabled={!academy || saving}
                 value={teacherId}
                 onChange={setTeacherId}
                 placeholder="No teacher assigned"
@@ -189,11 +220,11 @@ export default function TrialBookingsPage() {
               </label>
               <button
                 className="enterprise-action-button trials-book-button"
-                disabled={!academy}
+                disabled={!academy || saving}
               >
-                Book trial class
+                {saving ? "Saving…" : "Book trial class"}
               </button>
-            </div>
+            </fieldset>
           </form>
           <section className="trials-panel trials-list-panel">
             <header className="trials-panel-header">
@@ -223,6 +254,7 @@ export default function TrialBookingsPage() {
                     </div>
                     <StandardSelectField
                       name={`trial-status-${trial.id}`}
+                      disabled={!academy || saving}
                       value={trial.status}
                       onChange={(status) => void update(trial, status)}
                       placeholder="Status"

@@ -35,7 +35,11 @@
 | Regression result | 209 current combined controlled frontend PASS; no new backend/SQL run; Course lint FAIL (1 error/1 warning after improvement), not all-form/critical acceptance |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
-## Sales Campaigns checkpoint — 2026-10-10
+## Trial Bookings + Curriculum checkpoint — 2026-10-10
+
+[Report](../REPORTS/PHASE_2B_TRIAL_CURRICULUM_FEEDBACK_REPAIR.md): durable create/status/publication notices, confirmed-save/failed-refresh warning, retained drafts and synchronous pending/mount guards; exact original payload/time/null/sequence0 behavior and domain/access unchanged.52 controlled/64 synthetic browser PASS, lint0/0, TypeScript/83-page export PASS. No live SQL/domain/auth/device/full enterprise acceptance. Issue OPEN; current feedback queue23/28 checkpoints,5 remaining. [Progress tracker](../../ACADEMY_PROGRESS_CHECKLIST.md) maintained each batch. Next Sol Medium Academic Governance+Academic Periods feedback.
+
+## Retained Sales Campaigns checkpoint — 2026-10-10
 
 [Report](../REPORTS/PHASE_2B_CAMPAIGNS_FEEDBACK_REPAIR.md): durable create/status success and separate refresh warning, failed/other draft retained, synchronous page-local guard and checked mount. Exact POST/PATCH budget/date/status/end-date-null and domain/authority unchanged.26 controlled/32 synthetic browser PASS, lint0/0, installed TypeScript/83-page export PASS; test fixture absent-row lookup and root compiler resolution corrected. No live campaigns/SQL/auth/device/release acceptance. Issue OPEN, current queue21 checkpointed/7 routes with gaps, not enterprise completion. Next Sol Medium, Trial Bookings feedback only.
 

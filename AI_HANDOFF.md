@@ -2,6 +2,10 @@
 
 ## Current state
 
+## Trial Bookings + Curriculum feedback and progress tracker — 2026-10-10
+
+[Report](QA/REPORTS/PHASE_2B_TRIAL_CURRICULUM_FEEDBACK_REPAIR.md): two bounded routes repaired; original feedback queue23/28 checkpoints,5 remaining. Durable create/status/publication notices, confirmed-write/failed-readback distinction, draft retention, synchronous pending guards and checked mount; exact payload/null/date-time/sequence0 semantics retained, no API/domain/RBAC/Mini changes.52 controlled/64 synthetic browser PASS, lint0/0, TypeScript/export83 PASS; two mobile screenshots inspected. Not real SQL/domain/auth/device/enterprise acceptance. [Progress checklist](ACADEMY_PROGRESS_CHECKLIST.md) is now required at each batch: update/display past completed, current tick marks, next tasks and evidence limits. FP1/FP2/FP3 remain proposed, no inferred approval. NEXT Sol Medium Academic Governance+Academic Periods feedback; High for real authority/domain/transaction decisions. Unrelated32/28 continuity/financial proposal/evidence/main/Azure preserved; no project switch.
+
 ## Financial policy bundle — 2026-10-10
 
 [Decision/implementation packet](QA/REPORTS/PHASE_2B_FINANCIAL_POLICY_BUNDLE.md), E0 rank3: three proposed contracts, NOT approved/implemented. Separate reductions/refund obligations/settlements/credit-note documents; zero-net NoCashDue statement not fake Paid cash; terminal void with separately verified correction/provenance. Current source pinned at01e5531; original balance/transaction/race repairs preserved.18 planned acceptance requirements, legacy/migration/approval/host authority boundaries and staged Manual/backend/PENTA path; official accounting/tax references checked with full-source/access limits, no compliance claim. No application/tests/runner/data/runtime/Mini/main/push/Azure change or issue closure. NEXT owner FP1/FP2/FP3 approval, Sol High financial implementation/reviewer gates; while pending Sol Medium can batch Trial Bookings+Curriculum feedback from existing seven-route queue. FW1 still prepared/not delivered; unrelated32/28 continuity/evidence retained.
