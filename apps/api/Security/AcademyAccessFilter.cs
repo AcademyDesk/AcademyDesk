@@ -46,7 +46,9 @@ public sealed class AcademyAccessFilter(UserManager<ApplicationUser> userManager
         // individual platform endpoints still perform their own owner check.
         if (user.IsPlatformOwner)
         {
-            await next();
+            if (IncludesPlatformOwner(context.ActionDescriptor))
+                await ExecuteAndAuditAsync(context, next, user, academyId);
+            else await next();
             return;
         }
 
@@ -149,6 +151,9 @@ public sealed class AcademyAccessFilter(UserManager<ApplicationUser> userManager
 
     internal static bool IncludesIdentity(ActionDescriptor descriptor) => descriptor is ControllerActionDescriptor action &&
         Attribute.GetCustomAttribute(action.MethodInfo, typeof(AtomicAcademyMutationAttribute), inherit: false) is AtomicAcademyMutationAttribute { IncludeIdentity: true };
+
+    internal static bool IncludesPlatformOwner(ActionDescriptor descriptor) => descriptor is ControllerActionDescriptor action &&
+        Attribute.GetCustomAttribute(action.MethodInfo, typeof(AtomicAcademyMutationAttribute), inherit: false) is AtomicAcademyMutationAttribute { IncludePlatformOwner: true };
 
     internal static bool ShouldAudit(ActionExecutedContext executed)
     {

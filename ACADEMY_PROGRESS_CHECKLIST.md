@@ -121,13 +121,22 @@ Scope: success/refresh/error/draft/pending feedback only. Existing payloads/doma
 - [x] Harness build0 warnings/0 errors;88/7 migrations, owned database/login cleanup and both owned-container removals verified; [report](QA/REPORTS/PHASE_2B_TEACHER_AVAILABILITY_REPAIR.md).
 - [ ] Teacher onboarding/profile browser, physical Android/iOS and full critical/release acceptance; issue OPEN.
 
-## Current batch — Optional onboarding dates
+## Past batch — Optional onboarding dates
 
 - [x] BUG-API-0001 serialized-empty-date defect reproduced;9 actual-handler tests baseline5 PASS/4 FAIL, fixed9 PASS.
 - [x] Teacher DOB/joining and student admission blanks now null; required student DOB/all other payloads retained. Captured native forms fix related async reset failures.
 - [x]32 synthetic responsive browser cases and23 real SQL/Identity/HTTP binding/persistence/no-write cases PASS;88/7 migrations and owned cleanup verified.
 - [x] Target lint0/0, TypeScript,83-page webpack export and harness0/0 PASS; [report](QA/REPORTS/PHASE_2B_ONBOARDING_DATE_REPAIR.md).
 - [ ] Linked browser-to-SQL, physical devices, optional-all-fields/onboarding Identity rollback/critical acceptance; issue OPEN.
+
+## Current batch — Student onboarding transaction integrity
+
+- [x] Existing BUG-DATA-0004 native invalid-second-password400/changed snapshot reproduced; no repeated accepted audit.
+- [x] Shared SQL domain/Identity/audit transaction replaces inner domain-only boundary; role creation/membership results checked, authorization unchanged.
+- [x] Explicit platform-owner transaction opt-in protects onboarding only; other endpoint bypass behavior retained.
+- [x]21 real SQL/Identity/HTTP failure/success/role/tenant cases and23 unchanged optional-date native regressions PASS;88/7 migrations and exact owned cleanup verified.
+- [x]56 targeted unit tests and isolated builds0/0 PASS; [report](QA/REPORTS/PHASE_2B_ONBOARDING_ATOMIC_REPAIR.md), issue and scoped handoff updated.
+- [ ] Linked browser/device/concurrent/cancellation/store-mismatch/full-critical acceptance; issue OPEN. Partial optional-credential created flags remain separate BUG-DATA-0007.
 
 ## Original feedback routes — bounded checkpoint list
 
@@ -176,7 +185,8 @@ Current bounded feedback count: **28/28 checkpointed**, after the Assessments cr
 - [x] Student360 administrative-profile save feedback/pending/late-response gap — bounded UI proof; live privacy/role/SQL acceptance remains OPEN.
 - [x] Existing queue continuation: BUG-API-0006 teacher availability runtime reproduction/repair/native SQL acceptance; broader issue OPEN.
 - [x] BUG-API-0001 optional onboarding dates — bounded serialization/browser/native SQL proof; broader acceptance OPEN.
-- [ ] **Next: existing BUG-DATA-0004 onboarding domain/Identity transaction fault gate** — read current evidence and reproduce only missing rollback cases; Sol High. Broader onboarding pending/unknown-response UI also remains open.
+- [x] BUG-DATA-0004 onboarding domain/Identity transaction fault gate — bounded native repair/proof complete; wider acceptance OPEN.
+- [ ] **Next: existing BUG-DATA-0007 incomplete optional-credential created-account response flags** — truthful result/no-account controls; Sol High for Identity/domain integration. Broader onboarding pending/unknown-response UI remains open; Medium for settled UI.
 - [ ] Shared PENTA/Manual visual foundation: consume versioned FW1 delivery when available, continue independent Manual controls without claiming the shared AI frontend is delivered.
 - [ ] FP1/FP2/FP3 explicit owner decisions and legacy disposition — pending, not inferred from “continue.”
 - [ ] Approved financial implementation — Sol High; accounting/tax/payroll review before applicable release. Policy-pending finance need not block safe feedback work.

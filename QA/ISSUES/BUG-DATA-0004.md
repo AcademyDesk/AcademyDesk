@@ -3,8 +3,8 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | STATIC-FINDING |
-| Final verification | NOT RUN |
+| Confirmation status | RUNTIME-CONFIRMED; bounded repair tested |
+| Final verification | 21 native SQL/Identity/HTTP cases PASS; browser/device/full critical acceptance OPEN |
 | Severity | Major integrity |
 | Priority | P1 |
 | Category | DATA |
@@ -16,7 +16,7 @@
 | Device/viewport | NOT RUN; use QA/06_DEVICE_VIEWPORT_MATRIX.md where UI applies |
 | Baseline | 20bb6047f9edf733ac8e2a226621cc582ec54b3c + pre-existing student UI diff |
 | Discovery test / review ID | STUDENT-DB-001 |
-| Evidence classification | Static trace; runtime reproduction pending |
+| Evidence classification | Historical static trace plus native disposable-SQL reproduction and strict regression |
 | Preconditions | Isolated synthetic fixture from QA/10_TEST_DATA_STRATEGY.md; never customer data |
 | Reproduction frequency | Not measured; reproduction instructions are proposed |
 | Source | apps/api/Controllers/StudentOnboardingController.cs:32 |
@@ -30,10 +30,20 @@
 | API response | Not captured for this issue; use synthetic request/response in isolated reproduction |
 | Database before/after | Not executed; fixture and fresh-context assertions defined below |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | Not implemented (Phase 1) |
-| Retest result | NOT RUN |
-| Regression result | NOT RUN |
+| Fix commit | Feature commit containing PHASE_2B_ONBOARDING_ATOMIC_REPAIR.md; no main/Azure deployment |
+| Retest result | 21 native cases PASS; see latest checkpoint below |
+| Regression result | 23 retained optional-date native cases and56 targeted unit tests PASS |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
+
+## Latest bounded checkpoint — 2026-10-10
+
+[Report](../REPORTS/PHASE_2B_ONBOARDING_ATOMIC_REPAIR.md), starting HEAD517a943. Baseline `066c3660351545adbd4f5024c72875d3` reproduced HTTP400 after invalid second-account password with a changed fresh domain/Identity/audit snapshot. No strict case passed before the expected rollback assertion failed. The historical static entries below are not current verification results.
+
+Student Onboarding now opts into the existing same-store SQL domain/Identity/audit boundary; its nested domain-only transaction is removed. Role creation and assignment IdentityResults are checked. Explicit platform-owner transaction/audit opt-in is scoped to this action; original controller authorization and other endpoint bypass behavior remain unchanged.
+
+Final native run `97dde5dfa27849bab8dfbdb2597582d0`:21/21 PASS, including invalid/duplicate parent credentials, six SQL failure stages, failed role/membership results, successful/minimal account options, Owner/platform-owner integrity and anonymous/teacher/foreign-route no-write controls. Fresh contexts verify failed domain/Identity/role/membership/audit snapshots unchanged and successful exact row deltas/role links. Optional-date native retest23/23 and targeted unit56/56 PASS; builds0/0,88 application/7 Identity migrations and exact owned cleanup verified. Evidence remains local.
+
+Issue remains OPEN: linked live browser, physical Android/iOS, concurrent onboarding/cancellation/connection-store mismatch and full critical acceptance are not completed here. BUG-DATA-0007 incomplete-credential created flags and other onboarding field/branch/uniqueness issues remain separate; this transaction fix does not claim them repaired.
 
 ## Exact reproduction
 

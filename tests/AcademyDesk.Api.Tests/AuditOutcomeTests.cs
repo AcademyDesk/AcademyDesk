@@ -66,6 +66,7 @@ public sealed class AuditOutcomeTests
     [Theory]
     [InlineData(typeof(StudentsController), "Create", true)]
     [InlineData(typeof(TeachersController), "Create", true)]
+    [InlineData(typeof(StudentOnboardingController), "Create", true)]
     [InlineData(typeof(StudentsController), "Update", true)]
     [InlineData(typeof(TeachersController), "Update", true)]
     [InlineData(typeof(ClassMediaUploadsController), "Complete", false)]
@@ -97,9 +98,21 @@ public sealed class AuditOutcomeTests
     [InlineData(typeof(TeachersController), "Update", true)]
     [InlineData(typeof(ClassMediaUploadsController), "Complete", false)]
     [InlineData(typeof(InvoicesController), "Create", false)]
+    [InlineData(typeof(StudentOnboardingController), "Create", true)]
     public void Identity_enlistment_requires_explicit_action_opt_in(Type controller, string method, bool expected) =>
         Assert.Equal(expected, AcademyAccessFilter.IncludesIdentity(new ControllerActionDescriptor { MethodInfo = controller.GetMethod(method)! }));
 
     [Fact]
     public void Unknown_descriptor_does_not_enlist_Identity() => Assert.False(AcademyAccessFilter.IncludesIdentity(new ActionDescriptor()));
+
+    [Theory]
+    [InlineData(typeof(StudentOnboardingController), "Create", true)]
+    [InlineData(typeof(TeachersController), "Update", false)]
+    [InlineData(typeof(StudentsController), "Create", false)]
+    public void Platform_owner_atomicity_requires_explicit_action_opt_in(Type controller, string method, bool expected) =>
+        Assert.Equal(expected, AcademyAccessFilter.IncludesPlatformOwner(new ControllerActionDescriptor { MethodInfo = controller.GetMethod(method)! }));
+
+    [Fact]
+    public void Unknown_descriptor_does_not_change_platform_owner_bypass() =>
+        Assert.False(AcademyAccessFilter.IncludesPlatformOwner(new ActionDescriptor()));
 }

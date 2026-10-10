@@ -2,6 +2,10 @@
 
 ## Current state
 
+## Student onboarding atomicity repair — 2026-10-10
+
+[Report](QA/REPORTS/PHASE_2B_ONBOARDING_ATOMIC_REPAIR.md): BUG-DATA-0004 native400/changed-snapshot failure reproduced; existing domain/Identity/audit transaction opt-in replaces inner domain-only commit, role results checked. Explicit default-false platform marker protects this action only, original permissions/bypass elsewhere retained.21 native fault/success/role/tenant cases, unchanged23 optional-date SQL and56 targeted unit PASS; builds0/0,migrations88+7/owned teardown PASS. Evidence local, unrelated Mini/32+28 preserved, no frontend/main/Azure/project switch; issue/browser/device/concurrent/critical/Mini/FW1/release OPEN. Original28 feedback checkpoints retained. NEXT existing BUG-DATA-0007 incomplete-credential created flags, Sol High; Medium settled Manual/visual work. Maintain/display [checklist](ACADEMY_PROGRESS_CHECKLIST.md); no broad enterprise completion claim.
+
 ## Optional onboarding-date repair — 2026-10-10
 
 [Report](QA/REPORTS/PHASE_2B_ONBOARDING_DATE_REPAIR.md): teacher DOB/joining and student admission blanks now null; required student DOB/all other payloads unchanged. Captured native form fixes related async reset fault; teacher success/reset and student redirect preserved. Handler baseline5 PASS/4 FAIL, fixed9 PASS;32 synthetic responsive browser/23 real SQL/Identity/HTTP cases PASS; lint0/0/types/export83/harness0/0/88+7 migrations/owned cleanup PASS. Evidence local; separate browser and SQL, not linked/device/full intake acceptance. BUG-API-0001/0003/Mini/FW1/release OPEN; original28 count retained. NEXT existing BUG-DATA-0004 domain/Identity rollback gate, Sol High; broader onboarding pending/unknown-response UI remains. No main/Azure/project switch; unrelated Mini/32+28 continuity preserved; maintain/display [checklist](ACADEMY_PROGRESS_CHECKLIST.md).
