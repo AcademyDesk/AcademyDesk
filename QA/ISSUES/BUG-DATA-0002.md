@@ -37,6 +37,8 @@
 
 ## Approval versus payment — 2026-10-03
 
+2026-10-10 [financial policy bundle FP1](../REPORTS/PHASE_2B_FINANCIAL_POLICY_BUNDLE.md): separate reduction, refund obligation/settlement and credit-note document proposed; interim generic-type restriction/legacy explanation and pending-record disposition require owner approval, accounting/tax release requires qualified review. Current guard/race evidence retained; no ledger, source behavior or tests changed. Remain OPEN;18 shared planned requirements are not executed acceptance.
+
 2026-10-04 [adjustment/refund policy review](../REPORTS/PHASE_2B_ADJUSTMENT_REFUND_POLICY_REVIEW.md): all five adjustment types currently use the same unpaid-balance reduction. A `Refund` is not a disbursement and a `CreditNote` has no separate document/tax workflow. Current safety guard remains in place; business/accounting policy is undecided. No application behavior was changed; issue stays OPEN.
 
 [Approval versus payment](../REPORTS/PHASE_2B_APPROVAL_RACE.md): five invoices of 1000, each with a reconciled 600 and a pending discount of 200. Approving that discount and posting 400 at the same time returned 200 and 201 on every attempt and stored collected 1000 with adjusted 200. The invoice was marked Paid. Run `d66c4ad4118c4001a2a3e9703ea1d7e6` exit 1. Issue remains OPEN.

@@ -37,6 +37,8 @@
 
 ## Local repair checkpoint — 2026-10-01
 
+2026-10-10 [financial policy bundle FP2](../REPORTS/PHASE_2B_FINANCIAL_POLICY_BUNDLE.md): proposed valid zero-net earnings/deductions statement with NoCashDue rather than Paid/BankTransfer; owner approval, lawful deduction review and compatible statement/settlement schema/DTO/legacy treatment required. Current negative-net guard preserved; current zero-net behavior not changed or accepted. Remain OPEN; no new runtime evidence in this packet.
+
 [Repair and evidence](../REPORTS/PHASE_2B_PAYROLL_NET_REPAIR.md): deductions above effective gross rejected before payout save. Original Monthly boundaries and SessionBlock default/override/cent/error controls pass twice on fresh SQL; 118 API tests pass. Zero-net currently still produces a Paid/net-0 row, observed POLICY-PENDING rather than approved behavior. Remain OPEN pending policy/broader/critical acceptance. Original failure evidence/source excerpt below retained historically; no historical customer payroll rows corrected or real bank payout performed.
 
 ## Original reproduction (before repair)
