@@ -2,6 +2,10 @@
 
 ## Current state
 
+## Admission-fee loading/save feedback — 2026-10-10
+
+[Report](QA/REPORTS/PHASE_2B_ADMISSION_FEE_FEEDBACK_REPAIR.md): keyed checked admission editor, durable polite same-screen save status, denied/uncertain retained drafts, synchronous duplicate/date guard and stale/unmounted load/save protection; checked parent workspace. Exact optional-null/zero/min0/step0.01/PUT/domain retained, no new readback/backend rule.21 new+17 retained handler/52 synthetic responsive/88 unchanged decimal cases PASS; lint0/0, types/export83 PASS. Initial unsupported date prop/type failure and native-select test timeout corrected without suppression/weakening; failures/evidence local. BUG-FUNC-0003/live SQL/role/device/critical/Mini/FW1/release OPEN, original28 route count retained. NEXT Sol Medium bounded Student360 administrative-profile save feedback; High for privacy/authority/domain/release. No main/Azure/project switch; unrelated32/28 continuity preserved; maintain/display [checklist](ACADEMY_PROGRESS_CHECKLIST.md).
+
 ## Shared subject-fee loading/save feedback — 2026-10-10
 
 [Report](QA/REPORTS/PHASE_2B_SUBJECT_FEE_FEEDBACK_REPAIR.md): checked uncached initial list, durable polite confirmed/denied/uncertain/readback feedback, failed draft retention, synchronous duplicate guard through readback and matching-only reset. Fresh keyed student editor ignores late unmounted responses; no backend/payload/minimum/precision/domain change.17 actual TSX/72 synthetic browser/retained88 decimal checks PASS; lint0/0 removes prior effect error/warning without suppression, types/export83 PASS. BUG-FUNC-0003/0008 and live SQL/role/device/critical acceptance OPEN; original28-route count retained. NEXT Sol Medium Student Fee Details admission-fee save-feedback gap; High for authority/domain/finance/release decisions. Mini/FW1/enterprise gates remain pending; no project switch/main/Azure. Unrelated32/28 continuity/evidence preserved; maintain/display [checklist](ACADEMY_PROGRESS_CHECKLIST.md).

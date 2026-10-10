@@ -88,13 +88,21 @@ Scope: success/refresh/error/draft/pending feedback only. Existing payloads/doma
 - [x] Existing effect lint error/dependency warning cleared in the following bounded loading/feedback batch; previous decimal-only report retains its historical NOT PASS result.
 - [ ] Real SQL/HTTP/role/tenant, physical Android/iOS and critical regression acceptance; BUG-FUNC-0008 OPEN.
 
-## Current batch — Shared subject-fee loading/save feedback
+## Past batch — Shared subject-fee loading/save feedback
 
 - [x] Checked initial read, durable polite notices, denied/uncertain draft retention and confirmed-write/failed-refresh distinction; no automatic write retry.
 - [x] Synchronous write/readback guard, disabled controls, matching-only reset and fresh keyed student editor; late unmounted results ignored.
 - [x]17 actual-TSX checks and72 synthetic responsive browser cases PASS; retained88 decimal checks PASS; mobile screenshots inspected.
 - [x] Target lint0/0, TypeScript and83-page webpack export PASS; [report](QA/REPORTS/PHASE_2B_SUBJECT_FEE_FEEDBACK_REPAIR.md) and scoped handoff prepared.
 - [ ] Live SQL/HTTP/role/tenant, physical Android/iOS and critical workflow acceptance remain separate; existing issues OPEN.
+
+## Current batch — Admission-fee loading/save feedback
+
+- [x] Checked initial details/workspace; keyed editor isolates late loads/saves across students; failed reads cannot enable saving.
+- [x] Durable polite success, retained values/drafts, denied/uncertain guidance and synchronous duplicate/date/pending guards; optional nulls/zero/precision/PUT/domain unchanged.
+- [x]21 new +17 retained handler checks PASS;52 synthetic responsive cases and88 retained decimal cases PASS; mobile screenshots inspected.
+- [x] Target lint0/0, TypeScript and83-page webpack export PASS; [report](QA/REPORTS/PHASE_2B_ADMISSION_FEE_FEEDBACK_REPAIR.md), issue and scoped handoff prepared.
+- [ ] Real SQL/HTTP/role/tenant/physical-device/critical acceptance; existing issue and enterprise release gates OPEN.
 
 ## Original feedback routes — bounded checkpoint list
 
@@ -139,7 +147,8 @@ Current bounded feedback count: **28/28 checkpointed**, after the Assessments cr
 - [x] Enrollment required lifecycle-reason UI/native SQL integration (BUG-FUNC-0016) — server safeguard intact; direct browser/device/critical gates remain OPEN.
 - [x] Shared subject-fee fractional-input repair (BUG-FUNC-0008) — bounded browser proof; broader issue acceptance OPEN.
 - [x] Shared fee editor loading/feedback lint gap — bounded proof complete, broader acceptance OPEN.
-- [ ] **Next: admission-fee save feedback in Student Fee Details** — Sol Medium, retain optional nulls/PUT/minimum/precision/date and backend policy.
+- [x] Admission-fee loading/save feedback in Student Fee Details — bounded proof complete; broader acceptance OPEN.
+- [ ] **Next: Student360 administrative-profile save feedback/pending/late-response gap** — Sol Medium for bounded UI; High if privacy/authority/domain changes are needed.
 - [ ] Shared PENTA/Manual visual foundation: consume versioned FW1 delivery when available, continue independent Manual controls without claiming the shared AI frontend is delivered.
 - [ ] FP1/FP2/FP3 explicit owner decisions and legacy disposition — pending, not inferred from “continue.”
 - [ ] Approved financial implementation — Sol High; accounting/tax/payroll review before applicable release. Policy-pending finance need not block safe feedback work.
