@@ -35,6 +35,10 @@
 | Regression result | 209 current combined controlled frontend PASS; no new backend/SQL run; Course lint FAIL (1 error/1 warning after improvement), not all-form/critical acceptance |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
+## Submission Review feedback checkpoint — 2026-10-10
+
+[Report](../REPORTS/PHASE_2B_SUBMISSION_REVIEW_FEEDBACK_CHECK.md): prior durable success/identity/pending guards retained; stale notice clears only after confirmed prompt. Original15 +7 controls22/22, frozen baseline21/22;24 synthetic exported-browser cases PASS, lint0/0, TypeScript/83-page export PASS. Existing module-lock fixture error corrected, failures retained; prior21 SQL/821 backend not rerun. No new live SQL/device/critical acceptance; issue OPEN. Next reconcile existing feedback checkpoints to remaining coverage gaps without repeating accepted audits.
+
 ## Lesson Plans feedback checkpoint — 2026-10-10
 
 [Report](../REPORTS/PHASE_2B_LESSON_PLANS_FEEDBACK_REPAIR.md): durable create/readback-failure distinction, retained rejected/unconfirmed draft and synchronous pending guard. Exact POST/null optional references/objectives and selected batch preserved; scoped checked mount. Frozen15 baseline2 PASS/13 FAIL; final15 controlled +16 synthetic browser PASS, lint0/0, TypeScript/83-page export PASS. No fresh live SQL/auth/device/critical acceptance; issue OPEN. Next Submission Review feedback gap check.

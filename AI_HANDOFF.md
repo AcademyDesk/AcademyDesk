@@ -2,6 +2,10 @@
 
 ## Current state
 
+## Submission Review feedback gap — 2026-10-10
+
+[Report](QA/REPORTS/PHASE_2B_SUBMISSION_REVIEW_FEEDBACK_CHECK.md): accepted contextual success/row validation/pending guard reused. Only application change clears prior notice after prompt confirmation, not cancellation, before PATCH. Original15 assertion bodies retained +7 controls22/22 PASS; frozen22 baseline21 PASS/1 FAIL.24 synthetic exported-browser width/theme/cancel/error/identity/retry cases PASS, lint0/0, TypeScript/83-page export PASS. Missing AcademicGovernance fixture corrected without changing access; failures preserved. Historical21 HTTP-SQL/821 backend not rerun; no new live SQL/device or issue/release acceptance. Startingba1455f, scoped feature publication only; main/Mini/Azure/unrelated/evidence preserved, Mini86/94 blocked/handoff unchanged. NEXT Sol Medium: reconcile existing success-feedback checkpoints to remaining coverage gaps without repeating accepted audits; Sol High for authority/domain/persistence.
+
 ## Lesson Plans success feedback — 2026-10-10
 
 [Report](QA/REPORTS/PHASE_2B_LESSON_PLANS_FEEDBACK_REPAIR.md): durable create/readback-failure notices, retained rejected/unconfirmed draft and synchronous write/readback guard. Scoped mount checks academy response/empty list before enabling save; exact payload/null optional references/objectives and selected batch preserved. Frozen15 baseline2 PASS/13 FAIL; final15 controlled +16 synthetic exported-browser cases PASS, lint0/0, TypeScript/83-page export PASS. No fresh SQL/auth/device or enterprise acceptance; BUG-FUNC-0003/release OPEN, main/Mini/Azure/unrelated/evidence preserved. Startinga86571c, scoped feature publication only; Mini86/94 blocked/handoff unchanged. NEXT Sol Medium: Submission Review feedback gap check; Sol High for authority/domain/persistence.

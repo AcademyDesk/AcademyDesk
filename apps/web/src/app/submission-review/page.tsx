@@ -79,6 +79,7 @@ export default function SubmissionReviewPage() {
     if (feedback === null) return;
     saving.current = true;
     setSavingId(submission.id);
+    setMessage("");
     try {
       const response = await academyApi(
         `/api/academies/${academy.id}/assignment-submissions/${submission.id}/review`,
