@@ -269,6 +269,15 @@ Tick marks below mean a feedback checkpoint, **not full enterprise workflow acce
 
 Current bounded feedback count: **28/28 checkpointed**, after the Assessments creation report. Live/domain/device acceptance remains open. Never interpret this as whole-app readiness.
 
+## Current batch — Teacher publication form contract
+
+- [x] BUG-API-0005 reproduced against frozen actual handler:6/12 PASS,6 failures.
+- [x] Boolean publication, optional blank assessment-date NULL and captured form-reset repair:12/12 handler checks PASS.
+- [x] TypeScript and83-page production export PASS; [local report](QA/REPORTS/PHASE_2B_TEACHER_PUBLICATION_CONTRACT_REPAIR.md) recorded. Inherited teacher lint4 errors/3 warnings unchanged, NOT clean.
+- [x]20 real Identity/HTTP/SQL cases: strict bool/date binding, exact one-row create/readback, malformed/role/foreign-batch no-write controls; no429,88/7 migrations/exact owned cleanup.
+- [x]16 synthetic exported-browser cases:320/1440px/light-dark, exact POST/confirmation/reset/no console/overflow; two mobile screenshots inspected. Scoped feature publication after checks; not linked browser-SQL or final visual acceptance.
+- [ ] Physical devices/full critical regression and wider teacher form pending/network-recovery acceptance; issue OPEN.
+
 ## Next implementation batches
 
 - [x] Academic Governance + Academic Periods feedback — bounded checks completed; prerequisite and year-closure safeguards retained.
@@ -291,7 +300,8 @@ Current bounded feedback count: **28/28 checkpointed**, after the Assessments cr
 - [x] BUG-DATA-0048 work-item assignee/entity ownership — bounded repair/native proof; broader acceptance OPEN/RETEST.
 - [x] BUG-DATA-0049 student import duplicate identities — bounded repair/API/native proof, broader acceptance OPEN/RETEST.
 - [x] BUG-DATA-0050 teacher compensation zero-rate round-trip — bounded conversion/native proof; broader acceptance OPEN/RETEST.
-- [ ] **Next: BUG-API-0005 publication boolean binding**, check latest evidence/current source and reproduce only the missing serialization case. Sol Medium bounded UI; High for consequential authority/domain/SQL decisions, no accepted-audit restart.
+- [x] BUG-API-0005 bounded handler/native/synthetic browser proof completed; broader issue OPEN/RETEST.
+- [ ] **Next: BUG-DATA-0053 hidden payslip-theme preservation**, inspect/reproduce existing case before repair. Sol Medium bounded serialization; High consequential finance/authority decisions, no accepted-audit restart.
 - [ ] Manual shared redesign foundation and Platform → Admin → Teacher → Student rollout: Orbit + Aura dark /Prism light, reusable responsive tokens/shell/controls; preserve interrupted overlay work. Sol High foundation/host contracts, Medium settled rollout. Inherited lint remains open.
 - [ ] Shared PENTA/Manual visual foundation: consume versioned FW1 delivery when available, continue independent Manual controls without claiming the shared AI frontend is delivered.
 - [ ] FP1/FP2/FP3 explicit owner decisions and legacy disposition — pending, not inferred from “continue.”

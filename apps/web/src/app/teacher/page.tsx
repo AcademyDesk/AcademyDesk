@@ -511,15 +511,19 @@ function TeacherTasks({
   }, []);
   async function create(e: React.FormEvent<HTMLFormElement>, path: string) {
     e.preventDefault();
-    const f = new FormData(e.currentTarget);
+    const form = e.currentTarget;
+    const f = new FormData(form);
     const body = Object.fromEntries(f) as Record<string, unknown>;
     if (!body.batchId) {
       setM("Select an assigned batch before saving.");
       return;
     }
     if ("maxScore" in body) body.maxScore = Number(body.maxScore);
-    if ("scheduledAtUtc" in body && body.scheduledAtUtc)
-      body.scheduledAtUtc = new Date(String(body.scheduledAtUtc)).toISOString();
+    if ("isPublished" in body) body.isPublished = body.isPublished === "true";
+    if ("scheduledAtUtc" in body)
+      body.scheduledAtUtc = body.scheduledAtUtc
+        ? new Date(String(body.scheduledAtUtc)).toISOString()
+        : null;
     const r = await academyApi(path, {
       method: "POST",
       headers: apiHeaders(true),
@@ -530,7 +534,7 @@ function TeacherTasks({
         ? "Saved for your assigned batch."
         : "The teaching record could not be saved.",
     );
-    if (r.ok) e.currentTarget.reset();
+    if (r.ok) form.reset();
   }
   const batch = <TeacherBatchDropdown batches={batches} />;
   async function reviewPractice(log: PracticeLog) {

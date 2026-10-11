@@ -3,8 +3,8 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | STATIC-FINDING |
-| Final verification | NOT RUN |
+| Confirmation status | Handler-reproduced; bounded repair with real HTTP/SQL and synthetic browser proof |
+| Final verification | 12 handler/20 native HTTP SQL/16 synthetic browser PASS; linked/device/critical OPEN |
 | Severity | Major teaching form contract mismatch |
 | Priority | P1 |
 | Category | API |
@@ -30,8 +30,8 @@
 | API response | Not captured for this issue; use synthetic request/response in isolated reproduction |
 | Database before/after | Not executed; fixture and fresh-context assertions defined below |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | Not implemented (Phase 1) |
-| Retest result | NOT RUN |
+| Fix commit | Scoped feature publication, 2026-10-11; commit recorded by Git history/handoff |
+| Retest result | 12 handlers/20 real HTTP SQL/16 synthetic responsive browser PASS; broader gates OPEN |
 | Regression result | NOT RUN |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
@@ -69,3 +69,9 @@ Teacher homework and assessment create flows; blank assessment dates additionall
 TEACHERPORTAL-CONTRACT-001: Browser request assertions and real HTTP binding for true/false, string equivalents, blank optional date and valid ISO date; assert exactly one saved row and visible confirmation.
 
 Also run all endpoint/form cases pointing to this issue in QA/03_TEST_MATRIX.md and the critical regression suite before closure.
+
+## Local repair checkpoint — 2026-10-11
+
+Final successor: [report final verification](../REPORTS/PHASE_2B_TEACHER_PUBLICATION_CONTRACT_REPAIR.md#final-bounded-verification--2026-10-11),20 native cases and16 separate synthetic exported-browser cases PASS; strict bool/date binding, exact persisted row/readback and unauthorized/malformed no-write controls. Runf14bca55a66d48d4895993e6851f2c68,88/7 migrations/exact owned cleanup, no429. Status OPEN/RETEST, not linked browser-SQL/device/critical/final Manual styling acceptance; older checkpoint below is historical.
+
+[Report](../REPORTS/PHASE_2B_TEACHER_PUBLICATION_CONTRACT_REPAIR.md): current `TeacherTasks.create` reproduced4 publication type failures plus optional-date/reset failures under frozen HEAD (6 PASS/6 FAIL). Captured form, explicit booleans and blank assessment-date NULL yield12/12 actual-handler PASS. TypeScript/export83 PASS; lint remains4 inherited errors/3 warnings, identical baseline. No backend/authority change. Status remains **OPEN**: real HTTP binding, fresh SQL rows, rendered browser confirmation, physical devices and critical regression still pending. No commit/push/Azure in this checkpoint.
