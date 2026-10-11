@@ -206,7 +206,7 @@ Scope: success/refresh/error/draft/pending feedback only. Existing payloads/doma
 - [x]45 handler/money +54 controlled responsive browser cases PASS; four linked real SQL/browser journeys with five saves/four rejected foreign-branch writes PASS, no429. Types/lint/export83/builds0/0; exact owned SQL/login/container cleanup verified. [Report](QA/REPORTS/PHASE_2B_EXPENSE_INTEGRITY_REPAIR.md).
 - [ ] Physical Android/iOS, full critical regressions, cross-tab/server-idempotency and accounting/release gates remain separate. Issue OPEN/RETEST; no complete new CRUD editor, tax/FX certification, main merge or Azure.
 
-## Current batch — Work-item ownership and linked-record integrity
+## Past batch — Work-item ownership and linked-record integrity
 
 - [x] BUG-DATA-0048 starting controller reproduced:12/36 PASS; invalid assignees, links and oversized fields fail the new guards.
 - [x] Shared academy-owned active/non-portal staff guard on general and collections creation; optional null/custom staff retained, no role grant.
@@ -215,6 +215,15 @@ Scope: success/refresh/error/draft/pending feedback only. Existing payloads/doma
 - [x]24 actual-handler checks PASS; inactive choices removed, unavailable historical owners labelled truthfully, safe rejected drafts retained; types/lint and83-page webpack export PASS.
 - [x]32 synthetic responsive browser cases PASS,320/1440px light/dark; two mobile screenshots inspected. [Report](QA/REPORTS/PHASE_2B_WORK_ITEM_INTEGRITY_REPAIR.md).
 - [ ] Linked browser-to-SQL, physical Android/iOS, concurrent offboarding/deletion, status audit-fault and full critical/release acceptance. Issue remains OPEN/RETEST; no main merge/Azure/Core change.
+
+## Current batch — Student import identity integrity
+
+- [x] BUG-DATA-0049 baseline4/17 controller PASS; disposable SQL confirmed validation accepted and import stored duplicate normalized emails.
+- [x] Every duplicate file row identified after trim/case comparison; existing local matches rejected, optional blank email/number/phone stored NULL, null/oversized rows rejected.
+- [x] Academy-locked import and domain/audit transaction;57 native SQL/Identity/HTTP checks PASS, including five guarded concurrent pairs and audit-fault rollback, no429; exact owned cleanup.
+- [x]89 targeted API and27 actual-handler checks PASS; validation gating, retained failed/uncertain drafts, truthful success and pending guards; types/lint/export83 PASS.
+- [x]36 synthetic desktop/mobile light/dark browser cases PASS; two mobile screenshots reviewed. [Report](QA/REPORTS/PHASE_2B_STUDENT_IMPORT_INTEGRITY_REPAIR.md).
+- [ ] Linked browser-SQL, physical Android/iOS, other student create/update writers, full CSV grammar/idempotency and critical/release gates. Issue OPEN/RETEST, no main/Azure/Core changes.
 
 ## Original feedback routes — bounded checkpoint list
 
@@ -271,7 +280,8 @@ Current bounded feedback count: **28/28 checkpointed**, after the Assessments cr
 - [x] Platform Owner Manual navigation/header checkpoint —16 synthetic journeys, not full portal acceptance.
 - [x] BUG-DATA-0047 expense integrity and recording workflow — bounded API/native/linked browser proof complete; wider issue OPEN/RETEST.
 - [x] BUG-DATA-0048 work-item assignee/entity ownership — bounded repair/native proof; broader acceptance OPEN/RETEST.
-- [ ] **Next: BUG-DATA-0049 student import duplicate identities**, check latest evidence/current source and reproduce only missing cases. Sol High for import persistence/tenant/audit integrity; no accepted-audit restart.
+- [x] BUG-DATA-0049 student import duplicate identities — bounded repair/API/native proof, broader acceptance OPEN/RETEST.
+- [ ] **Next: BUG-DATA-0050 teacher compensation zero-rate round-trip**, check latest evidence/current source and reproduce only missing cases. Sol High for finance semantics/SQL; no accepted-audit restart.
 - [ ] Manual shared redesign foundation and Platform → Admin → Teacher → Student rollout: Orbit + Aura dark /Prism light, reusable responsive tokens/shell/controls; preserve interrupted overlay work. Sol High foundation/host contracts, Medium settled rollout. Inherited lint remains open.
 - [ ] Shared PENTA/Manual visual foundation: consume versioned FW1 delivery when available, continue independent Manual controls without claiming the shared AI frontend is delivered.
 - [ ] FP1/FP2/FP3 explicit owner decisions and legacy disposition — pending, not inferred from “continue.”

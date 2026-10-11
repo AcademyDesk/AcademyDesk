@@ -3,8 +3,8 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | STATIC-FINDING |
-| Final verification | NOT RUN |
+| Confirmation status | REPRODUCED / BOUNDED REPAIR / RETEST |
+| Final verification | API/native SQL bounded PASS; full acceptance NOT COMPLETE |
 | Severity | Major identity integrity |
 | Priority | P1 |
 | Category | DATA |
@@ -30,12 +30,18 @@
 | API response | Not captured for this issue; use synthetic request/response in isolated reproduction |
 | Database before/after | Not executed; fixture and fresh-context assertions defined below |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | Not implemented (Phase 1) |
-| Retest result | NOT RUN |
-| Regression result | NOT RUN |
+| Fix commit | Scoped student-import repair on codex/penta-search; see successor report and Git history |
+| Retest result | 17 new API and57 native SQL/Identity/HTTP cases PASS; linked/device/full-critical pending |
+| Regression result | 36 work-item +36 audit API checks and27 handler checks PASS; no full enterprise rerun |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
 ## Exact reproduction
+
+## 2026-10-11 successor — issue remains OPEN
+
+[Repair report](../REPORTS/PHASE_2B_STUDENT_IMPORT_INTEGRITY_REPAIR.md) supersedes the historical NOT RUN source snapshot below for the named cases only. Starting HEAD ee7efc6bf6f6e8f0774524c469d9cee4c9d543e4: controller4/17 PASS; disposable SQL baseline a0c795be9b3040ada73dd7b8074a193c confirmed validation accepted and import persisted two case/trim duplicate emails. Final run134f21301c5f4d9d9d15403cb6efa0ce passed57 native SQL/HTTP cases, five concurrent duplicate pairs exactly200/409, one student/one audit per pair, audit rollback, tenant/role/optional values and bounds, no429. Exact owned DB/login/container cleanup verified.89 targeted API and27 handler checks PASS; browser proof separately recorded in report.
+
+Duplicates within a file now reject400 before any domain write and identify every occurrence. Existing scoped normalized matches reject409. Whitespace optional fields become NULL. SQL imports serialize on the academy row and retain the lock through domain/audit completion. The validation endpoint retains existing successful-POST audit behaviour even when errors are returned; validation makes no student/domain writes. No global email unique index, legacy rewrite, arbitrary-mailbox normalization, new PENTA permissions or other-writer lock protocol is claimed. Linked browser-to-SQL, physical devices, complete CSV grammar, cross-tab/idempotency/other-writer races and full critical/release gates remain pending. Historical template fields below describe discovery, not current acceptance.
 
 Submit two syntactically valid rows whose normalized email differs only by case/whitespace, with no pre-existing student. Validate then import in isolated SQL fixtures; inspect result and persisted rows.
 
