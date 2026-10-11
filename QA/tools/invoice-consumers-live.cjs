@@ -2,9 +2,10 @@
 // Status/payment mutations below use real APIs; no invoice-status editor exists in this UI.
 const fs = require('node:fs'), path = require('node:path'), http = require('node:http'), assert = require('node:assert/strict');
 const { chromium } = require(process.env.QA_PLAYWRIGHT_MODULE || 'C:/Users/Admin/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
-const [api, academy, student, ...ids] = process.argv.slice(2), target = new URL(api);
-assert.equal(target.hostname, '127.0.0.1'); assert.equal(target.protocol, 'http:'); assert.ok(target.port); assert.equal(ids.length, 4);
-for (const id of [academy, student, ...ids]) assert.match(id, /^[a-f0-9-]{36}$/);
+const [api, academy, student, ...allIds] = process.argv.slice(2), target = new URL(api);
+const ids = allIds.slice(0, 4), displayIds = allIds.slice(4);
+assert.equal(target.hostname, '127.0.0.1'); assert.equal(target.protocol, 'http:'); assert.ok(target.port); assert.equal(ids.length, 4); assert.equal(displayIds.length, 3);
+for (const id of [academy, student, ...allIds]) assert.match(id, /^[a-f0-9-]{36}$/);
 const root = path.resolve(__dirname, '../..'), web = fs.realpathSync(path.join(root, 'apps/web/out'));
 const evidence = path.join(root, 'QA/EVIDENCE', 'invoice-consumers-live-' + Date.now()); fs.mkdirSync(evidence, { recursive: true });
 const server = http.createServer((req, res) => {
@@ -52,46 +53,53 @@ const money = value => new Intl.NumberFormat('en-IN', { style: 'currency', curre
         mutations.push({ method, route, data, status: r.status() });
         if (expected === 400) assert.equal((await r.json()).message, 'Invoice status must match the collected payments and adjusted balance.');
       };
-      const verify = async (status, balance, stage) => {
+      const verify = async (status, balance, stage, record = initial, paid = 1000 - balance, adjusted = 0) => {
         const before = responses.length;
-        await page.goto(origin + '/invoices'); const row = page.locator('.invoices-directory tbody tr').filter({ hasText: initial.invoiceNumber }); await row.waitFor();
+        await page.goto(origin + '/invoices'); const row = page.locator('.invoices-directory tbody tr').filter({ hasText: record.invoiceNumber }); await row.waitFor();
         assert.equal(await row.locator('.invoice-status').innerText(), status);
-        const list = responses.slice(before).find(x => x.path === base + '/invoices').body, current = list.find(x => x.id === invoiceId);
-        assert.equal(current.status, status); assert.equal(current.balance, balance); assert.equal(current.paidAmount, 1000 - balance);
+        const list = responses.slice(before).find(x => x.path === base + '/invoices').body, current = list.find(x => x.id === record.id);
+        assert.equal(current.status, status); assert.equal(current.balance, balance); assert.equal(current.paidAmount, paid); assert.equal(current.adjustedAmount, adjusted);
         for (const [label, value] of [['Issued invoices', list.length], ['Paid invoices', list.filter(x => x.status === 'Paid').length], ['Open invoices', list.filter(x => !['Paid', 'Cancelled'].includes(x.status)).length]]) {
           const tile = page.locator('.invoices-kpis article').filter({ hasText: label }); assert.equal(await tile.locator('strong').innerText(), String(value));
         }
         await row.getByRole('button', { name: 'Preview / Print', exact: true }).click();
         const previewStatus = page.locator('.invoice-paper-bill > div').filter({ hasText: 'Payment status' }); assert.equal(await previewStatus.locator('b').innerText(), status);
+        const summary = page.getByRole('region', { name: 'Invoice balance summary', exact: true });
+        for (const [label, value] of [['Invoice total', current.totalAmount], ['Approved adjustments', current.adjustedAmount], ['Collected payments', current.paidAmount], ['Remaining due', current.balance]]) {
+          const line = summary.locator('.invoice-paper-total').filter({ has: page.getByText(label, { exact: true }) }); assert.equal(await line.locator('b').innerText(), money(value));
+        }
         assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'Invoice page overflow');
         await page.screenshot({ path: path.join(evidence, `${width}-${theme}-${stage}-invoices.png`), fullPage: true });
         const collectionStart = responses.length;
         await page.goto(origin + '/finance-governance');
         await page.waitForFunction(() => !document.body.textContent.includes('Loading finance controls'));
         const queueResponse = responses.slice(collectionStart).find(x => x.path === base + '/finance-governance/collections'); assert.ok(queueResponse);
-        const queue = queueResponse.body, collection = queue.find(x => x.id === invoiceId);
+        const queue = queueResponse.body, collection = queue.find(x => x.id === record.id);
         const section = page.locator('section.surface-panel').filter({ has: page.getByRole('heading', { name: 'Overdue collections', exact: true }) });
-        assert.equal(await section.getByText(initial.invoiceNumber, { exact: true }).count(), balance > 0 ? 1 : 0);
+        assert.equal(await section.getByText(record.invoiceNumber, { exact: true }).count(), balance > 0 ? 1 : 0);
         const overdue = page.locator('.finance-control-kpis section').filter({ hasText: 'Overdue invoices' }); assert.equal(await overdue.locator('b').innerText(), String(queue.length));
-        if (balance > 0) { assert.equal(collection.balance, balance); assert.equal(collection.paidAmount, 600); assert.equal(collection.adjustedAmount, 0); assert.equal(collection.daysOverdue, 1); const card = section.locator('div.rounded.border').filter({ has: page.getByText(initial.invoiceNumber, { exact: true }) }); await card.getByText('Remaining due: ' + money(balance), { exact: true }).waitFor(); }
+        if (balance > 0) { assert.equal(collection.balance, balance); assert.equal(collection.paidAmount, paid); assert.equal(collection.adjustedAmount, adjusted); assert.equal(collection.daysOverdue, 1); const card = section.locator('div.rounded.border').filter({ has: page.getByText(record.invoiceNumber, { exact: true }) }); await card.getByText('Remaining due: ' + money(balance), { exact: true }).waitFor(); }
         else assert.equal(collection, undefined);
         assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'Collection page overflow');
         await page.screenshot({ path: path.join(evidence, `${width}-${theme}-${stage}-collections.png`), fullPage: true });
         const studentStart = responses.length;
         await page.goto(origin + '/portal'); await page.getByText('Fees and payments', { exact: true }).waitFor({ state: 'hidden' });
         await page.getByRole('heading', { name: /^Good day,/ }).waitFor();
+        const home = responses.slice(studentStart).find(x => x.path === `/api/portal/students/${student}`).body;
+        const homeBalance = home.invoices.reduce((sum, x) => sum + x.balance, 0);
+        assert.equal(await page.locator('.learner-kpi').filter({ has: page.getByText('Fee balance', { exact: true }) }).locator('b').innerText(), money(homeBalance));
         const nav = page.locator(width === 320 ? '.learner-bottom-nav' : '.enterprise-sidebar nav'); await nav.getByRole('button', { name: /More$/ }).click();
         const fees = page.locator('section').filter({ has: page.getByRole('heading', { name: 'Fees and payments', exact: true }) }).last(); await fees.waitFor();
-        const portal = responses.slice(studentStart).find(x => x.path === `/api/portal/students/${student}`).body.invoices.find(x => x.id === invoiceId);
+        const portal = responses.slice(studentStart).find(x => x.path === `/api/portal/students/${student}`).body.invoices.find(x => x.id === record.id);
         assert.equal(portal.status, status); assert.equal(portal.balance, balance);
-        const display = initial.invoiceNumber + ' · ' + new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(balance);
+        const display = record.invoiceNumber + ' · ' + money(balance);
         await fees.getByText(display, { exact: true }).waitFor();
         const downloadReady = page.waitForEvent('download');
-        await fees.locator('.learner-download-row').filter({ hasText: initial.invoiceNumber }).getByRole('button', { name: 'View / download invoice', exact: true }).click();
+        await fees.locator('.learner-download-row').filter({ hasText: record.invoiceNumber }).getByRole('button', { name: 'View / download invoice', exact: true }).click();
         const download = await downloadReady; await download.saveAs(path.join(evidence, `${width}-${theme}-${stage}-invoice.html`));
         const document = fs.readFileSync(await download.path(), 'utf8');
         const documentMoney = value => new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
-        assert.ok(document.includes(`Paid: INR ${documentMoney(1000 - balance)}`)); assert.ok(document.includes(`Balance: INR ${documentMoney(balance)}`)); assert.ok(document.includes(`Status: ${status}`));
+        assert.ok(document.includes(`Adjustments: INR ${documentMoney(adjusted)}`)); assert.ok(document.includes(`Paid: INR ${documentMoney(paid)}`)); assert.ok(document.includes(`Balance: INR ${documentMoney(balance)}`)); assert.ok(document.includes(`Status: ${status}`));
         await page.getByLabel('Payment status', { exact: true }).selectOption(balance > 0 ? 'Outstanding' : 'Paid'); await fees.getByText(display, { exact: true }).waitFor();
         await page.getByLabel('Payment status', { exact: true }).selectOption(balance > 0 ? 'Paid' : 'Outstanding'); assert.equal(await fees.getByText(display, { exact: true }).count(), 0);
         await page.getByLabel('Payment status', { exact: true }).selectOption('All'); await fees.getByText(display, { exact: true }).waitFor();
@@ -104,11 +112,19 @@ const money = value => new Intl.NumberFormat('en-IN', { style: 'currency', curre
       await mutate('POST', base + '/payments', { invoiceId, amount: 400 }, 201);
       await mutate('PATCH', statusPath, { status: ' paid ' }, 200);
       await verify('Paid', 0, 'paid');
+      const displayResponse = await context.request.get(api + base + '/invoices', { headers }); assert.equal(displayResponse.status(),200);
+      const displayList = await displayResponse.json();
+      const displayCases = [
+        {id:displayIds[0],status:'PartiallyPaid',paid:799.99,adjusted:200,balance:0.01,stage:'cent'},
+        {id:displayIds[1],status:'Paid',paid:0,adjusted:1000,balance:0,stage:'fully-adjusted'},
+        {id:displayIds[2],status:'Paid',paid:1000,adjusted:0,balance:0,stage:'already-settled'},
+      ];
+      for (const fixture of displayCases) { const record = displayList.find(x => x.id === fixture.id); assert.ok(record); await verify(fixture.status,fixture.balance,fixture.stage,record,fixture.paid,fixture.adjusted); }
       const final = await read(); assert.equal(final.paidAmount, 1000); assert.equal(final.balance, 0); assert.equal(final.status, 'Paid'); assert.deepEqual(errors, []);
-      checks.push({ width, theme, invoiceId, mutations, final, pageReads: responses.map(x => x.path), consoleErrors: errors });
+      checks.push({ width, theme, invoiceId, displayCases, mutations, final, pageReads: responses.map(x => x.path), consoleErrors: errors });
       await context.close(); console.log(`PASS: INVOICE CONSUMERS ${width} ${theme}; invoice/KPI/preview, collection queue/KPI, Student status/balance/filter; partial400 -> paid0`);
     }
-    fs.writeFileSync(path.join(evidence, 'result.json'), JSON.stringify({ journeys: checks.length, pageStates: checks.length * 6, mutations: checks.reduce((n, x) => n + x.mutations.length, 0), checks }, null, 2));
-    console.log('PASS: INVOICE CONSUMERS four linked journeys / 24 page-states evidence=' + evidence);
+    fs.writeFileSync(path.join(evidence, 'result.json'), JSON.stringify({ journeys: checks.length, retainedPageStates: checks.length * 6, additionalMoneyPageStates:checks.length * 9, pageStates: checks.length * 15, mutations: checks.reduce((n, x) => n + x.mutations.length, 0), checks }, null, 2));
+    console.log('PASS: INVOICE CONSUMERS four linked journeys / 60 page-states (24 retained +36 money display) evidence=' + evidence);
   } finally { if (browser) await browser.close(); await new Promise(r => server.close(r)); }
 })().catch(error => { fs.writeFileSync(path.join(evidence, 'failure.txt'), error.stack); console.error(error); process.exitCode = 1; });

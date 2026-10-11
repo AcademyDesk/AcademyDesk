@@ -4,7 +4,7 @@
 | --- | --- |
 | Status | OPEN |
 | Confirmation status | RUNTIME-CONFIRMED; bounded repair verified, RETEST |
-| Final verification | Retained111/45/20+9 gates; six native consumer stages/four linked journeys24 page-states/16 mutations PASS; display/wider gates OPEN |
+| Final verification | Retained111/45/20+9 gates; six native stages/four linked journeys60 page-states/16 mutations/monetary display PASS; wider gates OPEN |
 | Severity | Major invoice-ledger status integrity |
 | Priority | P1 |
 | Category | DATA |
@@ -31,11 +31,13 @@
 | Database before/after | Frozen Paid with collected0/balance1000 reproduced; final matrix checks fresh full invoice/payment/adjustment/audit snapshots |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
 | Fix commit | ee1e5a123d9683c8074118136f2fbebc326c9b9d; QA-only successor follows this repair |
-| Retest result | OPEN/RETEST; bounded concurrency/audit/native+linked consumer PASS; fractional/gross-money display, device/direct/stale/critical/release/policy pending |
-| Regression result | Prior111/45/20+9 accepted evidence retained; latest run1787e8dba86e45c4b7c371e502d704a9 six native/four linked journeys24 states/16 mutations/200 non-mutation snapshots PASS,265s/no429/exact owned cleanup; wider/display gates OPEN |
+| Retest result | OPEN/RETEST; bounded concurrency/audit/native+linked consumer and fractional/gross-vs-due display PASS; device/direct/platform/stale/critical/release/policy pending |
+| Regression result | Prior111/45/20+9 evidence retained; latest run85dbbb61fb434106b2a1b9ef73b9399d six native/four linked journeys60 states/16 mutations/480 non-mutation snapshots and display PASS,500.7s/no429/exact owned cleanup; wider gates OPEN |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
 ## Exact reproduction
+
+2026-10-12 monetary-display successor: [report](../REPORTS/PHASE_2B_INVOICE_MONEY_DISPLAY_REPAIR.md) records Student currency minor-unit preservation and four-line server-backed invoice total/adjustment/collected/remaining summary.16 source/render checks (frozen4/16), types/export83/harness0/0 and six retained native/four linked journeys60 page-states/20 UI downloads/16 mutations/480 unchanged finance snapshots/exact audits/foreign sentinel/no429 PASS. Run85dbbb61fb434106b2a1b9ef73b9399d,500.7s/88+7 migrations/exact owned cleanup; five inherited lint warnings and initial build/command failures disclosed. Current bounded fractional/zero and gross-vs-due presentation accepted; older paragraph below preserves discovery history. Mixed-currency aggregate, stale/direct/platform/device/wider visual/critical/release/policy gates remain separate; issue OPEN.
 
 2026-10-12 consumer successor: [report](../REPORTS/PHASE_2B_INVOICE_CONSUMERS_LINKED.md) records six retained native stages strengthened with status/document assertions, four real browser journeys/24 page-states, eight real UI downloads,16 API mutations (12 success/four400 no-write),200 unchanged four-finance-table controls/exact success audit/positive foreign sentinel/no429. Final run1787e8dba86e45c4b7c371e502d704a9,265s/88+7 migrations/exact owned cleanup; two selector/document-grouping harness failures retained/corrected without tolerance or app changes. **OPEN follow-ups:** Student0.01 renders0 due integer currency formatting; invoice preview labels gross amount "Total payable" even after settlement. Current integer status/consumer gate is not acceptance of those monetary displays. Direct/platform/stale/device/critical/release and policy gates remain separate; issue not closed.
 

@@ -30,7 +30,7 @@ internal static partial class SqlHarnessEntryPoint
 
     private static async Task VerifyInvoiceConsumerBrowserAsync(QaApiFactory factory, HttpClient client)
     {
-        Guid academy, student, actor; var invoices = new List<Guid>();
+        Guid academy, student, actor; var invoices = new List<Guid>(); var displayInvoices = new List<Guid>();
         using (var scope = factory.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
@@ -45,6 +45,13 @@ internal static partial class SqlHarnessEntryPoint
                 db.Invoices.Add(invoice); invoices.Add(invoice.Id);
                 db.Payments.Add(new Payment { AcademyId = academy, InvoiceId = invoice.Id, Amount = 600m, Status = "Reconciled",
                     Reference = "Keep reference", ReconciliationReference = "Keep linked reconciliation", ReconciledAtUtc = DateTime.UtcNow });
+            }
+            foreach (var fixture in new[] { ("CENT", 200m, 799.99m, "PartiallyPaid"), ("ADJUSTED", 1000m, 0m, "Paid"), ("SETTLED", 0m, 1000m, "Paid") })
+            {
+                var invoice = new Invoice { AcademyId = academy, StudentId = student, InvoiceNumber = $"QA-DISPLAY-{fixture.Item1}",
+                    TotalAmount = 1000m, AdjustedAmount = fixture.Item2, Status = fixture.Item4, DueDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-1)) };
+                db.Invoices.Add(invoice); displayInvoices.Add(invoice.Id);
+                if (fixture.Item3 > 0m) db.Payments.Add(new Payment { AcademyId = academy, InvoiceId = invoice.Id, Amount = fixture.Item3, Status = "Reconciled" });
             }
             // Positive foreign sentinel makes every whole-database comparison meaningful.
             var foreignStudent = await db.Students.SingleAsync(x => x.AcademyId != academy);
@@ -129,7 +136,7 @@ internal static partial class SqlHarnessEntryPoint
         await bridge.StartAsync();
         var start = new ProcessStartInfo("node") { WorkingDirectory = Directory.GetCurrentDirectory(), UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true, CreateNoWindow = true };
         start.ArgumentList.Add(Path.GetFullPath("QA/tools/invoice-consumers-live.cjs")); start.ArgumentList.Add(bridge.Urls.Single()); start.ArgumentList.Add(academy.ToString()); start.ArgumentList.Add(student.ToString());
-        foreach (var id in invoices) start.ArgumentList.Add(id.ToString());
+        foreach (var id in invoices.Concat(displayInvoices)) start.ArgumentList.Add(id.ToString());
         using var process = Process.Start(start) ?? throw new InvalidOperationException("Linked invoice browser did not start.");
         var output = process.StandardOutput.ReadToEndAsync(); var errors = process.StandardError.ReadToEndAsync();
         try { using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(8)); await process.WaitForExitAsync(timeout.Token); }

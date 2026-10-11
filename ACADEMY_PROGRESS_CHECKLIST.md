@@ -357,13 +357,23 @@ Current bounded feedback count: **28/28 checkpointed**, after the Assessments cr
 - [x] Final run8e62b5200c00447e800d1e40a1ba6abd,62.3s,88/7 migrations/exact owned cleanup; original containers preserved. Three harness-monitor/order/decimal failures retained, corrected without dropping ledger checks. [Report](QA/REPORTS/PHASE_2B_INVOICE_STATUS_CONCURRENCY_AUDIT.md).
 - [ ] Collection/Student portal consumers and linked browser, direct/platform boundary, physical Android/iOS, critical/release and financial policy acceptance. BUG-DATA-0055 OPEN/RETEST; both serialization orders not forced for every mode.
 
-## Current batch — Invoice consumers and linked browser
+## Current batch — Invoice monetary display
+
+- [x] Student currency formatter preserves INR/USD fractions, JPY whole units and KWD three-digit units; home/fee-row uses retained.
+- [x] Invoice preview separates total/approved adjustments/collected payments/server-authoritative remaining due; original gross register amount and print/close/branding retained. No financial-policy/domain/API change.
+- [x]16 actual source/render checks PASS; frozen baseline4 PASS/12 FAIL. TypeScript/83-page production export and harness0 warnings/errors PASS; lint0 errors/five independently confirmed inherited page warnings.
+- [x] Six retained native consumer stages and four linked journeys/60 page-states (24 retained +36 new),20 real downloads PASS across320/1440px/light-dark.16 mutations/480 unchanged finance snapshots/exact audits/foreign sentinel/no429; original target ledgers retained.
+- [x] Run85dbbb61fb434106b2a1b9ef73b9399d,500.7s/88+7 migrations/exact owned cleanup; other containers and unrelated work preserved. [Report](QA/REPORTS/PHASE_2B_INVOICE_MONEY_DISPLAY_REPAIR.md).
+- [ ] Physical Android/iOS, direct/platform/stale/full critical/release and policy gates remain OPEN.0055 stays OPEN/RETEST; mixed-currency aggregate, broader theme/print and whole Manual visual acceptance are separate.
+- [ ] Next Sol High: reproduce existing0056 payroll-history attribution against disposable SQL, then decide/verify a bounded repair. No new testing plan or Mini contract handoff required here.
+
+## Past batch — Invoice consumers and linked browser
 
 - [x] Six retained native SQL consumer stages now also assert canonical Admin/Student/document status; adjusted/reconciled/voided/pending/rejected/full-settlement/0.01 balances and reminders retained.
 - [x] Four real browser journeys:320/1440px/light-dark,24 page-states across Invoices/Collections/Student portal, eight UI-triggered authoritative invoice downloads; no API mocks.
 - [x]16 real API mutations: eight canonical status200, four collection201, four contradictory Paid400/no-write;200 non-mutation full four-finance-table snapshots, exact success audits/foreign sentinel/eight final payment rows/collected1000 each/no429.
 - [x] Harness0 warnings/errors, fresh TypeScript/83-page export/syntax checks PASS; final run1787e8dba86e45c4b7c371e502d704a9,265s/88+7 migrations/exact owned cleanup. Two selector/number-format test failures retained/corrected without weakening assertions; unrelated containers untouched. [Report](QA/REPORTS/PHASE_2B_INVOICE_CONSUMERS_LINKED.md).
-- [ ] Newly exposed monetary-display follow-up: Student0.01 rounds to0; invoice preview calls gross total "Total payable". Fix precision/remaining-due presentation and add strict linked fractional/zero checks; current integer browser gate is not full visual/consumer acceptance.
+- [x] Monetary-display follow-up completed in the bounded successor above; wider visual/consumer/release acceptance remains separate.
 - [ ] Physical Android/iOS, direct/platform/stale/critical/release and financial-policy gates remain separate. BUG-DATA-0055 OPEN/RETEST; previous111 unit/45 status/20+9 overlap-audit evidence retained, not rerun.
 
 ## Past batch — Teacher publication form contract
@@ -406,7 +416,7 @@ Current bounded feedback count: **28/28 checkpointed**, after the Assessments cr
 - [x] BUG-DATA-0055 authoritative invoice paid-status/ledger integrity — bounded repair111 targeted/45 strict SQL plus retained payment transitions PASS; broader acceptance OPEN.
 - [x] BUG-DATA-0055 bounded SQL-overlap concurrency and same-action audit rollback/recovery20+9 controls; broader issue remains OPEN.
 - [x] BUG-DATA-0055 bounded six native/four linked consumer journeys24 page-states/16 mutations; broader acceptance remains OPEN.
-- [ ] **Next: bounded Student currency precision and invoice gross/remaining-due presentation**, Sol High, with exact linked fractional/zero checks; then existing0056 historical payroll attribution queue.0055 physical/direct/stale/critical/release/policy gates remain separate. No audit restart or automatic policy approval.
+- [ ] **Next: existing0056 historical payroll attribution**, Sol High, disposable SQL reproduction before repair. Invoice precision/remaining-due bounded successor passed;0055 physical/direct/stale/critical/release/policy gates remain separate. No audit restart or automatic policy approval.
 - [ ] Manual shared redesign foundation and Platform → Admin → Teacher → Student rollout: Orbit + Aura dark /Prism light, reusable responsive tokens/shell/controls; preserve interrupted overlay work. Sol High foundation/host contracts, Medium settled rollout. Inherited lint remains open.
 - [ ] Shared PENTA/Manual visual foundation: consume versioned FW1 delivery when available, continue independent Manual controls without claiming the shared AI frontend is delivered.
 - [ ] FP1/FP2/FP3 explicit owner decisions and legacy disposition — pending, not inferred from “continue.”
