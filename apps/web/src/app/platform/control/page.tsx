@@ -6,6 +6,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { StandardDateField, StandardSelectField } from "@/components/design-system/controls";
 import { academyApi, apiHeaders, apiUrl, clearPortalTokens } from "@/lib/api";
+import { platformControlTabs, platformLinks } from "@/components/platform-navigation";
+import navigationStyles from "@/components/platform-navigation.module.css";
 
 type Academy = {
   id: string;
@@ -86,63 +88,6 @@ type InvoiceModal = "all" | "open" | "overdue" | "paid" | null;
 type CaseModal = "all" | "open" | "urgent" | "resolved" | null;
 type AnnouncementModal = "active" | "recent" | null;
 type HealthModal = "api" | "database" | "jobs" | "communications" | null;
-
-const platformLinks = [
-  { label: "Overview", icon: "▦", href: "/platform" },
-  {
-    label: "Tenant Management",
-    icon: "◫",
-    href: "/platform/control?tab=Tenants",
-    tab: "Tenants",
-  },
-  { label: "Tenant Onboarding", icon: "✦", href: "/platform/control?tab=Tenant%20onboarding", tab: "Tenant onboarding" },
-  { label: "Tenant Information", icon: "ⓘ", href: "/platform/control?tab=Tenant%20information", tab: "Tenant information" },
-  {
-    label: "Academy Admins",
-    icon: "♙",
-    href: "/platform/control?tab=Admins",
-    tab: "Admins",
-  },
-  {
-    label: "Billing",
-    icon: "₹",
-    href: "/platform/control?tab=Billing",
-    tab: "Billing",
-  },
-  {
-    label: "Support",
-    icon: "?",
-    href: "/platform/control?tab=Support",
-    tab: "Support",
-  },
-  { label: "Announcements", icon: "!", href: "/platform/control?tab=Announcements", tab: "Announcements" },
-  { label: "Activity logs", icon: "☷", href: "/platform/control?tab=Activity%20logs", tab: "Activity logs" },
-  {
-    label: "Settings",
-    icon: "⚙",
-    href: "/platform/control?tab=Settings",
-    tab: "Settings",
-  },
-  {
-    label: "Audit & health",
-    icon: "✓",
-    href: "/platform/control?tab=Audit%20%26%20health",
-    tab: "Audit & health",
-  },
-] as const;
-
-const platformControlTabs = [
-  "Tenants",
-  "Tenant onboarding",
-  "Tenant information",
-  "Admins",
-  "Billing",
-  "Support",
-  "Announcements",
-  "Activity logs",
-  "Settings",
-  "Audit & health",
-];
 
 export default function PlatformControlPage() {
   const router = useRouter();
@@ -570,7 +515,7 @@ export default function PlatformControlPage() {
           <span>A</span>
           <strong>AcademyDesk</strong>
         </div>
-        <nav className="platform-nav" aria-label="Platform navigation">
+        <nav className={`platform-nav ${navigationStyles.navigation}`} aria-label="Platform navigation">
           <p>Platform</p>
           {platformLinks.map((item) =>
             "tab" in item ? (
@@ -578,14 +523,15 @@ export default function PlatformControlPage() {
                 type="button"
                 key={item.label}
                 data-active={item.tab === tab}
+                aria-current={item.tab === tab ? "page" : undefined}
                 onClick={() => selectWorkspace(item.tab)}
               >
-                <i>{item.icon}</i>
+                <i aria-hidden="true">{item.icon}</i>
                 {item.label}
               </button>
             ) : (
               <Link href={item.href} key={item.label} data-active={false}>
-                <i>{item.icon}</i>
+                <i aria-hidden="true">{item.icon}</i>
                 {item.label}
               </Link>
             ),
@@ -593,12 +539,12 @@ export default function PlatformControlPage() {
         </nav>
       </aside>
       <section className="enterprise-workspace platform-workspace">
-        <header className="enterprise-topbar platform-topbar">
-          <div className="platform-topbar-context">
+        <header className={`enterprise-topbar platform-topbar ${navigationStyles.topbar}`}>
+          <div className={`platform-topbar-context ${navigationStyles.context}`}>
             <span>Platform Owner</span>
             <strong>{owner?.displayName || "Platform Owner"}</strong>
           </div>
-          <div className="enterprise-utilities">
+          <div className={`enterprise-utilities ${navigationStyles.utilities}`}>
             <button
               type="button"
               className="enterprise-icon-button"
@@ -629,7 +575,7 @@ export default function PlatformControlPage() {
             </details>
           </div>
         </header>
-        <nav className="platform-mobile-nav" aria-label="Platform navigation">
+        <nav className={`platform-mobile-nav ${navigationStyles.navigation}`} aria-label="Platform navigation">
           {platformLinks.map((item) => (
             <Link
               href={item.href}

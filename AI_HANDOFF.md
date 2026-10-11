@@ -2,6 +2,10 @@
 
 ## Current state
 
+## Platform Owner navigation/header foundation — 2026-10-11
+
+[Report](QA/REPORTS/E3_PLATFORM_NAVIGATION_FOUNDATION.md): missing Overview Announcements reproduced; shared presentation registry, desktop current-page semantics/decorative icons,44px/focus and phone identity/utility-row fix. Existing switching/URLs/scroll/authority retained.16 final synthetic exported journeys PASS at320/390/768/1440/light-dark/both entry points/all11 destinations/history/header/scroll; types/export83 PASS, screenshots inspected.32 unchanged popup cases rerun before final Platform-only header CSS; source retained. Page lint NOT PASS: inherited8 errors/10 warnings unchanged, new registry0/0; baseline/intermediate text-geometry limits recorded. Original28 count/full portal/E3/live/device/Mini/FW1/release OPEN; no API/Mini/main/Azure/project switch. Unrelated32/28/evidence preserved. NEXT Platform Owner overlays/utility states/bounded lint, Sol Medium; High for consequential integration. Maintain/display [checklist](ACADEMY_PROGRESS_CHECKLIST.md).
+
 ## Manual detail-modal foundation — 2026-10-11
 
 [Report](QA/REPORTS/E3_MANUAL_DETAIL_MODAL_FOUNDATION.md): latest Mini frontend plan inspected, no versioned FW1 return claimed; host tokens already align. Shared native top-layer/inert popup,44px close/viewport scroll/sticky header, Escape/outside/focus-return/body-scroll restoration; original data/props/authority unchanged.32 synthetic exported Admin overview cases PASS at320/390/768/1440/light-dark/empty-long; mobile screenshots inspected, lint0/0/types/export83 PASS. Baseline/intermediate focus/build-lock failures retained, assertions unchanged. Prior backend proofs NOT rerun; all-consumer/device/live/E3/Mini/FW1/release OPEN, original28 count retained. Unrelated32/28/evidence preserved; no Mini/main/Azure/project switch. NEXT Platform Owner Manual shell/navigation bounded checks, Sol Medium; High for consequential integration. Maintain/display [checklist](ACADEMY_PROGRESS_CHECKLIST.md).

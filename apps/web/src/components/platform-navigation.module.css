@@ -1,0 +1,30 @@
+/* Shared Manual navigation foundation; retain established responsive layout. */
+.navigation :is(a, button) {
+  min-height: 44px;
+}
+
+.navigation :is(a, button):focus-visible {
+  outline: 3px solid var(--ad-accent);
+  outline-offset: 3px;
+}
+
+@media (max-width: 640px) {
+  .topbar:global(.platform-topbar) {
+    flex-basis: auto;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .topbar > .context {
+    flex: 0 0 100%;
+    width: 100%;
+    margin-left: 0;
+    padding-bottom: 10px;
+  }
+
+  .topbar > .utilities {
+    flex: 0 0 100%;
+    min-width: 0;
+    justify-content: flex-end;
+  }
+}

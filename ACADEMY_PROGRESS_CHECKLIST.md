@@ -164,12 +164,20 @@ Scope: success/refresh/error/draft/pending feedback only. Existing payloads/doma
 - [x]48 new+32 retained synthetic desktop/mobile light/dark browser checks PASS; two mobile screenshots inspected. Lint0/0/types/export83; [report](QA/REPORTS/PHASE_2B_ONBOARDING_FEEDBACK_REPAIR.md).
 - [ ] Live browser-to-SQL, physical devices and full critical acceptance remain OPEN; previous native proofs retained, not rerun.
 
-## Current batch — Manual detail-modal foundation
+## Past batch — Manual detail-modal foundation
 
 - [x] Current Mini frontend ownership/plan inspected; no returned versioned FW1 release claimed or pilot replaced.
 - [x] Shared Manual popup: native top layer/inert background,44px close, Escape/outside dismissal, focus return and restored scroll; existing host tokens/data/permissions retained.
 - [x]32 synthetic exported-browser cases PASS across320/390/768/1440/light-dark/empty-long content; mobile screenshots inspected. Lint0/0/types/export83 PASS; [report](QA/REPORTS/E3_MANUAL_DETAIL_MODAL_FOUNDATION.md).
 - [ ] All consumers/portals, physical Android/iOS/Safari/screen-reader/live integration and full E3 acceptance remain OPEN.
+
+## Current batch — Platform Owner navigation/header foundation
+
+- [x] Missing Announcements from Overview reproduced and repaired through one shared presentation registry; existing routes/authority/switching preserved.
+- [x] Desktop active-page semantics, hidden decorative icons,44px navigation targets and visible focus; phone header overlap reproduced with text geometry and repaired.
+- [x]16 final synthetic journeys PASS at320/390/768/1440/light-dark/from both entry points, all11 sections/URL/history/scroll/overflow/header checks; mobile screenshots inspected. Types/export83 PASS; [report](QA/REPORTS/E3_PLATFORM_NAVIGATION_FOUNDATION.md).
+- [x]32 unchanged shared-popup regression cases passed during this batch; source unchanged. New registry lint0/0.
+- [ ] Existing Platform page lint8 errors/10 warnings unchanged; portal overlays/utility states/remaining forms/live/physical devices and full E3 remain OPEN.
 
 ## Original feedback routes — bounded checkpoint list
 
@@ -223,7 +231,8 @@ Current bounded feedback count: **28/28 checkpointed**, after the Assessments cr
 - [x] BUG-DATA-0008 optional-number collision — bounded29-case native normalization/uniqueness/chain proof; wider acceptance OPEN.
 - [x] Student/Teacher onboarding feedback — bounded handler/synthetic browser proof; live/device acceptance OPEN.
 - [x] Independent Manual/shared visual foundation started: current ownership/tokens checked and shared detail-popup checkpoint completed; not all shared controls or E3 completion.
-- [ ] **Next: Platform Owner Manual shell/navigation/responsive/keyboard checks** — preserve accepted fixes, repair demonstrated gaps; Sol Medium, High for consequential authority/integration.
+- [x] Platform Owner Manual navigation/header checkpoint —16 synthetic journeys, not full portal acceptance.
+- [ ] **Next: Platform Owner detail overlays/utility states and bounded inherited lint ownership**, then Admin/Teacher/Student; Sol Medium, High for consequential authority/integration.
 - [ ] Shared PENTA/Manual visual foundation: consume versioned FW1 delivery when available, continue independent Manual controls without claiming the shared AI frontend is delivered.
 - [ ] FP1/FP2/FP3 explicit owner decisions and legacy disposition — pending, not inferred from “continue.”
 - [ ] Approved financial implementation — Sol High; accounting/tax/payroll review before applicable release. Policy-pending finance need not block safe feedback work.

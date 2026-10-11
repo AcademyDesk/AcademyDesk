@@ -5,6 +5,8 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { academyApi, apiHeaders, apiUrl, clearPortalTokens } from "@/lib/api";
+import { platformLinks } from "@/components/platform-navigation";
+import navigationStyles from "@/components/platform-navigation.module.css";
 
 type Academy = {
   id: string;
@@ -39,27 +41,6 @@ type PlatformHealth = {
 };
 type OverviewModal = "academies" | "activeAcademies" | "learners" | "support" | "billed" | "collected" | "outstanding" | null;
 type OwnerSession = { displayName: string; email?: string | null; profileImageUrl?: string | null };
-
-const platformLinks = [
-  { label: "Overview", icon: "▦", href: "/platform" },
-  {
-    label: "Tenant Management",
-    icon: "◫",
-    href: "/platform/control?tab=Tenants",
-  },
-  { label: "Tenant Onboarding", icon: "✦", href: "/platform/control?tab=Tenant%20onboarding" },
-  { label: "Tenant Information", icon: "ⓘ", href: "/platform/control?tab=Tenant%20information" },
-  { label: "Academy Admins", icon: "♙", href: "/platform/control?tab=Admins" },
-  { label: "Billing", icon: "₹", href: "/platform/control?tab=Billing" },
-  { label: "Support", icon: "?", href: "/platform/control?tab=Support" },
-  { label: "Activity logs", icon: "☷", href: "/platform/control?tab=Activity%20logs" },
-  { label: "Settings", icon: "⚙", href: "/platform/control?tab=Settings" },
-  {
-    label: "Audit & health",
-    icon: "✓",
-    href: "/platform/control?tab=Audit%20%26%20health",
-  },
-] as const;
 
 export default function PlatformPage() {
   const router = useRouter();
@@ -188,27 +169,28 @@ export default function PlatformPage() {
           <span>A</span>
           <strong>AcademyDesk</strong>
         </div>
-        <nav className="platform-nav" aria-label="Platform navigation">
+        <nav className={`platform-nav ${navigationStyles.navigation}`} aria-label="Platform navigation">
           <p>Platform</p>
           {platformLinks.map((item) => (
             <Link
               href={item.href}
               key={item.label}
               data-active={item.label === "Overview"}
+              aria-current={item.label === "Overview" ? "page" : undefined}
             >
-              <i>{item.icon}</i>
+              <i aria-hidden="true">{item.icon}</i>
               {item.label}
             </Link>
           ))}
         </nav>
       </aside>
       <section className="enterprise-workspace platform-workspace">
-        <header className="enterprise-topbar platform-topbar">
-          <div className="platform-topbar-context">
+        <header className={`enterprise-topbar platform-topbar ${navigationStyles.topbar}`}>
+          <div className={`platform-topbar-context ${navigationStyles.context}`}>
             <span>Platform Owner</span>
             <strong>{owner?.displayName || "Platform Owner"}</strong>
           </div>
-          <div className="enterprise-utilities">
+          <div className={`enterprise-utilities ${navigationStyles.utilities}`}>
             <button
               type="button"
               className="enterprise-icon-button"
@@ -241,7 +223,7 @@ export default function PlatformPage() {
             </details>
           </div>
         </header>
-        <nav className="platform-mobile-nav" aria-label="Platform navigation">
+        <nav className={`platform-mobile-nav ${navigationStyles.navigation}`} aria-label="Platform navigation">
           {platformLinks.map((item) => (
             <Link
               href={item.href}
