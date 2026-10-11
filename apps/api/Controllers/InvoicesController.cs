@@ -57,7 +57,44 @@ public sealed class InvoicesController(AcademyDeskDbContext dbContext, Outstandi
     }
     [HttpPatch("{invoiceId:guid}/status")]
     public async Task<ActionResult> UpdateStatus(Guid academyId, Guid invoiceId, UpdateInvoiceStatusRequest request, CancellationToken token)
-    { var x=await dbContext.Invoices.SingleOrDefaultAsync(v=>v.Id==invoiceId&&v.AcademyId==academyId,token); if(x is null)return NotFound(); if(!new[]{"Issued","PartiallyPaid","Paid","Overdue","Cancelled"}.Contains(request.Status,StringComparer.OrdinalIgnoreCase))return BadRequest(); x.Status=request.Status.Trim(); await dbContext.SaveChangesAsync(token); return Ok(); }
+    {
+        // Share the invoice-first lock with collection, void, reconciliation and
+        // adjustment approval. Validation and the status write must see one ledger.
+        // The finance filter owns normal requests (including their success audit);
+        // direct/platform callers need their own transaction boundary.
+        await using var ownedTransaction = dbContext.Database.IsSqlServer() && dbContext.Database.CurrentTransaction is null
+            ? await dbContext.Database.BeginTransactionAsync(token) : null;
+        var query = dbContext.Database.IsSqlServer()
+            ? dbContext.Invoices.FromSqlInterpolated($"SELECT * FROM [Invoices] WITH (UPDLOCK, HOLDLOCK) WHERE [AcademyId] = {academyId} AND [Id] = {invoiceId}")
+            : dbContext.Invoices.Where(x => x.Id == invoiceId && x.AcademyId == academyId);
+        var invoice = await query.SingleOrDefaultAsync(token);
+        if (invoice is null) return NotFound();
+        var canonical = new[] { "Issued", "PartiallyPaid", "Paid", "Overdue", "Cancelled" }
+            .FirstOrDefault(x => string.Equals(x, request.Status?.Trim(), StringComparison.OrdinalIgnoreCase));
+        if (canonical is null) return BadRequest(new { message = "Select a valid invoice status." });
+
+        // Cancellation/reopening policy is a separate existing release gate.
+        // Preserve that operation; it is not a ledger settlement or a refund.
+        if (canonical != "Cancelled")
+        {
+            var collected = await dbContext.Payments.Where(x => x.AcademyId == academyId && x.InvoiceId == invoice.Id &&
+                (x.Status == "Completed" || x.Status == "Reconciled"))
+                .SumAsync(x => (decimal?)x.Amount, token) ?? 0m;
+            var balance = invoice.TotalAmount - invoice.AdjustedAmount - collected;
+            var consistent = canonical switch
+            {
+                "Paid" => balance == 0m,
+                "PartiallyPaid" => collected > 0m && balance > 0m,
+                _ => collected == 0m && balance > 0m
+            };
+            if (invoice.TotalAmount < 0m || invoice.AdjustedAmount < 0m || invoice.AdjustedAmount > invoice.TotalAmount || collected < 0m || !consistent)
+                return BadRequest(new { message = "Invoice status must match the collected payments and adjusted balance." });
+        }
+        invoice.Status = canonical;
+        await dbContext.SaveChangesAsync(token);
+        if (ownedTransaction is not null) await ownedTransaction.CommitAsync(token);
+        return Ok();
+    }
 }
 
 public sealed record CreateInvoiceRequest(Guid StudentId, Guid? FeePlanId, decimal? Amount, DateOnly? DueDate);

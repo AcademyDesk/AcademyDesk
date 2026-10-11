@@ -332,13 +332,21 @@ Current bounded feedback count: **28/28 checkpointed**, after the Assessments cr
 - [x] Four linked zero-score journeys/eight real PATCH/readback/reload and owned cleanup recorded in [report](QA/REPORTS/PHASE_2B_MUSIC_PROGRESS_SQL_LINKED.md); application behavior unchanged, harness build0/0.
 - [ ] Music pending/stale/readback-recovery and durable status feedback repair; linked positive/null/device/full-critical/release gates OPEN. BUG-DATA-0054 not closed.
 
-## Current batch — Music save/status/recovery feedback
+## Past batch — Music save/status/recovery feedback
 
 - [x] Shared synchronous guard through write/readback; all three actions and explicit refresh cannot overlap locally. Checked readiness, disabled forms/selects and stale local-row/lifetime/read-version guards.
 - [x] Durable polite success, rejection/uncertainty and confirmed-save/readback-failure distinction; draft retention/matching-only reset, explicit uncached recovery before further writes. Existing payloads/zero/null/domain/permissions unchanged.
 - [x]72 actual-handler checks PASS (51 new +20 retained score +one stricter duplicate guard); frozen new51 baseline1 PASS/50 FAIL. TypeScript/lint0/0/export83 PASS.
 - [x]48 new +48 retained synthetic responsive browser cases PASS; two mobile screenshots inspected.17 native SQL controls +four linked zero-score journeys/eight real writes PASS;88/7 migrations/no429/exact owned cleanup. [Report](QA/REPORTS/PHASE_2B_MUSIC_PROGRESS_FEEDBACK_REPAIR.md).
 - [ ] Cross-tab/other-actor metadata concurrency, linked positive/null/create/assign faults, physical-device/full-critical/release acceptance remain OPEN. BUG-DATA-0054 not closed.
+
+## Current batch — Invoice status and collected ledger
+
+- [x] BUG-DATA-0055 reproduced on frozen API in disposable SQL: unpaid1000 accepted Paid/paid with collected0/balance1000; baseline75 checks17 PASS/58 FAIL.
+- [x] Invoice-first transaction/row lock, canonical statuses and collected/adjusted-balance validation; contradictory payment statuses400. No schema/RBAC/Mini/UI change; existing cancellation/no-cash semantics retained, not policy approval.
+- [x]75 new +36 retained controller tests111/111 PASS; isolated harness build0 warnings/0 errors. [Report](QA/REPORTS/PHASE_2B_INVOICE_STATUS_LEDGER_REPAIR.md).
+- [x] Final combined SQL gate PASS:45 status/invalid/role/tenant/snapshot controls plus retained transition regression; run17b128d0bca34d6389728339cabe25e6,134.8s/no429/88+7 migrations/exact owned cleanup. Earlier fixture/429 failures retained; limits/assertions unchanged, natural interval added.
+- [ ] Concurrent status-vs-payment/approval, same-action audit rollback, consumer/linked browser/physical-device/critical/release and cancellation policy gates remain OPEN. BUG-DATA-0055 not closed.
 
 ## Past batch — Teacher publication form contract
 
@@ -377,7 +385,8 @@ Current bounded feedback count: **28/28 checkpointed**, after the Assessments cr
 - [x] BUG-DATA-0054 bounded zero-score serialization repair; broader acceptance OPEN.
 - [x] BUG-DATA-0054 native SQL/linked zero-score verification + pending assessment; async repair and broader acceptance remain OPEN.
 - [x] Music status page-local pending/stale/recovery + durable feedback — bounded handler/browser/native verification; broader0054 gates remain OPEN.
-- [ ] **Next: BUG-DATA-0055 authoritative invoice paid-status/ledger integrity**, Sol High. Existing enterprise/Mini/FW1 gates retained.
+- [x] BUG-DATA-0055 authoritative invoice paid-status/ledger integrity — bounded repair111 targeted/45 strict SQL plus retained payment transitions PASS; broader acceptance OPEN.
+- [ ] **Next: BUG-DATA-0055 concurrency and same-action audit-fault rollback/recovery**, Sol High; then collection/Student portal/linked browser/device gates. No audit restart or automatic policy approval.
 - [ ] Manual shared redesign foundation and Platform → Admin → Teacher → Student rollout: Orbit + Aura dark /Prism light, reusable responsive tokens/shell/controls; preserve interrupted overlay work. Sol High foundation/host contracts, Medium settled rollout. Inherited lint remains open.
 - [ ] Shared PENTA/Manual visual foundation: consume versioned FW1 delivery when available, continue independent Manual controls without claiming the shared AI frontend is delivered.
 - [ ] FP1/FP2/FP3 explicit owner decisions and legacy disposition — pending, not inferred from “continue.”

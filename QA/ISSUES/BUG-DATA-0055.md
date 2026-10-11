@@ -3,8 +3,8 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | STATIC-FINDING |
-| Final verification | NOT RUN |
+| Confirmation status | RUNTIME-CONFIRMED; bounded repair verified, RETEST |
+| Final verification | 111 targeted tests and45 strict SQL controls plus retained payment transitions PASS; wider gates OPEN |
 | Severity | Major invoice-ledger status integrity |
 | Priority | P1 |
 | Category | DATA |
@@ -12,30 +12,32 @@
 | Role | See reproduction; same-tenant Admin unless stated otherwise |
 | Screen / route | /invoices; direct invoice API |
 | API | PATCH /api/academies/{academyId}/invoices/{invoiceId}/status |
-| Environment | Source review of local working tree; runtime production state not inferred |
+| Environment | D:\AcademyDesk-codex-p0, codex/penta-search; real Identity/HTTP/disposable SQL; production state not inferred |
 | Device/viewport | NOT RUN; use QA/06_DEVICE_VIEWPORT_MATRIX.md where UI applies |
 | Baseline | 20bb6047f9edf733ac8e2a226621cc582ec54b3c + pre-existing student UI diff |
 | Discovery test / review ID | FINANCE-INVOICE-STATUS-001 |
-| Evidence classification | Static trace; runtime reproduction pending |
+| Evidence classification | Runtime reproduction on frozen API plus controlled tests; local evidence retained |
 | Preconditions | Isolated synthetic fixture from QA/10_TEST_DATA_STRATEGY.md; never customer data |
-| Reproduction frequency | Not measured; reproduction instructions are proposed |
+| Reproduction frequency | Frozen native baseline reproduced both Paid and lowercase paid; concurrency frequency not measured |
 | Source | apps/api/Controllers/InvoicesController.cs:30 |
 | Class/function | Invoices.UpdateStatus |
 | Related source | INVENTORY/API_ENDPOINTS.md, CONTRACTS.md, FORMS_AND_FIELDS.md and ASYNC_FORM_RISKS.md |
 | Root-cause confidence | HIGH |
-| Evidence location | Source excerpt below; source fingerprint in INVENTORY/SOURCE_MANIFEST.md |
+| Evidence location | QA/REPORTS/PHASE_2B_INVOICE_STATUS_LEDGER_REPAIR.md; local QA/EVIDENCE/invoice-status-20261011 |
 | Screenshot | Not captured on pinned baseline |
 | Console logs | Not captured; required in retest |
 | API request | In an isolated academy create an invoice for 1000 with no payments. PATCH status to Paid, then read invoice list, finance overview and any collection/reminder projections. Repeat lowercase paid, Cancelled on a paid invoice, malformed status, wrong academy, and a legitimately fully collected control. |
-| API response | Not captured for this issue; use synthetic request/response in isolated reproduction |
-| Database before/after | Not executed; fixture and fresh-context assertions defined below |
+| API response | Frozen unpaid Paid/paid200; repaired contradictions400, canonical accepted status200;45 final strict controls and retained transitions PASS/no429 |
+| Database before/after | Frozen Paid with collected0/balance1000 reproduced; final matrix checks fresh full invoice/payment/adjustment/audit snapshots |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | Not implemented (Phase 1) |
-| Retest result | NOT RUN |
-| Regression result | NOT RUN |
+| Fix commit | Scoped feature repair following8c025cf; report and feature git history identify publication |
+| Retest result | OPEN/RETEST; concurrency/audit-fault/linked consumer/browser/device/critical/release pending |
+| Regression result | 75 new plus36 retained unit/controller checks PASS; final SQL run17b128d0bca34d6389728339cabe25e6 PASS/134.8s/exact owned cleanup |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
 ## Exact reproduction
+
+2026-10-11 successor: frozen API from parent8c025cf accepts Paid200 with collected0/balance1000 and then stores paid200 noncanonically; owned SQL dc656f4eefe849c0b894b5594ba596b3,47.9s, normal cleanup. Repaired final run17b128d0bca34d6389728339cabe25e6 passes45 strict controls and retained transition regression,134.8s/no429/exact owned cleanup. Original static excerpt below is historical, not current repaired source. [Bounded report](../REPORTS/PHASE_2B_INVOICE_STATUS_LEDGER_REPAIR.md) records failed fixture/rate-limit runs without treating them as full passes. No policy approval or issue closure inferred.
 
 In an isolated academy create an invoice for 1000 with no payments. PATCH status to Paid, then read invoice list, finance overview and any collection/reminder projections. Repeat lowercase paid, Cancelled on a paid invoice, malformed status, wrong academy, and a legitimately fully collected control.
 

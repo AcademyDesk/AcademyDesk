@@ -79,7 +79,7 @@ internal static partial class SqlHarnessEntryPoint
         RequireFinanceStatus(cancelVoid, HttpStatusCode.OK, "void with cancelled invoice");
         var cancelState = await ReadAdjustmentSnapshotAsync(factory, academyId, studentId, cancelled.InvoiceId, "cancelled-preserved-after-void");
         RequireTransitionPayment(cancelState, cancelled, "Voided", null, false);
-        if (cancelState.Status != "cancelled" || await ReadAdjustedInvoiceViewAsync(client, cancelled.InvoicesPath, cancelled.InvoiceId) != (0m, 1000m, "cancelled"))
+        if (cancelState.Status != "Cancelled" || await ReadAdjustedInvoiceViewAsync(client, cancelled.InvoicesPath, cancelled.InvoiceId) != (0m, 1000m, "Cancelled"))
             throw new InvalidOperationException("Void uncancelled the invoice.");
         Console.WriteLine("TRANSITION REGRESSION PASS: original full/partial/adjusted void and required-evidence cases; mixed Reconciled collections/evidence preservation/repeat/rejected generic path; future due Issued; cancelled state preserved case-insensitively. Voided restoration policy remains pending, not certified.");
     }
