@@ -3,8 +3,8 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | Ordinary save bounded-repaired; native SQL and synthetic browser verified; stale overwrite reproduced/unfixed |
-| Final verification | 6 handler/16 synthetic browser PASS;15 native controls plus3 stale-reproduction requests checked; types/lint/export83 retained PASS; concurrency/linked/device/critical OPEN |
+| Confirmation status | Ordinary-save/stale guards bounded-repaired; strict real SQL concurrency verified, broader acceptance OPEN |
+| Final verification | SQL21 controls +5 guarded pairs PASS;67 unit/6 handler/36+16 synthetic/type/build PASS; linked/device/audit-fault/critical OPEN |
 | Severity | Major finance-settings integrity |
 | Priority | P1 |
 | Category | DATA |
@@ -31,11 +31,19 @@
 | Database before/after | Not executed; fixture and fresh-context assertions defined below |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
 | Fix commit | Scoped ordinary-save repair publication, 2026-10-11; see feature history, not issue closure |
-| Retest result | Bounded ordinary-save checks PASS; newer Professional overwritten by stale Compact with200; OPEN / RETEST |
+| Retest result | Historical stale overwrite200 now rejected409;21 native controls +5 exact200/409 pairs PASS; OPEN / RETEST |
 | Regression result | NOT RUN |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
-## Exact reproduction
+## Current stale-guard verification — 2026-10-11
+
+[Verification report](../REPORTS/PHASE_2B_FINANCE_SETTINGS_STALE_GUARD.md): Docker normal stop/start recovered, no reset/prune/older-container deletion. Real Identity/HTTP/SQL runb418248d40d2479d843a80c2414e6699:21 controls plus5/5 simultaneous pairs PASS (first absent settings row); exactly200/409, one row/one audit/unmixed winner fields/fresh SQL+GET equality/no429;88/7 migrations/exact run-owned cleanup. Current-version resets/themes and rejected authority/no-write preserved. Retained67 unit/6 handler/36+16 synthetic/types/export83 PASS, Governance3 inherited lint warnings. Earlier blocked/unfixed checkpoints below historical. Scoped feature publication only, no main/Azure/Mini. Issue OPEN for same-action audit-fault, linked browser/physical devices/full critical; no full release acceptance.
+
+## Earlier stale-guard checkpoint (historical)
+
+[Local report](../REPORTS/PHASE_2B_FINANCE_SETTINGS_STALE_GUARD.md) supersedes earlier “unfixed” wording for local source only. GET/PUT versions, stable-academy SQL lock/atomic success audit and both-editor draft recovery implemented.67 targeted unit tests,6 retained handler,36 synthetic exported-browser (including4 open-draft/approval-list refresh),16 retained theme cases,types/harness build/export83 PASS. Governance lint0 errors/3 inherited warnings; Policy0/0. **Real SQL21 sequential controls +5 guarded pairs BLOCKED/NOT RUN**, Docker socket inaccessible. Restart approval requested; no reset/prune/data deletion/run-owned SQL resource. Older clients missing version receive428; stale/manipulated version409. Original explicit NULL/omitted reset remains with current version; both editors/API must release together after gates. No commit/push/main/Azure/Mini change. OPEN/RETEST: native concurrency, same-action SQL audit-fault, linked browser/device/full critical pending. Historical failure and previous native ordinary-save receipts below retained, not current guard passes.
+
+## Exact reproduction (historical)
 
 In an isolated academy set PayslipTemplateKey to Compact or Professional through the document-settings editor or API. Open Finance Policy, change only tax label, save, then read the settings row in a fresh SQL context and compare both themes. Repeat with Standard control, failed PUT, and a concurrent document edit.
 

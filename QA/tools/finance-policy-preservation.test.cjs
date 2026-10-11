@@ -5,9 +5,9 @@ const file='apps/web/src/app/finance-policy/page.tsx';
 const source=process.env.QA_SOURCE_REF?cp.execFileSync('git',['show',process.env.QA_SOURCE_REF+':'+file],{encoding:'utf8'}):fs.readFileSync(file,'utf8');
 const code=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText;
 const nodes=n=>Array.isArray(n)?n.flatMap(nodes):!n||typeof n!=='object'?[]:[n,...nodes(n.props?.children)];
-const base={taxRegistrationNumber:'Synthetic',taxLabel:'GST',taxRatePercent:18,defaultPaymentTermsDays:7,taxInclusivePricing:false,invoiceLogoUrl:null,invoiceAuthorityName:'Synthetic signatory',invoiceAuthorityTitle:'Finance',invoiceSignatureUrl:null,invoiceTemplateKey:'Modern'};
+const base={taxRegistrationNumber:'Synthetic',taxLabel:'GST',taxRatePercent:18,defaultPaymentTermsDays:7,taxInclusivePricing:false,invoiceLogoUrl:null,invoiceAuthorityName:'Synthetic signatory',invoiceAuthorityTitle:'Finance',invoiceSignatureUrl:null,invoiceTemplateKey:'Modern',settingsVersion:'A'.repeat(64)};
 async function page(theme,rejected=false){let index=0;const state=[],effects=[],calls=[],module={exports:{}};
- const react={useState:v=>{const k=index++;if(!(k in state))state[k]=v;return[state[k],v=>state[k]=v];},useEffect:f=>effects.push(f)};
+ const pending={current:false};const react={useRef:()=>pending,useState:v=>{const k=index++;if(!(k in state))state[k]=v;return[state[k],v=>state[k]=v];},useEffect:f=>effects.push(f)};
  const api=async(url,init={})=>{calls.push({url,...init});return{ok:!init.method||!rejected,json:async()=>init.method?JSON.parse(init.body):url==='/api/academies'?[{id:'owned'}]:{...base,payslipTemplateKey:theme}};};
  function FixtureFormData(){const data=new FormData();for(const [k,v]of Object.entries({...base,taxLabel:'Edited tax label'})){if(v!==null&&k!=='taxInclusivePricing')data.set(k,String(v));}return data;}
  new Function('require','module','exports','FormData',code)(n=>n==='react'?react:n==='react/jsx-runtime'?jsx:n==='@/lib/api'?{academyApi:api,apiHeaders:()=>({'Content-Type':'application/json'})}:(()=>{throw Error(n)})(),module,module.exports,FixtureFormData);

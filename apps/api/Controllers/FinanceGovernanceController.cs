@@ -39,8 +39,70 @@ public sealed class FinanceGovernanceController(AcademyDeskDbContext db, Identit
      return Ok(new CollectionTaskSummary(item.Id, item.Type, item.Title, item.Description, item.Priority,
          item.Status, item.DueAtUtc, item.EscalationStage, item.PromisedPaymentDate));
  }
- [HttpGet("settings")] public async Task<ActionResult<FinanceSettingsSummary>> Get(Guid academyId,CancellationToken t){var x=await db.AcademyFinanceSettings.AsNoTracking().SingleOrDefaultAsync(x=>x.AcademyId==academyId,t);return Ok(x is null?new FinanceSettingsSummary("","GST",0,7,false,null,null,null,null,"Classic","Standard"):new(x.TaxRegistrationNumber,x.TaxLabel,x.TaxRatePercent,x.DefaultPaymentTermsDays,x.TaxInclusivePricing,x.InvoiceLogoUrl,x.InvoiceAuthorityName,x.InvoiceAuthorityTitle,x.InvoiceSignatureUrl,x.InvoiceTemplateKey,x.PayslipTemplateKey));}
- [HttpPut("settings")] public async Task<ActionResult<FinanceSettingsSummary>> Save(Guid academyId,FinanceSettingsRequest r,CancellationToken t){if(r.TaxRatePercent<0||r.TaxRatePercent>100||r.DefaultPaymentTermsDays<0||r.DefaultPaymentTermsDays>365)return BadRequest(new{message="Check tax rate and payment terms."});if(!new[]{"Classic","Modern","Minimal","Formal"}.Contains(r.InvoiceTemplateKey??"Classic")||!new[]{"Standard","Compact","Professional"}.Contains(r.PayslipTemplateKey??"Standard"))return BadRequest(new{message="Choose a supported document theme."});var x=await db.AcademyFinanceSettings.SingleOrDefaultAsync(x=>x.AcademyId==academyId,t);if(x is null){x=new AcademyFinanceSettings{AcademyId=academyId};db.AcademyFinanceSettings.Add(x);}x.TaxRegistrationNumber=r.TaxRegistrationNumber?.Trim()??"";x.TaxLabel=string.IsNullOrWhiteSpace(r.TaxLabel)?"GST":r.TaxLabel.Trim();x.TaxRatePercent=r.TaxRatePercent;x.DefaultPaymentTermsDays=r.DefaultPaymentTermsDays;x.TaxInclusivePricing=r.TaxInclusivePricing;x.InvoiceLogoUrl=Clean(r.InvoiceLogoUrl);x.InvoiceAuthorityName=Clean(r.InvoiceAuthorityName);x.InvoiceAuthorityTitle=Clean(r.InvoiceAuthorityTitle);x.InvoiceSignatureUrl=Clean(r.InvoiceSignatureUrl);x.InvoiceTemplateKey=r.InvoiceTemplateKey??"Classic";x.PayslipTemplateKey=r.PayslipTemplateKey??"Standard";await db.SaveChangesAsync(t);return Ok(new FinanceSettingsSummary(x.TaxRegistrationNumber,x.TaxLabel,x.TaxRatePercent,x.DefaultPaymentTermsDays,x.TaxInclusivePricing,x.InvoiceLogoUrl,x.InvoiceAuthorityName,x.InvoiceAuthorityTitle,x.InvoiceSignatureUrl,x.InvoiceTemplateKey,x.PayslipTemplateKey));}
+[HttpGet("settings")]
+ public async Task<ActionResult<FinanceSettingsSummary>> Get(Guid academyId, CancellationToken token)
+ {
+     var row = await db.AcademyFinanceSettings.AsNoTracking().SingleOrDefaultAsync(x => x.AcademyId == academyId, token);
+     Response.Headers.CacheControl = "no-store";
+     return Ok(SettingsSnapshot(academyId, row));
+ }
+ [HttpPut("settings")]
+ [AtomicAcademyMutation(IncludePlatformOwner = true)]
+ public async Task<ActionResult<FinanceSettingsSummary>> Save(Guid academyId, FinanceSettingsRequest r, CancellationToken token)
+ {
+     if (r.TaxRatePercent < 0 || r.TaxRatePercent > 100 || r.DefaultPaymentTermsDays < 0 || r.DefaultPaymentTermsDays > 365)
+         return BadRequest(new { message = "Check tax rate and payment terms." });
+     if (!new[] { "Classic", "Modern", "Minimal", "Formal" }.Contains(r.InvoiceTemplateKey ?? "Classic") ||
+         !new[] { "Standard", "Compact", "Professional" }.Contains(r.PayslipTemplateKey ?? "Standard"))
+         return BadRequest(new { message = "Choose a supported document theme." });
+     if (string.IsNullOrWhiteSpace(r.SettingsVersion))
+         return StatusCode(StatusCodes.Status428PreconditionRequired, new { message = "Refresh settings before saving. Your draft has not been saved." });
+     // Lock the stable academy row even when no settings row exists. The host
+     // boundary holds this lock through the settings write and success audit.
+     await using var ownedTransaction = db.Database.IsSqlServer() && db.Database.CurrentTransaction is null
+         ? await db.Database.BeginTransactionAsync(token) : null;
+     var academyQuery = db.Database.IsSqlServer()
+         ? db.Academies.FromSqlInterpolated($"SELECT * FROM [Academies] WITH (UPDLOCK, HOLDLOCK) WHERE [Id] = {academyId}")
+         : db.Academies.Where(x => x.Id == academyId);
+     if (await academyQuery.AsNoTracking().SingleOrDefaultAsync(token) is null) return NotFound();
+     var row = await db.AcademyFinanceSettings.SingleOrDefaultAsync(x => x.AcademyId == academyId, token);
+     if (!string.Equals(r.SettingsVersion, SettingsSnapshot(academyId, row).SettingsVersion, StringComparison.Ordinal))
+         return Conflict(new { message = "Settings changed in another window. Your draft has not been saved. Refresh this page and review the latest settings before saving again." });
+     if (row is null) { row = new AcademyFinanceSettings { AcademyId = academyId }; db.AcademyFinanceSettings.Add(row); }
+     row.TaxRegistrationNumber = r.TaxRegistrationNumber?.Trim() ?? "";
+     row.TaxLabel = string.IsNullOrWhiteSpace(r.TaxLabel) ? "GST" : r.TaxLabel.Trim();
+     row.TaxRatePercent = r.TaxRatePercent;
+     row.DefaultPaymentTermsDays = r.DefaultPaymentTermsDays;
+     row.TaxInclusivePricing = r.TaxInclusivePricing;
+     row.InvoiceLogoUrl = Clean(r.InvoiceLogoUrl);
+     row.InvoiceAuthorityName = Clean(r.InvoiceAuthorityName);
+     row.InvoiceAuthorityTitle = Clean(r.InvoiceAuthorityTitle);
+     row.InvoiceSignatureUrl = Clean(r.InvoiceSignatureUrl);
+     row.InvoiceTemplateKey = r.InvoiceTemplateKey ?? "Classic";
+     row.PayslipTemplateKey = r.PayslipTemplateKey ?? "Standard";
+     // Advance even for an identical replacement. Include metadata in the token
+     // so returning to old field values cannot revive an old editor snapshot.
+     row.UpdatedAtUtc = new DateTime(Math.Max(DateTime.UtcNow.Ticks, (row.UpdatedAtUtc?.Ticks ?? 0) + 1), DateTimeKind.Utc);
+     await db.SaveChangesAsync(token);
+     if (db.Database.IsRelational()) await db.Entry(row).ReloadAsync(token);
+     var result = SettingsSnapshot(academyId, row);
+     if (ownedTransaction is not null) await ownedTransaction.CommitAsync(token);
+     return Ok(result);
+ }
+ private static FinanceSettingsSummary SettingsSnapshot(Guid academyId, AcademyFinanceSettings? row)
+ {
+     var summary = row is null ? new FinanceSettingsSummary("", "GST", 0, 7, false, null, null, null, null, "Classic", "Standard") :
+         new(row.TaxRegistrationNumber, row.TaxLabel, row.TaxRatePercent, row.DefaultPaymentTermsDays, row.TaxInclusivePricing,
+             row.InvoiceLogoUrl, row.InvoiceAuthorityName, row.InvoiceAuthorityTitle, row.InvoiceSignatureUrl, row.InvoiceTemplateKey, row.PayslipTemplateKey);
+     // State token, NOT a credential or permission. Canonical decimal formatting
+     // avoids different SQL/JSON scale producing different versions.
+     var state = System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(new { Format = 1, AcademyId = academyId,
+         RowId = row?.Id, CreatedTicks = row?.CreatedAtUtc.Ticks, UpdatedTicks = row?.UpdatedAtUtc?.Ticks,
+         summary.TaxRegistrationNumber, summary.TaxLabel, Rate = summary.TaxRatePercent.ToString("G29", System.Globalization.CultureInfo.InvariantCulture),
+         summary.DefaultPaymentTermsDays, summary.TaxInclusivePricing, summary.InvoiceLogoUrl, summary.InvoiceAuthorityName,
+         summary.InvoiceAuthorityTitle, summary.InvoiceSignatureUrl, summary.InvoiceTemplateKey, summary.PayslipTemplateKey });
+     return summary with { SettingsVersion = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(state)) };
+ }
  private async Task<List<CollectionInvoiceSummary>> OverdueCollections(Guid academyId, DateOnly today, CancellationToken token)
  {
      // Match the existing invoice balance contract; reconciled money is still paid.
@@ -80,4 +142,4 @@ public sealed class FinanceGovernanceController(AcademyDeskDbContext db, Identit
      db.AdminWorkItems.Add(item); await db.SaveChangesAsync(t); return Ok(item);
  }
 }
-public sealed record FinanceSettingsRequest(string? TaxRegistrationNumber,string? TaxLabel,decimal TaxRatePercent,int DefaultPaymentTermsDays,bool TaxInclusivePricing,string? InvoiceLogoUrl,string? InvoiceAuthorityName,string? InvoiceAuthorityTitle,string? InvoiceSignatureUrl,string? InvoiceTemplateKey,string? PayslipTemplateKey); public sealed record FinanceSettingsSummary(string TaxRegistrationNumber,string TaxLabel,decimal TaxRatePercent,int DefaultPaymentTermsDays,bool TaxInclusivePricing,string? InvoiceLogoUrl,string? InvoiceAuthorityName,string? InvoiceAuthorityTitle,string? InvoiceSignatureUrl,string InvoiceTemplateKey,string PayslipTemplateKey); public sealed record CollectionFollowUpRequest(string? Note,string? Priority,Guid? AssignedUserId,DateTime? DueAtUtc);
+public sealed record FinanceSettingsRequest(string? TaxRegistrationNumber,string? TaxLabel,decimal TaxRatePercent,int DefaultPaymentTermsDays,bool TaxInclusivePricing,string? InvoiceLogoUrl,string? InvoiceAuthorityName,string? InvoiceAuthorityTitle,string? InvoiceSignatureUrl,string? InvoiceTemplateKey,string? PayslipTemplateKey,string? SettingsVersion = null); public sealed record FinanceSettingsSummary(string TaxRegistrationNumber,string TaxLabel,decimal TaxRatePercent,int DefaultPaymentTermsDays,bool TaxInclusivePricing,string? InvoiceLogoUrl,string? InvoiceAuthorityName,string? InvoiceAuthorityTitle,string? InvoiceSignatureUrl,string InvoiceTemplateKey,string PayslipTemplateKey,string? SettingsVersion = null); public sealed record CollectionFollowUpRequest(string? Note,string? Priority,Guid? AssignedUserId,DateTime? DueAtUtc);

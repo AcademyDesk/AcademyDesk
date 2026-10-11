@@ -25,10 +25,25 @@ internal static partial class SqlHarnessEntryPoint
         async Task<string> Snapshot()
         {
             using var scope = factory.Services.CreateScope(); var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
-            return JsonSerializer.Serialize(await db.AcademyFinanceSettings.AsNoTracking().OrderBy(x => x.Id).ToArrayAsync());
+            return JsonSerializer.Serialize(new { Settings = await db.AcademyFinanceSettings.AsNoTracking().OrderBy(x => x.Id).ToArrayAsync(), Audits = await db.AuditLogs.AsNoTracking().OrderBy(x => x.Id).ToArrayAsync() });
         }
-        async Task<FinanceSettingsSummary?> Send(object body, HttpStatusCode expected, string? token = null, string? path = null)
+        async Task<FinanceSettingsSummary> Read()
         {
+            await Task.Delay(750); using var request = new HttpRequestMessage(HttpMethod.Get, route);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", admin);
+            using var response = await client.SendAsync(request); RequireFinanceStatus(response,HttpStatusCode.OK,"settings version read");
+            var result = (await response.Content.ReadFromJsonAsync<FinanceSettingsSummary>())!;
+            if (result.SettingsVersion?.Length != 64) throw new InvalidOperationException("Missing authoritative settings version.");
+            return result;
+        }
+        async Task<FinanceSettingsSummary?> Send(object body, HttpStatusCode expected, string? token = null, string? path = null, bool attachVersion = true)
+        {
+            if (attachVersion)
+            {
+                var version = (await Read()).SettingsVersion;
+                if (body is FinanceSettingsRequest typed) body = typed with { SettingsVersion = version };
+                else if (body is Dictionary<string, JsonElement> omitted) omitted["settingsVersion"] = JsonSerializer.SerializeToElement(version);
+            }
             var before = await Snapshot(); await Task.Delay(750);
             using var request = new HttpRequestMessage(HttpMethod.Put, path ?? route) { Content = JsonContent.Create(body) };
             if (token is not null) request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
@@ -43,7 +58,7 @@ internal static partial class SqlHarnessEntryPoint
             {
                 var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>(); var row = await db.AcademyFinanceSettings.AsNoTracking().SingleAsync(x => x.AcademyId == academy);
                 var actual = new FinanceSettingsSummary(row.TaxRegistrationNumber,row.TaxLabel,row.TaxRatePercent,row.DefaultPaymentTermsDays,row.TaxInclusivePricing,row.InvoiceLogoUrl,row.InvoiceAuthorityName,row.InvoiceAuthorityTitle,row.InvoiceSignatureUrl,row.InvoiceTemplateKey,row.PayslipTemplateKey);
-                if (actual != expected) throw new InvalidOperationException("Fresh SQL settings differ from requested values.");
+                if (actual != expected with { SettingsVersion = null }) throw new InvalidOperationException("Fresh SQL settings differ from requested values.");
             }
             await Task.Delay(750); using var request = new HttpRequestMessage(HttpMethod.Get, route);
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", admin);
@@ -71,13 +86,44 @@ internal static partial class SqlHarnessEntryPoint
         await Send(Body("Compact"),HttpStatusCode.Forbidden,teacher);
         await Send(Body("Compact"),HttpStatusCode.Forbidden,admin,$"/api/academies/{foreign}/finance-governance/settings");
         await Send(Body("Unsupported"),HttpStatusCode.BadRequest,admin);
-        // Deliberate stale editor reproduction, NOT a guarded concurrency pass.
-        await Send(Body("Compact"),HttpStatusCode.OK,admin);
-        var stale = Body("Compact","Stale policy edit");
-        await Send(Body("Professional"),HttpStatusCode.OK,admin);
-        var overwritten = (await Send(stale,HttpStatusCode.OK,admin))!; await Verify(overwritten);
-        if (overwritten.PayslipTemplateKey != "Compact") throw new InvalidOperationException("Stale reproduction changed; re-evaluate before claiming this known gap.");
-        Console.WriteLine("PASS: POLICYTHEME STALE REPRODUCED: newer Professional overwritten by old Compact with HTTP200; no CAS/version guard; issue remains OPEN, not concurrency acceptance.");
-        Console.WriteLine($"PASS: POLICYTHEME HTTP-SQL {checks} requests checked; ordinary-save/reset/rejection/authority controls plus explicit stale-overwrite reproduction; not linked browser/device/full-critical proof.");
+        // Original stale failure now requires conflict and a completely unchanged snapshot.
+        var compact = (await Send(Body("Compact"),HttpStatusCode.OK,admin))!;
+        var stale = Body("Compact","Stale policy edit") with { SettingsVersion = compact.SettingsVersion };
+        var professional = (await Send(Body("Professional"),HttpStatusCode.OK,admin))!;
+        await Send(stale,HttpStatusCode.Conflict,admin,attachVersion:false); await Verify(professional);
+        await Send(Body("Compact"), (HttpStatusCode)428, admin,attachVersion:false);
+        await Send(Body("Compact") with { SettingsVersion = "*" },HttpStatusCode.Conflict,admin,attachVersion:false);
+        await Send(Body("Compact") with { SettingsVersion = (await Read()).SettingsVersion },HttpStatusCode.Forbidden,admin,$"/api/academies/{foreign}/finance-governance/settings",attachVersion:false);
+        // Five simultaneous pairs; first tests absent-row insertion, others replacement.
+        for (var pair = 0; pair < 5; pair++)
+        {
+            if (pair == 0)
+            {
+                using var scope = factory.Services.CreateScope(); var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+                db.Remove(await db.AcademyFinanceSettings.SingleAsync(x => x.AcademyId == academy)); await db.SaveChangesAsync();
+            }
+            var version = (await Read()).SettingsVersion; int auditBefore;
+            using (var scope = factory.Services.CreateScope()) auditBefore = await scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>().AuditLogs.CountAsync();
+            var bodies = new[] { Body("Compact",$"Policy pair{pair}") with { SettingsVersion=version }, Body("Professional",$"Document pair{pair}") with { SettingsVersion=version } };
+            await Task.Delay(1000);
+            async Task<(HttpStatusCode Status, FinanceSettingsSummary? Result)> Race(FinanceSettingsRequest body)
+            {
+                using var request = new HttpRequestMessage(HttpMethod.Put,route) { Content=JsonContent.Create(body) };
+                request.Headers.Authorization=new AuthenticationHeaderValue("Bearer",admin); using var response=await client.SendAsync(request);
+                return(response.StatusCode,response.IsSuccessStatusCode?await response.Content.ReadFromJsonAsync<FinanceSettingsSummary>():null);
+            }
+            var results = await Task.WhenAll(bodies.Select(Race));
+            if (results.Count(x=>x.Status==HttpStatusCode.OK)!=1 || results.Count(x=>x.Status==HttpStatusCode.Conflict)!=1) throw new InvalidOperationException($"Settings race{pair} expected200/409; got {string.Join(',',results.Select(x=>(int)x.Status))}.");
+            var winnerIndex = Array.FindIndex(results,x=>x.Status==HttpStatusCode.OK); var winner = results[winnerIndex].Result!;
+            if(winner.TaxLabel!=bodies[winnerIndex].TaxLabel || winner.PayslipTemplateKey!=bodies[winnerIndex].PayslipTemplateKey)throw new InvalidOperationException("Race mixed writer fields.");
+            await Verify(winner);
+            using (var scope = factory.Services.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+                if(await db.AcademyFinanceSettings.CountAsync(x=>x.AcademyId==academy)!=1 || await db.AuditLogs.CountAsync()!=auditBefore+1)throw new InvalidOperationException("Race inserted extra rows/audits or lost success audit.");
+            }
+            Console.WriteLine($"PASS: POLICYTHEME race={pair+1} exactly200/409 oneRow=true oneSuccessAudit=true noMixedFields=true");
+        }
+        Console.WriteLine($"PASS: POLICYTHEME HTTP-SQL {checks} sequential controls plus5 guarded simultaneous pairs; not linked browser/device/full-critical proof.");
     }
 }

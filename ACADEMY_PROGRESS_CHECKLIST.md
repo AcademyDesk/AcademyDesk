@@ -269,13 +269,23 @@ Tick marks below mean a feedback checkpoint, **not full enterprise workflow acce
 
 Current bounded feedback count: **28/28 checkpointed**, after the Assessments creation report. Live/domain/device acceptance remains open. Never interpret this as whole-app readiness.
 
-## Current batch — Finance Policy payslip-theme preservation
+## Past batch — Finance Policy payslip-theme preservation
 
 - [x] BUG-DATA-0053 actual-handler reproduction:0/6 baseline,6/6 final PASS; existing three theme values preserved on ordinary visible-policy saves.
 - [x] TypeScript/target lint and83-page export PASS; [local report](QA/REPORTS/PHASE_2B_FINANCE_POLICY_THEME_PRESERVATION.md) records exact scope/limits.
 - [x] Native HTTP/SQL:15 ordinary/reset/rejection/authority controls plus3 explicit stale-overwrite requests checked, no429,88/7 migrations/exact owned cleanup. Not a concurrency protection pass.
 - [x]16 synthetic mobile/desktop light/dark browser cases PASS; two screenshots inspected; explicit API reset contract retained. [Verification report](QA/REPORTS/PHASE_2B_FINANCE_POLICY_THEME_PRESERVATION.md) and scoped feature publication packet prepared.
-- [ ] Stale-editor/concurrent document change remains **unfixed**, plus linked/device/critical gates; Sol High for consequential concurrency/API decision.
+- [ ] Stale-editor SQL acceptance continues in the local guard batch below; linked/device/critical gates remain OPEN.
+
+## Current batch — Finance settings stale-save guard / native verification
+
+- [x] Version-bearing GET/PUT and academy-row transaction lock implemented locally across both editors; missing428/stale409, current-version resets retained. No schema/finance/authority change.
+- [x]67 targeted unit tests and6 retained ordinary-save handler checks PASS; SQL harness builds0 warnings/errors.
+- [x]36 synthetic browser cases PASS, including4 approval-list refresh/open-draft controls;16 retained theme cases PASS.
+- [x] TypeScript/export83 PASS; Policy lint0/0, Governance0 errors/3 unchanged inherited warnings.
+- [x] [Report](QA/REPORTS/PHASE_2B_FINANCE_SETTINGS_STALE_GUARD.md), issue and continuity updated for scoped feature publication; no main/Azure/Mini change.
+- [x] Real SQL21 sequential controls +5/5 guarded pairs PASS: exactly200/409, one row/one audit/unmixed fields/no429;88/7 migrations/exact owned cleanup. Docker normal restart recovered; no reset/prune/older-container deletion.
+- [ ] Linked browser-SQL, physical Android/iOS, same-action SQL audit-fault and critical regression/issue closure; BUG-DATA-0053 OPEN.
 
 ## Past batch — Teacher publication form contract
 
@@ -309,7 +319,8 @@ Current bounded feedback count: **28/28 checkpointed**, after the Assessments cr
 - [x] BUG-DATA-0049 student import duplicate identities — bounded repair/API/native proof, broader acceptance OPEN/RETEST.
 - [x] BUG-DATA-0050 teacher compensation zero-rate round-trip — bounded conversion/native proof; broader acceptance OPEN/RETEST.
 - [x] BUG-API-0005 bounded handler/native/synthetic browser proof completed; broader issue OPEN/RETEST.
-- [ ] **Next: BUG-DATA-0053 stale-settings protection across both editors**, newer Professional overwritten by old Compact with200 reproduced in real SQL. Ordinary-save repair/native/synthetic browser proof completed, do not redo it. Sol High consequential concurrency/API/SQL contract; Medium settled UI, no accepted-audit restart.
+- [x] BUG-DATA-0053 strict SQL stale/concurrent acceptance completed at bounded level; ordinary-save evidence/assertions preserved. Linked/device/audit-fault/critical still OPEN; no audit restart.
+- [ ] **Next: settings same-action audit-fault/linked host gate**, Sol High; Medium settled Manual shared controls afterward. Issue closure is separate from feature publication.
 - [ ] Manual shared redesign foundation and Platform → Admin → Teacher → Student rollout: Orbit + Aura dark /Prism light, reusable responsive tokens/shell/controls; preserve interrupted overlay work. Sol High foundation/host contracts, Medium settled rollout. Inherited lint remains open.
 - [ ] Shared PENTA/Manual visual foundation: consume versioned FW1 delivery when available, continue independent Manual controls without claiming the shared AI frontend is delivered.
 - [ ] FP1/FP2/FP3 explicit owner decisions and legacy disposition — pending, not inferred from “continue.”
