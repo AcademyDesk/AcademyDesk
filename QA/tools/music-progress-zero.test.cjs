@@ -6,9 +6,9 @@ const source = process.env.QA_SOURCE_REF ? cp.execFileSync('git', ['show', proce
 const code = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX } }).outputText;
 const nodes = n => Array.isArray(n) ? n.flatMap(nodes) : !n || typeof n !== 'object' ? [] : [n, ...nodes(n.props?.children)];
 async function fixture(score, rejected) {
-  let index = 0, stored = { id: 'progress', studentId: 'student', musicPieceId: 'piece', status: 'Assigned', score, targetDate: '2026-10-20', notes: 'Retain notes' };
-  const state = [], effects = [], calls = [], module = { exports: {} }, original = { ...stored };
-  const react = { useState: initial => { const k = index++; if (!(k in state)) state[k] = initial; return [state[k], value => { state[k] = value; }]; }, useEffect: fn => effects.push(fn) };
+  let index = 0, ri = 0, stored = { id: 'progress', studentId: 'student', musicPieceId: 'piece', status: 'Assigned', score, targetDate: '2026-10-20', notes: 'Retain notes' };
+  const state = [], refs = [], effects = [], calls = [], module = { exports: {} }, original = { ...stored };
+  const react = { useState: initial => { const k = index++; if (!(k in state)) state[k] = initial; return [state[k], value => { state[k] = typeof value === 'function' ? value(state[k]) : value; }]; }, useRef: initial => { const k = ri++; return refs[k] ?? (refs[k] = { current: initial }); }, useEffect: fn => effects.push(fn) };
   const api = async (url, init = {}) => {
     calls.push({ url, ...init });
     if (init.method) { assert.equal(init.method, 'PATCH'); if (!rejected) stored = { ...stored, ...JSON.parse(init.body) }; return { ok: !rejected, status: rejected ? 403 : 200 }; }
@@ -16,7 +16,7 @@ async function fixture(score, rejected) {
     return { ok: true, json: async () => data };
   };
   new Function('require', 'module', 'exports', code)(name => name === 'react' ? react : name === 'react/jsx-runtime' ? jsx : name === '@/lib/api' ? { academyApi: api, apiHeaders: () => ({ 'Content-Type': 'application/json' }) } : name === '@/components/workspace-nav' ? { WorkspaceNav: () => null } : name === '@/components/design-system/controls' ? { StandardSelectField: () => null, StandardDateField: () => null } : (() => { throw Error(name); })(), module, module.exports);
-  const render = () => { index = 0; return module.exports.default(); };
+  const render = () => { index = ri = 0; return module.exports.default(); };
   render(); effects.splice(0).forEach(fn => fn()); await new Promise(resolve => setImmediate(resolve));
   return { calls, original, read: () => stored, render, change: async status => { nodes(render()).find(n => n.props?.name === 'progress-progress').props.onChange(status); await new Promise(resolve => setImmediate(resolve)); } };
 }
@@ -30,10 +30,10 @@ for (const score of [0, 1, 85.5, null, undefined]) for (const status of ['Learni
   });
 }
 
-test('characterize existing same-tick duplicate gap (NOT guard acceptance)', async () => {
+test('same-tick status changes save only the first request', async () => {
   const f = await fixture(0, false);
   await Promise.all([f.change('Learning'), f.change('Mastered')]);
   const writes = f.calls.filter(x => x.method);
-  assert.equal(writes.length, 2, 'Characterization changed; reevaluate the pending-guard gate.');
-  assert.deepEqual(writes.map(x => JSON.parse(x.body).score), [0, 0]);
+  assert.equal(writes.length, 1);
+  assert.deepEqual(writes.map(x => JSON.parse(x.body).score), [0]);
 });

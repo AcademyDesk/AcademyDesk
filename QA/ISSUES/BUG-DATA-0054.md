@@ -4,7 +4,7 @@
 | --- | --- |
 | Status | OPEN |
 | Confirmation status | Actual-handler reproduction/serialization repair and native SQL/linked zero verification; broader acceptance OPEN |
-| Final verification |20 actual-handler/48 synthetic +17 native SQL controls PASS; four linked zero journeys in report; rapid/stale/device/critical pending |
+| Final verification |72 handler/96 synthetic +17 native SQL/four linked zero journeys PASS; local pending/stale/recovery repaired; wider concurrency/device/critical pending |
 | Severity | Major learner-progress data integrity |
 | Priority | P1 |
 | Category | DATA |
@@ -31,11 +31,13 @@
 | Database before/after | Fresh SQL exact score/status/date/notes and foreign sentinel/count verified; rejected requests preserve progress/audit snapshot |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
 | Fix commit | Scoped feature serialization repair2026-10-11; see feature history/report |
-| Retest result | Bounded zero/positive/null native persistence and linked zero PASS; rapid/stale/recovery/linked positive-null/device/critical OPEN |
-| Regression result |20 retained actual-handler checks PASS; separate same-tick characterization reproduces two writes, NOT guard acceptance |
+| Retest result | Bounded zero/positive/null native and linked zero PASS; page-local pending/stale/recovery PASS; cross-tab/linked positive-null/device/critical OPEN |
+| Regression result |20 score handlers retained plus stricter one-request guard and51 feedback cases PASS;96 synthetic browsers and native/linked rerun PASS |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
 ## Exact reproduction
+
+2026-10-11 [save/status/recovery repair](../REPORTS/PHASE_2B_MUSIC_PROGRESS_FEEDBACK_REPAIR.md): same-tick characterization replaced with strict one-write assertion; shared write/readback guard, lifetime/read-version and stale local-row protection, durable polite outcomes and explicit refresh recovery.72 handlers,96 synthetic browser cases and unchanged17 native/four linked zero journeys PASS. No API/version/idempotency change; issue stays OPEN for cross-tab metadata/linked positive-null/create-assign fault/device/critical/release gates. Older entries below are historical, superseded only for these bounded page-local checks.
 
 2026-10-11 [SQL/linked verification](../REPORTS/PHASE_2B_MUSIC_PROGRESS_SQL_LINKED.md):17 real controls PASS; zero/positive/null fresh SQL persistence and invalid/role/tenant/missing-row no-write, foreign sentinel retained. Linked zero-score journeys/owned cleanup in report. A separate characterization reproduces two same-tick writes; NOT a guard pass. Issue remains OPEN/RETEST for async/stale/recovery, linked positive/null/device/critical/release gates.
 

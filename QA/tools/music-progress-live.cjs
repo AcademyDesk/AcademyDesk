@@ -19,7 +19,11 @@ const server = http.createServer((req, res) => { try { assert.ok(['GET', 'HEAD']
       await page.goto(origin + '/music'); const row = page.locator('.music-register li'); await row.waitFor();
       for (let turn = 0; turn < 2; turn++) {
         const before = await read(), status = before.status === 'Learning' ? 'Mastered' : 'Learning'; assert.equal(before.score, 0);
-        await row.getByRole('button', { name: before.status, exact: true }).click(); await page.getByRole('option', { name: status, exact: true }).click(); await row.getByRole('button', { name: status, exact: true }).waitFor();
+        await row.getByRole('button', { name: before.status, exact: true }).click(); await page.getByRole('option', { name: status, exact: true }).click();
+        assert.equal(await row.getByRole('button', { name: before.status, exact: true }).isDisabled(), true); assert.equal(await page.locator('form fieldset:disabled').count(), 2);
+        await row.getByRole('button', { name: status, exact: true }).waitFor();
+        await page.locator('.music-message').filter({ hasText: `Progress updated to ${status}.` }).waitFor(); assert.equal(await page.locator('.music-message').getAttribute('role'), 'status');
+        await page.waitForFunction(() => !document.querySelector('form fieldset')?.disabled);
         const after = await read(); assert.deepEqual(writes[turn], { status: 200, body: { status, targetDate: '2026-10-20', score: 0, notes: 'Retain synthetic notes' } }); assert.equal(after.score, 0); assert.equal(after.status, status); assert.equal(after.notes, 'Retain synthetic notes');
       }
       await page.reload(); await row.getByRole('button', { name: (await read()).status, exact: true }).waitFor(); assert.equal(writes.length, 2); assert.deepEqual(errors, []); assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)); await page.screenshot({ path: path.join(evidence, `${width}-${theme}.png`), fullPage: true }); checks.push({ width, theme, writes, stored: await read() }); await context.close(); console.log(`PASS: MUSIC LINKED ${width} ${theme}`);
