@@ -3,8 +3,8 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | STATIC-FINDING |
-| Final verification | NOT RUN |
+| Confirmation status | Ordinary save bounded-repaired; native SQL and synthetic browser verified; stale overwrite reproduced/unfixed |
+| Final verification | 6 handler/16 synthetic browser PASS;15 native controls plus3 stale-reproduction requests checked; types/lint/export83 retained PASS; concurrency/linked/device/critical OPEN |
 | Severity | Major finance-settings integrity |
 | Priority | P1 |
 | Category | DATA |
@@ -16,7 +16,7 @@
 | Device/viewport | NOT RUN; use QA/06_DEVICE_VIEWPORT_MATRIX.md where UI applies |
 | Baseline | 20bb6047f9edf733ac8e2a226621cc582ec54b3c + pre-existing student UI diff |
 | Discovery test / review ID | FINANCE-POLICY-PRESERVE-001 |
-| Evidence classification | Static trace; runtime reproduction pending |
+| Evidence classification | Handler reproduced; real Identity/HTTP/SQL retest and separate synthetic DOM; stale-write failure reproduced |
 | Preconditions | Isolated synthetic fixture from QA/10_TEST_DATA_STRATEGY.md; never customer data |
 | Reproduction frequency | Not measured; reproduction instructions are proposed |
 | Source | apps/web/src/app/finance-policy/page.tsx:14 |
@@ -30,8 +30,8 @@
 | API response | Not captured for this issue; use synthetic request/response in isolated reproduction |
 | Database before/after | Not executed; fixture and fresh-context assertions defined below |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | Not implemented (Phase 1) |
-| Retest result | NOT RUN |
+| Fix commit | Scoped ordinary-save repair publication, 2026-10-11; see feature history, not issue closure |
+| Retest result | Bounded ordinary-save checks PASS; newer Professional overwritten by stale Compact with200; OPEN / RETEST |
 | Regression result | NOT RUN |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
@@ -69,3 +69,11 @@ Academies using a nondefault payslip theme; saving unrelated tax, payment terms 
 FINANCE-POLICY-PRESERVE-001: Browser + real HTTP/SQL baseline Compact/Professional, policy edit, fresh-row equality for untouched payslip theme and changed intended field; null/omitted direct API contract, rejected no-write, second editor and concurrency controls.
 
 Also run all endpoint/form cases pointing to this issue in QA/03_TEST_MATRIX.md and the critical regression suite before closure.
+
+## Local checkpoint — 2026-10-11
+
+[Report](../REPORTS/PHASE_2B_FINANCE_POLICY_THEME_PRESERVATION.md): frozen0/6 handler PASS, loaded-theme preservation6/6 PASS, types/target lint PASS. Original API NULL/omitted reset semantics untouched. Issue OPEN; real HTTP/SQL/browser proof, second-editor/stale concurrency (not fixed), physical-device/full critical still pending. No commit/push/Azure in this checkpoint.
+
+## Verification successor — 2026-10-11
+
+Earlier static/native-NOT-RUN fields and source snapshot above are historical. Final6 handler/16 synthetic exported-browser checks PASS; themes preserve exact payload, rejected draft retained, mobile/desktop light/dark no unexpected console/overflow. Native run59358d6cf5574380a4510f976c42bd83:15 ordinary/reset/rejection/authority controls plus3 stale-reproduction PUTs, fresh SQL/GET equality, no429,88/7 migrations/exact owned cleanup. NULL/omitted reset semantics retained. **Stale Compact still overwrites newer Professional with200**; no CAS/version protection implemented. OPEN/RETEST, not18 guarded concurrent successes. Separate browser/SQL, not linked/device/full-critical acceptance. Post-run Docker inventory unavailable; runner cleanup receipt retained. Next Sol High both-editor stale-settings guard/strict SQL races; retain ordinary-save repair and wider feedback/Manual visual queue. See report for evidence/scoped publication; no main/Mini/Azure.

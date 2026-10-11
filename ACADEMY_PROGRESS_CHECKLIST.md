@@ -269,7 +269,15 @@ Tick marks below mean a feedback checkpoint, **not full enterprise workflow acce
 
 Current bounded feedback count: **28/28 checkpointed**, after the Assessments creation report. Live/domain/device acceptance remains open. Never interpret this as whole-app readiness.
 
-## Current batch — Teacher publication form contract
+## Current batch — Finance Policy payslip-theme preservation
+
+- [x] BUG-DATA-0053 actual-handler reproduction:0/6 baseline,6/6 final PASS; existing three theme values preserved on ordinary visible-policy saves.
+- [x] TypeScript/target lint and83-page export PASS; [local report](QA/REPORTS/PHASE_2B_FINANCE_POLICY_THEME_PRESERVATION.md) records exact scope/limits.
+- [x] Native HTTP/SQL:15 ordinary/reset/rejection/authority controls plus3 explicit stale-overwrite requests checked, no429,88/7 migrations/exact owned cleanup. Not a concurrency protection pass.
+- [x]16 synthetic mobile/desktop light/dark browser cases PASS; two screenshots inspected; explicit API reset contract retained. [Verification report](QA/REPORTS/PHASE_2B_FINANCE_POLICY_THEME_PRESERVATION.md) and scoped feature publication packet prepared.
+- [ ] Stale-editor/concurrent document change remains **unfixed**, plus linked/device/critical gates; Sol High for consequential concurrency/API decision.
+
+## Past batch — Teacher publication form contract
 
 - [x] BUG-API-0005 reproduced against frozen actual handler:6/12 PASS,6 failures.
 - [x] Boolean publication, optional blank assessment-date NULL and captured form-reset repair:12/12 handler checks PASS.
@@ -301,7 +309,7 @@ Current bounded feedback count: **28/28 checkpointed**, after the Assessments cr
 - [x] BUG-DATA-0049 student import duplicate identities — bounded repair/API/native proof, broader acceptance OPEN/RETEST.
 - [x] BUG-DATA-0050 teacher compensation zero-rate round-trip — bounded conversion/native proof; broader acceptance OPEN/RETEST.
 - [x] BUG-API-0005 bounded handler/native/synthetic browser proof completed; broader issue OPEN/RETEST.
-- [ ] **Next: BUG-DATA-0053 hidden payslip-theme preservation**, inspect/reproduce existing case before repair. Sol Medium bounded serialization; High consequential finance/authority decisions, no accepted-audit restart.
+- [ ] **Next: BUG-DATA-0053 stale-settings protection across both editors**, newer Professional overwritten by old Compact with200 reproduced in real SQL. Ordinary-save repair/native/synthetic browser proof completed, do not redo it. Sol High consequential concurrency/API/SQL contract; Medium settled UI, no accepted-audit restart.
 - [ ] Manual shared redesign foundation and Platform → Admin → Teacher → Student rollout: Orbit + Aura dark /Prism light, reusable responsive tokens/shell/controls; preserve interrupted overlay work. Sol High foundation/host contracts, Medium settled rollout. Inherited lint remains open.
 - [ ] Shared PENTA/Manual visual foundation: consume versioned FW1 delivery when available, continue independent Manual controls without claiming the shared AI frontend is delivered.
 - [ ] FP1/FP2/FP3 explicit owner decisions and legacy disposition — pending, not inferred from “continue.”
