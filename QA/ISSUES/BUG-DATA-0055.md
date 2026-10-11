@@ -4,7 +4,7 @@
 | --- | --- |
 | Status | OPEN |
 | Confirmation status | RUNTIME-CONFIRMED; bounded repair verified, RETEST |
-| Final verification | 111 targeted tests and45 strict SQL controls plus retained payment transitions PASS; wider gates OPEN |
+| Final verification | 111 targeted tests/45 strict status controls/retained transitions plus20 SQL-overlapped pairs and9 audit controls PASS; wider gates OPEN |
 | Severity | Major invoice-ledger status integrity |
 | Priority | P1 |
 | Category | DATA |
@@ -18,24 +18,26 @@
 | Discovery test / review ID | FINANCE-INVOICE-STATUS-001 |
 | Evidence classification | Runtime reproduction on frozen API plus controlled tests; local evidence retained |
 | Preconditions | Isolated synthetic fixture from QA/10_TEST_DATA_STRATEGY.md; never customer data |
-| Reproduction frequency | Frozen native baseline reproduced both Paid and lowercase paid; concurrency frequency not measured |
+| Reproduction frequency | Frozen native baseline reproduced Paid/paid; successor20/20 overlapped pairs PASS, bounded modes only |
 | Source | apps/api/Controllers/InvoicesController.cs:30 |
 | Class/function | Invoices.UpdateStatus |
 | Related source | INVENTORY/API_ENDPOINTS.md, CONTRACTS.md, FORMS_AND_FIELDS.md and ASYNC_FORM_RISKS.md |
 | Root-cause confidence | HIGH |
-| Evidence location | QA/REPORTS/PHASE_2B_INVOICE_STATUS_LEDGER_REPAIR.md; local QA/EVIDENCE/invoice-status-20261011 |
+| Evidence location | QA/REPORTS/PHASE_2B_INVOICE_STATUS_LEDGER_REPAIR.md; QA/REPORTS/PHASE_2B_INVOICE_STATUS_CONCURRENCY_AUDIT.md; local QA/EVIDENCE/invoice-status-20261011 and invoice-integrity-20261011 |
 | Screenshot | Not captured on pinned baseline |
 | Console logs | Not captured; required in retest |
 | API request | In an isolated academy create an invoice for 1000 with no payments. PATCH status to Paid, then read invoice list, finance overview and any collection/reminder projections. Repeat lowercase paid, Cancelled on a paid invoice, malformed status, wrong academy, and a legitimately fully collected control. |
 | API response | Frozen unpaid Paid/paid200; repaired contradictions400, canonical accepted status200;45 final strict controls and retained transitions PASS/no429 |
 | Database before/after | Frozen Paid with collected0/balance1000 reproduced; final matrix checks fresh full invoice/payment/adjustment/audit snapshots |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | Scoped feature repair following8c025cf; report and feature git history identify publication |
-| Retest result | OPEN/RETEST; concurrency/audit-fault/linked consumer/browser/device/critical/release pending |
-| Regression result | 75 new plus36 retained unit/controller checks PASS; final SQL run17b128d0bca34d6389728339cabe25e6 PASS/134.8s/exact owned cleanup |
+| Fix commit | ee1e5a123d9683c8074118136f2fbebc326c9b9d; QA-only successor follows this repair |
+| Retest result | OPEN/RETEST; bounded concurrency/audit rollback PASS, consumer/linked browser/device/direct-boundary/critical/release/policy pending |
+| Regression result | 111 targeted unit/controller checks PASS; successor run8e62b5200c00447e800d1e40a1ba6abd20 pairs/9 audit controls PASS/62.3s/no429/exact owned cleanup; previous45 status controls/retained transitions retained |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
 ## Exact reproduction
+
+2026-10-12 IST QA-only successor: [concurrency/audit report](../REPORTS/PHASE_2B_INVOICE_STATUS_CONCURRENCY_AUDIT.md) records20/20 real SQL-overlapped status-vs-collection/void/approval/restoration pairs and9/9 audit rollback/rejection/recovery controls,111 targeted tests PASS. Four-table full finance snapshots, actor/tenant/action/route audits and invoice-register parity checked; initial harness monitoring/order/decimal-scale failures retained and corrected without weakening ledger assertions. No application or policy change;0055 remains OPEN for wider gates.
 
 2026-10-11 successor: frozen API from parent8c025cf accepts Paid200 with collected0/balance1000 and then stores paid200 noncanonically; owned SQL dc656f4eefe849c0b894b5594ba596b3,47.9s, normal cleanup. Repaired final run17b128d0bca34d6389728339cabe25e6 passes45 strict controls and retained transition regression,134.8s/no429/exact owned cleanup. Original static excerpt below is historical, not current repaired source. [Bounded report](../REPORTS/PHASE_2B_INVOICE_STATUS_LEDGER_REPAIR.md) records failed fixture/rate-limit runs without treating them as full passes. No policy approval or issue closure inferred.
 

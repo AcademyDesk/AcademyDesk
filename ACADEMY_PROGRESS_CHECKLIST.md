@@ -1,6 +1,6 @@
 # Academy Desk — delivery progress checklist
 
-Updated:2026-10-11. Worktree `D:\AcademyDesk-codex-p0`, branch `codex/penta-search`. Application goal: **90% eligible operations through conversational PENTA AI;10% manual control/fallback**. This is a target, not measured current coverage.
+Updated:2026-10-12. Worktree `D:\AcademyDesk-codex-p0`, branch `codex/penta-search`. Application goal: **90% eligible operations through conversational PENTA AI;10% manual control/fallback**. This is a target, not measured current coverage.
 
 ## How to read and maintain this checklist
 
@@ -340,13 +340,22 @@ Current bounded feedback count: **28/28 checkpointed**, after the Assessments cr
 - [x]48 new +48 retained synthetic responsive browser cases PASS; two mobile screenshots inspected.17 native SQL controls +four linked zero-score journeys/eight real writes PASS;88/7 migrations/no429/exact owned cleanup. [Report](QA/REPORTS/PHASE_2B_MUSIC_PROGRESS_FEEDBACK_REPAIR.md).
 - [ ] Cross-tab/other-actor metadata concurrency, linked positive/null/create/assign faults, physical-device/full-critical/release acceptance remain OPEN. BUG-DATA-0054 not closed.
 
-## Current batch — Invoice status and collected ledger
+## Past batch — Invoice status and collected ledger
 
 - [x] BUG-DATA-0055 reproduced on frozen API in disposable SQL: unpaid1000 accepted Paid/paid with collected0/balance1000; baseline75 checks17 PASS/58 FAIL.
 - [x] Invoice-first transaction/row lock, canonical statuses and collected/adjusted-balance validation; contradictory payment statuses400. No schema/RBAC/Mini/UI change; existing cancellation/no-cash semantics retained, not policy approval.
 - [x]75 new +36 retained controller tests111/111 PASS; isolated harness build0 warnings/0 errors. [Report](QA/REPORTS/PHASE_2B_INVOICE_STATUS_LEDGER_REPAIR.md).
 - [x] Final combined SQL gate PASS:45 status/invalid/role/tenant/snapshot controls plus retained transition regression; run17b128d0bca34d6389728339cabe25e6,134.8s/no429/88+7 migrations/exact owned cleanup. Earlier fixture/429 failures retained; limits/assertions unchanged, natural interval added.
-- [ ] Concurrent status-vs-payment/approval, same-action audit rollback, consumer/linked browser/physical-device/critical/release and cancellation policy gates remain OPEN. BUG-DATA-0055 not closed.
+- [x] Bounded status/ledger concurrency and same-action audit rollback completed in the successor below; not every scheduler/role boundary.
+- [ ] Consumer/linked browser/physical-device/critical/release and cancellation policy gates remain OPEN. BUG-DATA-0055 not closed.
+
+## Current batch — Invoice status SQL overlap and audit recovery
+
+- [x]20/20 SQL-overlapped pairs PASS: status edits vs collection/void/approval/reconciliation, five each. Both actual invoice-lock requests observed in each blocking chain; exact four-table finance snapshots/audits/foreign sentinel/register parity/no429.
+- [x]9/9 audit controls PASS: four500/no-write rollbacks, four200/one-audit recoveries and one400/no-write contradiction during audit denial.
+- [x]111 retained targeted API tests PASS; isolated harness build0 warnings/0 errors. QA-only, no app/schema/authority/Mini/frontend change.
+- [x] Final run8e62b5200c00447e800d1e40a1ba6abd,62.3s,88/7 migrations/exact owned cleanup; original containers preserved. Three harness-monitor/order/decimal failures retained, corrected without dropping ledger checks. [Report](QA/REPORTS/PHASE_2B_INVOICE_STATUS_CONCURRENCY_AUDIT.md).
+- [ ] Collection/Student portal consumers and linked browser, direct/platform boundary, physical Android/iOS, critical/release and financial policy acceptance. BUG-DATA-0055 OPEN/RETEST; both serialization orders not forced for every mode.
 
 ## Past batch — Teacher publication form contract
 
@@ -386,7 +395,8 @@ Current bounded feedback count: **28/28 checkpointed**, after the Assessments cr
 - [x] BUG-DATA-0054 native SQL/linked zero-score verification + pending assessment; async repair and broader acceptance remain OPEN.
 - [x] Music status page-local pending/stale/recovery + durable feedback — bounded handler/browser/native verification; broader0054 gates remain OPEN.
 - [x] BUG-DATA-0055 authoritative invoice paid-status/ledger integrity — bounded repair111 targeted/45 strict SQL plus retained payment transitions PASS; broader acceptance OPEN.
-- [ ] **Next: BUG-DATA-0055 concurrency and same-action audit-fault rollback/recovery**, Sol High; then collection/Student portal/linked browser/device gates. No audit restart or automatic policy approval.
+- [x] BUG-DATA-0055 bounded SQL-overlap concurrency and same-action audit rollback/recovery20+9 controls; broader issue remains OPEN.
+- [ ] **Next: BUG-DATA-0055 collection/Student portal consumers and linked browser acceptance**, Sol High; physical-device/direct-boundary/critical/release/policy gates remain separate. Then existing0056 historical payroll attribution queue. No audit restart or automatic policy approval.
 - [ ] Manual shared redesign foundation and Platform → Admin → Teacher → Student rollout: Orbit + Aura dark /Prism light, reusable responsive tokens/shell/controls; preserve interrupted overlay work. Sol High foundation/host contracts, Medium settled rollout. Inherited lint remains open.
 - [ ] Shared PENTA/Manual visual foundation: consume versioned FW1 delivery when available, continue independent Manual controls without claiming the shared AI frontend is delivered.
 - [ ] FP1/FP2/FP3 explicit owner decisions and legacy disposition — pending, not inferred from “continue.”
