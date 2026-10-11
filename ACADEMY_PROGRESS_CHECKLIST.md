@@ -216,7 +216,7 @@ Scope: success/refresh/error/draft/pending feedback only. Existing payloads/doma
 - [x]32 synthetic responsive browser cases PASS,320/1440px light/dark; two mobile screenshots inspected. [Report](QA/REPORTS/PHASE_2B_WORK_ITEM_INTEGRITY_REPAIR.md).
 - [ ] Linked browser-to-SQL, physical Android/iOS, concurrent offboarding/deletion, status audit-fault and full critical/release acceptance. Issue remains OPEN/RETEST; no main merge/Azure/Core change.
 
-## Current batch — Student import identity integrity
+## Past batch — Student import identity integrity
 
 - [x] BUG-DATA-0049 baseline4/17 controller PASS; disposable SQL confirmed validation accepted and import stored duplicate normalized emails.
 - [x] Every duplicate file row identified after trim/case comparison; existing local matches rejected, optional blank email/number/phone stored NULL, null/oversized rows rejected.
@@ -224,6 +224,15 @@ Scope: success/refresh/error/draft/pending feedback only. Existing payloads/doma
 - [x]89 targeted API and27 actual-handler checks PASS; validation gating, retained failed/uncertain drafts, truthful success and pending guards; types/lint/export83 PASS.
 - [x]36 synthetic desktop/mobile light/dark browser cases PASS; two mobile screenshots reviewed. [Report](QA/REPORTS/PHASE_2B_STUDENT_IMPORT_INTEGRITY_REPAIR.md).
 - [ ] Linked browser-SQL, physical Android/iOS, other student create/update writers, full CSV grammar/idempotency and critical/release gates. Issue OPEN/RETEST, no main/Azure/Core changes.
+
+## Current batch — Teacher compensation zero-rate round-trip
+
+- [x] BUG-DATA-0050 actual handler baseline22/39 PASS;17 failures confirm loaded/response-hydrated numeric zero becomesNULL.
+- [x] One absence-aware converter preserves all five numeric/typed zero rates, optionalNULL, model exclusions and dates; no API/payroll/accounting policy change.
+- [x]39 handler checks,35 retained metadata API and39 native SQL/Identity/HTTP checks PASS; fresh SQL/readback/resave/foreign sentinel and denied/no-write guards, no429/exact owned cleanup.
+- [x] TypeScript and83-page production export PASS; target lint0 errors/1 inherited effect warning, independently unchanged against HEAD.
+- [x]40 synthetic desktop/mobile light/dark browser cases PASS, including48 valid resave requests and16 native-invalid no-write cases; two mobile screenshots reviewed. [Report](QA/REPORTS/PHASE_2B_TEACHER_COMPENSATION_ZERO_REPAIR.md).
+- [ ] Linked browser-SQL, physical devices, editor stale-selection/pending/recovery, full critical/release acceptance; issue OPEN/RETEST.
 
 ## Original feedback routes — bounded checkpoint list
 
@@ -281,7 +290,8 @@ Current bounded feedback count: **28/28 checkpointed**, after the Assessments cr
 - [x] BUG-DATA-0047 expense integrity and recording workflow — bounded API/native/linked browser proof complete; wider issue OPEN/RETEST.
 - [x] BUG-DATA-0048 work-item assignee/entity ownership — bounded repair/native proof; broader acceptance OPEN/RETEST.
 - [x] BUG-DATA-0049 student import duplicate identities — bounded repair/API/native proof, broader acceptance OPEN/RETEST.
-- [ ] **Next: BUG-DATA-0050 teacher compensation zero-rate round-trip**, check latest evidence/current source and reproduce only missing cases. Sol High for finance semantics/SQL; no accepted-audit restart.
+- [x] BUG-DATA-0050 teacher compensation zero-rate round-trip — bounded conversion/native proof; broader acceptance OPEN/RETEST.
+- [ ] **Next: BUG-API-0005 publication boolean binding**, check latest evidence/current source and reproduce only the missing serialization case. Sol Medium bounded UI; High for consequential authority/domain/SQL decisions, no accepted-audit restart.
 - [ ] Manual shared redesign foundation and Platform → Admin → Teacher → Student rollout: Orbit + Aura dark /Prism light, reusable responsive tokens/shell/controls; preserve interrupted overlay work. Sol High foundation/host contracts, Medium settled rollout. Inherited lint remains open.
 - [ ] Shared PENTA/Manual visual foundation: consume versioned FW1 delivery when available, continue independent Manual controls without claiming the shared AI frontend is delivered.
 - [ ] FP1/FP2/FP3 explicit owner decisions and legacy disposition — pending, not inferred from “continue.”

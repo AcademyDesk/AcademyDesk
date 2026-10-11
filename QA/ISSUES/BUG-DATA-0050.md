@@ -3,8 +3,8 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | STATIC-FINDING |
-| Final verification | NOT RUN |
+| Confirmation status | REPRODUCED / BOUNDED REPAIR / RETEST |
+| Final verification | Handler/native SQL bounded PASS; full acceptance incomplete |
 | Severity | Major compensation round-trip integrity |
 | Priority | P1 |
 | Category | DATA |
@@ -30,12 +30,16 @@
 | API response | Not captured for this issue; use synthetic request/response in isolated reproduction |
 | Database before/after | Not executed; fixture and fresh-context assertions defined below |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | Not implemented (Phase 1) |
-| Retest result | NOT RUN |
-| Regression result | NOT RUN |
+| Fix commit | Scoped zero-rate repair on codex/penta-search; report/Git history |
+| Retest result | 39 actual-handler +39 native SQL/Identity/HTTP checks PASS; linked/device/critical pending |
+| Regression result | 35 unchanged MetadataShape API checks PASS; not whole enterprise suite |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
 ## Exact reproduction
+
+## 2026-10-11 successor — OPEN / RETEST
+
+[Repair report](../REPORTS/PHASE_2B_TEACHER_COMPENSATION_ZERO_REPAIR.md) supersedes the historical NOT RUN snapshot below for the named bounded cases. Starting0e2a215 handler22/39 PASS,17 FAIL: loaded numeric0 and typed0 after successful response hydration becomeNULL on save. Explicit null/undefined/empty detection now preserves numeric/string0 for all five rates. Backend already accepts zero and rejects missing primary/negative rates; no domain/payroll/policy rewrite.39 fixed handlers,35 retained metadata API and39 native SQL/Identity/HTTP checks PASS, run5d7d3225ff7b4539930fd0a2cad708fe, no429,88/7 migrations/exact owned cleanup. Browser/visual result in report. Linked browser-to-SQL, devices/full critical and wider editor loading/pending/stale-selection/audit-fault acceptance remain separate; issue stays OPEN. Historical discovery fields/source excerpt remain history, not current readiness.
 
 In isolated fixtures save Monthly salary 0 or Hourly standard rate 0, reload and save without editing that field. Separately use positive standard rate with optional beginner/intermediate/advanced rates 0, reload and resave. Compare freshly typed string zero and untouched numeric zero.
 
