@@ -3,8 +3,8 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | Ordinary-save/stale guards bounded-repaired; strict real SQL concurrency verified, broader acceptance OPEN |
-| Final verification | SQL21 controls +5 guarded pairs PASS;67 unit/6 handler/36+16 synthetic/type/build PASS; linked/device/audit-fault/critical OPEN |
+| Confirmation status | Ordinary/stale guards and initial editor loading bounded-repaired; SQL audit rollback + linked browser verified; broader acceptance OPEN |
+| Final verification | SQL24 controls +5 races/8 linked journeys PASS;11 Governance/6 Policy handlers/36+16 synthetic/type/export PASS;67 API units retained; physical/critical/wider OPEN |
 | Severity | Major finance-settings integrity |
 | Priority | P1 |
 | Category | DATA |
@@ -31,11 +31,15 @@
 | Database before/after | Not executed; fixture and fresh-context assertions defined below |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
 | Fix commit | Scoped ordinary-save repair publication, 2026-10-11; see feature history, not issue closure |
-| Retest result | Historical stale overwrite200 now rejected409;21 native controls +5 exact200/409 pairs PASS; OPEN / RETEST |
+| Retest result | Stale overwrite409;24 native controls +5 races/8 linked journeys/audit rollback PASS; physical/critical/wider gates OPEN / RETEST |
 | Regression result | NOT RUN |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
-## Current stale-guard verification — 2026-10-11
+## Current audit/linked verification — 2026-10-11
+
+[Report](../REPORTS/PHASE_2B_FINANCE_SETTINGS_AUDIT_LINKED.md): run2c9f9d27a0fa4cb89ab4a3e1a4bfb939,24 sequential controls/five strict200/409 races PASS; same-action insertion/update audit500 rollback leaves settings/audits/version unchanged, recovery200 one success audit. Eight linked production-export/real Identity HTTP SQL journeys,32 PUTs=24HTTP200/8HTTP409/no429, native draft retained/explicit refresh/recovery/version/all11 fields/audit actors/foreign sentinel verified. Initial Governance edit prevented hydration; readiness guard and four delayed real-GET browser controls fix it.11 final handlers vs frozen9/11,6 Policy/36+16 synthetic/types/export83 fresh PASS;67 API units retained, Governance3 inherited warnings.88/7 migrations/exact owned DB/login/container cleanup; both failed runs retained in report, exact owned containers removed only. Mobile document preview still clips internally; overlong tax-label500 FINANCE-SETTINGS-LENGTH-001 needs separate400/no-write validation. OPEN/RETEST for physical Android/iOS, full critical, wider permissions/visual/release; no enterprise completion/main/Azure/Mini change.
+
+## Prior stale-guard verification — 2026-10-11
 
 [Verification report](../REPORTS/PHASE_2B_FINANCE_SETTINGS_STALE_GUARD.md): Docker normal stop/start recovered, no reset/prune/older-container deletion. Real Identity/HTTP/SQL runb418248d40d2479d843a80c2414e6699:21 controls plus5/5 simultaneous pairs PASS (first absent settings row); exactly200/409, one row/one audit/unmixed winner fields/fresh SQL+GET equality/no429;88/7 migrations/exact run-owned cleanup. Current-version resets/themes and rejected authority/no-write preserved. Retained67 unit/6 handler/36+16 synthetic/types/export83 PASS, Governance3 inherited lint warnings. Earlier blocked/unfixed checkpoints below historical. Scoped feature publication only, no main/Azure/Mini. Issue OPEN for same-action audit-fault, linked browser/physical devices/full critical; no full release acceptance.
 

@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 internal static partial class SqlHarnessEntryPoint
 {
-    private static async Task VerifyFinancePolicyThemeAsync(QaApiFactory factory, HttpClient client)
+    private static async Task VerifyFinancePolicyThemeAsync(QaApiFactory factory, HttpClient client, QaRunManifest manifest)
     {
         Guid academy, foreign;
         using (var scope = factory.Services.CreateScope())
@@ -101,6 +101,11 @@ internal static partial class SqlHarnessEntryPoint
             {
                 using var scope = factory.Services.CreateScope(); var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
                 db.Remove(await db.AcademyFinanceSettings.SingleAsync(x => x.AcademyId == academy)); await db.SaveChangesAsync();
+                var absent = await Read();
+                await SetAuditInsertDeniedAsync(manifest, true);
+                try { await Send(Body("Compact", "Denied insertion") with { SettingsVersion = absent.SettingsVersion }, HttpStatusCode.InternalServerError, admin, attachVersion: false); }
+                finally { await SetAuditInsertDeniedAsync(manifest, false); }
+                if (await Read() != absent) throw new InvalidOperationException("Audit-failed insertion changed the settings version or inserted a row.");
             }
             var version = (await Read()).SettingsVersion; int auditBefore;
             using (var scope = factory.Services.CreateScope()) auditBefore = await scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>().AuditLogs.CountAsync();
@@ -124,6 +129,22 @@ internal static partial class SqlHarnessEntryPoint
             }
             Console.WriteLine($"PASS: POLICYTHEME race={pair+1} exactly200/409 oneRow=true oneSuccessAudit=true noMixedFields=true");
         }
-        Console.WriteLine($"PASS: POLICYTHEME HTTP-SQL {checks} sequential controls plus5 guarded simultaneous pairs; not linked browser/device/full-critical proof.");
+        var prior = await Read();
+        await SetAuditInsertDeniedAsync(manifest, true);
+        try { await Send(Body("Compact", "Denied update") with { SettingsVersion = prior.SettingsVersion }, HttpStatusCode.InternalServerError, admin, attachVersion: false); }
+        finally { await SetAuditInsertDeniedAsync(manifest, false); }
+        await Verify(prior);
+        int auditBeforeRecovery;
+        using (var scope = factory.Services.CreateScope()) auditBeforeRecovery = await scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>().AuditLogs.CountAsync();
+        var recovered = (await Send(Body("Professional", "Recovered update") with { SettingsVersion = prior.SettingsVersion }, HttpStatusCode.OK, admin, attachVersion: false))!;
+        await Verify(recovered);
+        using (var scope = factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+            var audit = await db.AuditLogs.AsNoTracking().OrderByDescending(x => x.OccurredAtUtc).FirstAsync();
+            if (await db.AuditLogs.CountAsync() != auditBeforeRecovery + 1 || audit.AcademyId != academy || audit.ActorUserId is null || audit.Action != "PUT FinanceGovernance" || !audit.MetadataJson!.Contains(route)) throw new InvalidOperationException("Recovery did not persist exactly one actor/tenant/route success audit.");
+        }
+        Console.WriteLine($"PASS: POLICYTHEME HTTP-SQL {checks} sequential controls plus5 guarded simultaneous pairs; insertion/update audit rollback and recovery verified; physical-device/full-critical proof separate.");
+        await VerifyFinanceSettingsBrowserAsync(factory, client, academy);
     }
 }

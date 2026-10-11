@@ -277,7 +277,7 @@ Current bounded feedback count: **28/28 checkpointed**, after the Assessments cr
 - [x]16 synthetic mobile/desktop light/dark browser cases PASS; two screenshots inspected; explicit API reset contract retained. [Verification report](QA/REPORTS/PHASE_2B_FINANCE_POLICY_THEME_PRESERVATION.md) and scoped feature publication packet prepared.
 - [ ] Stale-editor SQL acceptance continues in the local guard batch below; linked/device/critical gates remain OPEN.
 
-## Current batch — Finance settings stale-save guard / native verification
+## Past batch — Finance settings stale-save guard / native verification
 
 - [x] Version-bearing GET/PUT and academy-row transaction lock implemented locally across both editors; missing428/stale409, current-version resets retained. No schema/finance/authority change.
 - [x]67 targeted unit tests and6 retained ordinary-save handler checks PASS; SQL harness builds0 warnings/errors.
@@ -285,7 +285,21 @@ Current bounded feedback count: **28/28 checkpointed**, after the Assessments cr
 - [x] TypeScript/export83 PASS; Policy lint0/0, Governance0 errors/3 unchanged inherited warnings.
 - [x] [Report](QA/REPORTS/PHASE_2B_FINANCE_SETTINGS_STALE_GUARD.md), issue and continuity updated for scoped feature publication; no main/Azure/Mini change.
 - [x] Real SQL21 sequential controls +5/5 guarded pairs PASS: exactly200/409, one row/one audit/unmixed fields/no429;88/7 migrations/exact owned cleanup. Docker normal restart recovered; no reset/prune/older-container deletion.
-- [ ] Linked browser-SQL, physical Android/iOS, same-action SQL audit-fault and critical regression/issue closure; BUG-DATA-0053 OPEN.
+- [x] Linked browser-SQL and same-action SQL audit-fault bounded gates completed in the successor below; physical Android/iOS and critical/issue closure remain OPEN.
+
+## Current batch — Finance settings audit rollback + linked browser / loading guard
+
+- [x] Audit-denied insertion/update500 leave settings/audits/version unchanged; restored-audit recovery200 adds exactly one success audit.
+- [x]24 native SQL controls +5/5 strict200/409 simultaneous pairs PASS; original themes/current-version reset/role/tenant/no-write guards preserved.
+- [x]8 linked browser journeys PASS: both editors at320/1440px/light-dark, real Identity/HTTP/SQL, native200/409/200, draft retention/explicit refresh/recovery.32 actual PUTs=24successes/8stale409/no429.
+- [x] Fresh11-field SQL/version, actor-set/tenant/action/route audits, foreign settings sentinel and ledger-invariance snapshots verified; not a new whole-finance regression.
+- [x] Reproduced early Governance edit blocks first settings hydration; narrow disabled/click readiness guard fixed. Four held real initial-GET browser controls PASS; frozen handler9/11 →11/11.
+- [x]6 Policy handlers/36 conflict+16 theme synthetic browser/typecheck/export83 fresh PASS;67 API units retained, not rerun; Governance3 inherited lint warnings unchanged.
+- [x]88/7 migrations/exact owned DB/login/container cleanup verified. Failed runs/evidence retained; only their exact owned containers removed. Both PENTA/seven older QA containers retained.
+- [x] [Report](QA/REPORTS/PHASE_2B_FINANCE_SETTINGS_AUDIT_LINKED.md), issue/continuity/scoped publication packet; no main/Azure/Mini/Core change.
+- [ ] Separate FINANCE-SETTINGS-LENGTH-001: reject overlong tax label/registration with400/no write, retain draft and test exact schema limits. Valid-input linked pass does not fix the observed500.
+- [ ] Governance document preview clips internally at320px; premium Manual/shared-document responsive layout follow-up. Root overflow PASS is not full visual acceptance.
+- [ ] Physical Android/iOS/tablet, full critical/wider permission/visual/release gates; BUG-DATA-0053 remains OPEN/RETEST.
 
 ## Past batch — Teacher publication form contract
 
@@ -319,8 +333,8 @@ Current bounded feedback count: **28/28 checkpointed**, after the Assessments cr
 - [x] BUG-DATA-0049 student import duplicate identities — bounded repair/API/native proof, broader acceptance OPEN/RETEST.
 - [x] BUG-DATA-0050 teacher compensation zero-rate round-trip — bounded conversion/native proof; broader acceptance OPEN/RETEST.
 - [x] BUG-API-0005 bounded handler/native/synthetic browser proof completed; broader issue OPEN/RETEST.
-- [x] BUG-DATA-0053 strict SQL stale/concurrent acceptance completed at bounded level; ordinary-save evidence/assertions preserved. Linked/device/audit-fault/critical still OPEN; no audit restart.
-- [ ] **Next: settings same-action audit-fault/linked host gate**, Sol High; Medium settled Manual shared controls afterward. Issue closure is separate from feature publication.
+- [x] BUG-DATA-0053 SQL stale/concurrent/audit-fault and linked settings browser bounded gates complete; original assertions preserved. Device/critical/wider still OPEN; no audit restart.
+- [ ] **Next: FINANCE-SETTINGS-LENGTH-001 schema-bound input validation**, Sol Medium; High if transaction/authority contracts change. Then existing backend queue/Manual shared controls. Issue closure is separate from publication.
 - [ ] Manual shared redesign foundation and Platform → Admin → Teacher → Student rollout: Orbit + Aura dark /Prism light, reusable responsive tokens/shell/controls; preserve interrupted overlay work. Sol High foundation/host contracts, Medium settled rollout. Inherited lint remains open.
 - [ ] Shared PENTA/Manual visual foundation: consume versioned FW1 delivery when available, continue independent Manual controls without claiming the shared AI frontend is delivered.
 - [ ] FP1/FP2/FP3 explicit owner decisions and legacy disposition — pending, not inferred from “continue.”

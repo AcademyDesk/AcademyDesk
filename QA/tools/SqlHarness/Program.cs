@@ -364,7 +364,7 @@ static async Task VerifyRealHttpAsync(QaRunManifest manifest, bool classMediaOnl
             if (auditMode == "--audit-onboarding-accounts") { await VerifyOnboardingAccountFlagsAsync(factory, client); return; }
             if (auditMode == "--audit-onboarding-atomic") { await VerifyOnboardingAtomicAsync(factory, client, manifest); return; }
             if (auditMode == "--audit-onboarding-dates") { await VerifyOnboardingDatesAsync(factory, client); return; }
-            if (auditMode == "--audit-finance-policy-theme") { await VerifyFinancePolicyThemeAsync(factory, client); return; }
+            if (auditMode == "--audit-finance-policy-theme") { await VerifyFinancePolicyThemeAsync(factory, client, manifest); return; }
             if (auditMode == "--audit-teacher-publication") { await VerifyTeacherPublicationAsync(factory, client); return; }
             if (auditMode == "--audit-teacher-compensation") { await VerifyTeacherCompensationAsync(factory, client); return; }
             if (auditMode is "--audit-student-imports" or "--audit-student-imports-baseline") { await VerifyStudentImportsAsync(factory, client, manifest, auditMode.EndsWith("-baseline", StringComparison.Ordinal)); return; }
