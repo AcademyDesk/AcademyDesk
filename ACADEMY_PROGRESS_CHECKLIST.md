@@ -1,6 +1,6 @@
 # Academy Desk — delivery progress checklist
 
-Updated:2026-10-10. Worktree `D:\AcademyDesk-codex-p0`, branch `codex/penta-search`. Application goal: **90% eligible operations through conversational PENTA AI;10% manual control/fallback**. This is a target, not measured current coverage.
+Updated:2026-10-11. Worktree `D:\AcademyDesk-codex-p0`, branch `codex/penta-search`. Application goal: **90% eligible operations through conversational PENTA AI;10% manual control/fallback**. This is a target, not measured current coverage.
 
 ## How to read and maintain this checklist
 
@@ -156,13 +156,20 @@ Scope: success/refresh/error/draft/pending feedback only. Existing payloads/doma
 - [x] Issue/register/E0/checkpoint/handoff updated; evidence local, unrelated Mini work preserved. Feature publication only, not main/Azure.
 - [ ] Linked browser/physical devices/broader race/stale/full critical acceptance; issue OPEN. Queued intake feedback and visual work remain next.
 
-## Current batch — Student/Teacher onboarding feedback
+## Past batch — Student/Teacher onboarding feedback
 
 - [x] Checked initial academy readiness, synchronous pending/duplicate guards, native field disabling and accessible status.
 - [x] Clear success/rejected/unconfirmed feedback; retained failed drafts, safe confirmed-student link fallback; original payloads/reset/navigation/backend authority retained.
 - [x]48 new+9 retained handler checks PASS; frozen baseline1 PASS/47 FAIL, not47 distinct bugs.
 - [x]48 new+32 retained synthetic desktop/mobile light/dark browser checks PASS; two mobile screenshots inspected. Lint0/0/types/export83; [report](QA/REPORTS/PHASE_2B_ONBOARDING_FEEDBACK_REPAIR.md).
 - [ ] Live browser-to-SQL, physical devices and full critical acceptance remain OPEN; previous native proofs retained, not rerun.
+
+## Current batch — Manual detail-modal foundation
+
+- [x] Current Mini frontend ownership/plan inspected; no returned versioned FW1 release claimed or pilot replaced.
+- [x] Shared Manual popup: native top layer/inert background,44px close, Escape/outside dismissal, focus return and restored scroll; existing host tokens/data/permissions retained.
+- [x]32 synthetic exported-browser cases PASS across320/390/768/1440/light-dark/empty-long content; mobile screenshots inspected. Lint0/0/types/export83 PASS; [report](QA/REPORTS/E3_MANUAL_DETAIL_MODAL_FOUNDATION.md).
+- [ ] All consumers/portals, physical Android/iOS/Safari/screen-reader/live integration and full E3 acceptance remain OPEN.
 
 ## Original feedback routes — bounded checkpoint list
 
@@ -215,7 +222,8 @@ Current bounded feedback count: **28/28 checkpointed**, after the Assessments cr
 - [x] BUG-DATA-0007 incomplete optional-credential created-account flags — bounded native proof complete; broader acceptance OPEN.
 - [x] BUG-DATA-0008 optional-number collision — bounded29-case native normalization/uniqueness/chain proof; wider acceptance OPEN.
 - [x] Student/Teacher onboarding feedback — bounded handler/synthetic browser proof; live/device acceptance OPEN.
-- [ ] **Next: independent Manual/shared visual foundation** — verify current FW1 return and existing tokens/components, implement settled Manual controls without pretending shared AI delivery is complete; Sol Medium, High for consequential integration.
+- [x] Independent Manual/shared visual foundation started: current ownership/tokens checked and shared detail-popup checkpoint completed; not all shared controls or E3 completion.
+- [ ] **Next: Platform Owner Manual shell/navigation/responsive/keyboard checks** — preserve accepted fixes, repair demonstrated gaps; Sol Medium, High for consequential authority/integration.
 - [ ] Shared PENTA/Manual visual foundation: consume versioned FW1 delivery when available, continue independent Manual controls without claiming the shared AI frontend is delivered.
 - [ ] FP1/FP2/FP3 explicit owner decisions and legacy disposition — pending, not inferred from “continue.”
 - [ ] Approved financial implementation — Sol High; accounting/tax/payroll review before applicable release. Policy-pending finance need not block safe feedback work.

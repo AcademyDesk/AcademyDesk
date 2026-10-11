@@ -38,6 +38,13 @@ screens stay visually consistent.
   behind it. Its click must open `StandardDetailModal`, not navigate without a
   visible action. The pop-up has an explicit close action and also closes when
   the user clicks outside it.
+- `StandardDetailModal` uses the native modal top layer, not a page-local
+  z-index workaround. It provides inert background controls, Escape dismissal,
+  initial close focus, opener focus return, restored body scrolling, a 44px
+  close target and viewport-bounded content scrolling with a sticky header.
+  Its CSS module uses existing host tokens; it is not a released PENTA package.
+  Preserve the host-provided title, content and close callback. Device and
+  screen-reader acceptance remain separate from exported-browser checks.
 - Urgent banners are duration-bound and audience-targeted.
 - Admin pages do not show decorative helper sentences below a page title. Keep
   form labels, data captions, error/status messages, and operational metadata;

@@ -2,6 +2,10 @@
 
 ## Current state
 
+## Manual detail-modal foundation — 2026-10-11
+
+[Report](QA/REPORTS/E3_MANUAL_DETAIL_MODAL_FOUNDATION.md): latest Mini frontend plan inspected, no versioned FW1 return claimed; host tokens already align. Shared native top-layer/inert popup,44px close/viewport scroll/sticky header, Escape/outside/focus-return/body-scroll restoration; original data/props/authority unchanged.32 synthetic exported Admin overview cases PASS at320/390/768/1440/light-dark/empty-long; mobile screenshots inspected, lint0/0/types/export83 PASS. Baseline/intermediate focus/build-lock failures retained, assertions unchanged. Prior backend proofs NOT rerun; all-consumer/device/live/E3/Mini/FW1/release OPEN, original28 count retained. Unrelated32/28/evidence preserved; no Mini/main/Azure/project switch. NEXT Platform Owner Manual shell/navigation bounded checks, Sol Medium; High for consequential integration. Maintain/display [checklist](ACADEMY_PROGRESS_CHECKLIST.md).
+
 ## Student/Teacher onboarding feedback — 2026-10-11
 
 [Report](QA/REPORTS/PHASE_2B_ONBOARDING_FEEDBACK_REPAIR.md): checked uncached intake readiness, synchronous duplicate-submit guards/native disabled fields, accessible pending/success/rejection/unconfirmed notices, draft retention and confirmed-student missing-link/navigation fallback. Original payloads/reset/redirect/backend authority retained.48 new+9 retained handler checks and48 new+32 retained synthetic browser cases PASS; lint0/0,types/export83 PASS, two mobile screenshots inspected. Baseline1 PASS/47 FAIL; retained browser assertion-text update recorded. SQL proofs retained NOT rerun; linked/device/full-critical/FW1/release OPEN, original28 count unchanged. Unrelated32/28/evidence preserved, no Mini/main/Azure. NEXT independent Manual/shared visual foundation, verify FW1 return; Sol Medium for settled UI, High for consequential integration. Maintain [checklist](ACADEMY_PROGRESS_CHECKLIST.md).
