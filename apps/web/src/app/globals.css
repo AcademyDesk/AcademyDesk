@@ -1653,6 +1653,64 @@ html[data-theme="light"] .field-label { color: #475569; }
 .document-full-preview.document-template-formal,.document-full-preview.document-template-professional { padding:40px; border:8px double #b89248; border-radius:0; background:#fffdf6; }.document-full-preview.document-template-formal header,.document-full-preview.document-template-professional header { align-items:center; padding-bottom:20px; border-bottom:2px solid #b89248; }.document-full-preview.document-template-formal header i,.document-full-preview.document-template-professional header i { background:#f9e8b7; color:#75521e; }.document-full-preview.document-template-formal .document-full-preview-body,.document-full-preview.document-template-professional .document-full-preview-body { padding:22px 0; border-color:#d9c185; }.document-full-preview.document-template-formal footer,.document-full-preview.document-template-professional footer { margin-top:76px; }
 .document-full-preview.document-template-standard { border-top:8px solid #2563eb; }.document-full-preview.document-template-standard .document-full-preview-total { padding:12px 18px; border-radius:8px; background:#eff6ff; }.document-full-preview.document-template-compact { min-height:300px; padding:24px; }.document-full-preview.document-template-compact header { padding-bottom:12px; border-bottom:1px dashed #94a3b8; }.document-full-preview.document-template-compact .document-full-preview-body { margin-top:22px; padding:12px 0; }.document-full-preview.document-template-compact footer { margin-top:46px; }
 
+/* Preview-only reflow: keep document paper/themes and real print layouts intact. */
+.finance-control-documents .document-full-preview header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+}
+.finance-control-documents .document-full-preview :is(header, .document-full-preview-body, footer) > * {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.finance-control-documents .document-full-preview header :is(img, i) {
+  flex-shrink: 0;
+}
+.finance-control-documents .document-full-preview footer strong {
+  width: min(180px, 100%);
+}
+.finance-control-documents .document-full-preview footer span {
+  max-width: 100%;
+}
+@media (max-width: 640px) {
+  .finance-control-documents .document-full-preview {
+    padding: 20px 16px;
+  }
+  .finance-control-documents .document-full-preview header {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+  .finance-control-documents .document-full-preview > header > b {
+    grid-column: 1 / -1;
+    text-align: left;
+  }
+  .finance-control-documents .document-full-preview-body {
+    flex-direction: column;
+    margin-top: 28px;
+  }
+  .finance-control-documents .document-full-preview-total {
+    text-align: left;
+  }
+  .finance-control-documents .document-full-preview.document-template-modern,
+  .finance-control-documents .document-full-preview.document-template-minimal {
+    padding: 0 0 20px;
+  }
+  .finance-control-documents .document-full-preview:is(.document-template-modern, .document-template-minimal) header {
+    padding: 20px 16px;
+    align-items: center;
+  }
+  .finance-control-documents .document-full-preview:is(.document-template-modern, .document-template-minimal) .document-full-preview-body {
+    margin: 24px 16px 0;
+    padding: 16px 0;
+  }
+  .finance-control-documents .document-full-preview.document-template-modern .document-full-preview-body {
+    padding: 16px;
+  }
+  .finance-control-documents .document-full-preview:is(.document-template-modern, .document-template-minimal) footer {
+    margin: 40px 16px 0;
+  }
+}
+
 /* Academics uses the same calm, task-focused contract across its governance and
    legacy pages: no instructional clutter, predictable breathing room, and
    visible actions instead of text-only controls. */

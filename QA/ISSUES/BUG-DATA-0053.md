@@ -1,5 +1,7 @@
 # BUG-DATA-0053 — Finance Policy save silently resets a saved payslip theme
 
+2026-10-11 preview follow-up: [responsive report](../REPORTS/E3_FINANCE_DOCUMENT_PREVIEW_RESPONSIVE.md),112 synthetic internal geometry cases PASS across seven themes/four widths/light-dark/default-long branding. CSS-only counterfactual38 PASS/74 FAIL; preview-scoped reflow, no finance/API/print changes. Issue remains OPEN/RETEST for physical/critical/wider/release; prior SQL/linked proof retained, not rerun for CSS.
+
 | Field | Value |
 | --- | --- |
 | Status | OPEN |

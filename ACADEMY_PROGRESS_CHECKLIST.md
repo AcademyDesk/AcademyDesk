@@ -298,10 +298,10 @@ Current bounded feedback count: **28/28 checkpointed**, after the Assessments cr
 - [x]88/7 migrations/exact owned DB/login/container cleanup verified. Failed runs/evidence retained; only their exact owned containers removed. Both PENTA/seven older QA containers retained.
 - [x] [Report](QA/REPORTS/PHASE_2B_FINANCE_SETTINGS_AUDIT_LINKED.md), issue/continuity/scoped publication packet; no main/Azure/Mini/Core change.
 - [x] FINANCE-SETTINGS-LENGTH-001 API/controller/handler repair implemented in the successor below; final linked acceptance tracked separately.
-- [ ] Governance document preview clips internally at320px; premium Manual/shared-document responsive layout follow-up. Root overflow PASS is not full visual acceptance.
+- [x] Governance internal320px preview clipping bounded-repaired in the following responsive batch; root overflow alone was not visual acceptance. Wider device/portal gates remain OPEN.
 - [ ] Physical Android/iOS/tablet, full critical/wider permission/visual/release gates; BUG-DATA-0053 remains OPEN/RETEST.
 
-## Current batch — Finance settings normalized-length validation
+## Past batch — Finance settings normalized-length validation
 
 - [x] Existing normalized SQL limits30/50 enforced with400/no write, no truncation/schema widening or altered tax/authority rules.
 - [x] Exact limits/trim/supplementary UTF-16/null/blank defaults covered;76 targeted API units PASS (nine new plus67 retained).
@@ -310,6 +310,13 @@ Current bounded feedback count: **28/28 checkpointed**, after the Assessments cr
 - [x] Native SQL37 controls +5/5 strict200/409 pairs PASS, including eight length rejections/five normalized successes and original audit rollback/recovery.
 - [x] Eight real linked browser journeys +eight native length400 PASS;40 PUTs=24success/eight409/eight400/no429. Exact owned DB/login/container cleanup,88/7 migrations verified. [Report](QA/REPORTS/PHASE_2B_FINANCE_SETTINGS_LENGTH_REPAIR.md); scoped feature publication only, no main/Azure/Mini.
 - [ ] Physical devices/full critical/wider visual and permission/release gates remain OPEN; BUG-DATA-0053 not closed.
+
+## Current batch — Finance document-preview responsive reflow
+
+- [x] Scoped preview header/body/footer reflow; all seven document themes retained, no API/domain/finance/print changes.
+- [x]112 synthetic production-DOM cases at320/390/768/1440px/light-dark/default-long branding; internal text/element containment and overlap checks, no writes. CSS-only counterfactual38 PASS/74 FAIL, not a frozen application build.
+- [x]27 handler checks and83-page production build/TypeScript PASS; final52 existing synthetic browser regressions recorded in [report](QA/REPORTS/E3_FINANCE_DOCUMENT_PREVIEW_RESPONSIVE.md).
+- [ ] Physical Android/iOS/full critical/wider portal/design/release acceptance remain OPEN. BUG-DATA-0053 not closed; no main/Azure/Mini change.
 
 ## Past batch — Teacher publication form contract
 
@@ -344,7 +351,8 @@ Current bounded feedback count: **28/28 checkpointed**, after the Assessments cr
 - [x] BUG-DATA-0050 teacher compensation zero-rate round-trip — bounded conversion/native proof; broader acceptance OPEN/RETEST.
 - [x] BUG-API-0005 bounded handler/native/synthetic browser proof completed; broader issue OPEN/RETEST.
 - [x] BUG-DATA-0053 SQL stale/concurrent/audit-fault and linked settings browser bounded gates complete; original assertions preserved. Device/critical/wider still OPEN; no audit restart.
-- [ ] **Next: Governance document-preview internal320px clipping**, Sol Medium bounded Manual/shared-document responsive repair; High if shared design/authority contracts change. Existing backend queue/physical/critical/Mini/FW1 gates continue; issue closure is separate from publication.
+- [x] Governance document-preview internal320px clipping — bounded responsive repair; broader portal/device/release gates remain OPEN.
+- [ ] **Next: BUG-DATA-0054 zero learning-progress score round-trip**, Sol Medium settled serialization/reproduction; High consequential domain/authority/SQL decisions. Existing enterprise/Mini/FW1 gates retained.
 - [ ] Manual shared redesign foundation and Platform → Admin → Teacher → Student rollout: Orbit + Aura dark /Prism light, reusable responsive tokens/shell/controls; preserve interrupted overlay work. Sol High foundation/host contracts, Medium settled rollout. Inherited lint remains open.
 - [ ] Shared PENTA/Manual visual foundation: consume versioned FW1 delivery when available, continue independent Manual controls without claiming the shared AI frontend is delivered.
 - [ ] FP1/FP2/FP3 explicit owner decisions and legacy disposition — pending, not inferred from “continue.”
