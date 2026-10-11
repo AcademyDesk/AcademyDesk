@@ -1,0 +1,12 @@
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),ts=require('../../apps/web/node_modules/typescript');
+const moduleUnderTest={exports:{}};new Function('exports',ts.transpileModule(fs.readFileSync('apps/web/src/lib/expense-money.ts','utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText)(moduleUnderTest.exports);
+const {expenseCents,expenseAmountJson,formatExpenseCents}=moduleUnderTest.exports;
+for(const [input,expected] of [['0.01',1n],['0.10',10n],['12.50',1250n],['9999999999999999.99',999999999999999999n],['-0.01',-1n],[12.50,1250n]])test('Exact cents '+input,()=>assert.equal(expenseCents(input),expected));
+for(const input of ['1.001','NaN','Infinity','1e2','10000000000000000','1,"role":"Owner"',NaN,10000000000000000])test('Invalid/unsafe amount '+input,()=>assert.equal(expenseCents(input),null));
+for(const input of ['0','-1','1.001','10000000000000000'])test('Invalid creation lexeme '+input,()=>assert.equal(expenseAmountJson(input),null));
+test('Maximum valid JSON lexeme remains exact',()=>assert.equal(expenseAmountJson('9999999999999999.99'),'9999999999999999.99'));
+test('Decimal normalization remains a JSON number',()=>assert.equal(expenseAmountJson(' 00012.5 '),'12.50'));
+test('Maximum formatted amount retains 99 cents without Number conversion',()=>assert.equal(formatExpenseCents(999999999999999999n,'INR'),'₹9,99,99,99,99,99,99,999.99'));
+test('Large aggregate retains cents beyond one record maximum',()=>assert.match(formatExpenseCents(999999999999999999n+1n,'USD'),/\.00$/));
+test('Negative subunit retains sign',()=>assert.equal(formatExpenseCents(-1n,'INR'),'-₹0.01'));
+test('Unknown historical label is not silently relabelled INR',()=>assert.equal(formatExpenseCents(123n,'USDX'),'1.23 (USDX)'));

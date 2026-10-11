@@ -189,13 +189,22 @@ Scope: success/refresh/error/draft/pending feedback only. Existing payloads/doma
 - [ ] Interrupted Platform detail-overlay/utility edits remain local and unaccepted; preserve for the shared redesign, not a completed visual phase.
 - [ ] Owner design direction: all4 Manual portals match PENTA AI; Orbit + Aura dark /Prism light, shared responsive foundation. AI frontend stays in PENTA AI project; Academy owns Manual/host integration.
 
-## Current batch — Backend metadata shape safety
+## Past batch — Backend metadata shape safety
 
 - [x] Existing BUG-API-0004 reproduced: new35-case starting-source suite10 PASS/25 FAIL; not25 separate defects.
 - [x] Narrow compensation/portal/platform JSON-kind guards; valid aliases/zero/time/audience behaviour and authority unchanged, no storage rewrite.
 - [x]35 new +41 retained notification-channel +4 retained holiday tests:80/80 PASS; [report](QA/REPORTS/PHASE_2B_METADATA_SHAPE_REPAIR.md).
 - [x]72 real SQL/Identity/HTTP metadata cases and47 unchanged native announcement audience cases PASS; no429,88+7 migrations and exact owned database/login/container cleanup verified; scoped feature publication prepared.
 - [ ] Browser/physical-device/full-critical/whole-portal acceptance; issue remains OPEN.
+
+## Current batch — Expense integrity and recording workflow
+
+- [x] BUG-DATA-0047 starting controller reproduced:9/32 PASS; foreign/missing/empty branches and fabricated status rejected by repair.
+- [x] Existing field/decimal bounds, optional/legacy values and immutable update currency preserved; SQL replacement reads locked through domain/audit commit.
+- [x] 33 expense +36 unchanged audit tests69/69 PASS; five valid/invalid and five valid/valid concurrent replacements, audit rollback/recovery and tenant/role matrix covered by66/66 native SQL/API cases.
+- [x] Truthful record-form readiness/pending/success/rejection/unconfirmed feedback, draft retention and optional branch403 flow; exact integer-cent totals and additive amountExact contract.
+- [x]45 handler/money +54 controlled responsive browser cases PASS; four linked real SQL/browser journeys with five saves/four rejected foreign-branch writes PASS, no429. Types/lint/export83/builds0/0; exact owned SQL/login/container cleanup verified. [Report](QA/REPORTS/PHASE_2B_EXPENSE_INTEGRITY_REPAIR.md).
+- [ ] Physical Android/iOS, full critical regressions, cross-tab/server-idempotency and accounting/release gates remain separate. Issue OPEN/RETEST; no complete new CRUD editor, tax/FX certification, main merge or Azure.
 
 ## Original feedback routes — bounded checkpoint list
 
@@ -250,7 +259,8 @@ Current bounded feedback count: **28/28 checkpointed**, after the Assessments cr
 - [x] Student/Teacher onboarding feedback — bounded handler/synthetic browser proof; live/device acceptance OPEN.
 - [x] Independent Manual/shared visual foundation started: current ownership/tokens checked and shared detail-popup checkpoint completed; not all shared controls or E3 completion.
 - [x] Platform Owner Manual navigation/header checkpoint —16 synthetic journeys, not full portal acceptance.
-- [ ] **Next: BUG-DATA-0047 expense update branch/status integrity**, checking latest evidence/current source before repair. Sol High; no accepted-audit restart.
+- [x] BUG-DATA-0047 expense integrity and recording workflow — bounded API/native/linked browser proof complete; wider issue OPEN/RETEST.
+- [ ] **Next: BUG-DATA-0048 work-item assignee/entity ownership**, check latest evidence/current source and reproduce only the missing case. Sol High; no accepted-audit restart.
 - [ ] Manual shared redesign foundation and Platform → Admin → Teacher → Student rollout: Orbit + Aura dark /Prism light, reusable responsive tokens/shell/controls; preserve interrupted overlay work. Sol High foundation/host contracts, Medium settled rollout. Inherited lint remains open.
 - [ ] Shared PENTA/Manual visual foundation: consume versioned FW1 delivery when available, continue independent Manual controls without claiming the shared AI frontend is delivered.
 - [ ] FP1/FP2/FP3 explicit owner decisions and legacy disposition — pending, not inferred from “continue.”

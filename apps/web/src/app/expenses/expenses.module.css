@@ -1,0 +1,15 @@
+.content :global(.expenses-kpis b),
+.content :global(.expenses-list b),
+.content :global(.expenses-list small),
+.content :global(.expenses-list strong) {
+  overflow-wrap: anywhere;
+}
+
+.content :global(.expenses-list li > div),
+.content :global(.expenses-list strong) {
+  min-width: 0;
+}
+
+.content :global(.expenses-list strong) {
+  white-space: normal;
+}
