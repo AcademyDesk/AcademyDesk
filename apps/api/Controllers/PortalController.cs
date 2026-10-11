@@ -392,15 +392,21 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
         {
             using var document = JsonDocument.Parse(variablesJson);
             var root = document.RootElement;
-            if (!root.TryGetProperty("important", out var important) || !string.Equals(important.GetString(), "true", StringComparison.OrdinalIgnoreCase)) return false;
-            if (root.TryGetProperty("startsAtUtc", out var start) && DateTime.TryParse(start.GetString(), out var startsAtUtc) && startsAtUtc.ToUniversalTime() > now) return false;
-            return root.TryGetProperty("expiresAtUtc", out var expiry) && DateTime.TryParse(expiry.GetString(), out var expiresAtUtc) && expiresAtUtc.ToUniversalTime() > now;
+            if (root.ValueKind != JsonValueKind.Object) return false;
+            if (!root.TryGetProperty("important", out var important) || important.ValueKind != JsonValueKind.String || !string.Equals(important.GetString(), "true", StringComparison.OrdinalIgnoreCase)) return false;
+            if (root.TryGetProperty("startsAtUtc", out var start))
+            {
+                if (start.ValueKind is not (JsonValueKind.String or JsonValueKind.Null)) return false;
+                if (DateTime.TryParse(start.GetString(), out var startsAtUtc) && startsAtUtc.ToUniversalTime() > now) return false;
+            }
+            return root.TryGetProperty("expiresAtUtc", out var expiry) && expiry.ValueKind == JsonValueKind.String && DateTime.TryParse(expiry.GetString(), out var expiresAtUtc) && expiresAtUtc.ToUniversalTime() > now;
         }
         catch (JsonException) { return false; }
     }
     private static bool IsAnnouncementForAudience(string? variablesJson, string audience)
     {
-        try { using var document = JsonDocument.Parse(variablesJson ?? "{}"); if (!document.RootElement.TryGetProperty("audiences", out var targets)) return true; return targets.GetString()?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Any(x => string.Equals(x, audience, StringComparison.OrdinalIgnoreCase) || string.Equals(x, "Both", StringComparison.OrdinalIgnoreCase)) == true; }
+        if (string.IsNullOrWhiteSpace(variablesJson)) return false;
+        try { using var document = JsonDocument.Parse(variablesJson); if (document.RootElement.ValueKind != JsonValueKind.Object) return false; if (!document.RootElement.TryGetProperty("audiences", out var targets)) return true; return targets.ValueKind == JsonValueKind.String && targets.GetString()?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Any(x => string.Equals(x, audience, StringComparison.OrdinalIgnoreCase) || string.Equals(x, "Both", StringComparison.OrdinalIgnoreCase)) == true; }
         catch (JsonException) { return false; }
     }
     [HttpPut("students/{studentId:guid}/profile")]

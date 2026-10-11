@@ -3,8 +3,8 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | STATIC-FINDING |
-| Final verification | NOT RUN |
+| Confirmation status | REPRODUCED — starting-source controller/private-reader tests; bounded repair implemented |
+| Final verification | 35 new +45 retained tests,72 new native metadata +47 retained audience cases PASS |
 | Severity | Moderate malformed-data reliability |
 | Priority | P2 |
 | Category | API |
@@ -16,7 +16,7 @@
 | Device/viewport | NOT RUN; use QA/06_DEVICE_VIEWPORT_MATRIX.md where UI applies |
 | Baseline | 20bb6047f9edf733ac8e2a226621cc582ec54b3c + pre-existing student UI diff |
 | Discovery test / review ID | API-JSON-001 |
-| Evidence classification | Static trace; runtime reproduction pending |
+| Evidence classification | Original static trace; successor actual controller/EF InMemory and pure-reader reproduction |
 | Preconditions | Isolated synthetic fixture from QA/10_TEST_DATA_STRATEGY.md; never customer data |
 | Reproduction frequency | Not measured; reproduction instructions are proposed |
 | Source | apps/api/Controllers/TeacherCompensationController.cs:54 |
@@ -27,15 +27,17 @@
 | Screenshot | Not captured on pinned baseline |
 | Console logs | Not captured; required in retest |
 | API request | In disposable SQL seed CompensationJson as literal null, [], or a scalar. Read compensation. Repeat VariablesJson on announcement consumers. |
-| API response | Not captured for this issue; use synthetic request/response in isolated reproduction |
-| Database before/after | Not executed; fixture and fresh-context assertions defined below |
+| API response | Successor72-case native matrix: safe200 metadata summaries/lists,401/403/404 access controls; no500/429 |
+| Database before/after | Fresh captured teacher/notification/receipt/domain-audit/platform-audit snapshots unchanged after each native GET |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | Not implemented (Phase 1) |
-| Retest result | NOT RUN |
-| Regression result | NOT RUN |
+| Fix commit | Scoped JSON-kind repair; publication SHA supplied in final Git handoff |
+| Retest result | 35/35 metadata cases +72/72 native SQL/Identity/HTTP PASS; run6c6bd1fba98048f1b764393272e621f6 |
+| Regression result | 41 retained NotificationChannel +4 HolidayRoute tests and47 native AnnouncementAudience cases PASS; broader critical/device gates pending |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
 ## Exact reproduction
+
+2026-10-11 successor: [metadata shape repair](../REPORTS/PHASE_2B_METADATA_SHAPE_REPAIR.md). Frozen new35-case baseline10 PASS/25 FAIL; final80/80 includes45 unchanged channel/holiday cases. Narrow kind checks preserve valid metadata and avoid storage rewrites.72 native metadata and47 retained audience cases PASS, no429,88+7 migrations and exact owned cleanup. Issue remains OPEN for browser/device/full-critical gates. Original static trace below is historical.
 
 In disposable SQL seed CompensationJson as literal null, [], or a scalar. Read compensation. Repeat VariablesJson on announcement consumers.
 

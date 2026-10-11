@@ -258,13 +258,13 @@ public sealed class PlatformControlController(AcademyDeskDbContext db, UserManag
     private static bool HasAdminAudience(string? variablesJson)
     {
         if (string.IsNullOrWhiteSpace(variablesJson)) return false;
-        try { using var document = JsonDocument.Parse(variablesJson); return document.RootElement.TryGetProperty("audiences", out var audience) && audience.GetString()?.Contains("Admin", StringComparison.OrdinalIgnoreCase) == true; }
+        try { using var document = JsonDocument.Parse(variablesJson); return document.RootElement.ValueKind == JsonValueKind.Object && document.RootElement.TryGetProperty("audiences", out var audience) && audience.ValueKind == JsonValueKind.String && audience.GetString()?.Contains("Admin", StringComparison.OrdinalIgnoreCase) == true; }
         catch (JsonException) { return false; }
     }
     private static string? ReadAnnouncementExpiry(string? variablesJson)
     {
         if (string.IsNullOrWhiteSpace(variablesJson)) return null;
-        try { using var document = JsonDocument.Parse(variablesJson); return document.RootElement.TryGetProperty("expiresAtUtc", out var expiry) ? expiry.GetString() : null; }
+        try { using var document = JsonDocument.Parse(variablesJson); return document.RootElement.ValueKind == JsonValueKind.Object && document.RootElement.TryGetProperty("expiresAtUtc", out var expiry) && expiry.ValueKind == JsonValueKind.String ? expiry.GetString() : null; }
         catch (JsonException) { return null; }
     }
     private async Task Audit(string action, string entityType, Guid? entityId, object metadata, CancellationToken token) { var user = await users.GetUserAsync(User); db.PlatformAuditEntries.Add(new PlatformAuditEntry { ActorUserId = user?.Id, ActorName = user?.DisplayName ?? "System", Action = action, EntityType = entityType, EntityId = entityId, MetadataJson = JsonSerializer.Serialize(metadata) }); await Task.CompletedTask; }

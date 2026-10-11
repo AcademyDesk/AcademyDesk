@@ -179,7 +179,7 @@ Scope: success/refresh/error/draft/pending feedback only. Existing payloads/doma
 - [x]32 unchanged shared-popup regression cases passed during this batch; source unchanged. New registry lint0/0.
 - [ ] Existing Platform page lint8 errors/10 warnings unchanged; portal overlays/utility states/remaining forms/live/physical devices and full E3 remain OPEN.
 
-## Current batch — Backend holiday DELETE routing
+## Past batch — Backend holiday DELETE routing
 
 - [x] Existing BUG-API-0008 confirmed through actual MVC/TestServer: duplicate candidates and ambiguous HTTP; baseline0/4.
 - [x] Legacy source retained/excluded from MVC; canonical endpoint, payloads, domain/permission/filter rules preserved.
@@ -188,6 +188,14 @@ Scope: success/refresh/error/draft/pending feedback only. Existing payloads/doma
 - [ ] Live browser, physical Android/iOS, audit-fault atomicity and full critical acceptance remain separate; BUG-API-0008 OPEN.
 - [ ] Interrupted Platform detail-overlay/utility edits remain local and unaccepted; preserve for the shared redesign, not a completed visual phase.
 - [ ] Owner design direction: all4 Manual portals match PENTA AI; Orbit + Aura dark /Prism light, shared responsive foundation. AI frontend stays in PENTA AI project; Academy owns Manual/host integration.
+
+## Current batch — Backend metadata shape safety
+
+- [x] Existing BUG-API-0004 reproduced: new35-case starting-source suite10 PASS/25 FAIL; not25 separate defects.
+- [x] Narrow compensation/portal/platform JSON-kind guards; valid aliases/zero/time/audience behaviour and authority unchanged, no storage rewrite.
+- [x]35 new +41 retained notification-channel +4 retained holiday tests:80/80 PASS; [report](QA/REPORTS/PHASE_2B_METADATA_SHAPE_REPAIR.md).
+- [x]72 real SQL/Identity/HTTP metadata cases and47 unchanged native announcement audience cases PASS; no429,88+7 migrations and exact owned database/login/container cleanup verified; scoped feature publication prepared.
+- [ ] Browser/physical-device/full-critical/whole-portal acceptance; issue remains OPEN.
 
 ## Original feedback routes — bounded checkpoint list
 
@@ -242,7 +250,7 @@ Current bounded feedback count: **28/28 checkpointed**, after the Assessments cr
 - [x] Student/Teacher onboarding feedback — bounded handler/synthetic browser proof; live/device acceptance OPEN.
 - [x] Independent Manual/shared visual foundation started: current ownership/tokens checked and shared detail-popup checkpoint completed; not all shared controls or E3 completion.
 - [x] Platform Owner Manual navigation/header checkpoint —16 synthetic journeys, not full portal acceptance.
-- [ ] **Next: unverified backend queue** (metadata-shape BUG-API-0004 or higher-risk item based on current evidence), after publishing the accepted bounded HolidayRoute packet. Sol High; no accepted-audit restart.
+- [ ] **Next: BUG-DATA-0047 expense update branch/status integrity**, checking latest evidence/current source before repair. Sol High; no accepted-audit restart.
 - [ ] Manual shared redesign foundation and Platform → Admin → Teacher → Student rollout: Orbit + Aura dark /Prism light, reusable responsive tokens/shell/controls; preserve interrupted overlay work. Sol High foundation/host contracts, Medium settled rollout. Inherited lint remains open.
 - [ ] Shared PENTA/Manual visual foundation: consume versioned FW1 delivery when available, continue independent Manual controls without claiming the shared AI frontend is delivered.
 - [ ] FP1/FP2/FP3 explicit owner decisions and legacy disposition — pending, not inferred from “continue.”

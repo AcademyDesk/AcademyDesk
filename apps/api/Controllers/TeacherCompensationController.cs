@@ -51,6 +51,7 @@ public sealed class TeacherCompensationController(AcademyDeskDbContext dbContext
 
     private static JsonElement? Property(JsonElement root, params string[] names)
     {
+        if (root.ValueKind != JsonValueKind.Object) return null;
         foreach (var property in root.EnumerateObject())
             if (names.Any(name => string.Equals(property.Name, name, StringComparison.OrdinalIgnoreCase))) return property.Value;
         return null;
