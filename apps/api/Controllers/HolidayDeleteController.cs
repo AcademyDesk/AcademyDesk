@@ -4,6 +4,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AcademyDesk.Api.Controllers;
 
+// Legacy implementation retained for source compatibility. HolidaysController
+// owns the public DELETE route; exposing both makes endpoint selection ambiguous.
+[NonController]
 [ApiController]
 [Route("api/academies/{academyId:guid}/holidays")]
 public sealed class HolidayDeleteController(AcademyDeskDbContext db) : ControllerBase

@@ -171,13 +171,23 @@ Scope: success/refresh/error/draft/pending feedback only. Existing payloads/doma
 - [x]32 synthetic exported-browser cases PASS across320/390/768/1440/light-dark/empty-long content; mobile screenshots inspected. Lint0/0/types/export83 PASS; [report](QA/REPORTS/E3_MANUAL_DETAIL_MODAL_FOUNDATION.md).
 - [ ] All consumers/portals, physical Android/iOS/Safari/screen-reader/live integration and full E3 acceptance remain OPEN.
 
-## Current batch — Platform Owner navigation/header foundation
+## Past batch — Platform Owner navigation/header foundation
 
 - [x] Missing Announcements from Overview reproduced and repaired through one shared presentation registry; existing routes/authority/switching preserved.
 - [x] Desktop active-page semantics, hidden decorative icons,44px navigation targets and visible focus; phone header overlap reproduced with text geometry and repaired.
 - [x]16 final synthetic journeys PASS at320/390/768/1440/light-dark/from both entry points, all11 sections/URL/history/scroll/overflow/header checks; mobile screenshots inspected. Types/export83 PASS; [report](QA/REPORTS/E3_PLATFORM_NAVIGATION_FOUNDATION.md).
 - [x]32 unchanged shared-popup regression cases passed during this batch; source unchanged. New registry lint0/0.
 - [ ] Existing Platform page lint8 errors/10 warnings unchanged; portal overlays/utility states/remaining forms/live/physical devices and full E3 remain OPEN.
+
+## Current batch — Backend holiday DELETE routing
+
+- [x] Existing BUG-API-0008 confirmed through actual MVC/TestServer: duplicate candidates and ambiguous HTTP; baseline0/4.
+- [x] Legacy source retained/excluded from MVC; canonical endpoint, payloads, domain/permission/filter rules preserved.
+- [x]4 new routing/HTTP +36 retained audit tests PASS; native SqlHarness build0 errors/0 warnings; [report](QA/REPORTS/PHASE_2B_HOLIDAY_ROUTE_REPAIR.md).
+- [x]11 real SQL/Identity/HTTP checks PASS; no429, migrations88+7, exact run-owned database/login/container cleanup verified. Initial Docker/execution-policy blocks resolved without global policy changes; feature publication prepared.
+- [ ] Live browser, physical Android/iOS, audit-fault atomicity and full critical acceptance remain separate; BUG-API-0008 OPEN.
+- [ ] Interrupted Platform detail-overlay/utility edits remain local and unaccepted; preserve for the shared redesign, not a completed visual phase.
+- [ ] Owner design direction: all4 Manual portals match PENTA AI; Orbit + Aura dark /Prism light, shared responsive foundation. AI frontend stays in PENTA AI project; Academy owns Manual/host integration.
 
 ## Original feedback routes — bounded checkpoint list
 
@@ -232,7 +242,8 @@ Current bounded feedback count: **28/28 checkpointed**, after the Assessments cr
 - [x] Student/Teacher onboarding feedback — bounded handler/synthetic browser proof; live/device acceptance OPEN.
 - [x] Independent Manual/shared visual foundation started: current ownership/tokens checked and shared detail-popup checkpoint completed; not all shared controls or E3 completion.
 - [x] Platform Owner Manual navigation/header checkpoint —16 synthetic journeys, not full portal acceptance.
-- [ ] **Next: Platform Owner detail overlays/utility states and bounded inherited lint ownership**, then Admin/Teacher/Student; Sol Medium, High for consequential authority/integration.
+- [ ] **Next: unverified backend queue** (metadata-shape BUG-API-0004 or higher-risk item based on current evidence), after publishing the accepted bounded HolidayRoute packet. Sol High; no accepted-audit restart.
+- [ ] Manual shared redesign foundation and Platform → Admin → Teacher → Student rollout: Orbit + Aura dark /Prism light, reusable responsive tokens/shell/controls; preserve interrupted overlay work. Sol High foundation/host contracts, Medium settled rollout. Inherited lint remains open.
 - [ ] Shared PENTA/Manual visual foundation: consume versioned FW1 delivery when available, continue independent Manual controls without claiming the shared AI frontend is delivered.
 - [ ] FP1/FP2/FP3 explicit owner decisions and legacy disposition — pending, not inferred from “continue.”
 - [ ] Approved financial implementation — Sol High; accounting/tax/payroll review before applicable release. Policy-pending finance need not block safe feedback work.

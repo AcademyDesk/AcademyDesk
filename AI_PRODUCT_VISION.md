@@ -1,5 +1,9 @@
 # Academy Desk PENTA — product vision
 
+## Owner reaffirmation — 2026-10-11
+
+PENTA AI project owns the AI frontend. Academy Desk implements the matching **Manual** frontend for Platform Owner, Academy Admin, Teacher and Student: **Orbit + Aura for dark, Prism for light**, shared visual tokens/components and responsive foundations across mobile/tablet/desktop. Preserve distinct Manual workflows, existing permissions/business rules and independent fallback. Older ownership/theme wording below is historical where it conflicts with this direction. Align a versioned actual design handoff before broad rollout; do not claim the AI frontend or all-screen/device acceptance is complete. Backend integrity/integration continues alongside this work, without restarting completed audits or discarding interrupted local UI work.
+
 ## Shared visual identity — 2026-10-09
 
 Academy Desk PENTA and standalone PENTA AI are independently sellable products with one Core/Mini/protocol/design language, not a standalone dependency on Academy Desk. Academy is initial integrated design authority. [PENTA design system 0.1](PENTA_DESIGN_SYSTEM.md) governs conversation/composer/results/status, future actions/approvals/feedback, accessible responsive themes and eventual compatible components in distinct shells. Validate the integrated first real read before package extraction or standalone commercial screens. One assistant/five capability contexts; manual ERP remains fully available. Initial local UI token/help/touch/focus improvements are not five-capability/model/production completion.
