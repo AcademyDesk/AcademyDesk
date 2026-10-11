@@ -2,6 +2,7 @@ using AcademyDesk.Api.Data;
 using AcademyDesk.Api.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using AcademyDesk.Api.Security;
 namespace AcademyDesk.Api.Controllers;
 public sealed record CollectionTaskSummary(Guid Id, string Type, string Title, string? Description, string Priority,
     string Status, DateTime? DueAtUtc, string? EscalationStage, DateOnly? PromisedPaymentDate);
@@ -12,7 +13,7 @@ public sealed record CollectionInvoiceSummary(Guid Id, string InvoiceNumber, Gui
 }
 [ApiController]
 [Route("api/academies/{academyId:guid}/finance-governance")]
-public sealed class FinanceGovernanceController(AcademyDeskDbContext db) : ControllerBase
+public sealed class FinanceGovernanceController(AcademyDeskDbContext db, IdentityDbContext identity) : ControllerBase
 {
  private static string? Clean(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
@@ -66,6 +67,12 @@ public sealed class FinanceGovernanceController(AcademyDeskDbContext db) : Contr
          .SumAsync(p => (decimal?)p.Amount, t) ?? 0;
      if (invoice.Status is "Paid" or "Cancelled" || invoice.TotalAmount - invoice.AdjustedAmount - paid <= 0)
          return Conflict(new { message = "This invoice no longer requires collections follow-up." });
+     if (!await WorkItemReferences.CanAssignAsync(identity, academyId, r.AssignedUserId, t))
+         return BadRequest(new { message = "Choose an active staff member in this academy, or leave the work item unassigned." });
+     if (!string.IsNullOrWhiteSpace(r.Priority) && r.Priority.Trim() is not ("Low" or "Normal" or "High" or "Critical"))
+         return BadRequest(new { message = "Invalid priority." });
+     if (r.Note?.Trim().Length > 4000)
+         return BadRequest(new { message = "Follow-up note must not exceed 4000 characters." });
      var item = new AdminWorkItem { AcademyId = academyId, Type = "Collections", Title = $"Collect {invoice.InvoiceNumber}",
          Description = string.IsNullOrWhiteSpace(r.Note) ? $"Overdue invoice {invoice.InvoiceNumber}." : r.Note.Trim(),
          Priority = string.IsNullOrWhiteSpace(r.Priority) ? "High" : r.Priority.Trim(), AssignedUserId = r.AssignedUserId,

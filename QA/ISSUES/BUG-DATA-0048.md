@@ -3,8 +3,8 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | STATIC-FINDING |
-| Final verification | NOT RUN |
+| Confirmation status | RUNTIME-CONFIRMED / bounded repair RETEST |
+| Final verification | OPEN; linked browser/device/concurrent revocation/critical gates pending |
 | Severity | Major operational ownership integrity |
 | Priority | P1 |
 | Category | DATA |
@@ -12,27 +12,27 @@
 | Role | See reproduction; same-tenant Admin unless stated otherwise |
 | Screen / route | /work-queue |
 | API | POST /api/academies/{academyId}/admin-work-items |
-| Environment | Source review of local working tree; runtime production state not inferred |
-| Device/viewport | NOT RUN; use QA/06_DEVICE_VIEWPORT_MATRIX.md where UI applies |
+| Environment | Local disposable SQL/Identity/API, branch codex/penta-search; not Azure |
+| Device/viewport | Exported synthetic browser matrix recorded in successor report; physical Android/iOS NOT RUN |
 | Baseline | 20bb6047f9edf733ac8e2a226621cc582ec54b3c + pre-existing student UI diff |
 | Discovery test / review ID | OPERATIONS-WORK-IDENTITY-001 |
-| Evidence classification | Static trace; runtime reproduction pending |
+| Evidence classification | Starting-source controller failures; repaired real SQL/Identity/API matrix; separate synthetic UI proof |
 | Preconditions | Isolated synthetic fixture from QA/10_TEST_DATA_STRATEGY.md; never customer data |
 | Reproduction frequency | Not measured; reproduction instructions are proposed |
 | Source | apps/api/Controllers/AdminWorkItemsController.cs:6 |
 | Class/function | Create |
 | Related source | INVENTORY/API_ENDPOINTS.md, CONTRACTS.md, FORMS_AND_FIELDS.md and ASYNC_FORM_RISKS.md |
 | Root-cause confidence | HIGH |
-| Evidence location | Source excerpt below; source fingerprint in INVENTORY/SOURCE_MANIFEST.md |
+| Evidence location | Historical source below plus QA/REPORTS/PHASE_2B_WORK_ITEM_INTEGRITY_REPAIR.md; local QA/EVIDENCE/work-item-integrity-20261011/ |
 | Screenshot | Not captured on pinned baseline |
 | Console logs | Not captured; required in retest |
 | API request | Create a work item with local, foreign and missing AssignedUserId and EntityId values, including a mismatched EntityType. Inspect the assigned queue and fresh row; compare unassigned control. |
-| API response | Not captured for this issue; use synthetic request/response in isolated reproduction |
-| Database before/after | Not executed; fixture and fresh-context assertions defined below |
+| API response | Exact 400 invalid references, 200 valid creates; 401/403/404 isolation and 500 audit rollback verified in disposable matrix |
+| Database before/after | Fresh SQL work/audit/finance/document/Identity snapshots and unchanged foreign sentinel verified |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | Not implemented (Phase 1) |
-| Retest result | NOT RUN |
-| Regression result | NOT RUN |
+| Fix commit | Scoped feature commit for successor report; no main merge/Azure |
+| Retest result | 79/79 native SQL/Identity/API PASS, no429; run98c4b1324a354c3e83002ed528ceea48 |
+| Regression result | 100 targeted API,24 handler checks PASS; export/browser result in successor report |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
 ## Exact reproduction
@@ -44,6 +44,8 @@ Create a work item with local, foreign and missing AssignedUserId and EntityId v
 Assignees and linked entities are validated within the academy and entity type, or unsupported links are excluded from the public create contract.
 
 ## Actual / evidence
+
+Historical discovery below is retained, not the current implementation. See the [bounded repair report](../REPORTS/PHASE_2B_WORK_ITEM_INTEGRITY_REPAIR.md): both creation paths now validate same-academy active non-portal staff and supported local Invoice/PersonDocument links, preserve optional nulls and existing permissions, and fail creation atomically if audit insertion fails. Native cleanup verified. Issue remains OPEN / RETEST; no concurrent revocation lock, legacy row rewrite, direct linked browser, physical-device or full critical acceptance claimed.
 
 Create validates type/title/priority only, then stores AssignedUserId, EntityType and EntityId verbatim. No user/entity lookup or relationship mapping occurs. Runtime NOT RUN.
 

@@ -10,6 +10,7 @@ namespace AcademyDesk.Api.Tests;
 public sealed class CollectionsBalanceTests
 {
     private static AcademyDeskDbContext Context() => new(new DbContextOptionsBuilder<AcademyDeskDbContext>().UseInMemoryDatabase(Guid.NewGuid().ToString()).Options);
+    private static FinanceGovernanceController Controller(AcademyDeskDbContext db) => new(db, new IdentityDbContext(new DbContextOptionsBuilder<IdentityDbContext>().UseInMemoryDatabase(Guid.NewGuid().ToString()).Options));
 
     [Theory]
     [InlineData(0, 0, 0, 0, 1000)]
@@ -32,7 +33,7 @@ public sealed class CollectionsBalanceTests
         db.Add(new Payment { AcademyId = academy, InvoiceId = Guid.NewGuid(), Amount = 5000m });
         db.Add(new Payment { AcademyId = Guid.NewGuid(), InvoiceId = invoice.Id, Amount = 5000m });
         await db.SaveChangesAsync(); db.ChangeTracker.Clear();
-        var controller = new FinanceGovernanceController(db);
+        var controller = Controller(db);
         var result = await controller.Collections(academy, default);
         var rows = Assert.IsType<List<CollectionInvoiceSummary>>(Assert.IsType<OkObjectResult>(result.Result).Value);
         Assert.Equal(expected > 0 ? 1 : 0, rows.Count); Assert.Empty(db.ChangeTracker.Entries());
@@ -55,7 +56,7 @@ public sealed class CollectionsBalanceTests
         db.AddRange(new Invoice { AcademyId = academy, StudentId = Guid.NewGuid(), InvoiceNumber = "QA-OWN", TotalAmount = 1000, Status = status, DueDate = today.AddDays(days) },
             new Invoice { AcademyId = Guid.NewGuid(), StudentId = Guid.NewGuid(), InvoiceNumber = "QA-FOREIGN", TotalAmount = 1000, DueDate = today.AddDays(-1) });
         await db.SaveChangesAsync(); db.ChangeTracker.Clear();
-        var result = await new FinanceGovernanceController(db).Collections(academy, default);
+        var result = await Controller(db).Collections(academy, default);
         var rows = Assert.IsType<List<CollectionInvoiceSummary>>(Assert.IsType<OkObjectResult>(result.Result).Value);
         Assert.Equal(visible ? 1 : 0, rows.Count); Assert.Empty(db.ChangeTracker.Entries());
         if (visible) { Assert.Equal("QA-OWN", rows[0].InvoiceNumber); Assert.Equal(1, rows[0].DaysOverdue); }
@@ -68,7 +69,7 @@ public sealed class CollectionsBalanceTests
         db.AddRange(new Invoice { AcademyId = academy, StudentId = Guid.NewGuid(), InvoiceNumber = "QA-USD", TotalAmount = 1000, AdjustedAmount = 500, Currency = "USD", DueDate = due },
             new Invoice { AcademyId = academy, StudentId = Guid.NewGuid(), InvoiceNumber = "QA-SETTLED", TotalAmount = 1000, AdjustedAmount = 1000, DueDate = due });
         await db.SaveChangesAsync();
-        var controller = new FinanceGovernanceController(db); var summary = Assert.IsType<OkObjectResult>(await controller.Summary(academy, default));
+        var controller = Controller(db); var summary = Assert.IsType<OkObjectResult>(await controller.Summary(academy, default));
         using var json = JsonDocument.Parse(JsonSerializer.Serialize(summary.Value)); Assert.Equal(1, json.RootElement.GetProperty("OverdueInvoices").GetInt32());
         var list = Assert.IsType<List<CollectionInvoiceSummary>>(Assert.IsType<OkObjectResult>((await controller.Collections(academy, default)).Result).Value);
         Assert.Equal("USD", Assert.Single(list).Currency); Assert.Equal(500m, list[0].Balance);
