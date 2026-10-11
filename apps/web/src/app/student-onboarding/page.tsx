@@ -1,5 +1,5 @@
 "use client";
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { academyApi, apiHeaders } from "@/lib/api";
 import { StandardDateField } from "@/components/standard-date-field";
@@ -14,23 +14,34 @@ export default function StudentOnboardingPage() {
   const [gender, setGender] = useState("");
   const [message, setMessage] = useState("Loading onboarding…");
   const [saving, setSaving] = useState(false);
+  const [created, setCreated] = useState(false);
+  const pending = useRef(false);
+  const completed = useRef(false);
+  const active = useRef(true);
   const minor =
     !!dob &&
     new Date(dob) >
       new Date(new Date().setFullYear(new Date().getFullYear() - 18));
   useEffect(() => {
-    void academyApi("/api/academies")
+    active.current = true;
+    void academyApi("/api/academies", { cache: "no-store" })
       .then(async (response) => {
+        if (!response.ok) throw new Error();
         const rows: Academy[] = await response.json();
+        if (!Array.isArray(rows) || (rows.length && (typeof rows[0]?.id !== "string" || !rows[0].id.trim()))) throw new Error();
+        if (!active.current) return;
         setAcademy(rows[0]);
         setMessage(rows[0] ? "" : "Create an academy first.");
       })
-      .catch(() => setMessage("Onboarding could not be loaded."));
+      .catch(() => { if (active.current) setMessage("Onboarding could not be loaded. Please refresh or contact your administrator."); });
+    return () => { active.current = false; };
   }, []);
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!academy) return;
+    if (!academy || pending.current || completed.current || !active.current) return;
+    pending.current = true;
     setSaving(true);
+    setMessage("Creating student…");
     const submittedForm = event.currentTarget;
     const form = new FormData(submittedForm);
     const body = Object.fromEntries(form) as Record<string, unknown>;
@@ -53,21 +64,32 @@ export default function StudentOnboardingPage() {
         },
       );
       const result = await response.json().catch(() => null);
-      if (!response.ok)
-        throw new Error(result?.message || "Onboarding could not be saved.");
+      if (!active.current) return;
+      if (!response.ok) {
+        setMessage(response.status >= 500
+          ? "Student creation could not be confirmed. Your details have been retained. Check Student Management before retrying."
+          : `${typeof result?.message === "string" && result.message.trim() ? result.message : "Onboarding could not be saved."} Your details have been retained.`);
+        return;
+      }
+      completed.current = true;
+      setCreated(true);
+      setMessage("Student created successfully. Opening Student Management…");
+      if (typeof result?.id !== "string" || !result.id.trim()) {
+        setMessage("Student created successfully, but the record link could not be loaded. Open Student Management to check the saved record; do not repeat onboarding.");
+        return;
+      }
       submittedForm.reset();
       setDob("");
       setAdmissionDate("");
       setGender("");
-      router.push(`/student-management?studentId=${result.id}&notice=student-created`);
-    } catch (error) {
-      setMessage(
-        error instanceof Error
-          ? error.message
-          : "Onboarding could not be saved.",
-      );
+      router.push(`/student-management?studentId=${encodeURIComponent(result.id)}&notice=student-created`);
+    } catch {
+      if (active.current) setMessage(completed.current
+        ? "Student created successfully, but Student Management could not be opened. Open it to check the saved record; do not repeat onboarding."
+        : "Student creation could not be confirmed. Your details have been retained. Check Student Management before retrying.");
     } finally {
-      setSaving(false);
+      if (active.current) setSaving(false);
+      pending.current = false;
     }
   }
   return (
@@ -79,11 +101,13 @@ export default function StudentOnboardingPage() {
         </div>
       </header>
       {message && (
-        <p className="enterprise-page-state enterprise-page-state-loading">
+        <p role="status" aria-live="polite" aria-atomic="true" className="enterprise-page-state enterprise-page-state-loading">
           {message}
         </p>
       )}
-      <form onSubmit={submit} className="student-onboarding-form">
+      {created && <a href="/student-management">Open Student Management</a>}
+      <form onSubmit={submit} aria-busy={saving} className="student-onboarding-form">
+        <fieldset className="contents" disabled={saving || !academy || created} aria-label="Student onboarding details">
         <section className="surface-panel onboarding-section">
           <header className="onboarding-section-header">
             <span>01</span>
@@ -211,12 +235,13 @@ export default function StudentOnboardingPage() {
         </section>
         <section className="surface-panel onboarding-submit xl:col-span-2">
           <button
-            disabled={saving || !academy}
+            disabled={saving || !academy || created}
           className="student-onboarding-submit"
           >
             {saving ? "Creating…" : "Complete onboarding"}
           </button>
         </section>
+        </fieldset>
       </form>
     </main>
   );

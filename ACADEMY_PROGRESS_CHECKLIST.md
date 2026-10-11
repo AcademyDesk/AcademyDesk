@@ -147,7 +147,7 @@ Scope: success/refresh/error/draft/pending feedback only. Existing payloads/doma
 - [x] Issue/checkpoint/E0/handoff updated, source/receipt local; no frontend/Mini/main/Azure or unrelated publication.
 - [ ] Linked browser/physical devices/full critical acceptance; issue OPEN. Blank optional student numbers and broader intake pending/unknown-result UX remain separate.
 
-## Current batch — Optional student-number SQL normalization
+## Past batch — Optional student-number SQL normalization
 
 - [x] Existing BUG-DATA-0008 reproduced: first blank intake200/second400; fresh owned SQL one empty-number row.
 - [x] Blank/whitespace numbers now NULL; optional fields, explicit trimming/unique index/length limit and transaction/authority unchanged. No migration or historical-row rewrite.
@@ -155,6 +155,14 @@ Scope: success/refresh/error/draft/pending feedback only. Existing payloads/doma
 - [x] Unchanged33 account-flag and21 transaction native cases plus56 targeted unit tests PASS; builds0/0,88+7 migrations and exact owned cleanup; [report](QA/REPORTS/PHASE_2B_ONBOARDING_NUMBER_REPAIR.md).
 - [x] Issue/register/E0/checkpoint/handoff updated; evidence local, unrelated Mini work preserved. Feature publication only, not main/Azure.
 - [ ] Linked browser/physical devices/broader race/stale/full critical acceptance; issue OPEN. Queued intake feedback and visual work remain next.
+
+## Current batch — Student/Teacher onboarding feedback
+
+- [x] Checked initial academy readiness, synchronous pending/duplicate guards, native field disabling and accessible status.
+- [x] Clear success/rejected/unconfirmed feedback; retained failed drafts, safe confirmed-student link fallback; original payloads/reset/navigation/backend authority retained.
+- [x]48 new+9 retained handler checks PASS; frozen baseline1 PASS/47 FAIL, not47 distinct bugs.
+- [x]48 new+32 retained synthetic desktop/mobile light/dark browser checks PASS; two mobile screenshots inspected. Lint0/0/types/export83; [report](QA/REPORTS/PHASE_2B_ONBOARDING_FEEDBACK_REPAIR.md).
+- [ ] Live browser-to-SQL, physical devices and full critical acceptance remain OPEN; previous native proofs retained, not rerun.
 
 ## Original feedback routes — bounded checkpoint list
 
@@ -206,7 +214,8 @@ Current bounded feedback count: **28/28 checkpointed**, after the Assessments cr
 - [x] BUG-DATA-0004 onboarding domain/Identity transaction fault gate — bounded native repair/proof complete; wider acceptance OPEN.
 - [x] BUG-DATA-0007 incomplete optional-credential created-account flags — bounded native proof complete; broader acceptance OPEN.
 - [x] BUG-DATA-0008 optional-number collision — bounded29-case native normalization/uniqueness/chain proof; wider acceptance OPEN.
-- [ ] **Next: Student/Teacher onboarding pending/unknown-result/success feedback** — preserve payloads, optional fields, original navigation and backend authority; Sol Medium for settled UI, High if domain/security policy changes are required.
+- [x] Student/Teacher onboarding feedback — bounded handler/synthetic browser proof; live/device acceptance OPEN.
+- [ ] **Next: independent Manual/shared visual foundation** — verify current FW1 return and existing tokens/components, implement settled Manual controls without pretending shared AI delivery is complete; Sol Medium, High for consequential integration.
 - [ ] Shared PENTA/Manual visual foundation: consume versioned FW1 delivery when available, continue independent Manual controls without claiming the shared AI frontend is delivered.
 - [ ] FP1/FP2/FP3 explicit owner decisions and legacy disposition — pending, not inferred from “continue.”
 - [ ] Approved financial implementation — Sol High; accounting/tax/payroll review before applicable release. Policy-pending finance need not block safe feedback work.

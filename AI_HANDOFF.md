@@ -2,6 +2,10 @@
 
 ## Current state
 
+## Student/Teacher onboarding feedback — 2026-10-11
+
+[Report](QA/REPORTS/PHASE_2B_ONBOARDING_FEEDBACK_REPAIR.md): checked uncached intake readiness, synchronous duplicate-submit guards/native disabled fields, accessible pending/success/rejection/unconfirmed notices, draft retention and confirmed-student missing-link/navigation fallback. Original payloads/reset/redirect/backend authority retained.48 new+9 retained handler checks and48 new+32 retained synthetic browser cases PASS; lint0/0,types/export83 PASS, two mobile screenshots inspected. Baseline1 PASS/47 FAIL; retained browser assertion-text update recorded. SQL proofs retained NOT rerun; linked/device/full-critical/FW1/release OPEN, original28 count unchanged. Unrelated32/28/evidence preserved, no Mini/main/Azure. NEXT independent Manual/shared visual foundation, verify FW1 return; Sol Medium for settled UI, High for consequential integration. Maintain [checklist](ACADEMY_PROGRESS_CHECKLIST.md).
+
 ## Optional student-number normalization — 2026-10-10
 
 [Report](QA/REPORTS/PHASE_2B_ONBOARDING_NUMBER_REPAIR.md): BUG-DATA-0008 baseline first blank200/second400 plus one empty SQL row confirmed; blank/whitespace now NULL, explicit unique index/trimming/length limit unchanged.29 new native cases, unchanged33 account/21 atomic cases and56 targeted unit PASS; builds0/0,migrations88+7/owned cleanup. Legacy blank preserved; one concurrent blank pair passed, not broad race acceptance. No frontend/date/authority/Mini/main/Azure; unrelated32/28 continuity/evidence preserved, issue/linked/device/critical/FW1/release OPEN. NEXT Student/Teacher onboarding pending/unknown-result/success feedback, Sol Medium; High for consequential host/domain/release work. Maintain/display [checklist](ACADEMY_PROGRESS_CHECKLIST.md), no whole-app readiness claim or project switch.

@@ -44,7 +44,7 @@ const server = http.createServer((req, res) => { try {
       if(kind==='student')await chooseDate('dateOfBirth');
       if(dates==='valid')for(const name of kind==='teacher'?['dateOfBirth','joiningDate']:['admissionDate'])await chooseDate(name);
       await page.getByRole('button',{name:kind==='teacher'?'Complete teacher onboarding':'Complete onboarding',exact:true}).click();
-      if(status===400){await page.getByText('Synthetic date rejection',{exact:true}).waitFor();assert.equal(await page.locator('input[name="'+(kind==='teacher'?'firstName':'studentFirstName')+'"]').inputValue(),'Synthetic');}
+      if(status===400){await page.getByText('Synthetic date rejection Your details have been retained.',{exact:true}).waitFor();assert.equal(await page.locator('input[name="'+(kind==='teacher'?'firstName':'studentFirstName')+'"]').inputValue(),'Synthetic');}
       else if(kind==='teacher'){await page.getByText('Teacher onboarded. Add payment details from the Teacher payment details section.',{exact:true}).waitFor();assert.equal(await page.locator('input[name="firstName"]').inputValue(),'');}
       else await page.waitForURL('**/student-management?studentId=synthetic-created&notice=student-created');
       assert.equal(writes.length,1);

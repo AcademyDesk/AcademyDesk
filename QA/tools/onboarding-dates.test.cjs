@@ -4,12 +4,12 @@ const ts=require('../../apps/web/node_modules/typescript'),jsx=require('../../ap
 function nodes(n){return Array.isArray(n)?n.flatMap(nodes):!n||typeof n!=='object'?[]:[n,...nodes(n.props?.children)];}
 async function fixture(kind,dates,status=200){
  const code=ts.transpileModule(fs.readFileSync('apps/web/src/app/'+kind+'-onboarding/page.tsx','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX}}).outputText;
- const state=new Map(),calls=[],pushes=[],module={exports:{}};let index=0,resets=0;
- const react={useState:v=>{const k=index++;if(!state.has(k))state.set(k,v);return[state.get(k),v=>state.set(k,typeof v==='function'?v(state.get(k)):v)];},useEffect:()=>{}};
+ const state=new Map(),refs=[],calls=[],pushes=[],module={exports:{}};let index=0,refIndex=0,resets=0;
+ const react={useState:v=>{const k=index++;if(!state.has(k))state.set(k,v);return[state.get(k),v=>state.set(k,typeof v==='function'?v(state.get(k)):v)];},useRef:v=>refs[refIndex++]??(refs[refIndex-1]={current:v}),useEffect:()=>{}};
  const api=async(url,init)=>{calls.push({url,...init});return{ok:status===200,status,json:async()=>({id:'synthetic-created',message:'Synthetic rejection'})};};
  class FakeFormData extends Map{constructor(){super(Object.entries(kind==='teacher'?{firstName:'Synthetic',lastName:'Teacher',email:'qa@example.invalid',employmentType:'Full-time',phone:'',...dates}:{studentFirstName:'Synthetic',studentLastName:'Learner',dateOfBirth:'2000-01-01',studentNumber:'',...dates}));}}
  new Function('require','module','exports','FormData',code)(n=>n==='react/jsx-runtime'?jsx:n==='react'?react:n==='next/navigation'?{useRouter:()=>({push:url=>pushes.push(url)})}:n==='@/lib/api'?{academyApi:api,apiHeaders:()=>({})}:n.startsWith('@/components/')?{StandardDateField:'date',StandardSelectField:'select'}:(()=>{throw Error(n)})(),module,module.exports,FakeFormData);
- const render=()=>{index=0;return module.exports.default();};render();state.set(0,{id:'owned'});if(kind==='teacher')state.set(2,[{subject:' Piano ',certification:''}]);
+ const render=()=>{index=refIndex=0;return module.exports.default();};render();state.set(0,{id:'owned'});if(kind==='teacher')state.set(2,[{subject:' Piano ',certification:''}]);
  const action=async()=>{const event={preventDefault(){},currentTarget:{reset(){resets++;}}};const pending=nodes(render()).find(n=>n.type==='form').props.onSubmit(event);event.currentTarget=null;await pending;};
  return{action,calls,pushes,state,resets:()=>resets,render};
 }
