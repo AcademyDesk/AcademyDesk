@@ -100,12 +100,12 @@ internal static partial class SqlHarnessEntryPoint
         if (before.Payments.Where(x => x.Status is "Completed" or "Reconciled").Sum(x => x.Amount) != expectedPaid ||
             Math.Max(0m, before.Total - before.Adjusted - expectedPaid) != expectedBalance)
             throw new InvalidOperationException("Consumer SQL fixture arithmetic differs.");
-        var views = await ReadFinanceViewsAsync(client, $"/api/academies/{academyId}/invoices", studentId, invoiceId, adminToken, studentToken);
+        var views = await ReadFinanceViewsAsync(client, $"/api/academies/{academyId}/invoices", studentId, invoiceId, adminToken, studentToken, before.Status);
         if (views != (expectedPaid, expectedBalance, expectedBalance)) throw new InvalidOperationException("Consumer Admin/Student balances differ.");
         using var document = await client.GetAsync($"/api/portal/students/{studentId}/invoices/{invoiceId}/download");
         RequireFinanceStatus(document, HttpStatusCode.OK, "consumer invoice document");
         var html = await document.Content.ReadAsStringAsync();
-        if (!html.Contains($"Adjustments: INR {before.Adjusted:N2}") || !html.Contains($"Paid: INR {expectedPaid:N2}") || !html.Contains($"Balance: INR {expectedBalance:N2}"))
+        if (!html.Contains($"Adjustments: INR {before.Adjusted:N2}") || !html.Contains($"Paid: INR {expectedPaid:N2}") || !html.Contains($"Balance: INR {expectedBalance:N2}") || !html.Contains($"Status: {before.Status}"))
             throw new InvalidOperationException("Consumer document balance/evidence differs.");
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", adminToken);
         decimal gross, applied, collected; int notificationsBefore;

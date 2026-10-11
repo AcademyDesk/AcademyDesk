@@ -4,7 +4,7 @@
 | --- | --- |
 | Status | OPEN |
 | Confirmation status | RUNTIME-CONFIRMED; bounded repair verified, RETEST |
-| Final verification | 111 targeted tests/45 strict status controls/retained transitions plus20 SQL-overlapped pairs and9 audit controls PASS; wider gates OPEN |
+| Final verification | Retained111/45/20+9 gates; six native consumer stages/four linked journeys24 page-states/16 mutations PASS; display/wider gates OPEN |
 | Severity | Major invoice-ledger status integrity |
 | Priority | P1 |
 | Category | DATA |
@@ -13,7 +13,7 @@
 | Screen / route | /invoices; direct invoice API |
 | API | PATCH /api/academies/{academyId}/invoices/{invoiceId}/status |
 | Environment | D:\AcademyDesk-codex-p0, codex/penta-search; real Identity/HTTP/disposable SQL; production state not inferred |
-| Device/viewport | NOT RUN; use QA/06_DEVICE_VIEWPORT_MATRIX.md where UI applies |
+| Device/viewport | Headless Edge320/1440px/light-dark linked consumer states; physical Android/iOS NOT RUN |
 | Baseline | 20bb6047f9edf733ac8e2a226621cc582ec54b3c + pre-existing student UI diff |
 | Discovery test / review ID | FINANCE-INVOICE-STATUS-001 |
 | Evidence classification | Runtime reproduction on frozen API plus controlled tests; local evidence retained |
@@ -23,19 +23,21 @@
 | Class/function | Invoices.UpdateStatus |
 | Related source | INVENTORY/API_ENDPOINTS.md, CONTRACTS.md, FORMS_AND_FIELDS.md and ASYNC_FORM_RISKS.md |
 | Root-cause confidence | HIGH |
-| Evidence location | QA/REPORTS/PHASE_2B_INVOICE_STATUS_LEDGER_REPAIR.md; QA/REPORTS/PHASE_2B_INVOICE_STATUS_CONCURRENCY_AUDIT.md; local QA/EVIDENCE/invoice-status-20261011 and invoice-integrity-20261011 |
+| Evidence location | QA/REPORTS/PHASE_2B_INVOICE_STATUS_LEDGER_REPAIR.md; PHASE_2B_INVOICE_STATUS_CONCURRENCY_AUDIT.md; PHASE_2B_INVOICE_CONSUMERS_LINKED.md; local QA/EVIDENCE/invoice-status-20261011, invoice-integrity-20261011 and invoice-consumers-20261012 |
 | Screenshot | Not captured on pinned baseline |
-| Console logs | Not captured; required in retest |
+| Console logs | Linked four consumer journeys: zero console/page errors; wider workflows pending |
 | API request | In an isolated academy create an invoice for 1000 with no payments. PATCH status to Paid, then read invoice list, finance overview and any collection/reminder projections. Repeat lowercase paid, Cancelled on a paid invoice, malformed status, wrong academy, and a legitimately fully collected control. |
 | API response | Frozen unpaid Paid/paid200; repaired contradictions400, canonical accepted status200;45 final strict controls and retained transitions PASS/no429 |
 | Database before/after | Frozen Paid with collected0/balance1000 reproduced; final matrix checks fresh full invoice/payment/adjustment/audit snapshots |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
 | Fix commit | ee1e5a123d9683c8074118136f2fbebc326c9b9d; QA-only successor follows this repair |
-| Retest result | OPEN/RETEST; bounded concurrency/audit rollback PASS, consumer/linked browser/device/direct-boundary/critical/release/policy pending |
-| Regression result | 111 targeted unit/controller checks PASS; successor run8e62b5200c00447e800d1e40a1ba6abd20 pairs/9 audit controls PASS/62.3s/no429/exact owned cleanup; previous45 status controls/retained transitions retained |
+| Retest result | OPEN/RETEST; bounded concurrency/audit/native+linked consumer PASS; fractional/gross-money display, device/direct/stale/critical/release/policy pending |
+| Regression result | Prior111/45/20+9 accepted evidence retained; latest run1787e8dba86e45c4b7c371e502d704a9 six native/four linked journeys24 states/16 mutations/200 non-mutation snapshots PASS,265s/no429/exact owned cleanup; wider/display gates OPEN |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
 ## Exact reproduction
+
+2026-10-12 consumer successor: [report](../REPORTS/PHASE_2B_INVOICE_CONSUMERS_LINKED.md) records six retained native stages strengthened with status/document assertions, four real browser journeys/24 page-states, eight real UI downloads,16 API mutations (12 success/four400 no-write),200 unchanged four-finance-table controls/exact success audit/positive foreign sentinel/no429. Final run1787e8dba86e45c4b7c371e502d704a9,265s/88+7 migrations/exact owned cleanup; two selector/document-grouping harness failures retained/corrected without tolerance or app changes. **OPEN follow-ups:** Student0.01 renders0 due integer currency formatting; invoice preview labels gross amount "Total payable" even after settlement. Current integer status/consumer gate is not acceptance of those monetary displays. Direct/platform/stale/device/critical/release and policy gates remain separate; issue not closed.
 
 2026-10-12 IST QA-only successor: [concurrency/audit report](../REPORTS/PHASE_2B_INVOICE_STATUS_CONCURRENCY_AUDIT.md) records20/20 real SQL-overlapped status-vs-collection/void/approval/restoration pairs and9/9 audit rollback/rejection/recovery controls,111 targeted tests PASS. Four-table full finance snapshots, actor/tenant/action/route audits and invoice-register parity checked; initial harness monitoring/order/decimal-scale failures retained and corrected without weakening ledger assertions. No application or policy change;0055 remains OPEN for wider gates.
 

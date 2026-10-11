@@ -551,6 +551,8 @@ static async Task VerifyRealHttpAsync(QaRunManifest manifest, bool classMediaOnl
         if (financeConsumersOnly)
         {
             await VerifyFinanceConsumersAsync(factory, client);
+            if (Environment.GetEnvironmentVariable("QA_INVOICE_CONSUMER_BROWSER") == "1")
+                await VerifyInvoiceConsumerBrowserAsync(factory, client);
             return; // Bounded read-view/reminder gate; not critical suite or restoration policy acceptance.
         }
         if (paymentTransitionOnly)

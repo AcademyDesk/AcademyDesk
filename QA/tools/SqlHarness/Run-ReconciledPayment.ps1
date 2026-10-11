@@ -128,6 +128,10 @@ try {
             $qaHarness = Join-Path $qaRepo ".build-check/$qaArtifact/bin/SqlHarness/debug/SqlHarness.dll"
             if (!(Test-Path -LiteralPath $qaHarness)) { throw 'Build the isolated Course SQL harness first.' }
             $qaCommand = @($qaHarness, $qaRun, $qaPort, $qaContainer, $qaSwitch)
+        } elseif ($Module -eq 'Consumers' -and $env:QA_INVOICE_CONSUMER_BROWSER -eq '1') {
+            $qaHarness = Join-Path $qaRepo '.build-check/invoice-consumers-sql/bin/SqlHarness/debug/SqlHarness.dll'
+            if (!(Test-Path -LiteralPath $qaHarness)) { throw 'Build Consumers with --artifacts-path .build-check/invoice-consumers-sql first.' }
+            $qaCommand = @($qaHarness, $qaRun, $qaPort, $qaContainer, $qaSwitch)
         } elseif ($Module -eq 'InvoiceIntegrity') {
             $qaHarness = Join-Path $qaRepo '.build-check/invoice-integrity-sql/bin/SqlHarness/debug/SqlHarness.dll'
             if (!(Test-Path -LiteralPath $qaHarness)) { throw 'Build InvoiceIntegrity with --artifacts-path .build-check/invoice-integrity-sql first.' }

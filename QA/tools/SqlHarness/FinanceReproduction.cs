@@ -116,7 +116,7 @@ internal static partial class SqlHarnessEntryPoint
     }
 
     private static async Task<(decimal Paid, decimal AdminBalance, decimal StudentBalance)> ReadFinanceViewsAsync(
-        HttpClient client, string invoicesPath, Guid studentId, Guid invoiceId, string adminToken, string studentToken)
+        HttpClient client, string invoicesPath, Guid studentId, Guid invoiceId, string adminToken, string studentToken, string? expectedStatus = null)
     {
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", adminToken);
         using var admin = await client.GetAsync(invoicesPath);
@@ -131,6 +131,9 @@ internal static partial class SqlHarnessEntryPoint
         using var studentJson = JsonDocument.Parse(await student.Content.ReadAsStringAsync());
         var portalInvoice = studentJson.RootElement.GetProperty("invoices").EnumerateArray()
             .Single(x => x.GetProperty("id").GetGuid() == invoiceId);
+        if (expectedStatus is not null && (invoice.GetProperty("status").GetString() != expectedStatus ||
+            portalInvoice.GetProperty("status").GetString() != expectedStatus))
+            throw new InvalidOperationException("Admin/Student invoice status differs from fresh SQL.");
         if (invoice.GetProperty("totalAmount").GetDecimal() != 1000m ||
             portalInvoice.GetProperty("totalAmount").GetDecimal() != 1000m)
             throw new InvalidOperationException("Invoice views returned the wrong synthetic total.");
