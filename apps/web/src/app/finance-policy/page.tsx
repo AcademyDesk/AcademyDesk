@@ -21,6 +21,11 @@ export default function FinancePolicy() {
       const response = await academyApi(`/api/academies/${academy.id}/finance-governance/settings`, { method: "PUT", headers: apiHeaders(true), body: JSON.stringify({ taxRegistrationNumber: form.get("taxRegistrationNumber"), taxLabel: form.get("taxLabel"), taxRatePercent: Number(form.get("taxRatePercent")), defaultPaymentTermsDays: Number(form.get("defaultPaymentTermsDays")), taxInclusivePricing: form.get("taxInclusivePricing") === "on", invoiceLogoUrl: form.get("invoiceLogoUrl"), invoiceAuthorityName: form.get("invoiceAuthorityName"), invoiceAuthorityTitle: form.get("invoiceAuthorityTitle"), invoiceSignatureUrl: form.get("invoiceSignatureUrl"), invoiceTemplateKey: form.get("invoiceTemplateKey"), payslipTemplateKey: settings.payslipTemplateKey , settingsVersion: settings.settingsVersion }) });
       if (response.status === 409) return setMessage("Settings changed in another window. Your draft has not been saved. Refresh this page and review the latest settings before saving again.");
       if (response.status === 428) return setMessage("Refresh settings before saving. Your draft has not been saved.");
+      if (response.status === 400) {
+        const rejected: unknown = await response.json().catch(() => null);
+        const reason = rejected && typeof rejected === "object" && "message" in rejected ? rejected.message : null;
+        if (reason === "Tax label must not exceed 30 characters. Your draft has not been saved." || reason === "Tax registration number must not exceed 50 characters. Your draft has not been saved.") return setMessage(reason);
+      }
       if (!response.ok) return setMessage("Finance policy could not be saved.");
       setSettings(await response.json()); setMessage("Finance policy saved.");
     } catch { setMessage("The save could not be confirmed. Check the latest settings before retrying; your draft is retained."); }

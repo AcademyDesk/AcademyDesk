@@ -57,6 +57,14 @@ public sealed class FinanceGovernanceController(AcademyDeskDbContext db, Identit
          return BadRequest(new { message = "Choose a supported document theme." });
      if (string.IsNullOrWhiteSpace(r.SettingsVersion))
          return StatusCode(StatusCodes.Status428PreconditionRequired, new { message = "Refresh settings before saving. Your draft has not been saved." });
+     // Match SQL nvarchar limits after the existing normalization. String.Length
+     // counts UTF-16 units, including both units of a supplementary character.
+     var taxRegistrationNumber = r.TaxRegistrationNumber?.Trim() ?? "";
+     var taxLabel = string.IsNullOrWhiteSpace(r.TaxLabel) ? "GST" : r.TaxLabel.Trim();
+     if (taxLabel.Length > 30)
+         return BadRequest(new { message = "Tax label must not exceed 30 characters. Your draft has not been saved." });
+     if (taxRegistrationNumber.Length > 50)
+         return BadRequest(new { message = "Tax registration number must not exceed 50 characters. Your draft has not been saved." });
      // Lock the stable academy row even when no settings row exists. The host
      // boundary holds this lock through the settings write and success audit.
      await using var ownedTransaction = db.Database.IsSqlServer() && db.Database.CurrentTransaction is null
@@ -69,8 +77,8 @@ public sealed class FinanceGovernanceController(AcademyDeskDbContext db, Identit
      if (!string.Equals(r.SettingsVersion, SettingsSnapshot(academyId, row).SettingsVersion, StringComparison.Ordinal))
          return Conflict(new { message = "Settings changed in another window. Your draft has not been saved. Refresh this page and review the latest settings before saving again." });
      if (row is null) { row = new AcademyFinanceSettings { AcademyId = academyId }; db.AcademyFinanceSettings.Add(row); }
-     row.TaxRegistrationNumber = r.TaxRegistrationNumber?.Trim() ?? "";
-     row.TaxLabel = string.IsNullOrWhiteSpace(r.TaxLabel) ? "GST" : r.TaxLabel.Trim();
+     row.TaxRegistrationNumber = taxRegistrationNumber;
+     row.TaxLabel = taxLabel;
      row.TaxRatePercent = r.TaxRatePercent;
      row.DefaultPaymentTermsDays = r.DefaultPaymentTermsDays;
      row.TaxInclusivePricing = r.TaxInclusivePricing;

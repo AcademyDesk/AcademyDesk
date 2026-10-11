@@ -36,7 +36,7 @@ internal static partial class SqlHarnessEntryPoint
             if (result.SettingsVersion?.Length != 64) throw new InvalidOperationException("Missing authoritative settings version.");
             return result;
         }
-        async Task<FinanceSettingsSummary?> Send(object body, HttpStatusCode expected, string? token = null, string? path = null, bool attachVersion = true)
+        async Task<FinanceSettingsSummary?> Send(object body, HttpStatusCode expected, string? token = null, string? path = null, bool attachVersion = true, string? expectedMessage = null)
         {
             if (attachVersion)
             {
@@ -48,6 +48,11 @@ internal static partial class SqlHarnessEntryPoint
             using var request = new HttpRequestMessage(HttpMethod.Put, path ?? route) { Content = JsonContent.Create(body) };
             if (token is not null) request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
             using var response = await client.SendAsync(request); RequireFinanceStatus(response, expected, "finance policy theme");
+            if (expectedMessage is not null)
+            {
+                using var error = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+                if (error.RootElement.GetProperty("message").GetString() != expectedMessage) throw new InvalidOperationException("Settings length rejection message differs.");
+            }
             if (expected != HttpStatusCode.OK && before != await Snapshot()) throw new InvalidOperationException("Denied theme request changed settings.");
             checks++; Console.WriteLine($"PASS: POLICYTHEME case={checks} HTTP={(int)expected} noRejectedWrite=true");
             return expected == HttpStatusCode.OK ? await response.Content.ReadFromJsonAsync<FinanceSettingsSummary>() : null;
@@ -66,6 +71,33 @@ internal static partial class SqlHarnessEntryPoint
             if (await response.Content.ReadFromJsonAsync<FinanceSettingsSummary>() != expected) throw new InvalidOperationException("Fresh HTTP policy readback mismatch.");
         }
         FinanceSettingsRequest Body(string? theme, string label = "GST", decimal rate = 18) => new("Synthetic",label,rate,7,false,"https://example.invalid/logo.png","Synthetic signatory","Finance","https://example.invalid/sign.png","Modern",theme);
+        async Task LengthRejections()
+        {
+            var before = await Read();
+            await Send(Body("Compact", "  " + new string('L', 31) + "  "), HttpStatusCode.BadRequest, admin, expectedMessage: "Tax label must not exceed 30 characters. Your draft has not been saved.");
+            await Send(Body("Compact") with { TaxRegistrationNumber = "  " + new string('R', 51) + "  " }, HttpStatusCode.BadRequest, admin, expectedMessage: "Tax registration number must not exceed 50 characters. Your draft has not been saved.");
+            if (await Read() != before) throw new InvalidOperationException("Length rejection rotated version.");
+        }
+        // Reject before absent-row insertion, then prove exact normalized SQL limits.
+        await LengthRejections();
+        foreach (var supplementary in new[] { false, true })
+        {
+            var label = supplementary ? string.Concat(Enumerable.Repeat("\U0001F3B5", 15)) : new string('L', 30);
+            var registration = supplementary ? string.Concat(Enumerable.Repeat("\U0001F3B5", 25)) : new string('R', 50);
+            var saved = (await Send(Body("Compact", "  " + label + "  ") with { TaxRegistrationNumber = "  " + registration + "  " }, HttpStatusCode.OK, admin))!;
+            if (saved.TaxLabel != label || saved.TaxRegistrationNumber != registration) throw new InvalidOperationException("Exact-limit trim changed stored text.");
+            await Verify(saved);
+            await Send(Body("Compact", label + "x"), HttpStatusCode.BadRequest, admin, expectedMessage: "Tax label must not exceed 30 characters. Your draft has not been saved.");
+            await Send(Body("Compact", label) with { TaxRegistrationNumber = registration + "x" }, HttpStatusCode.BadRequest, admin, expectedMessage: "Tax registration number must not exceed 50 characters. Your draft has not been saved.");
+            await Verify(saved);
+        }
+        await LengthRejections();
+        foreach (var blank in new string?[] { null, "", "   " })
+        {
+            var saved = (await Send(Body("Compact") with { TaxLabel = blank, TaxRegistrationNumber = blank }, HttpStatusCode.OK, admin))!;
+            if (saved.TaxLabel != "GST" || saved.TaxRegistrationNumber != "") throw new InvalidOperationException("Optional settings defaults changed.");
+            await Verify(saved);
+        }
         foreach (var theme in new[] { "Standard", "Compact", "Professional" })
         {
             await Verify((await Send(Body(theme),HttpStatusCode.OK,admin))!);

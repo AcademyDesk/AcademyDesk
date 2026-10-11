@@ -287,7 +287,7 @@ Current bounded feedback count: **28/28 checkpointed**, after the Assessments cr
 - [x] Real SQL21 sequential controls +5/5 guarded pairs PASS: exactly200/409, one row/one audit/unmixed fields/no429;88/7 migrations/exact owned cleanup. Docker normal restart recovered; no reset/prune/older-container deletion.
 - [x] Linked browser-SQL and same-action SQL audit-fault bounded gates completed in the successor below; physical Android/iOS and critical/issue closure remain OPEN.
 
-## Current batch — Finance settings audit rollback + linked browser / loading guard
+## Past batch — Finance settings audit rollback + linked browser / loading guard
 
 - [x] Audit-denied insertion/update500 leave settings/audits/version unchanged; restored-audit recovery200 adds exactly one success audit.
 - [x]24 native SQL controls +5/5 strict200/409 simultaneous pairs PASS; original themes/current-version reset/role/tenant/no-write guards preserved.
@@ -297,9 +297,19 @@ Current bounded feedback count: **28/28 checkpointed**, after the Assessments cr
 - [x]6 Policy handlers/36 conflict+16 theme synthetic browser/typecheck/export83 fresh PASS;67 API units retained, not rerun; Governance3 inherited lint warnings unchanged.
 - [x]88/7 migrations/exact owned DB/login/container cleanup verified. Failed runs/evidence retained; only their exact owned containers removed. Both PENTA/seven older QA containers retained.
 - [x] [Report](QA/REPORTS/PHASE_2B_FINANCE_SETTINGS_AUDIT_LINKED.md), issue/continuity/scoped publication packet; no main/Azure/Mini/Core change.
-- [ ] Separate FINANCE-SETTINGS-LENGTH-001: reject overlong tax label/registration with400/no write, retain draft and test exact schema limits. Valid-input linked pass does not fix the observed500.
+- [x] FINANCE-SETTINGS-LENGTH-001 API/controller/handler repair implemented in the successor below; final linked acceptance tracked separately.
 - [ ] Governance document preview clips internally at320px; premium Manual/shared-document responsive layout follow-up. Root overflow PASS is not full visual acceptance.
 - [ ] Physical Android/iOS/tablet, full critical/wider permission/visual/release gates; BUG-DATA-0053 remains OPEN/RETEST.
+
+## Current batch — Finance settings normalized-length validation
+
+- [x] Existing normalized SQL limits30/50 enforced with400/no write, no truncation/schema widening or altered tax/authority rules.
+- [x] Exact limits/trim/supplementary UTF-16/null/blank defaults covered;76 targeted API units PASS (nine new plus67 retained).
+- [x] Both editors display only safe code-owned length guidance; retain editor/version/draft and pending recovery.27 handler checks PASS vs frozen23/27.
+- [x] Fresh types/export83/harness0 warnings-errors PASS; target lint0 errors/three inherited Governance warnings.36 conflict +16 theme synthetic browser cases PASS.
+- [x] Native SQL37 controls +5/5 strict200/409 pairs PASS, including eight length rejections/five normalized successes and original audit rollback/recovery.
+- [x] Eight real linked browser journeys +eight native length400 PASS;40 PUTs=24success/eight409/eight400/no429. Exact owned DB/login/container cleanup,88/7 migrations verified. [Report](QA/REPORTS/PHASE_2B_FINANCE_SETTINGS_LENGTH_REPAIR.md); scoped feature publication only, no main/Azure/Mini.
+- [ ] Physical devices/full critical/wider visual and permission/release gates remain OPEN; BUG-DATA-0053 not closed.
 
 ## Past batch — Teacher publication form contract
 
@@ -334,7 +344,7 @@ Current bounded feedback count: **28/28 checkpointed**, after the Assessments cr
 - [x] BUG-DATA-0050 teacher compensation zero-rate round-trip — bounded conversion/native proof; broader acceptance OPEN/RETEST.
 - [x] BUG-API-0005 bounded handler/native/synthetic browser proof completed; broader issue OPEN/RETEST.
 - [x] BUG-DATA-0053 SQL stale/concurrent/audit-fault and linked settings browser bounded gates complete; original assertions preserved. Device/critical/wider still OPEN; no audit restart.
-- [ ] **Next: FINANCE-SETTINGS-LENGTH-001 schema-bound input validation**, Sol Medium; High if transaction/authority contracts change. Then existing backend queue/Manual shared controls. Issue closure is separate from publication.
+- [ ] **Next: Governance document-preview internal320px clipping**, Sol Medium bounded Manual/shared-document responsive repair; High if shared design/authority contracts change. Existing backend queue/physical/critical/Mini/FW1 gates continue; issue closure is separate from publication.
 - [ ] Manual shared redesign foundation and Platform → Admin → Teacher → Student rollout: Orbit + Aura dark /Prism light, reusable responsive tokens/shell/controls; preserve interrupted overlay work. Sol High foundation/host contracts, Medium settled rollout. Inherited lint remains open.
 - [ ] Shared PENTA/Manual visual foundation: consume versioned FW1 delivery when available, continue independent Manual controls without claiming the shared AI frontend is delivered.
 - [ ] FP1/FP2/FP3 explicit owner decisions and legacy disposition — pending, not inferred from “continue.”

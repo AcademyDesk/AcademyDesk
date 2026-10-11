@@ -113,7 +113,7 @@ internal static partial class SqlHarnessEntryPoint
         Console.Write(await output); var errorText = await errors;
         await bridge.StopAsync();
         if (process.ExitCode != 0) throw new InvalidOperationException("Settings linked browser failed: " + errorText);
-        if (!failures.IsEmpty || statuses.Count != 32 || statuses.Count(x => x == 200) != 24 || statuses.Count(x => x == 409) != 8) throw new InvalidOperationException("Settings linked SQL verification failed: " + string.Join("; ", failures));
-        Console.WriteLine("PASS: SETTINGS BROWSER eight linked journeys;24 real successes/eight stale409; exact SQL fields/audits/foreign+ledger preservation; no429; physical devices NOT RUN.");
+        if (!failures.IsEmpty || statuses.Count != 40 || statuses.Count(x => x == 200) != 24 || statuses.Count(x => x == 409) != 8 || statuses.Count(x => x == 400) != 8) throw new InvalidOperationException("Settings linked SQL verification failed: " + string.Join("; ", failures));
+        Console.WriteLine("PASS: SETTINGS BROWSER eight linked journeys;24 real successes/eight stale409/eight length400; exact SQL fields/audits/foreign+ledger preservation; no429; physical devices NOT RUN.");
     }
 }

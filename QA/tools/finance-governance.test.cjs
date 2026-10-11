@@ -11,7 +11,7 @@ const compiled = ts.transpileModule(source, {
 const item = { id: 'w', type: 'Collections', title: 'Synthetic collection', description: null, priority: 'High', status: 'Open', escalationStage: 'Initial', promisedPaymentDate: null };
 const invoice = { id: 'i', invoiceNumber: 'QA-I', totalAmount: 100, balance: 100, currency: 'INR', dueDate: '2026-09-01', daysOverdue: 30 };
 const adjustment = { id: 'd', type: 'Discount', amount: 1, reason: 'Synthetic', status: 'PendingApproval' };
-const settings = { invoiceTemplateKey: 'Classic', payslipTemplateKey: 'Standard' };
+const settings = { invoiceTemplateKey: 'Classic', payslipTemplateKey: 'Standard', settingsVersion: 'A'.repeat(64) };
 const flush = () => new Promise(resolve => setImmediate(resolve));
 function nodes(node, predicate) {
   if (Array.isArray(node)) return node.flatMap(x => nodes(x, predicate));
@@ -23,7 +23,7 @@ function text(node) {
   if (node == null || typeof node === 'boolean') return '';
   return typeof node === 'object' ? text(node.props?.children) : String(node);
 }
-function page({ ready = false, deniedRead = false, deniedWrite = false, failRefresh = false, allowGeneric = false } = {}) {
+function page({ ready = false, deniedRead = false, deniedWrite = false, failRefresh = false, allowGeneric = false, documentError } = {}) {
   const states = ready ? [{ id: 'a' }, [adjustment], [invoice], [item], settings, '', false, undefined, false, undefined, 'Invoice', false, false] : [];
   const writes = new Map(), effects = [], calls = [], refs = []; let index = 0, refIndex = 0, mutated = false;
   const react = { useState: initial => { const key = index++; return [writes.has(key) ? writes.get(key) : ready ? states[key] : initial,
@@ -36,6 +36,7 @@ function page({ ready = false, deniedRead = false, deniedWrite = false, failRefr
     if (name === '@/lib/api') return { apiHeaders: () => ({}), academyApi: async (url, options = {}) => {
       const write = options.method && options.method !== 'GET'; calls.push({ url, ...options });
       const generic = url.includes('/admin-work-items');
+      if (write && url.endsWith('/settings') && documentError !== undefined) return { ok: false, status: 400, json: async () => ({ message: documentError }) };
       const status = (generic && !allowGeneric) || (write ? deniedWrite : deniedRead || (mutated && failRefresh)) ? 403 : 200;
       if (write && status === 200) mutated = true;
       return { ok: status === 200, status, json: async () => url === '/api/academies' ? [{ id: 'a' }]
@@ -78,6 +79,16 @@ test('Loaded editor opens and closes without a write', () => {
   assert.equal(edit.props.disabled, false); edit.props.onClick();
   edit = nodes(p.render(), n => n.type === 'button' && text(n) === 'Close edit')[0]; edit.props.onClick();
   assert.equal(nodes(p.render(), n => n.type === 'input' && n.props.name === 'invoiceAuthorityName').length, 0); assert.equal(p.calls.length, 0);
+});
+for (const reason of ['Tax label must not exceed 30 characters. Your draft has not been saved.', 'Tax registration number must not exceed 50 characters. Your draft has not been saved.', null, { unexpected: true }, 'Untrusted server detail']) test('Document length rejection retains editor/version and safe guidance: ' + JSON.stringify(reason), async () => {
+  const p = page({ ready: true, documentError: reason });
+  nodes(p.render(), n => n.type === 'button' && text(n) === 'Edit document setup')[0].props.onClick();
+  const form = nodes(p.render(), n => n.type === 'form' && nodes(n, c => c.type === 'input' && c.props.name === 'invoiceAuthorityName').length)[0];
+  await p.submit(form, { invoiceAuthorityName: 'Retained draft', invoiceTemplateKey: 'Modern', payslipTemplateKey: 'Professional' });
+  assert.equal(p.writes.get(5), typeof reason === 'string' && reason.startsWith('Tax ') ? reason : 'Document settings could not be saved.');
+  assert.equal(p.writes.get(6), true); assert.equal(p.writes.get(11), true); assert.equal(p.writes.get(12), false);
+  assert.equal(p.writes.has(4), false); assert.equal(p.calls.filter(x => x.method === 'PUT').length, 1);
+  assert.equal(JSON.parse(p.calls.find(x => x.method === 'PUT').body).settingsVersion, settings.settingsVersion);
 });
 for (const scenario of ['saved', 'denied', 'refresh-failed']) test(`Escalation ${scenario}: narrow route, nullable date and honest notice`, async () => {
   const p = page({ ready: true, deniedWrite: scenario === 'denied', failRefresh: scenario === 'refresh-failed' });

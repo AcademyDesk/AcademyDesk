@@ -36,6 +36,50 @@ public sealed class FinanceSettingsConcurrencyTests
         Assert.Equal("no-store", f.Controller.Response.Headers.CacheControl.ToString());
     }
     [Theory]
+    [InlineData(false, false)][InlineData(false, true)]
+    [InlineData(true, false)][InlineData(true, true)]
+    public async Task Overlong_normalized_fields_reject_without_settings_or_version_changes(bool existing, bool registration)
+    {
+        using var f = new Fixture();
+        if (existing) await f.Controller.Save(f.Academy, Body((await f.Get()).SettingsVersion), default);
+        var before = await f.Get();
+        var request = Body(before.SettingsVersion) with
+        {
+            TaxLabel = registration ? "GST" : "  " + new string('L', 31) + "  ",
+            TaxRegistrationNumber = registration ? "  " + new string('R', 51) + "  " : "Synthetic"
+        };
+        var result = Assert.IsType<BadRequestObjectResult>((await f.Controller.Save(f.Academy, request, default)).Result);
+        var message = System.Text.Json.JsonSerializer.SerializeToElement(result.Value).GetProperty("message").GetString();
+        Assert.Equal(registration ? "Tax registration number must not exceed 50 characters. Your draft has not been saved." : "Tax label must not exceed 30 characters. Your draft has not been saved.", message);
+        Assert.Equal(before, await f.Get());
+        Assert.Equal(existing ? 1 : 0, await f.Db.AcademyFinanceSettings.CountAsync());
+        Assert.False(f.Db.ChangeTracker.HasChanges());
+    }
+    [Theory]
+    [InlineData(false)][InlineData(true)]
+    public async Task Exact_limits_accept_after_trimming_including_supplementary_characters(bool supplementary)
+    {
+        using var f = new Fixture();
+        var label = supplementary ? string.Concat(Enumerable.Repeat("\U0001F3B5", 15)) : new string('L', 30);
+        var registration = supplementary ? string.Concat(Enumerable.Repeat("\U0001F3B5", 25)) : new string('R', 50);
+        var body = Body((await f.Get()).SettingsVersion) with { TaxLabel = "  " + label + "  ", TaxRegistrationNumber = "  " + registration + "  " };
+        Assert.IsType<OkObjectResult>((await f.Controller.Save(f.Academy, body, default)).Result);
+        var saved = await f.Get(); Assert.Equal(label, saved.TaxLabel); Assert.Equal(registration, saved.TaxRegistrationNumber);
+        var rejected = body with { SettingsVersion = saved.SettingsVersion, TaxLabel = label + "x" };
+        Assert.IsType<BadRequestObjectResult>((await f.Controller.Save(f.Academy, rejected, default)).Result);
+        rejected = body with { SettingsVersion = saved.SettingsVersion, TaxRegistrationNumber = registration + "x" };
+        Assert.IsType<BadRequestObjectResult>((await f.Controller.Save(f.Academy, rejected, default)).Result);
+        Assert.Equal(saved, await f.Get());
+    }
+    [Theory]
+    [InlineData(null)][InlineData("")][InlineData("   ")]
+    public async Task Optional_blank_values_preserve_GST_and_empty_registration_defaults(string? value)
+    {
+        using var f = new Fixture();
+        Assert.IsType<OkObjectResult>((await f.Controller.Save(f.Academy, Body((await f.Get()).SettingsVersion) with { TaxLabel = value, TaxRegistrationNumber = value }, default)).Result);
+        var saved = await f.Get(); Assert.Equal("GST", saved.TaxLabel); Assert.Equal("", saved.TaxRegistrationNumber);
+    }
+    [Theory]
     [InlineData(null)][InlineData("")][InlineData(" ")]
     public async Task Missing_version_fails_closed_without_insertion(string? version)
     {
