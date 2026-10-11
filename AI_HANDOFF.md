@@ -2,6 +2,10 @@
 
 ## Current state
 
+## Music progress SQL/linked verification and rapid-update gap — 2026-10-11
+
+[Report](QA/REPORTS/PHASE_2B_MUSIC_PROGRESS_SQL_LINKED.md): existing score0 serialization retained, no application/API/schema/authority/visual change.17 real Identity/HTTP/SQL controls PASS; successful fresh SQL/response equality, zero/positive/null, invalid/role/tenant/missing-row no-write, positive foreign sentinel/no429. Linked four journeys/eight exact real zero-score PATCH/readback/reload checks and owned cleanup in report. Harness build0/0.20 retained handlers PASS plus one characterization reproduces two same-tick requests: **NOT concurrency acceptance**. BUG-DATA-0054 OPEN/RETEST for pending/stale/recovery/linked positive-null/device/critical/release. Prior48 synthetic/types/export83/inherited lint evidence retained, not rerun. Older32/28/unrelated Mini/Platform/evidence preserved, no main/Azure/Core. NEXT **Sol High** bounded music status pending/stale/recovery/durable feedback repair, then existing0055 ledger gate; Medium settled UI. [Progress](ACADEMY_PROGRESS_CHECKLIST.md).
+
 ## Music progress zero-score serialization — 2026-10-11
 
 [Report](QA/REPORTS/PHASE_2B_MUSIC_PROGRESS_ZERO_REPAIR.md): BUG-DATA-0054 actual handler reproduced16/20 frozen parent; nullish score fallback only now20/20 PASS, numeric0/positive and optional null/date/notes/status contract retained.48 synthetic production-DOM cases/83-page build/types PASS; target lint0 errors/one inherited warning. No API/schema/permissions/visual or other music form behavior changes. OPEN/RETEST for real SQL/linked, stale/rapid/recovery/device/critical/release; synthetic denial is not RBAC proof. Older32/28/unrelated Mini/Platform/local evidence preserved; scoped feature publication only, no main/Azure/Core. NEXT **Sol High** native SQL/linked music acceptance and stale/pending assessment, then BUG-DATA-0055 invoice-status ledger integrity; Medium settled UI. Manual/FW1/Mini/existing enterprise program retained; [checklist](ACADEMY_PROGRESS_CHECKLIST.md).

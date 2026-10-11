@@ -318,12 +318,19 @@ Current bounded feedback count: **28/28 checkpointed**, after the Assessments cr
 - [x]27 handler checks and83-page production build/TypeScript PASS; final52 existing synthetic browser regressions recorded in [report](QA/REPORTS/E3_FINANCE_DOCUMENT_PREVIEW_RESPONSIVE.md).
 - [ ] Physical Android/iOS/full critical/wider portal/design/release acceptance remain OPEN. BUG-DATA-0053 not closed; no main/Azure/Mini change.
 
-## Current batch — Music progress zero-score preservation
+## Past batch — Music progress zero-score preservation
 
 - [x] BUG-DATA-0054 actual status handler reproduced: frozen16/20, four zero-score payload failures.
 - [x] One nullish fallback preserves numeric0/positive values; optional null/date/notes/status and backend rules unchanged.20/20 handler checks PASS.
 - [x]48 synthetic desktop/mobile/light-dark saved/denied browser cases; TypeScript/83-page export PASS. Target lint0 errors/one inherited warning. [Report](QA/REPORTS/PHASE_2B_MUSIC_PROGRESS_ZERO_REPAIR.md).
 - [ ] Native SQL/linked browser, stale/rapid/recovery, physical devices/full critical/release acceptance remain OPEN; issue not closed.
+
+## Current batch — Music progress SQL/linked verification
+
+- [x]17 real SQL/Identity/HTTP zero/positive/null and denied/invalid/tenant/missing-row checks PASS; fresh exact fields/foreign sentinel/row count/no429.
+- [x]20 original handler checks retained/pass; one characterization reproduces duplicate same-tick writes, NOT concurrency safety.
+- [x] Four linked zero-score journeys/eight real PATCH/readback/reload and owned cleanup recorded in [report](QA/REPORTS/PHASE_2B_MUSIC_PROGRESS_SQL_LINKED.md); application behavior unchanged, harness build0/0.
+- [ ] Music pending/stale/readback-recovery and durable status feedback repair; linked positive/null/device/full-critical/release gates OPEN. BUG-DATA-0054 not closed.
 
 ## Past batch — Teacher publication form contract
 
@@ -360,7 +367,8 @@ Current bounded feedback count: **28/28 checkpointed**, after the Assessments cr
 - [x] BUG-DATA-0053 SQL stale/concurrent/audit-fault and linked settings browser bounded gates complete; original assertions preserved. Device/critical/wider still OPEN; no audit restart.
 - [x] Governance document-preview internal320px clipping — bounded responsive repair; broader portal/device/release gates remain OPEN.
 - [x] BUG-DATA-0054 bounded zero-score serialization repair; broader acceptance OPEN.
-- [ ] **Next: BUG-DATA-0054 native SQL/linked acceptance + stale/pending assessment**, Sol High; then BUG-DATA-0055 authoritative invoice paid-status gate. Existing enterprise/Mini/FW1 gates retained.
+- [x] BUG-DATA-0054 native SQL/linked zero-score verification + pending assessment; async repair and broader acceptance remain OPEN.
+- [ ] **Next: Music status pending/stale/recovery + durable feedback**, Sol High; then BUG-DATA-0055 authoritative invoice paid-status gate. Existing enterprise/Mini/FW1 gates retained.
 - [ ] Manual shared redesign foundation and Platform → Admin → Teacher → Student rollout: Orbit + Aura dark /Prism light, reusable responsive tokens/shell/controls; preserve interrupted overlay work. Sol High foundation/host contracts, Medium settled rollout. Inherited lint remains open.
 - [ ] Shared PENTA/Manual visual foundation: consume versioned FW1 delivery when available, continue independent Manual controls without claiming the shared AI frontend is delivered.
 - [ ] FP1/FP2/FP3 explicit owner decisions and legacy disposition — pending, not inferred from “continue.”

@@ -29,3 +29,11 @@ for (const score of [0, 1, 85.5, null, undefined]) for (const status of ['Learni
     else { assert.equal(f.read().score, score ?? null); assert.equal(f.read().status, status); assert.equal(f.calls.length, 8); }
   });
 }
+
+test('characterize existing same-tick duplicate gap (NOT guard acceptance)', async () => {
+  const f = await fixture(0, false);
+  await Promise.all([f.change('Learning'), f.change('Mastered')]);
+  const writes = f.calls.filter(x => x.method);
+  assert.equal(writes.length, 2, 'Characterization changed; reevaluate the pending-guard gate.');
+  assert.deepEqual(writes.map(x => JSON.parse(x.body).score), [0, 0]);
+});

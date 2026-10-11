@@ -3,8 +3,8 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | Bounded actual-handler reproduction and serialization repair; broader acceptance OPEN |
-| Final verification |20 actual-handler and48 synthetic browser cases PASS; real SQL/linked/device/critical pending |
+| Confirmation status | Actual-handler reproduction/serialization repair and native SQL/linked zero verification; broader acceptance OPEN |
+| Final verification |20 actual-handler/48 synthetic +17 native SQL controls PASS; four linked zero journeys in report; rapid/stale/device/critical pending |
 | Severity | Major learner-progress data integrity |
 | Priority | P1 |
 | Category | DATA |
@@ -12,30 +12,32 @@
 | Role | See reproduction; same-tenant Admin unless stated otherwise |
 | Screen / route | /music |
 | API | PATCH /api/academies/{academyId}/music-progress/{progressId} |
-| Environment | Source review of local working tree; runtime production state not inferred |
-| Device/viewport | NOT RUN; use QA/06_DEVICE_VIEWPORT_MATRIX.md where UI applies |
+| Environment | Disposable local SQL/Identity/TestServer and linked production export; production state not inferred |
+| Device/viewport | Desktop browser320/1440px light/dark PASS; physical Android/iOS NOT RUN |
 | Baseline | 20bb6047f9edf733ac8e2a226621cc582ec54b3c + pre-existing student UI diff |
 | Discovery test / review ID | LEARNING-PROGRESS-ZERO-001 |
-| Evidence classification | Actual TSX handler + synthetic exported-browser PATCH proof; not live SQL |
+| Evidence classification | Actual TSX handler, synthetic export, native SQL/HTTP and linked export-to-disposable-SQL verification |
 | Preconditions | Isolated synthetic fixture from QA/10_TEST_DATA_STRATEGY.md; never customer data |
-| Reproduction frequency | Not measured; reproduction instructions are proposed |
+| Reproduction frequency | Frozen actual handler fails four zero cases; final20 cases pass; production frequency not measured |
 | Source | apps/web/src/app/music/page.tsx:146 |
 | Class/function | updateProgress / MusicProgress.Update |
 | Related source | INVENTORY/API_ENDPOINTS.md, CONTRACTS.md, FORMS_AND_FIELDS.md and ASYNC_FORM_RISKS.md |
 | Root-cause confidence | HIGH |
-| Evidence location | Source excerpt below; source fingerprint in INVENTORY/SOURCE_MANIFEST.md |
-| Screenshot | Not captured on pinned baseline |
-| Console logs | Not captured; required in retest |
+| Evidence location | Historical source excerpt below; current repair and SQL/linked reports in Exact reproduction |
+| Screenshot | Four linked final viewport screenshots local in QA/EVIDENCE/music-progress-live-1791728438464; pinned baseline screenshots not captured |
+| Console logs | Linked page/console error checks PASS; local receipts in report |
 | API request | In an isolated academy create an assigned music-progress row, set Score to decimal zero through the API, and read it freshly. On the music page change only the status to Learning or Mastered. Capture the PATCH payload, then read the row in a fresh SQL context. Repeat with a positive score, null score, rejection and rapid status changes. |
-| API response | Not captured for this issue; use synthetic request/response in isolated reproduction |
-| Database before/after | Not executed; fixture and fresh-context assertions defined below |
+| API response |17 native expected-status controls and eight linked PATCH200 with authoritative readback PASS |
+| Database before/after | Fresh SQL exact score/status/date/notes and foreign sentinel/count verified; rejected requests preserve progress/audit snapshot |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
 | Fix commit | Scoped feature serialization repair2026-10-11; see feature history/report |
-| Retest result | Bounded zero/positive/null payload preservation PASS; native/linked/stale/rapid/device/critical OPEN |
-| Regression result | NOT RUN |
+| Retest result | Bounded zero/positive/null native persistence and linked zero PASS; rapid/stale/recovery/linked positive-null/device/critical OPEN |
+| Regression result |20 retained actual-handler checks PASS; separate same-tick characterization reproduces two writes, NOT guard acceptance |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
 ## Exact reproduction
+
+2026-10-11 [SQL/linked verification](../REPORTS/PHASE_2B_MUSIC_PROGRESS_SQL_LINKED.md):17 real controls PASS; zero/positive/null fresh SQL persistence and invalid/role/tenant/missing-row no-write, foreign sentinel retained. Linked zero-score journeys/owned cleanup in report. A separate characterization reproduces two same-tick writes; NOT a guard pass. Issue remains OPEN/RETEST for async/stale/recovery, linked positive/null/device/critical/release gates.
 
 2026-10-11 [bounded repair](../REPORTS/PHASE_2B_MUSIC_PROGRESS_ZERO_REPAIR.md): actual frozen handler16/20 → final20/20; one `??` fallback preserves0.48 synthetic browser cases PASS. Historical source finding below retained. No backend/domain/schema change; issue OPEN/RETEST pending native SQL/linked/role/stale/rapid/device/critical release gates.
 

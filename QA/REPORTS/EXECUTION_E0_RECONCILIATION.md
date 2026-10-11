@@ -1,5 +1,7 @@
 # E0 — existing evidence reconciliation and actionable queue
 
+2026-10-11 music SQL/linked successor: [report](PHASE_2B_MUSIC_PROGRESS_SQL_LINKED.md),17 native persistence/no-write controls PASS; four linked zero-score journeys/eight writes/owned cleanup in report.20 retained handlers plus one characterization reproducing two same-tick writes, not race acceptance. No app/domain/authority change;0054 OPEN/RETEST for pending/stale/recovery/device/critical/release. NEXT Sol High music async repair, then0055 ledger integrity; no new audit/main/Azure/Mini.
+
 2026-10-11 music zero-score successor: [report](PHASE_2B_MUSIC_PROGRESS_ZERO_REPAIR.md), frozen16/20 →20 actual-handler PASS, one nullish fallback/no backend or authority change.48 synthetic responsive cases/types/export83 PASS; inherited one lint warning. BUG-DATA-0054 OPEN/RETEST for native/linked/stale/rapid/device/critical/release. NEXT Sol High native/linked music acceptance, then existing0055 invoice-ledger integrity; Medium settled UI. No new census/audit/main/Azure/Mini.
 
 2026-10-11 preview successor: [responsive report](E3_FINANCE_DOCUMENT_PREVIEW_RESPONSIVE.md),112 synthetic geometry cases PASS and CSS-only counterfactual38/74 failures; scoped preview reflow/no finance/API/print changes.27 handlers/types/export83/final36+16 regressions recorded; prior SQL/linked evidence retained. BUG-DATA-0053 physical/critical/wider/release OPEN. NEXT Sol Medium existing BUG-DATA-0054 zero-score serialization reproduction; High consequential contracts. Manual/FW1/Mini gates retained, no main/Azure/new audit.
