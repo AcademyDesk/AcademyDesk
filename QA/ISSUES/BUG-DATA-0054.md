@@ -3,8 +3,8 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | STATIC-FINDING |
-| Final verification | NOT RUN |
+| Confirmation status | Bounded actual-handler reproduction and serialization repair; broader acceptance OPEN |
+| Final verification |20 actual-handler and48 synthetic browser cases PASS; real SQL/linked/device/critical pending |
 | Severity | Major learner-progress data integrity |
 | Priority | P1 |
 | Category | DATA |
@@ -16,7 +16,7 @@
 | Device/viewport | NOT RUN; use QA/06_DEVICE_VIEWPORT_MATRIX.md where UI applies |
 | Baseline | 20bb6047f9edf733ac8e2a226621cc582ec54b3c + pre-existing student UI diff |
 | Discovery test / review ID | LEARNING-PROGRESS-ZERO-001 |
-| Evidence classification | Static trace; runtime reproduction pending |
+| Evidence classification | Actual TSX handler + synthetic exported-browser PATCH proof; not live SQL |
 | Preconditions | Isolated synthetic fixture from QA/10_TEST_DATA_STRATEGY.md; never customer data |
 | Reproduction frequency | Not measured; reproduction instructions are proposed |
 | Source | apps/web/src/app/music/page.tsx:146 |
@@ -30,12 +30,14 @@
 | API response | Not captured for this issue; use synthetic request/response in isolated reproduction |
 | Database before/after | Not executed; fixture and fresh-context assertions defined below |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | Not implemented (Phase 1) |
-| Retest result | NOT RUN |
+| Fix commit | Scoped feature serialization repair2026-10-11; see feature history/report |
+| Retest result | Bounded zero/positive/null payload preservation PASS; native/linked/stale/rapid/device/critical OPEN |
 | Regression result | NOT RUN |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
 ## Exact reproduction
+
+2026-10-11 [bounded repair](../REPORTS/PHASE_2B_MUSIC_PROGRESS_ZERO_REPAIR.md): actual frozen handler16/20 → final20/20; one `??` fallback preserves0.48 synthetic browser cases PASS. Historical source finding below retained. No backend/domain/schema change; issue OPEN/RETEST pending native SQL/linked/role/stale/rapid/device/critical release gates.
 
 In an isolated academy create an assigned music-progress row, set Score to decimal zero through the API, and read it freshly. On the music page change only the status to Learning or Mastered. Capture the PATCH payload, then read the row in a fresh SQL context. Repeat with a positive score, null score, rejection and rapid status changes.
 

@@ -2,6 +2,10 @@
 
 ## Current state
 
+## Music progress zero-score serialization — 2026-10-11
+
+[Report](QA/REPORTS/PHASE_2B_MUSIC_PROGRESS_ZERO_REPAIR.md): BUG-DATA-0054 actual handler reproduced16/20 frozen parent; nullish score fallback only now20/20 PASS, numeric0/positive and optional null/date/notes/status contract retained.48 synthetic production-DOM cases/83-page build/types PASS; target lint0 errors/one inherited warning. No API/schema/permissions/visual or other music form behavior changes. OPEN/RETEST for real SQL/linked, stale/rapid/recovery/device/critical/release; synthetic denial is not RBAC proof. Older32/28/unrelated Mini/Platform/local evidence preserved; scoped feature publication only, no main/Azure/Core. NEXT **Sol High** native SQL/linked music acceptance and stale/pending assessment, then BUG-DATA-0055 invoice-status ledger integrity; Medium settled UI. Manual/FW1/Mini/existing enterprise program retained; [checklist](ACADEMY_PROGRESS_CHECKLIST.md).
+
 ## Finance document-preview responsive reflow — 2026-10-11
 
 [Report](QA/REPORTS/E3_FINANCE_DOCUMENT_PREVIEW_RESPONSIVE.md): preview-only scoped header/body/footer reflow, seven themes and existing Manual tokens retained; no API/finance/print/authority change.112 synthetic production-DOM geometry cases PASS,320/390/768/1440px/light-dark/default-long branding; CSS-only counterfactual38 PASS/74 FAIL, not frozen app build.27 handlers/types/export83 PASS; final36 conflict +16 theme regressions and screenshots in report. Prior76 units/37 SQL/five races/eight linked journeys retained, not rerun. BUG-DATA-0053 OPEN/RETEST for physical/critical/wider/release; older32/28 and unrelated Mini/Platform work/local evidence preserved, no main/Azure/Core. NEXT **Sol Medium** BUG-DATA-0054 zero-score round-trip reproduction/settled serialization; High if domain/authority/SQL decisions arise. Manual/FW1/Mini/existing enterprise program continues; [progress](ACADEMY_PROGRESS_CHECKLIST.md).

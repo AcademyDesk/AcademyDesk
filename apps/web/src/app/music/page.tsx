@@ -143,7 +143,7 @@ export default function MusicPage() {
         body: JSON.stringify({
           status,
           targetDate: item.targetDate || null,
-          score: item.score || null,
+          score: item.score ?? null,
           notes: item.notes || null,
         }),
       },

@@ -311,12 +311,19 @@ Current bounded feedback count: **28/28 checkpointed**, after the Assessments cr
 - [x] Eight real linked browser journeys +eight native length400 PASS;40 PUTs=24success/eight409/eight400/no429. Exact owned DB/login/container cleanup,88/7 migrations verified. [Report](QA/REPORTS/PHASE_2B_FINANCE_SETTINGS_LENGTH_REPAIR.md); scoped feature publication only, no main/Azure/Mini.
 - [ ] Physical devices/full critical/wider visual and permission/release gates remain OPEN; BUG-DATA-0053 not closed.
 
-## Current batch — Finance document-preview responsive reflow
+## Past batch — Finance document-preview responsive reflow
 
 - [x] Scoped preview header/body/footer reflow; all seven document themes retained, no API/domain/finance/print changes.
 - [x]112 synthetic production-DOM cases at320/390/768/1440px/light-dark/default-long branding; internal text/element containment and overlap checks, no writes. CSS-only counterfactual38 PASS/74 FAIL, not a frozen application build.
 - [x]27 handler checks and83-page production build/TypeScript PASS; final52 existing synthetic browser regressions recorded in [report](QA/REPORTS/E3_FINANCE_DOCUMENT_PREVIEW_RESPONSIVE.md).
 - [ ] Physical Android/iOS/full critical/wider portal/design/release acceptance remain OPEN. BUG-DATA-0053 not closed; no main/Azure/Mini change.
+
+## Current batch — Music progress zero-score preservation
+
+- [x] BUG-DATA-0054 actual status handler reproduced: frozen16/20, four zero-score payload failures.
+- [x] One nullish fallback preserves numeric0/positive values; optional null/date/notes/status and backend rules unchanged.20/20 handler checks PASS.
+- [x]48 synthetic desktop/mobile/light-dark saved/denied browser cases; TypeScript/83-page export PASS. Target lint0 errors/one inherited warning. [Report](QA/REPORTS/PHASE_2B_MUSIC_PROGRESS_ZERO_REPAIR.md).
+- [ ] Native SQL/linked browser, stale/rapid/recovery, physical devices/full critical/release acceptance remain OPEN; issue not closed.
 
 ## Past batch — Teacher publication form contract
 
@@ -352,7 +359,8 @@ Current bounded feedback count: **28/28 checkpointed**, after the Assessments cr
 - [x] BUG-API-0005 bounded handler/native/synthetic browser proof completed; broader issue OPEN/RETEST.
 - [x] BUG-DATA-0053 SQL stale/concurrent/audit-fault and linked settings browser bounded gates complete; original assertions preserved. Device/critical/wider still OPEN; no audit restart.
 - [x] Governance document-preview internal320px clipping — bounded responsive repair; broader portal/device/release gates remain OPEN.
-- [ ] **Next: BUG-DATA-0054 zero learning-progress score round-trip**, Sol Medium settled serialization/reproduction; High consequential domain/authority/SQL decisions. Existing enterprise/Mini/FW1 gates retained.
+- [x] BUG-DATA-0054 bounded zero-score serialization repair; broader acceptance OPEN.
+- [ ] **Next: BUG-DATA-0054 native SQL/linked acceptance + stale/pending assessment**, Sol High; then BUG-DATA-0055 authoritative invoice paid-status gate. Existing enterprise/Mini/FW1 gates retained.
 - [ ] Manual shared redesign foundation and Platform → Admin → Teacher → Student rollout: Orbit + Aura dark /Prism light, reusable responsive tokens/shell/controls; preserve interrupted overlay work. Sol High foundation/host contracts, Medium settled rollout. Inherited lint remains open.
 - [ ] Shared PENTA/Manual visual foundation: consume versioned FW1 delivery when available, continue independent Manual controls without claiming the shared AI frontend is delivered.
 - [ ] FP1/FP2/FP3 explicit owner decisions and legacy disposition — pending, not inferred from “continue.”
