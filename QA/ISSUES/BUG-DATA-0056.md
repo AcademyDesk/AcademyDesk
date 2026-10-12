@@ -4,7 +4,7 @@
 | --- | --- |
 | Status | OPEN |
 | Confirmation status | RUNTIME-CONFIRMED; bounded API/schema repair verified |
-| Final verification | RETEST / NOT CLOSED; concurrency/browser/device/wider release gates OPEN |
+| Final verification | RETEST / NOT CLOSED; browser/device/direct/platform/wider release gates OPEN; bounded measured concurrency passed |
 | Severity | Major payroll history attribution integrity |
 | Priority | P1 |
 | Category | DATA |
@@ -31,7 +31,7 @@
 | Database before/after | Fresh-context all-row/field snapshots across Profiles/Payouts/Audits/Invoices/Payments; migration preserves pre-column orphan payout and NULL identity |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
 | Fix commit | Scoped payroll-history feature commit succeeding 3f40fd04d1e118d16866e0a0f1c1eb7b6364337d; see Git history/report |
-| Retest result | Bounded34 native controls + migration preservation PASS; concurrency/browser/device NOT RUN |
+| Retest result | Bounded34 native controls + migration preservation +24 measured SQL overlap/audit pairs PASS; browser/device NOT RUN |
 | Regression result | 66 targeted tests (14 new +52 retained),14 retained SQL payroll rule cases/types/harness PASS; zero-net policy pending |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
@@ -79,3 +79,9 @@ New payouts now snapshot worker name/type/linked identity IDs and the server rec
 Final run0932e043f3714333a106f29b5de235e1 passed34 history controls, same-action audit500 rollback and successful profile/payout recovery, legacy variants/positive foreign sentinel, unchanged five-table snapshots, authorization rejects and89+7 migrations; owned database/login/container removed, nine other containers retained, no429.14 retained payroll rule cases also passed; zero-net Paid semantics remain explicitly policy pending.66 targeted tests and TypeScript/harness build passed. Full details/commands/limitations: [repair report](../REPORTS/PHASE_2B_PAYROLL_HISTORY_IDENTITY_REPAIR.md).
 
 Remain **OPEN**. Next: measured SQL-overlap profile-edit/pay/deactivation ordering, linked Payroll browser/physical devices/direct/platform/stale/critical and migration-backup/rollback/release gates. Existing payroll-link validation, duplicate-period/idempotency/sub-cent rules and legacy identity recovery require separate approved work; this repair is not their acceptance or a new financial policy.
+
+## Measured concurrency successor — 2026-10-12
+
+The next SQL-overlap gate above is now bounded PASS:18 edit/pay pairs (six monthly, six SessionBlock, six deactivation), with both actual serialization orders observed in every mode. Two real PayrollProfiles UPDLOCK/HOLDLOCK HTTP commands were observed in the owned SQL blocking chain before each pair's release. Exact before-or-after identity/link/rate/session values, old payouts, foreign/finance rows, register parity and exact success audits were checked; no mixed state or429. Three audit-denied overlapped pairs returned500/500 with full five-table rollback; three same-profile recovery pairs passed.34 retained history controls/migration preservation/14 payroll rules and66 retained targeted tests also passed.
+
+Runb056963c11194f54b512c976ec80dcaf,108.6s/89+7 migrations/exact owned cleanup; QA-only, no application/schema/permissions change. See [concurrency report](../REPORTS/PHASE_2B_PAYROLL_HISTORY_CONCURRENCY_AUDIT.md). Issue stays **OPEN**; NEXT linked Payroll browser/physical devices/direct/platform/stale/critical/migration-backup-rollback/release gates. This is not arbitrary interleaving/stress, duplicate-payment/idempotency, policy or production acceptance.
