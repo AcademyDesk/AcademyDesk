@@ -357,13 +357,23 @@ Current bounded feedback count: **28/28 checkpointed**, after the Assessments cr
 - [x] Final run8e62b5200c00447e800d1e40a1ba6abd,62.3s,88/7 migrations/exact owned cleanup; original containers preserved. Three harness-monitor/order/decimal failures retained, corrected without dropping ledger checks. [Report](QA/REPORTS/PHASE_2B_INVOICE_STATUS_CONCURRENCY_AUDIT.md).
 - [ ] Collection/Student portal consumers and linked browser, direct/platform boundary, physical Android/iOS, critical/release and financial policy acceptance. BUG-DATA-0055 OPEN/RETEST; both serialization orders not forced for every mode.
 
-## Current batch — Payroll SQL overlap and audit recovery
+## Current batch — Payroll linked browser / feedback / UTC
+
+- [x] Both frozen actual-handler null-reset failures reproduced; captured forms, synchronous shared pending/readback guard, checked readiness and durable accessible feedback repaired. Failed/uncertain drafts retained, no automatic retry.
+- [x] Linked POST/GET raw timestamp mismatch reproduced; two frozen UTC tests failed. GET UTC Kind repaired without changing stored timestamps, payroll calculations, identity policy or authority.
+- [x]27/27 handler checks,68/68 freshly built targeted tests (66 retained +two UTC), TypeScript, Payroll lint0/0,83-page production export, harness0 warnings/errors PASS.
+- [x] Four real Identity/API/SQL browser journeys across320/1440px/light-dark/monthly teacher/session staff,24 register states,20 success writes/four400/one audit500 rollback/same-details recovery/two audit controls/221 unchanged five-table snapshots/exact audits/no429 PASS. Four profiles/eight payouts/history/legacy/foreign isolation preserved.
+- [x]34 retained native history controls/legacy migration/14 payroll rules rerun PASS; zero-net policy still pending. Prior24 measured SQL overlap pairs retained, not rerun. Two final-run mobile screenshots reviewed; horizontal register scroll retained.
+- [x] Run921728d928a943e3a118b78d6c14f672,308.8s/89+7 migrations/exact owned cleanup/nine other containers preserved. Failed-run receipts retained/only their owned containers removed. [Report](QA/REPORTS/PHASE_2B_PAYROLL_BROWSER_FEEDBACK.md).
+- [ ] NEXT Sol High: repair measured Payroll0.01→₹0 display and existing selected-payslip BUG-FUNC-0033; then worker-link0009 and wider role/device/critical/migration-backup-rollback/release gates.0056/async/feedback remain OPEN; not complete Payroll/enterprise/visual acceptance.
+
+## Past batch — Payroll SQL overlap and audit recovery
 
 - [x]18/18 measured SQL-overlapped edit/pay pairs PASS: monthly salary, SessionBlock rates/sessions and deactivation, six each. Both actual serialization orders observed per mode; no mixed identity/pay state.
 - [x] Three overlapped audit500/500 pairs fully rolled back and three same-profile recovery pairs passed;24 total pairs/48 mutation responses, no429. Exact all-row/field five-table snapshots, old history/foreign sentinel/actor-tenant-action-route audits/register retained.
 - [x]34 retained native history controls + legacy migration preservation +14 retained monthly/SessionBlock rules rerun PASS; zero-net policy still pending.66 retained tests rerun from accepted unchanged application test artifact PASS; new harness build0 warnings/0 errors.
 - [x] Runb056963c11194f54b512c976ec80dcaf,108.6s/89+7 migrations/exact owned DB/login/container cleanup; nine other containers and unrelated work preserved. QA-only, no app/schema/permission/Mini/frontend change. [Report](QA/REPORTS/PHASE_2B_PAYROLL_HISTORY_CONCURRENCY_AUDIT.md).
-- [ ] NEXT Sol High: linked Payroll browser/authoritative SQL, legacy labels, save/reload/denied/recovery states; physical devices/direct/platform/stale/critical/migration-backup-rollback/release and wider policy acceptance remain OPEN.0056 OPEN/RETEST; not whole concurrency/stress/idempotency acceptance.
+- [x] Linked Payroll browser/authoritative SQL and bounded feedback/UTC follow-up completed in successor above. Physical devices/direct/platform/stale/critical/migration-backup-rollback/release and wider policy acceptance remain OPEN.0056 OPEN/RETEST; not whole concurrency/stress/idempotency acceptance.
 
 ## Past batch — Payroll historical identity
 
@@ -435,7 +445,8 @@ Current bounded feedback count: **28/28 checkpointed**, after the Assessments cr
 - [x] BUG-DATA-0055 bounded six native/four linked consumer journeys24 page-states/16 mutations; broader acceptance remains OPEN.
 - [x] Existing0056 historical payroll attribution reproduced/repaired at bounded API/SQL/migration level;66 targeted tests and34 native controls PASS. Issue OPEN/RETEST, not enterprise closure.
 - [x]0056 bounded measured profile-edit/pay/deactivation SQL overlap and audit rollback/recovery passed24 pairs; wider issue remains OPEN.
-- [ ] **Next:0056 linked Payroll browser + authoritative SQL**, Sol High, then device/direct/platform/stale/critical/release/migration-backup-rollback. Invoice0055 wider gates remain separate. No audit restart or automatic policy approval.
+- [x]0056 bounded linked Payroll browser + authoritative SQL/feedback/UTC24 register-state proof; issue and enterprise gates remain OPEN.
+- [ ] **Next: Payroll currency precision + selected-payslip0033**, Sol High, then worker-link0009 and device/direct/platform/stale/critical/release/migration-backup-rollback. Invoice0055 wider gates remain separate. No audit restart or automatic policy approval.
 - [ ] Manual shared redesign foundation and Platform → Admin → Teacher → Student rollout: Orbit + Aura dark /Prism light, reusable responsive tokens/shell/controls; preserve interrupted overlay work. Sol High foundation/host contracts, Medium settled rollout. Inherited lint remains open.
 - [ ] Shared PENTA/Manual visual foundation: consume versioned FW1 delivery when available, continue independent Manual controls without claiming the shared AI frontend is delivered.
 - [ ] FP1/FP2/FP3 explicit owner decisions and legacy disposition — pending, not inferred from “continue.”

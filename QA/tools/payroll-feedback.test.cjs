@@ -1,0 +1,45 @@
+// Actual Payroll TSX / controlled React event lifetime and transport; not SQL evidence.
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs');
+const ts=require('../../apps/web/node_modules/typescript'),jsx=require('../../apps/web/node_modules/react/jsx-runtime');
+const source=process.env.QA_PAYROLL_BASELINE==='1'?require('node:child_process').execFileSync('git',['show','4de3b9c:apps/web/src/app/payroll/page.tsx'],{encoding:'utf8'}):fs.readFileSync('apps/web/src/app/payroll/page.tsx','utf8');
+const code=ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX}}).outputText;
+const nodes=n=>Array.isArray(n)?n.flatMap(nodes):!n||typeof n!=='object'?[]:[n,...nodes(n.props?.children)];
+const text=n=>Array.isArray(n)?n.map(text).join(''):n==null||typeof n==='boolean'?'':typeof n==='object'?text(n.props?.children):String(n);
+const tick=()=>new Promise(r=>setImmediate(r));
+async function page(config={}){
+ let index=0,ri=0,ei=0,ci=0,live=true;const state=new Map(),refs=[],effects=[],deps=[],callbacks=[],cleanups=[],calls=[],resets={profile:0,payout:0},module={exports:{}};
+ const profiles=[{id:'profile',workerType:'Teacher',workerName:'Synthetic Worker',paymentModel:config.session?'SessionBlock':'Monthly',monthlyAmount:1000,amountPerCycle:1000,sessionsPerCycle:4,isActive:true}];let payouts=[];
+ const react={useState:v=>{const k=index++;if(!state.has(k))state.set(k,v);return[state.get(k),v=>{assert.ok(live,'State updated after unmount');state.set(k,typeof v==='function'?v(state.get(k)):v);}];},useRef:v=>refs[ri]??(refs[ri++]={current:v}),useMemo:fn=>fn(),useCallback:(fn,next)=>{const k=ci++;if(!callbacks[k]||next.some((v,i)=>v!==callbacks[k].deps[i]))callbacks[k]={fn,deps:next};return callbacks[k].fn;},useEffect:(fn,next)=>{const k=ei++;if(!deps[k]||next.some((v,i)=>v!==deps[k][i])){deps[k]=next;effects.push(fn);}}};
+ // Keep ref indexing faithful across rerenders.
+ react.useRef=v=>{const k=ri++;return refs[k]??(refs[k]={current:v});};
+ const api=async(url,init={})=>{
+  calls.push({url,...init});const written=calls.some(x=>x.method);
+  if(init.method){if(config.writeGate)await config.writeGate;if(config.network)throw Error('Synthetic lost response');if(!config.status){if(url.endsWith('/profiles'))profiles.push({...JSON.parse(init.body),id:'new'});else payouts.push({...JSON.parse(init.body),id:'new',workerName:'Synthetic Worker',workerType:'Teacher',currency:'INR',netAmount:800});}return{ok:!config.status,status:config.status||201,json:async()=>{if(config.malformed)throw Error();return{message:config.message};}};}
+  if(written&&config.readGate)await config.readGate;
+  if(config.initialFailure&&!written||config.refreshFailure&&written)return{ok:false,status:503};
+  return{ok:true,status:200,json:async()=>config.badShape?{}:url==='/api/academies'?config.empty?[]:[{id:'owned'}]:url.endsWith('/teachers')?[{id:'teacher',firstName:'Synthetic',lastName:'Worker'}]:url.endsWith('/staff')?[{id:'staff',displayName:'Synthetic Staff'}]:url.endsWith('/profiles')?structuredClone(profiles):structuredClone(payouts)};
+ };
+ class Data{constructor(form){assert.ok(form,'Captured form required');this.values=form.values;}get(k){return this.values[k]??null;}}
+ new Function('require','module','exports','FormData',code)(n=>n==='react/jsx-runtime'?jsx:n==='react'?react:n==='@/lib/api'?{academyApi:api,apiHeaders:()=>({})}:n==='@/components/design-system/controls'?{StandardDateField:'date',StandardSelectField:'select'}:(()=>{throw Error(n)})(),module,module.exports,Data);
+ const render=()=>{index=ri=ei=ci=0;return module.exports.default();};
+ async function settle(){for(let i=0;i<5;i++){for(const fn of effects.splice(0)){const cleanup=fn();if(cleanup)cleanups.push(cleanup);}await tick();render();}}
+ const choose=(name,value)=>nodes(render()).find(n=>n.props?.name===name).props.onChange(value);
+ render();await settle();choose('workerId','teacher');choose('effectiveFrom','2026-10-01');choose('payrollProfileId','profile');
+ const action=async(kind='payout')=>{const form={values:kind==='profile'?{monthlyAmount:'1000',amountPerCycle:'1000',sessionsPerCycle:'4'}:{periodLabel:'October 2026',deductions:'200',sessionsCovered:'4',grossAmount:'1000',reference:''},reset(){resets[kind]++;}};const event={preventDefault(){},currentTarget:form};const result=nodes(render()).filter(n=>n.type==='form')[kind==='profile'?0:1].props.onSubmit(event);event.currentTarget=null;await result;await tick();};
+ const refresh=async()=>{await nodes(render()).find(n=>n.type==='button'&&text(n)==='Refresh payout register').props.onClick();};
+ return{render,settle,choose,action,refresh,calls,resets,writes:()=>calls.filter(c=>c.method),notice:()=>text(nodes(render()).find(n=>n.props?.role==='status')),unmount:()=>{for(const fn of cleanups)fn();live=false;}};
+}
+for(const kind of ['profile','payout']){
+ test(kind+' confirmed save survives React currentTarget null, resets and shows accessible durable success',async()=>{const p=await page();await p.action(kind);await p.settle();assert.equal(p.writes().length,1);assert.equal(p.resets[kind],1);assert.match(p.notice(),kind==='profile'?/Payout profile saved\./:/Payout recorded and payslip generated\./);assert.equal(nodes(p.render()).find(n=>n.props?.role==='status').props['aria-live'],'polite');});
+ test(kind+' confirmed write/readback failure blocks repeat',async()=>{const p=await page({refreshFailure:true});await p.action(kind);assert.match(p.notice(),/could not be refreshed.*do not repeat/);await p.action(kind);assert.equal(p.writes().length,1);});
+ for(const status of [400,403])test(kind+' '+status+' retains draft/reset and backend guidance',async()=>{const p=await page({status,message:'Synthetic field guidance'});await p.action(kind);assert.equal(p.notice(),'Synthetic field guidance');assert.equal(p.resets[kind],0);assert.equal(p.writes().length,1);});
+ for(const config of [{status:500},{network:true}])test(kind+' uncertain result needs explicit read, no automatic retry '+JSON.stringify(config),async()=>{const p=await page(config);await p.action(kind);assert.match(p.notice(),/could not be confirmed.*before retrying/);assert.equal(p.resets[kind],0);await p.action(kind);assert.equal(p.writes().length,1);await p.refresh();assert.match(p.notice(),/Check for the previous/);assert.equal(p.writes().length,1);});
+ for(const stage of ['write','readback'])test(kind+' '+stage+' prevents same-tick duplicate, other form and refresh',async()=>{let release;const gate=new Promise(r=>release=r),p=await page(stage==='write'?{writeGate:gate}:{readGate:gate});const a=p.action(kind);await tick();const b=p.action(kind),c=p.action(kind==='profile'?'payout':'profile'),d=p.refresh();try{assert.equal(p.writes().length,1);assert.ok(nodes(p.render()).filter(n=>n.type==='fieldset').every(n=>n.props.disabled));}finally{release();}await Promise.all([a,b,c,d]);assert.equal(p.writes().length,1);});
+ test(kind+' unmounted pending response does not reset or update state',async()=>{let release;const gate=new Promise(r=>release=r),p=await page({writeGate:gate});const a=p.action(kind);await tick();p.unmount();release();await a;assert.equal(p.resets[kind],0);});
+ test(kind+' malformed rejection has safe nonblank guidance',async()=>{const p=await page({status:400,malformed:true});await p.action(kind);assert.match(p.notice(),/could not be/);assert.equal(p.resets[kind],0);});
+}
+for(const config of [{initialFailure:true},{empty:true},{badShape:true}])test('Incomplete initial workspace cannot POST '+JSON.stringify(config),async()=>{const p=await page(config);await p.action('profile');await p.action('payout');assert.equal(p.writes().length,0);assert.ok(p.notice());});
+test('Monthly payout preserves optional blank reference, zero automatic date and no session override',async()=>{const p=await page();await p.action();assert.deepEqual(JSON.parse(p.writes()[0].body),{payrollProfileId:'profile',periodLabel:'October 2026',sessionsCovered:null,grossAmount:null,deductions:200,paymentMethod:'BankTransfer',reference:'',paidAtUtc:null});});
+test('Session-block payout retains exact existing input contract',async()=>{const p=await page({session:true});await p.action();assert.deepEqual(JSON.parse(p.writes()[0].body),{payrollProfileId:'profile',periodLabel:'October 2026',sessionsCovered:4,grossAmount:1000,deductions:200,paymentMethod:'BankTransfer',reference:'',paidAtUtc:null});});
+test('Staff profile retains server-bound link and existing payload',async()=>{const p=await page();p.choose('workerType','Staff');p.choose('workerId','staff');await p.action('profile');assert.deepEqual(JSON.parse(p.writes()[0].body),{workerType:'Staff',teacherId:null,staffUserId:'staff',workerName:'Synthetic Staff',paymentModel:'Monthly',monthlyAmount:1000,amountPerCycle:null,sessionsPerCycle:null,effectiveFrom:'2026-10-01',isActive:true});});
+test('Unchanged rerenders do not repeat initial loads',async()=>{const p=await page();await p.settle();assert.equal(p.calls.length,5);await p.action();await p.settle();assert.equal(p.calls.length,10);});

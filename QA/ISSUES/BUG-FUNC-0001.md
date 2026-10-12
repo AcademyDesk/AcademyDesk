@@ -69,3 +69,7 @@ React event currentTarget accessed after asynchronous suspension, before success
 TEACHER-FORM-001: Use a deferred successful response, real React submit event, assert one request/record, no exception, visible success and reload persistence.
 
 Also run all endpoint/form cases pointing to this issue in QA/03_TEST_MATRIX.md and the critical regression suite before closure.
+
+## Payroll successor — 2026-10-12
+
+Both Payroll create-profile and payout handlers reproduced the actual React currentTarget-null reset failure against frozen4de3b9c (two focused tests failed after simulated confirmation). Captured native forms/shared synchronous pending-readback guard now reset only after confirmed POST, retain failures/uncertainty and avoid unmounted updates.27 actual-handler checks and real browser/Identity/API/owned-SQL four journeys24 register states PASS; real UI profile/payout saves have durable confirmations, exact stored rows/audits, no duplicate POST or browser exception.68 targeted backend tests/types/lint0/0/export83/harness0/0 PASS. [Report](../REPORTS/PHASE_2B_PAYROLL_BROWSER_FEEDBACK.md). Physical/wider forms/critical/release remain OPEN; not closure of all original reset sites. No payload/permission/payroll-calculation change.

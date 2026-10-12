@@ -43,7 +43,7 @@ public sealed class PayrollController(AcademyDeskDbContext db) : ControllerBase
             .Select(x => new PayrollPayoutSummary(x.Id, x.PayrollProfileId,
                 x.IdentityRecordedAtUtc != null && x.WorkerNameSnapshot != null && x.WorkerTypeSnapshot != null ? x.WorkerNameSnapshot : "Historical identity not recorded",
                 x.IdentityRecordedAtUtc != null && x.WorkerNameSnapshot != null && x.WorkerTypeSnapshot != null ? x.WorkerTypeSnapshot : "Unknown (legacy)",
-                x.PayslipNumber, x.PeriodLabel, x.SessionsCovered, x.GrossAmount, x.Deductions, x.NetAmount, x.Currency, x.Status, x.PaymentMethod, x.Reference, x.PaidAtUtc,
+                x.PayslipNumber, x.PeriodLabel, x.SessionsCovered, x.GrossAmount, x.Deductions, x.NetAmount, x.Currency, x.Status, x.PaymentMethod, x.Reference, DateTime.SpecifyKind(x.PaidAtUtc, DateTimeKind.Utc),
                 x.IdentityRecordedAtUtc != null && x.WorkerNameSnapshot != null && x.WorkerTypeSnapshot != null ? "PayoutSnapshot" : "LegacyUnverified",
                 x.IdentityRecordedAtUtc == null ? null : DateTime.SpecifyKind(x.IdentityRecordedAtUtc.Value, DateTimeKind.Utc))).ToListAsync(token));
 

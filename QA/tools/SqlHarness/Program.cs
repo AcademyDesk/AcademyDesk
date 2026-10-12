@@ -569,6 +569,8 @@ static async Task VerifyRealHttpAsync(QaRunManifest manifest, bool classMediaOnl
                 await VerifyPayrollHistoryAsync(factory, client, manifest);
             if (Environment.GetEnvironmentVariable("QA_PAYROLL_RACE") == "1")
                 await VerifyPayrollHistoryConcurrencyAsync(factory, client, manifest);
+            if (Environment.GetEnvironmentVariable("QA_PAYROLL_BROWSER") == "1")
+                await VerifyPayrollBrowserAsync(factory, client, manifest);
             return; // Explicit payroll module, not full critical/release acceptance.
         }
         if (financeAdjustmentOnly)

@@ -227,3 +227,7 @@ Multiple form handlers; do not assume all setMessage calls provide visible confi
 FORM-SUCCESS-001: Fast and slow refresh with controlled network; assert visible success after reload, no false success on partial failure.
 
 Also run all endpoint/form cases pointing to this issue in QA/03_TEST_MATRIX.md and the critical regression suite before closure.
+
+## Payroll linked feedback successor — 2026-10-12
+
+Two Payroll forms now show durable polite confirmation after checked readback, preserve drafts/backend guidance on400/403, block blind repeat after network/500 and expose explicit register refresh; confirmed-save/failed-refresh is distinct. Same-tick/opposing-form/refresh attempts are blocked through write/readback.27 handler checks plus four actual browser/Identity/API/owned-SQL journeys24 states PASS, including real audit500 no-write/retained-draft/same-details recovery and deduction400/no-write/correction. Exact SQL snapshots/audits/history/legacy/foreign checks retained, no429. [Report](../REPORTS/PHASE_2B_PAYROLL_BROWSER_FEEDBACK.md). This extends the original28 feedback checkpoint queue rather than changing its historical counts; physical/all-domain/critical/release acceptance remains OPEN. A generated payslip number is not accepted proof of selected printable document (0033);0.01 display precision is separately NOT ACCEPTED.

@@ -11,6 +11,26 @@ namespace AcademyDesk.Api.Tests;
 
 public sealed class PayrollHistoryTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Reloaded_SQL_UTC_payment_time_has_explicit_zone_without_changing_stored_ticks(bool legacy)
+    {
+        await using var db = Db(); var profile = Profile(); var payout = Legacy(profile.AcademyId, profile.Id);
+        // SQL datetime2 materializes UTC columns with Unspecified Kind.
+        payout.PaidAtUtc = new DateTime(2026, 10, 1, 0, 15, 0, DateTimeKind.Unspecified);
+        if (!legacy) { payout.WorkerNameSnapshot = profile.WorkerName; payout.WorkerTypeSnapshot = profile.WorkerType; payout.IdentityRecordedAtUtc = payout.PaidAtUtc; }
+        db.PayrollPayouts.Add(payout); await db.SaveChangesAsync();
+        var before = System.Text.Json.JsonSerializer.Serialize(payout);
+        var row = Assert.Single(await List(db, profile.AcademyId));
+        Assert.Equal(DateTimeKind.Utc, row.PaidAtUtc.Kind);
+        Assert.Equal(payout.PaidAtUtc.Ticks, row.PaidAtUtc.Ticks);
+        using var json = System.Text.Json.JsonDocument.Parse(System.Text.Json.JsonSerializer.Serialize(row));
+        Assert.Equal("2026-10-01T00:15:00Z", json.RootElement.GetProperty("PaidAtUtc").GetString());
+        Assert.Equal(legacy ? "LegacyUnverified" : "PayoutSnapshot", row.IdentitySource);
+        Assert.Equal(before, System.Text.Json.JsonSerializer.Serialize(Assert.Single(await db.PayrollPayouts.AsNoTracking().ToListAsync())));
+    }
+
     [Fact]
     public void Model_matches_migration_snapshot_without_database_access()
     {
