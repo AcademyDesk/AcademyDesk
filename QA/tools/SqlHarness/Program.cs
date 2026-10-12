@@ -90,6 +90,8 @@ await using (var application = new AcademyDeskDbContext(
         await VerifyAssessmentGradeMigrationAsync(application);
     else if (args.Length == 4 && args[3] == "--audit-inbox-lifecycle" && Environment.GetEnvironmentVariable("QA_INBOX_BASELINE") != "1")
         await VerifyInboxReceiptMigrationAsync(application);
+    else if (args.Length == 4 && args[3] == "--payroll-net" && Environment.GetEnvironmentVariable("QA_PAYROLL_HISTORY") == "guarded")
+        await VerifyPayrollHistoryMigrationAsync(application);
     else await application.Database.MigrateAsync();
 }
 await using (var identity = new IdentityDbContext(
@@ -563,6 +565,8 @@ static async Task VerifyRealHttpAsync(QaRunManifest manifest, bool classMediaOnl
         if (payrollNetOnly)
         {
             await VerifyPayrollBoundariesAsync(factory, client, enforceRegression: true);
+            if (Environment.GetEnvironmentVariable("QA_PAYROLL_HISTORY") is "baseline" or "guarded")
+                await VerifyPayrollHistoryAsync(factory, client, manifest);
             return; // Explicit payroll module, not full critical/release acceptance.
         }
         if (financeAdjustmentOnly)

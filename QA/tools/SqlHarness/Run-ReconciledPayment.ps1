@@ -2,6 +2,9 @@
 param([ValidateSet('InvoiceIntegrity','InvoiceStatus','InvoiceStatusBaseline','MusicProgress','FinancePolicyTheme','TeacherPublication','TeacherCompensation','StudentImports','StudentImportsBaseline','WorkItemIntegrity','ExpenseIntegrity','MetadataShape','HolidayRoute','OnboardingNumbers','OnboardingAccounts','OnboardingAtomic','OnboardingDates','TeacherAvailability','EnrollmentLifecycle','GuardianRevocation','TeacherLifecycle','PentaFoundation','Reconciliation','Adjustment','Payroll','Transition','TransitionRace','ReconcileVoidRace','ApprovalRace','Consumers','Access','AuditBaseline','AuditFixed','PeopleBaseline','PeopleFixed','LinkedBaseline','LinkedFixed','BranchBaseline','BranchFixed','Lookups','Governance','CollectionsBaseline','Collections','InvoiceSettingsBaseline','InvoiceSettings','BranchAddressBaseline','BranchAddress','BatchTimesBaseline','BatchTimes','YearClosure','CoursePrerequisites','CoursePreservation','PromotionDecisions','AssessmentGrades','AssessmentRoster','AssessmentAccess','AssessmentOptions','AttendanceNotes','CalendarDetails','ScheduleDefaults','LeaveIdentity','MakeupLocation','RoleReplacement','RoleRevocation','SessionRevocationRepair','SessionRevocation','RefreshConcurrency','SessionRefresh','BrowserPayments','BrowserApproval','BrowserCertificate','BrowserSession','BrowserProvisioning','CollectionRace','AdjustmentRace','ProvisioningConflict','ProvisioningConcurrency','AcademyProvisioning','PortalProvisioning','PlatformProvisioning','TrialDuration','TenantPlan','PlatformBilling','ActivityDeletion','AnnouncementAudience','GuardianFlags','CertificateFamily','CertificateEnrollment','ComplianceIdentity','ResourceScope','PracticeIdentity','SubmissionIdentity','ReviewContext','MarketingConsent','TemplateState','PreferenceAccess','InboxLifecycle','NotificationChannel','CommunicationRoundtrip','BatchPreservationBaseline','BatchPreservation')][string]$Module = 'Reconciliation')
 $ErrorActionPreference = 'Stop'
 $qaRepo = (Resolve-Path (Join-Path $PSScriptRoot '../../..')).Path
+if ($Module -eq 'Payroll' -and $env:QA_PAYROLL_HISTORY -and $env:QA_PAYROLL_HISTORY -notin @('baseline','guarded')) {
+    throw 'QA_PAYROLL_HISTORY must be baseline or guarded before creating SQL.'
+}
 if (($Module -eq 'PentaFoundation' -and $env:QA_PENTA_BROWSER -eq '1') -or ($Module -eq 'CalendarDetails' -and $env:QA_CALENDAR_BROWSER -eq '1')) {
     $qaBrowserPort = 0
     [Uri]$qaBrowserOrigin = $null
@@ -131,6 +134,10 @@ try {
         } elseif ($Module -eq 'Consumers' -and $env:QA_INVOICE_CONSUMER_BROWSER -eq '1') {
             $qaHarness = Join-Path $qaRepo '.build-check/invoice-consumers-sql/bin/SqlHarness/debug/SqlHarness.dll'
             if (!(Test-Path -LiteralPath $qaHarness)) { throw 'Build Consumers with --artifacts-path .build-check/invoice-consumers-sql first.' }
+            $qaCommand = @($qaHarness, $qaRun, $qaPort, $qaContainer, $qaSwitch)
+        } elseif ($Module -eq 'Payroll' -and $env:QA_PAYROLL_HISTORY -in @('baseline','guarded')) {
+            $qaHarness = Join-Path $qaRepo '.build-check/payroll-history-sql/bin/SqlHarness/debug/SqlHarness.dll'
+            if (!(Test-Path -LiteralPath $qaHarness)) { throw 'Build Payroll history with --artifacts-path .build-check/payroll-history-sql first.' }
             $qaCommand = @($qaHarness, $qaRun, $qaPort, $qaContainer, $qaSwitch)
         } elseif ($Module -eq 'InvoiceIntegrity') {
             $qaHarness = Join-Path $qaRepo '.build-check/invoice-integrity-sql/bin/SqlHarness/debug/SqlHarness.dll'

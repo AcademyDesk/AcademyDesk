@@ -357,7 +357,16 @@ Current bounded feedback count: **28/28 checkpointed**, after the Assessments cr
 - [x] Final run8e62b5200c00447e800d1e40a1ba6abd,62.3s,88/7 migrations/exact owned cleanup; original containers preserved. Three harness-monitor/order/decimal failures retained, corrected without dropping ledger checks. [Report](QA/REPORTS/PHASE_2B_INVOICE_STATUS_CONCURRENCY_AUDIT.md).
 - [ ] Collection/Student portal consumers and linked browser, direct/platform boundary, physical Android/iOS, critical/release and financial policy acceptance. BUG-DATA-0055 OPEN/RETEST; both serialization orders not forced for every mode.
 
-## Current batch — Invoice monetary display
+## Current batch — Payroll historical identity
+
+- [x] BUG-DATA-0056 reproduced before repair in disposable SQL: old payout renamed/retyped from mutable profile, then hidden after profile removal. Three acceptance failures;24 supporting controls, NOT ACCEPTED.
+- [x] Five server-derived payout identity snapshots, payout-tenant scoped history without mutable join, shared profile-edit/payout SQL transaction-lock. Legacy/incomplete identity explicitly unverified; no speculative historical backfill, money/policy/authority/Mini/frontend change.
+- [x]66/66 targeted tests (14 new +52 retained), TypeScript and isolated harness0 warnings/0 errors PASS. [Report](QA/REPORTS/PHASE_2B_PAYROLL_HISTORY_IDENTITY_REPAIR.md).
+- [x]34 native history/audit rollback-and-recovery/role/tenant/full five-table snapshot controls + pre-column legacy preservation migration proof +14 retained monthly/SessionBlock payroll rules PASS; zero-net policy still pending, not accepted.
+- [x] Final run0932e043f3714333a106f29b5de235e1,57.9s/89+7 migrations/no429/exact owned DB/login/container cleanup; nine unrelated containers and older work preserved. Failed namespace builds/intermediate label corrections retained, assertions not weakened.
+- [ ] NEXT Sol High: measured SQL-overlap profile edit vs pay/deactivation, then linked Payroll browser and physical devices/direct/platform/critical/release and migration-backup/rollback gates.0056 OPEN/RETEST; row-lock implementation alone is not concurrency acceptance.
+
+## Past batch — Invoice monetary display
 
 - [x] Student currency formatter preserves INR/USD fractions, JPY whole units and KWD three-digit units; home/fee-row uses retained.
 - [x] Invoice preview separates total/approved adjustments/collected payments/server-authoritative remaining due; original gross register amount and print/close/branding retained. No financial-policy/domain/API change.
@@ -365,7 +374,7 @@ Current bounded feedback count: **28/28 checkpointed**, after the Assessments cr
 - [x] Six retained native consumer stages and four linked journeys/60 page-states (24 retained +36 new),20 real downloads PASS across320/1440px/light-dark.16 mutations/480 unchanged finance snapshots/exact audits/foreign sentinel/no429; original target ledgers retained.
 - [x] Run85dbbb61fb434106b2a1b9ef73b9399d,500.7s/88+7 migrations/exact owned cleanup; other containers and unrelated work preserved. [Report](QA/REPORTS/PHASE_2B_INVOICE_MONEY_DISPLAY_REPAIR.md).
 - [ ] Physical Android/iOS, direct/platform/stale/full critical/release and policy gates remain OPEN.0055 stays OPEN/RETEST; mixed-currency aggregate, broader theme/print and whole Manual visual acceptance are separate.
-- [ ] Next Sol High: reproduce existing0056 payroll-history attribution against disposable SQL, then decide/verify a bounded repair. No new testing plan or Mini contract handoff required here.
+- [x] Existing0056 disposable-SQL reproduction/bounded repair completed in successor above; concurrency/browser/device/wider closure gates remain OPEN. No new testing plan or Mini contract handoff required here.
 
 ## Past batch — Invoice consumers and linked browser
 
@@ -416,7 +425,8 @@ Current bounded feedback count: **28/28 checkpointed**, after the Assessments cr
 - [x] BUG-DATA-0055 authoritative invoice paid-status/ledger integrity — bounded repair111 targeted/45 strict SQL plus retained payment transitions PASS; broader acceptance OPEN.
 - [x] BUG-DATA-0055 bounded SQL-overlap concurrency and same-action audit rollback/recovery20+9 controls; broader issue remains OPEN.
 - [x] BUG-DATA-0055 bounded six native/four linked consumer journeys24 page-states/16 mutations; broader acceptance remains OPEN.
-- [ ] **Next: existing0056 historical payroll attribution**, Sol High, disposable SQL reproduction before repair. Invoice precision/remaining-due bounded successor passed;0055 physical/direct/stale/critical/release/policy gates remain separate. No audit restart or automatic policy approval.
+- [x] Existing0056 historical payroll attribution reproduced/repaired at bounded API/SQL/migration level;66 targeted tests and34 native controls PASS. Issue OPEN/RETEST, not enterprise closure.
+- [ ] **Next:0056 measured profile-edit/pay/deactivation SQL concurrency**, Sol High, then linked Payroll/browser/device/direct/platform/critical/release/migration-backup-rollback. Invoice0055 wider gates remain separate. No audit restart or automatic policy approval.
 - [ ] Manual shared redesign foundation and Platform → Admin → Teacher → Student rollout: Orbit + Aura dark /Prism light, reusable responsive tokens/shell/controls; preserve interrupted overlay work. Sol High foundation/host contracts, Medium settled rollout. Inherited lint remains open.
 - [ ] Shared PENTA/Manual visual foundation: consume versioned FW1 delivery when available, continue independent Manual controls without claiming the shared AI frontend is delivered.
 - [ ] FP1/FP2/FP3 explicit owner decisions and legacy disposition — pending, not inferred from “continue.”
