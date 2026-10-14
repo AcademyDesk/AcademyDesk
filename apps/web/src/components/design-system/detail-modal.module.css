@@ -1,4 +1,4 @@
-/* Manual-workspace foundation; uses host tokens, not an unreleased PENTA UI. */
+/* Host-native behavior retained; consume reviewed PENTA token mapping. */
 .overlay:not([open]) {
   display: none;
 }
@@ -14,6 +14,7 @@
   padding: 16px;
   border: 0;
   box-sizing: border-box;
+  background: rgb(3 9 22 / 70%);
 }
 
 .overlay::backdrop {
@@ -28,7 +29,10 @@
   padding: 0;
   overflow: auto;
   overscroll-behavior: contain;
-  border-radius: 14px;
+  border: 1px solid var(--pui-border, var(--ad-border-strong));
+  border-radius: var(--pui-radius-panel, 22px);
+  background: var(--pui-elevated, var(--ad-surface));
+  box-shadow: var(--pui-shadow, 0 12px 34px #0003);
   color: var(--ad-text);
   overflow-wrap: anywhere;
 }
@@ -38,7 +42,7 @@
   top: 0;
   z-index: 1;
   gap: 12px;
-  padding: 16px;
+  padding: 20px;
   background: var(--ad-surface);
 }
 

@@ -4,6 +4,9 @@ import { useRouter } from "next/navigation";
 import { academyApi, apiHeaders, apiUrl, clearPortalTokens } from "@/lib/api";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { PrivateMaterialActions } from "@/components/private-material-actions";
+import { ManualSectionNavigation } from "@/components/manual-section-navigation";
+import { usePentaManualTheme } from "@/components/penta-manual-theme";
+import manualStyles from "@/components/manual-workspace.module.css";
 type Me = {
   role: "Student" | "Parent";
   displayName: string;
@@ -129,6 +132,7 @@ const indiaDateKey = (value: string | Date) => {
   return `${part("year")}-${part("month")}-${part("day")}`;
 };
 export default function Portal() {
+  const manualTheme = usePentaManualTheme();
   const [me, setMe] = useState<Me>();
   const [id, setId] = useState("");
   const [d, setD] = useState<D>();
@@ -169,7 +173,7 @@ export default function Portal() {
       );
   }, []);
   return (
-    <main className="enterprise-app-shell teacher-portal-shell learner-portal-shell">
+    <main {...manualTheme} className={`enterprise-app-shell teacher-portal-shell learner-portal-shell ${manualStyles.shell} ${manualStyles.teacher} ${manualTheme.className}`}>
       <aside className="enterprise-sidebar teacher-portal-sidebar learner-portal-sidebar">
         <a href="/portal" className="enterprise-brand">
           <span>A</span>
@@ -178,8 +182,8 @@ export default function Portal() {
         <nav className="enterprise-nav-section teacher-portal-nav learner-portal-nav" aria-label="Student workspace">
           <p>{me?.role === "Parent" ? "Parent portal" : "Student portal"}</p>
           {tabs.map(([k, x, i]) => (
-            <button key={k} data-active={t === k} onClick={() => setT(k)}>
-              <i>{i}</i>
+            <button key={k} data-active={t === k} aria-current={t === k ? "page" : undefined} onClick={() => setT(k)}>
+              <i aria-hidden="true">{i}</i>
               {x}
             </button>
           ))}
@@ -191,6 +195,7 @@ export default function Portal() {
           <div className="enterprise-utilities"><PortalNotifications notices={n} setNotices={setN} /><ThemeToggle /><StudentPortalProfile /></div>
         </header>
         {announcements.length > 0 && <AnnouncementTicker announcements={announcements} />}
+        <ManualSectionNavigation className="learner-bottom-nav" label="Student section navigation" sections={tabs.map(([value, label, icon]) => ({ value, label, icon }))} value={t} onSelect={value => setT(value as Tab)} />
         <section className="learner-content teacher-portal-content learner-portal-content">
           {me?.role === "Parent" && (
             <div className="learner-switcher">
@@ -242,14 +247,6 @@ export default function Portal() {
           )}
         </section>
       </section>
-      <nav className="learner-bottom-nav">
-        {tabs.map(([k, x, i]) => (
-          <button key={k} data-active={t === k} onClick={() => setT(k)}>
-            <i>{i}</i>
-            <span>{x}</span>
-          </button>
-        ))}
-      </nav>
     </main>
   );
 }

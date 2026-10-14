@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
-import type { CSSProperties } from "react";
+import { useCallback, useRef, useState } from "react";
+import { AnchoredPopup } from "./design-system/anchored-popup";
 
 type StandardTimeFieldProps = {
   name: string;
@@ -37,9 +36,8 @@ export function StandardTimeField({
   intervalMinutes = 15,
 }: StandardTimeFieldProps) {
   const [open, setOpen] = useState(false);
-  const [popoverStyle, setPopoverStyle] = useState<CSSProperties>();
   const ref = useRef<HTMLDivElement>(null);
-  const popoverRef = useRef<HTMLElement>(null);
+  const close = useCallback(() => setOpen(false), []);
   const { hour, minute } = parts(value);
   const isPm = hour >= 12;
   const currentHour = hour % 12 || 12;
@@ -47,46 +45,6 @@ export function StandardTimeField({
     { length: 60 / intervalMinutes },
     (_, index) => index * intervalMinutes,
   );
-
-  useEffect(() => {
-    if (!open) return;
-    const updatePosition = () => {
-      const trigger = ref.current?.querySelector(".standard-time-trigger");
-      if (!(trigger instanceof HTMLElement)) return;
-      const rect = trigger.getBoundingClientRect();
-      const availableBelow = window.innerHeight - rect.bottom - 12;
-      const height = Math.min(330, Math.max(220, availableBelow));
-      const openAbove = availableBelow < 250 && rect.top > availableBelow;
-      setPopoverStyle({
-        position: "fixed",
-        zIndex: 10000,
-        left: rect.left,
-        top: openAbove ? Math.max(8, rect.top - height - 8) : rect.bottom + 8,
-        width: Math.min(360, Math.max(280, rect.width)),
-        maxHeight: height,
-      });
-    };
-    updatePosition();
-    window.addEventListener("resize", updatePosition);
-    window.addEventListener("scroll", updatePosition, true);
-    return () => {
-      window.removeEventListener("resize", updatePosition);
-      window.removeEventListener("scroll", updatePosition, true);
-    };
-  }, [open]);
-
-  useEffect(() => {
-    const close = (event: MouseEvent) => {
-      if (
-        ref.current &&
-        !ref.current.contains(event.target as Node) &&
-        !popoverRef.current?.contains(event.target as Node)
-      )
-        setOpen(false);
-    };
-    document.addEventListener("mousedown", close);
-    return () => document.removeEventListener("mousedown", close);
-  }, []);
 
   function setTime(nextHour: number, nextMinute: number, nextIsPm: boolean) {
     let hour24 = nextHour % 12;
@@ -108,14 +66,7 @@ export function StandardTimeField({
         <span>{readableTime(value)}</span>
         <i aria-hidden="true">◷</i>
       </button>
-      {open && popoverStyle && typeof document !== "undefined" && createPortal(
-        <section
-          ref={popoverRef}
-          className="standard-time-popover"
-          role="dialog"
-          aria-label={`${label} picker`}
-          style={popoverStyle}
-        >
+      {open && <AnchoredPopup anchorRef={ref} className="standard-time-popover" label={`${label} picker`} width={360} onClose={close}>
           <div>
             <span>Hour</span>
             <div className="standard-time-options">
@@ -168,9 +119,8 @@ export function StandardTimeField({
               ))}
             </div>
           </div>
-        </section>,
-        document.body,
-      )}
+          <button type="button" className="standard-time-done" onClick={() => { close(); ref.current?.querySelector("button")?.focus({ preventScroll: true }); }}>Done</button>
+        </AnchoredPopup>}
     </div>
   );
 }

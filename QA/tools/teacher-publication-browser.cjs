@@ -40,7 +40,7 @@ const server=http.createServer((req,res)=>{try{
    }
    if(url.origin===origin||url.protocol==='data:')return route.continue();return route.abort('blockedbyclient');
   });
-  await page.goto(origin+'/teacher');await page.locator((width===320?'.learner-bottom-nav':'.teacher-portal-nav')+' button').filter({hasText:'Homework'}).click();
+  await page.goto(origin+'/teacher');if(width===320)await page.locator('.learner-bottom-nav summary').click();await page.locator((width===320?'.learner-bottom-nav':'.teacher-portal-nav')+' button').filter({hasText:'Homework'}).click();
   const panel=page.locator('.teacher-action-panel').filter({has:page.getByRole('heading',{name:item.title,exact:true})}),form=panel.locator('form');
   await form.locator('input[name="title"]').fill('Synthetic teaching title');
   await form.getByRole('button',{name:'Assigned batch',exact:true}).click();await form.getByRole('option',{name:'Synthetic batch',exact:true}).click();

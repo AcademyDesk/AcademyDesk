@@ -7,6 +7,10 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { academyApi, apiHeaders, apiUrl, clearPortalTokens } from "@/lib/api";
 import { platformLinks } from "@/components/platform-navigation";
 import navigationStyles from "@/components/platform-navigation.module.css";
+import { PlatformMobileNavigation } from "@/components/platform-mobile-navigation";
+import manualStyles from "@/components/manual-workspace.module.css";
+import { usePentaManualTheme } from "@/components/penta-manual-theme";
+import { StandardDetailModal } from "@/components/design-system/controls";
 
 type Academy = {
   id: string;
@@ -43,6 +47,7 @@ type OverviewModal = "academies" | "activeAcademies" | "learners" | "support" | 
 type OwnerSession = { displayName: string; email?: string | null; profileImageUrl?: string | null };
 
 export default function PlatformPage() {
+  const manualTheme = usePentaManualTheme();
   const router = useRouter();
   const [academies, setAcademies] = useState<Academy[]>([]);
   const [query, setQuery] = useState("");
@@ -163,7 +168,7 @@ export default function PlatformPage() {
   }
 
   return (
-    <main className="enterprise-app-shell platform-shell">
+    <main {...manualTheme} className={`enterprise-app-shell platform-shell ${manualStyles.shell} ${manualTheme.className}`}>
       <aside className="enterprise-sidebar platform-sidebar">
         <div className="enterprise-brand">
           <span>A</span>
@@ -202,7 +207,9 @@ export default function PlatformPage() {
             <button
               type="button"
               className="enterprise-icon-button"
-              aria-label="Platform notifications"
+              aria-label="Platform notifications unavailable"
+              title="Platform notifications are not available yet"
+              disabled
             >
               ♧
             </button>
@@ -223,18 +230,7 @@ export default function PlatformPage() {
             </details>
           </div>
         </header>
-        <nav className={`platform-mobile-nav ${navigationStyles.navigation}`} aria-label="Platform navigation">
-          {platformLinks.map((item) => (
-            <Link
-              href={item.href}
-              key={item.label}
-              aria-current={item.label === "Overview" ? "page" : undefined}
-            >
-              <i aria-hidden="true">{item.icon}</i>
-              <span>{item.label}</span>
-            </Link>
-          ))}
-        </nav>
+        <PlatformMobileNavigation />
         <div className="platform-content">
           <section id="overview" className="platform-heading">
             <div className="platform-title-group">
@@ -330,12 +326,11 @@ export default function PlatformPage() {
             </article>
           </section>
           {overviewModal && selectedOverviewTile && (
-            <div className="platform-modal-backdrop" role="presentation" onMouseDown={() => setOverviewModal(null)}>
-              <article className="platform-modal platform-overview-modal" role="dialog" aria-modal="true" aria-labelledby="overview-tile-title" onMouseDown={(event) => event.stopPropagation()}>
-                <header><div><p>{selectedOverviewTile.label}</p><h3 id="overview-tile-title">{selectedOverviewTile.value}</h3></div><button type="button" aria-label="Close detail" onClick={() => setOverviewModal(null)}>×</button></header>
+            <StandardDetailModal title={String(selectedOverviewTile.value)} eyebrow={selectedOverviewTile.label} onClose={() => setOverviewModal(null)}>
+              <div className={`platform-overview-modal ${navigationStyles.details}`}>
                 {(["academies", "activeAcademies", "learners"] as const).includes(overviewModal as "academies" | "activeAcademies" | "learners") ? <ul className="platform-overview-detail-list">{(overviewModal === "activeAcademies" ? activeAcademies : academies).map((academy) => <li key={academy.id}><div><b>{academy.name}</b><small>{academy.branches} branch{academy.branches === 1 ? "" : "es"} · {academy.students} learner{academy.students === 1 ? "" : "s"}</small></div><span className={academy.isActive ? "platform-status active" : "platform-status"}>{academy.isActive ? "Active" : "Inactive"}</span></li>)}{!academies.length && <li><small>No academies recorded yet.</small></li>}</ul> : <div className="platform-overview-detail-summary"><p>{selectedOverviewTile.detail}</p>{overviewModal === "support" && <Link href="/platform/control?tab=Support" onClick={() => setOverviewModal(null)}>Open Support</Link>}{(["billed", "collected", "outstanding"] as const).includes(overviewModal as "billed" | "collected" | "outstanding") && <Link href="/platform/control?tab=Billing" onClick={() => setOverviewModal(null)}>Open Billing</Link>}</div>}
-              </article>
-            </div>
+              </div>
+            </StandardDetailModal>
           )}
           {onboardingOpen && (
             <div className="platform-modal-backdrop" role="presentation" onMouseDown={() => !busy && setOnboardingOpen(false)}>

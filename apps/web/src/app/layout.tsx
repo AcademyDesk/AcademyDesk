@@ -5,6 +5,8 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { StandaloneThemeControl } from "@/components/standalone-theme-control";
 import { WorkspaceFrame } from "@/components/workspace-frame";
 import "./globals.css";
+import "@/vendor/penta-shared-ui/foundation.css";
+import "@/vendor/penta-shared-ui/academy-mapping.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

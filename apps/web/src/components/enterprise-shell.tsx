@@ -8,6 +8,8 @@ import { academyApi, apiUrl, clearPortalTokens } from "@/lib/api";
 import PentaWorkspace from "@/components/penta/penta-workspace";
 import { WorkspaceDirectory } from "@/components/penta/workspace-directory";
 import pentaShell from "@/components/penta/penta-shell.module.css";
+import manualStyles from "@/components/manual-workspace.module.css";
+import { usePentaManualTheme } from "@/components/penta-manual-theme";
 
 type NavigationItem = readonly [label: string, href: string];
 type AcademySubscription = {
@@ -175,6 +177,20 @@ type EnterpriseShellProps = {
 };
 
 const EnterpriseShellContext = createContext(false);
+// Stable component identity preserves keyboard focus when shell reads refresh.
+function LockedNavigationItem({ item, pentaEligible, included, active, onUpgrade }: {
+  item: NavigationItem;
+  pentaEligible: boolean;
+  included: boolean;
+  active: boolean;
+  onUpgrade: () => void;
+}) {
+  const [label, href] = item;
+  if (href === "/penta" && !pentaEligible) return null;
+  if (included) return <Link href={href} data-active={active}>{label}</Link>;
+  return <button type="button" className="enterprise-locked-link" onClick={onUpgrade} aria-label={`${label} requires an upgrade`}><span>{label}</span><i aria-hidden="true">⌁</i></button>;
+}
+
 export function useEnterpriseShell() {
   return useContext(EnterpriseShellContext);
 }
@@ -185,6 +201,7 @@ export function EnterpriseShell({
   userRole,
   children,
 }: EnterpriseShellProps) {
+  const manualTheme = usePentaManualTheme();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -314,7 +331,7 @@ export function EnterpriseShell({
   const currentNavigationLabel = (() => {
     for (const group of activeNavigationGroups) {
       for (const item of group.links ?? []) {
-        if (isNavigationActive(item[1])) return item[0];
+        if (isNavigationActive(item[1])) return ["Overview", "Onboarding", "Management", "360"].includes(item[0]) ? `${group.label} · ${item[0]}` : item[0];
       }
       for (const section of group.sections ?? []) {
         for (const item of section.links) {
@@ -328,12 +345,8 @@ export function EnterpriseShell({
     return "Browse workspace";
   })();
 
-  function LockedNavigationItem({ item }: { item: NavigationItem }) {
-    const [label, href] = item;
-    if (href === "/penta" && !pentaEligible) return null;
-    const included = moduleIncluded(href);
-    if (included) return <Link href={href} data-active={isNavigationActive(href)}>{label}</Link>;
-    return <button type="button" className="enterprise-locked-link" onClick={() => setUpgradeModule(routeModule(href))} aria-label={`${label} requires an upgrade`}><span>{label}</span><i aria-hidden="true">⌁</i></button>;
+  function navigationItem(item: NavigationItem) {
+    return <LockedNavigationItem key={item[1]} item={item} pentaEligible={pentaEligible} included={moduleIncluded(item[1])} active={isNavigationActive(item[1])} onUpgrade={() => setUpgradeModule(routeModule(item[1]))} />;
   }
 
   useEffect(() => {
@@ -367,6 +380,26 @@ export function EnterpriseShell({
     if (menu) menu.open = false;
   }, [pathname, searchParams]);
 
+  useEffect(() => {
+    const closeOutside = (event: PointerEvent) => {
+      if (event.target instanceof Node && !mobileWorkspaceNavRef.current?.contains(event.target))
+        mobileWorkspaceNavRef.current?.querySelector("details")?.removeAttribute("open");
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      const menu = mobileWorkspaceNavRef.current?.querySelector("details");
+      if (event.key === "Escape" && menu?.open) {
+        menu.open = false;
+        menu.querySelector("summary")?.focus();
+      }
+    };
+    document.addEventListener("pointerdown", closeOutside);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOutside);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, []);
+
   async function uploadProfileImage(event: React.ChangeEvent<HTMLInputElement>) {
     const image = event.target.files?.[0];
     event.target.value = "";
@@ -395,7 +428,7 @@ export function EnterpriseShell({
 
   return (
     <EnterpriseShellContext.Provider value>
-      <div className={`enterprise-app-shell ${pentaView ? pentaShell.aiShell : ""}`}>
+      <div {...(pentaView ? {} : manualTheme)} className={`enterprise-app-shell ${pentaView ? pentaShell.aiShell : `${manualTheme.className} ${manualStyles.shell} ${manualStyles.admin}`}`}>
         <aside className="enterprise-sidebar">
           <Link href="/dashboard" className="enterprise-brand">
             <span>A</span>
@@ -418,8 +451,8 @@ export function EnterpriseShell({
                   <b aria-hidden="true">⌄</b>
                 </summary>
                 <div>
-                  {group.sections?.map((section) => <section key={section.label} className="enterprise-nav-subgroup"><p>{section.label}</p>{section.links.map((item) => <LockedNavigationItem key={item[1]} item={item} />)}</section>)}
-                  {(group.links ?? []).map((item) => <LockedNavigationItem key={item[1]} item={item} />)}
+                  {group.sections?.map((section) => <section key={section.label} className="enterprise-nav-subgroup"><p>{section.label}</p>{section.links.map(navigationItem)}</section>)}
+                  {(group.links ?? []).map(navigationItem)}
                 </div>
               </details>
             ))}
@@ -440,7 +473,7 @@ export function EnterpriseShell({
                   <b aria-hidden="true">⌄</b>
                 </summary>
                 <div>
-                  {activeAdministrationNavigation.map((item) => <LockedNavigationItem key={item[1]} item={item} />)}
+                  {activeAdministrationNavigation.map(navigationItem)}
                 </div>
               </details>
             </nav>
@@ -563,15 +596,15 @@ export function EnterpriseShell({
                     {group.sections?.map((section) => (
                       <div className="enterprise-mobile-workspace-subgroup" key={section.label}>
                         <p>{section.label}</p>
-                        {section.links.map((item) => <LockedNavigationItem key={item[1]} item={item} />)}
+                        {section.links.map(navigationItem)}
                       </div>
                     ))}
-                    {(group.links ?? []).map((item) => <LockedNavigationItem key={item[1]} item={item} />)}
+                    {(group.links ?? []).map(navigationItem)}
                   </section>
                 ))}
                 {activeAdministrationNavigation.length > 0 && <section>
                   <h2><i aria-hidden="true">⚙</i>Administration</h2>
-                  {activeAdministrationNavigation.map((item) => <LockedNavigationItem key={item[1]} item={item} />)}
+                  {activeAdministrationNavigation.map(navigationItem)}
                 </section>}
               </div>
             </details>

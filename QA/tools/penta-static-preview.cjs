@@ -2,11 +2,13 @@
 // Serves only apps/web/out; no development server refreshes, proxy or mutations.
 const http = require('node:http'), fs = require('node:fs'), path = require('node:path');
 const root = fs.realpathSync(path.resolve(__dirname, '../../apps/web/out'));
+const port = Number(process.env.QA_PREVIEW_PORT || 49542);
+if (!Number.isInteger(port) || port < 1024 || port > 65535) throw new Error('Invalid loopback preview port');
 const mime = { '.html': 'text/html', '.js': 'application/javascript', '.css': 'text/css', '.json': 'application/json', '.txt': 'text/plain', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon', '.woff2': 'font/woff2' };
 http.createServer((request, response) => {
-  if (request.headers.host !== '127.0.0.1:49542' || !['GET', 'HEAD'].includes(request.method)) { response.writeHead(400).end(); return; }
+  if (!['127.0.0.1:' + port, 'localhost:' + port].includes(request.headers.host) || !['GET', 'HEAD'].includes(request.method)) { response.writeHead(400).end(); return; }
   try {
-    const relative = decodeURIComponent(new URL(request.url, 'http://127.0.0.1:49542').pathname).replace(/^\/+/, '');
+    const relative = decodeURIComponent(new URL(request.url, 'http://127.0.0.1:' + port).pathname).replace(/^\/+/, '');
     let file = path.resolve(root, relative || 'index.html');
     if (file !== root && !file.startsWith(root + path.sep)) { response.writeHead(404).end(); return; }
     if (!path.extname(file) && fs.existsSync(file + '.html')) file += '.html';
@@ -21,4 +23,4 @@ http.createServer((request, response) => {
     response.writeHead(200, { 'Content-Type': mime[path.extname(exact)] || 'application/octet-stream', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' });
     if (request.method === 'HEAD') response.end(); else fs.createReadStream(exact).pipe(response);
   } catch { response.writeHead(404).end(); }
-}).listen(49542, '127.0.0.1', () => console.log('PENTA STATIC PREVIEW http://127.0.0.1:49542; exact built apps/web/out; local only'));
+}).listen(port, '127.0.0.1', () => console.log('ACADEMY STATIC PREVIEW http://localhost:' + port + '; exact built apps/web/out; local only; no API mocks'));

@@ -1,0 +1,58 @@
+{
+  "packet": "FW1-R1 Academy consumption",
+  "package": "@penta/shared-ui",
+  "version": "0.1.0-fw1.r1",
+  "tokenVersion": "1.0.0-fw1.r1",
+  "upstreamSourceDigest": "104d56a68bddf8d16aade15a082eb4d69c3c0b67a174f64a784bd683b0d7005b",
+  "archiveSha256": "4db847923a9dd6513bcbe7caf4beedeed606223fbc3fe11d6d3bb479f92a32e6",
+  "sourceRepository": "D:/PENTA AI Models",
+  "sourceBaseHead": "2f8806967709a1a7ec29e5176e7c31968adbf6aa",
+  "sourceDirty": true,
+  "files": [
+    {
+      "name": "academy-mapping.css",
+      "sourcePath": "src/academy-mapping.css",
+      "sha256": "2da663dc44d9d5c2ab5e4d5224b64912ba65e6147bdb2b00cfe27d12e84afebe",
+      "normalizedSha256": "50abb3037d30982ebf43e3b5651dbfe60dbed81583a42cec5300f6a8990ccb45"
+    },
+    {
+      "name": "contracts.ts",
+      "sourcePath": "src/contracts.ts",
+      "sha256": "5cee91c30518ab59368ed82c6ff0ab20cf4dbc0ed099b9a2ffc2c331a84745f1",
+      "normalizedSha256": "96b81ff43e82d351af4669c2cbfe29146cff3b9f6267fe98e10338c37f03dc84"
+    },
+    {
+      "name": "foundation.css",
+      "sourcePath": "src/foundation.css",
+      "sha256": "ff2bcd25ae943789b7565531f757e4dece495e0d222224a67ae0e35896a148bc",
+      "normalizedSha256": "ff38308ad67205289edaac59829c569fb18b00bf282aa2b834fdc2334600f86d"
+    },
+    {
+      "name": "index.ts",
+      "sourcePath": "src/index.ts",
+      "sha256": "e1ebfa4266bda339e51e478fa3bea9b3e3e5aa52c6f63b2362dd43038b6c8f20",
+      "normalizedSha256": "84d6bca82978b4c6ce790f1668568f7151009d16f8987ff99081b0c103abfda3"
+    },
+    {
+      "name": "primitives.tsx",
+      "sourcePath": "src/primitives.tsx",
+      "sha256": "0f13f239ab8a7de7a64baa09e6941635642ef54be443a43b824ea3993cd18963",
+      "normalizedSha256": "805784e7ccd95ba0e5908b85513ada8837bd2e6cec8d2ad13ea01afc24e5df6b"
+    },
+    {
+      "name": "tokens.ts",
+      "sourcePath": "src/tokens.ts",
+      "sha256": "e8dd2b6d4bb66b77f86419e4276d95299e62e4924b950a5a93891167c7169588",
+      "normalizedSha256": "3e5c810f3f36729e64dafad631921cfbba9e33ec6d4a4777f400414788ba5bd4"
+    }
+  ],
+  "normalization": "Upstream text snapshot through apply_patch; normalizedSha256 canonicalizes CRLF/LF and terminal blank lines to one final LF. No functional edits to vendor files.",
+  "excluded": [
+    "gallery",
+    "bootstrap",
+    "demo CSS",
+    "chat-visual-preview synthetic state",
+    "model catalog",
+    "build artifacts"
+  ]
+}

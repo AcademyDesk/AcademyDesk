@@ -1,0 +1,232 @@
+/* Manual host foundation. Apply portal by portal; never style the PENTA canvas.
+   Existing semantic tokens remain the compatibility boundary until FW1 ships. */
+.shell {
+  --manual-card-radius: 18px;
+  --manual-control-radius: 12px;
+  --ad-action: var(--ad-accent);
+  --ad-action-hover: var(--ad-accent-strong);
+  --ad-action-text: #fff;
+  background: var(--ad-canvas);
+}
+
+:global([data-theme="dark"]) .shell {
+  --ad-action-text: #07111f;
+}
+
+.shell :global(.platform-topbar) {
+  flex: 0 0 auto;
+  min-height: 84px;
+  height: auto;
+  gap: 16px;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--ad-border);
+  background: var(--ad-surface);
+}
+
+.shell :global(.platform-topbar-context) {
+  margin-left: 0;
+  padding-bottom: 8px;
+}
+
+.shell :global(.platform-topbar-context strong) {
+  overflow: visible;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.4;
+}
+
+.shell :global(.enterprise-utilities) {
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.shell :global(.enterprise-utilities button),
+.shell :global(.enterprise-profile-trigger) {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.shell :global(.platform-profile-menu) {
+  width: min(280px, calc(100vw - 32px));
+  min-width: 0;
+  max-height: min(420px, calc(100dvh - 140px));
+  overflow: auto;
+  overflow-wrap: anywhere;
+  border-radius: var(--manual-control-radius);
+}
+
+.shell :global(.platform-profile-menu button) {
+  min-height: 44px;
+}
+
+.shell :global(.platform-content) {
+  background:
+    radial-gradient(ellipse at top right, color-mix(in srgb, var(--ad-accent) 5%, transparent), transparent 55%),
+    var(--ad-canvas);
+}
+
+.shell :global(.platform-panel),
+.shell :global(.platform-kpis button) {
+  border-radius: var(--manual-card-radius);
+  box-shadow: 0 4px 18px color-mix(in srgb, var(--ad-text) 4%, transparent);
+}
+
+.shell :global(.platform-content) :is(input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]), select, textarea) {
+  min-height: 44px;
+}
+
+.shell :global(.platform-content) button {
+  min-height: 44px;
+}
+
+.shell :is(button, a, summary, input, select, textarea):focus-visible {
+  outline: 3px solid var(--ad-accent);
+  outline-offset: 3px;
+}
+
+.admin :global(.enterprise-topbar) {
+  z-index: 50;
+  isolation: auto;
+  flex: 0 0 auto;
+  min-height: 84px;
+  height: auto;
+  padding: 16px 24px;
+  background: var(--ad-surface);
+}
+
+.admin :global(.enterprise-admin-context) { min-width: 0; margin-left: 0; padding-bottom: 8px; }
+.admin :global(.enterprise-admin-context strong) {
+  max-width: none;
+  overflow: visible;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.4;
+}
+
+.admin :global(.enterprise-utilities) :is(a, button) { min-width: 44px; min-height: 44px; }
+.admin :global(.enterprise-profile-trigger span) { width: 100%; height: 100%; }
+.admin :global(.enterprise-notifications) { position: static; }
+.admin :global(.enterprise-search-panel),
+.admin :global(.enterprise-notification-menu) {
+  top: calc(100% + 8px);
+  right: 16px;
+  width: min(390px, calc(100% - 32px));
+  max-height: min(420px, 55dvh);
+  overflow: auto;
+}
+.admin :global(.enterprise-profile-menu) {
+  top: calc(100% + 8px);
+  right: 0;
+  width: min(280px, calc(100vw - 32px));
+  min-width: 0;
+  max-height: min(420px, 55dvh);
+  overflow: auto;
+}
+.admin :global(.enterprise-profile-menu),
+.admin :global(.enterprise-notification-menu) { overflow-wrap: anywhere; }
+.admin :global(.enterprise-notification-menu header) { flex-wrap: wrap; gap: 6px; }
+
+.admin :global(.enterprise-dashboard),
+.admin :global(.enterprise-settings) {
+  background:
+    radial-gradient(ellipse at top right, color-mix(in srgb, var(--ad-accent) 5%, transparent), transparent 55%),
+    var(--ad-canvas);
+}
+.admin :global(.enterprise-data-panel),
+.admin :global(.surface-panel) { border-radius: var(--manual-card-radius); }
+.admin :is(:global(.enterprise-settings), :global(.enterprise-dashboard), :global(.enterprise-search-panel)) :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]), select, textarea) { min-height: 44px; }
+.admin :global(.enterprise-mobile-workspace-nav) :is(a, button) { min-height: 44px; }
+.admin :global(.enterprise-sidebar) :is(a, button, summary),
+.admin :is(:global(.enterprise-settings), :global(.enterprise-dashboard)) button,
+.admin :is(:global(.enterprise-settings), :global(.enterprise-dashboard)) :is(:global(.enterprise-action-button), :global(.enterprise-primary-action)) { min-height: 44px; }
+
+.teacher :global(.enterprise-topbar) {
+  flex: 0 0 auto;
+  min-height: 84px;
+  height: auto;
+  padding: 16px 24px;
+  gap: 16px;
+  background: var(--ad-surface);
+}
+.teacher :global(.teacher-portal-context) { min-width: 0; }
+.teacher :global(.teacher-portal-context strong) { max-width: none; overflow: visible; white-space: normal; overflow-wrap: anywhere; line-height: 1.4; }
+.teacher :global(.enterprise-profile-trigger span) { width: 100%; height: 100%; }
+.teacher :global(.enterprise-profile-menu) {
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 0;
+  width: min(280px, calc(100vw - 32px));
+  max-height: min(420px, 55dvh);
+  overflow: auto;
+  overflow-wrap: anywhere;
+}
+.teacher :global(.learner-bottom-nav) { position: static; inset: auto; grid-template-columns: none; border-top: 0; }
+.teacher :global(.teacher-portal-content) {
+  background: radial-gradient(ellipse at top right, color-mix(in srgb, var(--ad-accent) 5%, transparent), transparent 55%), var(--ad-canvas);
+  padding-bottom: max(32px, env(safe-area-inset-bottom));
+}
+.teacher :is(:global(.teacher-action-panel), :global(.teacher-timetable-panel), :global(.teacher-home-messages), :global(.teacher-classroom-hero)) { border-radius: var(--manual-card-radius); }
+.teacher :global(.teacher-portal-nav) button,
+.teacher :global(.teacher-portal-content) button,
+.teacher :global(.enterprise-profile-menu-action) { min-height: 44px; }
+.teacher :global(.teacher-portal-content) :is(input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]), select, textarea) { min-height: 44px; }
+.teacher :is(:global(.teacher-activity-list), :global(.teacher-payslip-list), :global(.teacher-recent-payments)) article > div { min-width: 0; overflow-wrap: anywhere; }
+.teacher :global(.teacher-payslip-list) article { flex-wrap: wrap; }
+
+@media (max-width: 900px) {
+  .teacher :global(.enterprise-topbar) { flex-wrap: wrap; padding: 14px 16px; gap: 10px; }
+  .teacher :global(.teacher-portal-context), .teacher :global(.enterprise-utilities) { flex: 0 0 100%; }
+  .teacher :global(.enterprise-utilities) { justify-content: flex-end; gap: 4px; }
+  .teacher :global(.teacher-portal-content) :is(input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]), select, textarea) { font-size: 16px; }
+  .teacher :global(.teacher-payslip-list) article { align-items: flex-start; }
+  .teacher :global(.teacher-payslip-list) article > div:first-child { flex: 0 0 100%; }
+}
+
+@media (max-width: 900px) {
+  .admin :global(.enterprise-topbar) { padding: 14px 16px; flex-wrap: wrap; gap: 10px; }
+  .admin :global(.enterprise-admin-context),
+  .admin :global(.enterprise-utilities) { flex: 0 0 100%; }
+  .admin :global(.enterprise-admin-context > span) { display: block; }
+  .admin :global(.enterprise-utilities) { justify-content: flex-end; gap: 4px; }
+  .admin :is(:global(.enterprise-settings), :global(.enterprise-dashboard), :global(.enterprise-search-panel)) :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]), select, textarea) { font-size: 16px; }
+}
+
+@media (max-width: 360px) {
+  .admin :global(.enterprise-utilities) {
+    display: grid;
+    grid-template-columns: 44px 44px 44px minmax(94px, 1fr) 44px;
+    align-items: center;
+    gap: 3px;
+  }
+  .admin :global(.enterprise-utilities) > * { min-width: 0; }
+  .admin :global(.theme-toggle) { justify-content: center; }
+  /* Preserve explicit accessible theme names while leaving room for44px utilities. */
+  .admin :global(.theme-toggle button) { font-size: 0; gap: 0; }
+}
+
+@media (max-width: 900px) {
+  .shell :global(.platform-topbar) {
+    padding: 14px 16px;
+  }
+
+  .shell :global(.platform-content) :is(input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]), select, textarea) {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 640px) {
+  .shell :global(.platform-topbar) {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .shell :global(.platform-topbar-context),
+  .shell :global(.enterprise-utilities) {
+    flex: 0 0 100%;
+  }
+
+  .shell :global(.enterprise-utilities) {
+    gap: 4px;
+  }
+}

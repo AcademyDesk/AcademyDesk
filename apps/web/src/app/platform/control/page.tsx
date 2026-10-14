@@ -4,10 +4,13 @@ import Link from "next/link";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { StandardDateField, StandardSelectField } from "@/components/design-system/controls";
+import { StandardDateField, StandardSelectField, StandardDetailModal } from "@/components/design-system/controls";
 import { academyApi, apiHeaders, apiUrl, clearPortalTokens } from "@/lib/api";
 import { platformControlTabs, platformLinks } from "@/components/platform-navigation";
 import navigationStyles from "@/components/platform-navigation.module.css";
+import { PlatformMobileNavigation } from "@/components/platform-mobile-navigation";
+import manualStyles from "@/components/manual-workspace.module.css";
+import { usePentaManualTheme } from "@/components/penta-manual-theme";
 
 type Academy = {
   id: string;
@@ -90,6 +93,7 @@ type AnnouncementModal = "active" | "recent" | null;
 type HealthModal = "api" | "database" | "jobs" | "communications" | null;
 
 export default function PlatformControlPage() {
+  const manualTheme = usePentaManualTheme();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [tab, setTab] = useState("Tenants");
@@ -509,7 +513,7 @@ export default function PlatformControlPage() {
   }
 
   return (
-    <main className="enterprise-app-shell platform-shell">
+    <main {...manualTheme} className={`enterprise-app-shell platform-shell ${manualStyles.shell} ${manualTheme.className}`}>
       <aside className="enterprise-sidebar platform-sidebar">
         <div className="enterprise-brand">
           <span>A</span>
@@ -549,13 +553,16 @@ export default function PlatformControlPage() {
               type="button"
               className="enterprise-icon-button"
               aria-label="Search academy portfolio"
+              onClick={() => router.push("/platform#academy-search")}
             >
               ⌕
             </button>
             <button
               type="button"
               className="enterprise-icon-button"
-              aria-label="Platform notifications"
+              aria-label="Platform notifications unavailable"
+              title="Platform notifications are not available yet"
+              disabled
             >
               ♧
             </button>
@@ -575,18 +582,7 @@ export default function PlatformControlPage() {
             </details>
           </div>
         </header>
-        <nav className={`platform-mobile-nav ${navigationStyles.navigation}`} aria-label="Platform navigation">
-          {platformLinks.map((item) => (
-            <Link
-              href={item.href}
-              key={item.label}
-              aria-current={("tab" in item ? item.tab === tab : false) ? "page" : undefined}
-            >
-              <i aria-hidden="true">{item.icon}</i>
-              <span>{item.label}</span>
-            </Link>
-          ))}
-        </nav>
+        <PlatformMobileNavigation key={tab} currentTab={tab} />
         <div className="platform-content platform-control-content">
           <header className="platform-control-heading">
             <span className="platform-control-icon" aria-hidden="true">{controlIcon}</span>
@@ -644,7 +640,7 @@ export default function PlatformControlPage() {
                   </form> : <p className="platform-tenant-empty">Select an academy to configure its subscription.</p>}
                 </section>
               </section>
-              {tenantModal && <div className="platform-modal-backdrop" role="presentation"><article className="platform-modal platform-tenant-modal" role="dialog" aria-modal="true" aria-labelledby="tenant-modal-title"><header><div><p>Tenant register</p><h3 id="tenant-modal-title">{tenantModalTitle}</h3></div><button type="button" aria-label="Close tenant details" onClick={() => setTenantModal(null)}>×</button></header>{tenantModalRecords.length ? <ul>{tenantModalRecords.map((academy) => <li key={academy.id}><span>{academy.name.slice(0, 1).toUpperCase()}</span><div><b>{academy.name}</b><small>{academy.subscriptionPlan} plan · {academy.studentLimit} students · {academy.staffLimit} staff</small></div><em data-status={academy.subscriptionStatus.toLowerCase().replaceAll(" ", "-")}>{academy.subscriptionStatus}</em></li>)}</ul> : <p className="platform-tenant-empty">No tenants match this view.</p>}</article></div>}
+              {tenantModal && <StandardDetailModal title={tenantModalTitle} eyebrow="Tenant register" onClose={() => setTenantModal(null)}><div className={`platform-tenant-modal ${navigationStyles.details}`}>{tenantModalRecords.length ? <ul>{tenantModalRecords.map((academy) => <li key={academy.id}><span>{academy.name.slice(0, 1).toUpperCase()}</span><div><b>{academy.name}</b><small>{academy.subscriptionPlan} plan · {academy.studentLimit} students · {academy.staffLimit} staff</small></div><em data-status={academy.subscriptionStatus.toLowerCase().replaceAll(" ", "-")}>{academy.subscriptionStatus}</em></li>)}</ul> : <p className="platform-tenant-empty">No tenants match this view.</p>}</div></StandardDetailModal>}
             </>
           )}
           {tab === "Announcements" && <div>
@@ -669,7 +665,7 @@ export default function PlatformControlPage() {
                 {announcements.length ? <ul>{announcements.slice(0, 12).map((item) => { const active = Boolean(item.expiresAtUtc && new Date(item.expiresAtUtc).getTime() > currentTime); return <li key={item.id}><span>!</span><div><b>{item.title}</b><small>{item.academyName} · Ends {item.expiresAtUtc ? new Intl.DateTimeFormat("en-IN", { day: "2-digit", month: "short", hour: "numeric", minute: "2-digit" }).format(new Date(item.expiresAtUtc)) : "not set"}</small></div><em data-active={active}>{active ? "Active" : "Ended"}</em></li>; })}</ul> : <p className="platform-announcement-empty">No announcements have been published yet.</p>}
               </section>
             </section>
-            {announcementModal && <div className="platform-modal-backdrop" role="presentation"><article className="platform-modal platform-announcement-modal" role="dialog" aria-modal="true" aria-labelledby="announcement-modal-title"><header><div><p>Platform announcements</p><h3 id="announcement-modal-title">{announcementModalTitle}</h3></div><button type="button" aria-label="Close announcement details" onClick={() => setAnnouncementModal(null)}>×</button></header>{announcementModalRecords.length ? <ul>{announcementModalRecords.map((item) => { const active = Boolean(item.expiresAtUtc && new Date(item.expiresAtUtc).getTime() > currentTime); return <li key={item.id}><span>!</span><div><b>{item.title}</b><small>{item.academyName} · {item.message}</small></div><em data-active={active}>{active ? "Active" : "Ended"}</em></li>; })}</ul> : <p className="platform-announcement-empty">No announcements match this view.</p>}</article></div>}
+            {announcementModal && <StandardDetailModal title={announcementModalTitle} eyebrow="Platform announcements" onClose={() => setAnnouncementModal(null)}><div className={`platform-announcement-modal ${navigationStyles.details}`}>{announcementModalRecords.length ? <ul>{announcementModalRecords.map((item) => { const active = Boolean(item.expiresAtUtc && new Date(item.expiresAtUtc).getTime() > currentTime); return <li key={item.id}><span>!</span><div><b>{item.title}</b><small>{item.academyName} · {item.message}</small></div><em data-active={active}>{active ? "Active" : "Ended"}</em></li>; })}</ul> : <p className="platform-announcement-empty">No announcements match this view.</p>}</div></StandardDetailModal>}
           </div>}
           {tab === "Admins" && (
             <>
@@ -708,7 +704,7 @@ export default function PlatformControlPage() {
                 </table>
               </div>
               </section>
-              {adminModal && <div className="platform-modal-backdrop" role="presentation"><article className="platform-modal platform-admin-modal" role="dialog" aria-modal="true" aria-labelledby="admin-modal-title"><header><div><p>Academy administrators</p><h3 id="admin-modal-title">{adminModalTitle}</h3></div><button type="button" aria-label="Close administrator details" onClick={() => setAdminModal(null)}>×</button></header>{adminModalRecords.length ? <ul>{adminModalRecords.map((admin) => <li key={admin.id}><span>{admin.displayName.slice(0, 1).toUpperCase()}</span><div><b>{admin.displayName}</b><small>{admin.email} · {admin.academyName || "Unassigned academy"}</small></div><em data-active={admin.isActive}>{admin.isActive ? "Active" : "Deactivated"}</em></li>)}</ul> : <p className="platform-admin-empty">No administrator accounts match this view.</p>}</article></div>}
+              {adminModal && <StandardDetailModal title={adminModalTitle} eyebrow="Academy administrators" onClose={() => setAdminModal(null)}><div className={`platform-admin-modal ${navigationStyles.details}`}>{adminModalRecords.length ? <ul>{adminModalRecords.map((admin) => <li key={admin.id}><span>{admin.displayName.slice(0, 1).toUpperCase()}</span><div><b>{admin.displayName}</b><small>{admin.email} · {admin.academyName || "Unassigned academy"}</small></div><em data-active={admin.isActive}>{admin.isActive ? "Active" : "Deactivated"}</em></li>)}</ul> : <p className="platform-admin-empty">No administrator accounts match this view.</p>}</div></StandardDetailModal>}
             </>
           )}
           {tab === "Billing" && (
@@ -738,7 +734,7 @@ export default function PlatformControlPage() {
                   {invoices.length ? <ul>{invoices.map((item) => <li key={item.id}><div className="platform-invoice-copy"><b>{item.invoiceNumber}</b><small>{item.academyName} · Due {new Intl.DateTimeFormat("en-IN", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(`${item.dueDate}T12:00:00`))}{item.paymentReference ? ` · Payment ref: ${item.paymentReference}` : ""}</small></div><strong>{item.currency} {item.amount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong><div className="platform-invoice-status"><span data-status={item.status.toLowerCase()}>{item.status}</span><StandardSelectField name={`invoice-status-${item.id}`} value={invoiceStatuses[item.id] ?? item.status} onChange={(value) => { setInvoiceStatuses((current) => ({ ...current, [item.id]: value })); void updateInvoice(item, value); }} placeholder="Update status" options={["Draft", "Issued", "Payment submitted", "Overdue", "Paid", "Void"].map((value) => ({ value, label: value }))} disabled={busy} /></div></li>)}</ul> : <p className="platform-billing-empty">No platform invoices have been created yet.</p>}
                 </section>
               </section>
-              {invoiceModal && <div className="platform-modal-backdrop" role="presentation"><article className="platform-modal platform-invoice-modal" role="dialog" aria-modal="true" aria-labelledby="invoice-modal-title"><header><div><p>Platform billing</p><h3 id="invoice-modal-title">{invoiceModalTitle}</h3></div><button type="button" aria-label="Close invoice details" onClick={() => setInvoiceModal(null)}>×</button></header>{invoiceModalRecords.length ? <ul>{invoiceModalRecords.map((item) => <li key={item.id}><span>₹</span><div><b>{item.invoiceNumber}</b><small>{item.academyName} · Due {new Intl.DateTimeFormat("en-IN", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(`${item.dueDate}T12:00:00`))}</small></div><strong>{item.currency} {item.amount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong><em data-status={item.status.toLowerCase()}>{item.status}</em></li>)}</ul> : <p className="platform-billing-empty">No invoices match this view.</p>}</article></div>}
+              {invoiceModal && <StandardDetailModal title={invoiceModalTitle} eyebrow="Platform billing" onClose={() => setInvoiceModal(null)}><div className={`platform-invoice-modal ${navigationStyles.details}`}>{invoiceModalRecords.length ? <ul>{invoiceModalRecords.map((item) => <li key={item.id}><span>₹</span><div><b>{item.invoiceNumber}</b><small>{item.academyName} · Due {new Intl.DateTimeFormat("en-IN", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(`${item.dueDate}T12:00:00`))}</small></div><strong>{item.currency} {item.amount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong><em data-status={item.status.toLowerCase()}>{item.status}</em></li>)}</ul> : <p className="platform-billing-empty">No invoices match this view.</p>}</div></StandardDetailModal>}
             </>
           )}
           {tab === "Support" && (
@@ -765,7 +761,7 @@ export default function PlatformControlPage() {
                   {cases.length ? <ul>{cases.map((item) => <li key={item.id}><div className="platform-case-copy"><b>{item.subject}</b><small>{item.academyName} · {item.description || "No additional details"}{item.academyResponse ? ` · Academy reply: ${item.academyResponse}` : ""}</small></div><div className="platform-case-meta"><span data-priority={item.priority.toLowerCase()}>{item.priority}</span><StandardSelectField name={`case-status-${item.id}`} value={caseStatuses[item.id] ?? item.status} onChange={(value) => { setCaseStatuses((current) => ({ ...current, [item.id]: value })); void updateCase(item, value); }} placeholder="Update status" options={["Open", "In progress", "Resolved", "Closed"].map((value) => ({ value, label: value }))} disabled={busy} /></div></li>)}</ul> : <p className="platform-support-empty">No support cases have been created yet.</p>}
                 </section>
               </section>
-              {caseModal && <div className="platform-modal-backdrop" role="presentation"><article className="platform-modal platform-case-modal" role="dialog" aria-modal="true" aria-labelledby="case-modal-title"><header><div><p>Platform support</p><h3 id="case-modal-title">{caseModalTitle}</h3></div><button type="button" aria-label="Close support case details" onClick={() => setCaseModal(null)}>×</button></header>{caseModalRecords.length ? <ul>{caseModalRecords.map((item) => <li key={item.id}><span>?</span><div><b>{item.subject}</b><small>{item.academyName} · {item.priority} priority</small></div><em data-status={item.status.toLowerCase().replaceAll(" ", "-")}>{item.status}</em></li>)}</ul> : <p className="platform-support-empty">No support cases match this view.</p>}</article></div>}
+              {caseModal && <StandardDetailModal title={caseModalTitle} eyebrow="Platform support" onClose={() => setCaseModal(null)}><div className={`platform-case-modal ${navigationStyles.details}`}>{caseModalRecords.length ? <ul>{caseModalRecords.map((item) => <li key={item.id}><span>?</span><div><b>{item.subject}</b><small>{item.academyName} · {item.priority} priority</small></div><em data-status={item.status.toLowerCase().replaceAll(" ", "-")}>{item.status}</em></li>)}</ul> : <p className="platform-support-empty">No support cases match this view.</p>}</div></StandardDetailModal>}
             </>
           )}
           {tab === "Settings" && settings && (
@@ -814,7 +810,7 @@ export default function PlatformControlPage() {
                   {audit.length ? <ul>{audit.map((item) => <li key={item.id}><span>{item.actorName.slice(0, 1).toUpperCase()}</span><div><b>{item.action}</b><small>{item.actorName} · {item.entityType} · {new Intl.DateTimeFormat("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" }).format(new Date(item.occurredAtUtc))}</small></div></li>)}</ul> : <p className="platform-health-empty">No audit activity has been recorded yet.</p>}
                 </section>
               </section>
-              {healthModal && selectedHealthDetail && <div className="platform-modal-backdrop" role="presentation"><article className="platform-modal platform-health-modal" role="dialog" aria-modal="true" aria-labelledby="health-modal-title"><header><div><p>Operational health</p><h3 id="health-modal-title">{selectedHealthDetail.label}</h3></div><button type="button" aria-label="Close service details" onClick={() => setHealthModal(null)}>×</button></header><div><span data-health={selectedHealthDetail.value.toLowerCase()}></span><b>{selectedHealthDetail.value}</b><p>This service is currently reporting its latest platform status.</p></div></article></div>}
+              {healthModal && selectedHealthDetail && <StandardDetailModal title={selectedHealthDetail.label} eyebrow="Operational health" onClose={() => setHealthModal(null)}><div className={`platform-health-modal ${navigationStyles.details}`}><div><span data-health={selectedHealthDetail.value.toLowerCase()}></span><b>{selectedHealthDetail.value}</b><p>This service is currently reporting its latest platform status.</p></div></div></StandardDetailModal>}
             </>
           )}
         </div>

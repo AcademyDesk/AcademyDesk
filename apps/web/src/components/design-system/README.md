@@ -26,6 +26,18 @@ screens stay visually consistent.
 ## Interaction standards
 
 - Menus close when the user clicks outside them.
+- Standard select/date/time popups use the host `AnchoredPopup` native popover
+  top layer. Keep their DOM under the host theme; do not portal to `body` or
+  replace positioning with page-local z-index offsets. Placement follows the
+  trigger, scroll/resize and visual viewport, with bounded internal scrolling.
+  Escape closes the popup and restores trigger focus. Select options support
+  arrow/Home/End navigation and close after selection. Long labels must wrap.
+- Date pickers retain direct month/year selection and date-only payloads.
+  Time pickers retain the existing interval and 24-hour payload, with an explicit
+  Done action. Time choices, dropdown options, calendar navigation/footer and
+  modal close actions have 44px minimum height; calendar day cells remain a
+  compact seven-column grid (38px minimum height), not universal 44px targets.
+  These are host-owned controls consuming PENTA tokens, not vendor-source edits.
 - Every action has a visible label and accessible name.
 - Calendars provide previous month, today, next month, selected-day detail, and
   a direct action for applicable online or hybrid sessions.

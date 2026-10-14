@@ -28,3 +28,32 @@
     justify-content: flex-end;
   }
 }
+
+.utilities button:disabled {
+  cursor: not-allowed;
+  opacity: .5;
+}
+
+.details.details {
+  width: 100%;
+  min-width: 0;
+  padding: 0 16px 16px;
+}
+
+.details.details :is(b, small) {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+@media (max-width: 560px) {
+  .details ul > li {
+    grid-template-columns: 38px minmax(0, 1fr);
+  }
+
+  .details ul > li > :is(em, strong) {
+    grid-column: 2;
+    justify-self: start;
+  }
+}

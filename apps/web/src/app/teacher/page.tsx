@@ -6,6 +6,9 @@ import { useRouter } from "next/navigation";
 import { academyApi, apiHeaders, apiUrl, clearPortalTokens } from "@/lib/api";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { TeacherWorkspaceError, teacherWorkspaceFailure } from "@/lib/teacher-workspace";
+import { ManualSectionNavigation } from "@/components/manual-section-navigation";
+import manualStyles from "@/components/manual-workspace.module.css";
+import { usePentaManualTheme } from "@/components/penta-manual-theme";
 type P = {
   userId: string;
   firstName: string;
@@ -58,6 +61,7 @@ const indiaDateKey = (value: string | Date) => {
   return `${get("year")}-${get("month")}-${get("day")}`;
 };
 export default function Teacher() {
+  const manualTheme = usePentaManualTheme();
   const [p, setP] = useState<P>();
   const [sid, setSid] = useState("");
   const [roster, setRoster] = useState<S[]>([]);
@@ -123,7 +127,7 @@ export default function Teacher() {
   const name = (id: string) =>
     p?.batches.find((x) => x.id === id)?.name || "Assigned batch";
   return (
-    <main className="enterprise-app-shell teacher-portal-shell">
+    <main {...manualTheme} className={`enterprise-app-shell teacher-portal-shell ${manualStyles.shell} ${manualStyles.teacher} ${manualTheme.className}`}>
       <aside className="enterprise-sidebar teacher-portal-sidebar">
         <a href="/teacher" className="enterprise-brand">
           <span>A</span>
@@ -132,8 +136,8 @@ export default function Teacher() {
         <nav className="enterprise-nav-section teacher-portal-nav" aria-label="Teacher workspace">
           <p>Teacher portal</p>
           {tabs.map(([k, x, i]) => (
-            <button key={k} data-active={t === k} onClick={() => { if (k === "classroom") { setSid(""); setRoster([]); setAttendance([]); } setT(k); }}>
-              <i>{i}</i>
+            <button key={k} data-active={t === k} aria-current={t === k ? "page" : undefined} onClick={() => { if (k === "classroom") { setSid(""); setRoster([]); setAttendance([]); } setT(k); }}>
+              <i aria-hidden="true">{i}</i>
               {x}
             </button>
           ))}
@@ -141,10 +145,11 @@ export default function Teacher() {
       </aside>
       <section className="enterprise-workspace teacher-portal-workspace">
         <header className="enterprise-topbar">
-          <div className="teacher-portal-context"><strong>{p ? `${p.firstName} ${p.lastName}` : "Teacher workspace"}</strong></div>
+          <div className="teacher-portal-context"><span>Teacher workspace</span><strong>{p ? `${p.firstName} ${p.lastName}` : "Teacher workspace"}</strong></div>
           <div className="enterprise-utilities"><ThemeToggle /><TeacherPortalProfile /></div>
         </header>
         {announcements.length > 0 && <AnnouncementTicker announcements={announcements} />}
+        <ManualSectionNavigation className="learner-bottom-nav" label="Teacher section navigation" sections={tabs.map(([value, label, icon]) => ({ value, label, icon }))} value={t} onSelect={value => setT(value as T)} />
         <section className="learner-content teacher-portal-content">
           {m ? (
             <p className="learner-state" role="status" aria-live="polite">
@@ -222,14 +227,6 @@ export default function Teacher() {
           )}
         </section>
       </section>
-      <nav className="learner-bottom-nav">
-        {tabs.map(([k, x, i]) => (
-          <button key={k} data-active={t === k} onClick={() => setT(k)}>
-            <i>{i}</i>
-            <span>{x}</span>
-          </button>
-        ))}
-      </nav>
     </main>
   );
 }
