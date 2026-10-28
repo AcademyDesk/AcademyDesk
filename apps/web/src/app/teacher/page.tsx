@@ -543,6 +543,7 @@ function TeacherTasks({
       .catch(() => undefined);
   }, []);
   async function create(e: React.FormEvent<HTMLFormElement>, path: string) {
+    const submittedForm = e.currentTarget;
     e.preventDefault();
     const f = new FormData(e.currentTarget);
     const body = Object.fromEntries(f) as Record<string, unknown>;
@@ -563,7 +564,7 @@ function TeacherTasks({
         ? "Saved for your assigned batch."
         : "The teaching record could not be saved.",
     );
-    if (r.ok) e.currentTarget.reset();
+    if (r.ok) submittedForm.reset();
   }
   const batch = <TeacherBatchDropdown batches={batches} />;
   async function reviewPractice(log: PracticeLog) {
@@ -655,6 +656,7 @@ function TeacherSelfService() {
   const imageInput = useRef<HTMLInputElement>(null);
   useEffect(() => { void academyApi("/api/teacher/profile").then(async (response) => { if (response.ok) setProfile(await response.json()); }); void academyApi("/api/teacher/leave-requests").then(async (response) => { if (response.ok) setLeaveRequests(await response.json()); }); }, []);
   async function save(event: React.FormEvent<HTMLFormElement>, path: string) {
+    const submittedForm = event.currentTarget;
     event.preventDefault();
     const response = await academyApi(path, {
       method: path === "/api/teacher/profile" ? "PUT" : "POST",
@@ -667,7 +669,7 @@ function TeacherSelfService() {
       response.ok ? "Saved successfully." : "The request could not be saved.",
     );
     if (response.ok) {
-      if (path === "/api/teacher/leave-requests") { const created = await response.json(); setLeaveRequests((current) => [created, ...current]); event.currentTarget.reset(); }
+      if (path === "/api/teacher/leave-requests") { const created = await response.json(); setLeaveRequests((current) => [created, ...current]); submittedForm.reset(); }
       if (path === "/api/teacher/profile") setProfile(await response.json());
     }
   }

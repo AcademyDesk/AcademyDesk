@@ -365,9 +365,10 @@ export default function PlatformControlPage() {
     );
   }
   async function createCase(event: FormEvent<HTMLFormElement>) {
+    const submittedForm = event.currentTarget;
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-    await request(
+    const saved = await request(
       "/api/platform/support-cases",
       "POST",
       {
@@ -378,7 +379,8 @@ export default function PlatformControlPage() {
       },
       "Support case created.",
     );
-    event.currentTarget.reset();
+    if (!saved) return;
+    submittedForm.reset();
     setSupportAcademyId("");
     setSupportPriority("Normal");
   }
@@ -451,9 +453,10 @@ export default function PlatformControlPage() {
     } catch (error) { setMessage(error instanceof Error ? error.message : "The academy could not be created."); } finally { setBusy(false); }
   }
   async function createInvoice(event: FormEvent<HTMLFormElement>) {
+    const submittedForm = event.currentTarget;
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-    await request(
+    const saved = await request(
       "/api/platform/billing-invoices",
       "POST",
       {
@@ -467,7 +470,8 @@ export default function PlatformControlPage() {
       },
       "Platform invoice created.",
     );
-    event.currentTarget.reset();
+    if (!saved) return;
+    submittedForm.reset();
     setInvoiceAcademyId("");
     setInvoiceCurrency("INR");
     setInvoicePeriodStart("");
@@ -479,7 +483,8 @@ export default function PlatformControlPage() {
     method: string,
     body: unknown,
     success: string,
-  ) {
+  ): Promise<boolean> {
+    // A confirmed write remains successful even if its separate readback fails.
     setBusy(true);
     setMessage("");
     try {
@@ -491,14 +496,20 @@ export default function PlatformControlPage() {
       const payload = await response.json().catch(() => null);
       if (!response.ok)
         throw new Error(payload?.message ?? "The change could not be saved.");
-      await load();
+      try { await load(); }
+      catch {
+        setMessage(`${success} The saved change could not be refreshed. Reload the lists before submitting it again.`);
+        return true;
+      }
       setMessage(success);
+      return true;
     } catch (error) {
       setMessage(
         error instanceof Error
           ? error.message
-          : "The change could not be saved.",
+          : "The change could not be confirmed. Check saved records before retrying.",
       );
+      return false;
     } finally {
       setBusy(false);
     }
@@ -578,8 +589,11 @@ export default function PlatformControlPage() {
     finally { setBusy(false); }
   }
   async function publishAnnouncement(event: FormEvent<HTMLFormElement>) {
+    const submittedForm = event.currentTarget;
     event.preventDefault(); const form = new FormData(event.currentTarget); setBusy(true);
-    try { const response = await academyApi("/api/platform/announcements", { method: "POST", headers: apiHeaders(true), body: JSON.stringify({ academyId: form.get("academyId"), title: form.get("title"), message: form.get("body"), displayHours: Number(form.get("hours")) }) }); if (!response.ok) { const error = await response.json().catch(() => null); throw new Error(error?.message ?? "Announcement could not be published."); } event.currentTarget.reset(); setAnnouncementAcademyId(""); setAnnouncementHours("24"); await load(); setMessage("Academy admin announcement is now live."); } catch (error) { setMessage(error instanceof Error ? error.message : "Announcement could not be published."); } finally { setBusy(false); }
+    try { const response = await academyApi("/api/platform/announcements", { method: "POST", headers: apiHeaders(true), body: JSON.stringify({ academyId: form.get("academyId"), title: form.get("title"), message: form.get("body"), displayHours: Number(form.get("hours")) }) }); if (!response.ok) { const error = await response.json().catch(() => null); throw new Error(error?.message ?? "Announcement could not be published."); } submittedForm.reset(); setAnnouncementAcademyId(""); setAnnouncementHours("24"); try { await load(); }
+      catch { setMessage("Academy admin announcement is now live, but the lists could not be refreshed. Reload before publishing it again."); return; }
+      setMessage("Academy admin announcement is now live."); } catch (error) { setMessage(error instanceof Error ? error.message : "Announcement could not be published."); } finally { setBusy(false); }
   }
   function signOut() {
     clearPortalTokens();

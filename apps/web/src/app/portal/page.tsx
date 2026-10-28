@@ -742,6 +742,7 @@ function Action({
 }) {
   const [m, setM] = useState("");
   async function go(e: FormEvent<HTMLFormElement>) {
+    const submittedForm = e.currentTarget;
     e.preventDefault();
     const f = new FormData(e.currentTarget);
     const body: Record<string, unknown> = Object.fromEntries(f);
@@ -754,7 +755,7 @@ function Action({
     });
     setM(r.ok ? "Saved successfully." : "Could not be saved.");
     if (r.ok) {
-      e.currentTarget.reset();
+      submittedForm.reset();
       if (refresh) void refresh();
     }
   }

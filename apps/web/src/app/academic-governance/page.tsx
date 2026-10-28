@@ -79,6 +79,7 @@ export default function AcademicGovernancePage() {
     event: FormEvent<HTMLFormElement>,
     path: "grading-schemes" | "prerequisites",
   ) {
+    const submittedForm = event.currentTarget;
     event.preventDefault();
     if (!academy) return;
     const data = new FormData(event.currentTarget);
@@ -108,7 +109,7 @@ export default function AcademicGovernancePage() {
           error?.message || "Governance rule could not be saved.",
         );
       }
-      event.currentTarget.reset();
+      submittedForm.reset();
       if (path === "prerequisites") {
         setCourseId("");
         setRequiredCourseId("");

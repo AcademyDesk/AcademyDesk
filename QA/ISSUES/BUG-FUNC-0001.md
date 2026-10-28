@@ -82,3 +82,14 @@ retains input; teacher success guidance and student navigation also pass.
 No real HTTP/SQL persistence or real React browser submit event is claimed by
 these controlled-hook tests. Other reset sites and success/readback behavior
 remain open. See [cloud frontend report](../REPORTS/CLOUD_FRONTEND_QUALITY_2026-10-28.md).
+
+## Remaining form recovery — cloud 2026-10-28
+
+The nine remaining direct event-target reset sites now capture the form during
+dispatch. Rejected platform support/invoice writes retain input; confirmed
+platform/announcement/payroll writes retain success when their readback fails.
+All 23 new controlled handler cases pass, including exact payroll payload checks.
+The original 37 initial-load/form checks are retained. Full frontend: 963/966
+passed, three failed for absent SQL evidence. Browser/SQL, broader notice behavior,
+idempotency and critical gates remain OPEN. See
+[form recovery report](../REPORTS/CLOUD_FORM_RECOVERY_2026-10-28.md).

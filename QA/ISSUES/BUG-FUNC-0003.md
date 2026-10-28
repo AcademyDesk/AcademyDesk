@@ -85,3 +85,14 @@ Multiple form handlers; do not assume all setMessage calls provide visible confi
 FORM-SUCCESS-001: Fast and slow refresh with controlled network; assert visible success after reload, no false success on partial failure.
 
 Also run all endpoint/form cases pointing to this issue in QA/03_TEST_MATRIX.md and the critical regression suite before closure.
+
+## Remaining form recovery — cloud 2026-10-28
+
+The nine remaining direct event-target reset sites now capture the form during
+dispatch. Rejected platform support/invoice writes retain input; confirmed
+platform/announcement/payroll writes retain success when their readback fails.
+All 23 new controlled handler cases pass, including exact payroll payload checks.
+The original 37 initial-load/form checks are retained. Full frontend: 963/966
+passed, three failed for absent SQL evidence. Browser/SQL, broader notice behavior,
+idempotency and critical gates remain OPEN. See
+[form recovery report](../REPORTS/CLOUD_FORM_RECOVERY_2026-10-28.md).

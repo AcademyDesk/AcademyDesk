@@ -257,3 +257,34 @@ runtime still lacks the three pending CDN domains; the saved draft alone does no
 unblock SQL Server or model downloads. Do not use the configured application DB
 for destructive tests. Next independent work should continue the known form/state
 regressions or existing security gates, with focused tests and handoff updates.
+
+## Latest checkpoint — remaining form recovery, 2026-10-28
+
+- Previous full frontend/security checkpoint f9a0cd7d7569aaab2846c0afeacb308546dd2067
+  was pushed and verified on GitHub. User explicitly authorizes continued work and
+  recurring pushes on codex/release-export-security. No main merge or deployment.
+- Captured forms at all nine remaining direct currentTarget.reset sites in teacher,
+  portal, academic governance, platform and payroll frontend handlers. Rejected
+  platform support/invoice requests retain input. Confirmed platform/payroll writes
+  retain success plus a refresh warning if their separate readback fails.
+- Reproduction: initial 21 cases had 14 failures/seven passes. Two added payroll
+  readback cases independently failed before their repair. All 23 now pass.
+  Exact payroll request payload/worker/null handling remains covered; no financial
+  arithmetic, backend rules or real disbursement was changed.
+- Extracted controlled runtime to QA/tools/frontend-page-runtime.cjs; all previous
+  37 initial-load/form checks remain intact and pass. New file:
+  QA/tools/remaining-form-targets.test.cjs.
+- Full current npm test: 966 tests, 963 PASS/three FAIL, zero skipped/cancelled,
+  across 44 current files. The same three failures require the absent historical
+  communication-roundtrip SQL log. Do not fabricate evidence or call this green.
+- TypeScript, zero-error lint (65 inherited warnings), production webpack build
+  on Next.js 16.4.3 and git diff checks PASS. Prior audits and API test result
+  retained; no dependency/backend changes in this increment.
+- Report: QA/REPORTS/CLOUD_FORM_RECOVERY_2026-10-28.md. Root issues remain OPEN
+  for actual browser/SQL acceptance, idempotency/races and other notice workflows.
+- Runtime CDN restrictions remain unresolved; draft settings alone are not applied
+  network policy. No SQL fixture/model readiness or production acceptance claimed.
+- Next route: continue guarded SQL/HTTP fixture and critical finance/file-security
+  gates after network settings apply; independent work may continue the existing
+  record-selection/notice/security backlog with targeted regressions. Preserve
+  the QA history and update this handoff after each checkpoint.
