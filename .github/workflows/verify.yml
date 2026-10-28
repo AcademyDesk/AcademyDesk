@@ -1,0 +1,113 @@
+name: Verify AcademyDesk
+
+on:
+  push:
+    branches: [main, codex/release-export-security]
+  pull_request:
+    branches: [main]
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: API, SQL, private media and frontend verification
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.403'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.19.0'
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+      - name: Prepare source-bound verification output
+        run: |
+          mkdir -p .build-check/ci QA/EVIDENCE/logs
+          git rev-parse HEAD > .build-check/ci/source-commit.txt
+      - name: Restore and audit all API dependencies
+        run: >-
+          dotnet restore AcademyDesk.slnx
+          -p:NuGetAudit=true -p:NuGetAuditMode=all
+          '-p:WarningsAsErrors=NU1900%3BNU1901%3BNU1902%3BNU1903%3BNU1904'
+      - name: API regressions
+        run: >-
+          dotnet test AcademyDesk.slnx --no-restore --nologo -m:2
+          --logger trx --results-directory .build-check/ci/api-tests
+      - name: Install and audit frontend dependencies
+        working-directory: apps/web
+        run: |
+          npm ci
+          npm audit --audit-level=low
+      - name: TypeScript and lint
+        working-directory: apps/web
+        run: |
+          npx next typegen
+          npx tsc --noEmit
+          npm run lint
+      - name: Compile existing guarded SQL harness
+        run: >-
+          dotnet build QA/tools/SqlHarness/SqlHarness.csproj --nologo
+          --artifacts-path .build-check/ci-sql
+      - name: Generate actual TSX communication payload fixtures
+        run: >-
+          node QA/tools/communication-roundtrip.test.cjs |
+          tee QA/EVIDENCE/logs/phase-2b-communication-roundtrip-ui.log
+      - name: Guarded finance, tenant access and private-file SQL checks
+        shell: pwsh
+        run: |
+          $harness = Join-Path $PWD '.build-check/ci-sql/bin/SqlHarness/debug/SqlHarness.dll'
+          foreach ($module in @('Reconciliation', 'Adjustment', 'Payroll', 'Transition', 'Consumers', 'Access', 'ClassMedia', 'CommunicationRoundtrip')) {
+            $log = if ($module -eq 'CommunicationRoundtrip') {
+              'QA/EVIDENCE/logs/phase-2b-communication-roundtrip-sql.log'
+            } else { ".build-check/ci/$module-sql.log" }
+            & ./QA/tools/SqlHarness/Run-ReconciledPayment.ps1 -Module $module -HarnessPath $harness 2>&1 | Tee-Object -FilePath $log
+          }
+      - name: Guarded private Blob upload, recovery and download checks
+        shell: pwsh
+        run: |
+          $harness = Join-Path $PWD '.build-check/ci-sql/bin/SqlHarness/debug/SqlHarness.dll'
+          & ./QA/tools/SqlHarness/Run-BlobMedia.ps1 -HarnessPath $harness 2>&1 | Tee-Object -FilePath '.build-check/ci/blob-media-sql.log'
+      - name: Full frontend suite with fresh real SQL evidence
+        working-directory: apps/web
+        run: npm test
+      - name: Production frontend build
+        working-directory: apps/web
+        env:
+          NEXT_PUBLIC_API_URL: ${{ vars.PRODUCTION_API_URL || 'http://127.0.0.1:5092' }}
+        run: npm run build -- --webpack
+      - name: Build API runtime image
+        run: docker build -f apps/api/Dockerfile -t academydesk-ci-api:${{ github.sha }} .
+      - name: API container startup and unavailable-database behavior
+        env:
+          QA_API_IMAGE: academydesk-ci-api:${{ github.sha }}
+        run: bash QA/tools/check-api-container.sh
+      - name: Record tested container identities
+        run: |
+          docker image inspect mcr.microsoft.com/mssql/server:2022-latest --format '{{json .RepoDigests}}' > .build-check/ci/sql-image-digests.json
+          docker image inspect mcr.microsoft.com/azure-storage/azurite:latest --format '{{json .RepoDigests}}' > .build-check/ci/azurite-image-digests.json
+      - name: Ensure verification did not modify tracked source
+        run: git diff --exit-code
+      - name: Preserve synthetic verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: verification-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 7
+          if-no-files-found: error
+          include-hidden-files: true
+          path: |
+            .build-check/ci/
+            .build-check/frontend-tests/
+            QA/EVIDENCE/logs/phase-2b-communication-roundtrip-ui.log
+            QA/EVIDENCE/logs/phase-2b-communication-roundtrip-sql.log

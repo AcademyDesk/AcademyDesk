@@ -4,7 +4,7 @@
 | --- | --- |
 | Status | OPEN / FIX-IN-PROGRESS |
 | Confirmation status | RUNTIME-REPRODUCED; local void/evidence repair retested |
-| Final verification | Bounded void/evidence PASS twice; restoration policy / broader / critical gates pending |
+| Final verification | Approved restoration policy controlled checks PASS; current SQL/HTTP/concurrency/browser/critical gates pending |
 | Severity | Critical financial ledger consistency |
 | Priority | P0 |
 | Category | DATA |
@@ -30,9 +30,9 @@
 | API response | Void 200 leaves stale invoice status; full/adjusted invoices absent from collections; direct Reconciled 200 lacks reference/timestamp |
 | Database before/after | Fresh SQL confirms full/adjusted Paid and partial PartiallyPaid after void; direct Reconciled lacks evidence; rejected controls unchanged; restoration policy pending |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | Local uncommitted PaymentsController void/evidence repair; no deployment |
+| Fix commit | 0bceb439b95485297e2c05e8bc8cf9a4a19f572e; approved validated restoration, no deployment |
 | Retest result | Confirmed void/evidence cases PASS on two fresh owned Identity/HTTP/SQL runs; restoration POLICY-PENDING |
-| Regression result | API 134/134 and bounded SQL transition module PASS twice; not full critical / concurrent / browser acceptance |
+| Regression result | Current full API1,108 PASS including32 restoration cases; earlier SQL history retained; current SQL/critical acceptance pending |
 | Closure notes | Remain OPEN; restoration policy, permissions/recomputation and broader closure requirements pending |
 
 ## Approved restoration policy — 2026-10-28

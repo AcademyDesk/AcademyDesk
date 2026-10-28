@@ -1,12 +1,17 @@
 # Disposable, labelled, loopback-only SQL + Azurite. Never reads Azure keys/config.
-param([switch]$Browser, [int]$BrowserApiPort = 49002, [int]$BrowserWebPort = 49001, [int]$BrowserPauseChunkMs = 0, [switch]$BrowserStorageFailOnce, [switch]$BrowserLoseCompletionOnce, [switch]$BrowserRevokeAfterChunk)
+param([switch]$Browser, [int]$BrowserApiPort = 49002, [int]$BrowserWebPort = 49001, [int]$BrowserPauseChunkMs = 0, [switch]$BrowserStorageFailOnce, [switch]$BrowserLoseCompletionOnce, [switch]$BrowserRevokeAfterChunk, [string]$HarnessPath = '')
 $ErrorActionPreference = 'Stop'
 if ($BrowserStorageFailOnce -and !$Browser) { throw 'Provider failure injection requires the guarded Browser mode.' }
 if ($BrowserLoseCompletionOnce -and (!$Browser -or $BrowserStorageFailOnce)) { throw 'Completion loss requires guarded Browser mode without another fault.' }
 if ($BrowserRevokeAfterChunk -and (!$Browser -or $BrowserPauseChunkMs -lt 1000 -or $BrowserStorageFailOnce -or $BrowserLoseCompletionOnce)) { throw 'Revocation requires isolated paced Browser mode.' }
 if ($Browser -and ($BrowserApiPort -lt 1024 -or $BrowserApiPort -gt 65535 -or $BrowserWebPort -lt 1024 -or $BrowserWebPort -gt 65535 -or $BrowserApiPort -eq $BrowserWebPort)) { throw 'Distinct nonprivileged loopback browser ports required.' }
 if ($BrowserPauseChunkMs -ne 0 -and (!$Browser -or $BrowserPauseChunkMs -lt 1000 -or $BrowserPauseChunkMs -gt 30000)) { throw 'Chunk pacing requires Browser mode and 1000–30000 ms.' }
-if ((Get-PSDrive C).Free -lt 2GB) { throw 'At least 2 GiB free on C: required before owned SQL provisioning.' }
+if ($HarnessPath) {
+  $HarnessPath = (Resolve-Path -LiteralPath $HarnessPath).Path
+  if (!(Test-Path -LiteralPath $HarnessPath -PathType Leaf) -or [IO.Path]::GetFileName($HarnessPath) -ne 'SqlHarness.dll') { throw 'An existing SqlHarness.dll is required before SQL provisioning.' }
+}
+$qaDrive = [IO.DriveInfo]::new([IO.Path]::GetPathRoot((Get-Location).Path))
+if ($qaDrive.AvailableFreeSpace -lt 2GB) { throw 'At least 2 GiB free on the current drive is required before owned SQL provisioning.' }
 $qaRun = [Guid]::NewGuid().ToString('N')
 $qaSql = "academydesk-qa-$qaRun"
 $qaBlob = "academydesk-blob-qa-$qaRun"
@@ -38,7 +43,8 @@ try {
   if ($BrowserStorageFailOnce) { $env:QA_BROWSER_FAIL_STAGE_ONCE = '1' } else { Remove-Item Env:\QA_BROWSER_FAIL_STAGE_ONCE -ErrorAction SilentlyContinue }
   if ($BrowserLoseCompletionOnce) { $env:QA_BROWSER_LOSE_COMPLETION_ONCE = '1' } else { Remove-Item Env:\QA_BROWSER_LOSE_COMPLETION_ONCE -ErrorAction SilentlyContinue }
   if ($BrowserRevokeAfterChunk) { $env:QA_BROWSER_REVOKE_AFTER_CHUNK = '1' } else { Remove-Item Env:\QA_BROWSER_REVOKE_AFTER_CHUNK -ErrorAction SilentlyContinue }
-  dotnet run --project QA/tools/SqlHarness/SqlHarness.csproj --no-build -- $qaRun $qaPort $qaSql $qaMode 2>&1 | ForEach-Object {
+  $qaCommand = if ($HarnessPath) { @($HarnessPath, $qaRun, $qaPort, $qaSql, $qaMode) } else { @('run', '--project', 'QA/tools/SqlHarness/SqlHarness.csproj', '--no-build', '--', $qaRun, $qaPort, $qaSql, $qaMode) }
+  dotnet @qaCommand 2>&1 | ForEach-Object {
     $qaLine = $_.ToString()
     if ($qaLine -match '^(Runtime inventory|BROWSER |BLOB |Created run-owned|HTTP controls|Tenant controls|Negative cleanup|PASS:|Unhandled exception)' -or $qaLine -match 'Private media commit failed:' -or $_ -is [System.Management.Automation.ErrorRecord]) { Write-Output $qaLine }
   }

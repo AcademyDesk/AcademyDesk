@@ -430,3 +430,38 @@ regressions or existing security gates, with focused tests and handoff updates.
   run the existing real SQL/private media harness on a disposable CI runner.
   Do not claim a remote run passed unless its actual result can be read. All
   production/browser/concurrency/restore gates continue. Main/Azure untouched.
+
+## Latest checkpoint — production verification wiring, 2026-10-28
+
+- Finance-policy checkpoint0bceb439b95485297e2c05e8bc8cf9a4a19f572e pushed and
+  remote HEAD verified. User-authorized recurring development-branch pushes continue.
+- New .github/workflows/verify.yml: .NET/Node audits, API tests, existing owned
+  SQL finance/tenant/class-file/communication modules, private Blob checks, full
+  frontend tests with actual regenerated communication SQL evidence, type/lint/
+  webpack and API image/startup-failure checks. No Azure secrets in verification.
+  Explicit compiled-harness runner option and Linux Blob disk check added.
+- Deployment reuses verification, restricts deployment to main and runs the new
+  critical P0 record guard before Azure login/mutation. Known/new/missing/malformed
+  P0s fail closed; CLOSED/PASS exact table values required only after real closure
+  evidence. Current five open P0s correctly BLOCK. Critical P1/staging/restore/
+  browser/device requirements remain separate and mandatory. No issue auto-closed.
+- Local actionlint/PowerShell parse/preflight/shell checks PASS. Fourteen fixture
+  production-gate tests PASS; five command-stub container simulations PASS (local
+  socket, no image pull, health/auth/loopback/ownership cleanup); no real container
+  startup claimed. API1,108 PASS retained; SQL harness compiles0 warnings/errors.
+  CI restore/audit command, route typegen and TypeScript PASS. Fresh actual-TSX
+  payload prerequisite generated24 distinct cases; no SQL evidence fabricated.
+- Full frontend48 files,1,112 tests:1,109 PASS/three historical missing-SQL-log FAIL,
+  zero skipped/cancelled. Lint/build retained from prior web source; unchanged.
+- Report QA/REPORTS/CLOUD_PRODUCTION_VERIFICATION_2026-10-28.md and updated
+  QA/09_RELEASE_GATES.md. Verification workflow runs on branch pushes; its remote
+  outcome is NOT VERIFIED here because api.github.com is still blocked. Do not
+  claim CI/real SQL/private Blob or Docker runtime passed without reading results.
+- Saved additive GitHub API domain still requires user review/save/publish via
+  environment settings, alongside earlier SQL/model CDN domains. Agent has not
+  published, dispatched deployment, logged into Azure, merged main or touched
+  customer/configured application DBs. PentaMini remains unchanged.
+- Next route: inspect actual GitHub verification run after policy applies; repair
+  any real failure, then continue financial concurrency/audit/RBAC and private
+  media/browser/restore acceptance on the exact release source. Critical gates
+  remain OPEN; publishing source is not production readiness.

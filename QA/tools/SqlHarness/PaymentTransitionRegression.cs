@@ -86,6 +86,9 @@ internal static partial class SqlHarnessEntryPoint
 
     private static async Task VerifyPaymentRestorationAsync(QaApiFactory factory, HttpClient client, Guid academyId, Guid studentId)
     {
+        // The preceding real-HTTP transition suite shares the production 120/min
+        // limiter. Start this added batch in a fresh window; do not bypass it.
+        await Task.Delay(TimeSpan.FromSeconds(60));
         foreach (var reconcile in new[] { false, true })
         foreach (var adjusted in new[] { 0m, 200m })
         foreach (var outcome in new[] { "partial", "overbalance", "cancelled" })

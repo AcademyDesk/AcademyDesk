@@ -4,7 +4,7 @@
 | --- | --- |
 | Status | OPEN / FIX-IN-PROGRESS (local negative-net guard) |
 | Confirmation status | RUNTIME-REPRODUCED |
-| Final verification | Local negative-net original/module PASS twice; zero-net POLICY-PENDING and broader/critical gates pending |
+| Final verification | Approved positive-net policy unit checks PASS; current SQL/browser/concurrency/critical gates pending |
 | Severity | Critical financial integrity |
 | Priority | P0 |
 | Category | DATA |
@@ -30,9 +30,9 @@
 | API response | Deductions 1000.01 and 1001 accepted 201 with net −0.01 and −1; payout-list GET returned the same values |
 | Database before/after | Two negative-net Paid rows persisted per run; negative deductions rejected 400 with captured profile/ledger unchanged; zero net accepted but policy pending |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | Local uncommitted PayrollController upper-deduction guard, 2026-10-01; no deployment |
+| Fix commit | 0bceb439b95485297e2c05e8bc8cf9a4a19f572e; approved positive-net policy, no deployment |
 | Retest result | Two fresh guarded Identity/HTTP/SQL runs reject negative net without captured payroll writes |
-| Regression result | 118/118 API tests; each SQL run 14 rule cases PASS + zero-net POLICY-PENDING observation; full critical NOT RUN |
+| Regression result | Current full API1,108 PASS; earlier negative-net SQL history retained; current positive-net SQL/critical acceptance pending |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
 ## Approved first-release policy — 2026-10-28
