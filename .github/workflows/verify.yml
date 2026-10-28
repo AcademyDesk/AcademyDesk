@@ -77,7 +77,19 @@ jobs:
             $log = if ($module -eq 'CommunicationRoundtrip') {
               'QA/EVIDENCE/logs/phase-2b-communication-roundtrip-sql.log'
             } else { ".build-check/ci/$module-sql.log" }
-            & ./QA/tools/SqlHarness/Run-ReconciledPayment.ps1 -Module $module -HarnessPath $harness 2>&1 | Tee-Object -FilePath $log
+            try {
+              & ./QA/tools/SqlHarness/Run-ReconciledPayment.ps1 -Module $module -HarnessPath $harness 2>&1 | Tee-Object -FilePath $log
+              "SQL module ${module}: PASS" >> $env:GITHUB_STEP_SUMMARY
+            } catch {
+              "SQL module ${module}: FAIL" >> $env:GITHUB_STEP_SUMMARY
+              if (Test-Path -LiteralPath $log) {
+                Get-Content -LiteralPath $log | Where-Object { $_ -match '^QA failure frame: [A-Za-z0-9_.-]+\.cs:[0-9]+$' } | Select-Object -Last 10 | ForEach-Object {
+                  $_ >> $env:GITHUB_STEP_SUMMARY
+                  Write-Output "::error title=SQL $module source location::$_"
+                }
+              }
+              throw
+            }
           }
       - name: Guarded private Blob upload, recovery and download checks
         id: blob_tests

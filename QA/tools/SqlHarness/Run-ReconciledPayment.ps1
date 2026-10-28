@@ -98,6 +98,12 @@ try {
         } else { $qaCommand = @('run', '--project', 'QA/tools/SqlHarness/SqlHarness.csproj', '--no-build', '--', $qaRun, $qaPort, $qaContainer, $qaSwitch) }
         dotnet @qaCommand 2>&1 | ForEach-Object {
             $qaLine=$_.ToString()
+            # Publish source locations only, never raw stack arguments or SQL
+            # connection details, so CI summaries remain useful without logs.
+            if ($qaLine -match '\bat SqlHarnessEntryPoint\..+ in .+[/\\](?<file>[A-Za-z0-9_.-]+\.cs):line (?<line>[0-9]+)') {
+                Write-Output "QA failure frame: $($Matches.file):$($Matches.line)"
+                return
+            }
             if ($qaLine -match '^(GRADE|ROSTER|ACADEMICACCESS|ACADEMICOPTIONS|ATTENDANCENOTES|CALENDARDETAILS|SCHEDULEDEFAULTS|LEAVEIDENTITY|MAKEUPLOCATION|CHANNELROUNDTRIP|CHANNELCHOICE|INBOXLIFE|CONSENTACCESS|TEMPLATESTATE|MARKETING|REVIEWCONTEXT|SUBMISSIONIDENTITY|PRACTICEIDENTITY|RESOURCESCOPE|COMPLIANCE|CERTIFICATE|CERTFAMILY|GUARDIANFLAGS|ANNOUNCEMENTAUDIENCE|ACTIVITYDELETE|PLATFORMBILLING|TENANTPLAN|TRIALDURATION|PLATFORMPROVISION|PORTALPROVISION|ACADEMYPROVISION|PROVISIONRACE|PROVISIONCONFLICT|ROLEREPLACE|ROLESESSION|PROVISIONUI|SESSIONBROWSER|SESSIONREVOCATION|SESSIONREFRESH|REFRESHFLIGHT)') { Write-Output $qaLine; return }
             if ($qaLine -match '^(RECORDINTEGRITY|SECURITY-FILE|MEDIA|CLASSMATERIAL|Runtime inventory|Created run-owned|HTTP controls|Tenant controls|FINANCE|ADJUSTMENT|PAYROLL|TRANSITION|CONSUMER|ACCESS|AUDIT|PEOPLE|LINKED|BRANCH|BATCHPRESERVE|BATCHTIMES|COURSEPRESERVE|PREREQUISITE|YEARCLOSURE|PROMOTION|LOOKUP|GOVERNANCE|COLLECTIONS|INVOICESETTINGS|Negative cleanup|PASS:|Unhandled exception)' -or $_ -is [System.Management.Automation.ErrorRecord]) { Write-Output $qaLine }
         }

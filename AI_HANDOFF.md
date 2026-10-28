@@ -535,3 +535,16 @@ regressions or existing security gates, with focused tests and handoff updates.
 - Next route: inspect candidate CI and repair real failures; continue remaining
   API/form integrity and production acceptance work without waiting for another
   continue request. Do not close issues or certify production from unit counts.
+
+## 2026-10-28 — Candidate CI failure triage
+
+- Remote branch verified at aaacb95fdde921c429c8bd76152cb9130d35946b.
+- GitHub run40731742967 for c25b6b8 completed FAILURE in the guarded SQL
+  step. Exact failed module/assertion is not visible anonymously; no acceptance
+  claim applies to this candidate. Older52495e2 success remains historical only.
+- Added fail-closed module outcome summaries and source-file/line-only harness
+  stack diagnostics. Raw stack arguments/SQL connection details are excluded
+  from those summaries. Detailed evidence remains in the existing artifact.
+- Prior1,171 API pass retained; diagnostic change is workflow/runner only.
+  No customer database access or deployment. Next route: inspect the diagnostic
+  candidate run and repair its actual SQL failure before financial acceptance.
