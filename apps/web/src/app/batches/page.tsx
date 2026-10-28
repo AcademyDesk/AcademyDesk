@@ -78,14 +78,6 @@ export default function BatchesPage() {
     catch { setMessage(`${notice} The batch list could not be refreshed. Refresh the page to see the latest batches.`); }
   }
 
-  async function loadAcademies() {
-    const response = await academyApi("/api/academies", { cache: "no-store" });
-    if (!response.ok) throw new Error();
-    const data: Academy[] = await response.json();
-    setAcademies(data);
-    if (!academyId && data.length) setAcademyId(data[0].id);
-  }
-
   async function loadWorkspace(id: string) {
     if (!id) return;
     const [courseResponse, teacherResponse, branchResponse, batchResponse] =
@@ -112,11 +104,17 @@ export default function BatchesPage() {
   }
 
   useEffect(() => {
-    void loadAcademies().catch(() =>
-      setMessage(
-        "Please sign in and make sure the AcademyDesk API is running.",
-      ),
-    );
+    let active = true;
+    void academyApi("/api/academies", { cache: "no-store" }).then(async (response) => {
+      if (!response.ok) throw new Error();
+      const data: Academy[] = await response.json();
+      if (!active) return;
+      setAcademies(data);
+      setAcademyId(current => current || data[0]?.id || "");
+    }).catch(() => {
+      if (active) setMessage("Please sign in and make sure the AcademyDesk API is running.");
+    });
+    return () => { active = false; };
   }, []);
   useEffect(() => {
     void loadWorkspace(academyId).catch(() =>

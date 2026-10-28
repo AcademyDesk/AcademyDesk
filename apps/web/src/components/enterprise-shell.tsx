@@ -198,6 +198,12 @@ export function EnterpriseShell({
   const [profileMessage, setProfileMessage] = useState("");
   const [announcements, setAnnouncements] = useState<{ id: string; title: string; message: string }[]>([]);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [menuPath, setMenuPath] = useState(pathname);
+  if (menuPath !== pathname) {
+    setMenuPath(pathname);
+    setProfileOpen(false);
+    setNotificationsOpen(false);
+  }
   const profileRef = useRef<HTMLDivElement>(null);
   const notificationsRef = useRef<HTMLDivElement>(null);
   const mobileWorkspaceNavRef = useRef<HTMLElement>(null);
@@ -275,16 +281,17 @@ export function EnterpriseShell({
     };
   }, []);
 
+  const enabledModulesJson = subscription?.enabledModulesJson;
   const enabledModules = useMemo(() => {
     try {
-      return new Set<string>(JSON.parse(subscription?.enabledModulesJson || "[\"Core\"]"));
+      return new Set<string>(JSON.parse(enabledModulesJson || "[\"Core\"]"));
     } catch {
       return new Set<string>(["Core"]);
     }
-  }, [subscription?.enabledModulesJson]);
+  }, [enabledModulesJson]);
   const moduleIncluded = (href: string) => {
-    const module = routeModule(href);
-    return module === "Core" || enabledModules.has(module);
+    const requiredModule = routeModule(href);
+    return requiredModule === "Core" || enabledModules.has(requiredModule);
   };
   const currentModuleIncluded = moduleIncluded(pathname);
   const moduleLabel = (module: string) => ({
@@ -354,8 +361,6 @@ export function EnterpriseShell({
     return () => { document.removeEventListener("mousedown", closeOnOutsidePress); document.removeEventListener("keydown", closeOnEscape); };
   }, [notificationsOpen]);
 
-  useEffect(() => setProfileOpen(false), [pathname]);
-  useEffect(() => setNotificationsOpen(false), [pathname]);
   useEffect(() => {
     const menu = mobileWorkspaceNavRef.current?.querySelector("details");
     if (menu) menu.open = false;

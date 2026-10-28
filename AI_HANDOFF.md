@@ -95,9 +95,9 @@ Azure deployment waits for the pre-Azure quality gate in `ENTERPRISE_TESTING_ROA
 
 | | |
 | --- | --- |
-| Latest checkpoint | Cloud CSV export security increment; see the dated handoff and report below. |
+| Latest work | Local frontend quality/form-safety/security dependency follow-up; see final dated section below. |
 | Next engineering route | Verify isolated SQL/HTTP development setup and continue open security/release gates. |
-| Commit state | Feature-branch checkpoint includes this handoff; verify the remote branch before resuming elsewhere. Main is unchanged. |
+| Commit state | Latest verified development is being checkpointed on codex/release-export-security. User authorized recurring pushes; verify remote HEAD. Main is unchanged. |
 
 Update this file after substantial work. Record the branch, commit, what changed, what was validated, what remains open, and the next route.
 
@@ -163,3 +163,97 @@ Update this file after substantial work. Record the branch, commit, what changed
 PentaMini has no code changes from this increment. Its original repository main
 branch and existing handoff remain the starting point; real model inference and
 AcademyDesk integration are not established by the prior unit-test passes.
+
+## Local follow-up — dependency and lint increment, 2026-10-28
+
+- Base checkpoint b374b35482fa07c3dba41e27f4a746d9efc3a62e is already pushed.
+  Subsequent changes are LOCAL and UNCOMMITTED per the user's latest instruction;
+  defer further pushes until requested. The other profile cannot retrieve these
+  later changes from GitHub yet.
+- Pkcs 9.0.11 was pulled in by EFCore.SqlServer → SqlClient 6.1.6. Explicit API
+  pin to 9.0.22 addresses the two observed high/moderate advisories without a major
+  dependency upgrade. Both API and test transitive-inclusive NuGet audits report
+  zero known vulnerable packages; all 1,073 API tests passed.
+- Practice-log page now uses API/form types rather than five explicit-any values;
+  save/review guard a missing academy. Its lint and frontend TypeScript passed.
+  Production webpack build passed. Full frontend lint remains failing at
+  34 errors / 77 warnings, improved from 39 / 77; no rule suppression.
+- Docker daemon works, but SQL Server image pull is blocked on redirected blobs.
+  Observed domains: centralus.data.mcr.microsoft.com and
+  westcentralus.data.mcr.microsoft.com. No SQL container/database was created,
+  and the configured application connection was not used.
+- PentaMini model download remains blocked on us.aws.cdn.hf.co. No model or
+  inference success is claimed; PentaMini source remains unchanged.
+- All three exact CDN requirements were saved additively in the environment draft;
+  the running policy was not changed and no environment was published. Required
+  user action is to review/save settings and publish when appropriate. Retry
+  affected downloads only after a meaningful policy change.
+- Report: QA/REPORTS/CLOUD_DEPENDENCY_AND_LINT_2026-10-28.md.
+- Next route: Codex for the existing guarded SQL/HTTP harness and deployment-blocking
+  security cases once network access works; Cursor for remaining contextual lint
+  fixes. All existing P0, browser, migration/restore and deployment gates remain.
+
+## Latest local work — frontend quality and form safety, 2026-10-28
+
+This section supersedes the earlier local lint/dependency counts, not their history.
+Branch remains `codex/release-export-security`, HEAD b374b35. All changes since that
+checkpoint are LOCAL/UNCOMMITTED; the user requested that further pushes wait.
+
+- Configured frontend lint now PASSES: zero errors, 65 warnings, improved from
+  39 errors/77 warnings. No lint rules were disabled. Async initial/selection
+  reads reject late effect completions; controlled drafts reset before the new
+  view is committed. Calendar/theme/menu/clock behavior has targeted regressions.
+- Contact preferences: three controlled cross-contact/type/clear failures were
+  reproduced and fixed; all 13 preference tests pass. Broad BUG-DATA-0018 remains
+  open for other editors, pending/failed loads, save races and browser/SQL proof.
+- Async form reset: six released-target failures reproduced; seven handlers now
+  capture their form before awaiting. Fourteen accepted/rejected checks pass.
+  Other reset sites and successful-save/readback notice issues remain open.
+- New `npm test` from apps/web runs 43 current regression files. Final result:
+  943 tests, 940 PASS, three FAIL, zero skipped/cancelled. Failures are the three
+  communication-drafts historical HTTP cases requiring absent ignored evidence
+  QA/EVIDENCE/logs/phase-2b-communication-roundtrip-sql.log. Do not invent that
+  file or treat the suite as green. Restore actual synthetic evidence or run the
+  guarded real-SQL fixture once the network blocker is removed.
+- Historical certificate assertions are retained through explicit current
+  adapters; original issuance/print/appearance inputs remain unchanged. One
+  media transport assertion now reads Headers correctly, preserving bearer/body
+  security checks. Logs/summary: .build-check/frontend-tests/ (ignored).
+- Initial-load/state/form controlled suite: 37 PASS. Shared-control suite: eight
+  PASS. These are controlled TSX/hook checks and some server rendering, not full
+  browser, physical-device or SQL acceptance.
+- Frontend audit found critical Next.js plus high sharp/source-map-js/zod issues.
+  Next.js and eslint-config-next are now pinned together at 16.4.3. Lock refresh
+  resolves sharp 0.35.5, source-map-js 1.2.2, zod 4.6.7. `npm audit` now reports
+  ZERO known vulnerabilities including dev dependencies. Production webpack
+  build passes with 16.4.3; package/lock declarations agree. Final post-upgrade
+  `npx tsc --noEmit` also PASSED.
+- Earlier API full regression (1,073 passed) and API/test NuGet audits (zero known
+  vulnerable packages after Pkcs 9.0.22) are retained; not rerun for frontend-only
+  work. No complete runtime/application security guarantee is implied.
+- SQL Server and model CDN access still needs the saved environment network
+  requirements. No customer database/production seeder was used, and no SQL
+  fixture, inference readiness, Azure deployment or new environment publication
+  is claimed. PentaMini source remains unchanged.
+- Full report: QA/REPORTS/CLOUD_FRONTEND_QUALITY_2026-10-28.md.
+- Before switching profiles, checkpoint/push these later changes when the user
+  requests it; the existing remote b374b35 does not contain this local work.
+- Next route: Codex for guarded SQL/HTTP fixtures and critical finance/file-access
+  gates; continue existing browser/device, migration/restore and acceptance work.
+  The full product and enterprise testing program remain unfinished.
+
+## GitHub continuation checkpoint — 2026-10-28
+
+The user has now explicitly authorized continued work and recurring GitHub pushes.
+This supersedes the earlier instructions to defer pushes. This checkpoint includes
+all dependency, frontend quality, state/form-safety repairs and test instructions
+recorded above. Commit/push only to the development branch
+`codex/release-export-security`; do not merge main, deploy Azure or publish an
+environment without separate authorization. Verify remote HEAD after each push.
+
+Resume by checking the current branch/working tree, reading the latest QA report,
+and preserving the three evidence-dependent frontend failures as failures. The
+runtime still lacks the three pending CDN domains; the saved draft alone does not
+unblock SQL Server or model downloads. Do not use the configured application DB
+for destructive tests. Next independent work should continue the known form/state
+regressions or existing security gates, with focused tests and handoff updates.

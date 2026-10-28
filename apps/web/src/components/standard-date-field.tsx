@@ -20,11 +20,16 @@ const readableDate = (value: string) => value ? new Intl.DateTimeFormat("en-IN",
 export function StandardDateField({ name, value, onChange, label, required }: StandardDateFieldProps) {
   const selected = value ? new Date(`${value}T12:00:00`) : undefined;
   const [month, setMonth] = useState(() => selected ?? new Date(2000, 0, 1));
+  const [previousValue, setPreviousValue] = useState(value);
   const [todayKey, setTodayKey] = useState("");
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLLabelElement>(null);
-  useEffect(() => { if (selected) setMonth(selected); }, [value]);
-  useEffect(() => { setTodayKey(isoDate(new Date())); }, []);
+  // Reset browsing only when the controlled value changes. Guarded render-time
+  // adjustment avoids painting the old month before an effect catches up.
+  if (previousValue !== value) {
+    setPreviousValue(value);
+    if (selected) setMonth(selected);
+  }
   useEffect(() => {
     const close = (event: MouseEvent) => { if (ref.current && !ref.current.contains(event.target as Node)) setOpen(false); };
     document.addEventListener("mousedown", close);
@@ -41,7 +46,7 @@ export function StandardDateField({ name, value, onChange, label, required }: St
   return <label className="standard-date-field" ref={ref}>
     <span>{label}</span>
     <input type="hidden" name={name} value={value} />
-    <button type="button" className="standard-date-trigger" aria-expanded={open} aria-haspopup="dialog" onClick={() => { if (!open && !value && month.getFullYear() === 2000) setMonth(new Date()); setOpen(current => !current); }}>
+    <button type="button" className="standard-date-trigger" aria-expanded={open} aria-haspopup="dialog" onClick={() => { if (!open) { const today = new Date(); setTodayKey(isoDate(today)); if (!value && month.getFullYear() === 2000) setMonth(today); } setOpen(current => !current); }}>
       <span data-empty={!value}>{readableDate(value)}</span><i aria-hidden="true">▣</i>
     </button>
     {open && <section className="standard-date-popover" role="dialog" aria-label={`${label} calendar`}>

@@ -69,3 +69,16 @@ React event currentTarget accessed after asynchronous suspension, before success
 TEACHER-FORM-001: Use a deferred successful response, real React submit event, assert one request/record, no exception, visible success and reload persistence.
 
 Also run all endpoint/form cases pointing to this issue in QA/03_TEST_MATRIX.md and the critical regression suite before closure.
+
+## Cloud released-event-target slice — 2026-10-28
+
+Controlled actual-TSX submissions reproduced six confirmed-write reset failures
+with event.currentTarget released after dispatch. Seven handlers now capture the
+form before awaiting: academic periods, access grants, sign-off, work queue,
+support requests, teacher onboarding and student onboarding. All 14 accepted/
+rejected submit cases pass: one synthetic write, success resets once, rejection
+retains input; teacher success guidance and student navigation also pass.
+
+No real HTTP/SQL persistence or real React browser submit event is claimed by
+these controlled-hook tests. Other reset sites and success/readback behavior
+remain open. See [cloud frontend report](../REPORTS/CLOUD_FRONTEND_QUALITY_2026-10-28.md).

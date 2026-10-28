@@ -70,12 +70,17 @@ export default function CommunicationPreferencesPage() {
       ),
     [preferences, recipientType, recipientId],
   );
-  useEffect(() => {
+  const [draftSource, setDraftSource] = useState({ academyId: academy?.id, recipientType, recipientId, selected });
+  // Selection identity matters even when both contacts have no stored preference.
+  // Reset before rendering the new contact, rather than after an effect paints it.
+  if (draftSource.academyId !== academy?.id || draftSource.recipientType !== recipientType ||
+      draftSource.recipientId !== recipientId || draftSource.selected !== selected) {
+    setDraftSource({ academyId: academy?.id, recipientType, recipientId, selected });
     setEmailAllowed(selected?.emailAllowed ?? false);
     setWhatsAppAllowed(selected?.whatsAppAllowed ?? false);
     setMarketingAllowed(selected?.marketingAllowed ?? false);
     setNotes(selected?.notes ?? "");
-  }, [selected]);
+  }
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!academy || !recipientId) return;

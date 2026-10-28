@@ -12,6 +12,12 @@ type Item = {
   isActive: boolean;
 };
 
+async function readFeeArrangements(academyId: string, studentId: string): Promise<Item[] | undefined> {
+  if (!academyId || !studentId) return;
+  const response = await academyApi(`/api/academies/${academyId}/students/${studentId}/fee-arrangements`);
+  if (response.ok) return response.json();
+}
+
 export function StudentFeeArrangements({
   academyId,
   studentId,
@@ -25,14 +31,17 @@ export function StudentFeeArrangements({
   const [frequency, setFrequency] = useState("Monthly");
   const [message, setMessage] = useState("");
   async function load() {
-    if (!academyId || !studentId) return;
-    const response = await academyApi(
-      `/api/academies/${academyId}/students/${studentId}/fee-arrangements`,
-    );
-    if (response.ok) setItems(await response.json());
+    const next = await readFeeArrangements(academyId, studentId);
+    if (next) setItems(next);
   }
   useEffect(() => {
-    void load();
+    let active = true;
+    void readFeeArrangements(academyId, studentId).then((next) => {
+      if (active && next) setItems(next);
+    }).catch(() => {
+      if (active) setMessage("Subject fees could not be loaded. Try again.");
+    });
+    return () => { active = false; };
   }, [academyId, studentId]);
   async function add(event: FormEvent) {
     event.preventDefault();

@@ -26,6 +26,17 @@ type Term = {
   isClosed: boolean;
 };
 
+async function readAcademicPeriods() {
+  const academyResponse = await academyApi("/api/academies");
+  if (!academyResponse.ok) throw Error();
+  const rows: Academy[] = await academyResponse.json();
+  if (!rows[0]) throw Error();
+  const response = await academyApi(`/api/academies/${rows[0].id}/academic-periods`);
+  if (!response.ok) throw Error();
+  const data: { years: Year[]; terms: Term[] } = await response.json();
+  return { academy: rows[0], years: data.years, terms: data.terms };
+}
+
 export default function AcademicPeriods() {
   const [academy, setAcademy] = useState<Academy>();
   const [years, setYears] = useState<Year[]>([]);
@@ -38,14 +49,8 @@ export default function AcademicPeriods() {
   const [termEnd, setTermEnd] = useState("");
   async function load() {
     try {
-      const rows: Academy[] = await (await academyApi("/api/academies")).json();
-      if (!rows[0]) throw Error();
-      setAcademy(rows[0]);
-      const response = await academyApi(
-        `/api/academies/${rows[0].id}/academic-periods`,
-      );
-      if (!response.ok) throw Error();
-      const data = await response.json();
+      const data = await readAcademicPeriods();
+      setAcademy(data.academy);
       setYears(data.years);
       setTerms(data.terms);
       setMessage("");
@@ -54,7 +59,17 @@ export default function AcademicPeriods() {
     }
   }
   useEffect(() => {
-    void load();
+    let active = true;
+    void readAcademicPeriods().then((data) => {
+      if (!active) return;
+      setAcademy(data.academy);
+      setYears(data.years);
+      setTerms(data.terms);
+      setMessage("");
+    }).catch(() => {
+      if (active) setMessage("Academic governance could not be loaded.");
+    });
+    return () => { active = false; };
   }, []);
   async function save(
     event: FormEvent<HTMLFormElement>,
@@ -62,7 +77,7 @@ export default function AcademicPeriods() {
   ) {
     event.preventDefault();
     if (!academy) return;
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget; const form = new FormData(formElement);
     if (kind === "years" && (!yearStart || !yearEnd))
       return setMessage("Select the year start and end dates.");
     if (kind === "terms" && (!termYearId || !termStart || !termEnd))
@@ -89,7 +104,7 @@ export default function AcademicPeriods() {
       const payload = await response.json().catch(() => null);
       return setMessage(payload?.message || "Period could not be saved.");
     }
-    event.currentTarget.reset();
+    formElement.reset();
     if (kind === "years") {
       setYearStart("");
       setYearEnd("");

@@ -16,6 +16,20 @@ type Student = {
 };
 type Batch = { id: string; name: string; isActive: boolean; enrollmentStatus?: string };
 
+async function readStudentRegister() {
+  const response = await academyApi("/api/academies", { cache: "no-store" });
+  if (!response.ok) throw new Error();
+  const academies: Academy[] = await response.json();
+  const academy = academies[0];
+  if (!academy) return null;
+  const [roster, batches] = await Promise.all([
+    academyApi(`/api/academies/${academy.id}/students`, { cache: "no-store" }),
+    academyApi(`/api/academies/${academy.id}/batches`, { cache: "no-store" }),
+  ]);
+  if (!roster.ok || !batches.ok) throw new Error();
+  return { academy, students: await roster.json() as Student[], batches: await batches.json() as Batch[] };
+}
+
 export default function StudentsPage() {
   const [academy, setAcademy] = useState<Academy>();
   const [students, setStudents] = useState<Student[]>([]);
@@ -38,28 +52,24 @@ export default function StudentsPage() {
     [students, query, status],
   );
   async function load() {
-    const response = await academyApi("/api/academies", { cache: "no-store" });
-    if (!response.ok) throw new Error();
-    const academies: Academy[] = await response.json();
-    const current = academies[0];
-    if (!current) {
+    const data = await readStudentRegister();
+    if (!data) {
       setMessage("Create an academy before managing students.");
       return;
     }
-    setAcademy(current);
-    const [roster, batchResponse] = await Promise.all([
-      academyApi(`/api/academies/${current.id}/students`, { cache: "no-store" }),
-      academyApi(`/api/academies/${current.id}/batches`, { cache: "no-store" }),
-    ]);
-    if (!roster.ok || !batchResponse.ok) throw new Error();
-    setStudents(await roster.json());
-    setBatches(await batchResponse.json());
+    setAcademy(data.academy);
+    setStudents(data.students);
+    setBatches(data.batches);
     setMessage("");
   }
   useEffect(() => {
-    void load().catch(() =>
-      setMessage("The student register could not be loaded."),
-    );
+    let active = true;
+    void readStudentRegister().then((data) => {
+      if (!active) return;
+      if (!data) { setMessage("Create an academy before managing students."); return; }
+      setAcademy(data.academy); setStudents(data.students); setBatches(data.batches); setMessage("");
+    }).catch(() => { if (active) setMessage("The student register could not be loaded."); });
+    return () => { active = false; };
   }, []);
   async function toggle(student: Student) {
     if (!academy) return;

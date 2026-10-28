@@ -40,6 +40,21 @@ const permissions = [
   ["reports.export", "Reports & exports"],
 ] as const;
 
+async function readAccessControls() {
+  const response = await academyApi("/api/academies");
+  if (!response.ok) throw Error();
+  const academies: Academy[] = await response.json();
+  if (!academies[0]) throw Error();
+  const [staffResponse, grantsResponse] = await Promise.all([
+    academyApi(`/api/academies/${academies[0].id}/staff`),
+    academyApi(`/api/academies/${academies[0].id}/access-grants`),
+  ]);
+  if (!staffResponse.ok || !grantsResponse.ok) throw Error();
+  const staff: Staff[] = await staffResponse.json();
+  const grants: Grant[] = await grantsResponse.json();
+  return { academy: academies[0], staff, grants };
+}
+
 export default function AccessReview() {
   const [academy, setAcademy] = useState<Academy>();
   const [staff, setStaff] = useState<Staff[]>([]);
@@ -51,31 +66,33 @@ export default function AccessReview() {
 
   async function load() {
     try {
-      const academies: Academy[] = await (
-        await academyApi("/api/academies")
-      ).json();
-      if (!academies[0]) throw Error();
-      setAcademy(academies[0]);
-      const [staffResponse, grantsResponse] = await Promise.all([
-        academyApi(`/api/academies/${academies[0].id}/staff`),
-        academyApi(`/api/academies/${academies[0].id}/access-grants`),
-      ]);
-      if (!staffResponse.ok || !grantsResponse.ok) throw Error();
-      setStaff(await staffResponse.json());
-      setGrants(await grantsResponse.json());
+      const data = await readAccessControls();
+      setAcademy(data.academy);
+      setStaff(data.staff);
+      setGrants(data.grants);
       setMessage("");
     } catch {
       setMessage("Access controls could not be loaded.");
     }
   }
   useEffect(() => {
-    void load();
+    let active = true;
+    void readAccessControls().then((data) => {
+      if (!active) return;
+      setAcademy(data.academy);
+      setStaff(data.staff);
+      setGrants(data.grants);
+      setMessage("");
+    }).catch(() => {
+      if (active) setMessage("Access controls could not be loaded.");
+    });
+    return () => { active = false; };
   }, []);
 
   async function grant(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!academy) return;
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget; const form = new FormData(formElement);
     const selected = permissions
       .map(([key]) => key)
       .filter((key) => form.get(key) === "on");
@@ -103,7 +120,7 @@ export default function AccessReview() {
       const payload = await response.json().catch(() => null);
       return setMessage(payload?.message || "Access could not be granted.");
     }
-    event.currentTarget.reset();
+    formElement.reset();
     setPermanent(false);
     setExpiryDate("");
     setUserId("");

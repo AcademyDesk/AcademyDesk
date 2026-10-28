@@ -10,6 +10,13 @@ type Academy = { id: string; name: string };
 type Course = CourseUpdateSource;
 const courseTypes = ["Music", "Tuition", "Coaching"];
 
+async function readCourses(id: string): Promise<Course[]> {
+  if (!id) return [];
+  const response = await academyApi(`/api/academies/${id}/courses`, { cache: "no-store" });
+  if (!response.ok) throw new Error();
+  return response.json();
+}
+
 export default function CoursesPage() {
   const [academies, setAcademies] = useState<Academy[]>([]);
   const [academyId, setAcademyId] = useState("");
@@ -36,30 +43,30 @@ export default function CoursesPage() {
     try { await loadCourses(id); }
     catch { setMessage(`${notice} The course list could not be refreshed. Refresh the page to see the latest courses.`); }
   }
-  async function loadAcademies() {
-    const response = await academyApi("/api/academies", { cache: "no-store" });
-    if (!response.ok) throw new Error();
-    const data: Academy[] = await response.json();
-    setAcademies(data);
-    if (!academyId && data.length) setAcademyId(data[0].id);
-  }
   async function loadCourses(id: string) {
-    if (!id) return setCourses([]);
-    const response = await academyApi(`/api/academies/${id}/courses`, {
-      cache: "no-store",
-    });
-    if (!response.ok) throw new Error();
-    setCourses(await response.json());
+    setCourses(await readCourses(id));
   }
   useEffect(() => {
-    void loadAcademies().catch(() =>
-      setMessage("The AcademyDesk API is not reachable."),
-    );
+    let active = true;
+    void academyApi("/api/academies", { cache: "no-store" }).then(async (response) => {
+      if (!response.ok) throw new Error();
+      const data: Academy[] = await response.json();
+      if (!active) return;
+      setAcademies(data);
+      setAcademyId(current => current || data[0]?.id || "");
+    }).catch(() => {
+      if (active) setMessage("The AcademyDesk API is not reachable.");
+    });
+    return () => { active = false; };
   }, []);
   useEffect(() => {
-    void loadCourses(academyId).catch(() =>
-      setMessage("Courses could not be loaded."),
-    );
+    let active = true;
+    void readCourses(academyId).then((data) => {
+      if (active) setCourses(data);
+    }).catch(() => {
+      if (active) setMessage("Courses could not be loaded.");
+    });
+    return () => { active = false; };
   }, [academyId]);
   async function createCourse(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

@@ -1,13 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useTheme } from "@/components/theme-provider";
+import { useHydrated } from "@/lib/use-hydrated";
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
-  const [hydrated, setHydrated] = useState(false);
-
-  useEffect(() => setHydrated(true), []);
+  const hydrated = useHydrated();
 
   return (
     <div className="theme-toggle" role="group" aria-label="Color theme">

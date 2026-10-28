@@ -61,6 +61,21 @@ const platformLinks = [
   },
 ] as const;
 
+async function readPlatformDashboard() {
+  const [academies, overview, health, owner] = await Promise.all([
+    academyApi("/api/platform/academies", { cache: "no-store" }),
+    academyApi("/api/platform/overview", { cache: "no-store" }),
+    academyApi("/api/platform/health", { cache: "no-store" }),
+    academyApi("/api/auth/session", { cache: "no-store" }),
+  ]);
+  if (academies.status === 401 || academies.status === 403) return null;
+  if (!academies.ok) throw new Error("The Platform Owner dashboard could not be loaded.");
+  return { academies: await academies.json() as Academy[],
+    overview: overview.ok ? await overview.json() as PlatformOverview : undefined,
+    health: health.ok ? await health.json() as PlatformHealth : undefined,
+    owner: owner.ok ? await owner.json() as OwnerSession : undefined };
+}
+
 export default function PlatformPage() {
   const router = useRouter();
   const [academies, setAcademies] = useState<Academy[]>([]);
@@ -106,28 +121,30 @@ export default function PlatformPage() {
   const selectedOverviewTile = overviewTiles.find((tile) => tile.key === overviewModal);
 
   async function load() {
-    const [response, overviewResponse, healthResponse, ownerResponse] = await Promise.all([
-      academyApi("/api/platform/academies", { cache: "no-store" }),
-      academyApi("/api/platform/overview", { cache: "no-store" }),
-      academyApi("/api/platform/health", { cache: "no-store" }),
-      academyApi("/api/auth/session", { cache: "no-store" }),
-    ]);
-    if (response.status === 401 || response.status === 403) {
+    const data = await readPlatformDashboard();
+    if (!data) {
       router.replace("/login?returnTo=/platform");
       return;
     }
-    if (!response.ok) throw new Error("The Platform Owner dashboard could not be loaded.");
-    setAcademies(await response.json());
-    if (overviewResponse.ok) setOverview(await overviewResponse.json());
-    if (healthResponse.ok) setHealth(await healthResponse.json());
-    if (ownerResponse.ok) setOwner(await ownerResponse.json());
+    setAcademies(data.academies);
+    if (data.overview) setOverview(data.overview);
+    if (data.health) setHealth(data.health);
+    if (data.owner) setOwner(data.owner);
     setNotice({ text: "", tone: "neutral" });
   }
   useEffect(() => {
-    void load().catch((error) =>
-      setNotice({ text: error.message, tone: "error" }),
-    );
-  }, []);
+    let active = true;
+    void readPlatformDashboard().then((data) => {
+      if (!active) return;
+      if (!data) { router.replace("/login?returnTo=/platform"); return; }
+      setAcademies(data.academies);
+      if (data.overview) setOverview(data.overview);
+      if (data.health) setHealth(data.health);
+      if (data.owner) setOwner(data.owner);
+      setNotice({ text: "", tone: "neutral" });
+    }).catch((error) => { if (active) setNotice({ text: error.message, tone: "error" }); });
+    return () => { active = false; };
+  }, [router]);
   async function setStatus(academy: Academy) {
     setBusy(true);
     try {

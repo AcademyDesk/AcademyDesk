@@ -1,16 +1,49 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { StandardDateField, StandardSelectField, StandardTimeField } from "@/components/design-system/controls";
 import { academyApi, apiHeaders } from "@/lib/api";
 
 type Academy = { id: string }; type Staff = { id: string; displayName: string; roles: string[] }; type Work = { id: string; type: string; title: string; description?: string; priority: string; status: string; assignedUserId?: string; dueAtUtc?: string };
 const filters = ["All", "Open", "InProgress", "Completed", "Cancelled"];
+async function readWorkQueue(status: string) {
+  const academyResponse = await academyApi("/api/academies");
+  if (!academyResponse.ok) throw Error();
+  const academies: Academy[] = await academyResponse.json();
+  const academy = academies[0];
+  if (!academy) throw Error();
+  const [work, staff] = await Promise.all([
+    academyApi(`/api/academies/${academy.id}/admin-work-items${status === "All" ? "" : `?status=${status}`}`),
+    academyApi(`/api/academies/${academy.id}/staff`),
+  ]);
+  if (!work.ok) throw Error();
+  return { academy, items: await work.json() as Work[], staff: staff.ok ? await staff.json() as Staff[] : [] };
+}
 export default function WorkQueue() {
   const [academy, setAcademy] = useState<Academy>(); const [items, setItems] = useState<Work[]>([]); const [staff, setStaff] = useState<Staff[]>([]); const [filter, setFilter] = useState("All"); const [message, setMessage] = useState("Loading operational work queue…"); const [type, setType] = useState("Operations"); const [priority, setPriority] = useState("Normal"); const [assignedUserId, setAssignedUserId] = useState(""); const [dueDate, setDueDate] = useState(""); const [dueTime, setDueTime] = useState("09:00");
-  async function load(status = filter) { try { const academyResponse = await academyApi("/api/academies"); if (!academyResponse.ok) throw Error(); const academies: Academy[] = await academyResponse.json(); if (!academies[0]) throw Error(); setAcademy(academies[0]); const [workResponse, staffResponse] = await Promise.all([academyApi(`/api/academies/${academies[0].id}/admin-work-items${status === "All" ? "" : `?status=${status}`}`), academyApi(`/api/academies/${academies[0].id}/staff`)]); if (!workResponse.ok) throw Error(); setItems(await workResponse.json()); setStaff(staffResponse.ok ? await staffResponse.json() : []); setMessage(""); } catch { setMessage("Operational work queue could not be loaded."); } }
-  useEffect(() => { void load(); }, []);
-  async function create(event: FormEvent<HTMLFormElement>) { event.preventDefault(); if (!academy) return; const form = new FormData(event.currentTarget); const dueAtUtc = dueDate ? new Date(`${dueDate}T${dueTime}:00`).toISOString() : null; const response = await academyApi(`/api/academies/${academy.id}/admin-work-items`, { method: "POST", headers: apiHeaders(true), body: JSON.stringify({ type, title: form.get("title"), description: form.get("description") || null, priority, entityType: null, entityId: null, assignedUserId: assignedUserId || null, dueAtUtc }) }); if (!response.ok) return setMessage("Work item could not be created."); event.currentTarget.reset(); setAssignedUserId(""); setDueDate(""); setDueTime("09:00"); setMessage("Work item added to the operational queue."); await load(); }
+  const loadSequence = useRef({ version: 0 });
+  async function load(status = filter) {
+    const request = ++loadSequence.current.version;
+    try {
+      const data = await readWorkQueue(status);
+      if (request !== loadSequence.current.version) return;
+      setAcademy(data.academy); setItems(data.items); setStaff(data.staff); setMessage("");
+    } catch {
+      if (request === loadSequence.current.version) setMessage("Operational work queue could not be loaded.");
+    }
+  }
+  useEffect(() => {
+    const sequence = loadSequence.current;
+    const request = ++sequence.version;
+    void readWorkQueue("All").then((data) => {
+      if (request !== sequence.version) return;
+      setAcademy(data.academy); setItems(data.items); setStaff(data.staff); setMessage("");
+    }).catch(() => {
+      if (request === sequence.version) setMessage("Operational work queue could not be loaded.");
+    });
+    return () => { sequence.version++; };
+  }, []);
+  async function create(event: FormEvent<HTMLFormElement>) { event.preventDefault(); if (!academy) return; const formElement = event.currentTarget; const form = new FormData(formElement); const dueAtUtc = dueDate ? new Date(`${dueDate}T${dueTime}:00`).toISOString() : null; const response = await academyApi(`/api/academies/${academy.id}/admin-work-items`, { method: "POST", headers: apiHeaders(true), body: JSON.stringify({ type, title: form.get("title"), description: form.get("description") || null, priority, entityType: null, entityId: null, assignedUserId: assignedUserId || null, dueAtUtc }) }); if (!response.ok) return setMessage("Work item could not be created."); formElement.reset(); setAssignedUserId(""); setDueDate(""); setDueTime("09:00"); setMessage("Work item added to the operational queue."); await load(); }
   async function move(item: Work, status: string) { if (!academy) return; const response = await academyApi(`/api/academies/${academy.id}/admin-work-items/${item.id}/status`, { method: "PATCH", headers: apiHeaders(true), body: JSON.stringify({ status }) }); if (!response.ok) return setMessage("Work item could not be updated."); setMessage(`Work item moved to ${status}.`); await load(); }
   const highPriority = items.filter(item => item.priority === "Critical" || item.priority === "High").length;
   return <main className="enterprise-settings work-queue-standard"><header className="work-queue-heading"><span className="work-queue-icon" aria-hidden="true">✓</span><div><p>Administration</p><h1>Operational work queue</h1></div></header>{message && <p className="work-queue-notice" role="status">{message}</p>}<section className="work-queue-kpis"><article><span>Open in view</span><b>{items.length}</b><small>Items matching the current queue filter.</small></article><article><span>High priority</span><b>{highPriority}</b><small>High or critical actions requiring attention.</small></article><article><span>Active team</span><b>{staff.length}</b><small>Staff members available for assignment.</small></article></section><section className="work-queue-layout"><form onSubmit={create} className="work-queue-panel"><header className="work-queue-panel-header"><div><p>New action</p><h2>Create operational action</h2></div></header><div className="work-queue-fields"><label className="work-queue-wide"><span>Action title</span><input required name="title" className="field" placeholder="Action title" /></label><label><span>Area</span><StandardSelectField name="type" value={type} onChange={setType} placeholder="Choose area" options={["Compliance", "Admissions", "Finance", "Academic", "People", "Operations"].map(value => ({ value, label: value }))} /></label><label><span>Priority</span><StandardSelectField name="priority" value={priority} onChange={setPriority} placeholder="Choose priority" options={["Low", "Normal", "High", "Critical"].map(value => ({ value, label: value }))} /></label><label className="work-queue-wide"><span>Owner</span><StandardSelectField name="assignedUserId" value={assignedUserId} onChange={setAssignedUserId} placeholder="Unassigned" options={staff.map(person => ({ value: person.id, label: `${person.displayName} · ${person.roles.join(", ")}` }))} /></label><StandardDateField name="dueDate" value={dueDate} onChange={setDueDate} label="Due date" /><StandardTimeField name="dueTime" value={dueTime} onChange={setDueTime} label="Due time" /><label className="work-queue-wide"><span>Context and next action</span><textarea name="description" className="field" placeholder="Context, owner expectation and next action" /></label><button className="enterprise-action-button work-queue-wide">Add to queue</button></div></form><section className="work-queue-panel"><header className="work-queue-panel-header"><div><p>Queue controls</p><h2>Actions requiring attention</h2></div><div className="work-queue-filter"><StandardSelectField name="workQueueFilter" value={filter} onChange={value => { setFilter(value); void load(value); }} placeholder="Filter queue" options={filters.map(value => ({ value, label: value === "InProgress" ? "In progress" : value }))} /></div></header><ul className="work-queue-list">{items.map(item => <li key={item.id}><div><span>{item.type} · {item.priority}</span><h3>{item.title}</h3>{item.description && <p>{item.description}</p>}<small>Owner: {staff.find(person => person.id === item.assignedUserId)?.displayName || "Unassigned"} · Due: {item.dueAtUtc ? new Date(item.dueAtUtc).toLocaleString("en-IN") : "No due date"}</small></div><div className="work-queue-status"><StandardSelectField name={`status-${item.id}`} value={item.status} onChange={value => void move(item, value)} placeholder="Set status" options={[{ value: "Open", label: "Open" }, { value: "InProgress", label: "In progress" }, { value: "Completed", label: "Completed" }, { value: "Cancelled", label: "Cancelled" }]} /></div></li>)}{!items.length && <p className="work-queue-empty">No work items in this view.</p>}</ul></section></section></main>;

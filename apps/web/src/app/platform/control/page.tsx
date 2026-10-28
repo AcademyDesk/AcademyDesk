@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { StandardDateField, StandardSelectField } from "@/components/design-system/controls";
 import { academyApi, apiHeaders, apiUrl, clearPortalTokens } from "@/lib/api";
+import { useClock } from "@/lib/use-clock";
 
 type Academy = {
   id: string;
@@ -144,10 +145,36 @@ const platformControlTabs = [
   "Audit & health",
 ];
 
+async function readPlatformControls() {
+  const [a, ad, c, i, s, au, h, owner, announcements] = await Promise.all([
+    academyApi("/api/platform/academies"), academyApi("/api/platform/admins"),
+    academyApi("/api/platform/support-cases"), academyApi("/api/platform/billing-invoices"),
+    academyApi("/api/platform/settings"), academyApi("/api/platform/audit"),
+    academyApi("/api/platform/health"), academyApi("/api/auth/session"), academyApi("/api/platform/announcements"),
+  ]);
+  if (a.status === 401 || a.status === 403) return null;
+  if (!a.ok) throw new Error("The Platform Owner controls could not be loaded.");
+  return { academies: await a.json() as Academy[], admins: ad.ok ? await ad.json() as Admin[] : undefined,
+    cases: c.ok ? await c.json() as Case[] : undefined, invoices: i.ok ? await i.json() as Invoice[] : undefined,
+    settings: s.ok ? await s.json() as Settings : undefined, audit: au.ok ? await au.json() as Audit[] : undefined,
+    health: h.ok ? await h.json() as Health : undefined, owner: owner.ok ? await owner.json() as OwnerSession : undefined,
+    announcements: announcements.ok ? await announcements.json() as Announcement[] : undefined };
+}
+
+async function readPlatformActivity(scope: string, from: string, to: string): Promise<ActivityLog[]> {
+  const query = new URLSearchParams();
+  if (scope !== "All") query.set("scope", scope === "Platform owner" ? "PlatformOwner" : "AcademyAdmin");
+  if (from) query.set("fromUtc", new Date(`${from}T00:00:00`).toISOString());
+  if (to) { const end = new Date(`${to}T00:00:00`); end.setDate(end.getDate() + 1); query.set("toUtc", end.toISOString()); }
+  const response = await academyApi(`/api/platform/activity-logs?${query.toString()}`);
+  if (!response.ok) throw new Error("Activity logs could not be loaded.");
+  return response.json();
+}
+
 export default function PlatformControlPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [tab, setTab] = useState("Tenants");
+  const [tab, setTab] = useState(() => { const requested = searchParams.get("tab"); return requested && platformControlTabs.includes(requested) ? requested : "Tenants"; });
   const [academies, setAcademies] = useState<Academy[]>([]);
   const [admins, setAdmins] = useState<Admin[]>([]);
   const [cases, setCases] = useState<Case[]>([]);
@@ -187,52 +214,47 @@ export default function PlatformControlPage() {
   const [settingsCurrency, setSettingsCurrency] = useState("");
   const [tenantProfile, setTenantProfile] = useState<TenantProfile>();
   const [onboardingSection, setOnboardingSection] = useState("Personal");
-  const [startingTenant, setStartingTenant] = useState(false);
+  const [startingTenant, setStartingTenant] = useState(searchParams.get("start") === "true");
   const [message, setMessage] = useState("Loading platform controls…");
   const [busy, setBusy] = useState(false);
   const profileImageInput = useRef<HTMLInputElement>(null);
 
   async function load() {
-    const [a, ad, c, i, s, au, h, ownerResponse, announcementResponse] = await Promise.all([
-      academyApi("/api/platform/academies"),
-      academyApi("/api/platform/admins"),
-      academyApi("/api/platform/support-cases"),
-      academyApi("/api/platform/billing-invoices"),
-      academyApi("/api/platform/settings"),
-      academyApi("/api/platform/audit"),
-      academyApi("/api/platform/health"),
-      academyApi("/api/auth/session"),
-      academyApi("/api/platform/announcements"),
-    ]);
-    if (a.status === 401 || a.status === 403) {
-      router.replace("/login?returnTo=/platform/control");
-      return;
-    }
-    if (!a.ok) throw new Error("The Platform Owner controls could not be loaded.");
-    const academyRows = await a.json();
-    setAcademies(academyRows);
-    setSelectedAcademy((current) => current || academyRows[0]?.id || "");
-    if (ad.ok) setAdmins(await ad.json());
-    if (c.ok) setCases(await c.json());
-    if (i.ok) setInvoices(await i.json());
-    if (s.ok) setSettings(await s.json());
-    if (au.ok) setAudit(await au.json());
-    if (h.ok) setHealth(await h.json());
-    if (ownerResponse.ok) setOwner(await ownerResponse.json());
-    if (announcementResponse.ok) setAnnouncements(await announcementResponse.json());
+    const data = await readPlatformControls();
+    if (!data) { router.replace("/login?returnTo=/platform/control"); return; }
+    setAcademies(data.academies);
+    setSelectedAcademy(current => current || data.academies[0]?.id || "");
+    if (data.admins) setAdmins(data.admins);
+    if (data.cases) setCases(data.cases);
+    if (data.invoices) setInvoices(data.invoices);
+    if (data.settings) setSettings(data.settings);
+    if (data.audit) setAudit(data.audit);
+    if (data.health) setHealth(data.health);
+    if (data.owner) setOwner(data.owner);
+    if (data.announcements) setAnnouncements(data.announcements);
     setMessage("");
   }
   useEffect(() => {
-    void load().catch((error) => setMessage(error.message));
-  }, []);
+    let active = true;
+    void readPlatformControls().then((data) => {
+      if (!active) return;
+      if (!data) { router.replace("/login?returnTo=/platform/control"); return; }
+    setAcademies(data.academies);
+    setSelectedAcademy(current => current || data.academies[0]?.id || "");
+    if (data.admins) setAdmins(data.admins);
+    if (data.cases) setCases(data.cases);
+    if (data.invoices) setInvoices(data.invoices);
+    if (data.settings) setSettings(data.settings);
+    if (data.audit) setAudit(data.audit);
+    if (data.health) setHealth(data.health);
+    if (data.owner) setOwner(data.owner);
+    if (data.announcements) setAnnouncements(data.announcements);
+    setMessage("");
+    }).catch(error => { if (active) setMessage(error.message); });
+    return () => { active = false; };
+  }, [router]);
   async function loadActivityLogs() {
-    const query = new URLSearchParams();
-    if (activityScope !== "All") query.set("scope", activityScope === "Platform owner" ? "PlatformOwner" : "AcademyAdmin");
-    if (activityFrom) query.set("fromUtc", new Date(`${activityFrom}T00:00:00`).toISOString());
-    if (activityTo) { const end = new Date(`${activityTo}T00:00:00`); end.setDate(end.getDate() + 1); query.set("toUtc", end.toISOString()); }
-    const response = await academyApi(`/api/platform/activity-logs?${query.toString()}`);
-    if (!response.ok) throw new Error("Activity logs could not be loaded.");
-    setActivityLogs(await response.json());
+    setActivityLogs(await readPlatformActivity(activityScope, activityFrom, activityTo));
   }
   async function deleteActivityLogs() {
     if (!deleteLogMonth || !deleteLogYear) { setMessage("Choose a month and year before deleting logs."); return; }
@@ -262,7 +284,7 @@ export default function PlatformControlPage() {
   const resolvedCases = cases.filter((item) => ["Resolved", "Closed"].includes(item.status));
   const caseModalTitle = caseModal === "open" ? "Open support cases" : caseModal === "urgent" ? "High-priority support cases" : caseModal === "resolved" ? "Resolved support cases" : "All support cases";
   const caseModalRecords = caseModal === "open" ? openCases : caseModal === "urgent" ? urgentCases : caseModal === "resolved" ? resolvedCases : cases;
-  const currentTime = Date.now();
+  const currentTime = useClock();
   const activeAnnouncements = announcements.filter((item) => item.expiresAtUtc && new Date(item.expiresAtUtc).getTime() > currentTime);
   const announcementModalTitle = announcementModal === "active" ? "Active announcements" : "Recent announcements";
   const announcementModalRecords = announcementModal === "active" ? activeAnnouncements : announcements;
@@ -274,23 +296,40 @@ export default function PlatformControlPage() {
   ];
   const selectedHealthDetail = healthDetails.find((item) => item.key === healthModal);
   const controlIcon = tab === "Tenant onboarding" ? "✦" : tab === "Tenant information" ? "ⓘ" : tab === "Admins" ? "♙" : tab === "Billing" ? "₹" : tab === "Support" ? "?" : tab === "Announcements" ? "!" : tab === "Activity logs" ? "☷" : tab === "Settings" ? "⚙" : tab === "Audit & health" ? "✓" : "◫";
-  useEffect(() => {
+  const [tenantSource, setTenantSource] = useState(selected);
+  if (tenantSource !== selected) {
+    setTenantSource(selected);
     setTenantPlan(selected?.subscriptionPlan ?? "");
     setTenantStatus(selected?.subscriptionStatus ?? "");
     setTenantEndsAt(selected?.subscriptionEndsAtUtc?.slice(0, 10) ?? "");
-  }, [selected]);
-  useEffect(() => { setSettingsCurrency(settings?.defaultCurrency ?? ""); }, [settings]);
-  useEffect(() => { if (tab === "Activity logs") void loadActivityLogs().catch((error) => setMessage(error.message)); }, [tab, activityScope, activityFrom, activityTo]);
+  }
+  const [settingsSource, setSettingsSource] = useState(settings);
+  if (settingsSource !== settings) {
+    setSettingsSource(settings);
+    setSettingsCurrency(settings?.defaultCurrency ?? "");
+  }
   useEffect(() => {
+    if (tab !== "Activity logs") return;
+    let active = true;
+    void readPlatformActivity(activityScope, activityFrom, activityTo).then(data => {
+      if (active) setActivityLogs(data);
+    }).catch(error => { if (active) setMessage(error.message); });
+    return () => { active = false; };
+  }, [tab, activityScope, activityFrom, activityTo]);
+  const [profileTarget, setProfileTarget] = useState(selectedAcademy);
+  if (profileTarget !== selectedAcademy) {
+    setProfileTarget(selectedAcademy);
     setTenantProfile(undefined);
+  }
+  useEffect(() => {
     if (!selectedAcademy) return;
-    void academyApi(`/api/platform/academies/${selectedAcademy}/onboarding`)
-      .then(async (response) => {
-        if (!response.ok) { setTenantProfile(undefined); return; }
-        const body = await response.text();
-        setTenantProfile(body ? JSON.parse(body) : undefined);
-      })
-      .catch(() => setTenantProfile(undefined));
+    let active = true;
+    void academyApi(`/api/platform/academies/${selectedAcademy}/onboarding`).then(async response => {
+      if (!response.ok) { if (active) setTenantProfile(undefined); return; }
+      const body = await response.text();
+      if (active) setTenantProfile(body ? JSON.parse(body) : undefined);
+    }).catch(() => { if (active) setTenantProfile(undefined); });
+    return () => { active = false; };
   }, [selectedAcademy]);
   async function saveTenant(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -547,12 +586,14 @@ export default function PlatformControlPage() {
     router.push("/login");
   }
 
-  useEffect(() => {
+  const queryKey = searchParams.toString();
+  const [previousQuery, setPreviousQuery] = useState(queryKey);
+  if (previousQuery !== queryKey) {
+    setPreviousQuery(queryKey);
     const requestedTab = searchParams.get("tab");
     setStartingTenant(searchParams.get("start") === "true");
-    if (requestedTab && platformControlTabs.includes(requestedTab))
-      setTab(requestedTab);
-  }, [searchParams]);
+    if (requestedTab && platformControlTabs.includes(requestedTab)) setTab(requestedTab);
+  }
 
   function selectWorkspace(nextTab: (typeof platformControlTabs)[number]) {
     setTab(nextTab);

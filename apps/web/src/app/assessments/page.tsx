@@ -43,6 +43,13 @@ type AssessmentOptions = {
 };
 const assessmentTypes = ["Performance", "Exam", "Recital", "Test", "Practical"];
 
+async function readResults(academyId: string | undefined, assessmentId: string): Promise<Result[]> {
+  if (!academyId || !assessmentId) return [];
+  const response = await academyApi(`/api/academies/${academyId}/assessments/${assessmentId}/results`, { cache: "no-store" });
+  if (!response.ok) throw new Error();
+  return response.json();
+}
+
 export default function AssessmentsPage() {
   const [academy, setAcademy] = useState<Academy>();
   const [batches, setBatches] = useState<Batch[]>([]);
@@ -90,13 +97,7 @@ export default function AssessmentsPage() {
     setMessage("");
   }
   async function loadResults(id: string) {
-    if (!academy || !id) return setResults([]);
-    const response = await academyApi(
-      `/api/academies/${academy.id}/assessments/${id}/results`,
-      { cache: "no-store" },
-    );
-    if (!response.ok) throw new Error();
-    setResults(await response.json());
+    setResults(await readResults(academy?.id, id));
   }
   useEffect(() => {
     void (async () => {
@@ -118,10 +119,12 @@ export default function AssessmentsPage() {
     })();
   }, []);
   useEffect(() => {
-    void loadResults(assessmentId).catch(() =>
-      setMessage("Assessment results could not be loaded."),
-    );
-  }, [academy, assessmentId]);
+    let active = true;
+    void readResults(academy?.id, assessmentId).then((data) => {
+      if (active) setResults(data);
+    }).catch(() => { if (active) setMessage("Assessment results could not be loaded."); });
+    return () => { active = false; };
+  }, [academy?.id, assessmentId]);
   async function createAssessment(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!academy || !batchId) return;

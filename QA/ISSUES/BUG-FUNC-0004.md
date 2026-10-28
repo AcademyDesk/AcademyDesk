@@ -4,7 +4,7 @@
 | --- | --- |
 | Status | OPEN |
 | Confirmation status | RUNTIME-REPRODUCED |
-| Final verification | NOT RUN |
+| Final verification | Local lint PASS; review and release acceptance OPEN |
 | Severity | Major release-quality gap |
 | Priority | P1 |
 | Category | FUNC |
@@ -43,6 +43,15 @@ From apps/web run npm run lint; for machine output use -- --format json --output
 
 Configured quality gate completes without errors.
 
+## Cloud retest — 2026-10-28
+
+At checkpoint b374b35, the cloud lint baseline was 39 errors and 77 warnings.
+Concrete API/form types replaced five explicit-any violations on practice-logs;
+that page now passes lint, TypeScript passes, and the production webpack build
+passes. Full lint still exits 1 with 34 errors and 77 warnings. This issue remains
+OPEN; no rule was disabled and no remaining error was reclassified as a pass.
+See [dependency and lint increment](../REPORTS/CLOUD_DEPENDENCY_AND_LINT_2026-10-28.md).
+
 ## Actual / evidence
 
 Observed exit 1: 46 errors and 81 warnings. Includes hook effects/purity, explicit any, ARIA and module-variable rules; full file/rule locations in evidence.
@@ -71,3 +80,13 @@ Frontend CI quality gate; lint is not a count of behavioral test failures.
 QUALITY-LINT-001: Rerun identical lint command after targeted fixes; no rule disabling to fabricate a pass.
 
 Also run all endpoint/form cases pointing to this issue in QA/03_TEST_MATRIX.md and the critical regression suite before closure.
+
+## Latest cloud quality result — 2026-10-28
+
+`npm run lint` now exits zero: zero errors and 65 warnings, with rules enabled.
+TypeScript checks and the Next.js 16.4.3 production webpack build pass. New state,
+request-lifecycle, draft-isolation and event-target regression checks are recorded
+in [cloud frontend report](../REPORTS/CLOUD_FRONTEND_QUALITY_2026-10-28.md).
+The configured lint failure is locally repaired. Keep this issue OPEN pending
+review/merge and remaining quality acceptance; `npm test` still has three
+historical SQL-evidence failures. Do not equate lint PASS with release readiness.

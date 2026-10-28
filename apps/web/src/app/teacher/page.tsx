@@ -78,25 +78,44 @@ export default function Teacher() {
     setRoster(await a.json());
     setAttendance(b.ok ? await b.json() : []);
   }
-  async function load() {
-    const r = await academyApi("/api/teacher/me");
-    if (!r.ok) throw new TeacherWorkspaceError(r.status);
-    const x: P = await r.json();
-    setP(x);
-    if (x.sessions[0]) {
-      setSid(x.sessions[0].id);
-      await loadRoster(x.sessions[0].id);
-    }
-    setM("");
-  }
   useEffect(() => {
-    void load().catch((error: unknown) => {
+    let active = true;
+    void academyApi("/api/teacher/me").then(async r => {
+      if (!r.ok) throw new TeacherWorkspaceError(r.status);
+      const x: P = await r.json();
+      if (!active) return;
+      setP(x);
+      if (x.sessions[0]) {
+        const id = x.sessions[0].id;
+        setSid(id);
+        const [a, b] = await Promise.all([
+          academyApi(`/api/teacher/sessions/${id}/roster`),
+          academyApi(`/api/teacher/sessions/${id}/attendance`),
+        ]);
+        if (!a.ok) throw Error();
+        const rows: S[] = await a.json();
+        const records: A[] = b.ok ? await b.json() : [];
+        if (!active) return;
+        setRoster(rows); setAttendance(records);
+      }
+      setM("");
+    }).catch((error: unknown) => {
+      if (!active) return;
       const failure = teacherWorkspaceFailure(error);
       setM(failure.message);
       setNeedsSignIn(failure.signIn);
     });
-    void academyApi("/api/portal/announcements").then(async (response) => { if (response.ok) setAnnouncements(await response.json()); }).catch(() => undefined);
-    void academyApi("/api/portal/notifications").then(async (response) => { if (response.ok) setMessages(await response.json()); }).catch(() => undefined);
+    void academyApi("/api/portal/announcements").then(async response => {
+      if (!response.ok) return;
+      const rows = await response.json();
+      if (active) setAnnouncements(rows);
+    }).catch(() => undefined);
+    void academyApi("/api/portal/notifications").then(async response => {
+      if (!response.ok) return;
+      const rows = await response.json();
+      if (active) setMessages(rows);
+    }).catch(() => undefined);
+    return () => { active = false; };
   }, []);
   async function submitAttendance(teacherStatus: string, records: { studentId: string; status: string }[]) {
     if (!sid) return;
@@ -336,9 +355,16 @@ type TeacherBatch = P["batches"][number];
 type Resource = { id: string; batchId: string; studentId?: string; classSessionId?: string; title: string; description?: string; type: string; url: string; createdAtUtc: string };
 
 function TeacherAttendanceRoster({ sessionId, roster, attendance, teacherStatus, busy, onSubmit }: { sessionId: string; roster: S[]; attendance: A[]; teacherStatus?: string | null; busy: boolean; onSubmit: (teacherStatus: string, records: { studentId: string; status: string }[]) => Promise<void> }) {
-  const [draft, setDraft] = useState<Record<string, string>>({});
+  const initialDraft = () => Object.fromEntries(roster.map(student => [student.id, attendance.find(item => item.studentId === student.id)?.status ?? ""]));
+  const [draft, setDraft] = useState<Record<string, string>>(initialDraft);
   const [teacherDraft, setTeacherDraft] = useState(teacherStatus ?? "");
-  useEffect(() => { setDraft(Object.fromEntries(roster.map((student) => [student.id, attendance.find((item) => item.studentId === student.id)?.status ?? ""]))); setTeacherDraft(teacherStatus ?? ""); }, [attendance, roster, teacherStatus, sessionId]);
+  const [draftSource, setDraftSource] = useState({ attendance, roster, teacherStatus, sessionId });
+  if (draftSource.attendance !== attendance || draftSource.roster !== roster ||
+      draftSource.teacherStatus !== teacherStatus || draftSource.sessionId !== sessionId) {
+    setDraftSource({ attendance, roster, teacherStatus, sessionId });
+    setDraft(initialDraft());
+    setTeacherDraft(teacherStatus ?? "");
+  }
   const recorded = attendance.length;
   const attendanceReady = Boolean(teacherDraft) && roster.every((student) => Boolean(draft[student.id]));
   return <section className="teacher-attendance-panel">
@@ -413,7 +439,7 @@ function TeacherClassroomHero({ batch, sessionId, sessionStatus, onStatusChange 
   </section>;
 }
 function TeacherClassroom({ ownerId, batches, sessions, sessionId, roster, onSessionSelect }: { ownerId: string; batches: TeacherBatch[]; sessions: P["sessions"]; sessionId: string; roster: S[]; onSessionSelect: (id: string) => void }) {
-  const [batchId, setBatchId] = useState("");
+  const [batchId, setBatchId] = useState(() => sessions.find(session => session.id === sessionId)?.batchId ?? "");
   const [studentId, setStudentId] = useState("");
   const [activity, setActivity] = useState<ClassroomActivity>({ resources: [], homework: [] });
   const [fromDate, setFromDate] = useState("");
@@ -427,8 +453,15 @@ function TeacherClassroom({ ownerId, batches, sessions, sessionId, roster, onSes
     if (!history.ok) throw Error("Class history could not be refreshed.");
     setActivity(await history.json());
   }
-  useEffect(() => { setBatchId(sessions.find((session) => session.id === sessionId)?.batchId ?? ""); }, [sessionId, sessions]);
-  useEffect(() => { if (selected?.capacity === 1 && roster[0] && studentId !== roster[0].id) setStudentId(roster[0].id); }, [selected?.capacity, selected?.id, roster, studentId]);
+  const [sessionSource, setSessionSource] = useState({ sessions, sessionId });
+  if (sessionSource.sessions !== sessions || sessionSource.sessionId !== sessionId) {
+    setSessionSource({ sessions, sessionId });
+    const nextBatch = sessions.find(session => session.id === sessionId)?.batchId ?? "";
+    if (nextBatch !== batchId) setStudentId("");
+    setBatchId(nextBatch);
+  } else if (selected?.capacity === 1 && roster[0] && studentId !== roster[0].id) {
+    setStudentId(roster[0].id);
+  }
   useEffect(() => {
     if (!batchId) return;
     let active = true;

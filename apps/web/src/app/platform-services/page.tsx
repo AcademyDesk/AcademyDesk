@@ -10,6 +10,20 @@ type SupportCase = { id: string; subject: string; priority: string; status: stri
 
 const date = (value: string) => new Intl.DateTimeFormat("en-IN", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(`${value}T12:00:00`));
 
+async function readPlatformServices() {
+  const response = await academyApi("/api/academies", { cache: "no-store" });
+  if (!response.ok) throw new Error();
+  const academies: Academy[] = await response.json();
+  if (!academies[0]) throw new Error();
+  const academy = academies[0];
+  const [invoices, cases] = await Promise.all([
+    academyApi(`/api/academies/${academy.id}/platform-services/billing-invoices`, { cache: "no-store" }),
+    academyApi(`/api/academies/${academy.id}/platform-services/support-cases`, { cache: "no-store" }),
+  ]);
+  if (!invoices.ok || !cases.ok) throw new Error();
+  return { academy, invoices: await invoices.json() as PlatformInvoice[], cases: await cases.json() as SupportCase[] };
+}
+
 export default function PlatformServicesPage() {
   const [academy, setAcademy] = useState<Academy>();
   const [invoices, setInvoices] = useState<PlatformInvoice[]>([]);
@@ -22,20 +36,18 @@ export default function PlatformServicesPage() {
 
   async function load() {
     try {
-      const academyResponse = await academyApi("/api/academies", { cache: "no-store" });
-      if (!academyResponse.ok) throw new Error();
-      const academies: Academy[] = await academyResponse.json();
-      if (!academies[0]) throw new Error();
-      const selected = academies[0]; setAcademy(selected);
-      const [invoiceResponse, caseResponse] = await Promise.all([
-        academyApi(`/api/academies/${selected.id}/platform-services/billing-invoices`, { cache: "no-store" }),
-        academyApi(`/api/academies/${selected.id}/platform-services/support-cases`, { cache: "no-store" }),
-      ]);
-      if (!invoiceResponse.ok || !caseResponse.ok) throw new Error();
-      setInvoices(await invoiceResponse.json()); setCases(await caseResponse.json()); setMessage("");
+      const data = await readPlatformServices();
+      setAcademy(data.academy); setInvoices(data.invoices); setCases(data.cases); setMessage("");
     } catch { setMessage("Platform services could not be loaded."); }
   }
-  useEffect(() => { void load(); }, []);
+  useEffect(() => {
+    let active = true;
+    void readPlatformServices().then((data) => {
+      if (!active) return;
+      setAcademy(data.academy); setInvoices(data.invoices); setCases(data.cases); setMessage("");
+    }).catch(() => { if (active) setMessage("Platform services could not be loaded."); });
+    return () => { active = false; };
+  }, []);
 
   async function submitPayment(invoice: PlatformInvoice) {
     if (!academy) return; setBusy(true);
@@ -45,10 +57,10 @@ export default function PlatformServicesPage() {
     } catch { setMessage("Payment submission could not be sent."); } finally { setBusy(false); }
   }
   async function createCase(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault(); if (!academy) return; const form = new FormData(event.currentTarget); setBusy(true);
+    event.preventDefault(); if (!academy) return; const formElement = event.currentTarget; const form = new FormData(formElement); setBusy(true);
     try {
       const response = await academyApi(`/api/academies/${academy.id}/platform-services/support-cases`, { method: "POST", headers: apiHeaders(true), body: JSON.stringify({ subject: form.get("subject"), priority, description: form.get("description") }) });
-      if (!response.ok) throw new Error(); event.currentTarget.reset(); setPriority("Normal"); setMessage("Support request sent to the Platform Owner."); await load();
+      if (!response.ok) throw new Error(); formElement.reset(); setPriority("Normal"); setMessage("Support request sent to the Platform Owner."); await load();
     } catch { setMessage("Support request could not be sent."); } finally { setBusy(false); }
   }
   async function respond(item: SupportCase) {

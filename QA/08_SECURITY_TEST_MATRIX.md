@@ -20,3 +20,10 @@ All cases below are NOT RUN unless specifically backed by an execution artifact.
 Additional required cases under endpoint scenarios: role assignment cannot grant unintended system/owner capability; custom role names/permissions remain tenant-scoped; Identity default register route cannot choose role/tenant flags; public certificate verification exposes only intended information; access grants reject expired/unknown scope; audit export/delete restricted; HTML download must encode user text and not execute URLs/scripts. Policies and framework default routes must be enumerated in the actual test host rather than assumed from UI routes.
 
 Inspect dependency vulnerabilities with the pinned lock files in Phase 2; no dependency advisory scan was run here. Headers/CSP/HSTS, data-protection key persistence across Azure replicas, upload storage durability and production secret rotation require deployment configuration evidence beyond this repository. Do not copy secrets from pipeline/environment into QA. No production exploit attempt or destructive request is authorized by this audit.
+
+Cloud follow-up (2026-10-28): NuGet identified high/moderate Pkcs advisories in
+9.0.11 via SqlClient 6.1.6. An explicit API reference now resolves 9.0.22 in API
+and tests; both transitive-inclusive audits report zero known vulnerable packages.
+The full API suite passes 1,073 tests. This does not close deployment/runtime,
+SQL integration or other security gates. See
+[dependency remediation report](REPORTS/CLOUD_DEPENDENCY_AND_LINT_2026-10-28.md).

@@ -25,6 +25,13 @@ type Link = {
   isPrimary: boolean;
 };
 
+async function readLinks(academyId: string | undefined, studentId: string): Promise<Link[]> {
+  if (!academyId || !studentId) return [];
+  const response = await academyApi(`/api/academies/${academyId}/students/${studentId}/guardians`, { cache: "no-store" });
+  if (!response.ok) throw new Error();
+  return response.json();
+}
+
 export default function GuardiansPage() {
   const [academy, setAcademy] = useState<Academy>();
   const [students, setStudents] = useState<Student[]>([]);
@@ -62,13 +69,7 @@ export default function GuardiansPage() {
     setMessage("");
   }
   async function loadLinks(id: string) {
-    if (!academy || !id) return setLinks([]);
-    const response = await academyApi(
-      `/api/academies/${academy.id}/students/${id}/guardians`,
-      { cache: "no-store" },
-    );
-    if (!response.ok) throw new Error();
-    setLinks(await response.json());
+    setLinks(await readLinks(academy?.id, id));
   }
   useEffect(() => {
     async function initialise() {
@@ -95,10 +96,14 @@ export default function GuardiansPage() {
     void initialise();
   }, []);
   useEffect(() => {
-    void loadLinks(studentId).catch(() =>
-      setMessage("Student-parent links could not be loaded."),
-    );
-  }, [academy, studentId]);
+    let active = true;
+    void readLinks(academy?.id, studentId).then((next) => {
+      if (active) setLinks(next);
+    }).catch(() => {
+      if (active) setMessage("Student-parent links could not be loaded.");
+    });
+    return () => { active = false; };
+  }, [academy?.id, studentId]);
   async function createGuardian(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!academy) return;

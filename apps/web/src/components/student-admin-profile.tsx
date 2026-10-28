@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { academyApi, apiHeaders } from "@/lib/api";
 import { StandardDateField, StandardSelectField } from "@/components/design-system/controls";
 
@@ -51,7 +51,11 @@ export function StudentAdminProfile({
   const [form, setForm] = useState(fromProfile(profile));
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
-  useEffect(() => setForm(fromProfile(profile)), [profile, studentId]);
+  const [formSource, setFormSource] = useState({ profile, studentId, academyId });
+  if (formSource.profile !== profile || formSource.studentId !== studentId || formSource.academyId !== academyId) {
+    setFormSource({ profile, studentId, academyId });
+    setForm(fromProfile(profile));
+  }
   const set = (key: keyof Profile, value: string) =>
     setForm((current) => ({ ...current, [key]: value }));
   async function save() {

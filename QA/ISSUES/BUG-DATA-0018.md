@@ -69,3 +69,16 @@ Administrative guardian address/preferences edits; student admission-fee amounts
 GUARDIAN-PROFILE-001: Browser delayed/failed/out-of-order GET and PUT tests with distinct synthetic guardian values; assert save disabled or correctly bound until matching load completes, cancel/empty selection behavior and exact persisted target. Repeat with StudentFeesPage admission amount/date, delayed student change and failed GET; verify no wrong-student overwrite. Repeat StudentProfilePage and its student-management alias with studentNumber, address and notes; reverse load/save response order and verify fresh rows. Repeat TeacherProfilePage with distinct employee codes and availability, failed selection and switching during save. Add tenant discovery A/B reversed and failed GET, typing during load, save before load and fresh tenant no-wrong-target/no-blank-overwrite assertions. Add two assessments sharing a learner, distinct scores, delayed/failed/reversed result GET, selection during save and no cross-assessment writes. Add attendance shared-learner session A/B with different notes/status, pending/failed/reversed GET and persisted cross-session no-overwrite assertions. Add contacts A/B with no preference rows, edit A without saving, select B or switch contact type, and assert defaults plus no wrong-person consent write.
 
 Also run all endpoint/form cases pointing to this issue in QA/03_TEST_MATRIX.md and the critical regression suite before closure.
+
+## Contact-preference cloud slice — 2026-10-28
+
+Controlled actual-TSX cases reproduced three stale consent/notes failures when
+changing contact, changing contact type and clearing/reselecting a contact with
+no saved preference. Draft identity now includes academy/type/recipient/saved
+preference, resetting before the new view is committed. The preference suite
+passes all 13 cases. Reversed read responses are also guarded in the changed
+selection effects, including tenant discovery and fee reads.
+
+This is a bounded local repair, not closure of the broad multi-editor issue.
+Other profile/load/save races, schema/persistence and browser/device acceptance
+remain OPEN. See [cloud frontend report](../REPORTS/CLOUD_FRONTEND_QUALITY_2026-10-28.md).

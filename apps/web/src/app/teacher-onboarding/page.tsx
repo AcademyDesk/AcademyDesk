@@ -43,7 +43,7 @@ export default function TeacherOnboardingPage() {
     }
 
     setSaving(true);
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget; const form = new FormData(formElement);
     const availability = days
       .map((day) => ({
         day,
@@ -65,7 +65,7 @@ export default function TeacherOnboardingPage() {
       });
       const result = await response.json().catch(() => null);
       if (!response.ok) throw new Error(result?.message ?? "Teacher could not be created.");
-      event.currentTarget.reset();
+      formElement.reset();
       setEmploymentType("Full-time");
       setSubjects([{ subject: "", certification: "" }]);
       setDateOfBirth("");

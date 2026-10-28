@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { academyApi } from "@/lib/api";
+import { useClock } from "@/lib/use-clock";
 import { StandardDateField, StandardSelectField } from "@/components/design-system/controls";
 type Academy = { id: string };
 type Audit = {
@@ -12,6 +13,7 @@ type Audit = {
   occurredAtUtc: string;
 };
 export default function ActivityPage() {
+  const now = useClock();
   const [items, setItems] = useState<Audit[]>([]);
   const [message, setMessage] = useState("Loading activity…");
   const [query, setQuery] = useState("");
@@ -51,7 +53,7 @@ export default function ActivityPage() {
       items.filter((item) => {
         const searchable =
           `${item.action} ${item.entityType} ${item.metadataJson ?? ""}`.toLowerCase();
-        const age = Date.now() - new Date(item.occurredAtUtc).getTime();
+        const age = now - new Date(item.occurredAtUtc).getTime();
         const periodMatch =
           !period ||
           (period === "Today" && age <= 86400000) ||
@@ -64,7 +66,7 @@ export default function ActivityPage() {
           searchable.includes(query.toLowerCase())
         );
       }),
-    [items, entity, period, query, activityDate],
+    [items, entity, period, query, activityDate, now],
   );
   const label = (value: string) =>
     value.replace(/([a-z])([A-Z])/g, "$1 $2").replaceAll("_", " ");
