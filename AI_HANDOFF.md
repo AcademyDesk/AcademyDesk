@@ -288,3 +288,37 @@ regressions or existing security gates, with focused tests and handoff updates.
   gates after network settings apply; independent work may continue the existing
   record-selection/notice/security backlog with targeted regressions. Preserve
   the QA history and update this handoff after each checkpoint.
+
+## Latest checkpoint — Windows inventory and cloud-first work, 2026-10-28
+
+- User confirmed Windows with PowerShell and wants maximum cloud use. This chat
+  still has only the managed Linux executor; no local Windows machine, mount or
+  VPN is attached. Do not claim access to the PC or its Docker/files.
+- Started clean on codex/release-export-security at pushed/verified
+  161420bd7baca7dbdb1ac9041694d76f963d9030. Recurring development-branch pushes remain
+  authorized. PentaMini remains clean and unchanged.
+- Added QA/tools/check-machine.cjs and a Windows fetch/extraction workflow that
+  preserves the PC's branch and local changes. Reports only tool/repository/
+  local-Docker/artifact metadata; no raw errors, paths, secrets or artifact contents.
+  Does not install, connect to databases, start/pull containers, write files or
+  make network requests. Explicitly selects a local socket rather than following
+  a saved remote Docker context. Script requires Node 18+; app uses Node 24.
+- Syntax/help and cloud execution PASS: Linux x64, five logical CPUs, 33 GiB RAM,
+  Node 24.19.0, Git 2.52.0, .NET 10.0.403, Python 3.12.14, Docker 28.4.0,
+  Compose 2.40.3. SQL image, pinned models and communication SQL evidence absent.
+  Invalid-argument and missing-tools/repositories/artifacts JSON smoke checks PASS.
+  Node child-process output is suppressed by this cloud's default sandbox; the
+  first negative smoke produced no JSON. Repeated outside that sandbox and passed.
+  Windows/PowerShell/Docker Desktop execution is NOT VERIFIED until the user runs it.
+- Read runtime policy and current draft only. The existing three CDN requirements
+  remain saved but absent from enforced policy; VPN/TCP destinations unconfigured.
+  No repeated denied downloads, DB/seeder access, new configuration, publication,
+  SQL fixtures, model inference, application changes or deployment.
+- Report: QA/REPORTS/CLOUD_LOCAL_CONTINUATION_2026-10-28.md. Prior application
+  validation retained (frontend 963/966 PASS with three missing-evidence failures;
+  API 1,073 PASS; TypeScript/lint/webpack build PASS); not rerun for inventory/docs.
+- Next route: user runs the checker on Windows and shares its JSON only. Codex
+  interprets useful original synthetic evidence/cache availability, while cloud
+  code work continues. Real SQL/inference needs applied supported network settings
+  or a separately attached appropriate executor. Do not expose local Docker/SQL
+  publicly, transfer secrets or treat artifact presence as valid execution proof.
