@@ -568,3 +568,15 @@ regressions or existing security gates, with focused tests and handoff updates.
   Do not treat52495e2 historical success as validation of latest source.
 - No main merge, configured DB migration, deployment, publication or PentaMini
   change. Next route:Codex/Sol High actual SQL triage and release acceptance.
+
+## 2026-10-28 — Real SQL fixture failure located
+
+- c4a6ffd run40736314010 completed FAILURE. Public diagnostic annotations identify
+  FinanceIntegrityRegression.cs:43/56, fixture SaveChanges before the first race.
+- Fixture invoice identifier was45characters against model/SQL max40. Shortened
+  to35 without weakening the constraint or any race/assertion. Historical failed
+  runs remain failed; new source needs its own actual SQL acceptance.
+- Payroll local commit b5e4814 API1,179 PASS; model/upgrade SQL and final harness
+  compilation PASS. Push this plus fixture repair for source-bound CI.
+- No issue closure/deployment. Next route:Codex/Sol High inspect latest run and
+  repair actual failures before production gates can pass.

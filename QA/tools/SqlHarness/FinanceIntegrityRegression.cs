@@ -29,7 +29,7 @@ internal static partial class SqlHarnessEntryPoint
         async Task<(Guid Invoice, Guid[] Payments, Guid[] Adjustments)> Seed(string mode)
         {
             using var scope = factory.Services.CreateScope(); var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
-            var invoice = new Invoice { AcademyId = academy, StudentId = student, InvoiceNumber = "QA-INTEGRITY-" + Guid.NewGuid().ToString("N"), TotalAmount = 1000m };
+            var invoice = new Invoice { AcademyId = academy, StudentId = student, InvoiceNumber = "QI-" + Guid.NewGuid().ToString("N"), TotalAmount = 1000m };
             db.Invoices.Add(invoice);
             var rows = new List<Payment>(); var credits = new List<FinanceAdjustment>();
             var paymentCount = mode == "restore-pair" ? 2 : mode is "restore-collect" or "void-reconcile" ? 1 : 0;
