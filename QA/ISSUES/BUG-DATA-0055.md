@@ -69,3 +69,15 @@ Invoice register, collections and reminder eligibility, portal-facing status and
 FINANCE-INVOICE-STATUS-001: Full HTTP/SQL status-by-balance matrix with no/partial/full payments, reconciled/voided payments and adjustments, case variants, cancellation and role/tenant denials. Fresh read must agree across invoice, collection and portal projections.
 
 Also run all endpoint/form cases pointing to this issue in QA/03_TEST_MATRIX.md and the critical regression suite before closure.
+
+## Cloud invoice-integrity slice — 2026-10-28
+
+Twenty product failures reproduced in controlled controller/InMemory tests; two
+separate QA assertions for empty-vs-JSON400 corrected and retained in the report.
+Manual status now agrees with collected/adjusted balance and existing due-date
+rules; explicit cancellation remains and statuses are canonical. Invoice sums
+exclude Voided/unknown/foreign payment rows. New collection rejects cancelled
+invoices; adjustment approval preserves cancellation.33 focused and full API1,141
+PASS. SQL write boundaries and12-case real race/audit module prepared/compiled;
+new SQL execution, full HTTP/RBAC, browser and critical acceptance remain OPEN.
+See [invoice integrity report](../REPORTS/CLOUD_INVOICE_INTEGRITY_2026-10-28.md).

@@ -465,3 +465,38 @@ regressions or existing security gates, with focused tests and handoff updates.
   any real failure, then continue financial concurrency/audit/RBAC and private
   media/browser/restore acceptance on the exact release source. Critical gates
   remain OPEN; publishing source is not production readiness.
+
+## Latest checkpoint — invoice ledger/write integrity, 2026-10-28
+
+- User authorized sustained larger batches without repeated continue prompts.
+  Branch started clean at pushed52495e2; recurring pushes remain authorized.
+- Ordinary GitHub Actions overview works despite blocked API. It reports run
+  40728363572 COMPLETED/SUCCESS for exact52495e2; source workflow includes required
+  SQL/private media/frontend/build/container checks. Detailed logs request sign-in.
+  Do not describe the API block as complete inability to read public run metadata.
+  This older green run does not validate subsequent source changes.
+- Added InvoiceWriteScope: SQL tenant/invoice UPDLOCK/HOLDLOCK before mutable rows,
+  reuse existing finance/audit transaction or own transaction for bypass/direct
+  calls. Refresh unchanged cached SQL invoices under lock; do not discard unsaved
+  changes. All payment writers, adjustment decisions and invoice status use it.
+- BUG-DATA-0055 labels now follow same-tenant Completed/Reconciled collections,
+  adjustments and existing due-date rules; explicit cancellation canonicalized.
+  Cancelled collections rejected; approval does not uncancel invoices. No new
+  adjustment/refund/payroll rules or schema/RBAC change.
+- Initial31 tests had20 product failures plus two QA body-type expectation errors;
+  corrected empty400 assertions. Final33 focused cases/full API1,141 PASS with no
+  failures/skips. Twelve deterministic SQL race/audit/ledger cases prepared in
+  FinanceIntegrityRegression.cs; compile0 warnings/errors, NOT RUN here. Includes
+  two observed SQL waiters before release and audit rollback/stale tracked state.
+- CI/runner wires FinanceIntegrity and cancels outdated push/PR runs; manual
+  deployment verification protected. Existing cancelled fixture now expects its
+  canonical stored value. Actionlint/PowerShell parse/diff checks PASS.
+- Report QA/REPORTS/CLOUD_INVOICE_INTEGRITY_2026-10-28.md. All affected issues and
+  release gates remain OPEN for new SQL/HTTP/concurrency/browser/restore acceptance.
+  Prior local frontend1,109 PASS/three missing-evidence FAIL retained. No evidence
+  fabricated, configured/customer DB used, environment published, main merged or
+  Azure deployed. PentaMini unchanged.
+- Next route: inspect this checkpoint's actual CI; while it runs, continue tracked
+  holiday-route ambiguity and operational-dashboard integrity, then remaining
+  release/security/browser gaps. Continue useful independent work without asking
+  the user to repeat authorization.

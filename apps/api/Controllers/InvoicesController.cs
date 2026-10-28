@@ -1,5 +1,6 @@
 using AcademyDesk.Api.Data;
 using AcademyDesk.Api.Domain.Entities;
+using AcademyDesk.Api.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,7 +11,7 @@ namespace AcademyDesk.Api.Controllers;
 public sealed class InvoicesController(AcademyDeskDbContext dbContext) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<InvoiceSummary>>> List(Guid academyId, CancellationToken cancellationToken) => Ok(await dbContext.Invoices.AsNoTracking().Where(x => x.AcademyId == academyId).OrderByDescending(x => x.IssuedDate).Select(x => new InvoiceSummary(x.Id, x.InvoiceNumber, x.StudentId, x.FeePlanId, x.TotalAmount, x.AdjustedAmount, dbContext.Payments.Where(payment => payment.InvoiceId == x.Id && payment.Status != "Voided").Sum(payment => (decimal?)payment.Amount) ?? 0, x.Currency, x.IssuedDate, x.DueDate, x.Status)).ToListAsync(cancellationToken));
+    public async Task<ActionResult<IReadOnlyList<InvoiceSummary>>> List(Guid academyId, CancellationToken cancellationToken) => Ok(await dbContext.Invoices.AsNoTracking().Where(x => x.AcademyId == academyId).OrderByDescending(x => x.IssuedDate).Select(x => new InvoiceSummary(x.Id, x.InvoiceNumber, x.StudentId, x.FeePlanId, x.TotalAmount, x.AdjustedAmount, dbContext.Payments.Where(payment => payment.AcademyId == academyId && payment.InvoiceId == x.Id && (payment.Status == "Completed" || payment.Status == "Reconciled")).Sum(payment => (decimal?)payment.Amount) ?? 0, x.Currency, x.IssuedDate, x.DueDate, x.Status)).ToListAsync(cancellationToken));
 
     // Finance screens need billing identities, not student-management/profile access.
     // This action inherits the existing Invoices finance permission and module gate.
@@ -49,7 +50,26 @@ public sealed class InvoicesController(AcademyDeskDbContext dbContext) : Control
     }
     [HttpPatch("{invoiceId:guid}/status")]
     public async Task<ActionResult> UpdateStatus(Guid academyId, Guid invoiceId, UpdateInvoiceStatusRequest request, CancellationToken token)
-    { var x=await dbContext.Invoices.SingleOrDefaultAsync(v=>v.Id==invoiceId&&v.AcademyId==academyId,token); if(x is null)return NotFound(); if(!new[]{"Issued","PartiallyPaid","Paid","Overdue","Cancelled"}.Contains(request.Status,StringComparer.OrdinalIgnoreCase))return BadRequest(); x.Status=request.Status.Trim(); await dbContext.SaveChangesAsync(token); return Ok(); }
+    {
+        await using var write = await InvoiceWriteScope.OpenAsync(dbContext, academyId, invoiceId, token);
+        var invoice = write.Invoice;
+        if (invoice is null) return NotFound();
+        var requested = new[] { "Issued", "PartiallyPaid", "Paid", "Overdue", "Cancelled" }
+            .FirstOrDefault(x => string.Equals(x, request.Status?.Trim(), StringComparison.OrdinalIgnoreCase));
+        if (requested is null) return BadRequest();
+        if (requested != "Cancelled")
+        {
+            var paid = await dbContext.Payments.Where(x => x.AcademyId == academyId && x.InvoiceId == invoiceId && (x.Status == "Completed" || x.Status == "Reconciled"))
+                .SumAsync(x => (decimal?)x.Amount, token) ?? 0m;
+            var balance = invoice.TotalAmount - invoice.AdjustedAmount - paid;
+            var expected = balance <= 0 ? "Paid" : paid > 0 ? "PartiallyPaid" : invoice.DueDate < DateOnly.FromDateTime(DateTime.UtcNow) ? "Overdue" : "Issued";
+            if (requested != expected) return BadRequest(new { message = $"Invoice status must agree with its payment and adjustment balance. Expected {expected}." });
+        }
+        invoice.Status = requested;
+        await dbContext.SaveChangesAsync(token);
+        await write.CommitAsync(token);
+        return Ok();
+    }
 }
 
 public sealed record CreateInvoiceRequest(Guid StudentId, Guid? FeePlanId, decimal? Amount, DateOnly? DueDate);

@@ -1,5 +1,6 @@
 using AcademyDesk.Api.Data;
 using AcademyDesk.Api.Domain.Entities;
+using AcademyDesk.Api.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -28,19 +29,24 @@ public sealed class FinanceAdjustmentsController(AcademyDeskDbContext db) : Cont
     [HttpPatch("{adjustmentId:guid}/approval")]
     public async Task<ActionResult<FinanceAdjustmentSummary>> Decide(Guid academyId, Guid adjustmentId, FinanceAdjustmentDecisionRequest request, CancellationToken token)
     {
+        var target = await db.FinanceAdjustments.AsNoTracking().Where(x => x.AcademyId == academyId && x.Id == adjustmentId).Select(x => new { x.InvoiceId }).SingleOrDefaultAsync(token);
+        if (target is null) return NotFound();
+        await using var write = await InvoiceWriteScope.OpenAsync(db, academyId, target.InvoiceId, token);
         var item = await db.FinanceAdjustments.SingleOrDefaultAsync(x => x.AcademyId == academyId && x.Id == adjustmentId, token); if (item is null) return NotFound();
         if (item.Status != "PendingApproval") return Conflict(new { message = "This adjustment has already been decided." });
+        if (request.Approve && write.Invoice is null) return NotFound();
         item.Status = request.Approve ? "Approved" : "Rejected"; item.ApprovalNotes = string.IsNullOrWhiteSpace(request.Notes) ? null : request.Notes.Trim(); item.ApprovedAtUtc = DateTime.UtcNow;
         if (request.Approve)
         {
-            var invoice = await db.Invoices.SingleAsync(x => x.Id == item.InvoiceId && x.AcademyId == academyId, token);
+            var invoice = write.Invoice!;
             invoice.AdjustedAmount += item.Amount;
             item.AppliedAtUtc = DateTime.UtcNow;
-            var paid = await db.Payments.Where(x => x.InvoiceId == invoice.Id && (x.Status == "Completed" || x.Status == "Reconciled")).SumAsync(x => (decimal?)x.Amount, token) ?? 0;
+            var paid = await db.Payments.Where(x => x.AcademyId == academyId && x.InvoiceId == invoice.Id && (x.Status == "Completed" || x.Status == "Reconciled")).SumAsync(x => (decimal?)x.Amount, token) ?? 0;
             var balance = invoice.TotalAmount - invoice.AdjustedAmount - paid;
-            invoice.Status = balance <= 0 ? "Paid" : paid > 0 ? "PartiallyPaid" : "Issued";
+            if (!string.Equals(invoice.Status, "Cancelled", StringComparison.OrdinalIgnoreCase))
+                invoice.Status = balance <= 0 ? "Paid" : paid > 0 ? "PartiallyPaid" : "Issued";
         }
-        await db.SaveChangesAsync(token); return Ok(ToSummary(item));
+        await db.SaveChangesAsync(token); await write.CommitAsync(token); return Ok(ToSummary(item));
     }
     private static readonly HashSet<string> AllowedTypes = new(StringComparer.OrdinalIgnoreCase) { "Discount", "Scholarship", "Concession", "Refund", "CreditNote" };
     private static FinanceAdjustmentSummary ToSummary(FinanceAdjustment x) => new(x.Id, x.InvoiceId, x.Type, x.Amount, x.Currency, x.Reason, x.Status, x.ApprovedAtUtc, x.ApprovalNotes);

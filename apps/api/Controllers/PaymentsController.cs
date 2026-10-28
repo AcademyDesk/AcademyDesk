@@ -1,5 +1,6 @@
 using AcademyDesk.Api.Data;
 using AcademyDesk.Api.Domain.Entities;
+using AcademyDesk.Api.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,20 +21,27 @@ public sealed class PaymentsController(AcademyDeskDbContext dbContext) : Control
     [HttpPost]
     public async Task<ActionResult<PaymentSummary>> Create(Guid academyId, RecordPaymentRequest request, CancellationToken cancellationToken)
     {
-        var invoice = await dbContext.Invoices.SingleOrDefaultAsync(x => x.Id == request.InvoiceId && x.AcademyId == academyId, cancellationToken);
+        await using var write = await InvoiceWriteScope.OpenAsync(dbContext, academyId, request.InvoiceId, cancellationToken);
+        var invoice = write.Invoice;
         if (invoice is null) return NotFound();
+        if (string.Equals(invoice.Status, "Cancelled", StringComparison.OrdinalIgnoreCase))
+            return BadRequest(new { message = "A payment cannot be recorded on a cancelled invoice." });
         if (request.Amount <= 0) return BadRequest(new { message = "Payment amount must be positive." });
-        var paid = await dbContext.Payments.Where(x => x.InvoiceId == invoice.Id && (x.Status == "Completed" || x.Status == "Reconciled")).SumAsync(x => (decimal?)x.Amount, cancellationToken) ?? 0;
+        var paid = await dbContext.Payments.Where(x => x.AcademyId == academyId && x.InvoiceId == invoice.Id && (x.Status == "Completed" || x.Status == "Reconciled")).SumAsync(x => (decimal?)x.Amount, cancellationToken) ?? 0;
         var collectibleAmount = invoice.TotalAmount - invoice.AdjustedAmount;
         if (paid + request.Amount > collectibleAmount) return BadRequest(new { message = "Payment exceeds the invoice balance." });
         var payment = new Payment { AcademyId = academyId, InvoiceId = invoice.Id, Amount = request.Amount, Currency = invoice.Currency, Method = string.IsNullOrWhiteSpace(request.Method) ? "Offline" : request.Method.Trim(), Reference = request.Reference?.Trim() };
         invoice.Status = paid + request.Amount == collectibleAmount ? "Paid" : "PartiallyPaid";
         dbContext.Payments.Add(payment); await dbContext.SaveChangesAsync(cancellationToken);
+        await write.CommitAsync(cancellationToken);
         return Created($"/api/academies/{academyId}/payments/{payment.Id}", new PaymentSummary(payment.Id, payment.InvoiceId, payment.Amount, payment.Currency, payment.Method, payment.Status, payment.Reference, payment.PaidAtUtc, payment.ReconciliationReference, payment.ReconciledAtUtc));
     }
     [HttpPatch("{paymentId:guid}/status")]
     public async Task<ActionResult> UpdateStatus(Guid academyId, Guid paymentId, UpdatePaymentStatusRequest request, CancellationToken token)
     {
+        var target = await dbContext.Payments.AsNoTracking().Where(x => x.Id == paymentId && x.AcademyId == academyId).Select(x => new { x.InvoiceId }).SingleOrDefaultAsync(token);
+        if (target is null) return NotFound();
+        await using var write = await InvoiceWriteScope.OpenAsync(dbContext, academyId, target.InvoiceId, token);
         var payment = await dbContext.Payments.SingleOrDefaultAsync(x => x.Id == paymentId && x.AcademyId == academyId, token);
         if (payment is null) return NotFound();
         if (request.Status is not ("Completed" or "Reconciled" or "Voided"))
@@ -43,12 +51,12 @@ public sealed class PaymentsController(AcademyDeskDbContext dbContext) : Control
         if (payment.Status == request.Status) return Ok();
         if (payment.Status == "Voided" && request.Status == "Completed")
         {
-            var rejected = await RestoreBalanceAsync(academyId, payment, token);
+            var rejected = await RestoreBalanceAsync(academyId, payment, write.Invoice, token);
             if (rejected is not null) return rejected;
         }
         if (request.Status == "Voided")
         {
-            var invoice = await dbContext.Invoices.SingleOrDefaultAsync(x => x.Id == payment.InvoiceId && x.AcademyId == academyId, token);
+            var invoice = write.Invoice;
             if (invoice is null) return NotFound();
             if (!string.Equals(invoice.Status, "Cancelled", StringComparison.OrdinalIgnoreCase))
             {
@@ -63,30 +71,34 @@ public sealed class PaymentsController(AcademyDeskDbContext dbContext) : Control
         }
         payment.Status = request.Status;
         await dbContext.SaveChangesAsync(token);
+        await write.CommitAsync(token);
         return Ok();
     }
     [HttpPatch("{paymentId:guid}/reconcile")]
     public async Task<ActionResult> Reconcile(Guid academyId, Guid paymentId, ReconcilePaymentRequest request, CancellationToken token)
     {
+        var target = await dbContext.Payments.AsNoTracking().Where(x => x.Id == paymentId && x.AcademyId == academyId).Select(x => new { x.InvoiceId }).SingleOrDefaultAsync(token);
+        if (target is null) return NotFound();
+        await using var write = await InvoiceWriteScope.OpenAsync(dbContext, academyId, target.InvoiceId, token);
         var payment = await dbContext.Payments.SingleOrDefaultAsync(x => x.Id == paymentId && x.AcademyId == academyId, token);
         if (payment is null) return NotFound();
         if (string.IsNullOrWhiteSpace(request.Reference))
             return BadRequest(new { message = "A bank/cash reconciliation reference is required." });
         if (payment.Status == "Voided")
         {
-            var rejected = await RestoreBalanceAsync(academyId, payment, token);
+            var rejected = await RestoreBalanceAsync(academyId, payment, write.Invoice, token);
             if (rejected is not null) return rejected;
         }
         payment.Status = "Reconciled";
         payment.ReconciledAtUtc = DateTime.UtcNow;
         payment.ReconciliationReference = request.Reference.Trim();
         await dbContext.SaveChangesAsync(token);
+        await write.CommitAsync(token);
         return Ok();
     }
 
-    private async Task<ActionResult?> RestoreBalanceAsync(Guid academyId, Payment payment, CancellationToken token)
+    private async Task<ActionResult?> RestoreBalanceAsync(Guid academyId, Payment payment, Invoice? invoice, CancellationToken token)
     {
-        var invoice = await dbContext.Invoices.SingleOrDefaultAsync(x => x.Id == payment.InvoiceId && x.AcademyId == academyId, token);
         if (invoice is null) return NotFound();
         if (string.Equals(invoice.Status, "Cancelled", StringComparison.OrdinalIgnoreCase))
             return BadRequest(new { message = "A payment cannot be restored on a cancelled invoice." });
