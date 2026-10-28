@@ -89,6 +89,8 @@ await using (var application = new AcademyDeskDbContext(
         await VerifyAssessmentGradeMigrationAsync(application);
     else if (args.Length == 4 && args[3] == "--audit-inbox-lifecycle" && Environment.GetEnvironmentVariable("QA_INBOX_BASELINE") != "1")
         await VerifyInboxReceiptMigrationAsync(application);
+    else if (args.Length == 4 && args[3] == "--payroll-net")
+        await VerifyPayrollHistoryMigrationAsync(application);
     else await application.Database.MigrateAsync();
 }
 await using (var identity = new IdentityDbContext(

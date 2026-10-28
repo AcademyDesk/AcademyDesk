@@ -6,7 +6,7 @@ Bounded runtime follow-up [DRAFT-ISOLATION-UX-001](../REPORTS/PHASE_2B_TEACHER_S
 
 | Issue ID | Title | Priority | Severity | Evidence type | Regression test |
 | --- | --- | --- | --- | --- | --- |
-| [BUG-DATA-0056](BUG-DATA-0056.md) | Editing a payroll profile rewrites the worker name shown on historical payouts | P1 | Major payroll history attribution integrity | STATIC FINDING / reproduction pending | PAYROLL-HISTORY-IDENTITY-001 |
+| [BUG-DATA-0056](BUG-DATA-0056.md) | Editing a payroll profile rewrites the worker name shown on historical payouts | P1 | Major payroll history attribution integrity | PARTIAL controlled repair / SQL-browser pending | PAYROLL-HISTORY-IDENTITY-001 |
 | [BUG-FUNC-0033](BUG-FUNC-0033.md) | Payroll Print / Save PDF has no visible selected payslip in print output | P1 | Major payroll document workflow failure | STATIC FINDING / reproduction pending | PAYROLL-PRINT-001 |
 | [BUG-DATA-0055](BUG-DATA-0055.md) | Direct invoice status edit can mark an unpaid invoice Paid | P1 | Major invoice-ledger status integrity | Controlled repair33 cases/full API1,141 PASS; new SQL races/HTTP/browser OPEN | FINANCE-INVOICE-STATUS-001 |
 | [BUG-FUNC-0032](BUG-FUNC-0032.md) | Certificate preview can be printed before issuance and diverge from the register | P1 | Major credential issuance integrity | OPEN / synthetic real-DOM browser checks added; 143 regressions PASS; PDF/device/full-portal pending | CERTIFICATE-PRINT-ISSUANCE-001 |
@@ -100,7 +100,7 @@ Bounded runtime follow-up [DRAFT-ISOLATION-UX-001](../REPORTS/PHASE_2B_TEACHER_S
 | [BUG-FUNC-0005](BUG-FUNC-0005.md) | Cancelling the adjustment approval prompt still approves the request | P1 | Major unintended financial action | STATIC FINDING / reproduction pending | FINANCE-APPROVAL-001 |
 | [BUG-FUNC-0006](BUG-FUNC-0006.md) | Finance pages require lookup APIs denied to the FinanceUser role | P1 | Major role workflow availability | Student/Governance/invoice-settings dependencies repaired locally / current SQL ×34 twice / API 222/222 / TSX 43/43 / OPEN browser+critical | SECURITY-ROLE-003 |
 | [BUG-DATA-0008](BUG-DATA-0008.md) | Blank optional student numbers collide under the unique index | P1 | Major onboarding persistence | STATIC FINDING / reproduction pending | STUDENT-RULE-002 |
-| [BUG-DATA-0009](BUG-DATA-0009.md) | Payroll profiles accept unchecked or mismatched worker links | P1 | Major payroll data integrity | STATIC FINDING / reproduction pending | PAYROLL-RULE-002 |
+| [BUG-DATA-0009](BUG-DATA-0009.md) | Payroll profiles accept unchecked or mismatched worker links | P1 | Major payroll data integrity | PARTIAL controlled repair / SQL-browser pending | PAYROLL-RULE-002 |
 | [BUG-FUNC-0001](BUG-FUNC-0001.md) | Async form reset throws after successful persistence | P1 | Major | All remaining direct reset sites captured; new23/retained37 controlled PASS; browser/SQL OPEN | TEACHER-FORM-001 |
 | [BUG-API-0001](BUG-API-0001.md) | Blank optional dates sent as empty JSON strings | P1 | Major | STATIC FINDING / reproduction pending | FORM-OPTIONAL-001 |
 | [BUG-DATA-0001](BUG-DATA-0001.md) | Reconciled payments disappear from some balance calculations | P0 | Critical financial integrity | RUNTIME-REPRODUCED / OPEN / LOCAL BACKEND + CONTROLLED PAGE RETEST PASS | FINANCE-RULE-001 |

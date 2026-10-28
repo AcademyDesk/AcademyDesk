@@ -3,6 +3,8 @@ namespace AcademyDesk.Api.Domain.Entities;
 public sealed class PayrollPayout : AcademyEntity
 {
     public Guid PayrollProfileId { get; set; }
+    public string? WorkerNameSnapshot { get; set; }
+    public string? WorkerTypeSnapshot { get; set; }
     public required string PayslipNumber { get; set; }
     public required string PeriodLabel { get; set; }
     public int? SessionsCovered { get; set; }

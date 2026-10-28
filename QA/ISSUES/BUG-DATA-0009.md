@@ -3,8 +3,8 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | STATIC-FINDING |
-| Final verification | NOT RUN |
+| Confirmation status | CONTROLLED-REPRODUCED |
+| Final verification | PARTIAL controlled API PASS; SQL/browser/full closure pending |
 | Severity | Major payroll data integrity |
 | Priority | P1 |
 | Category | DATA |
@@ -69,3 +69,7 @@ Unattributed or wrongly attributed payroll profiles and downstream payouts; not 
 PAYROLL-RULE-002: HTTP/SQL matrix Teacher/Staff x valid/missing/unknown/cross-tenant/both-links, POST and PUT; verify unchanged rows on rejection and valid worker names/links on success.
 
 Also run all endpoint/form cases pointing to this issue in QA/03_TEST_MATRIX.md and the critical regression suite before closure.
+
+## 2026-10-28 — Partial cloud repair
+
+Update rejects supplied foreign/missing TeacherId before mutation, matching create. Two controlled cases reproduced before repair. Required worker links, StaffUserId and type/link consistency remain open. Final full API1,179 PASS. Prepared owned SQL migration/history/link checks compile separately; actual runtime pending. See [payroll report](../REPORTS/CLOUD_PAYROLL_HISTORY_2026-10-28.md). Status remains OPEN under the existing closure requirements.

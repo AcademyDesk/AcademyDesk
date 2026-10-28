@@ -3,8 +3,8 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | STATIC-FINDING |
-| Final verification | NOT RUN |
+| Confirmation status | CONTROLLED-REPRODUCED |
+| Final verification | PARTIAL controlled API PASS; SQL/browser/full closure pending |
 | Severity | Major payroll history attribution integrity |
 | Priority | P1 |
 | Category | DATA |
@@ -69,3 +69,7 @@ Payroll register and downstream payslip attribution after worker corrections/rea
 PAYROLL-HISTORY-IDENTITY-001: Real SQL/HTTP create payout, edit profile name/type/link, deactivate/remove profile, then fresh list/read. Assert immutable historical identity and retained payout visibility with audit trail; no real payroll disbursement.
 
 Also run all endpoint/form cases pointing to this issue in QA/03_TEST_MATRIX.md and the critical regression suite before closure.
+
+## 2026-10-28 — Partial cloud repair
+
+New payouts persist worker name/type snapshots; mutable or missing profiles no longer relabel/hide history. Six controlled cases reproduced before repair. Additive academy-scoped legacy backfill preserves the identity available at upgrade, not earlier overwritten names. Final full API1,179 PASS. Prepared owned SQL migration/history/link checks compile separately; actual runtime pending. See [payroll report](../REPORTS/CLOUD_PAYROLL_HISTORY_2026-10-28.md). Status remains OPEN under the existing closure requirements.

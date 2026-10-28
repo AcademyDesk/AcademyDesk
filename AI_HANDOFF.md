@@ -548,3 +548,23 @@ regressions or existing security gates, with focused tests and handoff updates.
 - Prior1,171 API pass retained; diagnostic change is workflow/runner only.
   No customer database access or deployment. Next route: inspect the diagnostic
   candidate run and repair its actual SQL failure before financial acceptance.
+
+## 2026-10-28 — Payroll history and supplied teacher links
+
+- BUG-DATA-0056:6 failures reproduced; new payouts freeze name/type, register
+  reads snapshots and retains orphan visibility without joining foreign profiles.
+- Additive migration20261028173216 backfills only same-academy profiles. Legacy
+  identity before prior edits is unrecoverable; unknown stays explicit. Quiesce
+  old writers during cutover; downgrade drops snapshots and requires preservation.
+- BUG-DATA-0009:2 failures reproduced; update now rejects supplied foreign/missing
+  teachers before mutation, matching create. Staff identity/required-link/type
+  policy remains open. All issues remain OPEN.
+- Final full API1,179 PASS/0fail/skip. Offline scaffold/upgrade SQL PASS. Prepared
+  owned SQL migration check(3legacy rows/profile),6HTTP history/link checks awaits
+  runtime. Receipt migration test remains pinned and upgrades to latest afterward.
+- Report:QA/REPORTS/CLOUD_PAYROLL_HISTORY_2026-10-28.md. Local SQL image access and
+  missing communication SQL log remain unresolved; no fabricated evidence.
+- c25b6b8 run40731742967 FAILURE; c4a6ffd diagnostic run pending at checkpoint.
+  Do not treat52495e2 historical success as validation of latest source.
+- No main merge, configured DB migration, deployment, publication or PentaMini
+  change. Next route:Codex/Sol High actual SQL triage and release acceptance.

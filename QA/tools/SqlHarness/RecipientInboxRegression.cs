@@ -16,8 +16,8 @@ internal static partial class SqlHarnessEntryPoint
 {
     private static async Task VerifyInboxReceiptMigrationAsync(AcademyDeskDbContext db)
     {
-        var migrations = db.Database.GetMigrations().ToArray(); var latest = migrations.Last(); var previous = migrations[^2];
-        if (!latest.EndsWith("_AddNotificationReadReceipts")) throw new InvalidOperationException("Expected pinned receipt migration");
+        const string latest = "20261001152214_AddNotificationReadReceipts";
+        const string previous = "20261001113622_TrackAssessmentGradeMode";
         var migrator = db.GetService<IMigrator>(); await migrator.MigrateAsync(previous);
         var row = new Notification { AcademyId = Guid.NewGuid(), RecipientId = Guid.NewGuid(), RecipientType = "Student", Title = "Synthetic pre-upgrade", Message = "Preserve legacy delivery", Status = "Read", Channel = "InApp", AttemptCount = 3, FailureReason = "Historical synthetic metadata", ScheduledAtUtc = DateTime.UtcNow.AddDays(-1) };
         // The current model contains an unapplied receipt table, but adding a
@@ -29,7 +29,9 @@ internal static partial class SqlHarnessEntryPoint
         await migrator.MigrateAsync(previous);
         if (original != JsonSerializer.Serialize(await db.Notifications.AsNoTracking().SingleAsync(x => x.Id == row.Id))) throw new InvalidOperationException("Rollback changed notification");
         await migrator.MigrateAsync(latest);
-        if (await db.NotificationReadReceipts.AnyAsync() || (await db.Database.GetPendingMigrationsAsync()).Any()) throw new InvalidOperationException("Reapply receipt schema failed");
+        if (await db.NotificationReadReceipts.AnyAsync()) throw new InvalidOperationException("Reapply receipt schema failed");
+        await db.Database.MigrateAsync();
+        if ((await db.Database.GetPendingMigrationsAsync()).Any()) throw new InvalidOperationException("Latest schema after receipt regression failed");
         db.Remove(await db.Notifications.SingleAsync(x => x.Id == row.Id)); await db.SaveChangesAsync(); db.ChangeTracker.Clear();
         Console.WriteLine("INBOXLIFE MIGRATION PASS:upgrade preserves existing notification/legacy Read; no fabricated receipts; rollback drops only receipts; reapply clean. Disposable owned SQL only, not dev/Azure.");
     }
