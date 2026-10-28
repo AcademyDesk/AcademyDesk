@@ -1,5 +1,69 @@
 # Academy Desk handoff
 
+## Approved shared GitHub checkpoint — 29 October 2026
+
+Owner approved one feature-branch commit/push of the validated payroll batch and
+shared handoffs to `codex/cloud-profile-sync`. Publication is being performed from
+the verified local source; check remote HEAD/CI rather than assuming success.
+Earlier no-push/unpublished entries remain chronological history. QA/EVIDENCE,
+.build-check, model files and original PENTA work are excluded. No main/Azure/
+settings changes. Next cloud profile starts with `CLOUD_PROFILE_START.md` and
+`AI_CROSS_PROFILE_HANDOFF.md`. Cloud task selection/execution is still pending.
+
+## Payroll reconciliation validated locally — 29 October 2026
+
+- [x] Cloud positive-net payroll rule plus local exact-money/worker/normalized-
+  period locks, identity provenance and teacher own-history safeguards integrated.
+  Historical zero-net/null timestamps retained; no new zero-net payouts enabled.
+- [x] Existing cloud snapshot migration unchanged; additive missing-provenance/
+  nullable-history migration, no duplicate columns or invented verification/date.
+- [x] Full cloud-based API1,234/zero skips; retained payroll module plus23new SQL/
+  HTTP checks,5/5 exact-resource observed-waiter races, two audit rollbacks and
+  blocked unsafe downgrade PASS.84app/7Identity migrations/owned teardown pass.
+- [x] Window8ec5a8c6b3fb40c98113b1f93d93d927, SQL920440a23b5647099200f118d64b338e;
+  exact services/images/health/API200/inventory restored. Unchanged API TRX/source
+  reused from0d4bcd61e02e4951810289716ff85d19 after harness-only repairs. Failures
+  and owned-only cleanup reconciliation preserved. No current-source CI claim.
+- [ ] Next:payments/invoices/adjustments finance reconciliation, then frontend/
+  PENTA/test/CI integration. Local3,183suite remains preserved separately, not
+  replaced by this cloud-based count. Payroll UI/browser/device/issues remain OPEN.
+- [ ] FiveP0s, qualified Mini, full conversational cohorts and wider release gates
+  remain OPEN. No commit/push/merge/main/production DB/Azure/model experiment.
+  Code remains local/unpublished; original PENTA working tree preserved.
+
+Report: `QA/REPORTS/CLOUD_LOCAL_PAYROLL_RECONCILIATION_2026-10-29.md`.
+Read `AI_CROSS_PROFILE_HANDOFF.md`; continue Sol High for finance/authority
+integration, Sol Medium for settled UI. Owner stop before candidate loading stands.
+
+## Shared cloud/local reconciliation — 28 October 2026
+
+- [x] Found and fetched the other-profile cloud branch `codex/release-export-security`,
+  exact HEAD `10a60eebc2e193b06de31622e897e755062dd72c` (14commits).
+- [x] Independently observed latest GitHub CI40738226886 SUCCESS, exact job/step
+  source and artifact metadata. Older failed cloud runs are superseded for this
+  checkpoint. Detailed logs/artifact contents require authenticated access; no
+  individual case counts are inferred.31fresh focused checks pass locally.
+- [x] Owner explicitly chooses cloud work and positive-net payroll/validated
+  Voided-payment restoration policies as common ground across three profiles.
+- [x] New review worktree `D:\AcademyDesk-cloud-sync`, branch
+  `codex/cloud-profile-sync`, starts at the verified cloud commit. Original dirty
+  `D:\AcademyDesk-codex-p0` and its3,183API/PENTA/enterprise evidence stay intact.
+- [ ] Actual source reconciliation remains:135cloud-changed paths include86
+  differently changed local files. Cloud lacks the local PENTA backend/chat/routes.
+  Preserve both, resolve transaction/migration/policy conflicts and retain all
+  accepted tests and stronger source-bound CI before validating a combined build.
+- [ ] FiveP0records, qualified Mini, full conversational cohorts, all-role/customer/
+  device and exact security/database/restore/staging/release gates remain OPEN.
+  No90%AI/production readiness claim. Owner stop before weights loading remains.
+
+Read `AI_CROSS_PROFILE_HANDOFF.md` first; detailed report:
+`QA/REPORTS/CROSS_PROFILE_RECONCILIATION_2026-10-28.md`.
+This section supersedes older Current state/Active handoff metadata below for
+continuation; earlier records remain historical. No application code changed,
+commit/push/merge/main edit/model activation or Azure action in this reconciliation.
+New coordination records are local/unpublished. Next route Sol High for the
+consequential reconciliation; Sol Medium for settled bounded UI/docs.
+
 ## Current state
 
 | | |

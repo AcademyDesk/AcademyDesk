@@ -6,6 +6,21 @@ GitHub is the accepted source of truth for application changes. Local working tr
 
 These root instructions govern coding agents working in this repository. `apps/web/AGENTS.md` is generated Next.js tooling guidance for that app. It does not replace this file, `AI_HANDOFF.md`, `AI_MODEL_ROUTING.md`, `AI_PRODUCT_VISION.md`, or `ENTERPRISE_TESTING_ROADMAP.md`.
 
+## Shared continuation across profiles — 28 October 2026
+
+Read `AI_CROSS_PROFILE_HANDOFF.md` before selecting a task. The owner has chosen
+the cloud development checkpoint as the common integration starting point; the
+unpublished local PENTA/security work must be preserved and integrated. Each
+profile uses its own bounded task branch and a source-bound handoff. Do not let
+multiple profiles overwrite the same active files or substitute an older test
+baseline for the larger accepted local suite. No automatic merge/push/deployment.
+
+PENTA authorization remains independent host enforcement: current authenticated
+server-resolved tenant/role, allowed typed tool, domain validation, scoped approval
+where required, real result and mandatory audit. Model output/memory cannot grant
+permissions or execute SQL/code. Preserve the owner's stop before candidate
+model-weight loading; common-profile setup does not authorize a model experiment.
+
 ## Required reading before modifying code
 
 Every coding agent must, before modifying code:

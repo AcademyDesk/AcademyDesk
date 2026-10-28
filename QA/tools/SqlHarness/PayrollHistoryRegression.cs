@@ -43,6 +43,11 @@ internal static partial class SqlHarnessEntryPoint
 
     private static async Task VerifyPayrollHistoryAsync(QaApiFactory factory, HttpClient client, Guid academy, Guid teacher, string path)
     {
+        string staffUserId;
+        using (var scope = factory.Services.CreateScope())
+            staffUserId = (await scope.ServiceProvider.GetRequiredService<IdentityDbContext>().Users.AsNoTracking()
+                .Where(x => x.AcademyId == academy && x.TeacherId == null && x.StudentId == null && x.GuardianId == null && !x.IsPlatformOwner)
+                .Select(x => x.Id).FirstAsync()).ToString();
         using var create = await client.PostAsJsonAsync(path + "/profiles", new { workerType = "Teacher", teacherId = teacher, workerName = "Paid identity", paymentModel = "Monthly", monthlyAmount = 1000m });
         RequireFinanceStatus(create, HttpStatusCode.Created, "history profile create");
         using var profileJson = JsonDocument.Parse(await create.Content.ReadAsStringAsync()); var profileId = profileJson.RootElement.GetProperty("id").GetGuid();
@@ -84,7 +89,7 @@ internal static partial class SqlHarnessEntryPoint
             }
             else
             {
-                using var update = await client.PutAsJsonAsync(path + "/profiles/" + profileId, new { workerType = mode == "rename" ? "Teacher" : "Staff", teacherId = mode == "rename" ? (Guid?)teacher : null, workerName = "Current identity", paymentModel = "Monthly", monthlyAmount = 2000m, isActive = mode != "deactivate" });
+                using var update = await client.PutAsJsonAsync(path + "/profiles/" + profileId, new { workerType = mode == "rename" ? "Teacher" : "Staff", teacherId = mode == "rename" ? (Guid?)teacher : null, staffUserId = mode == "rename" ? null : staffUserId, workerName = "Current identity", paymentModel = "Monthly", monthlyAmount = 2000m, isActive = mode != "deactivate" });
                 RequireFinanceStatus(update, HttpStatusCode.OK, "history " + mode);
             }
             using var listed = await client.GetAsync(path + "/payouts"); RequireFinanceStatus(listed, HttpStatusCode.OK, "history list " + mode);

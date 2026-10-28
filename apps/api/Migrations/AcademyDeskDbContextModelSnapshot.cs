@@ -2302,11 +2302,14 @@ namespace AcademyDesk.Api.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<DateTime?>("IdentityRecordedAtUtc")
+                        .HasColumnType("datetime2");
+
                     b.Property<decimal>("NetAmount")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<DateTime>("PaidAtUtc")
+                    b.Property<DateTime?>("PaidAtUtc")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("PaymentMethod")
@@ -2334,10 +2337,17 @@ namespace AcademyDesk.Api.Migrations
                     b.Property<int?>("SessionsCovered")
                         .HasColumnType("int");
 
+                    b.Property<string>("StaffUserIdSnapshot")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
+
+                    b.Property<Guid?>("TeacherIdSnapshot")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime?>("UpdatedAtUtc")
                         .HasColumnType("datetime2");

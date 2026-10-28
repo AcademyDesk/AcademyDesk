@@ -509,10 +509,16 @@ public sealed class TeacherPortalController(
         var user = await userManager.GetUserAsync(User);
         if (user?.AcademyId is null || user.TeacherId is null || (year.HasValue != month.HasValue) || (month.HasValue && month is < 1 or > 12) || (year.HasValue && year is < 2020 or > 2100)) return BadRequest();
         var profile = await dbContext.PayrollProfiles.AsNoTracking().FirstOrDefaultAsync(x => x.AcademyId == user.AcademyId && x.TeacherId == user.TeacherId && x.IsActive, cancellationToken);
-        var payoutQuery = profile is null ? dbContext.PayrollPayouts.AsNoTracking().Where(x => false) : dbContext.PayrollPayouts.AsNoTracking().Where(x => x.AcademyId == user.AcademyId && x.PayrollProfileId == profile.Id);
+        // A mutable current profile cannot grant another teacher's old payroll.
+        // Unverified legacy identity is available only to authorized finance review.
+        var payoutQuery = dbContext.PayrollPayouts.AsNoTracking().Where(x => x.AcademyId == user.AcademyId &&
+            x.TeacherIdSnapshot == user.TeacherId && x.WorkerTypeSnapshot == "Teacher" && x.IdentityRecordedAtUtc != null && x.WorkerNameSnapshot != null);
         if (year.HasValue && month.HasValue)
-            payoutQuery = payoutQuery.Where(x => x.Status == "Paid" && x.PaidAtUtc.Year == year.Value && x.PaidAtUtc.Month == month.Value);
-        IReadOnlyList<TeacherPayslipSummary> payouts = await payoutQuery.OrderByDescending(x => x.PaidAtUtc).Take(year.HasValue ? 100 : 12).Select(x => new TeacherPayslipSummary(x.Id, x.PayslipNumber, x.PeriodLabel, x.GrossAmount, x.Deductions, x.NetAmount, x.Currency, x.Status, x.PaymentMethod, x.Reference, x.PaidAtUtc)).ToListAsync(cancellationToken);
+            payoutQuery = payoutQuery.Where(x => (x.Status == "Paid" && x.PaidAtUtc != null && x.PaidAtUtc.Value.Year == year.Value && x.PaidAtUtc.Value.Month == month.Value) ||
+                (x.Status == "NoCashDue" && x.CreatedAtUtc.Year == year.Value && x.CreatedAtUtc.Month == month.Value));
+        IReadOnlyList<TeacherPayslipSummary> payouts = await payoutQuery.OrderByDescending(x => x.CreatedAtUtc).Take(year.HasValue ? 100 : 12).Select(x => new TeacherPayslipSummary(x.Id, x.PayslipNumber, x.PeriodLabel, x.GrossAmount, x.Deductions, x.NetAmount, x.Currency, x.Status, x.PaymentMethod, x.Reference,
+            x.PaidAtUtc == null ? null : DateTime.SpecifyKind(x.PaidAtUtc.Value, DateTimeKind.Utc), x.PayrollProfileId, x.WorkerNameSnapshot!,
+            x.IdentityRecordedAtUtc == null ? null : DateTime.SpecifyKind(x.IdentityRecordedAtUtc.Value, DateTimeKind.Utc), x.SessionsCovered)).ToListAsync(cancellationToken);
         return Ok(new TeacherPaymentSummary(profile?.PaymentModel, profile?.MonthlyAmount, profile?.AmountPerCycle, profile?.SessionsPerCycle, payouts));
     }
 
@@ -698,4 +704,12 @@ public sealed record TeacherProgressSummary(int CompletedClasses, int UpcomingCl
 public sealed record TeacherBatchProgressSummary(Guid BatchId, string BatchName, int SessionMinutes, int SessionsPerWeek, string PaymentCycle, int CycleTotal, int CompletedInCycle, int RemainingInCycle, bool PaymentReady, IReadOnlyList<DateTime> CoveredClassDates, IReadOnlyList<TeacherScheduledClassSummary> UpcomingClasses);
 public sealed record TeacherScheduledClassSummary(DateTime StartUtc, DateTime EndUtc);
 public sealed record TeacherPaymentSummary(string? PaymentModel, decimal? MonthlyAmount, decimal? AmountPerCycle, int? SessionsPerCycle, IReadOnlyList<TeacherPayslipSummary> Payslips);
-public sealed record TeacherPayslipSummary(Guid Id, string PayslipNumber, string PeriodLabel, decimal GrossAmount, decimal Deductions, decimal NetAmount, string Currency, string Status, string PaymentMethod, string? Reference, DateTime PaidAtUtc);
+public sealed record TeacherPayslipSummary(Guid Id, string PayslipNumber, string PeriodLabel, decimal GrossAmount, decimal Deductions, decimal NetAmount, string Currency, string Status, string PaymentMethod, string? Reference, DateTime? PaidAtUtc, Guid PayrollProfileId, string WorkerName, DateTime? IdentityRecordedAtUtc, int? SessionsCovered)
+{
+    public string GrossAmountExact => GrossAmount.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
+    public string DeductionsExact => Deductions.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
+    public string NetAmountExact => NetAmount.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
+    public string WorkerType => "Teacher";
+    public string IdentitySource => "PayoutSnapshot";
+    public string SettlementKind => Status == "NoCashDue" ? "NoCashDue" : NetAmount == 0m ? "LegacyZeroNet" : "RecordedPayout";
+}

@@ -1,3 +1,4 @@
+using AcademyDesk.Api.Tests.Infrastructure;
 using AcademyDesk.Api.Controllers;
 using AcademyDesk.Api.Data;
 using AcademyDesk.Api.Domain.Entities;
@@ -23,7 +24,7 @@ public sealed class PayrollNetTests
         var profile = Profile("Monthly");
         db.PayrollProfiles.Add(profile);
         await db.SaveChangesAsync();
-        var result = await new PayrollController(db).Pay(profile.AcademyId,
+        var result = await PayrollFixture.Controller(db).Pay(profile.AcademyId,
             new(profile.Id, "QA period", null, null, deductions, null, null, null), default);
         await AssertPayoutAsync(db, profile, result, accepted, 1000m, net, null);
     }
@@ -44,7 +45,7 @@ public sealed class PayrollNetTests
         var profile = Profile("SessionBlock");
         db.PayrollProfiles.Add(profile);
         await db.SaveChangesAsync();
-        var result = await new PayrollController(db).Pay(profile.AcademyId,
+        var result = await PayrollFixture.Controller(db).Pay(profile.AcademyId,
             new(profile.Id, "QA period", sessions, gross, deductions, null, null, null), default);
         await AssertPayoutAsync(db, profile, result, accepted, gross ?? 1000m, net, sessions ?? 12);
     }
@@ -56,7 +57,7 @@ public sealed class PayrollNetTests
         var profile = Profile("Monthly");
         db.PayrollProfiles.Add(profile);
         await db.SaveChangesAsync();
-        var result = await new PayrollController(db).Pay(profile.AcademyId,
+        var result = await PayrollFixture.Controller(db).Pay(profile.AcademyId,
             new(profile.Id, "QA period", 3, 1m, 999m, null, null, null), default);
         await AssertPayoutAsync(db, profile, result, true, 1000m, 1m, null);
     }
@@ -71,7 +72,7 @@ public sealed class PayrollNetTests
         profile.IsActive = foreign;
         db.PayrollProfiles.Add(profile);
         await db.SaveChangesAsync();
-        var result = await new PayrollController(db).Pay(foreign ? Guid.NewGuid() : profile.AcademyId,
+        var result = await PayrollFixture.Controller(db).Pay(foreign ? Guid.NewGuid() : profile.AcademyId,
             new(profile.Id, "QA period", null, null, 0m, null, null, null), default);
         Assert.IsType<BadRequestObjectResult>(result.Result);
         Assert.Empty(await db.PayrollPayouts.ToListAsync());
@@ -102,7 +103,7 @@ public sealed class PayrollNetTests
     }
 
     private static PayrollProfile Profile(string model) => new()
-    { AcademyId = Guid.NewGuid(), WorkerType = "Staff", WorkerName = "Synthetic QA", PaymentModel = model,
+    { AcademyId = Guid.NewGuid(), WorkerType = "Staff", StaffUserId = Guid.NewGuid().ToString(), WorkerName = "Synthetic QA", PaymentModel = model,
         MonthlyAmount = model == "Monthly" ? 1000m : null,
         AmountPerCycle = model == "SessionBlock" ? 1000m : null,
         SessionsPerCycle = model == "SessionBlock" ? 12 : null };

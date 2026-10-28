@@ -300,6 +300,7 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
         {
             entity.Property(x => x.WorkerNameSnapshot).HasMaxLength(240);
             entity.Property(x => x.WorkerTypeSnapshot).HasMaxLength(20);
+            entity.Property(x => x.StaffUserIdSnapshot).HasMaxLength(450);
             entity.Property(x => x.PayslipNumber).HasMaxLength(60).IsRequired();
             entity.Property(x => x.PeriodLabel).HasMaxLength(120).IsRequired();
             entity.Property(x => x.GrossAmount).HasPrecision(18, 2);

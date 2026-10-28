@@ -144,6 +144,6 @@ internal static partial class SqlHarnessEntryPoint
         bool Active, DateOnly EffectiveFrom);
     private sealed record PayrollLedger(Guid Id, Guid AcademyId, Guid ProfileId, string Payslip, string Period,
         decimal Gross, decimal Deductions, decimal Net, string Currency, string Status, int? Sessions,
-        string Method, string? Reference, DateTime PaidAtUtc);
+        string Method, string? Reference, DateTime? PaidAtUtc);
     private sealed record PayrollSnapshot(PayrollProfileSnapshot Profile, List<PayrollLedger> Payouts);
 }

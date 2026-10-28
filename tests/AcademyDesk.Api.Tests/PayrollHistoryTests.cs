@@ -1,3 +1,4 @@
+using AcademyDesk.Api.Tests.Infrastructure;
 using AcademyDesk.Api.Controllers;
 using AcademyDesk.Api.Data;
 using AcademyDesk.Api.Domain.Entities;
@@ -18,7 +19,7 @@ public sealed class PayrollHistoryTests
         var teacher = new Teacher { AcademyId = Guid.NewGuid(), FirstName = "Foreign", LastName = "Teacher" };
         db.Add(profile); if (foreign) db.Add(teacher); await db.SaveChangesAsync();
         var before = System.Text.Json.JsonSerializer.Serialize(profile);
-        var result = await new PayrollController(db).UpdateProfile(profile.AcademyId, profile.Id,
+        var result = await PayrollFixture.Controller(db).UpdateProfile(profile.AcademyId, profile.Id,
             new("Teacher", teacher.Id, null, "Changed", "Monthly", 2000m, null, null, null), default);
         Assert.IsType<BadRequestObjectResult>(result.Result);
         db.ChangeTracker.Clear();
@@ -33,9 +34,12 @@ public sealed class PayrollHistoryTests
     public async Task Existing_payout_retains_paid_identity_after_profile_change(string change)
     {
         await using var db = CreateDb();
-        var profile = new PayrollProfile { AcademyId = Guid.NewGuid(), WorkerType = "Staff", WorkerName = "Paid Worker", MonthlyAmount = 1000m };
+        var profile = new PayrollProfile { AcademyId = Guid.NewGuid(), WorkerType = "Staff", StaffUserId = Guid.NewGuid().ToString(), WorkerName = "Paid Worker", MonthlyAmount = 1000m };
         db.Add(profile); await db.SaveChangesAsync();
-        var controller = new PayrollController(db);
+        var replacementStaff = Guid.NewGuid().ToString();
+        var replacementTeacher = new Teacher { AcademyId = profile.AcademyId, FirstName = "Synthetic", LastName = "Replacement" };
+        db.Add(replacementTeacher); await db.SaveChangesAsync();
+        var controller = PayrollFixture.Controller(db, replacementStaff);
         var paid = Assert.IsType<PayrollPayoutSummary>(Assert.IsType<CreatedResult>((await controller.Pay(profile.AcademyId,
             new(profile.Id, "Synthetic period", null, null, 100m, null, null, null), default)).Result).Value);
         var original = Assert.Single(Assert.IsType<List<PayrollPayoutSummary>>(Assert.IsType<OkObjectResult>((await controller.Payouts(profile.AcademyId, default)).Result).Value));
@@ -45,7 +49,7 @@ public sealed class PayrollHistoryTests
         else
         {
             var update = await controller.UpdateProfile(profile.AcademyId, profile.Id,
-                new(change == "reassign" ? "Teacher" : "Staff", null, change == "reassign" ? null : "new-staff-link",
+                new(change == "reassign" ? "Teacher" : "Staff", change == "reassign" ? replacementTeacher.Id : null, change == "reassign" ? null : replacementStaff,
                     "Current Worker", "Monthly", 2000m, null, null, null, change != "deactivate"), default);
             Assert.IsType<OkObjectResult>(update.Result);
         }
@@ -63,10 +67,10 @@ public sealed class PayrollHistoryTests
         db.Add(foreign);
         db.Add(new PayrollPayout { AcademyId = academy, PayrollProfileId = foreign.Id, PayslipNumber = "QA-FOREIGN", PeriodLabel = "Synthetic" });
         await db.SaveChangesAsync();
-        var row = Assert.Single(Assert.IsType<List<PayrollPayoutSummary>>(Assert.IsType<OkObjectResult>((await new PayrollController(db).Payouts(academy, default)).Result).Value));
+        var row = Assert.Single(Assert.IsType<List<PayrollPayoutSummary>>(Assert.IsType<OkObjectResult>((await PayrollFixture.Controller(db).Payouts(academy, default)).Result).Value));
         Assert.Equal("Unavailable worker", row.WorkerName);
         Assert.Equal("Unknown", row.WorkerType);
-        Assert.Empty(Assert.IsType<List<PayrollPayoutSummary>>(Assert.IsType<OkObjectResult>((await new PayrollController(db).Payouts(foreign.AcademyId, default)).Result).Value));
+        Assert.Empty(Assert.IsType<List<PayrollPayoutSummary>>(Assert.IsType<OkObjectResult>((await PayrollFixture.Controller(db).Payouts(foreign.AcademyId, default)).Result).Value));
     }
 
     [Fact]
@@ -75,7 +79,7 @@ public sealed class PayrollHistoryTests
         await using var db = CreateDb();
         var row = new PayrollPayout { AcademyId = Guid.NewGuid(), PayrollProfileId = Guid.NewGuid(), PayslipNumber = "QA-ORPHAN", PeriodLabel = "Synthetic" };
         db.Add(row); await db.SaveChangesAsync();
-        var summary = Assert.Single(Assert.IsType<List<PayrollPayoutSummary>>(Assert.IsType<OkObjectResult>((await new PayrollController(db).Payouts(row.AcademyId, default)).Result).Value));
+        var summary = Assert.Single(Assert.IsType<List<PayrollPayoutSummary>>(Assert.IsType<OkObjectResult>((await PayrollFixture.Controller(db).Payouts(row.AcademyId, default)).Result).Value));
         Assert.Equal(row.Id, summary.Id);
         Assert.Equal("Unavailable worker", summary.WorkerName);
         Assert.Equal("Unknown", summary.WorkerType);

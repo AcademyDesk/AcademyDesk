@@ -1,5 +1,28 @@
 # Academy Desk product vision
 
+## Owner continuation decisions — 28 October 2026
+
+Cloud work/decisions are the common development starting point for all three
+profiles. Preserve and integrate the unpublished local PENTA/security/Manual work;
+the older cloud checkout alone does not contain the completed local AI host/UI.
+Read `AI_CROSS_PROFILE_HANDOFF.md` before implementation.
+
+The product name remains Academy Desk PENTA AI, with Pulse, Executor, Navigator,
+Twin and Autopilot. The first-launch target remains90%eligible operations through
+conversation and10%Manual control/fallback. Measure end-to-end outcomes before
+claiming that target; Manual and host security remain fully usable/enforced.
+
+The owner resolved the conflicting finance choices in favor of cloud: reject new
+zero-net payroll payouts; allow only validated Voided-payment restoration under
+the invoice transaction, current authority, adjusted balance and mandatory audit.
+Preserve existing records and stronger worker/period/identity safeguards during
+reconciliation. The old local rules are superseded choices, not already-migrated
+implementation. Other accounting/business rules and release gates remain.
+
+The explicit owner stop before candidate model-weight loading remains in force.
+Cloud ERP verification does not qualify Mini or authorize downloads, training,
+inference experiments, activation, paid compute or Azure deployment.
+
 Academy Desk should evolve into an **AI-native academy operating system**.
 
 The target is not traditional ERP plus a chatbot.

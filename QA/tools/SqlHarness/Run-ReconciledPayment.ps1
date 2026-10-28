@@ -6,6 +6,7 @@ if ($HarnessPath) {
     $HarnessPath = (Resolve-Path -LiteralPath $HarnessPath).Path
     if (!(Test-Path -LiteralPath $HarnessPath -PathType Leaf) -or [IO.Path]::GetFileName($HarnessPath) -ne 'SqlHarness.dll') { throw 'An existing SqlHarness.dll is required before SQL provisioning.' }
 }
+if ($env:QA_CLOUD_FINANCE_RECONCILIATION -and ($env:QA_CLOUD_FINANCE_RECONCILIATION -ne '1' -or $Module -ne 'Payroll')) { throw 'Invalid bounded payroll validation mode.' }
 $qaRun = [Guid]::NewGuid().ToString('N')
 $qaContainer = "academydesk-qa-$qaRun"
 $qaPreviousSa = $env:QA_SQL_SA_PASSWORD
@@ -59,7 +60,11 @@ try {
     if ($Module -eq 'CommunicationRoundtrip') { $qaSwitch = '--audit-communication-roundtrip' }
     $env:QA_SQL_SA_PASSWORD = 'Qa!a9' + [Guid]::NewGuid().ToString('N')
     $env:MSSQL_SA_PASSWORD = $env:QA_SQL_SA_PASSWORD
+    if ($env:QA_CLOUD_FINANCE_RECONCILIATION -eq '1') {
+        $qaId = docker run -d --pull=never --memory 2g --cpus 2 --name $qaContainer --hostname $qaContainer --label "academydesk.qa.run=$qaRun" -e ACCEPT_EULA=Y -e MSSQL_PID=Developer -e MSSQL_MEMORY_LIMIT_MB=1536 -e MSSQL_SA_PASSWORD -p 127.0.0.1::1433 mcr.microsoft.com/mssql/server:2022-latest
+    } else {
     $qaId = docker run -d --name $qaContainer --hostname $qaContainer --label "academydesk.qa.run=$qaRun" -e ACCEPT_EULA=Y -e MSSQL_PID=Developer -e MSSQL_SA_PASSWORD -p 127.0.0.1::1433 mcr.microsoft.com/mssql/server:2022-latest
+    }
     if ($LASTEXITCODE -ne 0) { throw 'Could not create isolated SQL container.' }
     Write-Output "QA $Module run=$qaRun container=$qaContainer started=$($qaStarted.ToString('o'))"
     $qaReady = $false

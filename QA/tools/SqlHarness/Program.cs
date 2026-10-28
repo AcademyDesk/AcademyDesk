@@ -509,6 +509,7 @@ static async Task VerifyRealHttpAsync(QaRunManifest manifest, bool classMediaOnl
         if (payrollNetOnly)
         {
             await VerifyPayrollBoundariesAsync(factory, client, enforceRegression: true);
+            await VerifyPayrollReconciliationAsync(factory, client, manifest);
             return; // Explicit payroll module, not full critical/release acceptance.
         }
         if (financeAdjustmentOnly)

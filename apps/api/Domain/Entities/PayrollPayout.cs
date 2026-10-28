@@ -3,8 +3,12 @@ namespace AcademyDesk.Api.Domain.Entities;
 public sealed class PayrollPayout : AcademyEntity
 {
     public Guid PayrollProfileId { get; set; }
+    // Nullable only for legacy rows: never infer past identity from today's profile.
     public string? WorkerNameSnapshot { get; set; }
     public string? WorkerTypeSnapshot { get; set; }
+    public Guid? TeacherIdSnapshot { get; set; }
+    public string? StaffUserIdSnapshot { get; set; }
+    public DateTime? IdentityRecordedAtUtc { get; set; }
     public required string PayslipNumber { get; set; }
     public required string PeriodLabel { get; set; }
     public int? SessionsCovered { get; set; }
@@ -15,5 +19,6 @@ public sealed class PayrollPayout : AcademyEntity
     public string Status { get; set; } = "Paid";
     public string PaymentMethod { get; set; } = "BankTransfer";
     public string? Reference { get; set; }
-    public DateTime PaidAtUtc { get; set; } = DateTime.UtcNow;
+    // Nullable to preserve historical NoCashDue statements; new payouts require positive net.
+    public DateTime? PaidAtUtc { get; set; } = DateTime.UtcNow;
 }

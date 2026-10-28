@@ -1,5 +1,37 @@
 # AcademyDesk QA control centre — Phase 1
 
+## Payroll reconciliation checkpoint — 29 October 2026
+
+- [x] Cloud positive-net rule reconciled with local worker/period/precision/
+  provenance/teacher history and required-audit protections; original work preserved.
+- [x]1,234cloud-based API/zero skips; retained payroll module +23new native SQL/
+  HTTP checks,5/5 deterministic races, two audit rollbacks and blocked unsafe
+  downgrade PASS. Window8ec5a8c6b3fb40c98113b1f93d93d927; SQL920440a23b5647099200f118d64b338e.
+- [x] Exact original services/images/health/inventory restored, own SQL removed;
+  no downloads, model loading, production DB, main, Git publication or Azure use.
+- [ ] Other finance conflicts, UI/PENTA/tests/CI and wider critical/customer/device/
+  model/security/restore/staging/release gates remain. No broad issue closure.
+
+Report: `REPORTS/CLOUD_LOCAL_PAYROLL_RECONCILIATION_2026-10-29.md`.
+Next Sol High; continue from `AI_CROSS_PROFILE_HANDOFF.md`.
+
+## Cross-profile current checkpoint — 28 October 2026
+
+- [x] Cloud10a60ee: latest exact GitHub CI40738226886 SUCCESS, all recorded job
+  steps successful. This supersedes older cloud failure/pending notes for that SHA.
+- [x]31fresh local cloud-checkout guards/CSV cases PASS; production guard correctly
+  blocks the five openP0records. No issue closure or full release approval.
+- [x] Owner chooses cloud financial policies/common base; original local PENTA/
+  enterprise work preserved. Read `AI_CROSS_PROFILE_HANDOFF.md` before edits.
+- [ ] Reconcile cloud fixes with local PENTA/security/Manual, migration and CI work;
+  cloud alone lacks the AI implementation. Revalidate the combined source.
+- [ ] Qualified Mini, remaining workflows, critical role/browser/device/security/
+  database/restore/staging/release gates OPEN. Owner stop before loading stands.
+
+Report: `REPORTS/CROSS_PROFILE_RECONCILIATION_2026-10-28.md`.
+This coordination checkpoint is local/unpublished; no new app source, commit,
+push, merge, model activation or Azure change. Next route Sol High.
+
 Latest cloud checkpoint (2026-10-28): [Payroll history and teacher links](REPORTS/CLOUD_PAYROLL_HISTORY_2026-10-28.md). Eight failures reproduced and repaired; full API1,179 PASS. New payout identity snapshots plus academy-scoped legacy backfill; original pre-upgrade names cannot be reconstructed. Prepared SQL upgrade/history/link checks await runtime. c25b6b8 CI failed in SQL; diagnostic candidate pending. Issues/release remain OPEN; no deployment/publication.
 
 Latest cloud checkpoint (2026-10-28): [Operational availability and record integrity](REPORTS/CLOUD_OPERATIONAL_RECORDS_2026-10-28.md). Four tracked issues repaired: holiday route ambiguity, unavailable-teacher dashboard failure, duplicate/null student imports and expense branch/status validation. Initial28 cases had15 failures; final30 focused/atomic checks and full API1,171 PASS. New22-case owned SQL/HTTP/audit module compiles but awaits runtime execution. Existing52495e2 CI is green; newer candidate needs its own result. No issue closed, main merge, deployment or publication.

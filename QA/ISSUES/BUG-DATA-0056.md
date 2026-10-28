@@ -1,5 +1,19 @@
 # BUG-DATA-0056 — Editing a payroll profile rewrites the worker name shown on historical payouts
 
+## Cloud/local payroll return — 29 October 2026
+
+Backend slice on codex/cloud-profile-sync:1,234cloud-based API/zero skips, retained
+payroll module plus23new real SQL/HTTP checks,5/5 exact-resource observed-waiter
+races, two mandatory audit rollbacks and guarded downgrade PASS. Cloud positive-net
+policy and local worker/period/provenance/privacy protections reconciled; no new
+zero-net payouts, legacy history retained. Original local work preserved.
+
+This issue remains OPEN: complete closure protocol, current UI/browser/device and
+wider critical/release acceptance are not established by this slice. Other finance
+and PENTA/source/test/CI reconciliation remain. No deployment or model experiment.
+Report: ../REPORTS/CLOUD_LOCAL_PAYROLL_RECONCILIATION_2026-10-29.md.
+
+
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
