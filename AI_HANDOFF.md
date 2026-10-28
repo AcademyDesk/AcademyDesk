@@ -347,3 +347,28 @@ regressions or existing security gates, with focused tests and handoff updates.
 - Next route: Codex for remaining StudentProfile/StudentAdminProfile and subject
   fee save/selection isolation, then tenant/assessment/attendance and existing
   critical security/SQL/browser gates. No overall production-readiness claim.
+
+## Latest checkpoint — student and subject-fee editor isolation, 2026-10-28
+
+- Previous bf109723383c481b1003028516f6690f21363df1 checkpoint pushed and remote
+  HEAD verified. Continue recurring user-authorized pushes to the same branch.
+- BUG-DATA-0018 student/subject-fee slice: 18 failures/one pass before repair;
+  all 34 expanded controlled actual-TSX cases now PASS. Student profile reads and
+  child callbacks use URL/load generation; administrative component completions
+  are scoped to academy/student/profile. Both student route aliases share the
+  implementation. Subject-fee drafts/list/frequency/notices reset by selection;
+  old loads/POSTs/post-save refreshes cannot overwrite a new student. Failed loads
+  lock save/add and offer retry; pending duplicate guards and recovery preserve
+  input/success. No financial arithmetic, API, RBAC or schema change.
+- Full frontend: 46 files, 1,047 tests, 1,044 PASS/three FAIL, zero skipped or
+  cancelled; exit1 retained for the absent historical communication SQL log.
+  TypeScript/lint/production webpack build PASS; lint0 errors/63 warnings.
+  Prior API/audits retained, not rerun. PentaMini unchanged.
+- Report QA/REPORTS/CLOUD_STUDENT_EDITORS_2026-10-28.md; regressions in
+  QA/tools/student-editor-isolation.test.cjs. BUG-DATA-0018 remains OPEN for
+  tenant/assessment/attendance, browser/device/SQL/critical gates and server races.
+- No environment configuration/publication, SQL fixture/migration/seeder,
+  customer action, main merge or deployment. Saved CDN requirements still unapplied.
+- Next route: Codex for existing data-preservation issues (numeric zero and
+  unrepresented settings), remaining editor races and guarded HTTP/SQL validation
+  when network access applies. Preserve all existing QA history and open gates.

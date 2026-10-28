@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { academyApi, apiHeaders } from "@/lib/api";
 import { StandardDateField, StandardSelectField } from "@/components/design-system/controls";
 
@@ -52,13 +52,25 @@ export function StudentAdminProfile({
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
   const [formSource, setFormSource] = useState({ profile, studentId, academyId });
+  const lifecycle = useRef<{ source: typeof formSource; active: boolean } | null>(null);
+  const pending = useRef<object | null>(null);
   if (formSource.profile !== profile || formSource.studentId !== studentId || formSource.academyId !== academyId) {
     setFormSource({ profile, studentId, academyId });
     setForm(fromProfile(profile));
+    if (formSource.studentId !== studentId || formSource.academyId !== academyId) setMessage("");
+    setSaving(false);
   }
+  useEffect(() => {
+    const current = { source: formSource, active: true };
+    lifecycle.current = current;
+    return () => { current.active = false; };
+  }, [formSource]);
   const set = (key: keyof Profile, value: string) =>
     setForm((current) => ({ ...current, [key]: value }));
   async function save() {
+    const current = lifecycle.current;
+    if (!academyId || !studentId || !profile || !current?.active || current.source !== formSource || pending.current === current) return;
+    pending.current = current;
     setSaving(true);
     setMessage("");
     try {
@@ -75,18 +87,22 @@ export function StudentAdminProfile({
         },
       );
       const payload = await response.json().catch(() => null);
-      if (!response.ok)
-        throw new Error(payload?.message ?? "The profile could not be saved.");
+      if (!current.active) return;
+      if (!response.ok) {
+        setMessage(typeof payload?.message === "string" ? payload.message : "The profile could not be saved.");
+        return;
+      }
+      if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+        setMessage("Administrative profile saved. Reload to confirm the latest details.");
+        return;
+      }
       onSaved(payload);
       setMessage("Administrative profile saved.");
-    } catch (error) {
-      setMessage(
-        error instanceof Error
-          ? error.message
-          : "The profile could not be saved.",
-      );
+    } catch {
+      if (current.active) setMessage("The profile could not be saved. Check the record before retrying.");
     } finally {
-      setSaving(false);
+      if (pending.current === current) pending.current = null;
+      if (current.active) setSaving(false);
     }
   }
   return (
@@ -97,14 +113,14 @@ export function StudentAdminProfile({
         </div>
         <button
           onClick={() => void save()}
-          disabled={saving}
+          disabled={saving || !profile || !academyId || !studentId}
           className="enterprise-action-button shrink-0 whitespace-nowrap"
         >
           {saving ? "Saving…" : "Save profile"}
         </button>
       </header>
       {message && <p className="mt-3 text-sm text-amber-200">{message}</p>}
-      <div className="mt-5 grid gap-3 md:grid-cols-2">
+      <fieldset disabled={saving || !profile} className="mt-5 grid gap-3 md:grid-cols-2">
         <input
           value={form.studentNumber}
           onChange={(e) => set("studentNumber", e.target.value)}
@@ -167,14 +183,16 @@ export function StudentAdminProfile({
           placeholder="Emergency contact phone"
           className="field"
         />
-      </div>
+      </fieldset>
       <textarea
+        disabled={saving || !profile}
         value={form.medicalOrAccessibilityNotes}
         onChange={(e) => set("medicalOrAccessibilityNotes", e.target.value)}
         placeholder="Medical or accessibility notes — authorised staff only"
         className="field mt-3 min-h-24"
       />
       <textarea
+        disabled={saving || !profile}
         value={form.adminNotes}
         onChange={(e) => set("adminNotes", e.target.value)}
         placeholder="Internal admin notes — never shown in portals"

@@ -96,3 +96,18 @@ failures remain. TypeScript/lint/webpack build PASS.
 This does not close the issue: remaining student/tenant/assessment/attendance
 editors, same-record server races, actual HTTP/SQL and browser/device/critical
 acceptance remain OPEN. See [editor isolation report](../REPORTS/CLOUD_RECORD_EDITORS_2026-10-28.md).
+
+## Student profiles and subject fees — 2026-10-28
+
+Initial controlled student/subject-fee slice: 18 failures/one pass. Student page
+loads and child callbacks are generation-bound; unloaded/pending/failed profile
+loads cannot submit. Student administrative completions are bound to the exact
+academy/student/profile source. Subject-fee drafts/lists/frequency reset on person
+or academy change; reads, POSTs and post-save reloads reject old completions.
+Rejected writes retain input; successful POSTs retain success on readback failure.
+All 34 expanded controlled cases PASS. Full frontend1,044/1,047 PASS with the same
+three missing historical SQL-evidence failures; TypeScript/lint/build PASS.
+
+Remaining tenant/assessment/attendance editors, real HTTP/SQL/browser/device,
+same-record server races and critical gates stay OPEN. See
+[student editor report](../REPORTS/CLOUD_STUDENT_EDITORS_2026-10-28.md).

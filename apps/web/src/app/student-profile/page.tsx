@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { academyApi } from "@/lib/api";
+import { useRecordEditor } from "@/lib/use-record-editor";
 import { StudentAdminProfile } from "@/components/student-admin-profile";
 import { StudentFeeArrangements } from "@/components/student-fee-arrangements";
 import { StandardSelectField } from "@/components/design-system/controls";
@@ -47,6 +48,7 @@ type Invoice = { invoiceNumber: string; totalAmount: number; currency: string; d
 type StudentDetail = "enrolments" | "attendance" | "fees" | "family";
 
 const count = (items?: unknown[]) => items?.length ?? 0;
+const prepare = (value: Profile) => value;
 function DetailPanel({
   title,
   children,
@@ -90,14 +92,18 @@ export default function StudentProfilePage() {
   const [academyId, setAcademyId] = useState("");
   const [students, setStudents] = useState<Student[]>([]);
   const [studentId, setStudentId] = useState(requested);
-  const [profile, setProfile] = useState<Profile>();
   const [message, setMessage] = useState("Loading student records…");
   const [detail, setDetail] = useState<StudentDetail | null>(null);
+  const editor = useRecordEditor(academyId && students.some(item => item.id === studentId) ? `/api/academies/${academyId}/students/${studentId}/profile` : "", prepare, "The student record could not be loaded.");
+  const profile = editor.data;
   useEffect(() => {
+    let active = true;
     void (async () => {
       try {
         const academies = await academyApi("/api/academies");
+        if (!academies.ok) throw new Error();
         const academy = (await academies.json())[0];
+        if (!active) return;
         if (!academy)
           return setMessage(
             "Create an academy before opening student records.",
@@ -106,31 +112,25 @@ export default function StudentProfilePage() {
         const response = await academyApi(
           `/api/academies/${academy.id}/students`,
         );
+        if (!response.ok) throw new Error();
         const rows: Student[] = await response.json();
+        if (!active) return;
         setStudents(rows);
-        const selected = requested || rows[0]?.id || "";
+        const selected = rows.find(item => item.id === requested)?.id ?? rows[0]?.id ?? "";
         setStudentId(selected);
-        if (selected) {
-          const detail = await academyApi(
-            `/api/academies/${academy.id}/students/${selected}/profile`,
-          );
-          if (detail.ok) setProfile(await detail.json());
-        }
         setMessage("");
       } catch {
-        setMessage("Student records could not be loaded.");
+        if (active) setMessage("Student records could not be loaded.");
       }
     })();
+    return () => { active = false; };
   }, [requested]);
-  async function select(id: string) {
+  function select(id: string) {
     setStudentId(id);
     setDetail(null);
-    if (!academyId || !id) return;
-    const response = await academyApi(
-      `/api/academies/${academyId}/students/${id}/profile`,
-    );
-    if (response.ok) setProfile(await response.json());
+    setMessage("");
   }
+  const notice = message || (editor.loading ? "Loading student record…" : editor.message);
   const student = students.find((item) => item.id === studentId);
   const balance = (item: Invoice) => Math.max(0, item.totalAmount - (item.paidAmount ?? 0));
   const outstanding = (profile?.invoices ?? [])
@@ -175,7 +175,8 @@ export default function StudentProfilePage() {
         </div>
       </section>
       {createdNotice && <p className="enterprise-page-state student-360-message" role="status">Student created successfully. You can now enrol the student, add fees, or update their profile.</p>}
-      {message && <p className="enterprise-page-state student-360-message">{message}</p>}
+      {notice && <p className="enterprise-page-state student-360-message">{notice}</p>}
+      {editor.failed && <button onClick={editor.reload} className="enterprise-action-button mt-3">Retry loading profile</button>}
       {student && profile && (
         <>
           <section className="student-360-summary-grid">
@@ -186,15 +187,15 @@ export default function StudentProfilePage() {
           </section>
           <section className="student-360-detail-grid">
             <StudentAdminProfile
+              key={`${academyId}/${studentId}`}
               academyId={academyId}
               studentId={studentId}
               profile={profile}
-              onSaved={(value) =>
-                setProfile((current) => ({ ...current, ...value }))
-              }
+              onSaved={editor.acceptSaved}
             />
             <div className="space-y-5">
               <StudentFeeArrangements
+                key={`${academyId}/${studentId}`}
                 academyId={academyId}
                 studentId={studentId}
               />

@@ -66,6 +66,15 @@ export function useRecordEditor<Data extends object, Draft extends object>(
     setRecord(current => current.generation === generation ? initial<Data, Draft>(url) : current);
   }
 
+  function acceptSaved(value: Data) {
+    if (!mounted.current) return;
+    setRecord(current => {
+      if (current.generation !== generation || current.phase !== "ready") return current;
+      const data = { ...current.data, ...value } as Data;
+      return { ...current, data, draft: prepare(data) };
+    });
+  }
+
   async function save(payload: object, success: string, failure: string) {
     if (!url || record.url !== url || record.phase !== "ready" || !mounted.current || pendingSave.current === generation) return;
     pendingSave.current = generation;
@@ -97,6 +106,6 @@ export function useRecordEditor<Data extends object, Draft extends object>(
     data: record.data, draft: record.draft, saving: record.saving,
     loading: Boolean(url) && record.phase === "loading", failed: record.phase === "error",
     ready: Boolean(url) && record.phase === "ready", message: record.message,
-    update, reload, save,
+    update, reload, save, acceptSaved,
   };
 }
