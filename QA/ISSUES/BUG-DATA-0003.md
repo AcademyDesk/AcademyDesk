@@ -35,7 +35,17 @@
 | Regression result | 118/118 API tests; each SQL run 14 rule cases PASS + zero-net POLICY-PENDING observation; full critical NOT RUN |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
-## Local repair checkpoint — 2026-10-01
+## Approved first-release policy — 2026-10-28
+
+User explicitly chose to block zero-net payouts. Equality now rejects before save
+for Monthly and SessionBlock default/override gross. Three new equality cases
+PASS with existing payroll checks; full API1,108 PASS. SQL harness expectations
+were updated and compile, but real SQL has not been rerun in this cloud.
+Zero-net is no longer POLICY-PENDING; old observations below remain history.
+Issue remains OPEN for real SQL/HTTP, concurrent/duplicate, browser and critical
+acceptance. See [approved finance policies](../REPORTS/CLOUD_FINANCE_POLICY_2026-10-28.md).
+
+## Historical local repair checkpoint — 2026-10-01
 
 [Repair and evidence](../REPORTS/PHASE_2B_PAYROLL_NET_REPAIR.md): deductions above effective gross rejected before payout save. Original Monthly boundaries and SessionBlock default/override/cent/error controls pass twice on fresh SQL; 118 API tests pass. Zero-net currently still produces a Paid/net-0 row, observed POLICY-PENDING rather than approved behavior. Remain OPEN pending policy/broader/critical acceptance. Original failure evidence/source excerpt below retained historically; no historical customer payroll rows corrected or real bank payout performed.
 

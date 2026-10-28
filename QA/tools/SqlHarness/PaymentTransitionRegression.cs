@@ -81,6 +81,45 @@ internal static partial class SqlHarnessEntryPoint
         RequireTransitionPayment(cancelState, cancelled, "Voided", null, false);
         if (cancelState.Status != "cancelled" || await ReadAdjustedInvoiceViewAsync(client, cancelled.InvoicesPath, cancelled.InvoiceId) != (0m, 1000m, "cancelled"))
             throw new InvalidOperationException("Void uncancelled the invoice.");
-        Console.WriteLine("TRANSITION REGRESSION PASS: original full/partial/adjusted void and required-evidence cases; mixed Reconciled collections/evidence preservation/repeat/rejected generic path; future due Issued; cancelled state preserved case-insensitively. Voided restoration policy remains pending, not certified.");
+        Console.WriteLine("TRANSITION REGRESSION PASS: original full/partial/adjusted void and required-evidence cases; mixed Reconciled collections/evidence preservation/repeat/rejected generic path; future due Issued; cancelled state preserved case-insensitively. Restoration is verified separately.");
+    }
+
+    private static async Task VerifyPaymentRestorationAsync(QaApiFactory factory, HttpClient client, Guid academyId, Guid studentId)
+    {
+        foreach (var reconcile in new[] { false, true })
+        foreach (var adjusted in new[] { 0m, 200m })
+        foreach (var outcome in new[] { "partial", "overbalance", "cancelled" })
+        {
+            var fixture = await CreateTransitionFixtureAsync(factory, client, academyId, studentId, 600m, adjusted,
+                $"restore-{reconcile}-{adjusted}-{outcome}");
+            using var voided = await client.PatchAsJsonAsync($"{fixture.PaymentsPath}/{fixture.PaymentId}/status", new { status = "Voided" });
+            RequireFinanceStatus(voided, HttpStatusCode.OK, "restoration fixture void");
+            if (outcome == "overbalance")
+            {
+                using var extra = await client.PostAsJsonAsync(fixture.PaymentsPath,
+                    new { invoiceId = fixture.InvoiceId, amount = 1000m - adjusted - 600m + 0.01m });
+                RequireFinanceStatus(extra, HttpStatusCode.Created, "restoration remaining-balance fixture");
+            }
+            if (outcome == "cancelled")
+            {
+                using var cancelled = await client.PatchAsJsonAsync($"{fixture.InvoicesPath}/{fixture.InvoiceId}/status", new { status = "cancelled" });
+                RequireFinanceStatus(cancelled, HttpStatusCode.OK, "restoration cancelled fixture");
+            }
+            var before = await ReadAdjustmentSnapshotAsync(factory, academyId, studentId, fixture.InvoiceId, "restoration-before");
+            using var restored = reconcile
+                ? await client.PatchAsJsonAsync($"{fixture.PaymentsPath}/{fixture.PaymentId}/reconcile", new { reference = " QA-RESTORED " })
+                : await client.PatchAsJsonAsync($"{fixture.PaymentsPath}/{fixture.PaymentId}/status", new { status = "Completed" });
+            RequireFinanceStatus(restored, outcome == "partial" ? HttpStatusCode.OK : HttpStatusCode.BadRequest, "restoration " + outcome);
+            var after = await ReadAdjustmentSnapshotAsync(factory, academyId, studentId, fixture.InvoiceId, "restoration-after");
+            if (outcome != "partial") RequireUnchangedAdjustment(before, after);
+            else
+            {
+                RequireTransitionPayment(after, fixture, reconcile ? "Reconciled" : "Completed", reconcile ? "QA-RESTORED" : null, reconcile);
+                if (after.Status != "PartiallyPaid" ||
+                    await ReadAdjustedInvoiceViewAsync(client, fixture.InvoicesPath, fixture.InvoiceId) != (600m, 400m - adjusted, "PartiallyPaid"))
+                    throw new InvalidOperationException("Restoration fresh SQL/read balance mismatch.");
+            }
+            Console.WriteLine($"TRANSITION RESTORATION CASE reconcile={reconcile}/adjusted={adjusted}/outcome={outcome} PASS: exact fresh SQL and read API; rejected financial snapshots unchanged.");
+        }
     }
 }

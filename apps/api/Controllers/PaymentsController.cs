@@ -41,6 +41,11 @@ public sealed class PaymentsController(AcademyDeskDbContext dbContext) : Control
         if (request.Status == "Reconciled")
             return BadRequest(new { message = "Use the reconciliation action and provide a bank/cash reference." });
         if (payment.Status == request.Status) return Ok();
+        if (payment.Status == "Voided" && request.Status == "Completed")
+        {
+            var rejected = await RestoreBalanceAsync(academyId, payment, token);
+            if (rejected is not null) return rejected;
+        }
         if (request.Status == "Voided")
         {
             var invoice = await dbContext.Invoices.SingleOrDefaultAsync(x => x.Id == payment.InvoiceId && x.AcademyId == academyId, token);
@@ -62,7 +67,40 @@ public sealed class PaymentsController(AcademyDeskDbContext dbContext) : Control
     }
     [HttpPatch("{paymentId:guid}/reconcile")]
     public async Task<ActionResult> Reconcile(Guid academyId, Guid paymentId, ReconcilePaymentRequest request, CancellationToken token)
-    { var payment=await dbContext.Payments.SingleOrDefaultAsync(x=>x.Id==paymentId&&x.AcademyId==academyId,token);if(payment is null)return NotFound();if(string.IsNullOrWhiteSpace(request.Reference))return BadRequest(new{message="A bank/cash reconciliation reference is required."});payment.Status="Reconciled";payment.ReconciledAtUtc=DateTime.UtcNow;payment.ReconciliationReference=request.Reference.Trim();await dbContext.SaveChangesAsync(token);return Ok(); }
+    {
+        var payment = await dbContext.Payments.SingleOrDefaultAsync(x => x.Id == paymentId && x.AcademyId == academyId, token);
+        if (payment is null) return NotFound();
+        if (string.IsNullOrWhiteSpace(request.Reference))
+            return BadRequest(new { message = "A bank/cash reconciliation reference is required." });
+        if (payment.Status == "Voided")
+        {
+            var rejected = await RestoreBalanceAsync(academyId, payment, token);
+            if (rejected is not null) return rejected;
+        }
+        payment.Status = "Reconciled";
+        payment.ReconciledAtUtc = DateTime.UtcNow;
+        payment.ReconciliationReference = request.Reference.Trim();
+        await dbContext.SaveChangesAsync(token);
+        return Ok();
+    }
+
+    private async Task<ActionResult?> RestoreBalanceAsync(Guid academyId, Payment payment, CancellationToken token)
+    {
+        var invoice = await dbContext.Invoices.SingleOrDefaultAsync(x => x.Id == payment.InvoiceId && x.AcademyId == academyId, token);
+        if (invoice is null) return NotFound();
+        if (string.Equals(invoice.Status, "Cancelled", StringComparison.OrdinalIgnoreCase))
+            return BadRequest(new { message = "A payment cannot be restored on a cancelled invoice." });
+        if (payment.Amount <= 0 || !string.Equals(payment.Currency, invoice.Currency, StringComparison.OrdinalIgnoreCase))
+            return BadRequest(new { message = "The stored payment amount and currency must be valid for this invoice." });
+        var otherPaid = await dbContext.Payments.Where(x => x.AcademyId == academyId && x.InvoiceId == invoice.Id &&
+                x.Id != payment.Id && (x.Status == "Completed" || x.Status == "Reconciled"))
+            .SumAsync(x => (decimal?)x.Amount, token) ?? 0m;
+        var collectible = invoice.TotalAmount - invoice.AdjustedAmount;
+        if (otherPaid + payment.Amount > collectible)
+            return BadRequest(new { message = "Restoring this payment would exceed the adjusted invoice balance." });
+        invoice.Status = otherPaid + payment.Amount == collectible ? "Paid" : "PartiallyPaid";
+        return null;
+    }
 }
 
 public sealed record RecordPaymentRequest(Guid InvoiceId, decimal Amount, string? Method, string? Reference);

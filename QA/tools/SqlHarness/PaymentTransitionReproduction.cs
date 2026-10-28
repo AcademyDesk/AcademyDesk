@@ -29,15 +29,21 @@ internal static partial class SqlHarnessEntryPoint
         var voidBeforeRestore = await ReadAdjustmentSnapshotAsync(factory, academyId, studentId, full.InvoiceId, "voided-before-restore");
         using var restore = await client.PatchAsJsonAsync($"{full.PaymentsPath}/{full.PaymentId}/reconcile",
             new { reference = "QA-RESTORE-OBSERVATION" });
-        if (restore.StatusCode is not (HttpStatusCode.OK or HttpStatusCode.BadRequest or HttpStatusCode.Conflict))
+        if (enforceRegression) RequireFinanceStatus(restore, HttpStatusCode.OK, "approved payment restoration");
+        else if (restore.StatusCode is not (HttpStatusCode.OK or HttpStatusCode.BadRequest or HttpStatusCode.Conflict))
             throw new InvalidOperationException("Unexpected voided-payment reconciliation response.");
         var restored = await ReadAdjustmentSnapshotAsync(factory, academyId, studentId, full.InvoiceId, "voided-after-restore");
         if (restore.StatusCode == HttpStatusCode.OK)
+        {
             RequireTransitionPayment(restored, full, "Reconciled", "QA-RESTORE-OBSERVATION", true);
+            if (enforceRegression && (restored.Status != "Paid" ||
+                await ReadAdjustedInvoiceViewAsync(client, full.InvoicesPath, full.InvoiceId) != (1000m, 0m, "Paid")))
+                throw new InvalidOperationException("Approved restoration failed to recalculate settled invoice.");
+        }
         else RequireUnchangedAdjustment(voidBeforeRestore, restored);
-        Console.WriteLine($"TRANSITION RESTORE POLICY-PENDING: Voided->reconcile HTTP={(int)restore.StatusCode}/" +
+        Console.WriteLine($"TRANSITION RESTORE {(enforceRegression ? "PASS" : "OBSERVATION")}: Voided->reconcile HTTP={(int)restore.StatusCode}/" +
             $"payment={restored.Payments.Single().Status}/evidence={restored.Payments.Single().ReconciliationReference ?? "none"}/" +
-            $"timestamp={restored.Payments.Single().ReconciledAtUtc.HasValue}; no approved restoration policy assumed.");
+            $"timestamp={restored.Payments.Single().ReconciledAtUtc.HasValue}; approved validation and recalculation policy enforced in regression mode.");
 
         var partial = await CreateTransitionFixtureAsync(factory, client, academyId, studentId, 600m, 0m, "partial");
         var partialFailed = await ObserveVoidAsync(factory, client, partial, "partial");
@@ -84,13 +90,14 @@ internal static partial class SqlHarnessEntryPoint
 
         Console.WriteLine($"FINANCE-RULE-003 {(fullFailed || partialFailed || adjustedFailed || missingEvidence ? "FAIL" : "PASS")}: " +
             $"full void inconsistent={fullFailed}; partial void inconsistent={partialFailed}; adjusted void inconsistent={adjustedFailed}; " +
-            $"direct Reconciled missing evidence={missingEvidence}; voided restoration POLICY-PENDING HTTP={(int)restore.StatusCode}; " +
+            $"direct Reconciled missing evidence={missingEvidence}; voided restoration HTTP={(int)restore.StatusCode}; " +
             "invalid status/blank reference/repeated void controls verified; independent SQL and read APIs used.");
         if (enforceRegression)
         {
             if (fullFailed || partialFailed || adjustedFailed || missingEvidence)
                 throw new InvalidOperationException("FINANCE-RULE-003 void/evidence repair regression failed.");
             await VerifyVoidEvidenceRegressionAsync(factory, client, academyId, studentId);
+            await VerifyPaymentRestorationAsync(factory, client, academyId, studentId);
         }
     }
 

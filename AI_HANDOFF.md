@@ -403,3 +403,30 @@ regressions or existing security gates, with focused tests and handoff updates.
   races and existing P0 security/finance/HTTP-SQL gates. Apply supported network
   settings through the user environment workflow before SQL/model retries; preserve
   browser/device/restore/release gates and do not claim production readiness.
+
+## Latest checkpoint — approved critical finance policies, 2026-10-28
+
+- User requested faster production progress and explicitly approved needed access.
+  User chose **block zero-net payroll** and **allow validated voided-payment
+  restoration with balance recalculation**. These supersede earlier policy-pending
+  notes; do not ask for the same decisions again.
+- Payroll rejects deductions >= effective gross. Payment restoration on both
+  Completed and dedicated Reconciled paths validates tenant/invoice lifecycle,
+  positive stored amount/currency and remaining adjusted collectible balance,
+  recalculating Paid/PartiallyPaid only on accepted writes. Reconciliation retains
+  its required reference/time; generic Reconciled remains denied. No real finance
+  action, schema/RBAC change or concurrency serialization claim.
+- Reproduction51 cases:33 FAIL/18 PASS; after repair51 PASS. New35 tests total
+  (32 restoration/three payroll boundaries); full API1,108 PASS, zero failed/skipped.
+  Guarded SQL harness build PASS/zero warnings/errors, with updated payroll policy
+  and12 added restoration cases. Actual SQL not run; both P0 issues remain OPEN.
+- Report QA/REPORTS/CLOUD_FINANCE_POLICY_2026-10-28.md. Prior frontend1,095 PASS/
+  three missing-evidence FAIL retained; no web changes in this policy checkpoint.
+- Saved additive api.github.com rule in the existing environment draft; save
+  confirmed requires_publish=true. Prior SQL/model CDN rules preserved. User must
+  review/save and publish in environment settings to apply them. Agent did not
+  publish. Runtime HTTP policy unchanged; gh API status inspection was Forbidden.
+- Next route: finish verification-before-deploy and critical-P0 status guards;
+  run the existing real SQL/private media harness on a disposable CI runner.
+  Do not claim a remote run passed unless its actual result can be read. All
+  production/browser/concurrency/restore gates continue. Main/Azure untouched.

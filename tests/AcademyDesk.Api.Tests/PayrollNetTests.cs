@@ -12,6 +12,7 @@ public sealed class PayrollNetTests
     [InlineData(0, true, 1000)]
     [InlineData(999, true, 1)]
     [InlineData(999.99, true, 0.01)]
+    [InlineData(1000, false, 0)]
     [InlineData(1000.01, false, 0)]
     [InlineData(1001, false, 0)]
     [InlineData(-0.01, false, 0)]
@@ -29,6 +30,8 @@ public sealed class PayrollNetTests
 
     [Theory]
     [InlineData(null, null, 1000.01, false, 0)]
+    [InlineData(null, null, 1000, false, 0)]
+    [InlineData("250", 3, 250, false, 0)]
     [InlineData("250", 3, 250.01, false, 0)]
     [InlineData("250", 3, 249.99, true, 0.01)]
     [InlineData("0", 3, 0, false, 0)]

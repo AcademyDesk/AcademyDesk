@@ -35,7 +35,20 @@
 | Regression result | API 134/134 and bounded SQL transition module PASS twice; not full critical / concurrent / browser acceptance |
 | Closure notes | Remain OPEN; restoration policy, permissions/recomputation and broader closure requirements pending |
 
-## Local repair checkpoint — 2026-10-01
+## Approved restoration policy — 2026-10-28
+
+User explicitly chose validated restoration with invoice balance recalculation.
+Both Voided→Completed and dedicated Voided→Reconciled now check positive stored
+amount/matching currency, same-tenant noncancelled invoice and remaining adjusted
+balance before mutation. Accepted restoration recomputes Paid/PartiallyPaid;
+rejected cases preserve captured rows and existing evidence. Thirty-two focused
+restoration unit cases and full API1,108 PASS. Existing SQL harness now includes
+strict restoration checks and12 new cases; it compiles but has not executed here.
+Restoration is no longer POLICY-PENDING; historical observations below remain.
+Issue stays OPEN for actual SQL/HTTP/audit, concurrent writes, browser and critical
+acceptance. See [approved finance policies](../REPORTS/CLOUD_FINANCE_POLICY_2026-10-28.md).
+
+## Historical local repair checkpoint — 2026-10-01
 
 [Phase 2B repair/evidence](../REPORTS/PHASE_2B_PAYMENT_TRANSITION_REPAIR.md): void updates invoice using remaining Completed/Reconciled amounts and approved adjustment; repeat void is no-write; cancelled status and historic reconciliation evidence preserved. Generic Reconciled changes reject in favor of the dedicated reference-taking action. Before-fix 16 unit cases: 6 PASS/10 FAIL; final API 134/134 and original-case/module SQL PASS twice on fresh owned runs. Resources cleaned; no commit/push/Azure or normal dev database changes.
 

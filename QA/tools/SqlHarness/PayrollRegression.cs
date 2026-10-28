@@ -21,7 +21,9 @@ internal static partial class SqlHarnessEntryPoint
         var cases = new (string Name, decimal? Gross, int? Sessions, decimal Deduction, bool Accepted, decimal ExpectedGross, decimal ExpectedNet, int ExpectedSessions)[]
         {
             ("default-excess", null, null, 1000.01m, false, 1000m, 0m, 12),
+            ("default-zero-net", null, null, 1000m, false, 1000m, 0m, 12),
             ("override-excess", 250m, 3, 250.01m, false, 250m, 0m, 3),
+            ("override-zero-net", 250m, 3, 250m, false, 250m, 0m, 3),
             ("override-cent", 250m, 3, 249.99m, true, 250m, 0.01m, 3),
             ("default-positive", null, null, 999m, true, 1000m, 1m, 12),
             ("zero-gross", 0m, 3, 0m, false, 0m, 0m, 3),
@@ -70,6 +72,6 @@ internal static partial class SqlHarnessEntryPoint
             }
             Console.WriteLine($"PAYROLL SESSION CASE {test.Name} PASS: HTTP={(int)response.StatusCode}; fresh profile/ledger and accepted response/list agree; rejection leaves captured financial snapshot unchanged.");
         }
-        Console.WriteLine("PAYROLL REGRESSION PASS: monthly negative-net rejection and original eight boundaries; SessionBlock effective default/override gross, positive cents, zero gross/sessions and negative deductions; no negative payout persisted. Zero-net policy remains pending.");
+        Console.WriteLine("PAYROLL REGRESSION PASS: monthly positive-net policy and original eight boundaries; SessionBlock effective default/override gross, zero-net rejection, positive cents, zero gross/sessions and negative deductions; rejected snapshots unchanged.");
     }
 }

@@ -55,8 +55,8 @@ internal static partial class SqlHarnessEntryPoint
                 throw new InvalidOperationException($"Payroll fixture deduction {deduction} returned {(int)payout.StatusCode}.");
             var after = await ReadPayrollSnapshotAsync(factory, academyId, teacherId, profileId, label + "-after");
             var validPositiveNet = deduction >= 0m && deduction < 1000m;
-            var invalidDeduction = deduction < 0m || deduction > 1000m;
-            var disposition = deduction == 1000m ? "POLICY-PENDING" : "PASS";
+            var invalidDeduction = deduction < 0m || deduction >= 1000m;
+            var disposition = "PASS";
             decimal? actualNet = null;
             Guid? payoutId = null;
             if (payout.StatusCode == HttpStatusCode.BadRequest)
@@ -99,17 +99,17 @@ internal static partial class SqlHarnessEntryPoint
             Console.WriteLine($"PAYROLL CASE deductions={deduction.ToString(CultureInfo.InvariantCulture)} {disposition}: " +
                 $"HTTP={(int)payout.StatusCode}/SQL rows before={before.Payouts.Count}/after={after.Payouts.Count}/" +
                 $"net={(actualNet?.ToString(CultureInfo.InvariantCulture) ?? "none")}/payout={(payoutId?.ToString() ?? "none")}; " +
-                $"expected={(deduction == 1000m ? "zero-net policy pending" : invalidDeduction ? "reject without financial write" : "exact nonnegative payout")}; " +
+                $"expected={(invalidDeduction ? "reject without financial write" : "exact positive payout")}; " +
                 "fresh SQL and accepted payout list verified.");
         }
         Console.WriteLine($"PAYROLL-RULE-001 {(failed ? "FAIL" : "PASS")}: gross=1000; " +
             $"negative Paid payouts persisted={negativePayouts}; rejected invalid controls={rejectedControls}; " +
-            $"zero-net POLICY-PENDING observed={zeroOutcome}; " +
-            "deductions above gross must be rejected without a payout; no debt workflow assumed.");
+            $"zero-net rejection observed={zeroOutcome}; " +
+            "approved first-release policy requires a strictly positive net payout.");
         if (enforceRegression)
         {
-            if (failed || negativePayouts != 0 || rejectedControls != 4)
-                throw new InvalidOperationException("PAYROLL-RULE-001 negative-net repair regression failed.");
+            if (failed || negativePayouts != 0 || rejectedControls != 5)
+                throw new InvalidOperationException("PAYROLL-RULE-001 positive-net policy regression failed.");
             await VerifySessionPayrollRegressionAsync(factory, client, academyId, teacherId, payrollPath);
         }
     }
