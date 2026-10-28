@@ -372,3 +372,34 @@ regressions or existing security gates, with focused tests and handoff updates.
 - Next route: Codex for existing data-preservation issues (numeric zero and
   unrepresented settings), remaining editor races and guarded HTTP/SQL validation
   when network access applies. Preserve all existing QA history and open gates.
+
+## Latest checkpoint — zero values and hidden settings, 2026-10-28
+
+- Previous fa0ded212c1289c65d57dccb35ac7ce651c9ca31 student/subject-fee checkpoint
+  pushed and remote HEAD verified. Continue authorized pushes to the same branch.
+- BUG-DATA-0050/0053/0054: initial41 controlled actual-TSX cases had20 failures;
+  all51 expanded cases PASS. Teacher compensation distinguishes blank/null from
+  numeric zero across hydration/repeated resaves and retains Monthly/Hourly
+  applicability. TeacherPayments also reuses loaded-record guards and recovery.
+  Music status PATCH preserves zero scores with nullish fallback. Finance Policy
+  preserves its loaded payslip theme because its form has no theme field.
+- No backend/RBAC/schema/financial arithmetic change or actual finance/customer
+  action. Finance settings still use a loaded replacement snapshot; concurrent
+  second-editor preservation is NOT established. SQL/browser/denied persistence,
+  music stale responses, server races and critical financial acceptance stay OPEN.
+- Final frontend: 47 files, 1,098 tests, 1,095 PASS/three FAIL, zero skipped or
+  cancelled. Three original communication-drafts historical SQL-evidence failures
+  retained; no evidence fabricated. TypeScript and webpack build PASS; full lint
+  PASS with zero errors/62 warnings. Prior API1,073 PASS/audits retained, not rerun.
+- This turn added132 focused checks across three slices (47+34+51). Reports:
+  CLOUD_RECORD_EDITORS_2026-10-28.md, CLOUD_STUDENT_EDITORS_2026-10-28.md,
+  CLOUD_VALUE_PRESERVATION_2026-10-28.md under QA/REPORTS/. Original issue histories
+  retained; all affected issues remain OPEN for the broader acceptance chain.
+- PentaMini unchanged. No environment configuration/publication, configured app
+  DB/migration/seeder, main merge or Azure deployment. Runtime CDN requirements
+  are still saved but unapplied. Local Windows access is still not attached and
+  its checker has not been run here; never imply local files/Docker were inspected.
+- Next route: Codex for remaining tenant/assessment/attendance and music/settings
+  races and existing P0 security/finance/HTTP-SQL gates. Apply supported network
+  settings through the user environment workflow before SQL/model retries; preserve
+  browser/device/restore/release gates and do not claim production readiness.

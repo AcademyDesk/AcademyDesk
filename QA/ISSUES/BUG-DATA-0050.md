@@ -3,8 +3,8 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | STATIC-FINDING |
-| Final verification | NOT RUN |
+| Confirmation status | CONTROLLED-TSX-REPRODUCED / partial local repair |
+| Final verification | Partial controlled checks PASS; SQL/browser/critical acceptance pending |
 | Severity | Major compensation round-trip integrity |
 | Priority | P1 |
 | Category | DATA |
@@ -30,9 +30,9 @@
 | API response | Not captured for this issue; use synthetic request/response in isolated reproduction |
 | Database before/after | Not executed; fixture and fresh-context assertions defined below |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | Not implemented (Phase 1) |
-| Retest result | NOT RUN |
-| Regression result | NOT RUN |
+| Fix commit | Development-branch repair; see latest dated checkpoint/report |
+| Retest result | Bounded controlled checks PASS; see latest dated checkpoint |
+| Regression result | Current frontend1,095/1,098 PASS; three historical SQL-evidence failures |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
 ## Exact reproduction
@@ -69,3 +69,18 @@ Unchanged zero primary rates cause rejected saves; zero optional hourly bands ca
 TEACHER-COMPENSATION-ZERO-001: Browser plus full HTTP/SQL first-save/reload/resave matrix for all five rates: blank/null/typed zero/loaded zero/positive/negative. Compare exact outgoing JSON, response and freshly reloaded CompensationJson; preserve zero versus absence. Reuse TEACHER-PAY-001 and TEACHER-FORM-002 for model transitions and optional cases.
 
 Also run all endpoint/form cases pointing to this issue in QA/03_TEST_MATRIX.md and the critical regression suite before closure.
+
+## Cloud controlled repair — 2026-10-28
+
+Zero/null serialization failures reproduced in actual-TSX request tests. Editable
+rates now normalize to strings and explicitly distinguish blank from zero; all
+five numeric rates preserve zero across hydration and repeated saves. Existing
+Monthly/Hourly applicability and optional-null behavior remain. The shared
+loaded-record guard also prevents pending/old teacher loads and saves from
+replacing a new teacher's editor, with retry/duplicate/transport recovery.
+
+All 37 compensation checks PASS; no payroll arithmetic, API validation or actual
+financial action changed. Full frontend1,095/1,098 PASS with three unchanged
+missing historical SQL-evidence failures. TypeScript/lint/build PASS. Remain OPEN
+for actual HTTP/SQL/browser/device, concurrent server writes, downstream payroll
+and critical regression. See [value-preservation report](../REPORTS/CLOUD_VALUE_PRESERVATION_2026-10-28.md).

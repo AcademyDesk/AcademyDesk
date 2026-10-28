@@ -3,8 +3,8 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | STATIC-FINDING |
-| Final verification | NOT RUN |
+| Confirmation status | CONTROLLED-TSX-REPRODUCED / partial local repair |
+| Final verification | Partial controlled checks PASS; SQL/browser/critical acceptance pending |
 | Severity | Major finance-settings integrity |
 | Priority | P1 |
 | Category | DATA |
@@ -30,9 +30,9 @@
 | API response | Not captured for this issue; use synthetic request/response in isolated reproduction |
 | Database before/after | Not executed; fixture and fresh-context assertions defined below |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | Not implemented (Phase 1) |
-| Retest result | NOT RUN |
-| Regression result | NOT RUN |
+| Fix commit | Development-branch repair; see latest dated checkpoint/report |
+| Retest result | Bounded controlled checks PASS; see latest dated checkpoint |
+| Regression result | Current frontend1,095/1,098 PASS; three historical SQL-evidence failures |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
 ## Exact reproduction
@@ -69,3 +69,15 @@ Academies using a nondefault payslip theme; saving unrelated tax, payment terms 
 FINANCE-POLICY-PRESERVE-001: Browser + real HTTP/SQL baseline Compact/Professional, policy edit, fresh-row equality for untouched payslip theme and changed intended field; null/omitted direct API contract, rejected no-write, second editor and concurrency controls.
 
 Also run all endpoint/form cases pointing to this issue in QA/03_TEST_MATRIX.md and the critical regression suite before closure.
+
+## Cloud controlled repair — 2026-10-28
+
+All six Standard/Compact/Professional accepted/rejected payload cases reproduced
+the absent-field-to-null failure. Finance Policy now sends the loaded payslip
+theme while preserving its intended editable tax/invoice payload. All six cases
+PASS; backend defaults and API/schema are unchanged. This preserves an ordinary
+loaded snapshot; concurrent document-editor updates can still conflict and need
+separate API/SQL policy and execution. No real finance/customer action occurred.
+
+Remain OPEN for actual HTTP/SQL, denied no-write, browser/device, concurrency and
+critical acceptance. See [value-preservation report](../REPORTS/CLOUD_VALUE_PRESERVATION_2026-10-28.md).

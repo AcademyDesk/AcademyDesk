@@ -3,8 +3,8 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | STATIC-FINDING |
-| Final verification | NOT RUN |
+| Confirmation status | CONTROLLED-TSX-REPRODUCED / partial local repair |
+| Final verification | Partial controlled checks PASS; SQL/browser/critical acceptance pending |
 | Severity | Major learner-progress data integrity |
 | Priority | P1 |
 | Category | DATA |
@@ -30,9 +30,9 @@
 | API response | Not captured for this issue; use synthetic request/response in isolated reproduction |
 | Database before/after | Not executed; fixture and fresh-context assertions defined below |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | Not implemented (Phase 1) |
-| Retest result | NOT RUN |
-| Regression result | NOT RUN |
+| Fix commit | Development-branch repair; see latest dated checkpoint/report |
+| Retest result | Bounded controlled checks PASS; see latest dated checkpoint |
+| Regression result | Current frontend1,095/1,098 PASS; three historical SQL-evidence failures |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
 ## Exact reproduction
@@ -69,3 +69,15 @@ Any student repertoire progress record with a legitimate zero score; later statu
 LEARNING-PROGRESS-ZERO-001: Real browser + HTTP/SQL zero/positive/null score matrix, status-only change, fresh-context persistence check, stale response and denied no-write variants.
 
 Also run all endpoint/form cases pointing to this issue in QA/03_TEST_MATRIX.md and the critical regression suite before closure.
+
+## Cloud controlled repair — 2026-10-28
+
+Both zero-score status-change payloads reproduced zero-to-null loss; the positive,
+null and absent controls already passed. Replaced truthy fallback with nullish
+fallback for score only. All eight Learning/Mastered × zero/positive/null/absent
+payload cases PASS, retaining exact target/status/date/notes behavior. API/storage
+and other music handlers remain unchanged.
+
+Remain OPEN for actual HTTP/SQL fresh-row persistence, denied no-write and stale
+responses, browser/device and critical regression. See
+[value-preservation report](../REPORTS/CLOUD_VALUE_PRESERVATION_2026-10-28.md).
