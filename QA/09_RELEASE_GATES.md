@@ -16,6 +16,8 @@ Cloud follow-up (2026-10-28): `.github/workflows/verify.yml` now prepares API re
 
 Deployment now requires verification success and `refs/heads/main`. Before Azure login or mutation, `QA/tools/check-production-gates.cjs` requires each known/new P0 record to have exact `Status: CLOSED` and `Final verification: PASS` table values. Set those only after the actual existing closure requirements pass; link the scoped release evidence in the issue. Missing/malformed records fail closed. The current five open issues correctly block deployment. This automated guard covers P0 issue records, not every staging/P1/browser/operational requirement; all remain mandatory.
 
+These workflow changes are on `codex/release-export-security`; the default-main workflow is unchanged until a reviewed merge. Ordinary GitHub metadata now confirms verification40728363572 SUCCESS for exact52495e2. Newer changes require their own successful result; a prior green run is not approval of a later release.
+
 Startup migration behavior in the existing deployment remains unchanged. Separate staged schema/backup/restore/rollback acceptance and deployed read-only smoke are still needed. No Azure workflow was dispatched or environment published during this follow-up. See [production verification report](REPORTS/CLOUD_PRODUCTION_VERIFICATION_2026-10-28.md).
 
 Production smoke must be non-destructive: health, correct deployed commit/artifact, authenticated scope-limited reads, route loading, CORS and static assets. Never create payments, teachers or students in a customer tenant as deployment probes. Rollback of application code does not automatically roll back SQL schema; require a compatible migration plan and a tested restore path.

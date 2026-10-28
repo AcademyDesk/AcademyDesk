@@ -3,8 +3,8 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | STATIC-FINDING |
-| Final verification | NOT RUN |
+| Confirmation status | CONTROLLED-REPRODUCED / bounded local repair |
+| Final verification | Bounded local checks PASS; SQL/browser/critical acceptance pending |
 | Severity | Major finance-record integrity |
 | Priority | P1 |
 | Category | DATA |
@@ -69,3 +69,9 @@ Expense register, branch reporting and finance controls can show invalid scope o
 FINANCE-EXPENSE-UPDATE-001: HTTP/SQL local/foreign/missing/null branch and status matrix, positive create/update/readback, rejected no-write, concurrent edits and currency preservation.
 
 Also run all endpoint/form cases pointing to this issue in QA/03_TEST_MATRIX.md and the critical regression suite before closure.
+
+## Cloud operational-record slice — 2026-10-28
+
+Foreign/missing branch updates reject before mutation. Only implemented Recorded status can be assigned; omission preserves stored history and currency is retained. No Paid/Approved workflow was invented or historic rows bulk rewritten.
+
+Nine expense controls PASS; full API1,171 PASS; SQL/concurrency/browser OPEN. New22-case guarded SQL module compiles but has not run locally. Remain OPEN for required broader closure. See [operational record report](../REPORTS/CLOUD_OPERATIONAL_RECORDS_2026-10-28.md).

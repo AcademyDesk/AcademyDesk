@@ -24,7 +24,22 @@ public sealed class ExpensesController(AcademyDeskDbContext dbContext) : Control
     }
     [HttpPut("{expenseId:guid}")]
     public async Task<ActionResult> Update(Guid academyId, Guid expenseId, UpdateExpenseRequest request, CancellationToken token)
-    { var x=await dbContext.Expenses.SingleOrDefaultAsync(v=>v.Id==expenseId&&v.AcademyId==academyId,token); if(x is null)return NotFound(); if(string.IsNullOrWhiteSpace(request.Description)||request.Amount<=0)return BadRequest(); x.Description=request.Description.Trim();x.Amount=request.Amount;x.Category=request.Category?.Trim()??"General";x.BranchId=request.BranchId;x.ExpenseDate=request.ExpenseDate;x.Status=request.Status?.Trim()??x.Status;await dbContext.SaveChangesAsync(token);return Ok(); }
+    {
+        var expense = await dbContext.Expenses.SingleOrDefaultAsync(x => x.Id == expenseId && x.AcademyId == academyId, token);
+        if (expense is null) return NotFound();
+        if (string.IsNullOrWhiteSpace(request.Description) || request.Amount <= 0) return BadRequest();
+        if (request.BranchId.HasValue && !await dbContext.Branches.AnyAsync(x => x.Id == request.BranchId && x.AcademyId == academyId, token))
+            return BadRequest(new { message = "The selected branch does not belong to this academy." });
+        // Recorded is the only implemented expense lifecycle state. This edit
+        // must not fabricate payment/approval states with no backing workflow.
+        if (request.Status is not null && !string.Equals(request.Status.Trim(), "Recorded", StringComparison.OrdinalIgnoreCase))
+            return BadRequest(new { message = "Expense status must be Recorded." });
+        expense.Description = request.Description.Trim(); expense.Amount = request.Amount;
+        expense.Category = request.Category?.Trim() ?? "General"; expense.BranchId = request.BranchId;
+        expense.ExpenseDate = request.ExpenseDate;
+        if (request.Status is not null) expense.Status = "Recorded";
+        await dbContext.SaveChangesAsync(token); return Ok();
+    }
 }
 
 public sealed record CreateExpenseRequest(string Description, decimal Amount, string? Currency, string? Category, Guid? BranchId, DateOnly? ExpenseDate);

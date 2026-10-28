@@ -3,8 +3,8 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | STATIC-FINDING |
-| Final verification | NOT RUN |
+| Confirmation status | CONTROLLED-REPRODUCED / bounded local repair |
+| Final verification | Bounded local checks PASS; SQL/browser/critical acceptance pending |
 | Severity | Major holiday deletion unavailable |
 | Priority | P1 |
 | Category | API |
@@ -69,3 +69,9 @@ Holiday Remove button and direct DELETE; controller unit calls would miss this r
 SCHEDULE-HOLIDAY-ROUTE-001: Endpoint uniqueness assertion plus real HTTP DELETE authorized/denied/foreign/missing/repeated cases against disposable SQL; assert status and exact row changes.
 
 Also run all endpoint/form cases pointing to this issue in QA/03_TEST_MATRIX.md and the critical regression suite before closure.
+
+## Cloud operational-record slice — 2026-10-28
+
+Removed duplicate controller; canonical Holidays DELETE and original URL/module/role gates retained. Equivalent method/route inventory and anonymous real-HTTP401 pass, plus own/foreign/missing/repeated controller checks.
+
+Real MVC routing/anonymous HTTP and controller controls: five PASS; owned SQL cases prepared; broader OPEN. New22-case guarded SQL module compiles but has not run locally. Remain OPEN for required broader closure. See [operational record report](../REPORTS/CLOUD_OPERATIONAL_RECORDS_2026-10-28.md).

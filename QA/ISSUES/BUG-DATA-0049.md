@@ -3,8 +3,8 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | STATIC-FINDING |
-| Final verification | NOT RUN |
+| Confirmation status | CONTROLLED-REPRODUCED / bounded local repair |
+| Final verification | Bounded local checks PASS; SQL/browser/critical acceptance pending |
 | Severity | Major identity integrity |
 | Priority | P1 |
 | Category | DATA |
@@ -69,3 +69,9 @@ Bulk student identity creation, later login/contact matching and import retry re
 OPERATIONS-IMPORT-DUPLICATE-001: Validate/import duplicate-case/whitespace/blank/null/new-versus-existing matrices, exact row errors, all-or-nothing writes and concurrent import behavior in real SQL.
 
 Also run all endpoint/form cases pointing to this issue in QA/03_TEST_MATRIX.md and the critical regression suite before closure.
+
+## Cloud operational-record slice — 2026-10-28
+
+Duplicate trimmed/case-insensitive emails and null rows are rejected with row feedback before import writes; stored identity lookup trims values. Import opts into existing normal-actor domain/audit transaction. Optional and cross-tenant behavior retained; concurrent identity creation not certified.
+
+Nine import controls PASS; full API1,171 PASS; SQL/concurrent import/browser OPEN. New22-case guarded SQL module compiles but has not run locally. Remain OPEN for required broader closure. See [operational record report](../REPORTS/CLOUD_OPERATIONAL_RECORDS_2026-10-28.md).

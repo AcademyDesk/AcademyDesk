@@ -45,6 +45,7 @@ jobs:
           -p:NuGetAudit=true -p:NuGetAuditMode=all
           '-p:WarningsAsErrors=NU1900%3BNU1901%3BNU1902%3BNU1903%3BNU1904'
       - name: API regressions
+        id: api_tests
         run: >-
           dotnet test AcademyDesk.slnx --no-restore --nologo -m:2
           --logger trx --results-directory .build-check/ci/api-tests
@@ -68,31 +69,37 @@ jobs:
           node QA/tools/communication-roundtrip.test.cjs |
           tee QA/EVIDENCE/logs/phase-2b-communication-roundtrip-ui.log
       - name: Guarded finance, tenant access and private-file SQL checks
+        id: sql_tests
         shell: pwsh
         run: |
           $harness = Join-Path $PWD '.build-check/ci-sql/bin/SqlHarness/debug/SqlHarness.dll'
-          foreach ($module in @('Reconciliation', 'Adjustment', 'Payroll', 'Transition', 'Consumers', 'Access', 'FinanceIntegrity', 'ClassMedia', 'CommunicationRoundtrip')) {
+          foreach ($module in @('Reconciliation', 'Adjustment', 'Payroll', 'Transition', 'Consumers', 'Access', 'FinanceIntegrity', 'RecordIntegrity', 'ClassMedia', 'CommunicationRoundtrip')) {
             $log = if ($module -eq 'CommunicationRoundtrip') {
               'QA/EVIDENCE/logs/phase-2b-communication-roundtrip-sql.log'
             } else { ".build-check/ci/$module-sql.log" }
             & ./QA/tools/SqlHarness/Run-ReconciledPayment.ps1 -Module $module -HarnessPath $harness 2>&1 | Tee-Object -FilePath $log
           }
       - name: Guarded private Blob upload, recovery and download checks
+        id: blob_tests
         shell: pwsh
         run: |
           $harness = Join-Path $PWD '.build-check/ci-sql/bin/SqlHarness/debug/SqlHarness.dll'
           & ./QA/tools/SqlHarness/Run-BlobMedia.ps1 -HarnessPath $harness 2>&1 | Tee-Object -FilePath '.build-check/ci/blob-media-sql.log'
       - name: Full frontend suite with fresh real SQL evidence
+        id: frontend_tests
         working-directory: apps/web
         run: npm test
       - name: Production frontend build
+        id: web_build
         working-directory: apps/web
         env:
           NEXT_PUBLIC_API_URL: ${{ vars.PRODUCTION_API_URL || 'http://127.0.0.1:5092' }}
         run: npm run build -- --webpack
       - name: Build API runtime image
+        id: api_image
         run: docker build -f apps/api/Dockerfile -t academydesk-ci-api:${{ github.sha }} .
       - name: API container startup and unavailable-database behavior
+        id: api_smoke
         env:
           QA_API_IMAGE: academydesk-ci-api:${{ github.sha }}
         run: bash QA/tools/check-api-container.sh
@@ -102,6 +109,30 @@ jobs:
           docker image inspect mcr.microsoft.com/azure-storage/azurite:latest --format '{{json .RepoDigests}}' > .build-check/ci/azurite-image-digests.json
       - name: Ensure verification did not modify tracked source
         run: git diff --exit-code
+      - name: Summarize source and verification outcomes
+        if: always()
+        env:
+          QA_VERIFY_SHA: ${{ github.sha }}
+          QA_API_RESULT: ${{ steps.api_tests.outcome }}
+          QA_SQL_RESULT: ${{ steps.sql_tests.outcome }}
+          QA_BLOB_RESULT: ${{ steps.blob_tests.outcome }}
+          QA_FRONTEND_RESULT: ${{ steps.frontend_tests.outcome }}
+          QA_WEB_RESULT: ${{ steps.web_build.outcome }}
+          QA_IMAGE_RESULT: ${{ steps.api_image.outcome }}
+          QA_SMOKE_RESULT: ${{ steps.api_smoke.outcome }}
+        run: |
+          {
+            printf 'Verification source: %s\n\n' "$QA_VERIFY_SHA"
+            printf '| Check | Outcome |\n| --- | --- |\n'
+            printf '| API tests | %s |\n' "$QA_API_RESULT"
+            printf '| Guarded SQL modules | %s |\n' "$QA_SQL_RESULT"
+            printf '| Private Blob checks | %s |\n' "$QA_BLOB_RESULT"
+            printf '| Full frontend suite | %s |\n' "$QA_FRONTEND_RESULT"
+            printf '| Web build | %s |\n' "$QA_WEB_RESULT"
+            printf '| API image build | %s |\n' "$QA_IMAGE_RESULT"
+            printf '| API container smoke | %s |\n' "$QA_SMOKE_RESULT"
+            printf '\nAutomated verification supplements the required release acceptance gates.\n'
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: Preserve synthetic verification evidence
         if: always()
         uses: actions/upload-artifact@v4

@@ -3,8 +3,8 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | STATIC-FINDING |
-| Final verification | NOT RUN |
+| Confirmation status | CONTROLLED-REPRODUCED / bounded local repair |
+| Final verification | Bounded local checks PASS; SQL/browser/critical acceptance pending |
 | Severity | Major operational-dashboard availability |
 | Priority | P1 |
 | Category | FUNC |
@@ -69,3 +69,9 @@ Admin intelligence response availability when historical or inconsistent session
 OPERATIONS-INTELLIGENCE-ORPHAN-001: HTTP/SQL valid/missing/foreign/inactive/null teacher session matrix, workload totals, response status and no leakage across academy data.
 
 Also run all endpoint/form cases pointing to this issue in QA/03_TEST_MATRIX.md and the critical regression suite before closure.
+
+## Cloud operational-record slice — 2026-10-28
+
+Missing/foreign teacher workload uses Unavailable teacher, retaining own/inactive names and exact session/hour totals without leaking foreign names. Deferred workload serialization was explicitly exercised.
+
+Five serialization controls PASS; full API1,171 PASS; SQL/browser OPEN. New22-case guarded SQL module compiles but has not run locally. Remain OPEN for required broader closure. See [operational record report](../REPORTS/CLOUD_OPERATIONAL_RECORDS_2026-10-28.md).

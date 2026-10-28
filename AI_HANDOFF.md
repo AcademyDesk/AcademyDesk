@@ -500,3 +500,38 @@ regressions or existing security gates, with focused tests and handoff updates.
   holiday-route ambiguity and operational-dashboard integrity, then remaining
   release/security/browser gaps. Continue useful independent work without asking
   the user to repeat authorization.
+
+## Latest checkpoint — operational/record integrity batch, 2026-10-28
+
+- Invoice batchc25b6b83381b28bf759a47406cefc707baa7ff1c pushed/remote HEAD verified.
+  Continuing larger authorized batches without repeated continue prompts.
+- Removed duplicate holiday DELETE controller, retained canonical Holidays route
+  and original module/role rules. Actual Program endpoint uniqueness and anonymous
+  DELETE401 tests now pass; prior ambiguous routing failure reproduced.
+- Admin intelligence safely serializes missing/foreign teacher references without
+  exposing their name; own/inactive teacher totals unchanged. Student import
+  validates trimmed/case-insensitive same-file duplicate emails and null rows,
+  trims existing email lookup and preserves optional/cross-tenant controls.
+  Expense update checks branch ownership and only assigns implemented Recorded
+  status; omitted status/currency remain intact. No new financial approval flow.
+- Imports and holiday DELETE opt into existing normal-actor domain/audit boundary.
+  Initial routing/dashboard10 cases had4 failures; import/expense18 had11 failures.
+  Final30 focused/atomic cases and full API1,171 PASS, zero failures/skips.
+- New RecordIntegrity SQL module22 cases compiles0 warnings/errors and is wired
+  into CI/owned runner. Includes scoped dashboard/holiday/import/expense calls and
+  three audit rollback cases. Actual SQL execution NOT RUN here; concurrent
+  imports/manual identity creation and all broader closure gates remain OPEN.
+- Workflow writes source SHA/real step outcomes to its summary. Actionlint,
+  PowerShell parsing/diff checks PASS. Report
+  QA/REPORTS/CLOUD_OPERATIONAL_RECORDS_2026-10-28.md. All four issues remain OPEN.
+- Older GitHub run40728363572 SUCCESS is observed for52495e2. Read run metadata via
+  ordinary github.com Actions overview; detailed logs/artifacts need sign-in and
+  api.github.com is still blocked. Newer source requires its own run. Local missing
+  communication SQL log was not fabricated; prior web results retained.
+- Workflow guards are development-branch changes, not activated default-main
+  policy until reviewed merge. No main merge, environment publication, configured
+  customer DB access, Azure deployment or PentaMini change. Critical and staging/
+  browser/device/concurrency/restore gates remain OPEN.
+- Next route: inspect candidate CI and repair real failures; continue remaining
+  API/form integrity and production acceptance work without waiting for another
+  continue request. Do not close issues or certify production from unit counts.

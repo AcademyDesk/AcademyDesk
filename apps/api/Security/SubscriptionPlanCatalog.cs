@@ -33,7 +33,7 @@ public static class SubscriptionPlanCatalog
     {
         "LeadsController" or "SalesMarketingController" => "Sales",
         "CommunicationSettingsController" or "CommunicationPreferencesController" or "CommunicationTemplatesController" or "NotificationsController" => "Engagement",
-        "CertificatesController" or "LearningResourcesController" or "HolidaysController" or "HolidayDeleteController" or "EventsController" => "Certificates",
+        "CertificatesController" or "LearningResourcesController" or "HolidaysController" or "EventsController" => "Certificates",
         "FeePlansController" or "InvoicesController" or "PaymentsController" or "ExpensesController" or "FeeRemindersController" => "Finance",
         "PayrollController" or "TeacherCompensationController" => "Finance",
         "FinanceAdjustmentsController" or "FinanceGovernanceController" => "FinanceControls",
