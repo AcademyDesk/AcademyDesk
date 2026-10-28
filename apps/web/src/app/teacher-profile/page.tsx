@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { academyApi, apiHeaders } from "@/lib/api";
+import { academyApi } from "@/lib/api";
+import { useRecordEditor } from "@/lib/use-record-editor";
 import { StandardDateField, StandardDetailModal, StandardInteractiveTile, StandardSelectField } from "@/components/design-system/controls";
 
 type Academy = { id: string };
@@ -35,59 +36,43 @@ type Profile = {
 const count = (rows?: unknown[]) => rows?.length ?? 0;
 const day = (value?: string) => value?.slice(0, 10) ?? "";
 const availabilityDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const prepare = (value: Profile): Record<string, string> => ({
+  employeeCode: value.employeeCode ?? "", preferredName: value.preferredName ?? "",
+  employmentType: value.employmentType ?? "", dateOfBirth: day(value.dateOfBirth), joiningDate: day(value.joiningDate),
+  qualifications: value.qualifications ?? "", addressLine1: value.addressLine1 ?? "",
+  city: value.city ?? "", state: value.state ?? "", postalCode: value.postalCode ?? "",
+  emergencyContactName: value.emergencyContactName ?? "", emergencyContactPhone: value.emergencyContactPhone ?? "",
+  adminNotes: value.adminNotes ?? "", specialties: value.specialties ?? "",
+  availabilityJson: JSON.stringify(value.availability ?? []),
+});
 
 export default function TeacherProfilePage() {
   const [academy, setAcademy] = useState<Academy>();
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [teacherId, setTeacherId] = useState("");
-  const [profile, setProfile] = useState<Profile>();
-  const [form, setForm] = useState<Record<string, string>>({});
   const [message, setMessage] = useState("Loading teaching team…");
-  const [saving, setSaving] = useState(false);
   const [detail, setDetail] = useState<"batches" | "sessions" | "students" | null>(null);
-  function prepare(value: Profile) {
-    setForm({
-      employeeCode: value.employeeCode ?? "",
-      preferredName: value.preferredName ?? "",
-      employmentType: value.employmentType ?? "",
-      dateOfBirth: day(value.dateOfBirth),
-      joiningDate: day(value.joiningDate),
-      qualifications: value.qualifications ?? "",
-      addressLine1: value.addressLine1 ?? "",
-      city: value.city ?? "",
-      state: value.state ?? "",
-      postalCode: value.postalCode ?? "",
-      emergencyContactName: value.emergencyContactName ?? "",
-      emergencyContactPhone: value.emergencyContactPhone ?? "",
-      adminNotes: value.adminNotes ?? "",
-      specialties: value.specialties ?? "",
-      availabilityJson: JSON.stringify(value.availability ?? []),
-    });
-  }
-  async function load(id: string, academyId = academy?.id) {
-    if (!academyId || !id) return;
-    const response = await academyApi(
-      `/api/academies/${academyId}/teachers/${id}/profile`,
-    );
-    if (!response.ok) throw new Error();
-    const value: Profile = await response.json();
-    setProfile(value);
-    prepare(value);
-  }
+  const editor = useRecordEditor(academy && teacherId ? `/api/academies/${academy.id}/teachers/${teacherId}/profile` : "", prepare, "The teacher record could not be loaded.");
+  const profile = editor.data;
+  const form = editor.draft ?? {};
+  const saving = editor.saving;
   useEffect(() => {
+    let active = true;
     void (async () => {
       try {
-        const academies: Academy[] = await (
-          await academyApi("/api/academies")
-        ).json();
+        const response = await academyApi("/api/academies");
+        if (!response.ok) throw new Error();
+        const academies: Academy[] = await response.json();
+        if (!active) return;
         if (!academies[0])
           return setMessage(
             "Create an academy before managing the teaching team.",
           );
         setAcademy(academies[0]);
-        const rows: Teacher[] = await (
-          await academyApi(`/api/academies/${academies[0].id}/teachers`)
-        ).json();
+        const teachers = await academyApi(`/api/academies/${academies[0].id}/teachers`);
+        if (!teachers.ok) throw new Error();
+        const rows: Teacher[] = await teachers.json();
+        if (!active) return;
         setTeachers(rows);
         const requestedId = new URLSearchParams(window.location.search).get(
           "teacherId",
@@ -96,57 +81,26 @@ export default function TeacherProfilePage() {
           rows.find((teacher) => teacher.id === requestedId) ?? rows[0];
         if (selected) {
           setTeacherId(selected.id);
-          await load(selected.id, academies[0].id);
         }
         setMessage("");
       } catch {
-        setMessage("Teacher records could not be loaded.");
+        if (active) setMessage("Teacher records could not be loaded.");
       }
     })();
+    return () => { active = false; };
   }, []);
-  async function select(id: string) {
+  function select(id: string) {
     setTeacherId(id);
-    try {
-      await load(id);
-      setMessage("");
-    } catch {
-      setMessage("The teacher record could not be loaded.");
-    }
+    setDetail(null);
+    setMessage("");
   }
   async function save() {
-    if (!academy || !teacherId) return;
-    setSaving(true);
-    try {
-      const response = await academyApi(
-        `/api/academies/${academy.id}/teachers/${teacherId}/profile`,
-        {
-          method: "PUT",
-          headers: apiHeaders(true),
-          body: JSON.stringify({
-            ...form,
-            dateOfBirth: form.dateOfBirth || null,
-            joiningDate: form.joiningDate || null,
-          }),
-        },
-      );
-      const value = await response.json().catch(() => null);
-      if (!response.ok)
-        throw new Error(value?.message ?? "The profile could not be saved.");
-      setProfile(value);
-      prepare(value);
-      setMessage("Teacher administrative profile saved.");
-    } catch (error) {
-      setMessage(
-        error instanceof Error
-          ? error.message
-          : "The profile could not be saved.",
-      );
-    } finally {
-      setSaving(false);
-    }
+    await editor.save({ ...form, dateOfBirth: form.dateOfBirth || null, joiningDate: form.joiningDate || null },
+      "Teacher administrative profile saved.", "The profile could not be saved. Check the record before retrying.");
   }
   const set = (key: string, value: string) =>
-    setForm((current) => ({ ...current, [key]: value }));
+    editor.update((current) => ({ ...current, [key]: value }));
+  const notice = message || (editor.loading ? "Loading teacher record…" : editor.message);
   const availability = readAvailability(form.availabilityJson);
   function updateAvailability(day: string, enabled: boolean, key?: "from" | "to", value?: string) {
     const current = availability.filter((slot) => slot.day !== day);
@@ -168,11 +122,12 @@ export default function TeacherProfilePage() {
           options={teachers.map((teacher) => ({ value: teacher.id, label: `${teacher.firstName} ${teacher.lastName}` }))}
         />
       </section>
-      {message && (
+      {notice && (
         <p className="mt-5 rounded-lg border border-amber-700/50 bg-amber-950/30 p-3 text-sm text-amber-100">
-          {message}
+          {notice}
         </p>
       )}
+      {editor.failed && <button onClick={editor.reload} className="enterprise-action-button mt-3">Retry loading profile</button>}
       {profile && (
         <>
           <section className="teacher-profile-summary-grid">
@@ -188,11 +143,11 @@ export default function TeacherProfilePage() {
           </section>
           <section className="teacher-profile-teaching-card">
             <header><div><p>Teaching details</p><h2>Subjects and availability</h2></div></header>
-            <div className="teacher-profile-teaching-grid">
+            <fieldset disabled={saving} className="teacher-profile-teaching-grid">
               <article><span>Subjects they can teach</span><input value={form.specialties ?? ""} onChange={(event) => set("specialties", event.target.value)} placeholder="e.g. Piano, Keyboard" aria-label="Subjects this teacher can teach" /></article>
               <article><span>Subjects currently assigned</span><p>{profile.subjects?.join(" · ") || "No current subject assignments"}</p></article>
               <article><span>Availability</span><div className="teacher-profile-availability-editor">{availabilityDays.map((availabilityDay) => { const slot = availability.find((item) => item.day === availabilityDay); return <div key={availabilityDay}><label><input type="checkbox" checked={Boolean(slot)} onChange={(event) => updateAvailability(availabilityDay, event.target.checked)} />{availabilityDay}</label><input type="time" value={slot?.from ?? ""} disabled={!slot} onChange={(event) => updateAvailability(availabilityDay, true, "from", event.target.value)} aria-label={`${availabilityDay} available from`} /><input type="time" value={slot?.to ?? ""} disabled={!slot} onChange={(event) => updateAvailability(availabilityDay, true, "to", event.target.value)} aria-label={`${availabilityDay} available to`} /></div>; })}</div></article>
-            </div>
+            </fieldset>
           </section>
           <section className="teacher-profile-card">
             <header className="teacher-profile-card-header">
@@ -205,7 +160,7 @@ export default function TeacherProfilePage() {
                 {saving ? "Saving…" : "Save profile"}
               </button>
             </header>
-            <div className="teacher-profile-fields">
+            <fieldset disabled={saving} className="teacher-profile-fields">
               <input
                 value={form.employeeCode ?? ""}
                 onChange={(e) => set("employeeCode", e.target.value)}
@@ -263,14 +218,16 @@ export default function TeacherProfilePage() {
                 placeholder="Emergency contact phone"
                 className="field"
               />
-            </div>
+            </fieldset>
             <textarea
+              disabled={saving}
               value={form.qualifications ?? ""}
               onChange={(e) => set("qualifications", e.target.value)}
               placeholder="Qualifications, certifications and background"
               className="field teacher-profile-notes"
             />
             <textarea
+              disabled={saving}
               value={form.adminNotes ?? ""}
               onChange={(e) => set("adminNotes", e.target.value)}
               placeholder="Internal operational notes — not visible in teacher portal"

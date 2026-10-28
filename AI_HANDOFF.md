@@ -322,3 +322,28 @@ regressions or existing security gates, with focused tests and handoff updates.
   code work continues. Real SQL/inference needs applied supported network settings
   or a separately attached appropriate executor. Do not expose local Docker/SQL
   publicly, transfer secrets or treat artifact presence as valid execution proof.
+
+## Latest checkpoint — profile and admission editor isolation, 2026-10-28
+
+- Started clean at pushed 0310dbf on codex/release-export-security. Continuing
+  user-authorized feature-branch pushes; main/PentaMini unchanged.
+- BUG-DATA-0018 guardian/teacher/admission-fee slice: 28 failures in 30 controlled
+  actual-TSX cases before repair, all 47 expanded cases now PASS. New shared
+  useRecordEditor binds drafts/reads/saves to exact URL and load generation,
+  invalidates before selection commit, ignores old/unmounted responses, locks
+  pending/failed loads and exposes retry. Same-generation pending writes are
+  guarded; failures preserve input and release busy state. Confirmed writes with
+  unreadable readback retain success with reload guidance. Date-null, zero-fee
+  and teacher availability payloads retained; no backend rules changed.
+- Full npm test: 45 current files, 1,013 tests, 1,010 PASS/three FAIL, zero
+  skipped/cancelled. Only absent communication-roundtrip SQL evidence fails.
+  TypeScript and production webpack build PASS; lint zero errors/63 warnings.
+  API 1,073 PASS/audits retained, not rerun for frontend-only edits.
+- Report QA/REPORTS/CLOUD_RECORD_EDITORS_2026-10-28.md; focused test file
+  QA/tools/record-editor-isolation.test.cjs. Historical QA records preserved.
+- Runtime policy still lacks saved CDN additions. No repeated denied downloads,
+  app-DB/seeder access, actual SQL/browser validation, environment configuration,
+  publication, main merge or deployment. Existing enterprise gates remain OPEN.
+- Next route: Codex for remaining StudentProfile/StudentAdminProfile and subject
+  fee save/selection isolation, then tenant/assessment/attendance and existing
+  critical security/SQL/browser gates. No overall production-readiness claim.

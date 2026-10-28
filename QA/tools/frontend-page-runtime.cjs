@@ -57,14 +57,17 @@ function mount(file, api, props = {}, exportName = 'default') {
       if (name === '@/lib/course-update') return execute('apps/web/src/lib/course-update.ts');
       if (name === '@/lib/batch-update') return execute('apps/web/src/lib/batch-update.ts');
       if (name === '@/lib/teacher-workspace') return execute('apps/web/src/lib/teacher-workspace.ts');
+      if (name === '@/lib/use-record-editor') return execute('apps/web/src/lib/use-record-editor.ts');
       if (name === '@/lib/use-clock') return { useClock: () => Date.parse('2026-10-28T12:00:00Z') };
       if (name === '@/components/theme-toggle') return { ThemeToggle: 'theme-toggle' };
       if (name === '@/components/teacher-material-uploader') return { TeacherMaterialUploader: 'uploader' };
       if (name === '@/components/private-material-actions') return { PrivateMaterialActions: 'material-actions' };
       if (name === '@/components/workspace-nav') return { WorkspaceNav: 'nav' };
+      if (name === '@/components/student-fee-arrangements') return { StudentFeeArrangements: 'fee-arrangements' };
+      if (name === '@/components/student-admin-profile') return { StudentAdminProfile: 'student-profile-editor' };
       if (name === '@/components/standard-date-field') return { StandardDateField: 'date-control' };
       if (name === '@/components/standard-select-field') return { StandardSelectField: 'select-control' };
-      if (name === '@/components/design-system/controls') return { StandardSelectField: 'select-control', StandardDateField: 'date-control', StandardTimeField: 'time-control' };
+      if (name === '@/components/design-system/controls') return { StandardSelectField: 'select-control', StandardDateField: 'date-control', StandardTimeField: 'time-control', StandardDetailModal: 'detail-modal', StandardInteractiveTile: 'tile' };
       if (name === '@/components/design-system/interactive') return { StandardDetailModal: 'detail-modal', StandardInteractiveTile: 'tile' };
       throw Error('Unexpected import: ' + name);
     }, mod, mod.exports, SyntheticFormData);

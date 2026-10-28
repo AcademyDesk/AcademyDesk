@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { academyApi, apiHeaders } from "@/lib/api";
+import { academyApi } from "@/lib/api";
+import { useRecordEditor } from "@/lib/use-record-editor";
 
 type Academy = { id: string };
 type Guardian = { id: string; firstName: string; lastName: string };
@@ -17,49 +18,38 @@ type Profile = {
   communications?: unknown[];
 };
 const count = (rows?: unknown[]) => rows?.length ?? 0;
+const prepare = (value: Profile): Record<string, string> => ({
+  preferredName: value.preferredName ?? "", addressLine1: value.addressLine1 ?? "",
+  city: value.city ?? "", state: value.state ?? "", postalCode: value.postalCode ?? "",
+  preferredLanguage: value.preferredLanguage ?? "",
+});
 
 export default function GuardianProfilePage() {
   const [academy, setAcademy] = useState<Academy>();
   const [guardians, setGuardians] = useState<Guardian[]>([]);
   const [guardianId, setGuardianId] = useState("");
-  const [profile, setProfile] = useState<Profile>();
-  const [form, setForm] = useState<Record<string, string>>({});
   const [message, setMessage] = useState("Loading family records…");
-  const [saving, setSaving] = useState(false);
-  function prepare(value: Profile) {
-    setForm({
-      preferredName: value.preferredName ?? "",
-      addressLine1: value.addressLine1 ?? "",
-      city: value.city ?? "",
-      state: value.state ?? "",
-      postalCode: value.postalCode ?? "",
-      preferredLanguage: value.preferredLanguage ?? "",
-    });
-  }
-  async function load(id: string, academyId = academy?.id) {
-    if (!academyId || !id) return;
-    const response = await academyApi(
-      `/api/academies/${academyId}/guardians/${id}/profile`,
-    );
-    if (!response.ok) throw new Error();
-    const value: Profile = await response.json();
-    setProfile(value);
-    prepare(value);
-  }
+  const editor = useRecordEditor(academy && guardianId ? `/api/academies/${academy.id}/guardians/${guardianId}/profile` : "", prepare, "The parent record could not be loaded.");
+  const profile = editor.data;
+  const form = editor.draft ?? {};
+  const saving = editor.saving;
   useEffect(() => {
+    let active = true;
     void (async () => {
       try {
-        const academies: Academy[] = await (
-          await academyApi("/api/academies")
-        ).json();
+        const response = await academyApi("/api/academies");
+        if (!response.ok) throw new Error();
+        const academies: Academy[] = await response.json();
+        if (!active) return;
         if (!academies[0])
           return setMessage(
             "Create an academy before managing family records.",
           );
         setAcademy(academies[0]);
-        const rows: Guardian[] = await (
-          await academyApi(`/api/academies/${academies[0].id}/guardians`)
-        ).json();
+        const guardians = await academyApi(`/api/academies/${academies[0].id}/guardians`);
+        if (!guardians.ok) throw new Error();
+        const rows: Guardian[] = await guardians.json();
+        if (!active) return;
         setGuardians(rows);
         const requestedId = new URLSearchParams(window.location.search).get(
           "guardianId",
@@ -68,53 +58,24 @@ export default function GuardianProfilePage() {
           rows.find((guardian) => guardian.id === requestedId) ?? rows[0];
         if (selected) {
           setGuardianId(selected.id);
-          await load(selected.id, academies[0].id);
         }
         setMessage("");
       } catch {
-        setMessage("Parent records could not be loaded.");
+        if (active) setMessage("Parent records could not be loaded.");
       }
     })();
+    return () => { active = false; };
   }, []);
-  async function select(id: string) {
+  function select(id: string) {
     setGuardianId(id);
-    try {
-      await load(id);
-      setMessage("");
-    } catch {
-      setMessage("The parent record could not be loaded.");
-    }
+    setMessage("");
   }
   async function save() {
-    if (!academy || !guardianId) return;
-    setSaving(true);
-    try {
-      const response = await academyApi(
-        `/api/academies/${academy.id}/guardians/${guardianId}/profile`,
-        {
-          method: "PUT",
-          headers: apiHeaders(true),
-          body: JSON.stringify(form),
-        },
-      );
-      const value = await response.json().catch(() => null);
-      if (!response.ok)
-        throw new Error(value?.message ?? "The profile could not be saved.");
-      setProfile(value);
-      prepare(value);
-      setMessage("Parent administrative profile saved.");
-    } catch (error) {
-      setMessage(
-        error instanceof Error
-          ? error.message
-          : "The profile could not be saved.",
-      );
-    } finally {
-      setSaving(false);
-    }
+    await editor.save(form, "Parent administrative profile saved.", "The profile could not be saved. Check the record before retrying.");
   }
   const set = (key: string, value: string) =>
-    setForm((current) => ({ ...current, [key]: value }));
+    editor.update((current) => ({ ...current, [key]: value }));
+  const notice = message || (editor.loading ? "Loading parent record…" : editor.message);
   return (
     <main className="enterprise-settings">
       <header className="enterprise-page-header">
@@ -139,11 +100,12 @@ export default function GuardianProfilePage() {
           ))}
         </select>
       </section>
-      {message && (
+      {notice && (
         <p className="mt-5 rounded-lg border border-amber-700/50 bg-amber-950/30 p-3 text-sm text-amber-100">
-          {message}
+          {notice}
         </p>
       )}
+      {editor.failed && <button onClick={editor.reload} className="enterprise-action-button mt-3">Retry loading profile</button>}
       {profile && (
         <>
           <section className="mt-5 grid gap-4 md:grid-cols-3">
@@ -185,7 +147,7 @@ export default function GuardianProfilePage() {
                 {saving ? "Saving…" : "Save profile"}
               </button>
             </div>
-            <div className="mt-5 grid gap-3 md:grid-cols-2">
+            <fieldset disabled={saving} className="mt-5 grid gap-3 md:grid-cols-2">
               <input
                 value={form.preferredName ?? ""}
                 onChange={(e) => set("preferredName", e.target.value)}
@@ -222,7 +184,7 @@ export default function GuardianProfilePage() {
                 placeholder="Postal / PIN code"
                 className="field"
               />
-            </div>
+            </fieldset>
           </section>
         </>
       )}

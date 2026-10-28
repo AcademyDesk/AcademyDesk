@@ -82,3 +82,17 @@ selection effects, including tenant discovery and fee reads.
 This is a bounded local repair, not closure of the broad multi-editor issue.
 Other profile/load/save races, schema/persistence and browser/device acceptance
 remain OPEN. See [cloud frontend report](../REPORTS/CLOUD_FRONTEND_QUALITY_2026-10-28.md).
+
+## Guardian, teacher and admission-fee slice — 2026-10-28
+
+Thirty controlled actual-TSX cases reproduced 28 failures. Loaded data, drafts
+and response updates are now scoped to a selected URL/load generation. Pending
+or failed loads cannot save; explicit retry, duplicate-pending guards, unmount
+cleanup and rejected-write draft retention were added. All 47 expanded cases
+PASS, including reversed reads/writes, A/B/A generations and zero/date-null fee
+payloads. Full frontend 1,010/1,013 PASS; three existing historical SQL-evidence
+failures remain. TypeScript/lint/webpack build PASS.
+
+This does not close the issue: remaining student/tenant/assessment/attendance
+editors, same-record server races, actual HTTP/SQL and browser/device/critical
+acceptance remain OPEN. See [editor isolation report](../REPORTS/CLOUD_RECORD_EDITORS_2026-10-28.md).
