@@ -95,8 +95,71 @@ Azure deployment waits for the pre-Azure quality gate in `ENTERPRISE_TESTING_ROA
 
 | | |
 | --- | --- |
-| Last governance update | Documentation set created for agent context. No application, test, migration, Docker, Azure, or `QA/EVIDENCE` changes. |
-| Next engineering route | Continue the existing enterprise remediation and testing program from the verified baseline. Route the task with `AI_MODEL_ROUTING.md`. |
-| Commit state | These governance files are ready for review and are not committed by this handoff. |
+| Latest checkpoint | Cloud CSV export security increment; see the dated handoff and report below. |
+| Next engineering route | Verify isolated SQL/HTTP development setup and continue open security/release gates. |
+| Commit state | Feature-branch checkpoint includes this handoff; verify the remote branch before resuming elsewhere. Main is unchanged. |
 
 Update this file after substantial work. Record the branch, commit, what changed, what was validated, what remains open, and the next route.
+
+## Cloud development increment — 2026-10-28
+
+- Branch: `codex/release-export-security`; base HEAD
+  `f7af512f884ca5fe8ac3ddb287c852492592e709`. This increment and handoff
+  are being checkpointed on the feature branch; main remains unchanged.
+- Started from a clean checkout. Reproduced BUG-SEC-0002 using 30 synthetic
+  controller export cases (all failed before repair).
+- Added formula-neutralizing CSV encoders for academy/audit exports and frontend
+  reports, preserving stored values, export scope and typed API numeric values.
+- Validation: full API suite 1,073 passed / zero failed / zero skipped;
+  frontend encoder 17 passed; TypeScript and new helper lint passed;
+  production frontend webpack build passed both before and after the repair.
+- Existing full frontend lint failures and NuGet transitive Pkcs vulnerability
+  warnings remain. Default Turbopack was not revalidated; webpack is the tested mode.
+- BUG-SEC-0002 remains OPEN: real HTTP/SQL export verification, browser download,
+  supported spreadsheet review and critical release regression are still required.
+- SQL-backed startup, migration/restore, concurrency, physical-device acceptance,
+  financial/file-access P0 gates and production readiness are not established.
+  Configured database/seed variables report ready, but this increment did not
+  connect to that database or run its seeder: it has not been established as an
+  approved disposable test database.
+- PentaMini was unchanged. Prior 49-test result retained, not rerun;
+  no inference-readiness or AcademyDesk integration claim is made.
+- Report: `QA/REPORTS/CLOUD_EXPORT_SECURITY_2026-10-28.md`.
+- No environment configuration changes, publication or deployment. The feature
+  branch is checkpointed separately from main for continuation across profiles.
+- Next route: Codex for guarded SQL/HTTP and security gate validation; Cursor
+  for routine lint remediation per AI_MODEL_ROUTING.md. Continue the existing
+  QA program; do not start a replacement test plan or mark enterprise work complete.
+
+## Continue from another profile
+
+1. Connect the new profile to `AcademyDesk/AcademyDesk` and, if needed,
+   `AcademyDesk/PentaMini`. Access is per account/workspace; do not assume the
+   previous cloud machine, chat, ignored files, credentials or processes transfer.
+2. Select/fetch `codex/release-export-security` and verify the latest remote
+   commit and a clean working tree. Do not reset a dirty checkout. Do not merge
+   into main or deploy merely to continue development.
+3. Read `AGENTS.md`, this handoff, `AI_MODEL_ROUTING.md`,
+   `ENTERPRISE_TESTING_ROADMAP.md`, `AI_PRODUCT_VISION.md`, and
+   `QA/REPORTS/CLOUD_EXPORT_SECURITY_2026-10-28.md`.
+4. Use the published environment if the new profile has access. Otherwise set
+   up .NET 10 (tested SDK 10.0.403), Node 24 (tested 24.19.0), and Python 3.12+
+   for PentaMini. In `apps/web`, use `npm ci`; in the AcademyDesk root, use
+   `dotnet restore AcademyDesk.slnx`. Restore credentials only through secure
+   environment settings; never copy secret files into GitHub or chat.
+5. Recorded validation commands, from the AcademyDesk root unless stated:
+   - `dotnet test AcademyDesk.slnx --nologo -m:4`
+   - `node QA/tools/test-csv-export.cjs` (Node 24 executes the TypeScript helper)
+   - From `apps/web`: `npx tsc --noEmit`, `npx eslint src/lib/csv.ts`,
+     `npm run build -- --webpack`
+   In the prepared cloud instance, .NET is in `/workspace/.tools/dotnet`;
+   set DOTNET_ROOT and add that directory to PATH if required.
+6. Next substantive task: establish an approved disposable SQL database and
+   guarded HTTP/SQL harness, then continue existing P0/security cases.
+   Never run development seeding/migrations against an unverified configured
+   database. Keep spreadsheet/browser export acceptance and all remaining
+   production gates OPEN until their actual checks pass.
+
+PentaMini has no code changes from this increment. Its original repository main
+branch and existing handoff remain the starting point; real model inference and
+AcademyDesk integration are not established by the prior unit-test passes.

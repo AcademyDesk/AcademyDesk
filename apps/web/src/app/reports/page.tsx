@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { academyApi } from "@/lib/api";
+import { spreadsheetCsv } from "@/lib/csv";
 import { StandardDetailModal, StandardInteractiveTile } from "@/components/design-system/controls";
 
 type Academy = { id: string };
@@ -27,11 +28,7 @@ const money = (amount: number) =>
     amount,
   );
 function downloadCsv(filename: string, rows: string[][]) {
-  const content = rows
-    .map((row) =>
-      row.map((value) => `"${value.replaceAll('"', '""')}"`).join(","),
-    )
-    .join("\r\n");
+  const content = spreadsheetCsv(rows);
   const anchor = document.createElement("a");
   anchor.href = URL.createObjectURL(
     new Blob([content], { type: "text/csv;charset=utf-8" }),

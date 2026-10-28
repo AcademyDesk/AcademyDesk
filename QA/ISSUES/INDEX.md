@@ -117,7 +117,7 @@ Bounded runtime follow-up [DRAFT-ISOLATION-UX-001](../REPORTS/PHASE_2B_TEACHER_S
 | [BUG-FUNC-0004](BUG-FUNC-0004.md) | Frontend quality check fails on current baseline | P1 | Major release-quality gap | EXECUTED CHECK | QUALITY-LINT-001 |
 | [BUG-DATA-0005](BUG-DATA-0005.md) | Session clash checks do not use effective teacher and branch assignments | P1 | Major scheduling integrity | STATIC FINDING / reproduction pending | SCHEDULE-RULE-001 |
 | [BUG-DATA-0006](BUG-DATA-0006.md) | Enrollment activation, transfer and promotion bypass admission invariants | P1 | Major enrollment integrity | STATIC FINDING / reproduction pending | BATCH-RULE-001 |
-| [BUG-SEC-0002](BUG-SEC-0002.md) | CSV quoting does not neutralize spreadsheet formula cells | P1 | Major export security risk | STATIC FINDING / reproduction pending | SECURITY-EXPORT-001 |
+| [BUG-SEC-0002](BUG-SEC-0002.md) | CSV quoting does not neutralize spreadsheet formula cells | P1 | Major export security risk | Synthetic export reproduction + repair: API1073/frontend17 PASS / HTTP-SQL, spreadsheet, browser, critical OPEN | SECURITY-EXPORT-001 |
 | [BUG-DATA-0007](BUG-DATA-0007.md) | Student onboarding account-created flags can report an account that was not created | P1 | Major response integrity | STATIC FINDING / reproduction pending | STUDENT-API-001 |
 | [BUG-API-0004](BUG-API-0004.md) | Valid non-object JSON metadata can crash object-only readers | P2 | Moderate malformed-data reliability | STATIC FINDING / reproduction pending | API-JSON-001 |
 | [BUG-PERF-0001](BUG-PERF-0001.md) | Large operational lists have no consistent paging contract | P2 | Moderate scale risk | STATIC FINDING / reproduction pending | PERF-BASELINE-001 |
