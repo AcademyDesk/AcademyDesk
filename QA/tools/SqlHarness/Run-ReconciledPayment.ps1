@@ -44,7 +44,7 @@ try {
     if ($Module -eq 'BrowserSession') { $qaSwitch = '--browser-session' }
     if ($Module -eq 'BrowserProvisioning') { $qaSwitch = '--browser-provisioning' }
     if ($Module -eq 'RoleReplacement') { $qaSwitch = '--audit-role-replacement' }
-    if ($Module -eq 'RoleRevocation') { $qaSwitch = '--audit-role-revocation' }
+    if ($Module -eq 'RoleRevocation') { $qaSwitch = '--audit-role-revocation-fixed' }
     if ($Module -eq 'SessionRevocationRepair') { $qaSwitch = '--audit-session-revocation-repair' }
     if ($Module -eq 'SessionRevocation') { $qaSwitch = '--audit-session-revocation' }
     if ($Module -eq 'SessionRefresh') { $qaSwitch = '--audit-session-refresh' }
@@ -99,6 +99,7 @@ try {
         } else { $qaCommand = @('run', '--project', 'QA/tools/SqlHarness/SqlHarness.csproj', '--no-build', '--', $qaRun, $qaPort, $qaContainer, $qaSwitch) }
         dotnet @qaCommand 2>&1 | ForEach-Object {
             $qaLine=$_.ToString()
+            if ($qaLine -match '^QA (failure frame|client failure): ') { Write-Output $qaLine; return }
             # Publish source locations only, never raw stack arguments or SQL
             # connection details, so CI summaries remain useful without logs.
             if ($qaLine -match '\bat SqlHarnessEntryPoint\..+ in .+[/\\](?<file>[A-Za-z0-9_.-]+\.cs):line (?<line>[0-9]+)') {

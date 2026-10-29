@@ -28,3 +28,5 @@ No product code, configured application database, customer records, normal devel
 Local verification of the new QA batch:SQL harness compilation0warnings/errors;11 existing host/ownership guard cases PASS;14 production-gate fixtures PASS; PowerShell parsing, actionlint and diff checks PASS. The actual production-gate CLI correctly remains BLOCKED by all five open P0 records. These are control checks, not an executed backup/restore result.
 
 Follow-up:GitHub payroll-print job123322240946 in run40836452644 for128604b is observed SUCCEEDED in13m58s. This includes the mandatory Chrome/PDF check. The newer security/recovery and assessment generations need their own candidate verification.
+
+Actual next-run result:eaa95e5/run40838396103 FAILED at the native session-refresh adapter. A missing VM AbortController global was reproduced and fixed without changing application code. RoleRevocation is now explicit strict acceptance rather than its historical diagnostic-only mode. Later concurrency/restore stages were not reached. See [native adapter report](CLOUD_NATIVE_SESSION_QA_2026-10-29.md); next candidate execution remains required.

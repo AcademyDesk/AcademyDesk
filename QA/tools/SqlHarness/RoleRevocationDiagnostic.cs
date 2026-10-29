@@ -12,7 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 internal static partial class SqlHarnessEntryPoint
 {
     // Scoped diagnostic: a reproduced policy gap is reported, not labelled a pass.
-    private static async Task VerifyRoleRevocationAsync(QaApiFactory factory, HttpClient client)
+    private static async Task VerifyRoleRevocationAsync(QaApiFactory factory, HttpClient client, bool enforceRegression = false)
     {
         const string password = "Synthetic!39Ab", staffEmail = "qa-role-staff@example.invalid";
         Guid academyA, academyB, staffId, operationsId;
@@ -166,6 +166,7 @@ internal static partial class SqlHarnessEntryPoint
             Observe("six-attributed-success-audits", audit.Count == 6 && audit.All(x => x.ActorUserId == identity.Users.Single(x => x.Email == "qa-admin-a@example.invalid").Id), new { count = audit.Count });
             Observe("final-fixture-state", !staff.IsActive && staff.LockoutEnd == DateTimeOffset.MaxValue && (await Memberships()).SequenceEqual(new[] { "Operations" }) && await db.Invoices.CountAsync() == 1, new { inactive = !staff.IsActive, roles = await Memberships(), invoiceCount = await db.Invoices.CountAsync() });
         }
-        Console.WriteLine("ROLESESSION SUMMARY " + JsonSerializer.Serialize(new { requests, observations = observations.Count, acceptedControls = observations.Count - gaps, policyGaps = gaps, unchangedSnapshots = unchanged, diagnosticOnly = true, nativeIdentitySql = true }));
+        Console.WriteLine("ROLESESSION SUMMARY " + JsonSerializer.Serialize(new { requests, observations = observations.Count, acceptedControls = observations.Count - gaps, policyGaps = gaps, unchangedSnapshots = unchanged, diagnosticOnly = !enforceRegression, nativeIdentitySql = true }));
+        if (enforceRegression && gaps != 0) throw new InvalidOperationException("Role revocation acceptance failed; policy gaps remain.");
     }
 }

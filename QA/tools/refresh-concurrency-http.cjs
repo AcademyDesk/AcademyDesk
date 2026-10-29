@@ -1,6 +1,7 @@
 // Real responses only; deterministic buffering of original401s controls overlap/late delivery.
 const fs=require('node:fs'),vm=require('node:vm'),a=require('node:assert/strict');
 const ts=require('../../apps/web/node_modules/typescript'),defer=()=>{let resolve;const promise=new Promise(r=>resolve=r);return{promise,resolve};};
+const {safeClientFailure}=require('./safe-client-failure.cjs');
 (async()=>{
  let input='';for await(const chunk of process.stdin)input+=chunk;const fixture=JSON.parse(input),origin=new URL(fixture.origin);a.equal(origin.hostname,'127.0.0.1');a.equal(origin.protocol,'http:');
  let phase;const calls=[],storage=new Map(),window={location:{pathname:'/portal-accounts'},localStorage:{getItem:k=>storage.get(k)??null,setItem:(k,v)=>storage.set(k,String(v)),removeItem:k=>storage.delete(k)}};
@@ -27,4 +28,4 @@ const ts=require('../../apps/web/node_modules/typescript'),defer=()=>{let resolv
  const admin=fixture.sessions.find(x=>x.workspace==='AcademyAdmin'),teacher=fixture.sessions.find(x=>x.workspace==='Teacher');
  await group(admin,'admin-late401',{late:true});await group(teacher,'teacher-overlap');await group(admin,'admin-read-create-overlap',{mutation:true});await group(admin,'expired-refresh-overlap',{denied:true});
  a.equal(calls.length,25);console.log('REFRESHFLIGHT CLIENT PASS25 native HTTP requests/four controlled overlaps;one refresh per group,late401 receipt reused,one successful mutation,expired-refresh waiters401/no replay;no browser acceptance.');
-})().catch(()=>{console.error('REFRESHFLIGHT CLIENT FAIL native assertion/transport;credentials omitted');process.exitCode=1;});
+})().catch(error=>{console.error('REFRESHFLIGHT CLIENT FAIL native assertion/transport;credentials omitted');for(const line of safeClientFailure(error))console.error(line);process.exitCode=1;});
