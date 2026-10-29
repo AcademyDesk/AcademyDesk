@@ -73,7 +73,7 @@ jobs:
         shell: pwsh
         run: |
           $harness = Join-Path $PWD '.build-check/ci-sql/bin/SqlHarness/debug/SqlHarness.dll'
-          foreach ($module in @('Reconciliation', 'Adjustment', 'Payroll', 'Transition', 'Consumers', 'Access', 'FinanceIntegrity', 'RecordIntegrity', 'ClassMedia', 'CommunicationRoundtrip')) {
+          foreach ($module in @('Reconciliation', 'Adjustment', 'Payroll', 'Transition', 'Consumers', 'Access', 'FinanceIntegrity', 'RecordIntegrity', 'RoleReplacement', 'RoleRevocation', 'SessionRevocationRepair', 'SessionRefresh', 'RefreshConcurrency', 'Recovery', 'ClassMedia', 'CommunicationRoundtrip')) {
             $log = if ($module -eq 'CommunicationRoundtrip') {
               'QA/EVIDENCE/logs/phase-2b-communication-roundtrip-sql.log'
             } else { ".build-check/ci/$module-sql.log" }

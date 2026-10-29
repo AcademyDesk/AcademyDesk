@@ -617,3 +617,24 @@ regressions or existing security gates, with focused tests and handoff updates.
   being checkpointed for its own CI. Older run success does not cover that source.
 - PentaMini research tests rerun49 PASS; no actual AcademyDesk gateway/connector
   or broad90%AI completion claim. Production release gates still OPEN.
+
+## 2026-10-29 IST — Security/recovery acceptance expansion
+
+- Payroll print source committed/pushed128604b. Its candidate verification run
+  40836452644 is being checked; historical10a60ee run40738226886 is SUCCESS.
+- CI adds existing real SQL RoleReplacement, RoleRevocation, SessionRevocationRepair,
+  SessionRefresh and RefreshConcurrency modules, plus new6-stage Recovery drill.
+- Recovery uses only this invocation's fresh marked GUID database in its verified
+  loopback Docker container. Copy-only/checksum backup and VERIFYONLY/header checks;
+  QA canary mutation; actual guarded RESTORE; all ordered table/column SHA256s;
+  restored marker/migrations/runtime privileges/HTTP+Identity checks. No configured
+  DB or external target accepted. Raw rows/backup contents are not published.
+- New harness compile0warnings/errors, PowerShell syntax/actionlint/diff PASS.
+  Production guard14synthetic cases and11host/ownership guard cases PASS.
+  Actual added SQL modules await CI.
+- This is synthetic SQL recovery, not Azure PITR/customer/media/production rollback
+  evidence. Report:QA/REPORTS/CLOUD_RELEASE_ACCEPTANCE_2026-10-29.md.
+- All five P0 and remaining critical P1/full staging/production gates remain OPEN.
+  No issue closure, main merge, deployment, environment publication or Penta change.
+- Next route:Codex/Sol High inspect exact candidate CI and repair actual failures;
+  continue remaining form/workflow integrity and release acceptance.
