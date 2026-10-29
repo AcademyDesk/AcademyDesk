@@ -638,3 +638,24 @@ regressions or existing security gates, with focused tests and handoff updates.
   No issue closure, main merge, deployment, environment publication or Penta change.
 - Next route:Codex/Sol High inspect exact candidate CI and repair actual failures;
   continue remaining form/workflow integrity and release acceptance.
+
+## 2026-10-29 IST — Assessment result generation isolation
+
+- BUG-DATA-0018 assessment slice:9 original controlled cases reproduced8failures.
+  Final44 assessment checks PASS(14isolation +29retained +1other-row lock).
+- Fresh academy/assessment generation gates editor visibility/save. Pending/failed/
+  malformed/null/missing-score/duplicate result rows lock; explicit retry; retired
+  callbacks/late saves/readbacks/A-B-A/unmount and same-tick duplicates guarded.
+  All rows lock during save; only actual learner shows Saving. Existing grading/
+  options payload/control cases preserved via the effect-aware page harness.
+- Full frontend50files/1,138tests:1,135PASS/3same absent historical SQL-evidence
+  failures/0skip-cancel. TypeScript/webpack PASS; scoped lint0errors/1inherited
+  load-effect warning. API1,179 earlier PASS retained, not rerun.
+- Report:QA/REPORTS/CLOUD_ASSESSMENT_ISOLATION_2026-10-29.md. Actual browser/SQL
+  and broad issue/critical acceptance remain OPEN. No API/schema changes.
+- GitHub payroll-print job123322240946 for run40836452644/source128604b is
+  observed SUCCEEDED in13m58s, including mandatory Chrome/PDF verification.
+  Expanded security/recovery +this newer source need their own exact run.
+- No main merge, deployment, configured DB access, environment publication or
+  Penta changes. Next route:Codex/Sol High actual candidate CI and remaining
+  attendance/form integrity/production acceptance.

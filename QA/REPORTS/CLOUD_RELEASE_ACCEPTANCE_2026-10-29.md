@@ -26,3 +26,5 @@ This is isolated synthetic SQL Server recovery proof, not proof of Azure SQL PIT
 No product code, configured application database, customer records, normal development seed, Azure settings or PentaMini code changed in this verification-only batch. Historical evidence is retained. Next route:Codex/Sol High inspect real CI outcomes, repair actual failures and continue critical acceptance; no repeated permission needed for authorized feature-branch work.
 
 Local verification of the new QA batch:SQL harness compilation0warnings/errors;11 existing host/ownership guard cases PASS;14 production-gate fixtures PASS; PowerShell parsing, actionlint and diff checks PASS. The actual production-gate CLI correctly remains BLOCKED by all five open P0 records. These are control checks, not an executed backup/restore result.
+
+Follow-up:GitHub payroll-print job123322240946 in run40836452644 for128604b is observed SUCCEEDED in13m58s. This includes the mandatory Chrome/PDF check. The newer security/recovery and assessment generations need their own candidate verification.

@@ -111,3 +111,7 @@ three missing historical SQL-evidence failures; TypeScript/lint/build PASS.
 Remaining tenant/assessment/attendance editors, real HTTP/SQL/browser/device,
 same-record server races and critical gates stay OPEN. See
 [student editor report](../REPORTS/CLOUD_STUDENT_EDITORS_2026-10-28.md).
+
+## Assessment results slice — 29 October 2026 IST
+
+Nine initial controlled actual-TSX cases reproduced8 failures. Results/readiness and saves now belong to one academy/assessment load generation. Pending/failed/malformed responses cannot unlock stale/blank rows; explicit retry, same-tick duplicate guards and late save/readback/A-B-A/unmount isolation added. All44 assessment checks PASS, with all existing grading/options cases retained. Full frontend1,135/1,138 PASS;3 unchanged missing historical SQL-evidence failures. TypeScript/webpack PASS. See [assessment report](../REPORTS/CLOUD_ASSESSMENT_ISOLATION_2026-10-29.md). Actual authenticated browser/SQL, attendance and broader issue/critical closure remain OPEN.
