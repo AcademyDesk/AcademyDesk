@@ -94,7 +94,9 @@ public sealed class AuditOutcomeTests
 
     [Theory]
     [InlineData(typeof(StudentsController), "Create", false)]
-    [InlineData(typeof(TeachersController), "Create", false)]
+    // Shared teacher creation holds current Identity authority through the
+    // domain/audit commit; this explicit requirement strengthens the boundary.
+    [InlineData(typeof(TeachersController), "Create", true)]
     [InlineData(typeof(StudentsController), "Update", true)]
     [InlineData(typeof(TeachersController), "Update", true)]
     [InlineData(typeof(ClassMediaUploadsController), "Complete", false)]
@@ -104,4 +106,16 @@ public sealed class AuditOutcomeTests
 
     [Fact]
     public void Unknown_descriptor_does_not_enlist_Identity() => Assert.False(AcademyAccessFilter.IncludesIdentity(new ActionDescriptor()));
+
+    [Theory]
+    [InlineData(typeof(TeachersController), "Create", true)]
+    [InlineData(typeof(TeachersController), "Update", false)]
+    [InlineData(typeof(StudentsController), "Create", false)]
+    [InlineData(typeof(EnrollmentsController), "Create", false)]
+    public void Platform_owner_audit_transaction_remains_explicitly_action_scoped(Type controller, string method, bool expected) =>
+        Assert.Equal(expected, AcademyAccessFilter.IncludesPlatformOwner(new ControllerActionDescriptor { MethodInfo = controller.GetMethod(method)! }));
+
+    [Fact]
+    public void Unknown_descriptor_keeps_existing_platform_owner_bypass() =>
+        Assert.False(AcademyAccessFilter.IncludesPlatformOwner(new ActionDescriptor()));
 }

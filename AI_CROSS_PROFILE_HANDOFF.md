@@ -1,5 +1,34 @@
 # Academy Desk — shared continuation across profiles
 
+## Teacher service qualified; work-laptop continuation ready — 29 October 2026
+
+- [x] Current branch codex/penta-teacher-service-integration-20261029 from4e70762
+  integrates existing shared teacher creation/typed fields. Manual create and
+  future protected PENTA callers share current stored authority and transaction/
+  audit rules. Cloud teacher UPDATE/request contracts and finance/schema unchanged.
+- [x] Full API1,564/zero skips.15retained actual teacher SQL/service cases plus
+  one full-long-row/actual-optional-schema snapshot test PASS; no account creation
+  or model/tool registration. Exact source/reused API hashes verified. Final
+  window0fe1242e875d4264900fd701473c58a0/SQLc85148fed94f4420bfa0149614eeafac;
+  exact original services/images/API200/health/full inventory/owned cleanup and
+  released lease PASS. Prior API assertion/harness compilation failures retained.
+- [x] WORK_LAPTOP_START.md supplies exact repositories/branches, source hierarchy,
+  exclusions and continuation prompt. CLOUD_INTEGRATION_TRACKER.md lists actual
+  completed slices and remaining gates. Source snapshots and prior payroll/
+  finance/contracts/enrollment commits are already published.
+- [x] Owner approved one commit/push of this teacher checkpoint and handoff;
+  verify the actual published remote SHA and source-bound CI.
+  No exact-current-source GitHub CI or full AI/production readiness claim.
+- [ ] Next shared student onboarding, protected student/teacher host persistence/
+  approvals/receipt/recovery/migration integration, connected frontend and remaining
+  cohorts. Mini cloud portability FAILED; semantic model NOT ACCEPTED. Owner stop
+  before candidate loading stands. P0/device/security/restore/staging/release OPEN.
+
+Report: QA/REPORTS/PENTA_TEACHER_SERVICE_INTEGRATION_2026-10-29.md. Continue
+Sol High for consequential domain/authority integration; Sol Medium for settled
+UI/docs. No main merge/customer DB/Azure/model experiment. Current-source API
+subset is not a replacement for the preserved local3,183-test program.
+
 ## Enrollment integrated into shared backend — 29 October 2026
 
 - [x] Previous PENTA contract slice published/verified d44aea5; finance a74a9e4,
