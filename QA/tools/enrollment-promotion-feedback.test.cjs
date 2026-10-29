@@ -34,7 +34,7 @@ async function page(domain, config = {}) {
     if (init.method) {
       if (config.writeGate) await config.writeGate;
       if (config.network) throw Error('Synthetic network');
-      return { ok: !config.status, status: config.status || 201, json: async () => ({ message: config.message || 'Synthetic policy refusal.' }) };
+      return { ok: !config.status, status: config.status || 201, json: async () => { if(config.invalidJson)throw Error('Synthetic malformed body');return Object.hasOwn(config,'payload')?config.payload:{ message: config.message || 'Synthetic policy refusal.' }; } };
     }
     if (url === '/api/academies') return { ok: !config.academyStatus, json: async () => config.noAcademy ? [] : [{ id: 'owned' }] };
     assert.ok(Object.hasOwn(data, url), url);
@@ -47,7 +47,7 @@ async function page(domain, config = {}) {
     : n === '@/components/workspace-nav' ? { WorkspaceNav: 'nav' }
     : n === '@/components/standard-date-field' ? { StandardDateField: 'date' }
     : n === '@/components/design-system/controls' ? { StandardSelectField: 'select', StandardDateField: 'date' }
-    : (() => { throw Error(n); })(), module, module.exports, class { constructor(form) { this.fields = { ...form.fields }; } get(k) { return this.fields[k] ?? null; } }, { location: { search: '?studentId=student' }, prompt() { prompts++; return Object.hasOwn(config, 'prompt') ? config.prompt : ' Decision note '; } });
+    : n.endsWith('.module.css') ? { default: {} } : (() => { throw Error(n); })(), module, module.exports, class { constructor(form) { this.fields = { ...form.fields }; } get(k) { return this.fields[k] ?? null; } }, { location: { search: '?studentId=student' }, prompt() { prompts++; return Object.hasOwn(config, 'prompt') ? config.prompt : ' Decision note '; } });
   const render = () => { i = r = e = 0; return module.exports.default(); };
   async function settle() { for (let i = 0; i < 5; i++) { for (const fn of effects.splice(0)) fn(); await tick(); render(); } }
   render(); await settle(); for (const [k, v] of d.drafts) state.set(k, v);
@@ -58,9 +58,9 @@ async function page(domain, config = {}) {
       return () => { let released = false; const event = { preventDefault() {}, get currentTarget() { if (released) throw Error('Released currentTarget'); return forms[0]; } }; const result = h(event); released = true; return result; };
     }
     if (!promo) return () => {
-      const select = nodes(render()).find(n => n.type === 'select' && n.props.id === 'status-enrollment');
+      const select = nodes(render()).find(n => n.type === 'select' && (n.props.id ?? n.props.name) === 'status-enrollment');
       if (!select) return tree.find(n => n.type === 'select' && n.props.value === 'Active').props.onChange({ target: { value: 'Paused' } });
-      select.props.onChange({ target: { value: 'Paused' } });
+      select.props.onChange(select.props.name ? 'Paused' : { target: { value: 'Paused' } });
       nodes(render()).find(n => n.type === 'textarea' && n.props.id === 'reason-enrollment')?.props.onChange({ target: { value: ' Decision note ' } });
       return nodes(render()).filter(n => n.type === 'form')[1].props.onSubmit({ preventDefault() {} });
     };
@@ -112,6 +112,10 @@ for (const domain of Object.keys(defs)) for (const config of [{ noAcademy: true 
 test('Promotion prompt cancellation is not an approval or rejection', async () => { for (const action of ['approve', 'reject']) { const p = await page('promotions', { prompt: null }); p.state.set(5, 'Prior notice'); p.handler(action)(); await p.settle(); assert.equal(p.writes().length, 0); assert.equal(p.notice(), 'Prior notice'); } });
 test('Promotion rejection still requires a nonblank reason', async () => { const p = await page('promotions', { prompt: '  ' }); p.handler('reject')(); await p.settle(); assert.equal(p.writes().length, 0); assert.match(p.notice(), /reason is required/); });
 test('Promotion approval note remains optional and creation notes remain null when blank', async () => { const p = await page('promotions', { prompt: '', blank: true }); p.handler('approve')(); await p.settle(); assert.equal(JSON.parse(p.writes()[0].body).notes, ''); const q = await page('promotions', { blank: true }); q.handler('create')(); await q.settle(); assert.equal(JSON.parse(q.writes()[0].body).notes, null); });
-test('Enrollment duplicate409 remains understandable and draft is retained', async () => { const p = await page('enrollments', { status: 409 }); await p.handler('create')(); await p.settle(); assert.match(p.notice(), /already actively enrolled/); resets(p, 'create', false); });
+test('Enrollment duplicate409 displays the actual server duplicate rule and retains the draft', async () => { const message='The student already has an active or waitlisted enrollment in this batch. Activate the existing waitlist entry instead of creating another enrollment.'; const p = await page('enrollments', { status: 409, message }); await p.handler('create')(); await p.settle(); assert.equal(p.notice(),message); resets(p, 'create', false); });
+
+for(const action of ['create','status'])for(const message of ['The learner has not completed all course prerequisites for this batch.','This batch has reached its active enrolment capacity. Add the learner to the waitlist or select another batch.','This batch waitlist is full or not enabled.','This batch is not open for enrolment.'])test('Enrollment '+action+'409 reports authoritative '+message,async()=>{const p=await page('enrollments',{status:409,message});await p.handler(action)();await p.settle();assert.equal(p.notice(),message);resets(p,action,false);assert.equal(p.writes().length,1);assert.equal(p.calls.filter(c=>!c.method).length,4);});
+
+for(const config of [{payload:null},{payload:{}},{payload:{message:44}},{payload:{message:''}},{payload:{message:'   '}},{invalidJson:true}])test('Enrollment409 malformed/empty body uses neutral retained-draft fallback '+JSON.stringify(config),async()=>{const p=await page('enrollments',{status:409,...config});await p.handler('create')();await p.settle();assert.equal(p.notice(),'The change conflicts with the current enrolment rules. Your draft has been retained.');resets(p,'create',false);assert.equal(p.writes().length,1);});
 test('Enrollment optional start date remains null', async () => { const p = await page('enrollments'); p.state.set(6, ''); await p.handler('create')(); await p.settle(); assert.equal(JSON.parse(p.writes()[0].body).startDate, null); });
 test('Existing real API lifecycle reason validation is displayed, not bypassed or marked success', async () => { const reason = 'A lifecycle reason is required when changing an enrolment from Active.'; const p = await page('enrollments', { status: 400, message: reason }); p.handler('status')(); await p.settle(); assert.equal(p.notice(), reason); assert.deepEqual(JSON.parse(p.writes()[0].body), { status: 'Paused', endDate: null, lifecycleReason: 'Decision note' }); resets(p, 'status', false); });

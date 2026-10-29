@@ -2,7 +2,7 @@
 const fs = require('node:fs'), path = require('node:path'), http = require('node:http'), assert = require('node:assert/strict'), crypto = require('node:crypto');
 const { chromium } = require(process.env.QA_PLAYWRIGHT_MODULE || 'C:/Users/Admin/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
 const {verifyVendor,assertManual}=require('./penta-foundation-contract.cjs');verifyVendor();
-const root = path.resolve(__dirname, '../..'), web = fs.realpathSync(path.join(root, 'apps/web/out'));
+const root = path.resolve(__dirname, '../..'), web = require('./web-candidate-export.cjs').resolveExport(root);
 const evidence = path.join(root, 'QA/EVIDENCE', 'admin-manual-' + Date.now()); fs.mkdirSync(evidence, { recursive: true });
 const mime = { '.html': 'text/html', '.css': 'text/css', '.js': 'application/javascript', '.txt': 'text/plain', '.woff2': 'font/woff2', '.svg': 'image/svg+xml', '.ico': 'image/x-icon' };
 const server = http.createServer((req, res) => { try {

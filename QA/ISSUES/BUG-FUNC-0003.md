@@ -1,5 +1,27 @@
 # BUG-FUNC-0003 — Success notices are missing or cleared immediately by reload helpers
 
+25October Staff successor: create/role/offboard original actual-handler baseline
+one PASS/25FAIL. Durable confirmations, checked directory/typed receipts,
+synchronous cross-action lock, uncertain-result read recovery, refused drafts,
+late-unmount safety and offboard cancel retained;26handlers/typecheck/lint/fresh
+export PASS. Real four-journey functional52HTTP/three audit-failure controls/
+twelve success audits pass after a newly reproduced missing supported-role repair.
+Screenshot review then found nested mobile clipping; CSS-only containment build
+and final SQL `1f5446c9dd944ea5b00f046246f1ccf0`52native HTTP/four actual
+journeys/three faults/24–42nested control bounds/exact originals/inventory/paired
+qualifier now PASS. No whole
+form/device/release closure; see [Staff linked report](../REPORTS/STAFF_LINKED_FEEDBACK_2026-10-25.md).
+
+25October Access Review successor: actual source lost grant/revoke confirmation
+on readback and grant reset could throw after persistence. One-page durable
+feedback/pending/captured form/explicit uncertain-outcome recovery now16handler
+checks plus typecheck/lint/fresh627file offline build PASS. Final linked SQL
+`a0208b1abdfb465fa0d8086a856804d7`53native checks/four actual journeys/two
+audit500rollback-and-recovery controls/eight success audits/exact original
+services/inventory/qualifier PASS. Original28-route count unchanged; broader
+forms/device/release remain OPEN. See
+[Access Review report](../REPORTS/ACCESS_REVIEW_FEEDBACK_2026-10-25.md).
+
 2026-10-11 intake feedback successor: [report](../REPORTS/PHASE_2B_ONBOARDING_FEEDBACK_REPAIR.md),48 new/9 retained handler and48 new/32 retained synthetic browser checks PASS; lint0/0/types/export83. Checked readiness, synchronous pending/native disabling, truthful success/rejection/uncertainty, retained drafts and confirmed-student link fallback. Original payloads/navigation/backend authority unchanged; original28-route count unchanged. Prior SQL retained NOT rerun; linked/device/critical acceptance and issue remain OPEN.
 
 2026-10-10 onboarding successor: [optional-date report](../REPORTS/PHASE_2B_ONBOARDING_DATE_REPAIR.md) also captures both native forms before awaiting; teacher success/reset and student reset/redirect no longer dereference an expired event.9 handler/32 synthetic browser/23 native date-binding SQL cases PASS. Original28-route count unchanged; broader intake pending/unknown-response/readiness and live/device/full-critical gates remain OPEN.

@@ -1,5 +1,11 @@
 # BUG-DATA-0009 — Payroll profiles accept unchecked or mismatched worker links
 
+## Batch1 checkpoint — Payroll worker ownership — 2026-10-12
+
+Frozen native run01b4234af2754beea333e9eab435d7ed reproduced19/22 invalid POST/PUT links accepted. Same-academy/type-specific Teacher and Identity Staff checks now cover create/update/payout. Guarded linked run50823642199a46988c2ea153f2d4b69f rejects22/22 invalid cases with400 and unchanged exact five-table state, plus4 valid roundtrips. No role/model-supplied identity grants authority; legacy invalid profiles require correction before new payroll. Broader lifecycle/race/physical/release acceptance remains OPEN.
+
+Current bounded evidence: [Batch1 ledger](../REPORTS/BATCH_1_CORE_INTEGRITY.md). Changes are local/uncommitted; **OPEN / RETEST, not closed**. The original baseline fields and historical findings below are retained, not a claim that the new runtime checks were unexecuted.
+
 | Field | Value |
 | --- | --- |
 | Status | OPEN |

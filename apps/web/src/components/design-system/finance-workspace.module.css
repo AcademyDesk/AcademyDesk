@@ -1,0 +1,85 @@
+.page.page { width: min(100%, 1440px); min-width: 0; overflow-wrap: anywhere; }
+.page :is(header, section, article, fieldset, form) { min-width: 0; }
+.page :is(h1, h2, h3, h4, strong, b) { overflow-wrap: anywhere; }
+.page :is(:global(.surface-panel), :global(.expenses-panel), :global(.finance-summary-grid) article) { border-radius: 18px !important; border: 1px solid var(--ad-border); background: var(--ad-surface); }
+.page :is(:global(.enterprise-page-header), :global(.expenses-heading), :global(.finance-summary-heading)) { flex-wrap: wrap; gap: 16px; }
+.page :global(.enterprise-page-header) h1 { font-size: var(--ad-page-title-size); line-height: var(--ad-page-title-line-height); margin: 0; }
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-top: 24px; }
+.page .kpis strong { font-size: clamp(1.3rem, 2vw, 1.85rem); line-height: 1.4; font-variant-numeric: tabular-nums; }
+.layout { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, .8fr); align-items: start; gap: 24px; margin-top: 24px; }
+.tableScroll { overflow-x: auto; overscroll-behavior-x: contain; max-width: 100%; margin-top: 20px; }
+.tableScroll:focus-visible { outline: 3px solid var(--ad-accent); outline-offset: 3px; }
+.tableScroll table { min-width: 540px; width: 100%; }
+.tableScroll td { overflow-wrap: anywhere; max-width: 220px; }
+.page .tableScroll :global(.text-rose-300) { color: var(--ad-danger); }
+.page .tableScroll :global(.text-amber-200) { color: var(--ad-text); }
+.workAreas { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 16px; }
+.workAreas > a { min-width: 0; }
+.page.page :is(button, a) { min-height: 44px !important; white-space: normal; }
+.page a { display: inline-flex; align-items: center; padding: 8px 10px; border-radius: 12px; }
+.page .workAreas > a { display: block; padding: 18px; }
+.page button { border-radius: 12px !important; }
+.page :global(.standard-select-field) { display: grid; gap: 8px; min-width: 0; }
+.page :global(.standard-time-label) { color: var(--ad-text-muted); font-size: .875rem; font-weight: 650; line-height: 1.5; }
+.page :global(.expenses-layout) { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; align-items: start; }
+.page :global(.expenses-fields) { gap: 18px; padding: clamp(16px, 2vw, 24px); }
+.page :global(.expenses-fields > .standard-select-field) { align-self: start; }
+.page :global(.expenses-panel-header) { flex-wrap: wrap; gap: 16px; }
+.page :global(.expenses-filter) { width: min(100%, 320px); }
+.page :global(.expenses-list li) { min-width: 0; gap: 16px; flex-wrap: wrap; }
+.page :global(.expenses-list strong) { white-space: normal; overflow-wrap: anywhere; min-width: 0; }
+.page :global(.expenses-kpis) { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.page :global(.expenses-kpis) b { font-size: clamp(1.15rem, 1.7vw, 1.7rem); overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.page > button { margin-bottom: 18px; transform: none !important; }
+.page :is(:global(.fee-plans-panel), :global(.reminders-panel), :global(.reminders-history), :global(.fee-plans-kpis) article, :global(.reminders-kpis) article) { min-width: 0; border: 1px solid var(--ad-border); border-radius: 18px !important; background: var(--ad-surface); }
+.page :is(:global(.fee-plans-fields), :global(.fee-plan-edit-form)) { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; padding: 20px; }
+.page :is(:global(.fee-plans-panel-header), :global(.reminders-panel) > header) { flex-wrap: wrap; gap: 16px; }
+.page :global(.fee-plan-row) { min-width: 0; gap: 16px; flex-wrap: wrap; }
+.page :global(.fee-plan-row) > div { min-width: 0; }
+.page :global(.fee-plan-actions) { display: flex; flex-wrap: wrap; gap: 10px; }
+.page :is(:global(.fee-plan-row), :global(.reminders-panel) li) :is(strong, b, small) { white-space: normal; overflow-wrap: anywhere; }
+.page :global(.reminders-kpis) { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.page :global(.reminders-kpis) b { font-size: clamp(1.15rem, 1.7vw, 1.7rem); font-variant-numeric: tabular-nums; }
+.page :global(.reminders-panel) li { flex-wrap: wrap; gap: 16px; min-width: 0; }
+.page :global(.reminders-panel) li > div { min-width: 0; }
+.page :global(.reminders-filters) { display: flex; flex-wrap: wrap; gap: 8px; }
+.page :global(.reminders-history) li { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--ad-border); }
+.page :global(.reminders-message) { padding: 12px 16px; margin-block: 16px; border: 1px solid var(--ad-border); border-radius: 12px; background: var(--ad-surface); color: var(--ad-text); line-height: 1.6; }
+.queueHint { padding: 16px 20px 0; margin: 0; color: var(--ad-text-muted); font-size: .875rem; }
+.page :is(:global(.invoices-fields), :global(.payments-fields)) { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; padding: clamp(16px, 2vw, 24px); }
+.page :is(:global(.invoices-create), :global(.payments-create)) { overflow: visible; }
+.page :is(:global(.invoices-directory), :global(.payments-directory)) { min-width: 0; }
+.page :is(:global(.invoices-directory), :global(.payments-directory)) header { flex-wrap: wrap; gap: 12px; }
+.page :global(.payments-create) > button { margin: 0 24px 24px; max-width: calc(100% - 48px); }
+.page :global(.payments-selected) { display: grid; gap: 8px; padding: 16px; border: 1px solid var(--ad-border); border-radius: 12px; background: var(--ad-surface); }
+.page :global(.payments-directory) li { min-width: 0; overflow-wrap: anywhere; }
+.page :global(.payments-directory) :global(.text-cyan-200) { color: var(--ad-text); }
+@media screen {
+  .page :global(.invoice-paper) { max-width: 100%; overflow-wrap: anywhere; }
+  .page :global(.invoice-paper-actions) { display: flex; flex-wrap: wrap; gap: 12px; }
+  .page :global(.invoice-paper-table) { width: 100%; min-width: 0 !important; table-layout: fixed; }
+  .page :global(.invoice-theme-modern) :global(.invoice-paper-table) { width: calc(100% - 80px); }
+  .page :global(.invoice-theme-minimal) :global(.invoice-paper-table) { width: calc(100% - 56px); }
+  .page :global(.invoice-paper-table) :is(th, td) { overflow-wrap: anywhere; }
+  @media (max-width: 760px) {
+    .page :global(.invoice-paper) { padding: 16px; }
+    .page :global(.invoice-paper) :is(:global(.invoice-paper-header), :global(.invoice-paper-bill), :global(.invoice-paper-table), :global(.invoice-paper-total), :global(.invoice-paper-footer)) { margin-inline: 0; }
+    .page :global(.invoice-theme-modern) :global(.invoice-paper-header) { padding: 16px; }
+    .page :global(.invoice-paper-bill) { padding-inline: 8px; }
+    .page :global(.invoice-paper) :global(.invoice-paper-table) { width: 100%; }
+    .page :global(.invoice-paper-total) { justify-content: space-between; gap: 12px; align-items: baseline; }
+    .page :global(.invoice-paper-total) b { font-size: 1rem; white-space: nowrap; }
+    .page :global(.invoice-paper-total) span { min-width: 0; }
+    .page :global(.invoice-paper-signature) { min-width: 0; max-width: 100%; }
+  }
+}
+.page :global(.finance-summary-grid) { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.page :global(.finance-summary-grid) strong { font-size: clamp(1.3rem, 2vw, 1.85rem); font-variant-numeric: tabular-nums; }
+@media (max-width: 1100px) { .layout, .page :global(.expenses-layout) { grid-template-columns: minmax(0, 1fr); } .kpis, .workAreas, .page :global(.finance-summary-grid) { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 760px) {
+  .page :global(.reminders-kpis) { grid-template-columns: minmax(0, 1fr); }
+  .kpis, .workAreas, .page :global(.expenses-kpis), .page :global(.finance-summary-grid) { grid-template-columns: minmax(0, 1fr); }
+  .page :global(.expenses-fields) { grid-template-columns: minmax(0, 1fr); }
+  .page :global(.expenses-kpis) b { font-size: 1rem; line-height: 1.6; }
+  .page :is(input, textarea) { font-size: 16px; }
+}

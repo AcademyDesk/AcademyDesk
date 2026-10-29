@@ -1,4 +1,5 @@
 // Read-only exported application DOM; synthetic transport, never real academy data.
+const pick = require('./shared-picker-actions.cjs');
 const fs = require('node:fs'), path = require('node:path'), http = require('node:http'), assert = require('node:assert/strict');
 const { chromium } = require(process.env.QA_PLAYWRIGHT_MODULE || 'C:/Users/Admin/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
 const root = path.resolve(__dirname, '../..'), web = fs.realpathSync(path.join(root, 'apps/web/out'));
@@ -50,9 +51,9 @@ const image = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www
         if (removed !== 15) throw new Error('Unexpected repair rule count: ' + removed);
       });
       for (const [kind, themes] of [['Invoice', ['Classic', 'Modern', 'Minimal', 'Formal']], ['Payslip', ['Standard', 'Compact', 'Professional']]]) {
-        await page.locator('.finance-control-documents select').nth(0).selectOption(kind);
+        await pick.select(page, 'documentKind', kind);
         for (const theme of themes) {
-          await page.locator('.finance-control-documents select').nth(1).selectOption(theme);
+          await pick.select(page, 'documentTheme', theme);
           const preview = page.locator('.document-full-preview'); await preview.scrollIntoViewIfNeeded();
           await page.waitForFunction(theme => document.querySelector('.document-full-preview').classList.contains('document-template-' + theme.toLowerCase()), theme);
           const geometry = await preview.evaluate(el => {

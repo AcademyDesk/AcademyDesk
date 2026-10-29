@@ -39,10 +39,12 @@ function page(fields, ok = true) {
     return data;
   }
   new Function('require', 'module', 'exports', 'FormData', code)(name => {
-    if (name === 'react/jsx-runtime') return jsx;
+    if (name === 'next/image') return { default: 'img' }; if (name === 'react/jsx-runtime') return jsx;
     if (name === 'react') return react;
     if (name === '@/lib/api') return { academyApi: api, apiHeaders: () => ({ 'Content-Type': 'application/json' }) };
     if (name === 'next/navigation' || name.startsWith('@/components/') || name === '@/lib/teacher-workspace') return {};
+    // Unused by TeacherTasks; these imports belong to the existing payslip UI.
+    if (name.startsWith('../payroll/')) return {};
     throw new Error(`Unexpected import: ${name}`);
   }, module, module.exports, FormDataFromFixture);
   const render = () => { index = 0; return module.exports.QaTeacherTasks({ batches: [{ id: 'owned', name: 'Synthetic batch' }] }); };

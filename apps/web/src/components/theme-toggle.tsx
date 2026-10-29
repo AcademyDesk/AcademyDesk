@@ -1,13 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { useTheme } from "@/components/theme-provider";
+
+const subscribe = () => () => {};
+const clientSnapshot = () => true;
+const serverSnapshot = () => false;
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
-  const [hydrated, setHydrated] = useState(false);
-
-  useEffect(() => setHydrated(true), []);
+  // Same hydration boundary as the PENTA Manual theme, without a mount-effect
+  // state update. Server and first hydration attributes remain identical.
+  const hydrated = useSyncExternalStore(subscribe, clientSnapshot, serverSnapshot);
 
   return (
     <div className="theme-toggle" role="group" aria-label="Color theme">

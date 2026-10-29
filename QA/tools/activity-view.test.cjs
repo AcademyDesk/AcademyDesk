@@ -1,0 +1,40 @@
+// Real TSX/helper, controlled hooks/transport/lifecycle; no SQL/device acceptance.
+const fs=require('node:fs'),assert=require('node:assert/strict'),{test}=require('node:test');
+const ts=require('../../apps/web/node_modules/typescript'),jsx=require('../../apps/web/node_modules/react/jsx-runtime');
+const compile=file=>ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText;
+const helper={exports:{}};new Function('module','exports',compile('apps/web/src/lib/activity-view.ts'))(helper,helper.exports);
+const {activityDateKey,activityTimestamp,activityMatches,validActivityRecord}=helper.exports;
+const row={id:'row',action:'UpdatedStudent',entityType:'Student',occurredAtUtc:'2026-10-20T19:00:00',metadataJson:'Synthetic piano'};
+const now=Date.parse('2026-10-21T12:00:00Z'),filters={query:'',entity:'',period:'',date:'',now};
+const nodes=node=>node==null?[]:Array.isArray(node)?node.flatMap(nodes):typeof node==='object'?[node,...nodes(node.props?.children)]:[];
+const text=node=>node==null?'':Array.isArray(node)?node.map(text).join(''):typeof node==='object'?text(node.props?.children):String(node);
+const tick=()=>new Promise(resolve=>setImmediate(resolve));
+async function fixture(config={}){
+ let index=0,mounted=false;const state=[],effects=[],cleanups=[],calls=[],timers=new Map(),events=new Map(),documentEvents=new Map(),mod={exports:{}};
+ const react={useState:initial=>{const i=index++;if(!(i in state))state[i]=typeof initial==='function'?initial():initial;return[state[i],value=>state[i]=typeof value==='function'?value(state[i]):value];},useMemo:fn=>fn(),useEffect:fn=>{if(!mounted)effects.push(fn);}};
+ const eventApi=map=>({addEventListener:(key,fn)=>map.set(key,fn),removeEventListener:(key,fn)=>{if(map.get(key)===fn)map.delete(key);}});
+ const win={...eventApi(events),setInterval:(fn,ms)=>{assert.equal(ms,60000);timers.set(1,fn);return 1;},clearInterval:key=>timers.delete(key)};
+ const doc={...eventApi(documentEvents),visibilityState:'visible'};
+ const api=async(url,init)=>{calls.push({url,init});if(config.gate)await config.gate;if(config.network)throw Error('Synthetic transport');return{ok:!config.denied,json:async()=>{if(config.badJson)throw Error('Synthetic JSON');return url==='/api/academies'?(config.academies??[{id:'owned'}]):(config.rows??[row]);}};};
+ new Function('require','module','exports','window','document',compile('apps/web/src/app/activity/page.tsx'))(name=>name==='react/jsx-runtime'?jsx:name==='react'?react:name==='@/lib/api'?{academyApi:api}:name==='@/lib/activity-view'?helper.exports:name==='@/components/design-system/controls'?{StandardDateField:'date',StandardSelectField:'select'}:(()=>{throw Error(name)})(),mod,mod.exports,win,doc);
+ const render=()=>{index=0;const tree=mod.exports.default();mounted=true;return nodes(tree);};
+ render();effects.splice(0).forEach(fn=>cleanups.push(fn()));for(let i=0;i<4;i++){await tick();render();}
+ const set=(name,value)=>{const field=render().find(node=>node.props?.name===name||node.props?.['aria-label']===name);assert.ok(field,name);field.props.onChange(field.type==='input'?{target:{value}}:value);};
+ return{render,set,calls,events,documentEvents,timers,doc,words:()=>render().map(node=>text(node.props?.children)).join(' '),dispose:()=>cleanups.forEach(fn=>fn?.()),count:()=>render().filter(node=>node.type==='li').length};
+}
+
+test('UTC SQL timestamp and explicit Z/offset have identical IST civil date',()=>{assert.equal(activityDateKey(row.occurredAtUtc),'2026-10-21');assert.equal(activityTimestamp(row.occurredAtUtc),Date.parse(row.occurredAtUtc+'Z'));assert.equal(activityDateKey('2026-10-21T00:30:00+05:30'),'2026-10-21');});
+for(const value of ['bad','2026-10-21','2026-10-21T99:00:00Z','2026-13-01T00:00:00'])test('invalid wire timestamp '+value,()=>assert.equal(validActivityRecord({...row,occurredAtUtc:value}),false));
+for(const change of [{id:null},{action:[]},{entityType:''},{metadataJson:{}},{occurredAtUtc:null}])test('malformed row fails closed '+JSON.stringify(change),()=>assert.equal(validActivityRecord({...row,...change}),false));
+test('optional null or missing metadata remains supported',()=>{assert.equal(validActivityRecord({...row,metadataJson:null}),true);assert.equal(validActivityRecord({...row,metadataJson:undefined}),true);});
+for(const [period,days] of [['Today',1],['7 days',7],['30 days',30]])test('inclusive rolling boundary with future exclusion '+period,()=>{for(const [offset,expected] of [[0,true],[days*86400000,true],[days*86400000+1,false],[-1,false]])assert.equal(activityMatches({...row,occurredAtUtc:new Date(now-offset).toISOString()},{...filters,period}),expected);});
+test('all-time retains future records; unknown period fails closed',()=>{assert.equal(activityMatches({...row,occurredAtUtc:'2099-01-01T00:00:00Z'},filters),true);assert.equal(activityMatches(row,{...filters,period:'Forged'}),false);});
+test('combined metadata/text/entity/date filtering',()=>{assert.equal(activityMatches(row,{...filters,query:'PIANO',entity:'Student',date:'2026-10-21'}),true);assert.equal(activityMatches(row,{...filters,date:'2026-10-20'}),false);assert.equal(activityMatches(row,{...filters,entity:'Teacher'}),false);});
+test('render does not sample live clock even with records/rolling filter',async()=>{const f=await fixture();f.set('activity-period','Today');const original=Date.now;try{Date.now=()=>{throw Error('Clock read in render');};assert.doesNotThrow(f.render);}finally{Date.now=original;f.dispose();}});
+test('valid records load with labels and no writes',async()=>{const f=await fixture();assert.equal(f.count(),1);assert.match(f.words(),/1 matching events/);assert.equal(f.calls.length,2);assert.ok(f.calls.every(call=>!call.init.method&&call.init.signal instanceof AbortSignal));assert.equal(f.render().find(node=>node.props?.name==='activity-record-type').props.label,'Record type');f.dispose();});
+test('valid empty data is the only empty-register state',async()=>{const f=await fixture({rows:[]});assert.match(f.words(),/No activity recorded/);assert.doesNotMatch(f.words(),/unavailable until/);f.dispose();});
+for(const config of [{rows:{}},{rows:[{...row,occurredAtUtc:'bad'}]},{academies:{}},{academies:[null]},{denied:true},{network:true},{badJson:true}])test('failed or malformed read is not empty success '+JSON.stringify(config),async()=>{const f=await fixture(config);assert.equal(f.count(),0);assert.match(f.words(),/unavailable until the list loads/);assert.doesNotMatch(f.words(),/No activity recorded|0 matching events/);assert.ok(f.render().some(node=>node.props?.role==='alert'));assert.equal(f.render().find(node=>node.type==='input').props.disabled,true);f.dispose();});
+test('no academy does not issue a dependent read or show an empty audit trail',async()=>{const f=await fixture({academies:[]});assert.equal(f.calls.length,1);assert.match(f.words(),/Create your academy first/);assert.doesNotMatch(f.words(),/No activity recorded/);f.dispose();});
+test('filter state changes and clearing preserve read-only data',async()=>{const f=await fixture();f.set('Search activity','not found');assert.equal(f.count(),0);f.render().find(node=>node.type==='button'&&node.props.children==='Clear filters').props.onClick();assert.equal(f.count(),1);assert.equal(f.calls.length,2);f.dispose();});
+test('focus/visibility/timer clock updates and cleanup issue no requests',async()=>{const f=await fixture();f.events.get('focus')();f.documentEvents.get('visibilitychange')();f.timers.get(1)();assert.equal(f.calls.length,2);f.dispose();assert.equal(f.events.size,0);assert.equal(f.documentEvents.size,0);assert.equal(f.timers.size,0);assert.equal(f.calls[0].init.signal.aborted,true);});
+test('unmounted pending read cannot start dependent request or publish data',async()=>{let release;const gate=new Promise(resolve=>release=resolve),f=await fixture({gate});f.dispose();release();for(let i=0;i<3;i++)await tick();assert.equal(f.calls.length,1);assert.equal(f.count(),0);assert.match(f.words(),/Loading activity/);});

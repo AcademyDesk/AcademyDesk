@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { academyApi } from "@/lib/api";
+import styles from "@/components/design-system/scheduling-workspace.module.css";
 
 type Academy = { id: string };
 type Batch = {
@@ -310,11 +311,11 @@ export default function CalendarPage() {
     .sort((a, b) => +a.start - +b.start);
   if (!month) return <main className="enterprise-settings workspace-calendar" aria-busy="true"><p>Loading calendar…</p></main>;
   return (
-    <main className="enterprise-settings workspace-calendar">
+    <main className={`enterprise-settings workspace-calendar ${styles.page}`}>
         <header className="workspace-calendar-heading">
           <div className="workspace-calendar-title">
             <span className="workspace-calendar-title-icon" aria-hidden="true">▦</span>
-            <div><p>Workspace</p><h1>Calendar</h1><span>Classes, make-ups and academy events in one view. All dates and times use India time (IST).</span></div>
+            <div><p>Workspace</p><h1>Calendar</h1></div>
           </div>
           <div className="workspace-calendar-month-actions" aria-label="Calendar navigation">
             <button
@@ -361,7 +362,9 @@ export default function CalendarPage() {
               ))}
             </div>
           </header>
-          {message && <p className="enterprise-page-state enterprise-page-state-loading workspace-calendar-message">{message}</p>}
+          {message && <p role="status" aria-live="polite" className="enterprise-page-state enterprise-page-state-loading workspace-calendar-message">{message}</p>}
+          <p className={styles.calendarHint}>Times use IST. Scroll the month grid horizontally on smaller screens, or use the month agenda below.</p>
+          <div className={styles.monthScroll} role="region" aria-label="Month calendar — scroll horizontally to view all days" tabIndex={0}>
           <section className="calendar-grid">
           {names.map((name) => (
             <div key={name} className="calendar-weekday">
@@ -413,6 +416,7 @@ export default function CalendarPage() {
             );
           })}
           </section>
+          </div>
         </section>
         <section className="workspace-calendar-agenda">
           <header className="workspace-calendar-agenda-header">

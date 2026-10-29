@@ -2,7 +2,9 @@
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { academyApi, apiHeaders } from "@/lib/api";
-import { StandardDateField, StandardSelectField } from "@/components/design-system/controls";
+import { StandardDateField, StandardSelectField, StandardTimeField } from "@/components/design-system/controls";
+import { OnboardingField } from "@/components/design-system/onboarding-field";
+import styles from "@/components/design-system/onboarding.module.css";
 
 type Academy = { id: string };
 type SubjectEntry = { subject: string; certification: string };
@@ -16,6 +18,7 @@ export default function TeacherOnboardingPage() {
   const [joiningDate, setJoiningDate] = useState("");
   const [message, setMessage] = useState("Loading teacher onboarding…");
   const [saving, setSaving] = useState(false);
+  const [availabilityTimes, setAvailabilityTimes] = useState<Record<string, string>>({});
   const pending = useRef(false);
   const active = useRef(true);
 
@@ -89,6 +92,7 @@ export default function TeacherOnboardingPage() {
       setSubjects([{ subject: "", certification: "" }]);
       setDateOfBirth("");
       setJoiningDate("");
+      setAvailabilityTimes({});
       setMessage("Teacher onboarded. Add payment details from the Teacher payment details section.");
     } catch {
       if (active.current) setMessage("Teacher creation could not be confirmed. Your details have been retained. Check Teacher Management before retrying.");
@@ -99,38 +103,39 @@ export default function TeacherOnboardingPage() {
   }
 
   return (
-    <main className="enterprise-settings teacher-standard teacher-onboarding-standard">
-      <header className="teacher-onboarding-heading"><div className="teacher-onboarding-title"><span className="teacher-onboarding-title-icon" aria-hidden="true">+</span><div><p>Teachers</p><h1>Onboarding</h1><span>Create the teaching record, subjects, availability, and employment details in one intake.</span></div></div></header>
+    <main className={`enterprise-settings teacher-standard teacher-onboarding-standard ${styles.page}`}>
+      <header className="teacher-onboarding-heading"><div className="teacher-onboarding-title"><span className="teacher-onboarding-title-icon" aria-hidden="true">+</span><div><p>Teachers</p><h1>Onboarding</h1></div></div></header>
       {message && <p role="status" aria-live="polite" aria-atomic="true" className="enterprise-page-state enterprise-page-state-loading teacher-onboarding-message">{message}</p>}
       <form onSubmit={submit} aria-busy={saving} className="teacher-onboarding-form">
         <fieldset className="contents" disabled={saving || !academy} aria-label="Teacher onboarding details">
         <section className="surface-panel onboarding-section">
           <div className="onboarding-section-header"><span>01</span><div><h3>Personal details</h3></div></div>
           <div className="onboarding-fields onboarding-fields-2">
-            <input required name="firstName" placeholder="First name" />
-            <input required name="lastName" placeholder="Last name" />
-            <input required type="email" name="email" placeholder="Email" />
-            <input name="phone" placeholder="Phone" />
-            <input className="onboarding-span-all" name="addressLine1" placeholder="Address" />
-            <input name="city" placeholder="City" />
-            <input name="state" placeholder="State" />
-            <input name="postalCode" placeholder="Postal / PIN code" />
+            <OnboardingField label="First name (required)"><input required name="firstName" placeholder="First name" /></OnboardingField>
+            <OnboardingField label="Last name (required)"><input required name="lastName" placeholder="Last name" /></OnboardingField>
+            <OnboardingField label="Email (required)"><input required type="email" name="email" placeholder="Email" /></OnboardingField>
+            <OnboardingField label="Phone (optional)"><input type="tel" name="phone" placeholder="Phone" /></OnboardingField>
+            <OnboardingField wide label="Address (optional)"><input name="addressLine1" placeholder="Address" /></OnboardingField>
+            <OnboardingField label="City (optional)"><input name="city" placeholder="City" /></OnboardingField>
+            <OnboardingField label="State (optional)"><input name="state" placeholder="State" /></OnboardingField>
+            <OnboardingField label="Postal / PIN code (optional)"><input name="postalCode" placeholder="Postal / PIN code" /></OnboardingField>
           </div>
         </section>
 
         <section className="surface-panel onboarding-section">
           <div className="onboarding-section-header"><span>02</span><div><h3>Professional details</h3></div></div>
           <div className="onboarding-fields">
-            <input name="qualifications" placeholder="Highest degree / qualification" />
+            <OnboardingField label="Highest degree / qualification (optional)"><input name="qualifications" placeholder="Highest degree / qualification" /></OnboardingField>
             <div className="teacher-subjects onboarding-span-all">
               <div className="teacher-subjects-header"><label>Subjects taught</label><button type="button" className="teacher-inline-button" onClick={() => { if (!pending.current) setSubjects((current) => [...current, { subject: "", certification: "" }]); }}>Add subject</button></div>
               {subjects.map((entry, index) => <div className="teacher-subject-row" key={`subject-${index}`}>
-                <input required value={entry.subject} onChange={(event) => updateSubject(index, "subject", event.target.value)} placeholder="Subject, e.g. Piano" aria-label={`Subject ${index + 1}`} />
-                <input value={entry.certification} onChange={(event) => updateSubject(index, "certification", event.target.value)} placeholder="Certification (optional)" aria-label={`Certification for subject ${index + 1}`} />
-                {subjects.length > 1 && <button type="button" className="teacher-remove-button" onClick={() => { if (!pending.current) setSubjects((current) => current.filter((_, subjectIndex) => subjectIndex !== index)); }}>Remove</button>}
+                <OnboardingField label={`Subject ${index + 1} (required)`}><input required value={entry.subject} onChange={(event) => updateSubject(index, "subject", event.target.value)} placeholder="Subject, e.g. Piano" aria-label={`Subject ${index + 1}`} /></OnboardingField>
+                <OnboardingField label={`Certification for subject ${index + 1} (optional)`}><input value={entry.certification} onChange={(event) => updateSubject(index, "certification", event.target.value)} placeholder="Certification (optional)" aria-label={`Certification for subject ${index + 1}`} /></OnboardingField>
+                {subjects.length > 1 && <button type="button" aria-label={`Remove subject ${index + 1}`} className="teacher-remove-button" onClick={() => { if (!pending.current) setSubjects((current) => current.filter((_, subjectIndex) => subjectIndex !== index)); }}>Remove</button>}
               </div>)}
             </div>
             <StandardSelectField
+              label="Employment type"
               name="employmentType"
               value={employmentType}
               onChange={setEmploymentType}
@@ -141,15 +146,15 @@ export default function TeacherOnboardingPage() {
                 { value: "Contract", label: "Contract" },
               ]}
             />
-            <StandardDateField name="dateOfBirth" label="Date of birth (DOB)" value={dateOfBirth} onChange={setDateOfBirth} />
-            <StandardDateField name="joiningDate" label="Joining date" value={joiningDate} onChange={setJoiningDate} />
+            <StandardDateField name="dateOfBirth" label="Date of birth (DOB) (optional)" value={dateOfBirth} onChange={setDateOfBirth} />
+            <StandardDateField name="joiningDate" label="Joining date (optional)" value={joiningDate} onChange={setJoiningDate} />
           </div>
         </section>
 
         <section className="surface-panel onboarding-section">
           <div className="onboarding-section-header"><span>03</span><div><h3>Availability</h3></div></div>
           <div className="availability-list">
-            {days.map((day) => <div key={day} className="availability-row"><label className="consent-check"><input type="checkbox" name={`available-${day}`} />{day}</label><input type="time" name={`from-${day}`} aria-label={`${day} start time`} /><input type="time" name={`to-${day}`} aria-label={`${day} end time`} /></div>)}
+            {days.map((day) => <div key={day} className="availability-row"><label className="consent-check"><input type="checkbox" name={`available-${day}`} />{day}</label>{(["from", "to"] as const).map((edge) => <StandardTimeField key={edge} name={`${edge}-${day}`} label={`${day} ${edge === "from" ? "start" : "end"} time`} value={availabilityTimes[`${edge}-${day}`] || ""} onChange={(value) => { if (!pending.current) setAvailabilityTimes((current) => ({ ...current, [`${edge}-${day}`]: value })); }} intervalMinutes={1} allowClear />)}</div>)}
           </div>
         </section>
 

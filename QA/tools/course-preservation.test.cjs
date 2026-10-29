@@ -21,6 +21,7 @@ async function exercise({ type, populated = true, action = 'edit', failure = fal
     const module = { exports: {} };
     new Function('require','module','exports',code)(name => {
       if (name === 'react/jsx-runtime') return jsx;
+      if (name.endsWith('.module.css')) return { default: {} };
       if (name === 'react') return { useState: value => { const key = index++; return [state.has(key) ? state.get(key) : initial[key] ?? value, value => state.set(key,value)]; },
         useRef: value => refs[refIndex++] ??= { current:value }, useEffect: () => {} };
       if (name === '@/components/workspace-nav') return { WorkspaceNav: 'nav' };

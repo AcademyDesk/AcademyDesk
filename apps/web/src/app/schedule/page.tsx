@@ -1,8 +1,11 @@
 "use client";
 
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { WorkspaceNav } from "@/components/workspace-nav";
 import { academyApi, apiHeaders } from "@/lib/api";
+import { StandardSelectField, StandardDateTimeField } from "@/components/design-system/controls";
+import { OnboardingField } from "@/components/design-system/onboarding-field";
+import styles from "@/components/design-system/scheduling-workspace.module.css";
 
 type Academy = { id: string; name: string };
 type Batch = {
@@ -55,8 +58,7 @@ export default function SchedulePage() {
   const [savingId, setSavingId] = useState<string | null>(null);
   const saving = useRef(false);
 
-  async function load(academyId?: string, confirmation = "") {
-    const id = academyId ?? academy?.id;
+  const load = useCallback(async (id: string | undefined, confirmation = "", applyInitialBatch = false) => {
     if (!id) return;
     const [batchResponse, teacherResponse, branchResponse, sessionResponse] =
       await Promise.all([
@@ -76,19 +78,19 @@ export default function SchedulePage() {
     setTeachers(await teacherResponse.json());
     setBranches(await branchResponse.json());
     setSessions(await sessionResponse.json());
-    if (!batchId && batchData.length) {
+    if (applyInitialBatch && batchData.length) {
       const initialBatch = batchData[0];
       setBatchId(initialBatch.id);
       setTeacherId(initialBatch.teacherId ?? "");
       setBranchId(initialBatch.branchId ?? "");
     }
     setMessage(confirmation);
-  }
+  }, []);
 
   async function refreshAfterSave(confirmation: string) {
     setMessage(confirmation);
     try {
-      await load(academy?.id, confirmation);
+      await load(academy?.id, confirmation, !batchId);
     } catch {
       setMessage(`${confirmation} The schedule could not be refreshed. Reload to view the latest classes; do not submit the saved action again.`);
     }
@@ -109,7 +111,7 @@ export default function SchedulePage() {
             "Create an academy, course, and batch before scheduling a class.",
           );
         setAcademy(academies[0]);
-        await load(academies[0].id);
+        await load(academies[0].id, "", true);
       } catch {
         setMessage(
           "The schedule could not be loaded. Confirm the API is running on port 5092.",
@@ -117,7 +119,7 @@ export default function SchedulePage() {
       }
     }
     void initialise();
-  }, []);
+  }, [load]);
 
   function applyBatchDefaults(id: string) {
     if (saving.current) return;
@@ -215,106 +217,63 @@ export default function SchedulePage() {
     branches.find((branch) => branch.id === id)?.name ?? "No branch";
 
   return (
-    <main className="enterprise-settings enterprise-legacy-standard min-h-screen bg-slate-950 text-slate-100">
+    <main className={`enterprise-settings enterprise-legacy-standard min-h-screen bg-slate-950 text-slate-100 ${styles.page}`}>
       <WorkspaceNav />
-      <div className="mx-auto max-w-6xl px-6 py-10">
-        <p className="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-300">
-          Timetable
-        </p>
-        <h1 className="mt-3 text-4xl font-semibold tracking-tight">
-          Class schedule
-        </h1>
-        <p className="mt-3 text-slate-300">
-          Schedule individual classes for your batches. Times use India Standard
-          Time (IST) and are stored safely in UTC.
-        </p>
+      <div className={styles.scheduleBody}>
+        <header className={styles.scheduleHeading}><span aria-hidden="true">▦</span><div><p>Class &amp; batch</p><h1>Class schedule</h1></div></header>
         {message && (
           <p role="status" aria-live="polite" aria-atomic="true" className="mt-6 rounded-lg border border-slate-700 bg-slate-900 p-4 text-sm text-slate-100">
             {message}
           </p>
         )}
-        <section className="mt-8 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+        <section className={styles.scheduleLayout}>
           <form
             onSubmit={createSession}
-            className="rounded-2xl border border-slate-800 bg-slate-900 p-6"
+            className={styles.scheduleForm}
             aria-busy={savingId === "create"}
           >
             <h2 className="text-xl font-semibold">Schedule a class</h2>
-            <select
+            <StandardSelectField
+              name="schedule-batch" label="Batch (required)" placeholder="Select batch"
               value={batchId}
               disabled={savingId !== null}
-              aria-label="Batch"
-              onChange={(event) => applyBatchDefaults(event.target.value)}
-              className="mt-5 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
-              required
-            >
-              <option value="">Select batch</option>
-              {batches.map((batch) => (
-                <option key={batch.id} value={batch.id}>
-                  {batch.name}
-                </option>
-              ))}
-            </select>
-            <select
+              onChange={applyBatchDefaults}
+              options={batches.map(batch => ({ value: batch.id, label: batch.name }))}
+            />
+            <StandardSelectField
+              name="schedule-teacher" label="Teacher (optional)" placeholder="No teacher assigned"
               value={teacherId}
               disabled={savingId !== null}
-              aria-label="Teacher"
-              onChange={(event) => setTeacherId(event.target.value)}
-              className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
-            >
-              <option value="">No teacher assigned</option>
-              {teachers.map((teacher) => (
-                <option key={teacher.id} value={teacher.id}>
-                  {teacher.firstName} {teacher.lastName}
-                </option>
-              ))}
-            </select>
-            <select
+              onChange={setTeacherId}
+              options={teachers.map(teacher => ({ value: teacher.id, label: `${teacher.firstName} ${teacher.lastName}` }))}
+            />
+            <StandardSelectField
+              name="schedule-branch" label="Branch (optional)" placeholder="No branch assigned"
               value={branchId}
               disabled={savingId !== null}
-              aria-label="Branch"
-              onChange={(event) => setBranchId(event.target.value)}
-              className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
-            >
-              <option value="">No branch assigned</option>
-              {branches.map((branch) => (
-                <option key={branch.id} value={branch.id}>
-                  {branch.name}
-                </option>
-              ))}
-            </select>
+              onChange={setBranchId}
+              options={branches.map(branch => ({ value: branch.id, label: branch.name }))}
+            />
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
-              <input
-                type="datetime-local"
+              <StandardDateTimeField name="schedule-start" label="Start (IST)"
                 value={startLocal}
                 disabled={savingId !== null}
-                aria-label="Start time (IST)"
-                onChange={(event) => setStartLocal(event.target.value)}
-                className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
-                required
+                onChange={setStartLocal}
               />
-              <input
-                type="datetime-local"
+              <StandardDateTimeField name="schedule-end" label="End (IST)"
                 value={endLocal}
                 disabled={savingId !== null}
-                aria-label="End time (IST)"
-                onChange={(event) => setEndLocal(event.target.value)}
-                className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
-                required
+                onChange={setEndLocal}
               />
             </div>
-            <select
+            <StandardSelectField
+              name="schedule-mode" label="Delivery mode" placeholder="Select delivery mode"
               value={deliveryMode}
               disabled={savingId !== null}
-              aria-label="Delivery mode"
-              onChange={(event) => setDeliveryMode(event.target.value)}
-              className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
-            >
-              <option value="InPerson">In person</option>
-              <option value="Online">Online</option>
-              <option value="Hybrid">Hybrid</option>
-            </select>
-            <input
+              onChange={setDeliveryMode}
+              options={[{value:"InPerson",label:"Offline"},{value:"Online",label:"Online"},{value:"Hybrid",label:"Hybrid"}]}
+            />
+            <OnboardingField label={["Online", "Hybrid"].includes(deliveryMode) ? "Meeting link (required)" : "Room (optional)"}><input
               value={roomName}
               disabled={savingId !== null}
               aria-label={["Online", "Hybrid"].includes(deliveryMode) ? "Meeting link" : "Room"}
@@ -326,7 +285,7 @@ export default function SchedulePage() {
                   : "Room (optional)"
               }
               className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
-            />
+            /></OnboardingField>
             <button
               disabled={!academy || batches.length === 0 || savingId !== null}
               className="mt-5 w-full rounded-lg bg-cyan-400 px-4 py-2.5 font-semibold text-slate-950 hover:bg-cyan-300 disabled:opacity-60"
@@ -334,7 +293,7 @@ export default function SchedulePage() {
               {savingId === "create" ? "Saving class…" : "Schedule class"}
             </button>
           </form>
-          <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+          <section className={styles.sessionPanel}>
             <h2 className="text-xl font-semibold">Scheduled classes</h2>
             {sessions.length === 0 ? (
               <p className="mt-6 text-slate-400">No classes scheduled yet.</p>
@@ -373,23 +332,15 @@ export default function SchedulePage() {
                       </span>
                     </div>
                     <div className="mt-3 flex items-center gap-2">
-                      <select
+                      <StandardSelectField
+                        name={`session-status-${session.id}`} label={`Status for ${batchName(session.batchId)}`} placeholder="Select class status"
                         value={session.status}
-                        onChange={(event) =>
-                          void updateStatus(session, event.target.value)
+                        onChange={(value) =>
+                          { if (value) void updateStatus(session, value); }
                         }
                         disabled={savingId !== null}
-                        aria-label={`Status for ${batchName(session.batchId)}`}
-                        className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 text-sm"
-                      >
-                        <option>Scheduled</option>
-                        <option>Completed</option>
-                        <option>Cancelled</option>
-                        <option>NoShow</option>
-                      </select>
-                      <span className="text-xs text-slate-500">
-                        Update status
-                      </span>
+                        options={["Scheduled", "Completed", "Cancelled", "NoShow"].map(status => ({value:status,label:status}))}
+                      />
                     </div>
                   </li>
                 ))}

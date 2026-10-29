@@ -1,5 +1,14 @@
 # BUG-FUNC-0001 — Async form reset throws after successful persistence
 
+25October Access Review successor: actual handler reproduction16cases/one PASS/
+15FAIL includes null reset after confirmed grant. One-page form capture/durable
+notice/pending/uncertain-result recovery repair now16/16PASS; fresh typecheck/lint/
+627file offline build PASS. Final SQL `a0208b1abdfb465fa0d8086a856804d7`
+53native checks/four actual390/1440light-dark grant/revoke journeys/two audit
+rollback controls/eight success audits/exact originals/inventory/paired qualifier
+PASS. Failed QA/RAM parents retained; wider reset sites/device/release OPEN. See
+[Access Review report](../REPORTS/ACCESS_REVIEW_FEEDBACK_2026-10-25.md).
+
 | Field | Value |
 | --- | --- |
 | Status | OPEN |

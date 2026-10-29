@@ -5,6 +5,13 @@
 .heading p { margin:0; color:var(--penta-text-muted); line-height:1.5; font-size:14px; }
 .status { font-size:13px; color:var(--penta-accent); white-space:nowrap; }
 .status small { display:block; color:var(--penta-text-muted); font-size:11px; margin-top:8px; }
+.readiness { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:16px; padding:18px; margin-bottom:20px; border:1px solid var(--penta-border); border-radius:var(--penta-radius-card); background:var(--penta-surface); }
+.readiness > div:first-child { flex:1 1 280px; min-width:0; }
+.readiness strong { font-size:14px; }
+.readiness p { margin:8px 0 0; color:var(--penta-text-muted); font-size:13px; line-height:1.6; }
+.readinessActions { display:flex; flex-wrap:wrap; align-items:center; gap:12px; }
+.readinessActions a { padding:12px 0; font-size:13px; }
+.page .readinessActions button { min-height:var(--penta-touch-target)!important; height:auto!important; max-height:none!important; }
 .page button { cursor:pointer; font:inherit; border:1px solid var(--penta-border); border-radius:var(--penta-radius-control); background:var(--penta-surface); color:var(--penta-text); min-height:var(--penta-touch-target); padding:8px 14px; }
 .page button:disabled { opacity:.5; cursor:default; }
 /* Isolate PENTA from the legacy ERP's compact, !important button rules. */

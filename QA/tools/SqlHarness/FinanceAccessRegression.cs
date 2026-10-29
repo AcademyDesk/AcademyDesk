@@ -25,7 +25,9 @@ internal static partial class SqlHarnessEntryPoint
             academyB = await db.Academies.Where(x => x.Name == "Synthetic Academy B").Select(x => x.Id).SingleAsync();
             studentA = await db.Students.Where(x => x.AcademyId == academyA).Select(x => x.Id).SingleAsync();
             studentB = await db.Students.Where(x => x.AcademyId == academyB).Select(x => x.Id).SingleAsync();
-            teacher = await db.Teachers.Where(x => x.AcademyId == academyA).Select(x => x.Id).SingleAsync();
+            // Combined Batch1 also seeds a distinct teacher for payroll privacy.
+            // Keep these retained access cases on the original authenticated fixture.
+            teacher = await db.Teachers.Where(x => x.AcademyId == academyA && x.FirstName == "Synthetic").Select(x => x.Id).SingleAsync();
         }
         var foreign = await SeedAccessFixtureAsync(factory, academyB, studentB, null);
         (string Name, string Email, bool Finance, bool Payroll)[] actors = [

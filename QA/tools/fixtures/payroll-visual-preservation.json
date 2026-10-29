@@ -1,0 +1,53 @@
+{
+  "path": "apps/web/src/app/payroll/page.tsx",
+  "entries": [
+    {
+      "name": "load",
+      "sha256": "3d5b298b3c86ad54f6f6f04a2e05a5600fff9d78c8fe9e4b81951e877b29b98d"
+    },
+    {
+      "name": "workers",
+      "sha256": "eb7367079c51390be38cd4b3dda08284e9b2de1746c6b0521e8377e7f0fff63d"
+    },
+    {
+      "name": "activeProfiles",
+      "sha256": "e37baca7d6c75499649b2729216c22d28bea6e2d974f808570a9323b8c50665e"
+    },
+    {
+      "name": "currentProfile",
+      "sha256": "afdcf3aaa5d96e39b597f5d7e4f60efa806ebd985c2c03233ec2f57a8c458dd7"
+    },
+    {
+      "name": "refreshRegister",
+      "sha256": "2ff9066497b9c9c2c644eaeef41d7ca1edcb08ef1fc65fea490b4dafcf4d535d"
+    },
+    {
+      "name": "save",
+      "sha256": "27c3328758d12c5ef68414725aad2c9fc6bca135d1e40ca4c93209f2c20e5441"
+    },
+    {
+      "name": "createProfile",
+      "sha256": "4cd566bf47445f8fec729507136e9df9d2bbff45cae6c906dbaaab13ee6e1692"
+    },
+    {
+      "name": "pay",
+      "sha256": "a60cbb05819c26cfce1f80ce12486f60509993471ab698a4b690cd7132c6be1e"
+    },
+    {
+      "name": "blocked",
+      "sha256": "fe8be87f12e1a09cbae38cec621b733f9be1999892ff9d76b52a33caa60e9439"
+    },
+    {
+      "name": "teacherProfiles",
+      "sha256": "7d605411ce770e7d418791f2e8751760e454c8640f37d9e95bc081e729d6500d"
+    },
+    {
+      "name": "paidThisCycle",
+      "sha256": "1773df21fa7c40a49e4da205d30474f152ab2a7403b632bb27ee60aafcc580c7"
+    }
+  ],
+  "hashes": {
+    "apps/web/src/app/payroll/payroll-money.ts": "1b0ca0680a06a3efd13f3b1acdc641797bdd53ec9782fbd67c8bdec60ed700b5",
+    "apps/web/src/app/payroll/payslip.tsx": "40b3b98f9ac73d77aa2da8d6cd557b3768f969922c9414662c9ffd45f95c31d6"
+  }
+}

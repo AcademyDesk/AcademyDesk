@@ -10,6 +10,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore.Storage;
+using AcademyDesk.Api.Controllers;
+using AcademyDesk.Api.Infrastructure;
+using System.Security.Claims;
 using Microsoft.Extensions.DependencyInjection;
 
 internal static partial class SqlHarnessEntryPoint
@@ -134,6 +138,74 @@ internal static partial class SqlHarnessEntryPoint
         await Check("foreign-route", HttpStatusCode.Forbidden, bypass, foreign);
         if (count != 21) throw new InvalidOperationException("Incomplete onboarding atomic matrix.");
         Console.WriteLine("PASS: ONBOARDINGATOMIC all 21 native SQL/Identity/HTTP cases; fault-stage rollback, successful account roles, optional accounts, Owner/platform opt-in and denied no-write controls.");
+
+        // Additive direct-domain checks: the existing 21 HTTP assertions/count stay unchanged.
+        var inactiveId = await CreateAccessActorAsync(factory, "qa-onboarding-service-inactive@example.invalid", "AcademyAdmin", academy);
+        using (var setup = factory.Services.CreateScope())
+        {
+            var users = setup.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+            var inactive = (await users.FindByIdAsync(inactiveId.ToString()))!;
+            inactive.IsActive = false;
+            if (!(await users.UpdateAsync(inactive)).Succeeded) throw new InvalidOperationException("Inactive service fixture failed.");
+        }
+        foreach (var mode in new[] { "no-boundary", "different-transactions", "teacher", "foreign", "anonymous", "inactive", "success-rolled-back" })
+        {
+            var before = await Snapshot();
+            using (var direct = factory.Services.CreateScope())
+            {
+                var db = direct.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+                var identity = direct.ServiceProvider.GetRequiredService<IdentityDbContext>();
+                var users = direct.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+                var email = mode == "teacher" ? "qa-teacher-a@example.invalid" : mode == "inactive"
+                    ? "qa-onboarding-service-inactive@example.invalid" : "qa-admin-a@example.invalid";
+                var actor = (await users.FindByEmailAsync(email))!;
+                var principal = mode == "anonymous" ? new ClaimsPrincipal() : new ClaimsPrincipal(new ClaimsIdentity(
+                    [new Claim(ClaimTypes.NameIdentifier, actor.Id.ToString())], "SyntheticHost"));
+                await using var domainTx = mode == "no-boundary" ? null : await db.Database.BeginTransactionAsync();
+                if (domainTx is not null && mode != "different-transactions")
+                    identity.Database.SetDbConnection(db.Database.GetDbConnection(), contextOwnsConnection: false);
+                await using var identityTx = mode == "no-boundary" ? null : mode == "different-transactions"
+                    ? await identity.Database.BeginTransactionAsync() : await identity.Database.UseTransactionAsync(domainTx!.GetDbTransaction());
+                var request = JsonSerializer.Deserialize<StudentOnboardingRequest>("""{"StudentFirstName":"Synthetic","StudentLastName":"Shared service","DateOfBirth":"2000-01-01"}""")!;
+                var result = await direct.ServiceProvider.GetRequiredService<StudentOnboardingService>().CreateAsync(
+                    principal, mode == "foreign" ? foreign : academy, request, CancellationToken.None);
+                var expected = mode is "no-boundary" or "different-transactions" ? 503 : mode == "success-rolled-back" ? 200 : 403;
+                if (result.HttpStatus != expected) throw new InvalidOperationException("Direct onboarding guard mismatch: " + mode);
+                if (expected == 200 && (result.Result is null || result.Result.StudentAccountCreated || result.Result.ParentAccountCreated ||
+                    !await db.Students.AnyAsync(x => x.Id == result.Result.Id && x.AcademyId == academy)))
+                    throw new InvalidOperationException("Shared service optional account behaviour changed.");
+                if (domainTx is not null) await domainTx.RollbackAsync();
+                if (mode == "different-transactions" && identityTx is not null) await identityTx.RollbackAsync();
+            }
+            if (before != await Snapshot()) throw new InvalidOperationException("Direct service guard/rollback changed domain/Identity/audit state: " + mode);
+            Console.WriteLine("PASS: ONBOARDINGSERVICE " + mode + "; real SQL boundary/authority/rollback verified");
+        }
+        Console.WriteLine("PASS: ONBOARDINGSERVICE all 7 additive direct SQL/Identity guard cases; no committed records or synthetic approval claims.");
+        await VerifyPentaOnboardingDraftsAsync(factory, manifest);
+        await VerifyPentaOnboardingExecutionAsync(factory, manifest);
+        await VerifyPentaOnboardingHttpAsync(factory, manifest);
+        await VerifyPentaOnboardingCoreContextAsync(factory, manifest);
+        await VerifyPentaOnboardingPreparationAsync(factory, manifest);
+        await VerifyPentaOnboardingLifecycleAsync(factory, manifest);
+        await VerifyPentaOnboardingApprovalAsync(factory, manifest);
+        await VerifyPentaOnboardingPartialAsync(factory, manifest);
+        await VerifyPentaOnboardingConversationAsync(factory, manifest);
+        await VerifyPentaOnboardingTurnAsync(factory, manifest);
+        await VerifyPentaOnboardingGatewayAsync(factory, manifest);
+        await VerifyPentaOnboardingStartAsync(manifest);
+        // Additive focused reload check retains every existing atomic/core/start
+        // regression above; it does not weaken or filter their acceptance.
+        if (Environment.GetEnvironmentVariable("QA_ONBOARDING_START_RECOVERY_BROWSER") == "1" &&
+            Environment.GetEnvironmentVariable("QA_ONBOARDING_REVIEW_BROWSER") != "1")
+            await VerifyPentaOnboardingStartBrowserAsync(manifest);
+        if (Environment.GetEnvironmentVariable("QA_ONBOARDING_REVIEW_BROWSER") == "1") {
+            await VerifyPentaOnboardingReviewBrowserAsync(manifest);
+            await VerifyPentaOnboardingOperationBrowserAsync(manifest);
+            await VerifyPentaOnboardingStartBrowserAsync(manifest);
+            await VerifyPentaOnboardingDialogueBrowserAsync(manifest);
+            await VerifyPentaOnboardingPendingBrowserAsync(manifest);
+            await VerifyPentaOnboardingExpiryBrowserAsync(manifest);
+        }
     }
 
     private sealed class OnboardingSqlFault(string mode) : DbCommandInterceptor

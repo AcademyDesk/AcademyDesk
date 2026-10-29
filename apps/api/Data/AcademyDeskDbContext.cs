@@ -7,6 +7,15 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
     : DbContext(options)
 {
     public DbSet<Academy> Academies => Set<Academy>();
+    public DbSet<MeetingPreviewReceipt> MeetingPreviewReceipts => Set<MeetingPreviewReceipt>();
+    public DbSet<MeetingProviderBinding> MeetingProviderBindings => Set<MeetingProviderBinding>();
+    public DbSet<MeetingOAuthAttempt> MeetingOAuthAttempts => Set<MeetingOAuthAttempt>();
+    public DbSet<MeetingOAuthCallback> MeetingOAuthCallbacks => Set<MeetingOAuthCallback>();
+    public DbSet<MeetingOAuthExchange> MeetingOAuthExchanges => Set<MeetingOAuthExchange>();
+    public DbSet<MeetingAccountReview> MeetingAccountReviews => Set<MeetingAccountReview>();
+    public DbSet<MeetingCredentialRevocation> MeetingCredentialRevocations => Set<MeetingCredentialRevocation>();
+    public DbSet<MeetingOperation> MeetingOperations => Set<MeetingOperation>();
+    public DbSet<MeetingOutbox> MeetingOutbox => Set<MeetingOutbox>();
     public DbSet<Branch> Branches => Set<Branch>();
     public DbSet<Lead> Leads => Set<Lead>();
     public DbSet<SalesCampaign> SalesCampaigns => Set<SalesCampaign>();
@@ -76,15 +85,28 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
     public DbSet<PentaConversationMessage> PentaConversationMessages => Set<PentaConversationMessage>();
     public DbSet<PentaMiniSession> PentaMiniSessions => Set<PentaMiniSession>();
     public DbSet<PentaMiniTurn> PentaMiniTurns => Set<PentaMiniTurn>();
+    public DbSet<PentaOnboardingDraft> PentaOnboardingDrafts => Set<PentaOnboardingDraft>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
+        modelBuilder.Entity<PentaOnboardingDraft>(entity =>
+        {
+            entity.Property(x => x.Revision).IsConcurrencyToken();
+            entity.Property(x => x.Status).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.ProtectedBody).HasMaxLength(16000).IsRequired();
+            entity.HasIndex(x => new { x.AcademyId, x.ActorUserId, x.CreatedAtUtc });
+            entity.HasOne<PentaMiniSession>().WithMany()
+                .HasForeignKey(x => new { x.AcademyId, x.ActorUserId, x.SessionId })
+                .HasPrincipalKey(x => new { x.AcademyId, x.ActorUserId, x.Id }).OnDelete(DeleteBehavior.Restrict);
+        });
+
         modelBuilder.Entity<PentaMiniSession>(entity =>
         {
             entity.Property(x => x.Version).IsConcurrencyToken();
             entity.Property(x => x.ProtectedState).HasMaxLength(12000).IsRequired();
+            entity.Property(x => x.ProtectedOnboardingState).HasMaxLength(4000);
             entity.HasAlternateKey(x => new { x.AcademyId, x.ActorUserId, x.Id });
             entity.HasOne<Academy>().WithMany().HasForeignKey(x => x.AcademyId).OnDelete(DeleteBehavior.Restrict);
             entity.HasIndex(x => new { x.AcademyId, x.ActorUserId, x.CreatedAtUtc });
@@ -673,6 +695,148 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
         modelBuilder.Entity<PracticeLog>(entity => { entity.Property(x => x.FocusArea).HasMaxLength(250); entity.Property(x => x.Notes).HasMaxLength(2000); entity.Property(x => x.TeacherFeedback).HasMaxLength(2000); entity.Property(x => x.Status).HasMaxLength(30).IsRequired(); entity.HasIndex(x => new { x.AcademyId, x.StudentId, x.PracticeDate }); });
         modelBuilder.Entity<AssignmentSubmission>(entity => { entity.Property(x => x.ResponseText).HasMaxLength(4000); entity.Property(x => x.TeacherFeedback).HasMaxLength(2000); entity.Property(x => x.Status).HasMaxLength(30).IsRequired(); entity.HasIndex(x => new { x.AcademyId, x.AssignmentId, x.StudentId }).IsUnique(); });
         modelBuilder.Entity<AcademyHoliday>(entity => { entity.Property(x => x.Name).HasMaxLength(200).IsRequired(); entity.Property(x => x.Notes).HasMaxLength(1000); entity.Property(x => x.Scope).HasMaxLength(30).IsRequired(); entity.Property(x => x.StateOrUt).HasMaxLength(80); entity.HasIndex(x => new { x.AcademyId, x.HolidayDate }).IsUnique(); });
+        modelBuilder.Entity<MeetingProviderBinding>(entity =>
+        {
+            entity.HasAlternateKey(x => new { x.AcademyId, x.Provider, x.Id });
+            entity.HasIndex(x => new { x.AcademyId, x.Provider }).IsUnique();
+            entity.Property(x => x.Provider).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.Status).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.Version).IsConcurrencyToken();
+            entity.ToTable(table =>
+            {
+                table.HasCheckConstraint("CK_MeetingProviderBinding_Provider", "[Provider] IN ('GoogleWorkspace','Microsoft365','Zoom')");
+                table.HasCheckConstraint("CK_MeetingProviderBinding_Status", "[Status] IN ('NotConnected','AuthorizationPending','VerificationRequired','Disconnected')");
+                table.HasCheckConstraint("CK_MeetingProviderBinding_Versions", "[Version] >= 0 AND [Generation] >= 0");
+            });
+        });
+        modelBuilder.Entity<MeetingOAuthAttempt>(entity =>
+        {
+            entity.HasAlternateKey(x => new { x.AcademyId, x.Provider, x.ActorUserId, x.Id });
+            entity.Property(x => x.Provider).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.StateHash).HasMaxLength(64).IsRequired();
+            entity.Property(x => x.ProtectedEnvelope).HasMaxLength(8192).IsRequired();
+            entity.Property(x => x.Status).HasMaxLength(20).IsRequired();
+            entity.Property(x => x.Version).IsConcurrencyToken();
+            entity.HasIndex(x => x.StateHash).IsUnique();
+            entity.HasIndex(x => new { x.AcademyId, x.ActorUserId, x.ExpiresAtUtc });
+            entity.HasOne<MeetingProviderBinding>().WithMany().HasForeignKey(x => new { x.AcademyId, x.Provider, x.BindingId })
+                .HasPrincipalKey(x => new { x.AcademyId, x.Provider, x.Id }).OnDelete(DeleteBehavior.Restrict);
+            entity.ToTable(table =>
+            {
+                table.HasCheckConstraint("CK_MeetingOAuthAttempt_State", "([Status] = 'Pending' AND [Version] = 0 AND [ClaimedAtUtc] IS NULL) OR ([Status] = 'CallbackCaptured' AND [Version] = 1 AND [ClaimedAtUtc] IS NULL) OR ([Status] = 'Claimed' AND [Version] IN (1,2) AND [ClaimedAtUtc] IS NOT NULL)");
+                table.HasCheckConstraint("CK_MeetingOAuthAttempt_Generation", "[Generation] > 0");
+            });
+        });
+        modelBuilder.Entity<MeetingOAuthCallback>(entity =>
+        {
+            entity.Property(x => x.Provider).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.ProtectedEnvelope).HasMaxLength(65536).IsRequired();
+            entity.Property(x => x.Status).HasMaxLength(20).IsRequired();
+            entity.Property(x => x.Version).IsConcurrencyToken();
+            entity.HasIndex(x => x.AttemptId).IsUnique();
+            entity.HasOne<MeetingOAuthAttempt>().WithMany().HasForeignKey(x => new { x.AcademyId, x.Provider, x.ActorUserId, x.AttemptId })
+                .HasPrincipalKey(x => new { x.AcademyId, x.Provider, x.ActorUserId, x.Id }).OnDelete(DeleteBehavior.Restrict);
+            entity.ToTable(table => table.HasCheckConstraint("CK_MeetingOAuthCallback_State",
+                "([Status] = 'Captured' AND [Version] = 0) OR ([Status] = 'Consumed' AND [Version] = 1)"));
+        });
+        modelBuilder.Entity<MeetingOAuthExchange>(entity =>
+        {
+            entity.HasAlternateKey(x => new { x.AcademyId, x.Provider, x.ActorUserId, x.Id });
+            entity.Property(x => x.Provider).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.Status).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.RegistrationFingerprint).HasMaxLength(64).IsRequired();
+            entity.Property(x => x.ProtectedEnvelope).HasMaxLength(262144).IsRequired();
+            entity.Property(x => x.Version).IsConcurrencyToken();
+            entity.HasIndex(x => x.AttemptId).IsUnique();
+            entity.HasOne<MeetingOAuthAttempt>().WithMany().HasForeignKey(x => new { x.AcademyId, x.Provider, x.ActorUserId, x.AttemptId })
+                .HasPrincipalKey(x => new { x.AcademyId, x.Provider, x.ActorUserId, x.Id }).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne<MeetingProviderBinding>().WithMany().HasForeignKey(x => new { x.AcademyId, x.Provider, x.BindingId })
+                .HasPrincipalKey(x => new { x.AcademyId, x.Provider, x.Id }).OnDelete(DeleteBehavior.Restrict);
+            entity.ToTable(table =>
+            {
+                table.HasCheckConstraint("CK_MeetingOAuthExchange_State", "([Status] = 'Started' AND [Version] = 0) OR ([Status] = 'OutcomeUnknown' AND [Version] = 1) OR ([Status] = 'TokensQuarantined' AND [Version] >= 1 AND [Version] % 2 = 1) OR ([Status] = 'RefreshStarted' AND [Version] >= 2 AND [Version] % 2 = 0) OR ([Status] = 'RefreshUnknown' AND [Version] >= 3 AND [Version] % 2 = 1) OR ([Status] = 'RefreshAbandoned' AND [Version] >= 4 AND [Version] % 2 = 0)");
+                table.HasCheckConstraint("CK_MeetingOAuthExchange_Versions", "[Generation] > 0 AND [BindingVersion] > 0");
+            });
+        });
+        modelBuilder.Entity<MeetingAccountReview>(entity =>
+        {
+            entity.Property(x => x.Provider).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.Status).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.RegistrationFingerprint).HasMaxLength(64).IsRequired();
+            entity.Property(x => x.ReviewHash).HasMaxLength(64).IsRequired();
+            entity.Property(x => x.ProtectedEnvelope).HasMaxLength(32768).IsRequired();
+            entity.Property(x => x.Version).IsConcurrencyToken();
+            entity.HasIndex(x => new { x.ExchangeId, x.BindingVersion }).IsUnique();
+            entity.HasOne<MeetingOAuthExchange>().WithMany().HasForeignKey(x => new { x.AcademyId, x.Provider, x.ActorUserId, x.ExchangeId })
+                .HasPrincipalKey(x => new { x.AcademyId, x.Provider, x.ActorUserId, x.Id }).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne<MeetingProviderBinding>().WithMany().HasForeignKey(x => new { x.AcademyId, x.Provider, x.BindingId })
+                .HasPrincipalKey(x => new { x.AcademyId, x.Provider, x.Id }).OnDelete(DeleteBehavior.Restrict);
+            entity.ToTable(table =>
+            {
+                table.HasCheckConstraint("CK_MeetingAccountReview_State", "([Status] = 'AwaitingConfirmation' AND [Version] = 0 AND [ConfirmedAtUtc] IS NULL) OR ([Status] = 'ConfirmedNotConnected' AND [Version] = 1 AND [ConfirmedAtUtc] IS NOT NULL)");
+                table.HasCheckConstraint("CK_MeetingAccountReview_Versions", "[Generation] > 0 AND [BindingVersion] > 0");
+            });
+        });
+        modelBuilder.Entity<MeetingCredentialRevocation>(entity =>
+        {
+            entity.Property(x => x.Provider).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.Status).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.RegistrationFingerprint).HasMaxLength(64).IsRequired();
+            entity.Property(x => x.ProtectedEnvelope).HasMaxLength(32768).IsRequired();
+            entity.Property(x => x.Version).IsConcurrencyToken();
+            entity.HasIndex(x => x.ExchangeId).IsUnique();
+            entity.HasOne<MeetingOAuthExchange>().WithMany().HasForeignKey(x => new { x.AcademyId, x.Provider, x.ActorUserId, x.ExchangeId })
+                .HasPrincipalKey(x => new { x.AcademyId, x.Provider, x.ActorUserId, x.Id }).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne<MeetingProviderBinding>().WithMany().HasForeignKey(x => new { x.AcademyId, x.Provider, x.BindingId })
+                .HasPrincipalKey(x => new { x.AcademyId, x.Provider, x.Id }).OnDelete(DeleteBehavior.Restrict);
+            entity.ToTable(table =>
+            {
+                table.HasCheckConstraint("CK_MeetingCredentialRevocation_State", "([Status] IN ('Started','ManualRequired') AND [Version] = 0) OR ([Status] IN ('ProviderAcknowledged','OutcomeUnknown') AND [Version] = 1) OR ([Status] = 'ManualReportedUnverified' AND (([Provider] IN ('Microsoft365','Zoom') AND [Version] = 1) OR ([Provider] = 'GoogleWorkspace' AND [Version] IN (1,2))))");
+                table.HasCheckConstraint("CK_MeetingCredentialRevocation_Versions", "[Generation] > 0 AND [BindingVersion] > 0");
+            });
+        });
+        modelBuilder.Entity<MeetingOperation>(entity =>
+        {
+            entity.HasAlternateKey(x => new { x.AcademyId, x.Id });
+            entity.Property(x => x.Kind).HasMaxLength(20).IsRequired();
+            entity.Property(x => x.Provider).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.IdempotencyKey).HasMaxLength(64).IsRequired();
+            entity.Property(x => x.RequestHash).HasMaxLength(64).IsRequired();
+            entity.Property(x => x.SourceVersion).HasMaxLength(64).IsRequired();
+            entity.Property(x => x.ProtectedEnvelope).HasMaxLength(32768).IsRequired();
+            entity.Property(x => x.Status).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.Version).IsConcurrencyToken();
+            entity.HasIndex(x => new { x.AcademyId, x.Kind, x.IdempotencyKey }).IsUnique();
+            entity.HasIndex(x => new { x.AcademyId, x.ReceiptId }).IsUnique();
+            entity.ToTable(table =>
+            {
+                table.HasCheckConstraint("CK_MeetingOperation_Status", "[Status] IN ('Held','PendingDispatch','Leased','Dispatching','AwaitingReview')");
+                table.HasCheckConstraint("CK_MeetingOperation_Version", "[Version] >= 0");
+            });
+        });
+        modelBuilder.Entity<MeetingOutbox>(entity =>
+        {
+            entity.Property(x => x.Version).IsConcurrencyToken();
+            entity.HasIndex(x => new { x.AcademyId, x.OperationId }).IsUnique();
+            entity.HasOne<MeetingOperation>().WithOne().HasForeignKey<MeetingOutbox>(x => new { x.AcademyId, x.OperationId })
+                .HasPrincipalKey<MeetingOperation>(x => new { x.AcademyId, x.Id }).OnDelete(DeleteBehavior.Restrict);
+            entity.ToTable(table =>
+            {
+                table.HasCheckConstraint("CK_MeetingOutbox_Version", "[Version] >= 0");
+                table.HasCheckConstraint("CK_MeetingOutbox_Lease", "([LeaseId] IS NULL AND [LeaseExpiresAtUtc] IS NULL) OR ([LeaseId] IS NOT NULL AND [LeaseExpiresAtUtc] IS NOT NULL)");
+            });
+        });
+        modelBuilder.Entity<MeetingPreviewReceipt>(entity =>
+        {
+            entity.Property(x => x.IdempotencyKey).HasMaxLength(64).IsRequired();
+            entity.Property(x => x.RequestHash).HasMaxLength(64).IsRequired();
+            entity.Property(x => x.SourceVersion).HasMaxLength(64).IsRequired();
+            entity.Property(x => x.ProtectedEnvelope).HasMaxLength(32768).IsRequired();
+            entity.Property(x => x.Status).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.Version).IsConcurrencyToken();
+            entity.HasIndex(x => new { x.AcademyId, x.ActorUserId, x.IdempotencyKey }).IsUnique();
+            entity.HasIndex(x => new { x.AcademyId, x.ActorUserId, x.ExpiresAtUtc });
+        });
         modelBuilder.Entity<PlatformSettings>(entity => { entity.Property(x => x.PlatformName).HasMaxLength(200).IsRequired(); entity.Property(x => x.SupportEmail).HasMaxLength(320); entity.Property(x => x.DefaultCurrency).HasMaxLength(3).IsRequired(); entity.Property(x => x.StatusMessage).HasMaxLength(1000); });
         modelBuilder.Entity<PlatformAuditEntry>(entity => { entity.Property(x => x.ActorName).HasMaxLength(200).IsRequired(); entity.Property(x => x.Action).HasMaxLength(100).IsRequired(); entity.Property(x => x.EntityType).HasMaxLength(100).IsRequired(); entity.Property(x => x.MetadataJson).HasMaxLength(8000); entity.HasIndex(x => x.OccurredAtUtc); });
         modelBuilder.Entity<PlatformSupportCase>(entity => { entity.Property(x => x.Subject).HasMaxLength(250).IsRequired(); entity.Property(x => x.Priority).HasMaxLength(30).IsRequired(); entity.Property(x => x.Status).HasMaxLength(30).IsRequired(); entity.Property(x => x.Description).HasMaxLength(4000); entity.HasIndex(x => new { x.AcademyId, x.Status, x.CreatedAtUtc }); });

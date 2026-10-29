@@ -25,7 +25,7 @@ async function page(config={}){
   const data=url==='/api/academies'?[{id:'owned'}]:url.endsWith('/students')?[{id:'student',firstName:'Synthetic',lastName:'Student'}]:url.endsWith('/batches')?[{id:'batch',name:'Synthetic batch'}]:url.endsWith('/teachers')?[]:url.endsWith('/makeup-classes')?structuredClone(rows):undefined;
   assert.ok(data,'Unexpected endpoint '+url);return{ok:true,status:200,json:async()=>data};
  };
- new Function('require','module','exports',code)(n=>n==='react/jsx-runtime'?jsx:n==='react'?react:n==='@/lib/api'?{academyApi:api,apiHeaders:()=>({})}:n==='@/components/workspace-nav'?{WorkspaceNav:'nav'}:n==='@/components/design-system/controls'?{StandardSelectField:'select',StandardDateField:'date',StandardTimeField:'time'}:(()=>{throw Error(n)})(),module,module.exports);
+ new Function('require','module','exports',code)(n=>n==='react/jsx-runtime'?jsx:n==='react'?react:n==='@/lib/api'?{academyApi:api,apiHeaders:()=>({})}:n==='@/components/workspace-nav'?{WorkspaceNav:'nav'}:n==='@/components/design-system/controls'?{StandardSelectField:'select',StandardDateField:'date',StandardTimeField:'time'}:n.endsWith('.module.css')?{default:{}}:n.endsWith('required-control-value')?{RequiredControlValue:'validation'}:n.endsWith('onboarding-field')?{OnboardingField:'field'}:(()=>{throw Error(n)})(),module,module.exports);
  const render=()=>{index=refIndex=effectIndex=0;return module.exports.default();};
  async function settle(){for(let i=0;i<4;i++){for(const fn of effects.splice(0))fn();await tick();render();}}
  const control=name=>nodes(render()).find(n=>n.props?.name===name);

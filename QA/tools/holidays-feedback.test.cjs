@@ -19,7 +19,7 @@ async function page(config={}){
   if(calls.some(c=>c.method)){if(config.readGate)await config.readGate;if(config.refreshFailure)return{ok:false,status:503};}
   assert.equal(url,'/api/academies/owned/holidays');return{ok:true,json:async()=>structuredClone(rows)};
  };
- new Function('require','module','exports',code)(n=>n==='react/jsx-runtime'?jsx:n==='react'?react:n==='@/lib/api'?{academyApi:api,apiHeaders:()=>({})}:n==='@/components/workspace-nav'?{WorkspaceNav:'nav'}:n==='@/components/design-system/controls'?{StandardDateField:'date'}:(()=>{throw Error(n)})(),module,module.exports);
+ new Function('require','module','exports',code)(n=>n==='react/jsx-runtime'?jsx:n==='react'?react:n==='@/lib/api'?{academyApi:api,apiHeaders:()=>({})}:n==='@/components/workspace-nav'?{WorkspaceNav:'nav'}:n==='@/components/design-system/controls'?{StandardDateField:'date'}:n.endsWith('.module.css')?{default:{}}:n.endsWith('required-control-value')?{RequiredControlValue:'validation'}:n.endsWith('onboarding-field')?{OnboardingField:'field'}:(()=>{throw Error(n)})(),module,module.exports);
  const render=()=>{index=refIndex=effectIndex=0;return module.exports.default();};
  async function settle(){for(let i=0;i<4;i++){for(const fn of effects.splice(0))fn();await tick();render();}}
  const action=async kind=>{if(kind==='create')await nodes(render()).find(n=>n.type==='form').props.onSubmit({preventDefault(){}});else await nodes(render()).find(n=>n.type==='button'&&text(n)===(kind==='defaults'?'Add India holidays 2026':'Remove')).props.onClick();await tick();await tick();};

@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 
 import {
   CSSProperties,
@@ -365,7 +366,7 @@ export default function CertificatesPage() {
             <div className="certificate-logo-control">
               <div className="certificate-logo-slot">
                 {logoUrl ? (
-                  <img src={logoUrl} alt="Academy logo" />
+                  <Image unoptimized loading="eager" width={54} height={54} src={logoUrl} alt="Academy logo" />
                 ) : (
                   <span>{branding?.academyName?.slice(0, 1) ?? "A"}</span>
                 )}
@@ -543,7 +544,7 @@ export default function CertificatesPage() {
             >
               <header>
                 {previewLogo ? (
-                  <img ref={printLogo} src={previewLogo} alt="Academy logo" />
+                  <Image unoptimized loading="eager" width={54} height={54} ref={printLogo} src={previewLogo} alt="Academy logo" />
                 ) : (
                   <span className="certificate-monogram">
                     {previewBranding?.academyName?.slice(0, 1) ?? "A"}

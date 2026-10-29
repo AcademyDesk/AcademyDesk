@@ -7,6 +7,7 @@ import { academyApi } from "@/lib/api";
 import { StudentAdminProfile } from "@/components/student-admin-profile";
 import { StudentFeeArrangements } from "@/components/student-fee-arrangements";
 import { StandardSelectField } from "@/components/design-system/controls";
+import styles from "@/components/design-system/records-workspace.module.css";
 import { StandardDetailModal, StandardInteractiveTile } from "@/components/design-system/interactive";
 
 type Student = {
@@ -170,7 +171,7 @@ function StudentProfileWorkspace({ requested, createdNotice }: { requested: stri
     .filter((item) => balance(item) > 0 && item.dueDate < today)
     .reduce((sum, item) => sum + balance(item), 0);
   return (
-    <main className="enterprise-settings student-360-standard">
+    <main className={`enterprise-settings student-360-standard ${styles.records}`}>
       <header className="student-360-heading">
         <div className="student-360-title">
           <span className="student-360-title-icon" aria-hidden="true">◎</span>
@@ -178,11 +179,12 @@ function StudentProfileWorkspace({ requested, createdNotice }: { requested: stri
           {student
             ? `${student.firstName} ${student.lastName}`
             : "360"}
-          </h1><span>A connected record for family, enrolment, attendance, finance, learning, and communication.</span></div>
+          </h1></div>
         </div>
       </header>
       <section className="student-360-toolbar">
         <StandardSelectField
+          label="Student record"
           name="student-record"
           value={studentId}
           onChange={(value) => void select(value)}
@@ -203,6 +205,7 @@ function StudentProfileWorkspace({ requested, createdNotice }: { requested: stri
       </section>
       {createdNotice && <p className="enterprise-page-state student-360-message" role="status">Student created successfully. You can now enrol the student, add fees, or update their profile.</p>}
       {message && <p role="status" aria-live="polite" className="enterprise-page-state student-360-message">{message}</p>}
+      {!message && !students.length && <p role="status" className="enterprise-page-state">No student records yet.</p>}
       {student && profile && (
         <>
           <section className="student-360-summary-grid">

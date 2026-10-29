@@ -1,7 +1,7 @@
 // Exported expense UI/controlled API. Not real SQL or physical-device acceptance.
 const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict');
 const {chromium}=require(process.env.QA_PLAYWRIGHT_MODULE||'C:/Users/Admin/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
-const root=path.resolve(__dirname,'../..'),web=fs.realpathSync(path.join(root,'apps/web/out'));
+const root=path.resolve(__dirname,'../..'),web=process.env.QA_WEB_CANDIDATE?require('./web-candidate-export.cjs').resolveExport(root):fs.realpathSync(path.join(root,'apps/web/out'));
 const evidence=path.join(root,'QA/EVIDENCE','expenses-feedback-browser-'+Date.now());fs.mkdirSync(evidence,{recursive:true});
 const mime={'.html':'text/html','.css':'text/css','.js':'application/javascript','.txt':'text/plain','.woff2':'font/woff2','.svg':'image/svg+xml','.ico':'image/x-icon'};
 const server=http.createServer((req,res)=>{try{
@@ -61,7 +61,7 @@ const server=http.createServer((req,res)=>{try{
      await page.getByRole('button',{name:'Refresh expense register',exact:true}).click();await notice.filter({hasText:'Check for the previous expense'}).waitFor();assert.equal(await description.isDisabled(),false);assert.equal(await description.inputValue(),'Synthetic expense');assert.match(await page.locator('.expenses-register').textContent(),/Synthetic expense/);
     }
    }
-   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+   assert.ok(await page.locator('main button:visible').evaluateAll(es=>es.every(e=>e.getBoundingClientRect().height>=44)),'All settled expense actions44px');for(const f of await page.locator('main input:not([type="hidden"])').all())assert.ok(await f.evaluate(e=>e.labels.length||e.getAttribute('aria-label')),'Persistent native labels');assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
    await page.screenshot({path:path.join(evidence,`${width}-${theme}-${scenario}.png`),fullPage:true});
    const expectedCode=scenario==='branch-denied'?'403':scenario==='rejected'?'400':scenario==='refresh-failure'||scenario==='initial-failure'?'503':scenario==='uncertain-committed'?'500':scenario==='network'?'ERR_FAILED':null;
    const unexpected=pageErrors.filter(x=>!expectedCode||!x.startsWith('Failed to load resource:')||!x.includes(expectedCode));assert.deepEqual(unexpected,[]);errors.push(...unexpected);

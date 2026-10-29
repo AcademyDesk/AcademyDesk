@@ -24,14 +24,14 @@ function text(node) {
   return typeof node === 'object' ? text(node.props?.children) : String(node);
 }
 function page({ ready = false, deniedRead = false, deniedWrite = false, failRefresh = false, allowGeneric = false, documentError } = {}) {
-  const states = ready ? [{ id: 'a' }, [adjustment], [invoice], [item], settings, '', false, undefined, false, undefined, 'Invoice', false, false] : [];
+  const states = ready ? [{ id: 'a' }, [adjustment], [invoice], [item], settings, '', false, undefined, false, undefined, 'Invoice', false, false, true, false] : [];
   const writes = new Map(), effects = [], calls = [], refs = []; let index = 0, refIndex = 0, mutated = false;
   const react = { useState: initial => { const key = index++; return [writes.has(key) ? writes.get(key) : ready ? states[key] : initial,
-    value => writes.set(key, typeof value === 'function' ? value(writes.has(key) ? writes.get(key) : states[key]) : value)]; }, useEffect: fn => effects.push(fn), useRef: value => { const key = refIndex++; return refs[key] ??= { current: value }; } };
+    value => writes.set(key, typeof value === 'function' ? value(writes.has(key) ? writes.get(key) : states[key]) : value)]; }, useCallback: fn => fn, useEffect: fn => effects.push(fn), useRef: value => { const key = refIndex++; return refs[key] ??= { current: ready && key === 2 ? { ready: true, pending: false, review: false, snapshot: 0 } : value }; } };
   const module = { exports: {} };
   new Function('require', 'module', 'exports', 'FormData', 'window', compiled)(name => {
     if (name === 'react') return react;
-    if (name === 'react/jsx-runtime') return jsx;
+    if (name === 'next/image') return { default: 'img' }; if (name === 'react/jsx-runtime') return jsx;
     if (name === 'next/link') return { default: 'a' };
     if (name === '@/lib/api') return { apiHeaders: () => ({}), academyApi: async (url, options = {}) => {
       const write = options.method && options.method !== 'GET'; calls.push({ url, ...options });
@@ -43,6 +43,9 @@ function page({ ready = false, deniedRead = false, deniedWrite = false, failRefr
         : url.endsWith('/collection-tasks') || generic ? [item] : url.endsWith('/collections') ? [invoice]
         : url.endsWith('/finance-adjustments') ? [adjustment] : url.endsWith('/settings') ? settings : {} };
     } };
+    if (name.endsWith('.module.css')) return { default: {} };
+    if (name === '@/components/design-system/form-fields') return { StandardFormDate: 'date', StandardFormSelect: 'form-select' };
+    if (name === '@/components/design-system/controls') return { StandardSelectField: 'select' };
     throw Error('Unexpected import ' + name);
   }, module, module.exports, class { constructor(fields) { this.fields = fields; } get(key) { return this.fields[key] ?? null; } }, { prompt: () => '' });
   function render() { index = 0; refIndex = 0; return module.exports.default(); }
@@ -92,7 +95,7 @@ for (const reason of ['Tax label must not exceed 30 characters. Your draft has n
 });
 for (const scenario of ['saved', 'denied', 'refresh-failed']) test(`Escalation ${scenario}: narrow route, nullable date and honest notice`, async () => {
   const p = page({ ready: true, deniedWrite: scenario === 'denied', failRefresh: scenario === 'refresh-failed' });
-  const form = nodes(p.render(), n => n.type === 'form' && nodes(n, c => c.type === 'select' && c.props.name === 'stage').length)[0];
+  const form = nodes(p.render(), n => n.type === 'form' && nodes(n, c => c.type === 'form-select' && c.props.name === 'stage').length)[0];
   await p.submit(form, { stage: 'Reminder', promiseDate: '' });
   const write = p.calls.find(x => x.method === 'PATCH');
   assert.equal(write.url, '/api/academies/a/finance-governance/collection-tasks/w');

@@ -1,0 +1,84 @@
+{
+  "entries": [
+    {
+      "path": "apps/web/src/app/courses/page.tsx",
+      "name": "startSaving",
+      "sha256": "5adc36fd19207b0ab71f4aa03815e00bf3e33a9ebe78e66abf6c696032e7da3d"
+    },
+    {
+      "path": "apps/web/src/app/courses/page.tsx",
+      "name": "finishSaving",
+      "sha256": "c5f323bf2e682898726487b5ebfc2d25eaa58ff6dcddae0b1836ff6331efe64f"
+    },
+    {
+      "path": "apps/web/src/app/courses/page.tsx",
+      "name": "refreshAfterSave",
+      "sha256": "dcc34444c7f44675c4fcecf6f69d1720d36af0ec7ebb8de8be34c41c2fea603b"
+    },
+    {
+      "path": "apps/web/src/app/courses/page.tsx",
+      "name": "loadAcademies",
+      "sha256": "ffc9cd4c8fdf8323f87c5dab3f08aec5aed660c519f6fa9e45ae794769af0120"
+    },
+    {
+      "path": "apps/web/src/app/courses/page.tsx",
+      "name": "loadCourses",
+      "sha256": "462f3941124d19bfca3fd0b82eb5e2cfcaa4f5d1529889e2cfc9b780292d49be"
+    },
+    {
+      "path": "apps/web/src/app/courses/page.tsx",
+      "name": "createCourse",
+      "sha256": "6d481ef2114b9700755e53671ef73bc83e3d8e6b303603dddf51c246010077ce"
+    },
+    {
+      "path": "apps/web/src/app/courses/page.tsx",
+      "name": "beginEdit",
+      "sha256": "488f84f7f66cc1c477b5eacb1044e4e534aadd23fa307ecc17bc16a26a9e53ef"
+    },
+    {
+      "path": "apps/web/src/app/courses/page.tsx",
+      "name": "saveCourse",
+      "sha256": "6f13109b811b96f6a7d6b08a68af6fe32e4c984f747f4ad5c62eefb76f6999fb"
+    },
+    {
+      "path": "apps/web/src/app/courses/page.tsx",
+      "name": "toggleActive",
+      "sha256": "75078c4f2db805096174bd4a82e2e9e18270976f1cae5879f07e12914138aec7"
+    },
+    {
+      "path": "apps/web/src/app/curriculum/page.tsx",
+      "name": "fetchCurriculum",
+      "sha256": "781be3b66c145d40db9b6d8ef756cb57f566edffec381fdc528055ec68ec1356"
+    },
+    {
+      "path": "apps/web/src/app/curriculum/page.tsx",
+      "name": "mutate",
+      "sha256": "17df48f94f5fb29c54d7147559334d9707f6c38ad21a3f0ea4f10495b8de00a1"
+    },
+    {
+      "path": "apps/web/src/app/curriculum/page.tsx",
+      "name": "add",
+      "sha256": "70030c2ef17c17c2363c7b7c63945ed92083f83cb745d3d5d0e7eceec98d0680"
+    },
+    {
+      "path": "apps/web/src/app/curriculum/page.tsx",
+      "name": "publish",
+      "sha256": "86de43cb0dbf01a3e6d331144e2b6281216808e26c519ab28b3307a099d8ae32"
+    },
+    {
+      "path": "apps/web/src/app/lesson-plans/page.tsx",
+      "name": "fetchWorkspace",
+      "sha256": "5083f12066324ca9b9b855b40dacc99242e36105b7ab19be8fcca9358af78eac"
+    },
+    {
+      "path": "apps/web/src/app/lesson-plans/page.tsx",
+      "name": "initialise",
+      "sha256": "8b967a2f5eece78f0e0dbdeb12a9135cecc82b8d83da587f6e390d33c21bc0ba"
+    },
+    {
+      "path": "apps/web/src/app/lesson-plans/page.tsx",
+      "name": "add",
+      "sha256": "8802c2ba9191184ae56924ae5b1b28fd0f800ac47f455c05353889ce315e1fdc"
+    }
+  ]
+}

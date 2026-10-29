@@ -1,0 +1,1 @@
+.error.error { display: block; padding: 8px 10px; border: 1px solid var(--ad-border); border-radius: 10px; color: var(--ad-text); background: var(--ad-accent-soft); font-size: .875rem; line-height: 1.5; white-space: normal; overflow-wrap: anywhere; }

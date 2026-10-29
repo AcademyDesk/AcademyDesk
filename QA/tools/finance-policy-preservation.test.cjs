@@ -10,7 +10,7 @@ async function page(theme,rejected=false,reason){let index=0;const state=[],effe
  const pending={current:false};const react={useRef:()=>pending,useState:v=>{const k=index++;if(!(k in state))state[k]=v;return[state[k],v=>state[k]=v];},useEffect:f=>effects.push(f)};
  const api=async(url,init={})=>{calls.push({url,...init});return{ok:!init.method||!rejected,status:init.method&&rejected?400:200,json:async()=>init.method?(rejected?{message:reason}:JSON.parse(init.body)):url==='/api/academies'?[{id:'owned'}]:{...base,payslipTemplateKey:theme}};};
  function FixtureFormData(){const data=new FormData();for(const [k,v]of Object.entries({...base,taxLabel:'Edited tax label'})){if(v!==null&&k!=='taxInclusivePricing')data.set(k,String(v));}return data;}
- new Function('require','module','exports','FormData',code)(n=>n==='react'?react:n==='react/jsx-runtime'?jsx:n==='@/lib/api'?{academyApi:api,apiHeaders:()=>({'Content-Type':'application/json'})}:(()=>{throw Error(n)})(),module,module.exports,FixtureFormData);
+ new Function('require','module','exports','FormData',code)(n=>n==='react'?react:n==='react/jsx-runtime'?jsx:n.endsWith('.module.css')?{default:{}}:n==='@/components/design-system/form-fields'?{StandardFormSelect:'form-select'}:n==='@/lib/api'?{academyApi:api,apiHeaders:()=>({'Content-Type':'application/json'})}:(()=>{throw Error(n)})(),module,module.exports,FixtureFormData);
  const render=()=>{index=0;return module.exports.default();};render();effects.splice(0).forEach(f=>f());await new Promise(r=>setImmediate(r));
  return{state,calls,render,save:()=>nodes(render()).find(n=>n.type==='form').props.onSubmit({preventDefault(){},currentTarget:{}})};
 }

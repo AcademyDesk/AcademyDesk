@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { WorkspaceNav } from "@/components/workspace-nav";
 import { academyApi, apiHeaders } from "@/lib/api";
 import { StandardSelectField } from "@/components/design-system/controls";
+import { OnboardingField } from "@/components/design-system/onboarding-field";
+import styles from "@/components/design-system/operations-workspace.module.css";
 
 type Academy = { id: string };
 type Student = { id: string; firstName: string; lastName: string };
@@ -61,7 +63,7 @@ export default function AttendancePage() {
         if (!academies[0]) return setMessage("Create an academy, batch, and class session before marking attendance.");
         setAcademy(academies[0]);
         await loadWorkspace(academies[0].id);
-      } catch { setMessage("Attendance could not be loaded. Confirm the API is running on port 5092."); }
+      } catch { setMessage("Attendance could not be loaded. Please refresh or check your access."); }
     }
     void initialise();
   }, []);
@@ -116,11 +118,11 @@ export default function AttendancePage() {
     finally { pendingSave.current = false; setSavingId(""); }
   }
 
-  return <main className="enterprise-settings enterprise-legacy-standard attendance-standard min-h-screen bg-slate-950 text-slate-100"><WorkspaceNav /><div className="attendance-content mx-auto max-w-5xl px-6 py-10">
+  return <main className={`${styles.page} enterprise-settings enterprise-legacy-standard attendance-standard min-h-screen bg-slate-950 text-slate-100`}><WorkspaceNav /><div className="attendance-content mx-auto max-w-5xl px-6 py-10">
     <header className="attendance-heading"><div className="attendance-title"><span className="attendance-title-icon" aria-hidden="true">✓</span><div><p>Class records</p><h1>Attendance</h1></div></div></header>
     {message && <p role="status" aria-live="polite" className="mt-6 rounded-lg border border-amber-700/50 bg-amber-950/40 p-4 text-sm text-amber-100">{message}</p>}
-    <section className="attendance-panel"><header className="attendance-panel-header"><div><p>Session</p><h2>Mark attendance</h2></div><span>{roster.length} students</span></header><div className="attendance-session-picker"><StandardSelectField name="session" value={sessionId} disabled={Boolean(savingId)} onChange={setSessionId} placeholder="Select a class" options={sessions.map((session) => ({ value: session.id, label: sessionLabel(session, batches) }))} /></div>
-      {!sessionId ? <p className="attendance-empty">Schedule a class first.</p> : roster.length === 0 ? <p className="attendance-empty">No active enrolments exist for this batch yet.</p> : !recordsLoaded ? <p className="attendance-empty">Loading attendance records…</p> : <ul className="attendance-roster">{roster.map((student) => { const record = recordFor(student.id); return <li key={student.id}><div><b>{student.firstName} {student.lastName}</b><small>{record ? `Marked: ${record.status}` : "Not marked"}</small></div><StandardSelectField name={`attendance-${student.id}`} value={record?.status ?? ""} disabled={Boolean(savingId)} onChange={(status) => { void mark(student.id, status); }} placeholder="Select status" options={statuses.map((status) => ({ value: status, label: status }))} /><input value={notesFor(student.id)} disabled={Boolean(savingId)} maxLength={500} onChange={(event) => setNotesByStudent((current) => ({ ...current, [`${sessionId}:${student.id}`]: event.target.value }))} placeholder="Notes (optional)" /><button disabled={Boolean(savingId) || !record?.status} onClick={() => { const status = record?.status; if (status) void mark(student.id, status); }} className="attendance-save">{savingId === student.id ? "Saving…" : "Save"}</button></li>; })}</ul>}
+    <section className="attendance-panel" aria-busy={Boolean(savingId)}><header className="attendance-panel-header"><div><p>Session</p><h2>Mark attendance</h2></div><span>{roster.length} students</span></header><div className="attendance-session-picker"><StandardSelectField name="session" label="Class session" value={sessionId} disabled={Boolean(savingId)} onChange={setSessionId} placeholder="Select a class" options={sessions.map((session) => ({ value: session.id, label: sessionLabel(session, batches) }))} /></div>
+      {!sessionId ? <p className="attendance-empty">Schedule a class first.</p> : roster.length === 0 ? <p className="attendance-empty">No active enrolments exist for this batch yet.</p> : !recordsLoaded ? <p className="attendance-empty">Loading attendance records…</p> : <ul className="attendance-roster">{roster.map((student) => { const record = recordFor(student.id); const name = `${student.firstName} ${student.lastName}`; return <li key={student.id}><div><b>{name}</b><small>{record ? `Marked: ${record.status}` : "Not marked"}</small></div><StandardSelectField name={`attendance-${student.id}`} label={`Attendance for ${name}`} value={record?.status ?? ""} disabled={Boolean(savingId)} onChange={(status) => { if (status) void mark(student.id, status); }} placeholder="Select status" options={statuses.map((status) => ({ value: status, label: status }))} /><OnboardingField label={`Notes for ${name} (optional)`}><input value={notesFor(student.id)} disabled={Boolean(savingId)} maxLength={500} onChange={(event) => setNotesByStudent((current) => ({ ...current, [`${sessionId}:${student.id}`]: event.target.value }))} placeholder="Notes (optional)" /></OnboardingField><button disabled={Boolean(savingId) || !record?.status} onClick={() => { const status = record?.status; if (status) void mark(student.id, status); }} className="attendance-save">{savingId === student.id ? "Saving…" : "Save"}</button></li>; })}</ul>}
     </section>
   </div></main>;
 }

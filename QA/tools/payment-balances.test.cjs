@@ -17,15 +17,20 @@ const payments = [{ id: 'r', invoiceId: 'i', amount: 600, status: 'Reconciled' }
   { id: 'v', invoiceId: 'i', amount: 75, status: 'Voided' }];
 function render(invoices = [invoice], rows = payments, selected = 'i') {
   const states = [{ id: 'a' }, [{ id: 's', firstName: 'Synthetic', lastName: 'Student' }],
-    invoices, rows, selected, '', 'UPI', '', ''];
+    invoices, rows, selected, '', 'UPI', '', '', false, false, true, false];
   const writes = new Map(); let index = 0;
-  const react = { useState: () => { const key = index++; return [states[key], value => writes.set(key, value)]; },
-    useEffect: () => {}, useMemo: fn => fn() };
+  const react = { useCallback: fn => fn, useState: () => { const key = index++; return [states[key], value => writes.set(key, value)]; },
+    useEffect: () => {}, useRef: v => ({ current: v }), useMemo: fn => fn() };
   const module = { exports: {} };
   new Function('require', 'module', 'exports', compiled)(name => {
     if (name === 'react') return react;
     if (name === 'react/jsx-runtime') return jsx;
     if (name === '@/lib/api') return { academyApi: () => { throw Error('No network in controlled page test'); } };
+    if (name.endsWith('.module.css')) return new Proxy({}, {get: (_, key) => key});
+    if (name === '@/components/standard-select-field') return { StandardSelectField: 'shared-select' };
+    if (name === '@/components/standard-date-field') return { StandardDateField: 'shared-date' };
+    if (name === '@/components/design-system/onboarding-field') return { OnboardingField: 'label' };
+    if (name === '@/components/invoice-ledger-summary') return { InvoiceLedgerSummary: 'invoice-ledger-summary' };
     throw Error('Unexpected import ' + name);
   }, module, module.exports);
   return { tree: module.exports.default(), writes };
@@ -53,8 +58,8 @@ test('Outstanding uses canonical API balance after applied adjustment', () => {
 });
 test('invoice option and directory show the API balance', () => {
   const { tree } = render();
-  const option = all(tree, n => n.type === 'option' && n.props.value === 'i')[0];
-  assert.match(text(option), new RegExp('Balance ' + money(100).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  const option = all(tree, n => n.type === 'shared-select' && n.props.name === 'invoiceId')[0].props.options.find(o => o.value === 'i');
+  assert.match(option.label, new RegExp('Balance ' + money(100).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   const directory = all(tree, n => n.type === 'section' && n.props.className?.includes('payments-directory'))[0];
   assert.ok(text(directory).includes('Balance ' + money(100)));
 });
@@ -66,18 +71,18 @@ test('selected detail and amount maximum use same canonical balance', () => {
 });
 test('selecting invoice pre-fills only its API outstanding amount', () => {
   const { tree, writes } = render();
-  all(tree, n => n.type === 'select')[0].props.onChange({ target: { value: 'i' } });
+  all(tree, n => n.type === 'shared-select' && n.props.name === 'invoiceId')[0].props.onChange('i');
   assert.equal(writes.get(5), '100');
 });
 test('fully adjusted invoice is not open or selectable for collection', () => {
   const { tree } = render([{ ...invoice, adjustedAmount: 1000, paidAmount: 0, balance: 0, status: 'Paid' }], [], '');
   assert.equal(kpi(tree, 'Open balances'), '0');
   assert.equal(kpi(tree, 'Outstanding'), money(0));
-  assert.equal(all(tree, n => n.type === 'option' && n.props.value === 'i').length, 0);
+  assert.equal(all(tree, n => n.type === 'shared-select' && n.props.name === 'invoiceId')[0].props.options.filter(o => o.value === 'i').length, 0);
 });
 test('empty ledger remains zero and has no invoice collection options', () => {
   const { tree } = render([], [], '');
   assert.equal(kpi(tree, 'Collected'), money(0));
   assert.equal(kpi(tree, 'Outstanding'), money(0));
-  assert.equal(all(tree, n => n.type === 'option').filter(n => n.props.value).length, 0);
+  assert.equal(all(tree, n => n.type === 'shared-select' && n.props.name === 'invoiceId')[0].props.options.length, 0);
 });

@@ -1,7 +1,69 @@
 # Fresh local owned SQL only. Real auth/API and strict selected finance regression.
-param([ValidateSet('InvoiceIntegrity','InvoiceStatus','InvoiceStatusBaseline','MusicProgress','FinancePolicyTheme','TeacherPublication','TeacherCompensation','StudentImports','StudentImportsBaseline','WorkItemIntegrity','ExpenseIntegrity','MetadataShape','HolidayRoute','OnboardingNumbers','OnboardingAccounts','OnboardingAtomic','OnboardingDates','TeacherAvailability','EnrollmentLifecycle','GuardianRevocation','TeacherLifecycle','PentaFoundation','Reconciliation','Adjustment','Payroll','Transition','TransitionRace','ReconcileVoidRace','ApprovalRace','Consumers','Access','AuditBaseline','AuditFixed','PeopleBaseline','PeopleFixed','LinkedBaseline','LinkedFixed','BranchBaseline','BranchFixed','Lookups','Governance','CollectionsBaseline','Collections','InvoiceSettingsBaseline','InvoiceSettings','BranchAddressBaseline','BranchAddress','BatchTimesBaseline','BatchTimes','YearClosure','CoursePrerequisites','CoursePreservation','PromotionDecisions','AssessmentGrades','AssessmentRoster','AssessmentAccess','AssessmentOptions','AttendanceNotes','CalendarDetails','ScheduleDefaults','LeaveIdentity','MakeupLocation','RoleReplacement','RoleRevocation','SessionRevocationRepair','SessionRevocation','RefreshConcurrency','SessionRefresh','BrowserPayments','BrowserApproval','BrowserCertificate','BrowserSession','BrowserProvisioning','CollectionRace','AdjustmentRace','ProvisioningConflict','ProvisioningConcurrency','AcademyProvisioning','PortalProvisioning','PlatformProvisioning','TrialDuration','TenantPlan','PlatformBilling','ActivityDeletion','AnnouncementAudience','GuardianFlags','CertificateFamily','CertificateEnrollment','ComplianceIdentity','ResourceScope','PracticeIdentity','SubmissionIdentity','ReviewContext','MarketingConsent','TemplateState','PreferenceAccess','InboxLifecycle','NotificationChannel','CommunicationRoundtrip','BatchPreservationBaseline','BatchPreservation')][string]$Module = 'Reconciliation')
+param([ValidateSet('InvoiceIntegrity','InvoiceStatus','InvoiceStatusBaseline','MusicProgress','FinancePolicyTheme','TeacherPublication','TeacherCompensation','StudentImports','StudentImportsBaseline','WorkItemIntegrity','ExpenseIntegrity','MetadataShape','HolidayRoute','OnboardingNumbers','OnboardingAccounts','OnboardingAtomic','OnboardingDates','TeacherAvailability','EnrollmentLifecycle','GuardianRevocation','TeacherLifecycle','PentaFoundation','Reconciliation','Adjustment','Payroll','Transition','TransitionRace','ReconcileVoidRace','ApprovalRace','Consumers','Access','AuditBaseline','AuditFixed','PeopleBaseline','PeopleFixed','LinkedBaseline','LinkedFixed','BranchBaseline','BranchFixed','Lookups','Governance','CollectionsBaseline','Collections','InvoiceSettingsBaseline','InvoiceSettings','BranchAddressBaseline','BranchAddress','BatchTimesBaseline','BatchTimes','YearClosure','CoursePrerequisites','CoursePreservation','PromotionDecisions','AssessmentGrades','AssessmentRoster','AssessmentAccess','AssessmentOptions','AttendanceNotes','CalendarDetails','ScheduleDefaults','LeaveIdentity','MakeupLocation','RoleReplacement','RoleRevocation','SessionRevocationRepair','SessionRevocation','RefreshConcurrency','SessionRefresh','BrowserPayments','BrowserApproval','BrowserCertificate','BrowserSession','BrowserProvisioning','CollectionRace','AdjustmentRace','ProvisioningConflict','ProvisioningConcurrency','AcademyProvisioning','PortalProvisioning','PlatformProvisioning','TrialDuration','TenantPlan','PlatformBilling','ActivityDeletion','AnnouncementAudience','GuardianFlags','CertificateFamily','CertificateEnrollment','ComplianceIdentity','ResourceScope','PracticeIdentity','SubmissionIdentity','ReviewContext','MarketingConsent','TemplateState','PreferenceAccess','InboxLifecycle','NotificationChannel','CommunicationRoundtrip','MeetingReadiness','BatchPreservationBaseline','BatchPreservation')][string]$Module = 'Reconciliation')
 $ErrorActionPreference = 'Stop'
+if ($env:QA_ENROLLMENT_SHARED -and ($env:QA_ENROLLMENT_SHARED -ne '1' -or $Module -ne 'EnrollmentLifecycle')) {
+    throw 'Enrollment shared-service checks require EnrollmentLifecycle and value1 before creating SQL.'
+}
+if ($env:QA_PENTA_TEACHER_CHAT_EXPORT -and ($env:QA_PENTA_TEACHER_CHAT_EXPORT -notmatch '^[0-9a-f]{32}$' -or $env:QA_PENTA_TEACHER_CHAT_EXPORT -ne $env:QA_PENTA_TEACHER_BROWSER_EXPORT -or $Module -ne 'TeacherAvailability' -or $env:QA_PENTA_TEACHER_START -ne '1' -or $env:QA_PENTA_TEACHER_CONVERSATION -ne '1' -or $env:QA_PENTA_TEACHER_CORE -ne '1' -or $env:QA_PENTA_TEACHER_WORKFLOW -ne '1' -or $env:QA_TEACHER_CREATION_SERVICE -ne '1')) {
+    throw 'Teacher chat browser requires the same reviewed export and all retained startup/conversation/Core/workflow/service gates before SQL.'
+}
+if ($env:QA_PENTA_TEACHER_START -and ($env:QA_PENTA_TEACHER_START -ne '1' -or $Module -ne 'TeacherAvailability' -or $env:QA_PENTA_TEACHER_CONVERSATION -ne '1' -or $env:QA_PENTA_TEACHER_CORE -ne '1' -or $env:QA_PENTA_TEACHER_WORKFLOW -ne '1' -or $env:QA_TEACHER_CREATION_SERVICE -ne '1')) {
+    throw 'Teacher startup checks require TeacherAvailability and retained conversation/Core/workflow/service gates before creating SQL.'
+}
+if ($env:QA_PENTA_TEACHER_CONVERSATION -and ($env:QA_PENTA_TEACHER_CONVERSATION -ne '1' -or $Module -ne 'TeacherAvailability' -or $env:QA_PENTA_TEACHER_CORE -ne '1' -or $env:QA_PENTA_TEACHER_WORKFLOW -ne '1' -or $env:QA_TEACHER_CREATION_SERVICE -ne '1')) {
+    throw 'Teacher conversation checks require TeacherAvailability and retained Core/workflow/service gates before creating SQL.'
+}
+if ($env:QA_PENTA_TEACHER_BROWSER_EXPORT -and ($env:QA_PENTA_TEACHER_BROWSER_EXPORT -notmatch '^[0-9a-f]{32}$' -or $Module -ne 'TeacherAvailability' -or $env:QA_PENTA_TEACHER_CORE -ne '1' -or $env:QA_PENTA_TEACHER_WORKFLOW -ne '1' -or $env:QA_TEACHER_CREATION_SERVICE -ne '1')) {
+    throw 'Teacher browser checks require an exact export and retained Core/workflow/service gates before creating SQL.'
+}
+if ($env:QA_PENTA_TEACHER_CORE -and ($env:QA_PENTA_TEACHER_CORE -ne '1' -or $Module -ne 'TeacherAvailability' -or $env:QA_PENTA_TEACHER_WORKFLOW -ne '1' -or $env:QA_TEACHER_CREATION_SERVICE -ne '1')) {
+    throw 'Teacher Core checks require the retained guarded teacher workflow and shared-service checks before creating SQL.'
+}
+if ($env:QA_PENTA_TEACHER_WORKFLOW -and ($env:QA_PENTA_TEACHER_WORKFLOW -ne '1' -or $Module -ne 'TeacherAvailability' -or $env:QA_TEACHER_CREATION_SERVICE -ne '1')) {
+    throw 'Teacher workflow checks require TeacherAvailability and retained shared-service checks before creating SQL.'
+}
+if ($env:QA_TEACHER_CREATION_SERVICE -and ($env:QA_TEACHER_CREATION_SERVICE -ne '1' -or $Module -ne 'TeacherAvailability')) {
+    throw 'Teacher creation shared-service checks require TeacherAvailability and value1 before creating SQL.'
+}
+if ($env:QA_ONBOARDING_START_RECOVERY_BROWSER -and ($env:QA_ONBOARDING_START_RECOVERY_BROWSER -ne '1' -or $Module -ne 'OnboardingAtomic' -or $env:QA_ONBOARDING_START_EXPORT -notmatch '^[0-9a-f]{32}$')) {
+    throw 'Start recovery browser requires OnboardingAtomic, value1 and an exact owned export build before creating SQL.'
+}
+if ($env:QA_ONBOARDING_SESSION_BROWSER -and ($env:QA_ONBOARDING_SESSION_BROWSER -ne '1' -or $Module -ne 'OnboardingAtomic' -or $env:QA_ONBOARDING_REVIEW_BROWSER -ne '1')) {
+    throw 'Onboarding session browser requires OnboardingAtomic, retained review browser and value1 before creating SQL.'
+}
+if ($env:QA_REFRESH_LOCK_BROWSER -and ($env:QA_REFRESH_LOCK_BROWSER -ne '1' -or $Module -ne 'RefreshConcurrency')) {
+    throw 'Native refresh-lock browser checks require RefreshConcurrency and value1 before creating SQL.'
+}
+if ($env:QA_ONBOARDING_REVIEW_BROWSER -and ($env:QA_ONBOARDING_REVIEW_BROWSER -ne '1' -or $Module -ne 'OnboardingAtomic')) {
+    throw 'Passive onboarding review browser is available only with OnboardingAtomic and value1.'
+}
 $qaRepo = (Resolve-Path (Join-Path $PSScriptRoot '../../..')).Path
+if ($env:QA_IDENTITY_CHALLENGE_CHECK) {
+    if ($env:QA_IDENTITY_CHALLENGE_CHECK -ne '1' -or $Module -ne 'SessionRevocationRepair') { throw 'Identity challenge checks require SessionRevocationRepair and value1 before creating SQL.' }
+    if (!(Test-Path -LiteralPath (Join-Path $qaRepo '.build-check/identity-challenge-sql/bin/SqlHarness/debug/SqlHarness.dll'))) { throw 'Build the isolated identity-challenge-sql harness first.' }
+}
+if ($env:QA_CSV_EXPORT_CHECK) {
+    if ($env:QA_CSV_EXPORT_CHECK -ne '1' -or $Module -ne 'Access') { throw 'CSV export checks require Access and value1 before creating SQL.' }
+    if (!(Test-Path -LiteralPath (Join-Path $qaRepo '.build-check/csv-export-sql/bin/SqlHarness/debug/SqlHarness.dll'))) { throw 'Build the isolated csv-export-sql harness first.' }
+}
+if ($env:QA_ONBOARDING_REVIEW_BROWSER -eq '1' -and !(Test-Path -LiteralPath (Join-Path $qaRepo 'apps/web/out/penta/onboarding.html'))) {
+    throw 'Build the onboarding review product export before creating disposable SQL.'
+}
+if ($env:QA_LIFECYCLE_BROWSER -and ($env:QA_LIFECYCLE_BROWSER -ne '1' -or $Module -ne 'TeacherLifecycle' -or $env:QA_LIFECYCLE_OVERLAP -or $env:QA_TEACHER_LIFECYCLE_BASELINE -or $env:QA_GUARDIAN_REVOCATION_BASELINE)) {
+    throw 'Lifecycle browser requires TeacherLifecycle, QA_LIFECYCLE_BROWSER=1, no overlap or baseline flags before creating SQL.'
+}
+if ($env:QA_LIFECYCLE_OVERLAP -and ($env:QA_LIFECYCLE_OVERLAP -ne '1' -or $Module -notin @('TeacherLifecycle','GuardianRevocation') -or $env:QA_TEACHER_LIFECYCLE_BASELINE -or $env:QA_GUARDIAN_REVOCATION_BASELINE)) {
+    throw 'Lifecycle overlap requires TeacherLifecycle/GuardianRevocation, QA_LIFECYCLE_OVERLAP=1 and no baseline flags before creating SQL.'
+}
+if ($env:QA_PAYROLL_DOCUMENT_BROWSER -and ($env:QA_PAYROLL_DOCUMENT_BROWSER -ne '1' -or $Module -ne 'Payroll' -or $env:QA_PAYROLL_HISTORY -ne 'guarded' -or $env:QA_BATCH1 -ne 'guarded')) {
+    throw 'Payroll document browser requires Payroll, guarded Batch1/history and QA_PAYROLL_DOCUMENT_BROWSER=1 before creating SQL.'
+}
+if ($env:QA_BATCH1 -and ($env:QA_BATCH1 -notin @('baseline','guarded') -or $Module -ne 'Payroll' -or $env:QA_PAYROLL_HISTORY -ne 'guarded')) {
+    throw 'Batch1 requires baseline/guarded mode, Payroll and guarded history before creating SQL.'
+}
+if ($env:QA_BATCH1_FINANCE -and ($env:QA_BATCH1_FINANCE -ne '1' -or $Module -ne 'Payroll' -or $env:QA_BATCH1 -ne 'guarded')) {
+    throw 'Batch1 finance add-on requires Payroll, guarded Batch1 and QA_BATCH1_FINANCE=1 before creating SQL.'
+}
 if ($env:QA_PAYROLL_BROWSER -and ($env:QA_PAYROLL_BROWSER -ne '1' -or $Module -ne 'Payroll' -or $env:QA_PAYROLL_HISTORY -ne 'guarded')) {
     throw 'Payroll browser requires QA_PAYROLL_BROWSER=1, Payroll module and guarded history before creating SQL.'
 }
@@ -48,6 +110,7 @@ try {
     if ($Module -eq 'OnboardingDates') { $qaSwitch = '--audit-onboarding-dates' }
     if ($Module -eq 'TeacherAvailability') { $qaSwitch = '--audit-teacher-availability' }
     if ($Module -eq 'AssessmentGrades') { $qaSwitch = '--audit-assessment-grades' }
+    if ($Module -eq 'MeetingReadiness') { $qaSwitch = '--audit-meeting-readiness' }
     if ($Module -eq 'PentaFoundation') { $qaSwitch = '--penta-foundation' }
     if ($Module -eq 'AssessmentRoster') { $qaSwitch = '--audit-assessment-roster' }
     if ($Module -eq 'AssessmentAccess') { $qaSwitch = '--audit-assessment-access' }
@@ -102,13 +165,29 @@ try {
     if ($Module -eq 'CommunicationRoundtrip') { $qaSwitch = '--audit-communication-roundtrip' }
     $env:QA_SQL_SA_PASSWORD = 'Qa!a9' + [Guid]::NewGuid().ToString('N')
     $env:MSSQL_SA_PASSWORD = $env:QA_SQL_SA_PASSWORD
-    $qaId = docker run -d --name $qaContainer --hostname $qaContainer --label "academydesk.qa.run=$qaRun" -e ACCEPT_EULA=Y -e MSSQL_PID=Developer -e MSSQL_SA_PASSWORD -p 127.0.0.1::1433 mcr.microsoft.com/mssql/server:2022-latest
+    # This focused recovery window uses only the already-cached SQL image and
+    # the same bounded SQL allocation as the newer image/native runners.
+    $qaRecoverySqlLimits = @()
+    if ($env:QA_ONBOARDING_START_RECOVERY_BROWSER -eq '1' -or $env:QA_TEACHER_CREATION_SERVICE -eq '1' -or $env:QA_ENROLLMENT_SHARED -eq '1') {
+        $qaRecoverySqlLimits = @('--pull=never', '--memory', '2g', '--cpus', '2', '-e', 'MSSQL_MEMORY_LIMIT_MB=1536')
+    }
+    $qaId = docker run -d @qaRecoverySqlLimits --name $qaContainer --hostname $qaContainer --label "academydesk.qa.run=$qaRun" -e ACCEPT_EULA=Y -e MSSQL_PID=Developer -e MSSQL_SA_PASSWORD -p 127.0.0.1::1433 mcr.microsoft.com/mssql/server:2022-latest
     if ($LASTEXITCODE -ne 0) { throw 'Could not create isolated SQL container.' }
     Write-Output "QA $Module run=$qaRun container=$qaContainer started=$($qaStarted.ToString('o'))"
     $qaReady = $false
     for ($qaAttempt=0; $qaAttempt -lt 30; $qaAttempt++) {
         $qaLogs = docker logs $qaContainer 2>&1
-        if ($qaLogs -match 'SQL Server is now ready for client connections') { $qaReady=$true; break }
+        if ($qaLogs -match 'SQL Server is now ready for client connections') {
+            # The first startup log can precede completion of SA provisioning.
+            # Require an actual authenticated probe; never print the credential.
+            $qaProbeErrorAction=$ErrorActionPreference
+            try {
+                $ErrorActionPreference='Continue'
+                docker exec $qaContainer /bin/bash -c 'SQLCMDPASSWORD=$MSSQL_SA_PASSWORD /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -C -Q "SELECT 1"' 2>&1 | Out-Null
+                $qaProbeExit=$LASTEXITCODE
+            } finally { $ErrorActionPreference=$qaProbeErrorAction }
+            if ($qaProbeExit -eq 0) { $qaReady=$true; break }
+        }
         Start-Sleep -Seconds 2
     }
     if (!$qaReady) { throw "Readiness failed; retained exact owned container $qaContainer" }
@@ -116,7 +195,13 @@ try {
     Write-Output "QA SQL port=$qaPort"
     Push-Location -LiteralPath $qaRepo
     try {
-        if ($Module -in @('CoursePreservation','CoursePrerequisites','YearClosure','PromotionDecisions','AssessmentGrades','AssessmentRoster','AssessmentAccess','AssessmentOptions','AttendanceNotes','CalendarDetails','ScheduleDefaults','LeaveIdentity','MakeupLocation','RoleReplacement','RoleRevocation','SessionRevocationRepair','SessionRevocation','RefreshConcurrency','SessionRefresh','BrowserCertificate','BrowserSession','BrowserProvisioning','ProvisioningConflict','ProvisioningConcurrency','AcademyProvisioning','PortalProvisioning','PlatformProvisioning','TrialDuration','TenantPlan','PlatformBilling','ActivityDeletion','AnnouncementAudience','GuardianFlags','CertificateFamily','CertificateEnrollment','ComplianceIdentity','ResourceScope','PracticeIdentity','SubmissionIdentity','ReviewContext','MarketingConsent','TemplateState','PreferenceAccess','InboxLifecycle','NotificationChannel','CommunicationRoundtrip')) {
+        if ($Module -eq 'SessionRevocationRepair' -and $env:QA_IDENTITY_CHALLENGE_CHECK -eq '1') {
+            $qaHarness = Join-Path $qaRepo '.build-check/identity-challenge-sql/bin/SqlHarness/debug/SqlHarness.dll'
+            $qaCommand = @($qaHarness, $qaRun, $qaPort, $qaContainer, $qaSwitch)
+        } elseif ($Module -eq 'Access' -and $env:QA_CSV_EXPORT_CHECK -eq '1') {
+            $qaHarness = Join-Path $qaRepo '.build-check/csv-export-sql/bin/SqlHarness/debug/SqlHarness.dll'
+            $qaCommand = @($qaHarness, $qaRun, $qaPort, $qaContainer, $qaSwitch)
+        } elseif ($Module -in @('CoursePreservation','CoursePrerequisites','YearClosure','PromotionDecisions','AssessmentGrades','AssessmentRoster','AssessmentAccess','AssessmentOptions','AttendanceNotes','CalendarDetails','ScheduleDefaults','LeaveIdentity','MakeupLocation','RoleReplacement','RoleRevocation','SessionRevocationRepair','SessionRevocation','RefreshConcurrency','SessionRefresh','BrowserCertificate','BrowserSession','BrowserProvisioning','ProvisioningConflict','ProvisioningConcurrency','AcademyProvisioning','PortalProvisioning','PlatformProvisioning','TrialDuration','TenantPlan','PlatformBilling','ActivityDeletion','AnnouncementAudience','GuardianFlags','CertificateFamily','CertificateEnrollment','ComplianceIdentity','ResourceScope','PracticeIdentity','SubmissionIdentity','ReviewContext','MarketingConsent','TemplateState','PreferenceAccess','InboxLifecycle','NotificationChannel','CommunicationRoundtrip')) {
             $qaArtifact = switch ($Module) { 'YearClosure' { 'year-closure-sql' }; 'CoursePrerequisites' { 'prerequisite-sql' }; 'PromotionDecisions' { 'promotion-sql' }; 'AssessmentGrades' { 'assessment-grade-sql' }; 'AssessmentRoster' { 'assessment-roster-sql' }; 'AssessmentAccess' { 'assessment-access-sql' }; 'AssessmentOptions' { 'assessment-options-sql' }; 'AttendanceNotes' { 'attendance-notes-sql' }; 'CalendarDetails' { 'calendar-details-sql' }; 'ScheduleDefaults' { 'schedule-defaults-sql' }; 'LeaveIdentity' { 'leave-identity-sql' }; 'MakeupLocation' { 'makeup-location-sql' }; 'ProvisioningConflict' { 'provisioning-conflict-sql' }; 'ProvisioningConcurrency' { 'provisioning-concurrency-sql' }; 'AcademyProvisioning' { 'academy-provisioning-sql-final' }; 'PortalProvisioning' { 'portal-provisioning-sql-final' }; 'PlatformProvisioning' { 'platform-provisioning-sql' }; 'TrialDuration' { 'trial-duration-sql' }; 'TenantPlan' { 'tenant-plan-sql-baseline' }; 'PlatformBilling' { 'platform-billing-sql-baseline' }; 'ActivityDeletion' { 'activity-deletion-sql-baseline' }; 'AnnouncementAudience' { 'announcement-audience-sql-baseline' }; 'GuardianFlags' { 'guardian-flags-sql-baseline' }; 'CertificateFamily' { 'certificate-family-sql' }; 'CertificateEnrollment' { 'certificate-enrollment-sql-final' }; 'ComplianceIdentity' { 'compliance-identity-sql-final' }; 'ResourceScope' { 'resource-scope-sql' }; 'PracticeIdentity' { 'practice-identity-sql' }; 'SubmissionIdentity' { 'submission-identity-sql' }; 'ReviewContext' { 'review-context-sql' }; 'MarketingConsent' { 'marketing-consent-sql' }; 'TemplateState' { 'template-state-sql' }; 'PreferenceAccess' { 'preference-access-sql' }; 'InboxLifecycle' { 'inbox-lifecycle-sql' }; 'NotificationChannel' { 'notification-channel-sql' }; 'CommunicationRoundtrip' { 'communication-roundtrip-sql' }; default { 'course-sql' } }
             if ($Module -eq 'BrowserCertificate') { $qaArtifact = 'certificate-portal-sql' }
             if ($Module -eq 'BrowserSession') { $qaArtifact = 'session-browser-sql' }
@@ -142,7 +227,8 @@ try {
             if (!(Test-Path -LiteralPath $qaHarness)) { throw 'Build Consumers with --artifacts-path .build-check/invoice-consumers-sql first.' }
             $qaCommand = @($qaHarness, $qaRun, $qaPort, $qaContainer, $qaSwitch)
         } elseif ($Module -eq 'Payroll' -and $env:QA_PAYROLL_HISTORY -in @('baseline','guarded')) {
-            $qaHarness = Join-Path $qaRepo '.build-check/payroll-history-sql/bin/SqlHarness/debug/SqlHarness.dll'
+            $qaPayrollArtifact = if ($env:QA_BATCH1_FINANCE -eq '1') { '.build-check/batch1-retained-finance/bin/SqlHarness/debug/SqlHarness.dll' } else { '.build-check/payroll-history-sql/bin/SqlHarness/debug/SqlHarness.dll' }
+            $qaHarness = Join-Path $qaRepo $qaPayrollArtifact
             if (!(Test-Path -LiteralPath $qaHarness)) { throw 'Build Payroll history with --artifacts-path .build-check/payroll-history-sql first.' }
             $qaCommand = @($qaHarness, $qaRun, $qaPort, $qaContainer, $qaSwitch)
         } elseif ($Module -eq 'InvoiceIntegrity') {
@@ -190,6 +276,14 @@ try {
             $qaHarness = Join-Path $qaRepo '.build-check/holiday-route-sql/bin/SqlHarness/debug/SqlHarness.dll'
             if (!(Test-Path -LiteralPath $qaHarness)) { throw 'Build HolidayRoute with --artifacts-path .build-check/holiday-route-sql first.' }
             $qaCommand = @($qaHarness, $qaRun, $qaPort, $qaContainer, $qaSwitch)
+        } elseif ($Module -eq 'TeacherLifecycle' -and $env:QA_LIFECYCLE_BROWSER -eq '1') {
+            $qaHarness = Join-Path $qaRepo '.build-check/lifecycle-browser-sql/bin/SqlHarness/debug/SqlHarness.dll'
+            if (!(Test-Path -LiteralPath $qaHarness)) { throw 'Build lifecycle browser harness first.' }
+            $qaCommand = @($qaHarness, $qaRun, $qaPort, $qaContainer, $qaSwitch)
+        } elseif ($Module -in @('GuardianRevocation','TeacherLifecycle') -and $env:QA_LIFECYCLE_OVERLAP -eq '1') {
+            $qaHarness = Join-Path $qaRepo '.build-check/lifecycle-overlap-sql/bin/SqlHarness/debug/SqlHarness.dll'
+            if (!(Test-Path -LiteralPath $qaHarness)) { throw 'Build the lifecycle overlap harness first.' }
+            $qaCommand = @($qaHarness, $qaRun, $qaPort, $qaContainer, $qaSwitch)
         } elseif ($Module -eq 'GuardianRevocation') {
             $qaHarness = Join-Path $qaRepo '.build-check/guardian-revocation-sql/bin/SqlHarness/debug/SqlHarness.dll'
             if (!(Test-Path -LiteralPath $qaHarness)) { throw 'Build the GuardianRevocation harness with --artifacts-path .build-check/guardian-revocation-sql first.' }
@@ -218,6 +312,10 @@ try {
             $qaHarness = Join-Path $qaRepo '.build-check/penta-mini-sql/bin/SqlHarness/debug/SqlHarness.dll'
             if (!(Test-Path -LiteralPath $qaHarness)) { throw 'Build the isolated PENTA harness with --artifacts-path .build-check/penta-mini-sql first.' }
             $qaCommand = @($qaHarness, $qaRun, $qaPort, $qaContainer, $qaSwitch)
+        } elseif ($Module -eq 'MeetingReadiness') {
+            $qaHarness = Join-Path $qaRepo '.build-check/meeting-readiness-sql/bin/SqlHarness/debug/SqlHarness.dll'
+            if (!(Test-Path -LiteralPath $qaHarness)) { throw 'Build MeetingReadiness with --artifacts-path .build-check/meeting-readiness-sql first.' }
+            $qaCommand = @($qaHarness, $qaRun, $qaPort, $qaContainer, $qaSwitch)
         } else { $qaCommand = @('run', '--project', 'QA/tools/SqlHarness/SqlHarness.csproj', '--no-build', '--', $qaRun, $qaPort, $qaContainer, $qaSwitch) }
         # Windows PowerShell must not turn native stderr into a terminating
         # error before the regression's exit code and stack trace are captured.
@@ -228,10 +326,13 @@ try {
         $qaHarnessCompleted = $false
         dotnet @qaCommand 2>&1 | ForEach-Object {
             $qaLine=$_.ToString()
+            if ($qaLine -match '^REFRESHLOCK') { Write-Output $qaLine; return }
+            if ($qaLine -match '^REVOCATION') { Write-Output $qaLine; return }
+            if ($qaLine -match '^IDENTITYCHALLENGE') { Write-Output $qaLine; return }
             if ($qaLine -match '^Unhandled exception') { $qaUnhandled = $true }
             if ($qaLine -match '^PASS: application migrations=\d+, identity migrations=\d+, scoped runtime login verified; run-owned database and login removed\.$') { $qaHarnessCompleted = $true }
-            if ($qaLine -match '^(GUARDIANREVOKE|TEACHERLIFE|PENTA|GRADE|ROSTER|ACADEMICACCESS|ACADEMICOPTIONS|ATTENDANCENOTES|CALENDARDETAILS|SCHEDULEDEFAULTS|LEAVEIDENTITY|MAKEUPLOCATION|CHANNELROUNDTRIP|CHANNELCHOICE|INBOXLIFE|CONSENTACCESS|TEMPLATESTATE|MARKETING|REVIEWCONTEXT|SUBMISSIONIDENTITY|PRACTICEIDENTITY|RESOURCESCOPE|COMPLIANCE|CERTIFICATE|CERTFAMILY|GUARDIANFLAGS|ANNOUNCEMENTAUDIENCE|ACTIVITYDELETE|PLATFORMBILLING|TENANTPLAN|TRIALDURATION|PLATFORMPROVISION|PORTALPROVISION|ACADEMYPROVISION|PROVISIONRACE|PROVISIONCONFLICT|ROLEREPLACE|ROLESESSION|PROVISIONUI|CERTPORTAL|PAYPORTAL|SESSIONBROWSER|SESSIONREVOCATION|SESSIONREFRESH|REFRESHFLIGHT)') { Write-Output $qaLine; return }
-            if ($qaLine -match '^(SECURITY-FILE|CLASSMATERIAL|Runtime inventory|Created run-owned|HTTP controls|Tenant controls|FINANCE|ADJUSTMENT|PAYROLL|TRANSITION|CONSUMER|ACCESS|AUDIT|PEOPLE|LINKED|BRANCH|BATCHPRESERVE|BATCHTIMES|COURSEPRESERVE|PREREQUISITE|YEARCLOSURE|PROMOTION|LOOKUP|GOVERNANCE|COLLECTIONS|INVOICESETTINGS|Negative cleanup|PASS:|Unhandled exception)' -or ($qaUnhandled -and $qaLine -match '^\s+at SqlHarnessEntryPoint\.') -or $_ -is [System.Management.Automation.ErrorRecord]) { Write-Output $qaLine }
+            if ($qaLine -match '^(MEETING|GUARDIANREVOKE|TEACHERLIFE|PENTA|GRADE|ROSTER|ACADEMICACCESS|ACADEMICOPTIONS|ATTENDANCENOTES|CALENDARDETAILS|SCHEDULEDEFAULTS|LEAVEIDENTITY|MAKEUPLOCATION|CHANNELROUNDTRIP|CHANNELCHOICE|INBOXLIFE|CONSENTACCESS|TEMPLATESTATE|MARKETING|REVIEWCONTEXT|SUBMISSIONIDENTITY|PRACTICEIDENTITY|RESOURCESCOPE|COMPLIANCE|CERTIFICATE|CERTFAMILY|GUARDIANFLAGS|ANNOUNCEMENTAUDIENCE|ACTIVITYDELETE|PLATFORMBILLING|TENANTPLAN|TRIALDURATION|PLATFORMPROVISION|PORTALPROVISION|ACADEMYPROVISION|PROVISIONRACE|PROVISIONCONFLICT|ROLEREPLACE|ROLESESSION|PROVISIONUI|CERTPORTAL|PAYPORTAL|SESSIONBROWSER|SESSIONREVOCATION|SESSIONREFRESH|REFRESHFLIGHT)') { Write-Output $qaLine; return }
+            if ($qaLine -match '^(SECURITY-FILE|CLASSMATERIAL|Runtime inventory|Created run-owned|HTTP controls|Tenant controls|FINANCE|ADJUSTMENT|PAYROLL|BATCH1|TRANSITION|CONSUMER|ACCESS|AUDIT|PEOPLE|LINKED|BRANCH|BATCHPRESERVE|BATCHTIMES|COURSEPRESERVE|PREREQUISITE|YEARCLOSURE|PROMOTION|LOOKUP|GOVERNANCE|COLLECTIONS|INVOICESETTINGS|Negative cleanup|PASS:|Unhandled exception)' -or ($qaUnhandled -and $qaLine -match '^\s+at SqlHarnessEntryPoint\.') -or $_ -is [System.Management.Automation.ErrorRecord]) { Write-Output $qaLine }
         }
         $qaExit=$LASTEXITCODE
         } finally { $ErrorActionPreference = $qaPriorErrorAction }

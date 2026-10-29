@@ -1,0 +1,30 @@
+.page.page { width: min(100%, 1320px); min-width: 0; }
+.page :global(.onboarding-section) { padding: clamp(16px, 2vw, 24px); border-radius: 18px; background: var(--ad-surface); border: 1px solid var(--ad-border); }
+.page :global(.onboarding-section-header) { align-items: center; margin-bottom: 20px; }
+.page :global(.onboarding-section-header > span) { background: var(--ad-accent-soft); color: var(--ad-accent); border-radius: 12px; }
+.page :global(.onboarding-fields) { gap: 18px 20px; align-items: start; }
+.field { display: grid; min-width: 0; gap: 8px; color: var(--ad-text-muted); font-size: .875rem; font-weight: 650; line-height: 1.5; }
+.field > :is(input, textarea) { width: 100%; min-width: 0; min-height: 44px; padding: 12px; border: 1px solid var(--ad-border-strong); border-radius: 12px; background: var(--ad-control-surface); color: var(--ad-text); font-weight: 400; }
+.field > textarea { min-height: 100px; resize: vertical; }
+.page :global(.onboarding-helper) { display: block; margin: 0; padding: 12px; border: 1px solid var(--ad-border); border-radius: 12px; background: var(--ad-accent-soft); color: var(--ad-text); font-size: .875rem; line-height: 1.6; }
+.page :global(.onboarding-permissions) { gap: 10px; }
+.page :global(.consent-check) { min-height: 44px; line-height: 1.5; overflow-wrap: anywhere; }
+.page :global(.consent-check input) { flex: 0 0 auto; }
+.page :global(.teacher-subject-row) { align-items: end; gap: 12px; }
+.page :global(.teacher-subjects) { gap: 16px; }
+.page :global(.teacher-subjects-header) { flex-wrap: wrap; }
+.page :global(.availability-list) { gap: 14px; }
+.page :global(.availability-row) { padding: 14px; border: 1px solid var(--ad-border); border-radius: 14px; background: var(--ad-surface-subtle); grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; }
+.page :global(.availability-row .consent-check) { grid-column: 1 / -1; margin: 0; }
+.page :global(.standard-time-label) { overflow-wrap: anywhere; }
+.page :global(.teacher-inline-button), .page :global(.teacher-remove-button) { min-height: 44px; border-radius: 12px; }
+.page :global(.teacher-onboarding-action), .page :global(.onboarding-submit) { margin: 0; padding: 16px; border-radius: 18px; }
+.page :global(.student-onboarding-submit), .page :global(.teacher-onboarding-submit) { min-height: 48px; border-radius: 12px; }
+@media (max-width: 760px) {
+  .page :global(.onboarding-fields-2) { grid-template-columns: minmax(0, 1fr); }
+  .page :global(.onboarding-parent-layout) { grid-template-columns: minmax(0, 1fr); }
+  .page :global(.onboarding-permissions) { border-left: 0; border-top: 1px solid var(--ad-border); padding: 16px 0 0; }
+  .page :global(.teacher-subject-row) { grid-template-columns: minmax(0, 1fr); }
+  .page :global(.teacher-remove-button) { justify-self: start; }
+  .field > :is(input, textarea) { font-size: 16px; }
+}

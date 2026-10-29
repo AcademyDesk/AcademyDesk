@@ -1,0 +1,35 @@
+# Payroll monetary input / storage precision — bounded repair
+
+## Superseding linked input/document checkpoint — 2026-10-13
+
+[Linked report](PHASE_2B_PAYROLL_DOCUMENT_LINKED.md): three min1→0.01 inputs aligned,64 focused checks/types/lint/export83/harness PASS; prior1484 API units retained. Run484f34cba03446dea79468d462c2f25b,577.8s/eight real Admin journeys16 exact writes/eight one-cent payouts/four Teacher journeys/16 actual selected one-page PDFs/four finance403/304 unchanged five-table reads/retained native guards/no429/90+7/exact owned cleanup PASS. Four PDFs rendered/visually inspected. Supersedes lower-bound/linked precision/selected Teacher PDF pending notes below, not all monetary inputs/whole Teacher UI/device/release acceptance.320px Teacher list/action clipping observed and queued Batch2; Batch1/security/private-media/period/idempotency/qualified-review/release remain OPEN. Failed new QA/setup attempts retained, no application authority or PDF template changes.
+
+2026-10-12. Academy Desk worktree D:\AcademyDesk-codex-p0, codex/penta-search, unchanged HEAD2e376b0. Batch1 continuation, not a new audit or full payroll/release acceptance. Local/uncommitted; preserve unrelated Mini/platform work and local evidence.
+
+## Reproduction and repair
+
+Captured immediate pre-precision source, including prior legitimate Batch1 changes, in QA/EVIDENCE/batch1-20261012/payroll-precision-before.cs and payroll-precision-before.tsx. The new10 API tests produced8 failures/2 passes before repair: both payment models accepted sub-cent/SQL-overflow profile/payout inputs. The original handler plus13 added precision assertions produced28 passes/13 failures; one failure is zero's JSON decimal representation contract, not a distinct user-visible defect. The remaining failures demonstrate large-value loss or missing local rejection. Baseline receipts retained; these are controlled/unit reproductions, not frozen-SQL reproductions.
+
+Payroll monetary form values now remain validated decimal strings until serialized as allowlisted JSON number lexemes. Non-money values use normal JSON encoding; malformed/injected, non-positive profile/gross, negative deduction, exponent, sub-cent and out-of-range money are rejected before POST without draft reset. Optional blank deductions remain numeric zero. Existing integer sessions, optional nulls, same-tick/pending/readback recovery and authoritative success notices retained.
+
+The API independently validates effective profile/gross/deduction amounts against its existing SQL decimal(18,2) contract before writes; no silent rounding or schema migration. Profile DTOs add invariant exact monthly/cycle strings while retaining existing numeric properties; dropdown labels use exact strings. Monthly gross still comes from the profile and SessionBlock override/default semantics remain unchanged. Existing worker/tenant authorization, transactions/audit, NoCashDue and terminal-void rules are retained. No PENTA permissions or external/Core contract change.
+
+## Verification
+
+- Fresh full API unit suite: **1484 passed,0 failed,0 skipped** (10 precision cases added to1474).
+- Actual-handler/exact-money/serializer suite: **61 passed,0 failed** (41 handler +20 display/serializer cases), including escaped non-money text and injected lexeme rejection.
+- TypeScript PASS; targeted payroll page/helper lint0 errors/0 warnings; production Webpack static export83 pages PASS. Webpack retains the existing worktree dependency-junction workaround, no build configuration change.
+- Fresh SQL harness build0 warnings/0 errors.
+- Native run **6d65a21b502245f7853bc1c4d9657c24**, loopback SQL61280, **271.7s**, exit0. **12 HTTP400** exact-guidance rejects retain every row/field of payroll profiles/payouts/audits/invoices/payments; **6 successful profile create/update/payout** controls across Monthly and SessionBlock retain9999999999999999.99 gross/rate,9999999999999999.98 deduction and0.01 net in real SQL and response/readback exact strings. No429; production limiter unchanged with QA-only pacing/window waits.
+- Retained native14 arithmetic/22 worker rejects/4 valid links/34 history controls/18 approved-policy/privacy controls, Teacher recorded cycle/UTC/exact projection, guarded downgrade/roundtrip and five terminal reconcile/void race pairs PASS.90 application+7 Identity migrations. Negative mismatched-marker cleanup refused; exact run-owned database/login/container removed. All nine pre-existing containers preserved. This turn did not rerun the wider129 access/collection/approval add-on; prior receipt retained in Batch1 ledger.
+- Controlled production-export browser proof: **8/8 journeys,16 exact raw form writes** (320/1440px × light/dark × Monthly/SessionBlock), native sub-cent no-submit/draft retention, exact maximum profile dropdown labels and0.01 register display PASS. Receipt QA/EVIDENCE/payroll-precision-browser-1791825703273/receipt.json;320px dark SessionBlock screenshot visually inspected. This is not a browser-to-real-SQL or physical-device test. Actual linked Teacher browser/PDF remains pending; prior Admin selected-PDF acceptance retained, not rerun here.
+
+Receipts: QA/EVIDENCE/batch1-20261012/precision-unit-before.txt, precision-handler-before.txt, precision-unit-after.txt, precision-handler-after.txt, precision-typecheck.txt, precision-lint.txt, precision-web-build.txt, precision-harness-build.txt, sql-precision.txt and precision-browser.txt. Evidence remains intentionally untracked. New/changed JavaScript parsing and git diff whitespace checks PASS; tracked main/feature HEAD unchanged, nothing staged, local evidence untracked and build/export output ignored.
+
+## Browser execution note / remaining gates
+
+New production-export controlled-response browser check covers320/1440px, light/dark, Monthly/SessionBlock, native sub-cent no-submit/draft retention, exact raw request lexemes, maximum profile dropdown labels and0.01 displayed net. This is NOT a browser-to-real-SQL journey, authority proof or physical-device acceptance. First run failed because its new test used an abbreviated button name; corrected to the actual accessible label without reducing assertions. Receipt precision-browser-selector-failed.txt retained.
+
+The existing forms' min1 still differs from the API's positive-cent lower bound. Align and verify that native lower-bound behavior alongside the next linked precision/Teacher browser checks; do not imply all possible monetary entry cases are accepted. Teacher actual self-service/PDF, direct/platform/wider security/private media, duplicate/idempotency/period rules, physical Android/iOS, qualified financial/payroll review and restore/operational/pre-Azure gates remain OPEN. Batch1 and enterprise testing are not complete.
+
+Next route remains the existing Sol High financial/security continuation. No project switch or Mini handoff needed for this host-only bounded repair; Sol Medium for settled Manual Orbit+Aura/Prism rollout after contracts/gates. No stage/commit/push/main/Azure/production data changes.

@@ -1,13 +1,15 @@
 "use client";
 
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { WorkspaceNav } from "@/components/workspace-nav";
 import { academyApi, apiHeaders } from "@/lib/api";
 import { batchUpdatePayload, type BatchUpdateSource } from "@/lib/batch-update";
-import { StandardDateField, StandardSelectField } from "@/components/design-system/controls";
+import { StandardDateField, StandardSelectField, StandardTimeField } from "@/components/design-system/controls";
 import { StandardDetailModal, StandardInteractiveTile } from "@/components/design-system/interactive";
+import { OnboardingField } from "@/components/design-system/onboarding-field";
+import styles from "@/components/design-system/scheduling-workspace.module.css";
 
 type Academy = { id: string; name: string };
 type Course = { id: string; name: string; academyType: string };
@@ -78,22 +80,15 @@ export default function BatchesPage() {
     catch { setMessage(`${notice} The batch list could not be refreshed. Refresh the page to see the latest batches.`); }
   }
 
-  async function loadAcademies() {
-    const response = await academyApi("/api/academies", { cache: "no-store" });
-    if (!response.ok) throw new Error();
-    const data: Academy[] = await response.json();
-    setAcademies(data);
-    if (!academyId && data.length) setAcademyId(data[0].id);
-  }
 
-  async function loadWorkspace(id: string) {
+  const loadWorkspace = useCallback(async (id: string, signal?: AbortSignal) => {
     if (!id) return;
     const [courseResponse, teacherResponse, branchResponse, batchResponse] =
       await Promise.all([
-        academyApi(`/api/academies/${id}/courses`, { cache: "no-store" }),
-        academyApi(`/api/academies/${id}/teachers`, { cache: "no-store" }),
-        academyApi(`/api/academies/${id}/branches`, { cache: "no-store" }),
-        academyApi(`/api/academies/${id}/batches`, { cache: "no-store" }),
+        academyApi(`/api/academies/${id}/courses`, { cache: "no-store", signal }),
+        academyApi(`/api/academies/${id}/teachers`, { cache: "no-store", signal }),
+        academyApi(`/api/academies/${id}/branches`, { cache: "no-store", signal }),
+        academyApi(`/api/academies/${id}/batches`, { cache: "no-store", signal }),
       ]);
     if (
       ![courseResponse, teacherResponse, branchResponse, batchResponse].every(
@@ -104,25 +99,41 @@ export default function BatchesPage() {
     const [courseData, teacherData, branchData, batchData]: [Course[], Teacher[], Branch[], Batch[]] = await Promise.all([
       courseResponse.json(), teacherResponse.json(), branchResponse.json(), batchResponse.json(),
     ]);
+    if (signal?.aborted) return;
+    if (![courseData, teacherData, branchData, batchData].every(data => Array.isArray(data) && data.every(item => item && typeof item.id === "string"))) throw new Error();
     setCourses(courseData);
     setTeachers(teacherData);
     setBranches(branchData);
     setBatches(batchData);
-    if (!courseId && courseData.length) setCourseId(courseData[0].id);
-  }
+    setCourseId(current => current || courseData[0]?.id || "");
+  }, []);
 
   useEffect(() => {
-    void loadAcademies().catch(() =>
-      setMessage(
+    const controller = new AbortController();
+    async function initialise() {
+      const response = await academyApi("/api/academies", { cache: "no-store", signal: controller.signal });
+      if (!response.ok) throw new Error();
+      const data: Academy[] = await response.json();
+      if (controller.signal.aborted) return;
+      if (!Array.isArray(data) || !data.every(item => item && typeof item.id === "string" && typeof item.name === "string")) throw new Error();
+      setAcademies(data);
+      setAcademyId(current => current || data[0]?.id || "");
+    }
+    void initialise().catch(() => {
+      if (!controller.signal.aborted) setMessage(
         "Please sign in and make sure the AcademyDesk API is running.",
-      ),
+      ); },
     );
+    return () => controller.abort();
   }, []);
   useEffect(() => {
-    void loadWorkspace(academyId).catch(() =>
-      setMessage("Batch information could not be loaded."),
+    if (!academyId) return;
+    const controller = new AbortController();
+    void loadWorkspace(academyId, controller.signal).catch(() =>
+      { if (!controller.signal.aborted) setMessage("Batch information could not be loaded."); },
     );
-  }, [academyId]);
+    return () => controller.abort();
+  }, [academyId, loadWorkspace]);
 
   async function createBatch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -264,7 +275,7 @@ export default function BatchesPage() {
     const courseName = (id: string) => courses.find((course) => course.id === id)?.name ?? "Subject not set";
     const detailRows = (rows: Batch[], mode: "classes" | "teachers" | "capacity") => <div className="standard-detail-list">{rows.map((batch) => <div key={batch.id}><strong>{batch.name}</strong><span>{mode === "teachers" ? teacherName(batch.teacherId) : mode === "capacity" ? `${batch.activeEnrolments ?? 0} of ${batch.capacity} filled · ${batch.capacity - (batch.activeEnrolments ?? 0)} student${batch.capacity - (batch.activeEnrolments ?? 0) === 1 ? "" : "s"} needed` : `${courseName(batch.courseId)} · ${batch.capacity === 1 ? "1:1" : `Group · capacity ${batch.capacity}`} · ${batch.activeEnrolments ?? 0} students · ${teacherName(batch.teacherId)}`}</span></div>)}</div>;
     return (
-      <main className="enterprise-settings enterprise-legacy-standard batch-overview-standard min-h-screen bg-slate-950 text-slate-100">
+      <main className={`enterprise-settings enterprise-legacy-standard batch-overview-standard min-h-screen bg-slate-950 text-slate-100 ${styles.page}`}>
         <WorkspaceNav />
         <div className="batch-overview-content mx-auto max-w-6xl px-6 py-10">
           <header className="batch-overview-heading">
@@ -332,7 +343,7 @@ export default function BatchesPage() {
   }
 
   return (
-    <main className="enterprise-settings enterprise-legacy-standard batch-setup-standard min-h-screen bg-slate-950 text-slate-100">
+    <main className={`enterprise-settings enterprise-legacy-standard batch-setup-standard min-h-screen bg-slate-950 text-slate-100 ${styles.page}`}>
       <WorkspaceNav />
       <div className="batch-setup-content mx-auto max-w-6xl px-6 py-10">
         <header className="batch-setup-heading"><div className="batch-setup-title"><span className="batch-setup-title-icon" aria-hidden="true">+</span><div><p>Class &amp; batch</p><h1>Create Class / Batch</h1></div></div></header>
@@ -353,7 +364,7 @@ export default function BatchesPage() {
               disabled={savingId !== null}
               name="academy"
               value={academyId}
-              onChange={(id) => { if (!saveInFlight.current) setAcademyId(id); }}
+              onChange={(id) => { if (!saveInFlight.current && id !== academyId) { setAcademyId(id); setCourses([]); setTeachers([]); setBranches([]); setBatches([]); setCourseId(""); setBranchId(""); setEditingId(null); } }}
               placeholder="Select academy"
               options={academies.map((academy) => ({ value: academy.id, label: academy.name }))}
             />
@@ -363,6 +374,7 @@ export default function BatchesPage() {
                 <header className="batch-setup-panel-header"><div><p>Setup</p><h2>Create Class / Batch</h2></div></header>
                 <fieldset disabled={savingId !== null} className="batch-setup-form-fields" style={{ border: 0, margin: 0, minWidth: 0 }}>
                 <StandardSelectField
+                  label="Course (required)"
                   disabled={savingId !== null}
                   name="course"
                   value={courseId}
@@ -370,20 +382,21 @@ export default function BatchesPage() {
                   placeholder="Select course"
                   options={courses.map((course) => ({ value: course.id, label: `${course.name} · ${course.academyType}` }))}
                 />
-                <input
+                <OnboardingField label="Batch name (required)"><input
                   value={name}
                   onChange={(event) => setName(event.target.value)}
                   placeholder="Batch name, e.g. Piano Level 1 – Evening"
                   className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
                   required
-                />
-                <input
+                /></OnboardingField>
+                <OnboardingField label="Batch code (optional)"><input
                   value={batchCode}
                   onChange={(event) => setBatchCode(event.target.value)}
                   placeholder="Batch code, e.g. PNO-L1-EVE"
                   className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
-                />
+                /></OnboardingField>
                 <StandardSelectField
+                  label="Branch (optional)"
                   disabled={savingId !== null}
                   name="branch"
                   value={branchId}
@@ -391,7 +404,7 @@ export default function BatchesPage() {
                   placeholder="No branch assigned"
                   options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
                 />
-                <input
+                <OnboardingField label="Capacity (required)"><input
                   type="number"
                   min="1"
                   max="1000"
@@ -400,9 +413,10 @@ export default function BatchesPage() {
                   placeholder="Capacity"
                   className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
                   required
-                />
+                /></OnboardingField>
                 <div className="mt-3 grid gap-3 sm:grid-cols-2">
                   <StandardSelectField
+                    label="Class type"
                     disabled={savingId !== null}
                     name="class-type"
                     value={classType}
@@ -411,6 +425,7 @@ export default function BatchesPage() {
                     options={[{ value: "Group", label: "Group class" }, { value: "OneToOne", label: "1:1 class" }]}
                   />
                   <StandardSelectField
+                    label="Delivery mode"
                     disabled={savingId !== null}
                     name="delivery-mode"
                     value={deliveryMode}
@@ -433,7 +448,7 @@ export default function BatchesPage() {
                             onChange={() =>
                               setMeetingDays((days) => {
                                 if (days.includes(day)) {
-                                  setMeetingTimes((times) => { const { [day]: _, ...remaining } = times; return remaining; });
+                                  setMeetingTimes((times) => { const remaining = { ...times }; delete remaining[day]; return remaining; });
                                   return days.filter((item) => item !== day);
                                 }
                                 return [...days, day];
@@ -449,21 +464,16 @@ export default function BatchesPage() {
                 {meetingDays.length > 0 && (
                   <div className="mt-3 grid gap-3 sm:grid-cols-2">
                     {meetingDays.map((day) => (
-                      <label key={day} className="text-sm text-slate-300">
-                        {day} class time
-                        <input
-                          required
-                          type="time"
+                      <StandardTimeField key={day}
+                          name={`batch-time-${day}`} label={`${day} class time (required)`} required intervalMinutes={1} disabled={savingId !== null}
                           value={meetingTimes[day] ?? ""}
-                          onChange={(event) => setMeetingTimes((times) => ({ ...times, [day]: event.target.value }))}
-                          className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
+                          onChange={(value) => setMeetingTimes((times) => ({ ...times, [day]: value }))}
                         />
-                      </label>
                     ))}
                   </div>
                 )}
                 <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                  <input
+                  <OnboardingField label="Class duration (minutes)"><input
                     type="number"
                     min="15"
                     step="15"
@@ -471,8 +481,8 @@ export default function BatchesPage() {
                     onChange={(event) => setSessionMinutes(event.target.value)}
                     placeholder="Class duration (minutes)"
                     className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
-                  />
-                  <input
+                  /></OnboardingField>
+                  <OnboardingField label="Sessions per week"><input
                     type="number"
                     min="1"
                     max="7"
@@ -480,26 +490,26 @@ export default function BatchesPage() {
                     onChange={(event) => setSessionsPerWeek(event.target.value)}
                     placeholder="Sessions per week"
                     className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
-                  />
+                  /></OnboardingField>
                 </div>
                 {["Online", "Hybrid"].includes(deliveryMode) && (
-                  <input
+                  <OnboardingField label="Meeting link (required)"><input
                     value={meetingLink}
                     onChange={(event) => setMeetingLink(event.target.value)}
                     required
                     placeholder="Meeting link (required)"
                     className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
-                  />
+                  /></OnboardingField>
                 )}
                 <div className="mt-3">
-                  <input
+                  <OnboardingField label="Room / location (optional)"><input
                     value={roomName}
                     onChange={(event) => setRoomName(event.target.value)}
                     placeholder="Room / online location"
                     className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
-                  />
+                  /></OnboardingField>
                 </div>
-                <input
+                <OnboardingField label="Waitlist capacity"><input
                   type="number"
                   min="0"
                   max="1000"
@@ -507,7 +517,7 @@ export default function BatchesPage() {
                   onChange={(event) => setWaitlistCapacity(event.target.value)}
                   placeholder="Waitlist capacity"
                   className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
-                />
+                /></OnboardingField>
                 <StandardDateField name="batch-start-date" label="Batch start date" value={startDate} onChange={setStartDate} />
                 <button disabled={savingId !== null} className="mt-5 w-full rounded-lg bg-cyan-400 px-4 py-2.5 font-semibold text-slate-950 hover:bg-cyan-300">
                   Create batch
@@ -527,12 +537,13 @@ export default function BatchesPage() {
                           className="rounded-lg border border-cyan-700/60 bg-slate-950 p-4"
                         >
                           <fieldset disabled={savingId !== null} className="grid gap-2" style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
-                            <input
+                            <OnboardingField label="Batch name"><input
                               value={editName}
                               onChange={(e) => setEditName(e.target.value)}
                               className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2"
-                            />
+                            /></OnboardingField>
                             <StandardSelectField
+                              label="Course"
                               disabled={savingId !== null}
                               name="edit-course"
                               value={editCourseId}
@@ -541,6 +552,7 @@ export default function BatchesPage() {
                               options={courses.map((course) => ({ value: course.id, label: course.name }))}
                             />
                             <StandardSelectField
+                              label="Teacher"
                               disabled={savingId !== null}
                               name="edit-teacher"
                               value={editTeacherId}
@@ -549,6 +561,7 @@ export default function BatchesPage() {
                               options={teachers.map((teacher) => ({ value: teacher.id, label: `${teacher.firstName} ${teacher.lastName}` }))}
                             />
                             <StandardSelectField
+                              label="Branch"
                               disabled={savingId !== null}
                               name="edit-branch"
                               value={editBranchId}
@@ -556,14 +569,14 @@ export default function BatchesPage() {
                               placeholder="No branch"
                               options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
                             />
-                            <input
+                            <OnboardingField label="Capacity"><input
                               type="number"
                               min="1"
                               max="1000"
                               value={editCapacity}
                               onChange={(e) => setEditCapacity(e.target.value)}
                               className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2"
-                            />
+                            /></OnboardingField>
                             <StandardDateField name="edit-batch-start-date" label="Batch start date" value={editStartDate} onChange={setEditStartDate} />
                           </fieldset>
                           <div className="mt-3 flex gap-2">

@@ -1,0 +1,43 @@
+.page.page { width: min(100%, 1440px); min-width: 0; overflow-wrap: anywhere; }
+.page :is(section, form, fieldset, article, header, label) { min-width: 0; }
+.page :is(h1, h2, h3, h4, b, strong, small) { overflow-wrap: anywhere; }
+.page h1 { margin: 0; font-size: var(--ad-page-title-size); line-height: var(--ad-page-title-line-height); color: var(--ad-text); }
+.page :is(:global(.surface-panel), :global(.reconciliation-panel)) { border-radius: 18px !important; border-color: var(--ad-border); background: var(--ad-surface); }
+.page :is(header, :global(.reconciliation-filters)) { flex-wrap: wrap; gap: 16px; }
+.page.page :is(button, a) { min-height: 44px !important; white-space: normal; border-radius: 12px; }
+.page a { display: inline-flex; align-items: center; padding: 8px 10px; }
+.page > button { margin-block: 16px; transform: none !important; }
+.page :is(:global(.text-slate-300), :global(.text-slate-400), :global(.text-amber-200)) { color: var(--ad-text-muted); }
+.page :global(.text-cyan-300) { color: var(--ad-accent); }
+.page :global(.text-emerald-300) { color: var(--ad-success, var(--ad-text)); }
+.page :global(.text-rose-300) { color: var(--ad-danger); }
+.page :is(:global(.standard-select-field), :global(.standard-date-field)) { min-width: 0; display: grid; gap: 8px; }
+.page :global(.standard-time-label), .page :global(.field-label) { color: var(--ad-text-muted); font-size: .875rem; line-height: 1.5; }
+.page :is(input, select, textarea) { max-width: 100%; }
+.page :is(form, fieldset) { min-width: 0; }
+.page fieldset { border: 0; padding: 0; margin: 0; }
+.page :global(.reconciliation-kpis) { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.page :global(.reconciliation-kpis) b { font-size: clamp(1rem, 1.8vw, 1.75rem); font-variant-numeric: tabular-nums; }
+.page :global(.reconciliation-filters) { align-items: start; }
+.page :global(.finance-control-workspace) { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; align-items: start; }
+.page :global(.finance-control-documents) :global(.md\:grid-cols-2) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.page :global(.finance-control-register) form > div { flex-wrap: wrap; }
+.page :global(.standard-select-field) { margin-block: 8px; }
+.page :global(.document-full-preview) { max-width: 100%; overflow-wrap: anywhere; }
+.page :global(.document-full-preview) :is(header, footer) { flex-wrap: wrap; }
+.page :global(.document-full-preview-body) { min-width: 0; }
+.page [role="status"], .page [role="alert"] { color: var(--ad-text); background: var(--ad-surface); border-color: var(--ad-border); line-height: 1.6; }
+.scroll { overflow-x: auto; max-width: 100%; overscroll-behavior-x: contain; }
+.scroll:focus-visible { outline: 3px solid var(--ad-accent); outline-offset: 3px; }
+.scroll table { min-width: 600px; width: 100%; }
+.scroll td { max-width: 260px; overflow-wrap: anywhere; }
+.policyLabel { display: grid; gap: 8px; font-size: .875rem; color: var(--ad-text-muted); }
+.page [data-template-preview="true"] { margin-top: 16px; color: var(--ad-text-muted); font-size: .875rem; }
+@media (max-width: 1100px) { .page :global(.reconciliation-kpis) { grid-template-columns: repeat(2, minmax(0, 1fr)); } .page :global(.finance-control-workspace) { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 760px) {
+  .page :global(.reconciliation-kpis), .page :global(.finance-control-documents) :global(.md\:grid-cols-2) { grid-template-columns: minmax(0, 1fr); }
+  .page :is(input, select, textarea) { font-size: 16px; }
+  .page :global(.finance-control-workspace) :global(.flex), .page :global(.finance-control-documents) :global(.flex) { flex-wrap: wrap; }
+  .page :global(.document-full-preview-body) { flex-direction: column; gap: 16px; }
+  .page :global(.document-full-preview-total) { min-width: 0; width: 100%; }
+}

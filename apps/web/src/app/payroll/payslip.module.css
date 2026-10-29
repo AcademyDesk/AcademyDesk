@@ -1,0 +1,32 @@
+.printTarget { min-width:0; }
+.paper { padding:24px; color:var(--ad-text); background:var(--ad-surface); overflow-wrap:anywhere; }
+.heading { padding-bottom:18px; border-bottom:2px solid var(--ad-border-strong); }
+.heading p { margin:0 0 5px; color:var(--ad-text-muted); }
+.heading h3 { margin:0 0 10px; font-size:1.5rem; }
+.heading strong { color:var(--ad-accent); }
+.details { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; margin:22px 0; }
+.details div { min-width:0; }
+.details dt { color:var(--ad-text-muted); font-size:.78rem; }
+.details dd { margin:5px 0 0; font-size:.9rem; font-weight:650; }
+.amounts { display:grid; gap:12px; padding:18px; border:1px solid var(--ad-border-strong); border-radius:12px; }
+.amounts div { display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+.amounts div:last-child { border-top:1px solid var(--ad-border-strong); padding-top:12px; font-weight:750; }
+.note { margin:18px 0 0; color:var(--ad-text-muted); font-size:.76rem; line-height:1.55; }
+.actions { display:flex; flex-wrap:wrap; gap:10px; padding:0 24px 24px; }
+.actions button { min-height:44px!important; white-space:normal; }
+@media(max-width:480px) { .paper { padding:16px; } .details { grid-template-columns:1fr; } .actions { padding:0 16px 16px; } }
+@media print {
+  :global(body):has(.printTarget) { overflow:visible!important; background:#fff!important; }
+  :global(body):has(.printTarget)>:not(.printTarget) { display:none!important; }
+  .printTarget, .printTarget :global(*) { visibility:visible!important; }
+  .printTarget :global(.standard-detail-modal) { position:static!important; display:block!important; width:100%!important; height:auto!important; max-height:none!important; margin:0!important; padding:0!important; border:0!important; background:#fff!important; }
+  .printTarget :global(.standard-detail-modal::backdrop) { display:none!important; }
+  .printTarget :global(.standard-detail-modal>article) { width:100%!important; max-height:none!important; overflow:visible!important; border:0!important; box-shadow:none!important; background:#fff!important; }
+  .printTarget :global(.standard-detail-modal>article>header) { display:none!important; }
+  .paper { color:#172033!important; background:#fff!important; padding:16px!important; }
+  .heading, .amounts, .amounts div:last-child { border-color:#ccd5df!important; }
+  .heading strong { color:#165b9a!important; }
+  .heading p, .details dt, .note { color:#4a596c!important; }
+  .details { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .actions { display:none!important; }
+}

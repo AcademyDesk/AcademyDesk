@@ -6,6 +6,7 @@ import {
   StandardTimeField,
 } from "@/components/design-system/controls";
 import { academyApi } from "@/lib/api";
+import visual from "@/components/design-system/meeting-workspace.module.css";
 type Academy = { id: string; timeZone?: string };
 type Person = {
   id: string;
@@ -47,7 +48,7 @@ const name = (p: Person) =>
 const hasMeetingUrl = (meetingLink?: string) =>
   /^https?:\/\//i.test(meetingLink?.trim() ?? "");
 export default function MeetingLinksPage() {
-  const [academy, setAcademy] = useState<Academy>();
+  const [, setAcademy] = useState<Academy>();
   const [students, setStudents] = useState<Person[]>([]);
   const [teachers, setTeachers] = useState<Person[]>([]);
   const [batches, setBatches] = useState<Batch[]>([]);
@@ -170,11 +171,11 @@ export default function MeetingLinksPage() {
         `Connect ${providerName[provider]} in Engagement → Channel settings before creating a link.`,
       );
     setMessage(
-      "Meeting creation will send the selected settings to the connected provider.",
+      "Meeting creation is not available in this workspace yet. No request has been sent to the provider.",
     );
   }
   return (
-    <main className="enterprise-settings meeting-links-standard min-h-screen">
+    <main className={`enterprise-settings meeting-links-standard min-h-screen ${visual.page}`}>
       <div className="meeting-links-content">
         <header className="meeting-links-heading">
           <div className="meeting-links-title">
@@ -188,24 +189,26 @@ export default function MeetingLinksPage() {
             className={`meeting-provider-status ${connected ? "is-connected" : ""}`}
           >
             {connected
-              ? `${providerName[provider]} connected`
-              : `${providerName[provider]} needs connection`}
+              ? `${providerName[provider]} connection recorded`
+              : `${providerName[provider]} connection not recorded`}
           </div>
         </header>
-        {message && <p className="enterprise-page-state mt-6">{message}</p>}
+        {message && <p className="enterprise-page-state mt-6" role="status">{message}</p>}
+        <p className={visual.availability}>Meeting creation and provider history are not yet integrated. You can prepare a draft below; it will not create a meeting, invite attendees or save provider restrictions. A recorded connection is not a live connectivity test.</p>
         <section className="meeting-links-metrics" aria-label="Meeting link summary">
           <article><span>Eligible classes</span><strong>{eligibleBatchIds.length}</strong><small>Online or Hybrid without a link</small></article>
           <article><span>Selected invitees</span><strong>{attendees.length}</strong><small>Students and additional guests</small></article>
-          <article><span>Provider</span><strong>{connected ? "Connected" : "Action needed"}</strong><small>{providerName[provider]}</small></article>
+          <article><span>Provider</span><strong>{connected ? "Recorded" : "Not recorded"}</strong><small>{providerName[provider]}</small></article>
         </section>
         <section className="meeting-links-layout">
           <form onSubmit={submit} className="meeting-links-panel">
             <header>
               <div>
-                <p>Create</p>
-                <h2>New meeting link</h2>
+                <p>Preparation only</p>
+                <h2>Meeting draft</h2>
               </div>
               <StandardSelectField
+                label="Meeting provider"
                 name="provider"
                 value={provider}
                 onChange={(x) => setProvider(x as Provider)}
@@ -228,6 +231,7 @@ export default function MeetingLinksPage() {
               </label>
               <div className="meeting-links-two">
                 <StandardSelectField
+                  label="Batch"
                   name="batch"
                   value={batchId}
                   onChange={(x) => {
@@ -240,6 +244,7 @@ export default function MeetingLinksPage() {
                     .map((b) => ({ value: b.id, label: b.name }))}
                 />
                 <StandardSelectField
+                  label="Organizer / teacher"
                   name="teacher"
                   value={teacherId}
                   onChange={setTeacherId}
@@ -250,9 +255,9 @@ export default function MeetingLinksPage() {
                   }))}
                 />
               </div>
-              <label>
-                <span>Students to invite</span>
+              <div className={visual.inviteField}>
                 <StandardSelectField
+                  label="Students to invite"
                   name="invite-student"
                   value={studentToAdd}
                   onChange={addStudent}
@@ -272,7 +277,7 @@ export default function MeetingLinksPage() {
                   Only active students in eligible Online/Hybrid batches without
                   a meeting link are shown.
                 </small>
-              </label>
+              </div>
               {selectedStudents.length > 0 && (
                 <div className="meeting-attendee-chips">
                   {selectedStudents.map((s) => (
@@ -310,9 +315,9 @@ export default function MeetingLinksPage() {
                   value={time}
                   onChange={setTime}
                 />
-                <label className="meeting-duration-field">
-                  <span>Duration</span>
+                <div className="meeting-duration-field">
                   <StandardSelectField
+                    label="Duration"
                     name="duration"
                     value={duration}
                     onChange={setDuration}
@@ -322,10 +327,11 @@ export default function MeetingLinksPage() {
                       label: `${x} minutes`,
                     }))}
                   />
-                </label>
+                </div>
               </div>
               <div className="meeting-links-two">
                 <StandardSelectField
+                  label="Schedule"
                   name="recurrence"
                   value={recurrence}
                   onChange={setRecurrence}
@@ -337,6 +343,7 @@ export default function MeetingLinksPage() {
                   ]}
                 />
                 <StandardSelectField
+                  label="Who can join"
                   name="access"
                   value={access}
                   onChange={setAccess}
@@ -361,6 +368,7 @@ export default function MeetingLinksPage() {
                 <h3>Meeting controls</h3>
                 <div className="meeting-links-two">
                   <StandardSelectField
+                    label="In-meeting chat"
                     name="chat"
                     value={chat}
                     onChange={setChat}
@@ -372,6 +380,7 @@ export default function MeetingLinksPage() {
                     ]}
                   />
                   <StandardSelectField
+                    label="Recording"
                     name="recording"
                     value={recording}
                     onChange={setRecording}
@@ -386,16 +395,14 @@ export default function MeetingLinksPage() {
               </section>
               <button
                 className="enterprise-action-button"
-                disabled={!connected}
+                disabled
               >
-                {connected
-                  ? "Create meeting link"
-                  : `Connect ${providerName[provider]} first`}
+                Meeting creation unavailable
               </button>
             </div>
           </form>
           <aside className="meeting-links-help">
-            <header><p>Ready to create</p><h2>Meeting summary</h2></header>
+            <header><p>Not submitted</p><h2>Draft summary</h2></header>
             <dl>
               <div><dt>Provider</dt><dd>{providerName[provider]}</dd></div>
               <div><dt>Class</dt><dd>{batches.find((item) => item.id === batchId)?.name || "Not selected"}</dd></div>
@@ -426,11 +433,13 @@ export default function MeetingLinksPage() {
                 value={to}
                 onChange={setTo}
               />
+              <label className={visual.emailFilter}>Attendee email
               <input
                 value={emailFilter}
                 onChange={(e) => setEmailFilter(e.target.value)}
                 placeholder="Filter attendee email"
               />
+              </label>
             </div>
           </header>
           {filtered.length ? (
@@ -455,9 +464,7 @@ export default function MeetingLinksPage() {
             </ul>
           ) : (
             <p>
-              No meeting links have been created yet. When created, use Edit
-              details to change the date, time, recurrence, invitees,
-              restrictions, or any other setting.
+              Provider history is unavailable in this workspace. No meeting records have been loaded; this does not mean the provider has no meetings.
             </p>
           )}
         </section>

@@ -22,7 +22,10 @@ internal static partial class SqlHarnessEntryPoint
             var otherStudent = await db.Students.FirstAsync(x => x.AcademyId == foreign);
             var course = new ProgramCourse { AcademyId = academy, Name = "Synthetic lifecycle course" };
             var otherCourse = new ProgramCourse { AcademyId = foreign, Name = "Synthetic foreign lifecycle course" };
-            var batch = new Batch { AcademyId = academy, CourseId = course.Id, Name = "Synthetic lifecycle batch" };
+            // The success-path waitlist transition requires an enabled waitlist
+            // under the retained admission rules. Zero/full capacities are tested
+            // independently; keep this fixture valid without changing assertions.
+            var batch = new Batch { AcademyId = academy, CourseId = course.Id, Name = "Synthetic lifecycle batch", WaitlistCapacity = 3 };
             var otherBatch = new Batch { AcademyId = foreign, CourseId = otherCourse.Id, Name = "Synthetic foreign lifecycle batch" };
             db.AddRange(course, otherCourse, batch, otherBatch);
             var row = new Enrollment { AcademyId = academy, StudentId = student.Id, BatchId = batch.Id, StartDate = new(2026, 10, 1), Status = "Active" };

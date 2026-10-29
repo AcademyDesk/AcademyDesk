@@ -1,0 +1,109 @@
+name: Verify AcademyDesk developer baseline
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      web_api_url:
+        description: Public API origin baked into the verified static web artifact
+        required: false
+        type: string
+        default: https://api.example.invalid
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+# No environment secrets, Azure login, registry writes, real databases or model
+# loading. This developer gate does not establish staging/production acceptance.
+jobs:
+  api:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: '1'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          dotnet-version: 10.0.x
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Restore API and existing tests
+        run: dotnet restore AcademyDesk.slnx
+      - name: Build API and existing tests
+        run: dotnet build AcademyDesk.slnx --configuration Release --no-restore
+      - name: Run the existing API suite
+        run: dotnet test tests/AcademyDesk.Api.Tests/AcademyDesk.Api.Tests.csproj --configuration Release --no-build --no-restore --logger "trx;LogFileName=api.trx" --results-directory "$RUNNER_TEMP/academydesk-ci/test-results"
+      - name: Build one candidate API image
+        run: |
+          mkdir -p "$RUNNER_TEMP/academydesk-ci/api"
+          docker build -f apps/api/Dockerfile -t "academydesk-api:$GITHUB_SHA" .
+          docker save "academydesk-api:$GITHUB_SHA" | gzip > "$RUNNER_TEMP/academydesk-ci/api/api-image.tar.gz"
+      - name: Bind image and passing tests to the exact source
+        run: node QA/tools/ci-release-artifacts.cjs create "$RUNNER_TEMP/academydesk-ci/api" api "$GITHUB_SHA" "$RUNNER_TEMP/academydesk-ci/test-results/api.trx"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: api-candidate-${{ github.sha }}
+          path: ${{ runner.temp }}/academydesk-ci/api
+          if-no-files-found: error
+          retention-days: 7
+          compression-level: 0
+      - name: Retain API diagnostics even on failure
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: api-test-results-${{ github.sha }}
+          path: ${{ runner.temp }}/academydesk-ci/test-results
+          if-no-files-found: warn
+          retention-days: 7
+  web:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      NEXT_PUBLIC_API_URL: ${{ inputs.web_api_url || 'https://api.example.invalid' }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Install locked frontend dependencies
+        working-directory: apps/web
+        run: npm ci
+      - name: Lint
+        working-directory: apps/web
+        run: npm run lint -- --max-warnings=0
+      - name: TypeScript
+        working-directory: apps/web
+        run: npx --no-install tsc --noEmit
+      - name: Release artifact guard regressions
+        run: node --test QA/tools/ci-release-artifacts.test.cjs QA/tools/ci-workflow.test.cjs
+      - name: Build the candidate static portal
+        working-directory: apps/web
+        run: npm run build
+      - name: Bind the web export and API origin to the exact source
+        run: |
+          mkdir -p "$RUNNER_TEMP/academydesk-ci/web"
+          cp -R apps/web/out "$RUNNER_TEMP/academydesk-ci/web/out"
+          node QA/tools/ci-release-artifacts.cjs create "$RUNNER_TEMP/academydesk-ci/web" web "$GITHUB_SHA" "$NEXT_PUBLIC_API_URL"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: web-candidate-${{ github.sha }}
+          path: ${{ runner.temp }}/academydesk-ci/web
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7

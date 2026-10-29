@@ -36,8 +36,8 @@ const server=http.createServer((req,res)=>{try{
     if(url.origin===origin||url.protocol==='data:')return route.continue();return route.abort('blockedbyclient');
    });
    await page.goto(origin+'/assignments');await page.getByText('No assignments yet.',{exact:true}).waitFor();
-   const form=page.locator('form'),title=page.getByPlaceholder('Assignment title'),description=page.getByPlaceholder('Instructions or practice notes (optional)'),batch=form.locator('select').nth(0),type=form.locator('select').nth(1),due=form.locator('input[type="datetime-local"]'),published=page.getByRole('checkbox',{name:'Publish for students'});
-   await batch.selectOption('second');await type.selectOption('Practice');await published.uncheck();
+   const form=page.locator('form'),title=page.getByPlaceholder('Assignment title'),description=page.getByPlaceholder('Instructions or practice notes (optional)'),batch=form.locator('input[name="batchId"]'),type=form.locator('input[name="assignmentType"]'),due=form.locator('input[type="datetime-local"]'),published=page.getByRole('checkbox',{name:'Publish for students'});
+   await require('./shared-picker-actions.cjs').select(page,'batchId','Second batch');await require('./shared-picker-actions.cjs').select(page,'assignmentType','Practice');await published.uncheck();
    await title.fill('Synthetic assignment');await description.fill('Practice instructions');await due.fill('2026-10-31T10:00');
    await page.getByRole('button',{name:'Create assignment',exact:true}).click();
    const notice=page.getByRole('status'),failed=scenario==='rejected'||scenario==='uncertain-committed';

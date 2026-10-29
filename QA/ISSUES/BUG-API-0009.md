@@ -1,5 +1,13 @@
 # BUG-API-0009 — Guardian child list fails SQL query translation
 
+24October related portal successor: [selected-child context](../REPORTS/GUARDIAN_SELECTION_CACHE_2026-10-24.md)
+qualified real Guardian login/Me/two-child detail switching/delayed responses/
+Admin revoke/regrant in four390/1440light-dark journeys.50native HTTP checks,
+exact finally/independent qualifier PASS. This is current portal Me/detail UI
+evidence, not a new exhaustive direct GuardianChildren endpoint test. Earlier
+21direct child-list SQL checks remain historical to their binary; full query-
+payload/order/count/guardian/device/enterprise acceptance stays OPEN.
+
 | Field | Value |
 | --- | --- |
 | Status | OPEN |

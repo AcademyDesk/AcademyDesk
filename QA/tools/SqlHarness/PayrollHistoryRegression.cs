@@ -27,6 +27,25 @@ internal static partial class SqlHarnessEntryPoint
             row.PaidAtUtc != new DateTime(2026,9,30,12,0,0) || row.CreatedAtUtc != row.PaidAtUtc || row.UpdatedAtUtc is not null || row.Reference is not null || row.SessionsCovered is not null ||
             row.WorkerNameSnapshot is not null || row.WorkerTypeSnapshot is not null || row.TeacherIdSnapshot is not null || row.StaffUserIdSnapshot is not null || row.IdentityRecordedAtUtc is not null ||
             db.Database.HasPendingModelChanges()) throw new InvalidOperationException("Payroll identity migration changed legacy row or invented identity.");
+        if (Environment.GetEnvironmentVariable("QA_BATCH1") == "guarded")
+        {
+            var original = JsonSerializer.Serialize(row);
+            var statement = new PayrollPayout { AcademyId = academy, PayrollProfileId = profile, PayslipNumber = "QA-MIGRATION-NOCASH", PeriodLabel = "Synthetic migration", GrossAmount = 1000m, Deductions = 1000m, NetAmount = 0m, Status = "NoCashDue", PaymentMethod = "NoCashDue", PaidAtUtc = null };
+            db.Add(statement); await db.SaveChangesAsync();
+            var blocked = false;
+            try { await db.GetService<IMigrator>().MigrateAsync("20261012121216_PreservePayrollPayoutIdentity"); }
+            catch (Microsoft.Data.SqlClient.SqlException error) when (error.Number == 51000) { blocked = true; }
+            if (!blocked || !(await db.Database.GetAppliedMigrationsAsync()).Contains("20261012140937_PayrollNoCashDueStatements") ||
+                (await db.PayrollPayouts.AsNoTracking().SingleAsync(x => x.Id == statement.Id)).PaidAtUtc != null ||
+                original != JsonSerializer.Serialize(await db.PayrollPayouts.AsNoTracking().SingleAsync(x => x.Id == id)))
+                throw new InvalidOperationException("No-cash migration rollback guard failed or fabricated evidence.");
+            await db.PayrollPayouts.Where(x => x.Id == statement.Id && x.AcademyId == academy).ExecuteDeleteAsync();
+            await db.GetService<IMigrator>().MigrateAsync("20261012121216_PreservePayrollPayoutIdentity");
+            await db.Database.MigrateAsync();
+            if (original != JsonSerializer.Serialize(await db.PayrollPayouts.AsNoTracking().SingleAsync(x => x.Id == id)) || db.Database.HasPendingModelChanges())
+                throw new InvalidOperationException("Compatible migration roundtrip changed the old payout.");
+            Console.WriteLine("BATCH1 MIGRATION PASS: legacy row exact, null-paid statement downgrade51000/rollback/retained migration, compatible empty-statement down/up exact; no invented payment timestamp.");
+        }
         await db.PayrollPayouts.Where(x => x.Id == id && x.AcademyId == academy).ExecuteDeleteAsync();
         Console.WriteLine("PAYROLLHISTORY MIGRATION PASS: pre-column orphan payout preserved exactly, all five identity fields remain NULL, current model matches snapshot; only owned migration fixture removed.");
     }

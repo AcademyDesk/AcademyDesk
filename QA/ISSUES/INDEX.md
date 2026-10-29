@@ -1,15 +1,93 @@
 # Open issue register
 
+## Access-review provenance successor — 26 October 2026
+
+BUG-DATA-0013/BUG-API-0002 bounded backend repair qualified2995API tests/49native
+HTTP/five attributed sign-offs/four500rollbacks/final5reviews3tasks10audits/
+65actual image files/exact originals/inventory/independent qualifier PASS.
+Sign-off client41checks/fresh627files/eight synthetic/four actual Owner-login
+journeys/one extra browser audit-fault recovery/exact originals/qualifier PASS.
+Wider issues remain OPEN; discovery tables below retain historical context.
+
+## Current25October continuation
+
+Staff Create/password/status/offboard extends existing BUG-API-0002: eight native
+unaudited outcomes reproduced for ordinary/same-academy platform-flag Owner,
+four existing transaction markers,2971API tests and repaired54native HTTP/eight
+500rollback controls/ten attributed recovery audits/exact original services/
+inventory/paired qualifier PASS. Wider identity/platform/concurrency/device/
+release remains OPEN. Access Review feedback also qualified16handlers/fresh
+627file export/53native HTTP/four actual browser journeys/two audit faults/
+eight success audits; BUG-FUNC-0001/0003 broader scope stays OPEN.
+
+[BUG-API-0002](BUG-API-0002.md) now also has qualified ordinary academy access-
+grant Create/Revoke atomicity:2933API tests, two real500rollback/recovery controls,
+70normal HTTP/30permission cases and65actual image files PASS. Earlier failed QA/
+supplemental RAM envelopes retained. Existing broader issue remains OPEN.
+Owner approved one regular payroll statement per worker/period with separate
+approved adjustments; [BUG-DATA-0003](BUG-DATA-0003.md) duplicate guard now has
+2950API/84native HTTP/5pairs/FP1-FP3 plus44linked native HTTP/four actual browser
+journeys in both themes/mobile-desktop, exact originals/inventory and qualifiers
+PASS. Broader payroll/AI/device/release OPEN, not a new issue.120records remain.
+Custom-role Create/Assign now also qualified for BUG-API-0002:2956API tests,
+51native HTTP checks/two audit rollback controls/one replacement membership
+rollback control/four recovery audits/exact original restoration and paired proof
+PASS. Wider authorization/concurrency/platform/device/release remain OPEN.
+
+## Current24October continuation
+
+Later [guardian selected-child repair](../REPORTS/GUARDIAN_SELECTION_CACHE_2026-10-24.md)
+qualified50native HTTP checks/four real response-delay/revoke-regrant journeys/
+eight Admin writes/14table read snapshots plus11handlers/48synthetic states.
+BUG-SEC-0006/API-0009 remain OPEN for their wider limits; no new issue count.
+Installed Zod4.6.6unchanged; new portal source has its own accepted export,
+and prior frontend receipts remain historical rather than weakened/relabelled.
+
+[BUG-DATA-0006](BUG-DATA-0006.md) additional waitlist/configuration and linked
+enrollment feedback successors passed; authority negatives also qualified:
+84HTTP checks/31denials/two authorized readbacks/12unchanged table hashes.
+All remain OPEN for their stated remaining gates. [BUG-FUNC-0016](BUG-FUNC-0016.md)
+now has current linked native browser proof, not blanket "direct linked pending."
+[BUG-SEC-0011](BUG-SEC-0011.md) Zod4.6.6patch now applied to development;
+fresh working-lock metadata returns zero matches,155tool tests/216synthetic
+browser checks/current46native checks+eight journeys PASS. Prior nonzero Zod/
+withdrawn-braces history retained. No suppression, whole-security/issue closure
+or change to120registered records.
+Current reports carry exact source/image/export scope; older snapshots below
+are retained historical evidence, not current untouched-task counts.
+
+## Advisory successor — 23 October 2026
+
+New [BUG-SEC-0011](BUG-SEC-0011.md):14known npm advisory/version matches across
+four frontend package versions, including3critical-rated matches; runtime exposure
+not confirmed and no package/waiver change. Existing119records retained; now
+120records/120distinct IDs (5P0/101P1/14P2), not120untouched defects.
+
+## Current reconciliation — 21 October 2026
+
+Read-only `node QA/tools/delivery-status.cjs` identifies **119 issue files and
+119 distinct IDs**: 5 declared P0, 100 P1 and 14 P2. Compound authentication IDs
+must not be collapsed by a one-segment parser. Both authentication records now
+appear below. These are registered records, **not 119 untouched defects**.
+Local repairs and remaining acceptance are separate; no issue is closed here.
+The broad session scenario remains a P0 release gate despite its record's P1 label.
+
+| Additional existing record | Current evidence boundary | Regression |
+| --- | --- | --- |
+| [BUG-AUTH-REFRESH-001](BUG-AUTH-REFRESH-001.md) | P1 / bounded helper and native Identity/HTTP repairs retained; cross-tab/browser/device/critical acceptance remains open | SECURITY-SESSION-001 / AUTH-001 |
+| [BUG-AUTH-REVOCATION-001](BUG-AUTH-REVOCATION-001.md) | P1 record / broader P0 session gate; local inactive/stamp repair and bounded browser recovery retained, not complete session/device/release closure | SECURITY-SESSION-001 / AUTH-001 |
+
 All issues remain OPEN. Static findings require isolated execution; the known UI symptoms are historical reports, not reproduced screenshots at this baseline. Priority and impact severity are separate. No production data was used.
 
 Bounded runtime follow-up [DRAFT-ISOLATION-UX-001](../REPORTS/PHASE_2B_TEACHER_SIGNIN_UX.md): locally fixed and bounded retest PASS for anonymous 401/sign-in guidance, authenticated unlinked 403/Admin guidance and linked Teacher 200. Targeted 32/32 tests/typecheck PASS; pre-existing targeted lint remains FAIL. This follow-up is not an additional security leak or closure of registered media/security/release issues. Existing issue counts/classifications are unchanged.
 
 | Issue ID | Title | Priority | Severity | Evidence type | Regression test |
 | --- | --- | --- | --- | --- | --- |
+| [BUG-SEC-0011](BUG-SEC-0011.md) | Frontend lockfile contains known advisory-matched package versions | P1 | Current zero advisory matches after scoped4.6.6patch; initial14matches historical | OPEN / current candidate/native/installed-copy qualification PASS; wider image/security/release review remains; no exploit/waiver claim | SECURITY-PACKAGE-001 |
 | [BUG-API-0009](BUG-API-0009.md) | Guardian child list fails SQL query translation | P1 | Major child-list workflow unavailable | OPEN / runtime-confirmed, bounded query repair and21 native list checks PASS; broader gates pending | GUARDIAN-CHILDREN-SQL-001 |
 | [BUG-UI-0008](BUG-UI-0008.md) | Narrow calendar agenda cuts short useful subject/date/make-up detail | P2 | Moderate readability | OPEN / local CSS repair and 10 emulated readability cases PASS; physical/broader responsive pending | SCHEDULE-AGENDA-READABILITY-001 |
 | [BUG-DATA-0056](BUG-DATA-0056.md) | Editing a payroll profile rewrites the worker name shown on historical payouts | P1 | Major payroll history attribution integrity | OPEN / repaired native history34, overlap24 pairs and linked browser24 states PASS; physical/wider gates pending | PAYROLL-HISTORY-IDENTITY-001 |
-| [BUG-FUNC-0033](BUG-FUNC-0033.md) | Payroll Print / Save PDF has no visible selected payslip in print output | P1 | Major payroll document workflow failure | STATIC FINDING / reproduction pending | PAYROLL-PRINT-001 |
+| [BUG-FUNC-0033](BUG-FUNC-0033.md) | Payroll Print / Save PDF has no visible selected payslip in print output | P1 | Major payroll document workflow failure | OPEN / RETEST — linked Admin/Teacher selected PDF checkpoints verified; physical/wider release acceptance pending; see latest issue checkpoint | PAYROLL-PRINT-001 |
 | [BUG-DATA-0055](BUG-DATA-0055.md) | Direct invoice status edit can mark an unpaid invoice Paid | P1 | Major invoice-ledger status integrity | STATIC FINDING / reproduction pending | FINANCE-INVOICE-STATUS-001 |
 | [BUG-FUNC-0032](BUG-FUNC-0032.md) | Certificate preview can be printed before issuance and diverge from the register | P1 | Major credential issuance integrity | OPEN / linked portal PDF matches the disposable SQL row; official PDF still repeats on 3 pages; issue audit actor is null; physical device pending | CERTIFICATE-PRINT-ISSUANCE-001 |
 | [BUG-DATA-0054](BUG-DATA-0054.md) | Changing music progress status erases a stored zero score | P1 | Major learner-progress data integrity | STATIC FINDING / reproduction pending | LEARNING-PROGRESS-ZERO-001 |
@@ -91,35 +169,35 @@ Bounded runtime follow-up [DRAFT-ISOLATION-UX-001](../REPORTS/PHASE_2B_TEACHER_S
 | [BUG-DATA-0014](BUG-DATA-0014.md) | Downloaded child certificate names the signed-in guardian | P1 | Major document identity integrity | STATIC FINDING / reproduction pending | FAMILY-DOCUMENT-001 |
 | [BUG-API-0005](BUG-API-0005.md) | Teacher creation forms serialize publication booleans as strings | P1 | Major teaching form contract mismatch | Handler-reproduced / bounded repair:12 handler/20 native SQL/16 synthetic browser PASS; linked/device/critical OPEN | TEACHERPORTAL-CONTRACT-001 |
 | [BUG-DATA-0015](BUG-DATA-0015.md) | Lesson creation accepts unchecked module and session references | P1 | Major academic relationship integrity | STATIC FINDING / reproduction pending | TEACHERPORTAL-LINK-001 |
-| [BUG-SEC-0004](BUG-SEC-0004.md) | Standard staff role replacement retains custom-role permissions | P1 | Major retained privilege | STATIC FINDING / reproduction pending | SECURITY-ROLE-004 |
+| [BUG-SEC-0004](BUG-SEC-0004.md) | Standard staff role replacement retains custom-role permissions | P1 | Major retained privilege | OPEN / retained-permission repair and supported-role preparation qualified; latest2982API/52native/four Staff journeys/three audit faults PASS; broader identity/concurrency/device/release pending | SECURITY-ROLE-004 |
 | [BUG-DATA-0012](BUG-DATA-0012.md) | Academy-scoped role names conflict with global Identity uniqueness | P1 | Major tenant configuration availability | STATIC FINDING / reproduction pending | AUTH-ROLE-001 |
-| [BUG-UI-0003](BUG-UI-0003.md) | Expired permission grants are counted as active | P2 | Moderate misleading access status | STATIC FINDING / reproduction pending | AUTH-GRANT-001 |
-| [BUG-DATA-0013](BUG-DATA-0013.md) | Access-review sign-off omits reviewer identity and record correlation | P2 | Moderate governance traceability gap | STATIC FINDING / reproduction pending | AUTH-REVIEW-001 |
+| [BUG-UI-0003](BUG-UI-0003.md) | Expired permission grants are counted as active | P2 | Moderate misleading access status | OPEN / reproduced and repaired;23handlers/fresh627file export/four fixed-clock synthetic browser journeys PASS; clock-skew/device/release pending | AUTH-GRANT-001 |
+| [BUG-DATA-0013](BUG-DATA-0013.md) | Access-review sign-off omits reviewer identity and record correlation | P2 | Moderate governance traceability gap | OPEN /2995API/49native/five total rollback controls/UI41checks/eight synthetic/four real-login journeys qualified; wider concurrency/devices/release pending | AUTH-REVIEW-001 |
 | [BUG-SEC-0003](BUG-SEC-0003.md) | Teacher resource actions bypass academy suspension checks | P1 | Major authorization lifecycle gap | STATIC FINDING / reproduction pending | SECURITY-LIFECYCLE-001 |
 | [BUG-DATA-0011](BUG-DATA-0011.md) | Account provisioning ignores role-assignment failure | P1 | Major identity provisioning integrity | STATIC FINDING / reproduction pending | AUTH-PROVISION-001 |
 | [BUG-FUNC-0007](BUG-FUNC-0007.md) | Failed teacher upload discards the staged attachment | P1 | Major data-entry recovery | STATIC FINDING — original failure reproduction pending; new uploader pause/reload, 503, lost-completion and revoked-assignment recovery partial PASS; clear confirmation human-assisted | TEACHERPORTAL-UPLOAD-001 |
-| [BUG-DATA-0010](BUG-DATA-0010.md) | Payment status transitions leave invoice state and reconciliation evidence inconsistent | P0 | Critical financial ledger consistency | Sequential void/evidence PASS; two-row void race baseline FAIL 0/5, repaired two-void and create/void gross/adjusted PASS 5/5 each; OPEN / restoration and other interleavings pending | FINANCE-RULE-003 |
+| [BUG-DATA-0010](BUG-DATA-0010.md) | Payment status transitions leave invoice state and reconciliation evidence inconsistent | P0 | Critical financial ledger consistency | OPEN / RETEST — FP3 terminal void approved and bounded implementation verified; reconcile/void and prior races retained; dedicated correction, wider/browser/device/release gates pending | FINANCE-RULE-003 |
 | [BUG-FUNC-0005](BUG-FUNC-0005.md) | Cancelling the adjustment approval prompt still approves the request | P1 | Major unintended financial action | STATIC FINDING / reproduction pending | FINANCE-APPROVAL-001 |
 | [BUG-FUNC-0006](BUG-FUNC-0006.md) | Finance pages require lookup APIs denied to the FinanceUser role | P1 | Major role workflow availability | Student/Governance/invoice-settings dependencies repaired locally / current SQL ×34 twice / API 222/222 / TSX 43/43 / OPEN browser+critical | SECURITY-ROLE-003 |
 | [BUG-DATA-0008](BUG-DATA-0008.md) | Blank optional student numbers collide under the unique index | P1 | Major onboarding persistence | RUNTIME CONFIRMED / bounded29-case SQL repair; broader acceptance OPEN | STUDENT-RULE-002 |
 | [BUG-DATA-0009](BUG-DATA-0009.md) | Payroll profiles accept unchecked or mismatched worker links | P1 | Major payroll data integrity | STATIC FINDING / reproduction pending | PAYROLL-RULE-002 |
-| [BUG-FUNC-0001](BUG-FUNC-0001.md) | Async form reset throws after successful persistence | P1 | Major | STATIC FINDING / reproduction pending | TEACHER-FORM-001 |
+| [BUG-FUNC-0001](BUG-FUNC-0001.md) | Async form reset throws after successful persistence | P1 | Major | OPEN / intake/Payroll retained; Access Review16handlers/fresh export/53native/four actual journeys/two rollback controls PASS; wider sites/devices open | TEACHER-FORM-001 |
 | [BUG-API-0001](BUG-API-0001.md) | Blank optional dates sent as empty JSON strings | P1 | Major | STATIC FINDING / reproduction pending | FORM-OPTIONAL-001 |
 | [BUG-DATA-0001](BUG-DATA-0001.md) | Reconciled payments disappear from some balance calculations | P0 | Critical financial integrity | OPEN — original race historical FAIL 3/5; repaired unadjusted and approved-adjustment races now PASS 5/5 each; live browser/device/critical gates pending | FINANCE-RULE-001 |
-| [BUG-DATA-0002](BUG-DATA-0002.md) | Payment guard ignores approved invoice adjustments | P0 | Critical financial integrity | OPEN — approved-adjustment collection race PASS 5/5; approval-versus-payment FAIL 0/5 on 2026-10-03 | FINANCE-RULE-002 |
-| [BUG-DATA-0003](BUG-DATA-0003.md) | Payroll permits deductions greater than gross | P0 | Critical financial integrity | RUNTIME-REPRODUCED / OPEN / LOCAL NEGATIVE-NET RETEST PASS; ZERO POLICY-PENDING | PAYROLL-RULE-001 |
+| [BUG-DATA-0002](BUG-DATA-0002.md) | Payment guard ignores approved invoice adjustments | P0 | Critical financial integrity | OPEN / RETEST — approval/payment repair guarded 5/5 in three fresh runs plus approval-first control; FP1 product rule approved; dedicated refund/credit-note, qualified review/device/release remain open | FINANCE-RULE-002 |
+| [BUG-DATA-0003](BUG-DATA-0003.md) | Payroll permits deductions greater than gross | P0 | Critical financial integrity | OPEN / RETEST — negative-net, precision and linked document checks verified; FP2 NoCashDue approved and implemented; period/duplicate/idempotency/qualified review/device/release remain open | PAYROLL-RULE-001 |
 | [BUG-SEC-0001](BUG-SEC-0001.md) | Class material URLs are served outside authorization | P0 | Critical confidentiality risk | FIX-IN-PROGRESS / OPEN — historical APIs/smoke/resume/video retained; 33 MiB preview fallback and exact Teacher/Student downloads PASS, local copy fix/client 23 PASS; 2 GB/recording/broader recovery/actual-device/critical/release pending | SECURITY-FILE-001 |
 | [BUG-DATA-0004](BUG-DATA-0004.md) | Student transaction does not encompass Identity account writes | P1 | Major integrity | STATIC FINDING / reproduction pending | STUDENT-DB-001 |
-| [BUG-API-0002](BUG-API-0002.md) | Successful write can be followed by an audit-save failure | P1 | Major ambiguous outcome | RUNTIME REPRODUCED / finance +student/teacher create+linked Update repairs PASS twice each / broader scope OPEN | API-RELIABILITY-001 |
+| [BUG-API-0002](BUG-API-0002.md) | Successful write can be followed by an audit-save failure | P1 | Major ambiguous outcome | OPEN / earlier repairs retained; AccessReview2995API/49native/four audit-or-task fault rollbacks qualified; wider endpoints/concurrency/release pending | API-RELIABILITY-001 |
 | [BUG-API-0003](BUG-API-0003.md) | Token refresh retry can reuse the expired Authorization header | P1 | Major session reliability | STATIC FINDING / reproduction pending | AUTH-002 |
 | [BUG-FUNC-0002](BUG-FUNC-0002.md) | Granted onboarding permission conflicts with action-level admin check | P1 | Major workflow | STATIC FINDING / reproduction pending | SECURITY-ROLE-002 |
-| [BUG-FUNC-0003](BUG-FUNC-0003.md) | Success notices are missing or cleared immediately by reload helpers | P1 | Major feedback | Schedule41+12 browser, Attendance34+16 browser/lint PASS; Make-up33+16 and Leave23+16 and Preferences28+32 and Assignments15+16 and LessonPlans15+16 and Review22+24 and Messages72+32 and ChannelSettings90+24 and Events15+16 and Holidays22+16 synthetic browser/lint PASS; OPEN other forms+linked+device+critical | FORM-SUCCESS-001 |
+| [BUG-FUNC-0003](BUG-FUNC-0003.md) | Success notices are missing or cleared immediately by reload helpers | P1 | Major feedback | OPEN /28original routes retained; Access Review16handlers/53native/four journeys and Staff26handlers/52native/four journeys/three faults/mobile bounds PASS; wider live/device/critical pending | FORM-SUCCESS-001 |
 | [BUG-UI-0001](BUG-UI-0001.md) | Select opening above trigger uses maximum rather than actual menu height | P1 | Major interaction | STATIC FINDING / reproduction pending | UI-DROPDOWN-001 |
-| [BUG-UI-0002](BUG-UI-0002.md) | Shared modal and select omit expected keyboard focus behavior | P2 | Moderate accessibility | STATIC FINDING / reproduction pending | UI-A11Y-001 |
+| [BUG-UI-0002](BUG-UI-0002.md) | Shared modal and select omit expected keyboard focus behavior | P2 | Moderate accessibility | OPEN / modal historical32cases retained; select9keyboard/5required/63combined handlers/fresh627file build/eight synthetic browser journeys PASS; device/assistive-tech/all-consumer/release pending | UI-A11Y-001 |
 | [BUG-FUNC-0004](BUG-FUNC-0004.md) | Frontend quality check fails on current baseline | P1 | Major release-quality gap | EXECUTED CHECK | QUALITY-LINT-001 |
 | [BUG-DATA-0005](BUG-DATA-0005.md) | Session clash checks do not use effective teacher and branch assignments | P1 | Major scheduling integrity | STATIC FINDING / reproduction pending | SCHEDULE-RULE-001 |
-| [BUG-DATA-0006](BUG-DATA-0006.md) | Enrollment activation, transfer and promotion bypass admission invariants | P1 | Major enrollment integrity | STATIC FINDING / reproduction pending | BATCH-RULE-001 |
-| [BUG-SEC-0002](BUG-SEC-0002.md) | CSV quoting does not neutralize spreadsheet formula cells | P1 | Major export security risk | STATIC FINDING / reproduction pending | SECURITY-EXPORT-001 |
+| [BUG-DATA-0006](BUG-DATA-0006.md) | Enrollment activation, transfer and promotion bypass admission invariants | P1 | Major enrollment integrity | Rule proof retained; policy-lock API2927/SQL48checks+three controls/payload65files/independent qualifier PASS; remaining transitions/devices/release OPEN | BATCH-RULE-001 |
+| [BUG-SEC-0002](BUG-SEC-0002.md) | CSV quoting does not neutralize spreadsheet formula cells | P1 | Major export security risk | OPEN / local three-path guard; 27 .NET,27 TS,four native downloads and32actual export SQL/Identity/HTTP checks plus retained Access PASS; spreadsheet/client/device/wider acceptance pending | SECURITY-EXPORT-001 |
 | [BUG-DATA-0007](BUG-DATA-0007.md) | Student onboarding account-created flags can report an account that was not created | P1 | Major response integrity | STATIC FINDING / reproduction pending | STUDENT-API-001 |
 | [BUG-API-0004](BUG-API-0004.md) | Valid non-object JSON metadata can crash object-only readers | P2 | Moderate malformed-data reliability | STATIC FINDING / reproduction pending | API-JSON-001 |
 | [BUG-PERF-0001](BUG-PERF-0001.md) | Large operational lists have no consistent paging contract | P2 | Moderate scale risk | STATIC FINDING / reproduction pending | PERF-BASELINE-001 |

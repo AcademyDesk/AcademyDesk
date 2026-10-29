@@ -19,18 +19,21 @@ public sealed class PentaMiniProvider(HttpClient http, IConfiguration config, IH
             !request.AvailableTools.SequenceEqual(PentaMiniTools.Available)) return new(null, "InvalidRequest");
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(token);
         deadline.CancelAfter(TimeSpan.FromSeconds(125));
+        MiniRuntimeIdentity? runtime = null;
         try
         {
             using var message = new HttpRequestMessage(HttpMethod.Post, new Uri(endpoint, "v1/chat")) { Content = JsonContent.Create(request) };
             using var response = await http.SendAsync(message, HttpCompletionOption.ResponseHeadersRead, deadline.Token);
             if (!response.IsSuccessStatusCode) return new(null, "Unavailable");
+            runtime = MiniRuntimeIdentity.FromHeaders(response.Headers);
+            if (runtime is null) return new(null, "RuntimeIdentityFailed");
             var data = await BoundedJsonAsync(response.Content, deadline.Token);
             var plan = data.Deserialize<MiniPlan>();
-            return PentaMiniTools.ValidPlan(plan) ? new(plan) : new(null, "SchemaFailed");
+            return PentaMiniTools.ValidPlan(plan) ? new(plan, Runtime: runtime) : new(null, "SchemaFailed", runtime);
         }
-        catch (OperationCanceledException) { return new(null, "Timeout"); }
+        catch (OperationCanceledException) { return new(null, "Timeout", runtime); }
         catch (Exception ex) when (ex is HttpRequestException or IOException or JsonException or InvalidOperationException)
-        { return new(null, ex is JsonException ? "SchemaFailed" : "Unavailable"); }
+        { return new(null, ex is JsonException ? "SchemaFailed" : "Unavailable", runtime); }
     }
 
     public async Task<string> ReadinessAsync(CancellationToken token)

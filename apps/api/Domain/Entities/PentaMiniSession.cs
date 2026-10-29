@@ -8,6 +8,9 @@ public sealed class PentaMiniSession : AcademyEntity
     public Guid? PendingRequestId { get; set; }
     public DateTime ExpiresAtUtc { get; set; }
     public required string ProtectedState { get; set; }
+    // Optional, independently purpose-bound onboarding cursor. Never wraps or
+    // changes the retained read-only MiniState payload.
+    public string? ProtectedOnboardingState { get; set; }
 }
 public sealed class PentaMiniTurn : AcademyEntity
 {

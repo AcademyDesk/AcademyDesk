@@ -1,5 +1,27 @@
 # BUG-UI-0003 — Expired permission grants are counted as active
 
+## 25 October 2026 bounded repair — issue remains OPEN
+
+The historical static finding below was reproduced by seven actual-source clock
+tests (0/7 baseline), repaired in the Access Review page and retested7/7. Existing
+16grant/revoke feedback cases retained PASS. Fresh frontend build/typecheck/lint/
+627file export and four fixed-clock synthetic-read browser journeys PASS at390/
+1440light-dark; screenshots inspected. Independent source/export/browser/window
+qualifier PASS, exact original PENTA services/inventory restored.
+
+UI `11505c82b2d4463e86d925bf4069e17e`; browser
+`66af30d7073c40a3928c2e0b5319e45c`; window
+`0e2dade20e8c40979df785641e4945db`. Expired/exact-boundary grants no longer
+count active; invalid/missing dates fail inactive without crashing; permanent and
+revoked precedence, IST time, long-open/focus/visible recovery and cleanup verified.
+See `QA/REPORTS/ACCESS_GRANT_EXPIRY_DISPLAY_2026-10-25.md`.
+
+This packet uses synthetic reads/token/time and is presentation-only. Earlier
+native server stored-expiry evidence remains tied to its own source/image.
+Device clock skew, actual devices and broader release regressions remain OPEN;
+no new SQL/server-authorization acceptance or closure is claimed. Original static
+metadata below is retained as historical discovery, not the current retest result.
+
 | Field | Value |
 | --- | --- |
 | Status | OPEN |

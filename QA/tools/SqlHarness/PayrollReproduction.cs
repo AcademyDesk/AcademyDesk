@@ -56,14 +56,14 @@ internal static partial class SqlHarnessEntryPoint
             var after = await ReadPayrollSnapshotAsync(factory, academyId, teacherId, profileId, label + "-after");
             var validPositiveNet = deduction >= 0m && deduction < 1000m;
             var invalidDeduction = deduction < 0m || deduction > 1000m;
-            var disposition = deduction == 1000m ? "POLICY-PENDING" : "PASS";
+            var disposition = "PASS";
             decimal? actualNet = null;
             Guid? payoutId = null;
             if (payout.StatusCode == HttpStatusCode.BadRequest)
             {
                 if (JsonSerializer.Serialize(before) != JsonSerializer.Serialize(after))
                     throw new InvalidOperationException("Rejected payroll request changed its financial snapshot.");
-                if (validPositiveNet) throw new InvalidOperationException("Valid positive-net payroll control was rejected.");
+                if (validPositiveNet || deduction == 1000m) throw new InvalidOperationException("Valid earnings/payout control was rejected.");
                 if (invalidDeduction) rejectedControls++;
                 if (deduction == 1000m) zeroOutcome = "HTTP 400/no payout/unchanged financial snapshot";
             }
@@ -77,8 +77,8 @@ internal static partial class SqlHarnessEntryPoint
                 if (after.Payouts.Count != before.Payouts.Count + 1 ||
                     !before.Payouts.All(x => after.Payouts.Contains(x)) || before.Profile != after.Profile ||
                     row.Period != label || row.Gross != 1000m || row.Deductions != deduction || row.Net != expectedNet ||
-                    row.Status != "Paid" || row.Currency != "INR" || row.Sessions is not null ||
-                    row.Method != "BankTransfer" || row.Reference is not null || string.IsNullOrWhiteSpace(row.Payslip) ||
+                    row.Status != (deduction == 1000m ? "NoCashDue" : "Paid") || row.Currency != "INR" || row.Sessions is not null ||
+                    row.Method != (deduction == 1000m ? "NoCashDue" : "BankTransfer") || (deduction == 1000m ? row.PaidAtUtc != null : row.PaidAtUtc == null) || row.Reference is not null || string.IsNullOrWhiteSpace(row.Payslip) ||
                     response.RootElement.GetProperty("grossAmount").GetDecimal() != 1000m ||
                     response.RootElement.GetProperty("deductions").GetDecimal() != deduction ||
                     response.RootElement.GetProperty("netAmount").GetDecimal() != expectedNet)
@@ -94,17 +94,17 @@ internal static partial class SqlHarnessEntryPoint
                     throw new InvalidOperationException("Payroll list does not match the stored payout.");
                 if (invalidDeduction) { failed = true; disposition = "FAIL"; }
                 if (row.Net < 0m) negativePayouts++;
-                if (deduction == 1000m) zeroOutcome = "HTTP 201/one Paid payout/net 0";
+                if (deduction == 1000m) zeroOutcome = "HTTP 201/one NoCashDue statement/net 0/no bank payment date";
             }
             Console.WriteLine($"PAYROLL CASE deductions={deduction.ToString(CultureInfo.InvariantCulture)} {disposition}: " +
                 $"HTTP={(int)payout.StatusCode}/SQL rows before={before.Payouts.Count}/after={after.Payouts.Count}/" +
                 $"net={(actualNet?.ToString(CultureInfo.InvariantCulture) ?? "none")}/payout={(payoutId?.ToString() ?? "none")}; " +
-                $"expected={(deduction == 1000m ? "zero-net policy pending" : invalidDeduction ? "reject without financial write" : "exact nonnegative payout")}; " +
+                $"expected={(deduction == 1000m ? "approved FP2 NoCashDue statement" : invalidDeduction ? "reject without financial write" : "exact nonnegative payout")}; " +
                 "fresh SQL and accepted payout list verified.");
         }
         Console.WriteLine($"PAYROLL-RULE-001 {(failed ? "FAIL" : "PASS")}: gross=1000; " +
             $"negative Paid payouts persisted={negativePayouts}; rejected invalid controls={rejectedControls}; " +
-            $"zero-net POLICY-PENDING observed={zeroOutcome}; " +
+            $"zero-net approved FP2 observed={zeroOutcome}; " +
             "deductions above gross must be rejected without a payout; no debt workflow assumed.");
         if (enforceRegression)
         {
@@ -144,6 +144,6 @@ internal static partial class SqlHarnessEntryPoint
         bool Active, DateOnly EffectiveFrom);
     private sealed record PayrollLedger(Guid Id, Guid AcademyId, Guid ProfileId, string Payslip, string Period,
         decimal Gross, decimal Deductions, decimal Net, string Currency, string Status, int? Sessions,
-        string Method, string? Reference, DateTime PaidAtUtc);
+        string Method, string? Reference, DateTime? PaidAtUtc);
     private sealed record PayrollSnapshot(PayrollProfileSnapshot Profile, List<PayrollLedger> Payouts);
 }

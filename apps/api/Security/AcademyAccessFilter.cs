@@ -113,6 +113,7 @@ public sealed class AcademyAccessFilter(UserManager<ApplicationUser> userManager
         if (string.Equals(controller, "AuditLogs", StringComparison.Ordinal) ||
             string.Equals(controller, "Penta", StringComparison.Ordinal) ||
             string.Equals(controller, "PentaConversations", StringComparison.Ordinal) ||
+            string.Equals(controller, "PentaOnboarding", StringComparison.Ordinal) ||
             string.Equals(controller, "PentaChat", StringComparison.Ordinal))
         {
             await next();

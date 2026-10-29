@@ -2,15 +2,21 @@
 // No login, real model, SQL, credentials, customer data or external network.
 const fs = require('node:fs'), path = require('node:path'), http = require('node:http'), assert = require('node:assert/strict');
 const { chromium } = require(process.env.QA_PLAYWRIGHT_MODULE || 'C:/Users/Admin/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
-const root = path.resolve(__dirname, '../..'), web = path.join(root, 'apps/web/out');
+const root = path.resolve(__dirname, '../..'), web = fs.realpathSync(process.env.QA_PENTA_EXPORT_ROOT || path.join(root, 'apps/web/out'));
+const exportRelative=path.relative(root,web).replaceAll('\\','/'),candidate=/^\.build-check\/web-dependency-candidate\/([0-9a-f]{32})\/app\/out$/.exec(exportRelative);assert.ok(exportRelative==='apps/web/out'||/^\.build-check\/default-web-build\/[0-9a-f]{32}\/app\/out$/.test(exportRelative)||candidate,'Only current or owned isolated exports allowed');if(candidate)assert.equal(require('./web-candidate-export.cjs').resolveExport(root,candidate[1]),web);
 const evidence = path.join(root, 'QA/EVIDENCE', `penta-chat-contract-${Date.now()}`);
 assert.ok(fs.existsSync(path.join(web, 'penta.html')), 'Build the actual frontend export first');
 fs.mkdirSync(evidence, { recursive: true });
 const academy = '11111111-1111-4111-8111-111111111111', conversation = '22222222-2222-4222-8222-222222222222', student = '33333333-3333-4333-8333-333333333333';
 const mime = { '.html': 'text/html', '.js': 'application/javascript', '.css': 'text/css', '.txt': 'text/plain', '.json': 'application/json', '.woff2': 'font/woff2', '.svg': 'image/svg+xml', '.ico': 'image/x-icon' };
+const ts = require('../../apps/web/node_modules/typescript');
+const sessionHelper = 'const process={env:{}};\n' + ts.transpileModule(fs.readFileSync(path.join(root,'apps/web/src/lib/api.ts'),'utf8'),{compilerOptions:{module:ts.ModuleKind.ES2022,target:ts.ScriptTarget.ES2022}}).outputText;
 const server = http.createServer((req, res) => {
   if (!['GET', 'HEAD'].includes(req.method)) { res.writeHead(405).end(); return; }
   try {
+    if (new URL(req.url,'http://localhost').pathname === '/qa/session-api.js') {
+      res.writeHead(200,{'Content-Type':'application/javascript','Cache-Control':'no-store'}).end(sessionHelper);return;
+    }
     let file = path.resolve(web, '.' + decodeURIComponent(new URL(req.url, 'http://localhost').pathname));
     if (!file.startsWith(web + path.sep)) throw Error('Path outside export');
     if (!path.extname(file)) file += '.html';
@@ -23,17 +29,22 @@ const server = http.createServer((req, res) => {
   } catch { res.writeHead(404).end(); }
 });
 (async () => {
-  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
-  const origin = `http://127.0.0.1:${server.address().port}`;
+  const runtimeOrigin = process.env.QA_PENTA_STATIC_ORIGIN;
+  if(runtimeOrigin){const parsed=new URL(runtimeOrigin);assert.equal(parsed.protocol,'http:');assert.equal(parsed.hostname,'127.0.0.1');assert.ok(Number(parsed.port)>=1024);assert.equal(parsed.origin,runtimeOrigin);assert.equal(parsed.pathname,'/');assert.equal(parsed.search+parsed.hash+parsed.username+parsed.password,'');}
+  else await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  const origin = runtimeOrigin ?? `http://127.0.0.1:${server.address().port}`;
   const browser = await chromium.launch({ headless: true, executablePath: process.env.QA_BROWSER_EXECUTABLE || 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe' });
   const checks = [], errors = [], expectedHttpErrors = [];
   let lastPage;
   try {
     const scenarios = ['valid', 'null-row', 'null-balance', 'bad-filters', 'wrong-capability', 'rows-on-error', 'bad-session', 'bad-timezone', 'expired', 'recovery', 'network-interruption', 'stale-version', 'replayed-receipt', 'other-tab-logout', 'same-tab-logout', 'stopped-waiting'];
+    scenarios.push('health-unavailable', 'health-degraded', 'health-malformed', 'health-recovery', 'health-degraded-recovery', 'health-recheck-role-change');
+    scenarios.push('replacement-boot','replacement-ready','replacement-turn');
     for (let i = 0; i < scenarios.length; i++) {
       const scenario = scenarios[i], width = [320, 390, 1440][i % 3];
       const context = await browser.newContext({ viewport: { width, height: 1000 } });
-      let creates = 0, turns = 0, firstRequestId, releaseTurn;
+      let creates = 0, turns = 0, healthReads = 0, authReads = 0, firstRequestId, releaseTurn, releaseBoot, bootObserved;
+      const bootStarted = new Promise(resolve => { bootObserved = resolve; });
       let turnArrived;
       const turnStarted = new Promise(resolve => { turnArrived = resolve; });
       const page = await context.newPage();
@@ -47,7 +58,7 @@ const server = http.createServer((req, res) => {
              (scenario === 'stale-version' && m.text() === 'Failed to load resource: the server responded with a status of 409 (Conflict)') ||
              (scenario === 'network-interruption' && m.text().includes('net::ERR_FAILED'))) &&
             new URL(m.location().url).pathname.endsWith('/turns')) expectedHttpErrors.push({ scenario, message: m.text() });
-        else errors.push({ scenario, message: m.text() });
+        else {let resourcePath='';try{resourcePath=new URL(m.location().url).pathname;}catch{}errors.push({ scenario, message: m.text(),resourcePath });}
       });
       await context.addInitScript(({ theme }) => {
         localStorage.setItem('academydesk.theme', theme);
@@ -56,13 +67,19 @@ const server = http.createServer((req, res) => {
       }, { theme: i % 2 ? 'dark' : 'light' });
       await context.route('**/*', async route => {
         const url = new URL(route.request().url());
+        if(url.origin===origin&&url.pathname==='/qa/session-api.js')return route.fulfill({contentType:'application/javascript',body:sessionHelper});
         if (url.pathname.startsWith('/api/') && ['localhost', '127.0.0.1'].includes(url.hostname)) {
           const response = async (value, status = 200) => route.fulfill({ status, contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': origin }, body: JSON.stringify(value) });
-          if (url.pathname === '/api/auth/session') return response({ academyId: academy, displayName: 'Synthetic admin', roles: ['AcademyAdmin'], isPlatformOwner: false });
+          if (url.pathname === '/api/auth/session') { authReads++; return response({ academyId: academy, displayName: 'Synthetic admin', roles: scenario === 'health-recheck-role-change' && healthReads > 0 ? ['Teacher'] : ['AcademyAdmin'], isPlatformOwner: false }); }
           if (url.pathname === '/api/academies') return response([{ name: 'Synthetic academy', enabledModulesJson: '["Core","Finance"]' }]);
           if (url.pathname === '/api/portal/announcements') return response([]);
           if (url.pathname.endsWith('/academy-context')) return response({ academyId: academy, name: 'Synthetic academy', timeZone: scenario === 'bad-timezone' ? 'Invalid/Zone' : 'Asia/Kolkata' });
-          if (url.pathname.endsWith('/chat/health')) return response({ status: 'Available', provider: 'PENTA Mini', protocol: '0.1', readOnly: true });
+          if (url.pathname.endsWith('/chat/health')) {
+            healthReads++;
+            if(scenario==='replacement-boot'){bootObserved();await new Promise(resolve=>releaseBoot=resolve);}
+            const unavailable = scenario.startsWith('health-') && healthReads === 1;
+            return response(scenario === 'health-malformed' ? { status: 'Available' } : { status: unavailable ? scenario.includes('degraded') ? 'Degraded' : 'Unavailable' : 'Available', provider: 'PENTA Mini', protocol: '0.1', readOnly: true });
+          }
           if (url.pathname.endsWith('/chat/conversations')) { creates++; return response(scenario === 'bad-session' ? null : { conversationId: conversation, version: 0, expiresAtUtc: '2099-10-08T10:00:00Z' }, 201); }
           if (url.pathname.endsWith('/turns')) {
             turns++;
@@ -70,7 +87,7 @@ const server = http.createServer((req, res) => {
             if (scenario === 'expired') return response({ error: 'Synthetic expired session' }, 410);
             if (scenario === 'stale-version' && turns === 1) return response({ error: 'Synthetic stale version' }, 409);
             if (scenario === 'network-interruption' && turns === 1) return route.abort('failed');
-            if (['other-tab-logout', 'same-tab-logout'].includes(scenario) || scenario === 'stopped-waiting' && turns === 1) {
+            if (['other-tab-logout', 'same-tab-logout','replacement-turn'].includes(scenario) || scenario === 'stopped-waiting' && turns === 1) {
               await new Promise(resolve => { releaseTurn = resolve; });
               return response({ error: 'Synthetic late reply' }, 409).catch(() => undefined);
             }
@@ -95,12 +112,78 @@ const server = http.createServer((req, res) => {
       });
       await page.goto(origin + '/penta');
       const panel = page.getByRole('region', { name: 'PENTA conversation' });
-      if (scenario === 'bad-timezone') {
+      if(scenario.startsWith('replacement-')){
+        if(scenario==='replacement-boot')await bootStarted;
+        else{
+          await page.getByText('● Mini connected').waitFor();
+          if(scenario==='replacement-turn'){
+            await panel.getByLabel('Message PENTA AI',{exact:true}).fill('Synthetic replacement test');
+            await panel.getByRole('button',{name:'Send ↑',exact:true}).click();await turnStarted;
+          }
+        }
+        const beforeCreates=creates,beforeTurns=turns;
+        await page.evaluate(async()=>{const api=await import('/qa/session-api.js');api.beginPortalSession('AcademyAdmin',api.portalAccessToken('AcademyAdmin'));});
+        releaseBoot?.();releaseTurn?.();
+        await page.getByRole('heading',{name:'Session ended',exact:true}).waitFor();
+        assert.equal(await page.getByLabel('Message PENTA AI',{exact:true}).count(),0);
+        assert.equal(await page.getByRole('link',{name:'Open Student 360 ↗'}).count(),0);
+        assert.ok(!(await page.locator('body').innerText()).includes('Synthetic learner'));
+        assert.equal(creates,beforeCreates);assert.equal(turns,beforeTurns);
+        assert.equal(creates,scenario==='replacement-turn'?1:0);assert.equal(turns,scenario==='replacement-turn'?1:0);
+        assert.equal(await page.getByRole('link',{name:'Sign in again',exact:true}).getAttribute('href'),'/login');
+        await page.screenshot({path:path.join(evidence,scenario+'-'+width+'.png')});
+      }else if (scenario.startsWith('health-')) {
+        const availability = page.getByRole('region', { name: 'AI availability' });
+        await availability.getByText('PENTA is not ready for this conversation.', { exact: true }).waitFor();
+        const prompt = panel.getByLabel('Message PENTA AI', { exact: true });
+        assert.equal(await prompt.isDisabled(), true);
+        assert.equal(await panel.getByRole('button', { name: 'Send ↑', exact: true }).isDisabled(), true);
+        assert.equal(await panel.getByRole('button', { name: 'Show students with pending fees ↗' }).isDisabled(), true);
+        assert.equal(await page.getByText('Unavailable · Use the manual workspace', { exact: true }).count(), 1);
+        assert.equal(await availability.getByRole('link', { name: 'Open manual workspace ↗' }).getAttribute('href'), '/dashboard');
+        await panel.locator('form').evaluate(form => form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })));
+        await panel.getByRole('button', { name: 'New conversation', exact: true }).click();
+        assert.equal(await prompt.isDisabled(), true, 'New conversation cannot bypass failed readiness');
+        assert.equal(creates + turns, 0, 'No conversation or turn POST during outage, including direct submit');
+        assert.equal(healthReads, 1, 'No automatic readiness retry');
+        if (scenario.includes('recovery') || scenario === 'health-recheck-role-change') {
+          const previousAuthReads = authReads;
+          await availability.getByRole('button', { name: 'Recheck AI availability' }).click();
+          if (scenario === 'health-recheck-role-change') {
+            await panel.getByRole('alert').filter({ hasText: 'current Academy Owner/Admin access' }).waitFor();
+            assert.equal(await prompt.isDisabled(), true);
+            assert.equal(healthReads, 1, 'Changed role is rejected before contacting Mini');
+            await panel.getByText('Academy access unverified', { exact: true }).waitFor();
+          } else {
+            await page.getByText('● Mini connected').waitFor();
+            assert.equal(await prompt.isDisabled(), false);
+            assert.equal(await prompt.evaluate(element => element === document.activeElement), true, 'Explicit recovery returns keyboard focus to the enabled composer');
+            assert.equal(await prompt.inputValue(), '');
+            assert.equal(healthReads, 2);
+            assert.equal(creates + turns, 0, 'Recovery checks never send a prompt');
+            await prompt.fill('Synthetic read request after explicit recovery');
+            await panel.getByRole('button', { name: 'Send ↑', exact: true }).click();
+            await panel.getByRole('link', { name: 'Open Student 360 ↗' }).waitFor();
+            assert.equal(creates, 1); assert.equal(turns, 1);
+          }
+          assert.ok(authReads > previousAuthReads, 'Recheck resolves current authenticated account again');
+        }
+        const retry = availability.getByRole('button', { name: 'Recheck AI availability' });
+        if (await retry.count()) {
+          const bounds = await retry.boundingBox();
+          assert.ok(bounds && bounds.height >= 44, 'Readiness retry has a usable touch target');
+        }
+        await page.screenshot({ path: path.join(evidence, `${scenario}-${width}.png`), fullPage: true });
+      } else if (scenario === 'bad-timezone') {
         await panel.getByRole('alert').filter({ hasText: 'Academy context could not be verified' }).waitFor();
         assert.equal(await panel.getByLabel('Message PENTA AI', { exact: true }).isDisabled(), true);
         assert.equal(creates + turns, 0);
       } else {
         await page.getByText('● Mini connected').waitFor();
+        if(width===1440){
+          const bounds=await panel.boundingBox();
+          assert.ok(bounds&&bounds.width>=600,'Desktop conversation must retain usable width, independent of CSS chunk order');
+        }
         const send = async () => { await panel.getByLabel('Message PENTA AI', { exact: true }).fill('Synthetic read request'); await panel.getByRole('button', { name: 'Send ↑', exact: true }).click(); };
         await send();
         if (scenario === 'stopped-waiting') {
@@ -173,11 +256,12 @@ const server = http.createServer((req, res) => {
     }
     assert.deepEqual(errors, [], 'No browser console or rendering errors');
     assert.equal(expectedHttpErrors.length, 3, 'Retain only the deliberate 410, 409 and network transport logs');
-    fs.writeFileSync(path.join(evidence, 'result.json'), JSON.stringify({ checks, errors, expectedHttpErrors, liveMini: 'NOT RUN', sql: 'NOT RUN', physicalDevices: 'NOT RUN' }, null, 2));
+    if(candidate)assert.equal(require('./web-candidate-export.cjs').resolveExport(root,candidate[1]),web);
+    fs.writeFileSync(path.join(evidence, 'result.json'), JSON.stringify({ checks, errors, expectedHttpErrors, exportRelative, staticOriginMode:runtimeOrigin?'external-loopback-runtime':'owned-node-static', liveMini: 'NOT RUN', sql: 'NOT RUN', physicalDevices: 'NOT RUN' }, null, 2));
     console.log(JSON.stringify({ passed: checks.length, evidence }));
   } catch (error) {
     if (lastPage && !lastPage.isClosed()) await lastPage.screenshot({ path: path.join(evidence, 'failure.png'), fullPage: true }).catch(() => {});
     fs.writeFileSync(path.join(evidence, 'failed.json'), JSON.stringify({ checks, errors, expectedHttpErrors, failure: error.message }, null, 2));
     throw error;
-  } finally { await browser.close(); await new Promise(resolve => server.close(resolve)); }
+  } finally { await browser.close(); if(server.listening)await new Promise(resolve => server.close(resolve)); }
 })().catch(error => { console.error(error); process.exitCode = 1; server.close(); });

@@ -1,5 +1,45 @@
 # BUG-SEC-0001 — Class material URLs are served outside authorization
 
+## Client material-scope continuation — 25 October 2026, OPEN
+
+Reused preview controls retained old-file state after URL changes and late request
+completion. Exact pre-repair TSX settled baseline1/9PASS; scoped keyed material
+view/request-ownership/cleanup repair now9/9, with75combined media/preview/image/
+guardian-selection checks PASS. Fresh types/lint/627file build/eight synthetic
+Student portal browser journeys/four widths/both themes/eight inspected PNGs/
+exact original services/inventory/source-bound qualification PASS;
+see `QA/REPORTS/PRIVATE_MATERIAL_SCOPE_2026-10-25.md`. This client lifecycle
+finding is not a new authorization leak and does not replace the retained native
+private-storage/publication/denial evidence below. No backend/ticket/limit change.
+
+## Publication boundary repaired — bounded PASS, 2026-10-13
+
+[Report](../REPORTS/PHASE_2B_MEDIA_PUBLICATION_GUARD.md): publication checks domain and fresh current account/stamp/role inside shared Serializable SQL boundary. Final7340a7d158994fc6a503cd8bf723646a,98.9s/exit0,nine revoked-restored cases/6 admitted-completion404/3 private-stage200/9 hidden/exact-byte/idempotent recoveries/6 actual SQL1222 authority lock controls/75 retained Blob assertions/no429/90+7/ownedcleanup. Fresh1485unit checks;first stale role-membership failure retained/fresh association query fixed. Linked final-backend four browser journeys30645035ab98431faef298abf8bb89f2,147.4s/exit0,record-upload-history-preview/playback/hash/StudentAPI200/anonymous401/foreign404/unassignedTeacher404/retry no-duplicates PASS. Nine originals preserved. Private already-admitted bytes may finish storing,but cannot publish while revoked;old strict all-provider-write oracle/source/failed receipt untouched,not accepted. OPEN / FIX-IN-PROGRESS / PARTIAL retained;optional-scope concurrent edits/load/physical/operational gates separate,no blanket closure or Azure.
+
+## Already-admitted upload revocation — FAILED, 2026-10-13
+
+[Report](../REPORTS/PHASE_2B_MEDIA_ADMISSION_REVOCATION.md): runeca7d5c6d7be4c699573b9b907216e80,90.4s/nonzero,new6 coordinated Teacher/academy/batch stage-complete timings0/6 guarded/22HTTP/no429. Domain policy admits request;real storage held;exact authority deactivated/newGET404;released request still200. Three nonpublic blocks staged and three resource/notification publications after revocation. This is a confirmed timing gap,not proven anonymous/cross-tenant read leakage.75 original Blob tests retained PASS;no app fix yet. Next settle staging/publication semantics and authoritative transaction/identity/domain boundary,retain private recovery bytes,no oracle weakening. OPEN / FIX-IN-PROGRESS / PARTIAL retained;issue must not close. Evidence preserved/only exact owned two failed containers removed/nine originals retained.
+
+## Native recording linked publication/readback — 2026-10-13
+
+[Report](../REPORTS/PHASE_2B_RECORDER_LINKED_UPLOAD.md): four exported Teacher viewport/theme native recordings saved by explicit confirmation;protected HEAD/GET/hash/playback,Student API200 exact bytes,anonymous401/foreign404/unassignedTeacher404 and repeat completion no-duplicates PASS. Runa2efcad24ca74385b65db07918cc0269,125.3s/exit0,75 original Blob assertions/101HTTP/93 unchanged snapshots/eight exact create-complete deltas/correct recipient notifications/90+7/exact cleanup/nine originals. QA-only/no permission/app change. OPEN / FIX-IN-PROGRESS / PARTIAL retained;physical devices/nativeDownload/StudentUI/real-network/already-admitted authority/operational-release remain separate. Prior native/recovery proof preserved.
+
+## Controlled recorder recovery — 2026-10-13
+
+[Report](../REPORTS/PHASE_2B_RECORDER_CONTROLLED_RECOVERY.md): QA-only run9b16ad2cb0cf4a3eb1d6a0ab842edb8e,72.1s/exit0. Four viewport/theme journeys/16 controlled cancellation/error/32MiB cases with native fake-device streams/final events PASS;75 original Blob assertions/41 unchanged snapshots+final/no writes-no429/90+7/exact owned cleanup/nine originals retained. Recording recovery produces no implicit upload/publication. Actual File/chunk hash preserved; inert fixture not decodable audio. No human prompt/native failure/long-duration/physical-device/after-admission authority acceptance or permission changes. OPEN / FIX-IN-PROGRESS / PARTIAL retained; prior native permission/playback and wider security receipts remain independent.
+
+## Bounded native recorder browser — 2026-10-13
+
+[Report](../REPORTS/PHASE_2B_RECORDER_NATIVE_BROWSER.md): retained75 Blob assertions/four real exported Teacher320/1440px light-dark/native CDP denial-retained details → granted synthetic-device native recording/playback/track cleanup/41 unchanged per-request snapshots+final/no writes-no429 PASS. Run1d5fda02379e4d11b066378af73db42b,75.8s/exit0,90+7/exact owned cleanup/nine originals retained; final56/56 focused checks after fixture-only event/Headers corrections, old assertions/failed receipts preserved. No app/permission change, no personal microphone/recording upload/human pending Cancel/native error-limit/device/mobile navigation acceptance; OPEN / FIX-IN-PROGRESS / PARTIAL retained.
+
+## Bounded actual maximum-size transport — 2026-10-13
+
+[Report](../REPORTS/PHASE_2B_MEDIA_MAXIMUM_TRANSFER.md): actual2,000,000,000 bytes staged through239 original API chunks, one retry/fresh-host120-chunk recovery, exact full streamed download SHA256/single publication/preserved SQL/Blob ETags/HEAD/five ranges/canceled partial download then new full stream passed. Run4ed1c9a93b9445c7a9a99a7b4a3ff9cc,308.5s/exit0,75 retained assertions+590 additive/272 HTTP/275 unchanged snapshots/no429/90+7/exact owned cleanup, nine prior containers preserved. Anonymous401/foreign404 also checked at maximum size. QA-only, in-process API + real SQL/private Azurite, not browser/Kestrel/containerized API/reverse-proxy/Azure/device/codec/load/after-admission-revocation acceptance. OPEN / FIX-IN-PROGRESS / PARTIAL retained; no permission or source repair needed in this slice.
+
+## Bounded lifecycle / private Blob checkpoint — 2026-10-13
+
+[Report](../REPORTS/PHASE_2B_MEDIA_LIFECYCLE_RECOVERY.md): runa9ea188721fe48c2a45664a3a6bdf83d,112s/exit0, original75 Blob assertions and six domain Teacher/academy cases/110 HTTP/66 exact denials/107 unchanged snapshots/313 new assertions/no429/90+7/exact owned cleanup PASS. Current activity independently gates upload create/status/chunks/completion and content GET/HEAD/mint/pre-issued ticket redemption; restoration same tokens/tickets/session, exact original bytes, no unrelated SQL/Blob changes. Student loses access for academy deactivation, not merely unrelated domain Teacher inactivity. QA-only; no model/permission/source repair needed. Status remains OPEN / FIX-IN-PROGRESS / PARTIAL: actual2GB/recording/physical devices/other roles/concurrent already-admitted work/operational-release are not accepted by this native gate.
+
 | Field | Value |
 | --- | --- |
 | Status | OPEN |

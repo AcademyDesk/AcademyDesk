@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useState } from "react";
 import { academyApi, apiHeaders } from "@/lib/api";
 import { StandardDateField, StandardSelectField } from "@/components/design-system/controls";
 
@@ -19,15 +19,15 @@ export default function TeacherPaymentsPage() {
   const [form, setForm] = useState<Compensation>({ model: "Monthly" });
   const [message, setMessage] = useState("Loading teacher payment details…");
   const [saving, setSaving] = useState(false);
-  async function loadCompensation(id: string, academyId = academy?.id) {
+  const loadCompensation = useCallback(async (id: string, academyId: string | undefined) => {
     if (!academyId || !id) return;
     const response = await academyApi(`/api/academies/${academyId}/teachers/${id}/compensation`);
     if (!response.ok) throw new Error();
     const value = await response.json() as Compensation;
     setForm({ ...value, model: value.model || "Monthly", effectiveFrom: day(value.effectiveFrom) });
-  }
-  useEffect(() => { void (async () => { try { const academies = await academyApi("/api/academies"); const current = (await academies.json())[0] as Academy | undefined; if (!current) return setMessage("Create an academy before managing teacher payments."); setAcademy(current); const response = await academyApi(`/api/academies/${current.id}/teachers`); if (!response.ok) throw new Error(); const rows = (await response.json()) as Teacher[]; setTeachers(rows); const selected = rows.find((teacher) => teacher.isActive) ?? rows[0]; if (selected) { setTeacherId(selected.id); await loadCompensation(selected.id, current.id); } setMessage(""); } catch { setMessage("Teacher payment details could not be loaded."); } })(); }, []);
-  async function select(id: string) { setTeacherId(id); try { await loadCompensation(id); setMessage(""); } catch { setMessage("Payment details could not be loaded."); } }
+  }, []);
+  useEffect(() => { void (async () => { try { const academies = await academyApi("/api/academies"); const current = (await academies.json())[0] as Academy | undefined; if (!current) return setMessage("Create an academy before managing teacher payments."); setAcademy(current); const response = await academyApi(`/api/academies/${current.id}/teachers`); if (!response.ok) throw new Error(); const rows = (await response.json()) as Teacher[]; setTeachers(rows); const selected = rows.find((teacher) => teacher.isActive) ?? rows[0]; if (selected) { setTeacherId(selected.id); await loadCompensation(selected.id, current.id); } setMessage(""); } catch { setMessage("Teacher payment details could not be loaded."); } })(); }, [loadCompensation]);
+  async function select(id: string) { setTeacherId(id); try { await loadCompensation(id, academy?.id); setMessage(""); } catch { setMessage("Payment details could not be loaded."); } }
   const set = (key: keyof Compensation, value: string) => setForm((current) => ({ ...current, [key]: value }));
   async function save(event: FormEvent<HTMLFormElement>) { event.preventDefault(); if (!academy || !teacherId) return; setSaving(true); const hourly = form.model === "Hourly"; const payload = { model: form.model, monthlySalary: !hourly ? rate(form.monthlySalary) : null, standardHourlyRate: hourly ? rate(form.standardHourlyRate) : null, beginnerHourlyRate: hourly ? rate(form.beginnerHourlyRate) : null, intermediateHourlyRate: hourly ? rate(form.intermediateHourlyRate) : null, advancedHourlyRate: hourly ? rate(form.advancedHourlyRate) : null, effectiveFrom: form.effectiveFrom || null }; const response = await academyApi(`/api/academies/${academy.id}/teachers/${teacherId}/compensation`, { method: "PUT", headers: apiHeaders(true), body: JSON.stringify(payload) }); const result = await response.json().catch(() => null); setSaving(false); if (!response.ok) return setMessage(result?.message ?? "Payment details could not be saved."); setForm({ ...result, effectiveFrom: day(result.effectiveFrom) }); setMessage("Teacher payment details saved."); }
   return (

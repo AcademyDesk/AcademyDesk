@@ -153,6 +153,14 @@ internal static partial class SqlHarnessEntryPoint
         catch { if (!process.HasExited) process.Kill(entireProcessTree: true); throw; }
         finally { await bridge.StopAsync(); await SetAuditInsertDeniedAsync(manifest, false); }
         Console.Write(await output); var errorText = await errors;
+        if (Environment.GetEnvironmentVariable("QA_PAYROLL_PRESENTATION") == "baseline")
+        {
+            if (process.ExitCode != 0 || !failures.IsEmpty || successful != 0 || denied != 0 || faults != 0 || auditControls != 0 || reads == 0)
+                throw new InvalidOperationException("Print diagnostic baseline failed: " + errorText);
+            Exact(initial, await State());
+            Console.WriteLine("PAYROLL PRINT BASELINE NOT ACCEPTED: original row button invokes whole-page print; output diagnostic retained; no browser mutation.");
+            return;
+        }
         if (process.ExitCode != 0 || !failures.IsEmpty || successful != 20 || denied != 4 || faults != 1 || auditControls != 2 || ownedProfiles.Count != 4 || reads == 0)
             throw new InvalidOperationException($"Payroll linked failed ({successful}/{denied}/{faults}/{auditControls}): " + errorText + string.Join("; ", failures));
         var final = await State();

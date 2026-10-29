@@ -1,5 +1,6 @@
 "use client";
-import { FormEvent, useEffect, useRef, useState } from "react";
+import Image from "next/image";
+import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { academyApi, apiHeaders, apiUrl, clearPortalTokens } from "@/lib/api";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -141,26 +142,47 @@ export default function Portal() {
   const [l, setL] = useState<Leave[]>([]);
   const [t, setT] = useState<Tab>("home");
   const [m, setM] = useState("Loading your learning workspace…");
-  async function load(student = id) {
+  const loadGeneration = useRef(0);
+  const load = useCallback(async (student: string) => {
     if (!student) return;
-    const [a, b, c, e] = await Promise.all([
-      academyApi(`/api/portal/students/${student}`),
-      academyApi(`/api/portal/students/${student}/leave-requests`),
-      academyApi("/api/portal/notifications"),
-      academyApi("/api/portal/announcements"),
-    ]);
-    if (!a.ok) throw Error("Your student record could not be loaded.");
-    setD(await a.json());
-    if (b.ok) setL(await b.json());
-    if (c.ok) setN(await c.json());
-    if (e.ok) setAnnouncements(await e.json());
-    setM("");
-  }
+    const generation = ++loadGeneration.current;
+    setD(undefined);
+    setL([]);
+    setN([]);
+    setAnnouncements([]);
+    setM("Loading your learning workspace…");
+    try {
+      const [a, b, c, e] = await Promise.all([
+        academyApi(`/api/portal/students/${student}`),
+        academyApi(`/api/portal/students/${student}/leave-requests`),
+        academyApi("/api/portal/notifications"),
+        academyApi("/api/portal/announcements"),
+      ]);
+      if (generation !== loadGeneration.current) return;
+      if (!a.ok) {
+        setM(a.status === 401 ? "Please sign in again to view your learning workspace." : a.status === 403 || a.status === 404 ? "You do not currently have access to this student. Select another permitted student or contact your academy." : "Your student record could not be loaded. Please try again.");
+        return;
+      }
+      const [details, leave, notices, currentAnnouncements] = await Promise.all([
+        a.json(), b.ok ? b.json() : [], c.ok ? c.json() : [], e.ok ? e.json() : [],
+      ]);
+      if (generation !== loadGeneration.current) return;
+      setD(details);
+      setL(leave);
+      setN(notices);
+      setAnnouncements(currentAnnouncements);
+      setM("");
+    } catch {
+      if (generation === loadGeneration.current) setM("Your student record could not be loaded. Please try again.");
+    }
+  }, []);
   useEffect(() => {
+    let current = true;
     void academyApi("/api/portal/me")
       .then(async (r) => {
         if (!r.ok) throw Error();
         const x: Me = await r.json();
+        if (!current) return;
         const student =
           x.role === "Student" ? x.studentId : x.children?.[0]?.id;
         if (!student) throw Error();
@@ -168,10 +190,14 @@ export default function Portal() {
         setId(student);
         await load(student);
       })
-      .catch(() =>
-        setM("This account is not linked to a student or Parent portal."),
-      );
-  }, []);
+      .catch(() => {
+        if (current) setM("This account is not linked to a student or Parent portal.");
+      });
+    return () => {
+      current = false;
+      loadGeneration.current++;
+    };
+  }, [load]);
   return (
     <main {...manualTheme} className={`enterprise-app-shell teacher-portal-shell learner-portal-shell ${manualStyles.shell} ${manualStyles.teacher} ${manualTheme.className}`}>
       <aside className="enterprise-sidebar teacher-portal-sidebar learner-portal-sidebar">
@@ -233,7 +259,7 @@ export default function Portal() {
                 n={n}
                 l={l}
                 tab={t}
-                refresh={load}
+                refresh={() => load(id)}
                 parentId={me?.role === "Parent" ? me.parentId : undefined}
                 parentEmail={me?.role === "Parent" ? me.parentEmail : undefined}
                 parentPhone={me?.role === "Parent" ? me.parentPhone : undefined}
@@ -264,7 +290,7 @@ function StudentPortalProfile() {
   useEffect(() => { if (!open) return; const close = (event: MouseEvent) => { if (!ref.current?.contains(event.target as Node)) setOpen(false); }; document.addEventListener("mousedown", close); return () => document.removeEventListener("mousedown", close); }, [open]);
   async function upload(event: React.ChangeEvent<HTMLInputElement>) { const file = event.target.files?.[0]; event.target.value = ""; if (!file) return; const body = new FormData(); body.append("image", file); const response = await academyApi("/api/auth/session/profile-image", { method: "POST", body }); const result = await response.json().catch(() => null); if (!response.ok) return setMessage(result?.message ?? "Profile image could not be saved."); setAccount((current) => ({ ...current, profileImageUrl: result.profileImageUrl })); setMessage(""); setOpen(false); }
   function signOut() { clearPortalTokens(); router.push("/login"); }
-  return <div className="enterprise-profile" ref={ref}><button type="button" className="enterprise-profile-trigger" onClick={() => setOpen((value) => !value)} aria-label="Open profile menu" aria-expanded={open}>{imageUrl ? <img src={imageUrl} alt="Profile" /> : <span>{initials}</span>}</button>{open && <div className="enterprise-profile-menu" role="menu"><strong>{name}</strong><small>Student portal</small><input ref={input} className="sr-only" type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => void upload(event)} /><button type="button" className="enterprise-profile-menu-action" onClick={() => input.current?.click()}>Edit profile picture</button><button type="button" className="enterprise-profile-menu-action" onClick={signOut}>Sign out</button>{message && <small role="status">{message}</small>}</div>}</div>;
+  return <div className="enterprise-profile" ref={ref}><button type="button" className="enterprise-profile-trigger" onClick={() => setOpen((value) => !value)} aria-label="Open profile menu" aria-expanded={open}>{imageUrl ? <Image unoptimized loading="eager" width={44} height={44} src={imageUrl} alt="Profile" /> : <span>{initials}</span>}</button>{open && <div className="enterprise-profile-menu" role="menu"><strong>{name}</strong><small>Student portal</small><input ref={input} className="sr-only" type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => void upload(event)} /><button type="button" className="enterprise-profile-menu-action" onClick={() => input.current?.click()}>Edit profile picture</button><button type="button" className="enterprise-profile-menu-action" onClick={signOut}>Sign out</button>{message && <small role="status">{message}</small>}</div>}</div>;
 }
 function AnnouncementTicker({ announcements }: { announcements: Announcement[] }) {
   const text = announcements.map((item) => `${item.title}: ${item.message}`).join("   •   ");

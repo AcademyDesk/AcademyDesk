@@ -11,7 +11,7 @@ async function page(config={}){let i=0,e=0,r=0;const refs=[],state=[],deps=[],ef
  if(url.endsWith('/students')||url.endsWith('/guardians'))return{ok:false,status:403,json:async()=>({})};
  if(url.endsWith('/recipients')){if(config.network)throw Error('offline');return{ok:!config.denied,status:config.denied?403:200,json:async()=>config.data??{students,guardians}};}
  return{ok:!config.preferenceDenied,status:config.preferenceDenied?403:200,json:async()=>prefs};};
- new Function('require','module','exports',code)(n=>n==='react/jsx-runtime'?jsx:n==='react'?react:n==='@/lib/api'?{academyApi:api,apiHeaders:()=>({})}:n==='@/components/workspace-nav'?{WorkspaceNav(){}}:n==='@/components/design-system/controls'?{StandardSelectField}:(()=>{throw Error(n);})(),mod,mod.exports);
+ new Function('require','module','exports',code)(n=>n==='react/jsx-runtime'?jsx:n==='react'?react:n==='@/lib/api'?{academyApi:api,apiHeaders:()=>({})}:n==='@/components/workspace-nav'?{WorkspaceNav(){}}:n==='@/components/design-system/controls'?{StandardSelectField}:n.endsWith('.module.css')?{default:{}}:(()=>{throw Error(n)})(),mod,mod.exports);
  const render=()=>{i=e=r=0;return mod.exports.default();};const flush=async()=>{for(let t=0;t<5;t++){effects.splice(0).forEach(fn=>fn());await new Promise(r=>setImmediate(r));render();}};render();await flush();
  const select=(name,value)=>nodes(render()).find(n=>n.type===StandardSelectField&&n.props.name===name).props.onChange(value);
  const save=async()=>{await nodes(render()).find(n=>n.type==='form').props.onSubmit({preventDefault(){}});await flush();};

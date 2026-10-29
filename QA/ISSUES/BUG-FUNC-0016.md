@@ -1,5 +1,18 @@
 # BUG-FUNC-0016 — Enrollment status selector omits the required lifecycle reason
 
+2026-10-24 continuation: directly linked native browser/SQL evidence now exists
+for four390/1440 light/dark enrollment/pause/resume journeys in
+[admission rules](../REPORTS/API_IMAGE_ADMISSION_RULES_2026-10-23.md).
+This supersedes the older blanket "direct linked pending" statement only for
+those exact historical API/frontend artifacts. Current API also passed the
+[waitlist lifecycle successor](../REPORTS/ADMISSION_WAITLIST_LIFECYCLE_2026-10-24.md):
+78HTTP checks/10outcomes/three pairs/two audit controls. A separate misleading409
+feedback fix passed94actual-handler tests; its changed frontend export now passed
+four normal native create/duplicate/pause/resume journeys plus four authoritative
+refusal journeys with46HTTP checks, recorded in the
+[feedback report](../REPORTS/ENROLLMENT_CONFLICT_FEEDBACK_2026-10-24.md).
+No physical-device/full-critical-regression or issue closure is claimed. OPEN.
+
 2026-10-10 repair successor: [Lifecycle-reason report](../REPORTS/PHASE_2B_ENROLLMENT_LIFECYCLE_REASON_REPAIR.md) replaces immediate status writes with inline review/required reason/explicit Save/Cancel.79 controlled/44 synthetic browser/28 native SQL+Identity+HTTP cases PASS; persisted trimmed reasons and rejected/foreign/unauthorized no-write controls, existing backend unchanged. Failed/uncertain reason drafts retained, only confirmed row draft reset. Issue stays OPEN for directly linked browser/SQL, physical Android/iOS, stale/concurrent and complete critical regression; earlier static/feedback-only history below is retained, not the latest state.
 
 2026-10-10 feedback-only successor: [Enrollment/Promotion report](../REPORTS/PHASE_2B_ENROLLMENT_PROMOTION_FEEDBACK_REPAIR.md) now displays backend validation messages, retains draft and guards duplicate writes. The status/endDate payload deliberately remains unchanged; LifecycleReason input/integration is still missing. This issue remains OPEN and is not closed by synthetic successful status-response feedback cases. Next bounded domain-linked UI reason/confirmation and real SQL/browser verification; do not relax the existing server requirement.
@@ -8,7 +21,7 @@
 | --- | --- |
 | Status | OPEN |
 | Confirmation status | CONTROLLED-REPRODUCED / bounded UI repair / native API-SQL contract verified |
-| Final verification |79 controlled,44 synthetic browser,28 native SQL/HTTP PASS; direct linked/device/critical OPEN |
+| Final verification | Current feedback94handlers +46SQL/API checks/four normal/four refusal linked browser journeys PASS; physical devices/wider critical OPEN |
 | Severity | Major workflow blocked |
 | Priority | P1 |
 | Category | FUNC |
@@ -16,11 +29,11 @@
 | Role | See reproduction; same-tenant Admin unless stated otherwise |
 | Screen / route | /enrollments |
 | API | PUT enrollments/{enrollmentId} |
-| Environment | Source review of local working tree; runtime production state not inferred |
-| Device/viewport |320/1440px light/dark synthetic browser PASS; physical Android/iOS NOT RUN |
+| Environment | Current source-pinned export linked to immutable development API/disposable SQL/real Identity; production state not inferred |
+| Device/viewport | Current390/1440px light/dark native browser journeys PASS; physical Android/iOS NOT RUN |
 | Baseline | 20bb6047f9edf733ac8e2a226621cc582ec54b3c + pre-existing student UI diff |
 | Discovery test / review ID | BATCH-LIFECYCLE-001 |
-| Evidence classification | Actual-handler UI, synthetic browser and separate real API/SQL contract; directly linked browser pending |
+| Evidence classification | Actual-handler UI and directly linked native browser/API/SQL, scoped in24October feedback report; wider/device gates OPEN |
 | Preconditions | Isolated synthetic fixture from QA/10_TEST_DATA_STRATEGY.md; never customer data |
 | Reproduction frequency | Not measured; reproduction instructions are proposed |
 | Source | apps/web/src/app/enrollments/page.tsx:51 |
@@ -28,8 +41,8 @@
 | Related source | INVENTORY/API_ENDPOINTS.md, CONTRACTS.md, FORMS_AND_FIELDS.md and ASYNC_FORM_RISKS.md |
 | Root-cause confidence | HIGH |
 | Evidence location | Source excerpt below; source fingerprint in INVENTORY/SOURCE_MANIFEST.md |
-| Screenshot | Not captured on pinned baseline |
-| Console logs | Not captured; required in retest |
+| Screenshot | Eight current-export PNGs SHA256 verified; original baseline screenshot not captured |
+| Console logs | Zero uncaught page errors in current scoped native browser journeys; full critical/device console pending |
 | API request | Select Paused, Completed, Waitlisted, Withdrawn or Cancelled for an active synthetic enrollment using the current status dropdown. |
 | API response | Not captured for this issue; use synthetic request/response in isolated reproduction |
 | Database before/after | Not executed; fixture and fresh-context assertions defined below |

@@ -8,6 +8,7 @@
 export { StandardDateField } from "../standard-date-field";
 export { StandardSelectField } from "../standard-select-field";
 export { StandardTimeField } from "../standard-time-field";
+export { StandardDateTimeField } from "../standard-date-time-field";
 export { StandardDetailModal, StandardInteractiveTile } from "./interactive";
 
 /** Shared contract for full-month schedule views. */

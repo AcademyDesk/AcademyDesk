@@ -8,6 +8,9 @@ import {
   StandardTimeField,
 } from "@/components/design-system/controls";
 import { academyApi, apiHeaders } from "@/lib/api";
+import { RequiredControlValue } from "@/components/design-system/required-control-value";
+import styles from "@/components/design-system/operations-workspace.module.css";
+import { EVENT_TIME_LABEL, EVENT_TIME_ZONE, eventTimeToUtc } from "./event-time";
 
 type Academy = { id: string };
 type Branch = { id: string; name: string };
@@ -72,6 +75,10 @@ export default function EventsPage() {
     if (pending.current) return;
     if (!academy || !startDate || !endDate)
       return setMessage("Enter a title, start, and end time.");
+    const startUtc = eventTimeToUtc(startDate, startTime);
+    const endUtc = eventTimeToUtc(endDate, endTime);
+    if (!startUtc || !endUtc) return setMessage("Enter valid event dates and times in IST.");
+    if (endUtc <= startUtc) return setMessage("Event end must be after its start (IST).");
     pending.current = true;
     setSaving(true);
     setMessage("");
@@ -83,8 +90,8 @@ export default function EventsPage() {
           title,
           type,
           branchId: branchId || null,
-          startUtc: new Date(`${startDate}T${startTime}:00`).toISOString(),
-          endUtc: new Date(`${endDate}T${endTime}:00`).toISOString(),
+          startUtc,
+          endUtc,
           venue: venue || null,
           capacity: null,
           notes: null,
@@ -124,7 +131,7 @@ export default function EventsPage() {
     }
   }
   return (
-    <main className="enterprise-settings events-standard min-h-screen">
+    <main className={`${styles.page} enterprise-settings events-standard min-h-screen`}>
       <WorkspaceNav />
       <div className="events-content mx-auto max-w-6xl px-6 py-10">
         <header className="events-heading">
@@ -142,7 +149,7 @@ export default function EventsPage() {
           <p className="enterprise-page-state events-message" role="status" aria-live="polite">{message}</p>
         )}
         <section className="events-layout">
-          <form onSubmit={create} className="events-panel">
+          <form onSubmit={create} className="events-panel" aria-label="Plan event" aria-busy={saving}>
             <header className="events-panel-header">
               <div>
                 <p>Event planning</p>
@@ -150,11 +157,12 @@ export default function EventsPage() {
               </div>
             </header>
             <div className="events-fields">
+              <p className="text-sm text-slate-400">Event dates and times use {EVENT_TIME_LABEL}, regardless of your device timezone.</p>
               <label>
-                <span>Event title</span>
+                <span>Event title (required)</span>
                 <input
                   value={title}
-                  disabled={saving}
+                  disabled={saving || !academy}
                   onChange={(event) => setTitle(event.target.value)}
                   placeholder="Event title"
                   required
@@ -162,15 +170,17 @@ export default function EventsPage() {
               </label>
               <StandardSelectField
                 name="event-type"
-                disabled={saving}
+                label="Event type"
+                disabled={saving || !academy}
                 value={type}
-                onChange={setType}
+                onChange={value => { if (value) setType(value); }}
                 placeholder="Event type"
                 options={eventTypes.map((value) => ({ value, label: value }))}
               />
               <StandardSelectField
                 name="branch"
-                disabled={saving}
+                label="Branch (optional)"
+                disabled={saving || !academy}
                 value={branchId}
                 onChange={setBranchId}
                 placeholder="No branch"
@@ -179,46 +189,48 @@ export default function EventsPage() {
                   label: branch.name,
                 }))}
               />
-              <fieldset className="events-date-time m-0 min-w-0 border-0 p-0" disabled={saving}>
-                <StandardDateField
+              <fieldset className="events-date-time m-0 min-w-0 border-0 p-0" disabled={saving || !academy}>
+                <div className={styles.dateField}><RequiredControlValue value={startDate} label="Start date (required)" disabled={saving || !academy} /><StandardDateField
                   name="start-date"
-                  label="Start date"
+                  label="Start date (IST)"
                   value={startDate}
                   onChange={setStartDate}
-                  required
-                />
+                  required disabled={saving || !academy}
+                /></div>
                 <StandardTimeField
                   name="start-time"
-                  label="Start time"
+                  label="Start time (IST)"
+                  disabled={saving || !academy} intervalMinutes={1}
                   value={startTime}
                   onChange={setStartTime}
                 />
               </fieldset>
-              <fieldset className="events-date-time m-0 min-w-0 border-0 p-0" disabled={saving}>
-                <StandardDateField
+              <fieldset className="events-date-time m-0 min-w-0 border-0 p-0" disabled={saving || !academy}>
+                <div className={styles.dateField}><RequiredControlValue value={endDate} label="End date (required)" disabled={saving || !academy} /><StandardDateField
                   name="end-date"
-                  label="End date"
+                  label="End date (IST)"
                   value={endDate}
                   onChange={setEndDate}
-                  required
-                />
+                  required disabled={saving || !academy}
+                /></div>
                 <StandardTimeField
                   name="end-time"
-                  label="End time"
+                  label="End time (IST)"
+                  disabled={saving || !academy} intervalMinutes={1}
                   value={endTime}
                   onChange={setEndTime}
                 />
               </fieldset>
               <label>
-                <span>Venue or meeting link</span>
+                <span>Venue or meeting link (optional)</span>
                 <input
                   value={venue}
-                  disabled={saving}
+                  disabled={saving || !academy}
                   onChange={(event) => setVenue(event.target.value)}
                   placeholder="Venue or meeting link"
                 />
               </label>
-              <button className="enterprise-action-button events-action" disabled={saving}>
+              <button className="enterprise-action-button events-action" disabled={saving || !academy}>
                 {saving ? "Saving…" : "Plan event"}
               </button>
             </div>
@@ -244,8 +256,8 @@ export default function EventsPage() {
                         {new Intl.DateTimeFormat("en-IN", {
                           dateStyle: "medium",
                           timeStyle: "short",
-                          timeZone: "Asia/Kolkata",
-                        }).format(new Date(item.startUtc))}
+                          timeZone: EVENT_TIME_ZONE,
+                        }).format(new Date(item.startUtc))} IST
                       </small>
                       <small>
                         {item.venue || "Venue not set"} · {item.status}

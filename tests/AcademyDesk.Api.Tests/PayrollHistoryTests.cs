@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
+using AcademyDesk.Api.Tests.Infrastructure;
 
 namespace AcademyDesk.Api.Tests;
 
@@ -23,8 +24,8 @@ public sealed class PayrollHistoryTests
         db.PayrollPayouts.Add(payout); await db.SaveChangesAsync();
         var before = System.Text.Json.JsonSerializer.Serialize(payout);
         var row = Assert.Single(await List(db, profile.AcademyId));
-        Assert.Equal(DateTimeKind.Utc, row.PaidAtUtc.Kind);
-        Assert.Equal(payout.PaidAtUtc.Ticks, row.PaidAtUtc.Ticks);
+        Assert.Equal(DateTimeKind.Utc, row.PaidAtUtc!.Value.Kind);
+        Assert.Equal(payout.PaidAtUtc!.Value.Ticks, row.PaidAtUtc.Value.Ticks);
         using var json = System.Text.Json.JsonDocument.Parse(System.Text.Json.JsonSerializer.Serialize(row));
         Assert.Equal("2026-10-01T00:15:00Z", json.RootElement.GetProperty("PaidAtUtc").GetString());
         Assert.Equal(legacy ? "LegacyUnverified" : "PayoutSnapshot", row.IdentitySource);
@@ -83,10 +84,11 @@ public sealed class PayrollHistoryTests
         await using var db = Db(); var profile = Profile();
         db.PayrollProfiles.Add(profile); await db.SaveChangesAsync(); var original = await Pay(db, profile);
         var before = System.Text.Json.JsonSerializer.Serialize(Assert.Single(await db.PayrollPayouts.AsNoTracking().ToListAsync()));
-        var request = new SavePayrollProfileRequest(mode == "type" ? "Teacher" : "Staff", mode == "link" ? Guid.NewGuid() : null,
-            mode == "link" ? null : profile.StaffUserId, mode == "name" ? "Synthetic replacement" : profile.WorkerName,
+        var teacher = new Teacher { AcademyId = profile.AcademyId, FirstName = "Synthetic", LastName = "Replacement" }; db.Teachers.Add(teacher); await db.SaveChangesAsync();
+        var request = new SavePayrollProfileRequest(mode == "type" ? "Teacher" : "Staff", mode == "type" ? teacher.Id : null,
+            mode == "type" ? null : mode == "link" ? Guid.NewGuid().ToString() : profile.StaffUserId, mode == "name" ? "Synthetic replacement" : profile.WorkerName,
             "Monthly", 1000m, null, null, profile.EffectiveFrom, mode != "inactive");
-        Assert.IsType<OkObjectResult>((await new PayrollController(db).UpdateProfile(profile.AcademyId, profile.Id, request, default)).Result);
+        Assert.IsType<OkObjectResult>((await PayrollFixture.Controller(db, request.StaffUserId).UpdateProfile(profile.AcademyId, profile.Id, request, default)).Result);
         Assert.Equal(original, Assert.Single(await List(db, profile.AcademyId)));
         Assert.Equal(before, System.Text.Json.JsonSerializer.Serialize(Assert.Single(await db.PayrollPayouts.AsNoTracking().ToListAsync())));
     }
@@ -134,10 +136,10 @@ public sealed class PayrollHistoryTests
     }
 
     private static async Task<PayrollPayoutSummary> Pay(AcademyDeskDbContext db, PayrollProfile p) =>
-        Assert.IsType<PayrollPayoutSummary>(Assert.IsType<CreatedResult>((await new PayrollController(db).Pay(p.AcademyId,
+        Assert.IsType<PayrollPayoutSummary>(Assert.IsType<CreatedResult>((await PayrollFixture.Controller(db).Pay(p.AcademyId,
             new(p.Id, "September", null, null, 200m, null, null, new DateTime(2026, 9, 30, 12, 0, 0, DateTimeKind.Utc)), default)).Result).Value);
     private static async Task<IReadOnlyList<PayrollPayoutSummary>> List(AcademyDeskDbContext db, Guid academy) =>
-        Assert.IsAssignableFrom<IReadOnlyList<PayrollPayoutSummary>>(Assert.IsType<OkObjectResult>((await new PayrollController(db).Payouts(academy, default)).Result).Value);
+        Assert.IsAssignableFrom<IReadOnlyList<PayrollPayoutSummary>>(Assert.IsType<OkObjectResult>((await PayrollFixture.Controller(db).Payouts(academy, default)).Result).Value);
     private static PayrollProfile Profile() => new() { AcademyId = Guid.NewGuid(), WorkerName = "Synthetic original worker", WorkerType = "Staff", StaffUserId = Guid.NewGuid().ToString(), MonthlyAmount = 1000m };
     private static PayrollPayout Legacy(Guid academy, Guid profile) => new() { AcademyId = academy, PayrollProfileId = profile, PayslipNumber = "QA-LEGACY", PeriodLabel = "September", GrossAmount = 1000m, Deductions = 200m, NetAmount = 800m };
     private static AcademyDeskDbContext Db() => new(new DbContextOptionsBuilder<AcademyDeskDbContext>().UseInMemoryDatabase("qa-payroll-history-" + Guid.NewGuid()).Options);

@@ -1,5 +1,9 @@
 # Phase 2B — financial policy decision and implementation bundle
 
+## Current approval checkpoint — 2026-10-12
+
+The owner approved all three proposed **product rules** in the Batch1 reply. FP1 generic Refund/CreditNote creation and unreviewed legacy pending decisions are now blocked; FP2 records zero-net earnings as NoCashDue with no paid timestamp/reference; FP3 makes voided payments terminal. The [Batch1 ledger](BATCH_1_CORE_INTEGRITY.md) records implementation and bounded evidence. The original proposal and old-policy receipts below are historical; their NOT APPROVED wording is superseded only for these three product rules. Dedicated refund/credit-note/correction workflows, qualified accounting/tax/payroll review and enterprise/pre-Azure acceptance remain pending. No automatic legacy decision, retrospective rewrite or real funds movement is authorized.
+
 Date:2026-10-10. Academy worktree `D:\AcademyDesk-codex-p0`, branch `codex/penta-search`, inspected HEAD `01e5531783bb34c44da282e85b6d8c4d9bf4a75e`. Sol High. E0 rank3, following the bounded teacher and guardian repairs. **PROPOSED / NOT APPROVED / NOT IMPLEMENTED.** This packet combines three existing policy gates; it does not restart the audit or create a new testing program.
 
 ## 1. Decisions to approve together

@@ -200,9 +200,9 @@
     gap: 3px;
   }
   .admin :global(.enterprise-utilities) > * { min-width: 0; }
-  .admin :global(.theme-toggle) { justify-content: center; }
+  .admin :global(.enterprise-utilities .theme-toggle) { justify-content: center; gap: 0; }
   /* Preserve explicit accessible theme names while leaving room for44px utilities. */
-  .admin :global(.theme-toggle button) { font-size: 0; gap: 0; }
+  .admin :global(.enterprise-utilities .theme-toggle button) { font-size: 0; gap: 0; }
 }
 
 @media (max-width: 900px) {

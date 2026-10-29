@@ -29,7 +29,7 @@ async function page(config={}){
   const data=url==='/api/academies'?[{id:'a'}]:url.endsWith('/students')?[{id:'s',firstName:'Synthetic',lastName:'Student'}]:url.endsWith('/batches')?[{id:'b',name:'Synthetic batch'}]:url.endsWith('/enrollments')?[{studentId:'s',batchId:'b',status:'Active'}]:url.endsWith('/sessions')?['one','two'].map(id=>({id,batchId:'b',startUtc:'2026-10-01T10:00:00Z'})):undefined;
   if(!data)throw Error('Unexpected endpoint '+url);return{ok:true,status:200,json:async()=>data};
  };
- new Function('require','module','exports',code)(n=>n==='react/jsx-runtime'?jsx:n==='react'?react:n==='@/components/design-system/controls'?{StandardSelectField:'select'}:n==='@/components/workspace-nav'?{WorkspaceNav:'nav'}:n==='@/lib/api'?{academyApi:api,apiHeaders:()=>({})}:(()=>{throw Error(n)})(),module,module.exports);
+ new Function('require','module','exports',code)(n=>n==='react/jsx-runtime'?jsx:n==='react'?react:n==='@/components/design-system/controls'?{StandardSelectField:'select'}:n==='@/components/workspace-nav'?{WorkspaceNav:'nav'}:n.endsWith('.module.css')?{default:{}}:n.endsWith('onboarding-field')?{OnboardingField:'field'}:n==='@/lib/api'?{academyApi:api,apiHeaders:()=>({})}:(()=>{throw Error(n)})(),module,module.exports);
  const render=()=>{index=refIndex=effectIndex=0;return module.exports.default();};
  async function settle(){for(let i=0;i<4;i++){for(const fn of effects.splice(0))fn();await tick();render();}}
  const select=name=>nodes(render()).find(n=>n.type==='select'&&n.props.name===name);
@@ -58,6 +58,8 @@ for(const scenario of [
  const payload=JSON.parse(p.writes()[0].body);assert.equal(payload.notes,visible||null);assert.equal(p.stored.one[0].notes,scenario.expected);assert.equal(p.state.get(7),'Attendance saved.');assert.deepEqual(p.state.get(9),{});
  console.log('ATTENDANCE PAYLOAD '+JSON.stringify({label:scenario.label,before:scenario.before,newRecord:Boolean(scenario.newRecord),payload,expected:scenario.expected}));
 });
+
+test('Status placeholder cannot submit an empty attendance mutation',async()=>{const p=await page();p.select('attendance-s').props.onChange('');await p.settle();assert.equal(p.writes().length,0);assert.equal(p.stored.one[0].status,'Present');});
 test('Drafts follow their session and survive switching back without leaking',async()=>{
  const p=await page();p.edit('Session one draft');p.select('session').props.onChange('two');await p.settle();assert.equal(p.input().props.value,'Session two note');p.edit('Session two draft');p.select('session').props.onChange('one');await p.settle();assert.equal(p.input().props.value,'Session one draft');await p.save();assert.equal(p.state.get(9)['two:s'],'Session two draft');assert.equal(p.stored.two[0].notes,'Session two note');
 });

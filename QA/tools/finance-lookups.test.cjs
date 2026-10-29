@@ -14,12 +14,12 @@ async function loadPage(page, lookupStatus = 200) {
     module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX,
   } }).outputText;
   const effects = [], calls = [], writes = new Map(); let index = 0;
-  const react = { useState: initial => { const key = index++; return [writes.has(key) ? writes.get(key) : initial, value => writes.set(key, value)]; },
-    useEffect: fn => effects.push(fn), useMemo: fn => fn() };
+  const react = { useCallback: fn => fn, useState: initial => { const key = index++; return [writes.has(key) ? writes.get(key) : initial, value => writes.set(key, typeof value === 'function' ? value(writes.has(key) ? writes.get(key) : initial) : value)]; },
+    useEffect: fn => effects.push(fn), useRef: v => ({ current: v }), useMemo: fn => fn() };
   const module = { exports: {} };
   new Function('require', 'module', 'exports', compiled)(name => {
     if (name === 'react') return react;
-    if (name === 'react/jsx-runtime') return jsx;
+    if (name === 'next/image') return { default: 'img' }; if (name === 'react/jsx-runtime') return jsx;
     if (name === '@/lib/api') return { academyApi: async url => {
       calls.push(url);
       const lookup = url.endsWith('/invoices/student-options');
@@ -27,6 +27,11 @@ async function loadPage(page, lookupStatus = 200) {
       return { ok: status === 200, status, json: async () => url === '/api/academies'
         ? [{ id: 'a', name: 'Synthetic academy' }] : lookup ? [student] : url.endsWith('/invoices') ? [invoice] : url.endsWith('/settings') ? {} : [] };
     } };
+    if (name.endsWith('.module.css')) return new Proxy({}, {get: (_, key) => key});
+    if (name === '@/components/standard-select-field') return { StandardSelectField: 'shared-select' };
+    if (name === '@/components/standard-date-field') return { StandardDateField: 'shared-date' };
+    if (name === '@/components/design-system/onboarding-field') return { OnboardingField: 'label' };
+    if (name === '@/components/invoice-ledger-summary') return { InvoiceLedgerSummary: 'invoice-ledger-summary' };
     throw Error('Unexpected import ' + name);
   }, module, module.exports);
   module.exports.default(); effects.forEach(fn => fn());
@@ -46,7 +51,7 @@ function text(node) {
 }
 test('Payments retains resolved student names in the invoice selector and directory', async () => {
   const { render } = await loadPage('payments'); const tree = render();
-  assert.ok(text(nodes(tree, n => n.type === 'option' && n.props.value === 'i')[0]).includes('Synthetic Student'));
+  assert.ok(nodes(tree, n => n.type === 'shared-select' && n.props.name === 'invoiceId')[0].props.options.find(o => o.value === 'i').label.includes('Synthetic Student'));
   assert.ok(text(nodes(tree, n => n.props?.className?.includes('payments-directory'))[0]).includes('Synthetic Student'));
 });
 test('Invoices retains billing contact in the actual Preview/Print handler', async () => {

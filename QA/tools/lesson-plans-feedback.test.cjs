@@ -15,7 +15,7 @@ async function page(config={}){
   if(calls.some(c=>c.method)){if(config.readGate)await config.readGate;if(config.refreshFailure)return{ok:false,status:503};}
   assert.ok(['/api/academies/owned/lesson-plans','/api/academies/owned/batches'].includes(url));return{ok:true,json:async()=>url.endsWith('/batches')?[{id:'first',name:'First batch'},{id:'second',name:'Second batch'}]:[]};
  };
- new Function('require','module','exports',code)(n=>n==='react/jsx-runtime'?jsx:n==='react'?react:n==='@/lib/api'?{academyApi:api,apiHeaders:()=>({})}:n==='@/components/workspace-nav'?{WorkspaceNav:'nav'}:n==='@/components/design-system/controls'?{StandardDateField:'date',StandardTimeField:'time',StandardSelectField:'select'}:(()=>{throw Error(n)})(),module,module.exports);
+ new Function('require','module','exports',code)(n=>n==='react/jsx-runtime'?jsx:n==='react'?react:n==='@/lib/api'?{academyApi:api,apiHeaders:()=>({})}:n==='@/components/workspace-nav'?{WorkspaceNav:'nav'}:n==='@/components/design-system/controls'?{StandardDateField:'date',StandardTimeField:'time',StandardSelectField:'select'}:n.endsWith('.module.css')?{default:{}}:(()=>{throw Error(n)})(),module,module.exports);
  const render=()=>{index=refIndex=effectIndex=0;return module.exports.default();};
  async function settle(){for(let i=0;i<4;i++){for(const fn of effects.splice(0))fn();await tick();render();}}
  const action=()=>nodes(render()).find(n=>n.type==='form').props.onSubmit({preventDefault(){}});

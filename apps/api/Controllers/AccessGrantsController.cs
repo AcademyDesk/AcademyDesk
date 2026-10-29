@@ -31,6 +31,7 @@ public sealed class AccessGrantsController(IdentityDbContext db, UserManager<App
     }
 
     [HttpPost]
+    [AtomicAcademyMutation(IncludeIdentity = true)]
     public async Task<ActionResult> Create(Guid academyId, CreateAccessGrantRequest request, CancellationToken token)
     {
         var admin = await CurrentAdmin(academyId);
@@ -49,6 +50,7 @@ public sealed class AccessGrantsController(IdentityDbContext db, UserManager<App
     }
 
     [HttpPatch("{grantId:guid}/revoke")]
+    [AtomicAcademyMutation(IncludeIdentity = true)]
     public async Task<ActionResult> Revoke(Guid academyId, Guid grantId, CancellationToken token)
     {
         var admin = await CurrentAdmin(academyId);

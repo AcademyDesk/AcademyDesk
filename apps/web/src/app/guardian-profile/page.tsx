@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { academyApi, apiHeaders } from "@/lib/api";
 
 type Academy = { id: string };
@@ -26,7 +26,7 @@ export default function GuardianProfilePage() {
   const [form, setForm] = useState<Record<string, string>>({});
   const [message, setMessage] = useState("Loading family records…");
   const [saving, setSaving] = useState(false);
-  function prepare(value: Profile) {
+  const prepare = useCallback((value: Profile) => {
     setForm({
       preferredName: value.preferredName ?? "",
       addressLine1: value.addressLine1 ?? "",
@@ -35,8 +35,8 @@ export default function GuardianProfilePage() {
       postalCode: value.postalCode ?? "",
       preferredLanguage: value.preferredLanguage ?? "",
     });
-  }
-  async function load(id: string, academyId = academy?.id) {
+  }, []);
+  const load = useCallback(async (id: string, academyId: string | undefined) => {
     if (!academyId || !id) return;
     const response = await academyApi(
       `/api/academies/${academyId}/guardians/${id}/profile`,
@@ -45,7 +45,7 @@ export default function GuardianProfilePage() {
     const value: Profile = await response.json();
     setProfile(value);
     prepare(value);
-  }
+  }, [prepare]);
   useEffect(() => {
     void (async () => {
       try {
@@ -75,11 +75,11 @@ export default function GuardianProfilePage() {
         setMessage("Parent records could not be loaded.");
       }
     })();
-  }, []);
+  }, [load]);
   async function select(id: string) {
     setGuardianId(id);
     try {
-      await load(id);
+      await load(id, academy?.id);
       setMessage("");
     } catch {
       setMessage("The parent record could not be loaded.");

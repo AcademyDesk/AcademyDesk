@@ -11,5 +11,6 @@
     <ProjectReference Include="../../../apps/api/AcademyDesk.Api.csproj" />
     <Compile Include="../../../tests/AcademyDesk.Api.Tests/Infrastructure/QaRunGuard.cs" Link="QaRunGuard.cs" />
     <Compile Include="../../../tests/AcademyDesk.Api.Tests/Infrastructure/QaApiFactory.cs" Link="QaApiFactory.cs" />
+    <Compile Include="../../../tests/AcademyDesk.Api.Tests/Infrastructure/QaMeetingKeyRing.cs" Link="QaMeetingKeyRing.cs" />
   </ItemGroup>
 </Project>

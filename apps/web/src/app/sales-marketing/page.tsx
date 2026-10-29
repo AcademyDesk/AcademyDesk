@@ -150,7 +150,7 @@ function SalesMarketingContent() {
         {view === "overview" && (
           <>
             <section className="sales-tile-grid">
-              {leadTiles.map(([name, value, href, detail]) => (
+              {leadTiles.map(([name, value, , detail]) => (
                 <StandardInteractiveTile
                   key={String(name)}
                   label={name}

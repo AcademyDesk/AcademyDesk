@@ -19,11 +19,38 @@ internal static partial class SqlHarnessEntryPoint
 {
 private static async Task Main(string[] args)
 {
-if ((args.Length != 3 && (args.Length != 4 || (args[3] != "--audit-invoice-integrity" && args[3] != "--audit-invoice-status" && args[3] != "--audit-music-progress" && args[3] != "--audit-finance-policy-theme" && args[3] != "--audit-teacher-publication" && args[3] != "--audit-teacher-compensation" && args[3] != "--audit-student-imports" && args[3] != "--audit-student-imports-baseline" && args[3] != "--audit-work-item-integrity" && args[3] != "--audit-expense-integrity" && args[3] != "--audit-metadata-shape" && args[3] != "--audit-holiday-route" && args[3] != "--audit-onboarding-numbers" && args[3] != "--audit-onboarding-accounts" && args[3] != "--audit-onboarding-atomic" && args[3] != "--audit-onboarding-dates" && args[3] != "--audit-teacher-availability" && args[3] != "--audit-enrollment-lifecycle" && args[3] != "--audit-guardian-revocation" && args[3] != "--audit-teacher-lifecycle" && args[3] != "--penta-foundation" && args[3] != "--browser-approval" && args[3] != "--payment-reconcile-void-race" && args[3] != "--finance-approval-race" && args[3] != "--payment-transition-race" && args[3] != "--finance-adjustment-race" && args[3] != "--audit-role-replacement" && args[3] != "--audit-role-revocation" && args[3] != "--audit-session-revocation-repair" && args[3] != "--audit-session-revocation" && args[3] != "--audit-refresh-concurrency" && args[3] != "--audit-session-refresh" && args[3] != "--browser-payments" && args[3] != "--browser-certificate" && args[3] != "--browser-session" && args[3] != "--browser-provisioning" && args[3] != "--audit-provisioning-conflict" && args[3] != "--audit-provisioning-concurrency" && args[3] != "--audit-academy-provisioning" && args[3] != "--audit-portal-provisioning" && args[3] != "--audit-platform-provisioning" && args[3] != "--audit-trial-duration" && args[3] != "--audit-tenant-plan" && args[3] != "--audit-platform-billing" && args[3] != "--audit-activity-deletion" && args[3] != "--audit-announcement-audience" && args[3] != "--audit-guardian-flags" && args[3] != "--audit-certificate-family" && args[3] != "--audit-certificate-enrollment" && args[3] != "--audit-compliance-identity" && args[3] != "--audit-resource-scope" && args[3] != "--audit-practice-identity" && args[3] != "--audit-submission-identity" && args[3] != "--audit-review-context" && args[3] != "--audit-marketing-consent" && args[3] != "--audit-template-state" && args[3] != "--audit-preference-access" && args[3] != "--audit-inbox-lifecycle" && args[3] != "--audit-notification-channel" && args[3] != "--audit-communication-roundtrip" && args[3] != "--audit-makeup-location" && args[3] != "--audit-leave-identity" && args[3] != "--audit-schedule-defaults" && args[3] != "--audit-calendar-details" && args[3] != "--audit-attendance-notes" && args[3] != "--audit-assessment-options" && args[3] != "--audit-assessment-access" && args[3] != "--audit-assessment-roster" && args[3] != "--audit-assessment-grades" && args[3] != "--audit-year-closure" && args[3] != "--audit-course-prerequisites" && args[3] != "--audit-course-preservation" && args[3] != "--audit-promotion-decisions" && args[3] != "--class-media" && args[3] != "--blob-media" && args[3] != "--browser-media" && args[3] != "--finance-collection-race" && args[3] != "--finance-reconciliation" && args[3] != "--finance-adjustment" && args[3] != "--payroll-net" && args[3] != "--payment-transition" && args[3] != "--finance-consumers" && args[3] != "--finance-access" && args[3] != "--finance-lookups" && args[3] != "--finance-governance" && args[3] != "--collections-baseline" && args[3] != "--collections-balance" && args[3] != "--invoice-settings-baseline" && args[3] != "--invoice-settings" && args[3] != "--audit-batch-times-baseline" && args[3] != "--audit-batch-times-fixed" && args[3] != "--audit-batch-preservation-baseline" && args[3] != "--audit-batch-preservation-fixed" && args[3] != "--audit-branch-address-baseline" && args[3] != "--audit-branch-address-fixed" && args[3] != "--audit-baseline" && args[3] != "--audit-fixed" && args[3] != "--audit-people-baseline" && args[3] != "--audit-people-fixed" && args[3] != "--audit-linked-baseline" && args[3] != "--audit-linked-fixed" && args[3] != "--audit-branch-baseline" && args[3] != "--audit-branch-fixed"))) || !Guid.TryParseExact(args[0], "N", out var runId) ||
+if ((args.Length != 3 && (args.Length != 4 || (args[3] != "--audit-invoice-integrity" && args[3] != "--audit-invoice-status" && args[3] != "--audit-music-progress" && args[3] != "--audit-finance-policy-theme" && args[3] != "--audit-teacher-publication" && args[3] != "--audit-teacher-compensation" && args[3] != "--audit-student-imports" && args[3] != "--audit-student-imports-baseline" && args[3] != "--audit-work-item-integrity" && args[3] != "--audit-expense-integrity" && args[3] != "--audit-metadata-shape" && args[3] != "--audit-holiday-route" && args[3] != "--audit-onboarding-numbers" && args[3] != "--audit-onboarding-accounts" && args[3] != "--audit-onboarding-atomic" && args[3] != "--audit-onboarding-dates" && args[3] != "--audit-teacher-availability" && args[3] != "--audit-enrollment-lifecycle" && args[3] != "--audit-guardian-revocation" && args[3] != "--audit-teacher-lifecycle" && args[3] != "--penta-foundation" && args[3] != "--browser-approval" && args[3] != "--payment-reconcile-void-race" && args[3] != "--finance-approval-race" && args[3] != "--payment-transition-race" && args[3] != "--finance-adjustment-race" && args[3] != "--audit-role-replacement" && args[3] != "--audit-role-revocation" && args[3] != "--audit-session-revocation-repair" && args[3] != "--audit-session-revocation" && args[3] != "--audit-refresh-concurrency" && args[3] != "--audit-session-refresh" && args[3] != "--browser-payments" && args[3] != "--browser-certificate" && args[3] != "--browser-session" && args[3] != "--browser-provisioning" && args[3] != "--audit-provisioning-conflict" && args[3] != "--audit-provisioning-concurrency" && args[3] != "--audit-academy-provisioning" && args[3] != "--audit-portal-provisioning" && args[3] != "--audit-platform-provisioning" && args[3] != "--audit-trial-duration" && args[3] != "--audit-tenant-plan" && args[3] != "--audit-platform-billing" && args[3] != "--audit-activity-deletion" && args[3] != "--audit-announcement-audience" && args[3] != "--audit-guardian-flags" && args[3] != "--audit-certificate-family" && args[3] != "--audit-certificate-enrollment" && args[3] != "--audit-compliance-identity" && args[3] != "--audit-resource-scope" && args[3] != "--audit-practice-identity" && args[3] != "--audit-submission-identity" && args[3] != "--audit-review-context" && args[3] != "--audit-marketing-consent" && args[3] != "--audit-template-state" && args[3] != "--audit-preference-access" && args[3] != "--audit-inbox-lifecycle" && args[3] != "--audit-notification-channel" && args[3] != "--audit-meeting-readiness" && args[3] != "--audit-communication-roundtrip" && args[3] != "--audit-makeup-location" && args[3] != "--audit-leave-identity" && args[3] != "--audit-schedule-defaults" && args[3] != "--audit-calendar-details" && args[3] != "--audit-attendance-notes" && args[3] != "--audit-assessment-options" && args[3] != "--audit-assessment-access" && args[3] != "--audit-assessment-roster" && args[3] != "--audit-assessment-grades" && args[3] != "--audit-year-closure" && args[3] != "--audit-course-prerequisites" && args[3] != "--audit-course-preservation" && args[3] != "--audit-promotion-decisions" && args[3] != "--class-media" && args[3] != "--blob-media" && args[3] != "--browser-media" && args[3] != "--finance-collection-race" && args[3] != "--finance-reconciliation" && args[3] != "--finance-adjustment" && args[3] != "--payroll-net" && args[3] != "--payment-transition" && args[3] != "--finance-consumers" && args[3] != "--finance-access" && args[3] != "--finance-lookups" && args[3] != "--finance-governance" && args[3] != "--collections-baseline" && args[3] != "--collections-balance" && args[3] != "--invoice-settings-baseline" && args[3] != "--invoice-settings" && args[3] != "--audit-batch-times-baseline" && args[3] != "--audit-batch-times-fixed" && args[3] != "--audit-batch-preservation-baseline" && args[3] != "--audit-batch-preservation-fixed" && args[3] != "--audit-branch-address-baseline" && args[3] != "--audit-branch-address-fixed" && args[3] != "--audit-baseline" && args[3] != "--audit-fixed" && args[3] != "--audit-people-baseline" && args[3] != "--audit-people-fixed" && args[3] != "--audit-linked-baseline" && args[3] != "--audit-linked-fixed" && args[3] != "--audit-branch-baseline" && args[3] != "--audit-branch-fixed"))) || !Guid.TryParseExact(args[0], "N", out var runId) ||
     !int.TryParse(args[1], out var port) || string.IsNullOrWhiteSpace(args[2]))
     throw new InvalidOperationException("Supply the QA run ID, Docker host port, and exact container name.");
 
 var saPassword = Environment.GetEnvironmentVariable("QA_SQL_SA_PASSWORD");
+if (Environment.GetEnvironmentVariable("QA_IDENTITY_CHALLENGE_CHECK") is { } identityChallengeCheck &&
+    (identityChallengeCheck != "1" || args.Length != 4 || args[3] != "--audit-session-revocation-repair"))
+    throw new InvalidOperationException("Identity challenge checks require only the guarded SessionRevocationRepair module.");
+if (Environment.GetEnvironmentVariable("QA_CSV_EXPORT_CHECK") is { } csvExportCheck &&
+    (csvExportCheck != "1" || args.Length != 4 || args[3] != "--finance-access"))
+    throw new InvalidOperationException("CSV export checks require only the guarded Access module.");
+if (Environment.GetEnvironmentVariable("QA_MEDIA_PUBLICATION_GUARD") is { } publicationGuard &&
+    (publicationGuard != "1" || Environment.GetEnvironmentVariable("QA_MEDIA_ADMISSION_REVIEW") != "1"))
+    throw new InvalidOperationException("Publication guard requires only its isolated admission module.");
+if (Environment.GetEnvironmentVariable("QA_MEDIA_ADMISSION_REVIEW") is { } admissionReview &&
+    (admissionReview != "1" || args.Length != 4 || args[3] != "--blob-media" || new[] { "QA_MEDIA_LIFECYCLE", "QA_MEDIA_LARGE_TRANSFER", "QA_MEDIA_RECORDER_BROWSER", "QA_MEDIA_RECORDER_RECOVERY", "QA_MEDIA_RECORDER_UPLOAD" }.Any(x => Environment.GetEnvironmentVariable(x) is not null)))
+    throw new InvalidOperationException("Media admission review requires only its isolated native Blob module.");
+if (Environment.GetEnvironmentVariable("QA_MEDIA_RECORDER_UPLOAD") is { } recorderUpload &&
+    (recorderUpload != "1" || Environment.GetEnvironmentVariable("QA_MEDIA_RECORDER_BROWSER") != "1" || Environment.GetEnvironmentVariable("QA_MEDIA_RECORDER_RECOVERY") is not null))
+    throw new InvalidOperationException("Recorder upload requires only its isolated recorder browser gate.");
+if (Environment.GetEnvironmentVariable("QA_MEDIA_RECORDER_RECOVERY") is { } recorderRecovery &&
+    (recorderRecovery != "1" || Environment.GetEnvironmentVariable("QA_MEDIA_RECORDER_BROWSER") != "1"))
+    throw new InvalidOperationException("Recorder recovery requires the isolated recorder browser gate.");
+if (Environment.GetEnvironmentVariable("QA_MEDIA_RECORDER_BROWSER") is { } recorderBrowser &&
+    (recorderBrowser != "1" || args.Length != 4 || args[3] != "--blob-media" || Environment.GetEnvironmentVariable("QA_MEDIA_LIFECYCLE") is not null || Environment.GetEnvironmentVariable("QA_MEDIA_LARGE_TRANSFER") is not null))
+    throw new InvalidOperationException("Recorder browser requires only the isolated native Blob module.");
+if (Environment.GetEnvironmentVariable("QA_MEDIA_LIFECYCLE") is { } mediaLifecycle &&
+    (mediaLifecycle != "1" || args.Length != 4 || args[3] != "--blob-media"))
+    throw new InvalidOperationException("Media lifecycle requires only the guarded native Blob module.");
+if (Environment.GetEnvironmentVariable("QA_MEDIA_LARGE_TRANSFER") is { } mediaLarge &&
+    (mediaLarge != "1" || args.Length != 4 || args[3] != "--blob-media" || Environment.GetEnvironmentVariable("QA_MEDIA_LIFECYCLE") is not null))
+    throw new InvalidOperationException("Large media requires the isolated native Blob module without lifecycle/browser modes.");
 if (string.IsNullOrWhiteSpace(saPassword))
     throw new InvalidOperationException("The ephemeral QA SQL administrator credential is required.");
 
@@ -86,7 +113,20 @@ Console.WriteLine("Created database-scoped runtime login; applying both EF migra
 await using (var application = new AcademyDeskDbContext(
     new DbContextOptionsBuilder<AcademyDeskDbContext>().UseSqlServer(adminDatabaseConnection).Options))
 {
-    if (args.Length == 4 && args[3] == "--audit-assessment-grades")
+    if (args.Length == 4 && args[3] == "--audit-meeting-readiness")
+    {
+        await VerifyMeetingReceiptMigrationAsync(application);
+        await VerifyMeetingOperationMigrationAsync(application);
+        await VerifyMeetingOAuthMigrationAsync(application);
+        await VerifyMeetingOAuthCallbackMigrationAsync(application);
+        await VerifyMeetingOAuthExchangeMigrationAsync(application);
+        await VerifyMeetingAccountReviewMigrationAsync(application);
+        await VerifyMeetingRevocationMigrationAsync(application);
+        await VerifyMeetingRefreshMigrationAsync(application);
+        await VerifyMeetingManualRevocationMigrationAsync(application);
+        await VerifyMeetingUnknownRefreshMigrationAsync(application);
+    }
+    else if (args.Length == 4 && args[3] == "--audit-assessment-grades")
         await VerifyAssessmentGradeMigrationAsync(application);
     else if (args.Length == 4 && args[3] == "--audit-inbox-lifecycle" && Environment.GetEnvironmentVariable("QA_INBOX_BASELINE") != "1")
         await VerifyInboxReceiptMigrationAsync(application);
@@ -268,7 +308,8 @@ static async Task VerifyRealHttpAsync(QaRunManifest manifest, bool classMediaOnl
         var linkedFault = auditMode is "--audit-linked-baseline" or "--audit-linked-fixed" or "--audit-branch-fixed" ? new LinkedIdentitySqlFault() : null;
         var calendarBrowser = auditMode == "--audit-calendar-details" && Environment.GetEnvironmentVariable("QA_CALENDAR_BROWSER") == "1";
         var calendarOrigin = calendarBrowser ? ValidateCalendarBrowserOrigin() : null;
-        using var factory = new QaApiFactory(manifest, calendarOrigin is null ? null : new Dictionary<string,string?> { ["Cors:AllowedOrigins:0"] = calendarOrigin.GetLeftPart(UriPartial.Authority) }, isolatedIdentityInterceptor: linkedFault);
+        var lifecycleGate = Environment.GetEnvironmentVariable("QA_LIFECYCLE_OVERLAP") == "1" && auditMode is "--audit-teacher-lifecycle" or "--audit-guardian-revocation" ? new LifecycleAuthorizationGate() : null;
+        using var factory = new QaApiFactory(manifest, calendarOrigin is null ? null : new Dictionary<string,string?> { ["Cors:AllowedOrigins:0"] = calendarOrigin.GetLeftPart(UriPartial.Authority) }, isolatedIdentityInterceptor: linkedFault, isolatedDomainInterceptor: lifecycleGate);
         using var client = factory.CreateClient(new() { AllowAutoRedirect = false });
         if (!factory.PreflightPassed)
             throw new InvalidOperationException("The HTTP host did not pass the QA preflight.");
@@ -342,7 +383,11 @@ static async Task VerifyRealHttpAsync(QaRunManifest manifest, bool classMediaOnl
         if (auditMode is not null)
         {
             if (auditMode == "--audit-certificate-family") { await VerifyCertificateFamilyAsync(factory, client); return; }
-            if (auditMode == "--audit-guardian-revocation") { await VerifyGuardianRevocationAsync(factory, client, manifest); return; }
+            if (auditMode == "--audit-guardian-revocation") {
+                await VerifyGuardianRevocationAsync(factory, client, manifest);
+                if (lifecycleGate is not null) await VerifyGuardianAuthorizationOverlapAsync(factory, client, manifest, lifecycleGate);
+                return;
+            }
             if (auditMode == "--audit-guardian-flags") { await VerifyGuardianFlagsAsync(factory, client); return; }
             if (auditMode == "--audit-announcement-audience") { await VerifyAnnouncementAudienceAsync(factory, client); return; }
             if (auditMode == "--audit-activity-deletion") { await VerifyActivityDeletionAsync(factory, client); return; }
@@ -356,7 +401,12 @@ static async Task VerifyRealHttpAsync(QaRunManifest manifest, bool classMediaOnl
             if (auditMode == "--audit-provisioning-conflict") { await VerifyProvisioningConflictAsync(factory, client, manifest); return; }
             if (auditMode == "--audit-role-replacement") { await VerifyRoleReplacementAsync(factory, client, manifest); return; }
             if (auditMode == "--audit-role-revocation") { await VerifyRoleRevocationAsync(factory, client); return; }
-            if (auditMode == "--audit-session-revocation-repair") { await VerifyPrivateResourceAccessAsync(factory, client); await VerifySessionRevocationRepairAsync(factory, client); return; }
+            if (auditMode == "--audit-session-revocation-repair") {
+                await VerifyPrivateResourceAccessAsync(factory, client);
+                await VerifySessionRevocationRepairAsync(factory, client);
+                if (Environment.GetEnvironmentVariable("QA_IDENTITY_CHALLENGE_CHECK") == "1") await VerifyIdentityChallengesAsync(factory, client);
+                return;
+            }
             if (auditMode == "--audit-session-revocation") { await VerifySessionRevocationAsync(factory, client); return; }
             if (auditMode == "--audit-session-refresh") { await VerifySessionRefreshAsync(factory, client, manifest); return; }
             if (auditMode == "--audit-refresh-concurrency") { await VerifySessionRefreshAsync(factory, client, manifest, concurrency: true); return; }
@@ -377,8 +427,30 @@ static async Task VerifyRealHttpAsync(QaRunManifest manifest, bool classMediaOnl
             if (auditMode == "--audit-expense-integrity") { await VerifyExpenseIntegrityAsync(factory, client, manifest); return; }
             if (auditMode == "--audit-metadata-shape") { await VerifyMetadataShapeAsync(factory, client); return; }
             if (auditMode == "--audit-holiday-route") { await VerifyHolidayRouteAsync(factory, client); return; }
-            if (auditMode == "--audit-teacher-availability") { await VerifyTeacherAvailabilityAsync(factory, client); return; }
-            if (auditMode == "--audit-teacher-lifecycle") { await VerifyTeacherLifecycleAsync(factory, client, manifest); return; }
+            if (auditMode == "--audit-teacher-availability") {
+                await VerifyTeacherAvailabilityAsync(factory, client);
+                if (Environment.GetEnvironmentVariable("QA_TEACHER_CREATION_SERVICE") == "1")
+                    await VerifyTeacherCreationServiceAsync(factory, client, manifest);
+                if (Environment.GetEnvironmentVariable("QA_PENTA_TEACHER_WORKFLOW") == "1")
+                    await VerifyPentaTeacherCreationAsync(factory, manifest);
+                if (Environment.GetEnvironmentVariable("QA_PENTA_TEACHER_CORE") == "1")
+                    await VerifyPentaTeacherCoreAsync(manifest);
+                if (Environment.GetEnvironmentVariable("QA_PENTA_TEACHER_CONVERSATION") == "1")
+                    await VerifyPentaTeacherConversationAsync(manifest);
+                if (Environment.GetEnvironmentVariable("QA_PENTA_TEACHER_START") == "1")
+                    await VerifyPentaTeacherStartAsync(manifest);
+                if (Environment.GetEnvironmentVariable("QA_PENTA_TEACHER_BROWSER_EXPORT") is not null)
+                    await VerifyPentaTeacherBrowserAsync(manifest);
+                if (Environment.GetEnvironmentVariable("QA_PENTA_TEACHER_CHAT_EXPORT") is not null)
+                    await VerifyPentaTeacherChatBrowserAsync(manifest);
+                return;
+            }
+            if (auditMode == "--audit-teacher-lifecycle") {
+                await VerifyTeacherLifecycleAsync(factory, client, manifest);
+                if (lifecycleGate is not null) await VerifyTeacherAuthorizationOverlapAsync(factory, client, manifest, lifecycleGate);
+                if (Environment.GetEnvironmentVariable("QA_LIFECYCLE_BROWSER") == "1") await VerifyLifecycleBrowserAsync(factory, client, manifest);
+                return;
+            }
             if (auditMode == "--audit-resource-scope") { await VerifyResourceScopeAsync(factory, client); return; }
             if (auditMode == "--audit-practice-identity") { await VerifyPracticeIdentityAsync(factory, client); return; }
             if (auditMode == "--audit-submission-identity") { await VerifySubmissionIdentityAsync(factory, client); return; }
@@ -408,6 +480,7 @@ static async Task VerifyRealHttpAsync(QaRunManifest manifest, bool classMediaOnl
                 await VerifyNotificationChannelAsync(factory, client);
                 return;
             }
+            if (auditMode == "--audit-meeting-readiness") { await VerifyMeetingReadinessAsync(factory, client, manifest); return; }
             if (auditMode == "--audit-communication-roundtrip")
             {
                 await VerifyCommunicationRoundtripAsync(factory, client);
@@ -472,6 +545,8 @@ static async Task VerifyRealHttpAsync(QaRunManifest manifest, bool classMediaOnl
             if (auditMode == "--audit-enrollment-lifecycle")
             {
                 await VerifyEnrollmentLifecycleAsync(factory, client);
+                if (Environment.GetEnvironmentVariable("QA_ENROLLMENT_SHARED") == "1")
+                    await VerifyEnrollmentMutationAsync(factory, manifest);
                 return;
             }
             if (auditMode == "--audit-promotion-decisions")
@@ -547,6 +622,8 @@ static async Task VerifyRealHttpAsync(QaRunManifest manifest, bool classMediaOnl
         }
         if (financeAccessOnly)
         {
+            if (Environment.GetEnvironmentVariable("QA_CSV_EXPORT_CHECK") == "1")
+                await VerifySpreadsheetExportsAsync(factory, client);
             await VerifyFinanceAccessAsync(factory, client);
             return; // Current bounded role/tenant rules, not new approval/restoration policy or full critical suite.
         }
@@ -565,12 +642,43 @@ static async Task VerifyRealHttpAsync(QaRunManifest manifest, bool classMediaOnl
         if (payrollNetOnly)
         {
             await VerifyPayrollBoundariesAsync(factory, client, enforceRegression: true);
+            if (Environment.GetEnvironmentVariable("QA_BATCH1") is "baseline" or "guarded")
+                await VerifyPayrollWorkerLinksAsync(factory, client);
             if (Environment.GetEnvironmentVariable("QA_PAYROLL_HISTORY") is "baseline" or "guarded")
                 await VerifyPayrollHistoryAsync(factory, client, manifest);
+            if (Environment.GetEnvironmentVariable("QA_BATCH1") == "guarded")
+            {
+                Console.WriteLine("BATCH1 waiting unchanged production limiter window before exact-money acceptance.");
+                await Task.Delay(TimeSpan.FromSeconds(60));
+                await VerifyPayrollPrecisionAsync(factory, client);
+                await VerifyBatchOnePoliciesAsync(factory, client);
+                Console.WriteLine("BATCH1 waiting unchanged production limiter window before terminal-void concurrency.");
+                await Task.Delay(TimeSpan.FromSeconds(60));
+                await VerifyReconcileVoidRaceAsync(factory, client);
+                if (Environment.GetEnvironmentVariable("QA_BATCH1_FINANCE") == "1")
+                {
+                    // Reuse the existing strict gates. Never reduce iterations,
+                    // permit429, or modify the production limiter for this batch.
+                    Console.WriteLine("BATCH1 retained collection/approval/void/access gates starting; separate limiter windows.");
+                    await Task.Delay(TimeSpan.FromSeconds(60));
+                    await VerifyCollectionRaceAsync(factory, client, false);
+                    await Task.Delay(TimeSpan.FromSeconds(60));
+                    await VerifyCollectionRaceAsync(factory, client, true);
+                    await Task.Delay(TimeSpan.FromSeconds(60));
+                    await VerifyApprovalRaceAsync(factory, client);
+                    await Task.Delay(TimeSpan.FromSeconds(60));
+                    await VerifyPaymentVoidRaceAsync(factory, client);
+                    await Task.Delay(TimeSpan.FromSeconds(60));
+                    await VerifyFinanceAccessAsync(factory, client);
+                    Console.WriteLine("BATCH1 retained finance gates PASS; this is not full enterprise/security/private-media release acceptance.");
+                }
+            }
             if (Environment.GetEnvironmentVariable("QA_PAYROLL_RACE") == "1")
                 await VerifyPayrollHistoryConcurrencyAsync(factory, client, manifest);
             if (Environment.GetEnvironmentVariable("QA_PAYROLL_BROWSER") == "1")
                 await VerifyPayrollBrowserAsync(factory, client, manifest);
+            if (Environment.GetEnvironmentVariable("QA_PAYROLL_DOCUMENT_BROWSER") == "1")
+                await VerifyPayrollDocumentBrowserAsync(factory, client);
             return; // Explicit payroll module, not full critical/release acceptance.
         }
         if (financeAdjustmentOnly)
@@ -590,6 +698,31 @@ static async Task VerifyRealHttpAsync(QaRunManifest manifest, bool classMediaOnl
             using var blobFactory = new QaApiFactory(manifest, new Dictionary<string, string?> { ["Cors:AllowedOrigins:0"] = "http://localhost:3000" }, isolatedMediaStore: blobFixture.Store);
             using var blobClient = blobFactory.CreateClient(new() { AllowAutoRedirect = false });
             await VerifyBlobUploadsAsync(blobFactory, blobClient, blobFixture, manifest);
+            if (Environment.GetEnvironmentVariable("QA_MEDIA_ADMISSION_REVIEW") == "1")
+            {
+                if (Environment.GetEnvironmentVariable("QA_MEDIA_PUBLICATION_GUARD") == "1") await VerifyMediaPublicationGuardAsync(blobFixture, manifest);
+                else await VerifyMediaAdmissionReviewAsync(blobFixture, manifest);
+            }
+            if (Environment.GetEnvironmentVariable("QA_MEDIA_RECORDER_BROWSER") == "1")
+            {
+                using var recorderFactory = new QaApiFactory(manifest, new Dictionary<string, string?> { ["Cors:AllowedOrigins:0"] = "http://localhost:3000" }, isolatedMediaStore: blobFixture.Store);
+                using var recorderClient = recorderFactory.CreateClient(new() { AllowAutoRedirect = false });
+                await VerifyRecorderBrowserAsync(recorderFactory, recorderClient, blobFixture, manifest);
+            }
+            if (Environment.GetEnvironmentVariable("QA_MEDIA_LIFECYCLE") == "1")
+            {
+                // Separate DI host resets no persisted data; keeps the unchanged
+                // limiter while isolating this additive module's request window.
+                using var lifecycleFactory = new QaApiFactory(manifest, new Dictionary<string, string?> { ["Cors:AllowedOrigins:0"] = "http://localhost:3000" }, isolatedMediaStore: blobFixture.Store);
+                using var lifecycleClient = lifecycleFactory.CreateClient(new() { AllowAutoRedirect = false });
+                await VerifyMediaLifecycleAsync(lifecycleFactory, lifecycleClient, blobFixture, manifest);
+            }
+            if (Environment.GetEnvironmentVariable("QA_MEDIA_LARGE_TRANSFER") == "1")
+            {
+                using var largeFactory = new QaApiFactory(manifest, new Dictionary<string, string?> { ["Cors:AllowedOrigins:0"] = "http://localhost:3000" }, isolatedMediaStore: blobFixture.Store);
+                using var largeClient = largeFactory.CreateClient(new() { AllowAutoRedirect = false });
+                await VerifyMediaLargeTransferAsync(largeFactory, largeClient, blobFixture, manifest);
+            }
             return;
         }
         await VerifyPrivateResourceAccessAsync(factory, client);

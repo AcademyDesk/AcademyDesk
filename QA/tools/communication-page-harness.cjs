@@ -27,7 +27,7 @@ async function page(config={}){
   if(config.defer)await config.defer;
   return{ok:!config.getStatus,status:config.getStatus??200,json:async()=>structuredClone(rows)};
  };
- new Function('require','module','exports',code)(n=>n==='react/jsx-runtime'?jsx:n==='react'?react:n==='@/lib/api'?{academyApi:api,apiHeaders:()=>({})}:n==='@/components/workspace-nav'?{WorkspaceNav(){}}:n==='@/components/meeting-provider-settings'?{MeetingProviderSettings}:(()=>{throw Error(n)})(),module,module.exports);
+ new Function('require','module','exports',code)(n=>n==='react/jsx-runtime'?jsx:n==='react'?react:n==='@/lib/api'?{academyApi:api,apiHeaders:()=>({})}:n==='@/components/workspace-nav'?{WorkspaceNav(){}}:n==='@/components/meeting-provider-settings'?{MeetingProviderSettings}:n==='@/components/meeting-integration-options'?{MeetingIntegrationOptions(){}}:n==='@/components/design-system/controls'?{StandardSelectField:'shared-select'}:n.endsWith('.module.css')?{default:{}}:(()=>{throw Error(n)})(),module,module.exports);
  const render=()=>{index=effectIndex=refIndex=0;return module.exports.default();};
  const flush=async()=>{for(let i=0;i<4;i++){for(const fn of effects.splice(0))fn();await new Promise(r=>setImmediate(r));render();}};
  render();await flush();
@@ -35,7 +35,7 @@ async function page(config={}){
  const meeting=()=>nodes(render()).find(n=>n.type===MeetingProviderSettings);
  const edit=(channel,key,value)=>{
   if(channel==='Meeting'){const p=meeting().props;const mapping={senderName:'organizerName',senderAddress:'organizerEmail',externalAccountReference:'reference'};p.onChange({...p.value,[mapping[key]??key]:value});}
-  else if(key==='provider')nodes(form(channel)).find(n=>n.type==='select').props.onChange({target:{value}});
+  else if(key==='provider'){const control=nodes(form(channel)).find(n=>n.type==='shared-select'||n.type==='select');control.props.onChange(control.type==='select'?{target:{value}}:value);}
   else {const placeholder=key==='senderName'?'Display name':channel==='Email'?'Sender email':'Dedicated WhatsApp number';nodes(form(channel)).find(n=>n.type==='input'&&n.props.placeholder===placeholder).props.onChange({target:{value}});}
  };
  const save=async channel=>{if(channel==='Meeting')meeting().props.onSave();else form(channel).props.onSubmit({preventDefault(){}});await new Promise(r=>setImmediate(r));await new Promise(r=>setImmediate(r));render();};

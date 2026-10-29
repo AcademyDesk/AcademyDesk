@@ -1,5 +1,7 @@
 using AcademyDesk.Api.Data;
 using AcademyDesk.Api.Domain.Entities;
+using AcademyDesk.Api.Infrastructure;
+using AcademyDesk.Api.Security;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
@@ -31,8 +33,12 @@ public sealed class BatchesController(AcademyDeskDbContext dbContext) : Controll
     }
 
     [HttpPut("{batchId:guid}")]
+    [AtomicAcademyMutation]
     public async Task<ActionResult<BatchSummary>> Update(Guid academyId, Guid batchId, UpdateBatchRequest request, CancellationToken token)
     {
+        await using var ownedTransaction = await EnrollmentAdmissionBoundary.BeginOwnedAsync(dbContext, token);
+        if (!await EnrollmentAdmissionBoundary.TryLockAsync(dbContext, academyId, token))
+            return StatusCode(503, new { message = EnrollmentAdmissionBoundary.BusyMessage });
         var batch = await dbContext.Batches.SingleOrDefaultAsync(x => x.AcademyId == academyId && x.Id == batchId, token); if (batch is null) return NotFound();
         var problem = await Validate(academyId, request, token, batchId); if (problem is not null) return BadRequest(new { message = problem });
         var active = await dbContext.Enrollments.CountAsync(x => x.AcademyId == academyId && x.BatchId == batchId && x.Status == "Active", token); if (request.Capacity < active) return BadRequest(new { message = $"Capacity cannot be lower than the {active} active enrolments." });
@@ -45,7 +51,9 @@ public sealed class BatchesController(AcademyDeskDbContext dbContext) : Controll
             .Where(x => x.AcademyId == academyId && x.BatchId == batchId && x.Status == "Scheduled" && x.StartUtc >= DateTime.UtcNow)
             .ToListAsync(token);
         foreach (var session in futureSessions) session.TeacherId = batch.TeacherId;
-        await dbContext.SaveChangesAsync(token); return Ok(Summary(batch, active));
+        await dbContext.SaveChangesAsync(token);
+        if (ownedTransaction is not null) await ownedTransaction.CommitAsync(token);
+        return Ok(Summary(batch, active));
     }
 
     private async Task<string?> Validate(Guid academyId, BatchRequest r, CancellationToken token, Guid? ignore = null)

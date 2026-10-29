@@ -1,0 +1,11 @@
+// Freeze pre-existing working-source handlers; retain prior uncommitted policy fixes.
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),crypto=require('node:crypto');
+const ts=require('../../apps/web/node_modules/typescript'),snapshot=require('./fixtures/finance-controls-preservation.json');
+const printer=ts.createPrinter({removeComments:true});
+function declarations(path){const file=ts.createSourceFile(path,fs.readFileSync(path,'utf8'),ts.ScriptTarget.Latest,true,ts.ScriptKind.TSX),map=new Map();function visit(n){if((ts.isVariableDeclaration(n)||ts.isFunctionDeclaration(n))&&n.name&&ts.isIdentifier(n.name))map.set(n.name.text,printer.printNode(ts.EmitHint.Unspecified,n,file));ts.forEachChild(n,visit);}visit(file);return map;}
+// Reconciliation/adjustment load/save deliberately hardened in the successor;
+// their request/outcome tests live in finance-recovery.test.cjs, not an unchanged claim.
+// Governance actions now have dedicated pending/recovery regressions; document save remains frozen.
+const changed = entry => entry.path.includes('finance-reconciliation') && ['load','reconcile'].includes(entry.name) || entry.path.includes('finance-adjustments') && ['load','save'].includes(entry.name) || entry.path.includes('finance-governance') && ['load','decide','createFollowUp','updateCollection'].includes(entry.name);
+for(const entry of snapshot.entries.filter(entry => !changed(entry)))test(entry.path+' preserves '+entry.name,()=>assert.equal(crypto.createHash('sha256').update(declarations(entry.path).get(entry.name)).digest('hex'),entry.sha256));
+for(const route of ['finance-reconciliation','finance-adjustments'])for(const[amount,currency]of[[0.01,'INR'],[1000.01,'INR'],[0,'INR'],[0.01,'USD'],[12,'JPY'],[0.001,'KWD']])test(route+' exact visible fractional currency '+amount+currency,()=>{const code=declarations('apps/web/src/app/'+route+'/page.tsx').get('money');const compiled=ts.transpileModule('const '+code+';',{compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText;const format=new Function(compiled+';return money;')();assert.equal(format(amount,currency),new Intl.NumberFormat('en-IN',{style:'currency',currency}).format(amount));});

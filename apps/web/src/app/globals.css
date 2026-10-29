@@ -2045,8 +2045,8 @@ html[data-theme="light"] .field-label { color: #475569; }
   .teacher-onboarding-title
 ) > div > span,
 .enterprise-workspace .enterprise-page-intro,
-.enterprise-workspace .enterprise-settings.enterprise-legacy-standard h1 + p,
-.enterprise-workspace > main:not(.enterprise-settings) > .mx-auto > h1 + p {
+.enterprise-workspace .enterprise-settings.enterprise-legacy-standard h1 + p:not([role="status"]):not([role="alert"]),
+.enterprise-workspace > main:not(.enterprise-settings) > .mx-auto > h1 + p:not([role="status"]):not([role="alert"]) {
   display: none !important;
 }
 @media (max-width: 760px) {
@@ -4060,6 +4060,19 @@ html[data-theme="light"] .field-label { color: #475569; }
 }
 .auth-submit:hover:not(:disabled) { background: var(--ad-action-hover); transform: translateY(-1px); }
 .auth-submit:disabled { cursor: not-allowed; opacity: 0.6; }
+.auth-challenge-action {
+  min-height: 44px;
+  margin-top: 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--ad-border-strong);
+  border-radius: 9px;
+  background: var(--ad-surface);
+  color: var(--ad-text);
+  font: inherit;
+  cursor: pointer;
+}
+.auth-challenge-action:focus-visible { outline: 2px solid var(--ad-accent); outline-offset: 3px; }
+.auth-challenge-action:disabled { cursor: not-allowed; opacity: 0.6; }
 .auth-message {
   margin: 16px 0 0;
   padding: 10px 12px;
@@ -4353,6 +4366,7 @@ html[data-theme="light"] .field-label { color: #475569; }
 .teacher-file-preview b { color: var(--ad-text); font-size: .78rem; }
 .teacher-file-preview :is(audio, video) { width: 100%; max-height: 180px; }
 .teacher-file-preview img { max-width: 100%; max-height: 180px; border-radius: 8px; object-fit: contain; background: var(--ad-surface); }
+.teacher-file-image { position: relative; width: 100%; height: 180px; }
 .teacher-file-preview small { color: var(--ad-text-muted); font-size: .72rem; }
 .teacher-clear-file { width: max-content; padding: 0; border: 0; background: transparent; color: var(--ad-text-muted); cursor: pointer; font: inherit; font-size: .72rem; text-decoration: underline; }
 .teacher-clear-file:hover { color: var(--ad-text); transform: none; }
@@ -4374,6 +4388,7 @@ html[data-theme="light"] .field-label { color: #475569; }
 .private-material-actions p { font-size: .8rem; color: var(--ad-text-muted); overflow-wrap: anywhere; }
 .private-material-preview { display: grid; gap: 10px; padding: 12px; border: 1px solid var(--ad-border); border-radius: 10px; background: var(--ad-surface-subtle); }
 .private-material-preview :is(img,video,audio) { width: 100%; max-width: 100%; max-height: 320px; object-fit: contain; }
+.private-material-image { position: relative; width: 100%; height: clamp(160px, 40vw, 320px); }
 @media (max-width:760px) { .teacher-activity-list > article { flex-wrap: wrap; } .teacher-activity-list .private-material-actions { width: 100%; } }
 .teacher-portal-shell .learner-row a { display: inline-flex; width: max-content; margin-top: 8px; color: var(--ad-accent); font-size: .78rem; font-weight: 700; }
 @media (max-width: 760px) { .teacher-classroom-hero { align-items: flex-start; flex-direction: column; } .teacher-classroom-controls, .teacher-classroom-grid, .teacher-finance-summary, .teacher-compact-panels, .teacher-batch-progress-list > article { grid-template-columns: 1fr; } .teacher-classroom-grid > :nth-child(3), .teacher-profile-panels > .teacher-action-panel:first-child { grid-column: auto; } .teacher-attendance-grid { grid-template-columns: 1fr; } .teacher-calendar-day, .teacher-calendar-blank { min-height: 82px; padding: 5px; } .teacher-calendar-day > span { font-size: .55rem; } }
@@ -5183,7 +5198,10 @@ html[data-theme="light"] .field-label { color: #475569; }
 
 /* Operations & workforce — standard directory and onboarding workspace. */
 .staff-standard { width:min(100%,1320px); }.staff-content { width:min(100%,1320px)!important; max-width:none!important; margin-inline:auto; padding:0!important; }.staff-heading { display:flex; align-items:center; min-height:74px; margin-bottom:24px; }.staff-title { display:flex; align-items:center; gap:16px; }.staff-title-icon { display:grid; width:56px; height:56px; place-items:center; border-radius:15px; background:var(--ad-accent); box-shadow:0 12px 22px color-mix(in srgb,var(--ad-accent) 24%,transparent); color:#fff; font-size:1.45rem; font-weight:850; }.staff-title p,.staff-panel-header p { margin:0 0 5px; color:var(--ad-accent); font-size:.7rem; font-weight:850; letter-spacing:.14em; text-transform:uppercase; }.staff-title h1 { margin:0; padding:0!important; border:0!important; color:var(--ad-text); font-size:var(--ad-page-title-size)!important; font-weight:var(--ad-page-title-weight)!important; letter-spacing:var(--ad-page-title-tracking)!important; line-height:var(--ad-page-title-line-height)!important; }.staff-title h1::after { display:none; }.staff-message { margin-bottom:18px; }.staff-layout { display:grid; grid-template-columns:minmax(320px,.78fr) minmax(0,1.22fr); gap:18px; }.staff-panel { position:relative; z-index:1; overflow:visible; padding:0!important; border:1px solid var(--ad-border)!important; border-radius:16px!important; background:var(--ad-surface)!important; box-shadow:0 8px 22px color-mix(in srgb,var(--ad-text) 5%,transparent); }.staff-panel:has(.standard-select-menu) { z-index:60; }.staff-panel-header { display:flex; align-items:center; justify-content:space-between; gap:14px; padding:18px 20px; border-bottom:1px solid var(--ad-border); background:linear-gradient(105deg,color-mix(in srgb,var(--ad-accent) 10%,var(--ad-surface)),var(--ad-surface) 72%); }.staff-panel-header h2 { margin:0; color:var(--ad-text); font-size:1.05rem; font-weight:750; }.staff-panel-header > span { padding:6px 10px; border-radius:999px; background:var(--ad-accent-soft); color:var(--ad-accent); font-size:.72rem; font-weight:750; }.staff-fields { display:grid; gap:12px; padding:20px; }.staff-fields > label,.staff-person > label { display:grid; gap:7px; min-width:0; color:var(--ad-text-muted); font-size:.78rem; font-weight:650; }.staff-fields input { min-width:0; min-height:42px; padding:10px 12px; border:1px solid var(--ad-border)!important; border-radius:8px!important; background:var(--ad-control-surface)!important; color:var(--ad-text)!important; font:inherit; font-size:.875rem; }.staff-create-button { justify-content:center; width:100%; margin-top:4px; }.staff-directory-panel > ul { margin:0; padding:0 20px; list-style:none; }.staff-directory-panel li { padding:14px 0; border-bottom:1px solid var(--ad-border); }.staff-directory-panel li:last-child { border:0; }.staff-person { display:grid; grid-template-columns:minmax(0,1fr) 190px; align-items:center; gap:16px; }.staff-person b,.staff-person small { display:block; }.staff-person b { color:var(--ad-text); font-size:.88rem; font-weight:760; }.staff-person small { margin-top:4px; overflow:hidden; color:var(--ad-text-muted); font-size:.74rem; text-overflow:ellipsis; white-space:nowrap; }.staff-person-actions { display:flex; align-items:center; justify-content:flex-end; margin-top:10px; }.staff-person-actions > span { color:var(--ad-text-subtle); font-size:.74rem; font-weight:700; }.staff-offboard-button { min-height:32px; padding:6px 10px; border:1px solid color-mix(in srgb,var(--ad-danger) 45%,var(--ad-border)); border-radius:8px; background:transparent; color:var(--ad-danger); cursor:pointer; font:inherit; font-size:.72rem; font-weight:750; }.staff-offboard-button:hover { background:color-mix(in srgb,var(--ad-danger) 10%,transparent); }.staff-empty { margin:0; padding:34px 20px; color:var(--ad-text-muted); text-align:center; }.staff-standard .standard-select-field { position:relative; z-index:1; }.staff-standard .standard-select-field:has(.standard-select-menu) { z-index:60; }.staff-standard .standard-select-trigger:disabled { cursor:not-allowed; opacity:.55; }
-@media (max-width:860px) { .staff-layout { grid-template-columns:1fr; } }.staff-standard .staff-directory-panel { min-width:0; }@media (max-width:760px) { .staff-heading { min-height:0; }.staff-title-icon { width:46px; height:46px; border-radius:13px; }.staff-person { grid-template-columns:1fr; gap:10px; }.staff-person-actions { justify-content:flex-start; }.staff-panel-header { align-items:flex-start; flex-direction:column; }.staff-fields,.staff-directory-panel > ul { padding-inline:14px; } }
+@media (max-width:860px) { .staff-layout { grid-template-columns:minmax(0,1fr); } }.staff-standard .staff-directory-panel { min-width:0; }@media (max-width:760px) { .staff-heading { min-height:0; }.staff-title-icon { width:46px; height:46px; border-radius:13px; }.staff-person { grid-template-columns:minmax(0,1fr); gap:10px; }.staff-person-actions { justify-content:flex-start; }.staff-panel-header { align-items:flex-start; flex-direction:column; }.staff-fields,.staff-directory-panel > ul { padding-inline:14px; } }
+.staff-standard :is(.staff-person,.staff-person > div,.staff-person > label,.staff-directory-panel > ul,.staff-directory-panel li) { min-width:0; max-width:100%; }
+.staff-standard .staff-title > div { min-width:0; }
+.staff-standard .staff-title-icon { flex-shrink:0; }
 
 /* Portal access — shared operations workspace treatment. */
 .portal-access-standard { width:min(100%,760px); }.portal-access-content { width:min(100%,760px)!important; max-width:none!important; margin-inline:auto; padding:0!important; }.portal-access-heading { display:flex; align-items:center; min-height:74px; margin-bottom:24px; }.portal-access-title { display:flex; align-items:center; gap:16px; }.portal-access-title-icon { display:grid; width:56px; height:56px; place-items:center; border-radius:15px; background:var(--ad-accent); box-shadow:0 12px 22px color-mix(in srgb,var(--ad-accent) 24%,transparent); color:#fff; font-size:1.35rem; font-weight:850; }.portal-access-title p,.portal-access-panel-header p { margin:0 0 5px; color:var(--ad-accent); font-size:.7rem; font-weight:850; letter-spacing:.14em; text-transform:uppercase; }.portal-access-title h1 { margin:0; padding:0!important; border:0!important; color:var(--ad-text); font-size:var(--ad-page-title-size)!important; font-weight:var(--ad-page-title-weight)!important; letter-spacing:var(--ad-page-title-tracking)!important; line-height:var(--ad-page-title-line-height)!important; }.portal-access-title h1::after { display:none; }.portal-access-message { margin-bottom:18px; }.portal-access-panel { position:relative; z-index:1; overflow:visible; padding:0!important; border:1px solid var(--ad-border)!important; border-radius:16px!important; background:var(--ad-surface)!important; box-shadow:0 8px 22px color-mix(in srgb,var(--ad-text) 5%,transparent); }.portal-access-panel:has(.standard-select-menu) { z-index:60; }.portal-access-panel-header { padding:18px 20px; border-bottom:1px solid var(--ad-border); background:linear-gradient(105deg,color-mix(in srgb,var(--ad-accent) 10%,var(--ad-surface)),var(--ad-surface) 72%); }.portal-access-panel-header h2 { margin:0; color:var(--ad-text); font-size:1.05rem; font-weight:750; }.portal-access-fields { display:grid; gap:12px; padding:20px; }.portal-access-fields > label { display:grid; gap:7px; color:var(--ad-text-muted); font-size:.78rem; font-weight:650; }.portal-access-fields input { min-width:0; min-height:42px; padding:10px 12px; border:1px solid var(--ad-border)!important; border-radius:8px!important; background:var(--ad-control-surface)!important; color:var(--ad-text)!important; font:inherit; font-size:.875rem; }.portal-access-action { justify-content:center; width:100%; margin-top:4px; }.portal-access-standard .standard-select-field { position:relative; z-index:1; }.portal-access-standard .standard-select-field:has(.standard-select-menu) { z-index:60; }@media (max-width:760px) { .portal-access-heading { min-height:0; }.portal-access-title-icon { width:46px; height:46px; border-radius:13px; }.portal-access-panel-header,.portal-access-fields { padding-inline:14px; } }
@@ -5724,7 +5742,7 @@ html[data-theme="light"] .field-label { color: #475569; }
 /* Admin portal — keep pages concise.  These are instructional helper sentences only;
    system feedback, validation, field labels, records and meaningful empty states remain visible. */
 .enterprise-settings .enterprise-page-header > span,
-.enterprise-settings.enterprise-legacy-standard > div > h1 + p,
+.enterprise-settings.enterprise-legacy-standard > div > h1 + p:not([role="status"]):not([role="alert"]),
 .enterprise-settings :is(
   .workspace-activity-title,
   .workspace-calendar-title,

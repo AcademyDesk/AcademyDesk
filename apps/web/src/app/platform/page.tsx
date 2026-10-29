@@ -1,7 +1,8 @@
 "use client";
+import Image from "next/image";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { academyApi, apiHeaders, apiUrl, clearPortalTokens } from "@/lib/api";
@@ -91,29 +92,40 @@ export default function PlatformPage() {
   ];
   const selectedOverviewTile = overviewTiles.find((tile) => tile.key === overviewModal);
 
-  async function load() {
+  async function read(signal?: AbortSignal) {
     const [response, overviewResponse, healthResponse, ownerResponse] = await Promise.all([
-      academyApi("/api/platform/academies", { cache: "no-store" }),
-      academyApi("/api/platform/overview", { cache: "no-store" }),
-      academyApi("/api/platform/health", { cache: "no-store" }),
-      academyApi("/api/auth/session", { cache: "no-store" }),
+      academyApi("/api/platform/academies", { cache: "no-store", signal }),
+      academyApi("/api/platform/overview", { cache: "no-store", signal }),
+      academyApi("/api/platform/health", { cache: "no-store", signal }),
+      academyApi("/api/auth/session", { cache: "no-store", signal }),
     ]);
     if (response.status === 401 || response.status === 403) {
-      router.replace("/login?returnTo=/platform");
-      return;
+      return null;
     }
     if (!response.ok) throw new Error("The Platform Owner dashboard could not be loaded.");
-    setAcademies(await response.json());
-    if (overviewResponse.ok) setOverview(await overviewResponse.json());
-    if (healthResponse.ok) setHealth(await healthResponse.json());
-    if (ownerResponse.ok) setOwner(await ownerResponse.json());
-    setNotice({ text: "", tone: "neutral" });
+    const [rows, summary, status, account]: [Academy[], PlatformOverview | undefined, PlatformHealth | undefined, OwnerSession | undefined] = await Promise.all([
+      response.json(), overviewResponse.ok ? overviewResponse.json() : undefined,
+      healthResponse.ok ? healthResponse.json() : undefined, ownerResponse.ok ? ownerResponse.json() : undefined,
+    ]);
+    if (!Array.isArray(rows)) throw new Error("The Platform Owner dashboard could not be loaded.");
+    return { rows, summary, status, account };
   }
+  const publish = useCallback((snapshot: Awaited<ReturnType<typeof read>>) => {
+    if (!snapshot) { router.replace("/login?returnTo=/platform"); return; }
+    setAcademies(snapshot.rows);
+    if (snapshot.summary) setOverview(snapshot.summary);
+    if (snapshot.status) setHealth(snapshot.status);
+    if (snapshot.account) setOwner(snapshot.account);
+    setNotice({ text: "", tone: "neutral" });
+  }, [router]);
+  async function load() { publish(await read()); }
   useEffect(() => {
-    void load().catch((error) =>
-      setNotice({ text: error.message, tone: "error" }),
-    );
-  }, []);
+    const controller = new AbortController();
+    void read(controller.signal).then(snapshot => {
+      if (!controller.signal.aborted) publish(snapshot);
+    }).catch(() => { if (!controller.signal.aborted) setNotice({ text: "The Platform Owner dashboard could not be loaded.", tone: "error" }); });
+    return () => controller.abort();
+  }, [publish]);
   async function setStatus(academy: Academy) {
     setBusy(true);
     try {
@@ -216,7 +228,7 @@ export default function PlatformPage() {
             <ThemeToggle />
             <details className="platform-profile enterprise-profile">
               <summary className="enterprise-profile-trigger" aria-label="Open Platform Owner profile menu">
-                {owner?.profileImageUrl ? <img className="platform-avatar-image" src={`${apiUrl}${owner.profileImageUrl}`} alt="Profile"/> : <span className="platform-avatar">{owner?.displayName?.[0]?.toUpperCase() || "S"}</span>}
+                {owner?.profileImageUrl ? <Image unoptimized loading="eager" width={42} height={42} className="platform-avatar-image" src={`${apiUrl}${owner.profileImageUrl}`} alt="Profile"/> : <span className="platform-avatar">{owner?.displayName?.[0]?.toUpperCase() || "S"}</span>}
                 <span className="platform-topbar-owner-copy"><b>{owner?.displayName || "Platform Owner"}</b><small>Platform Owner</small></span>
               </summary>
               <div className="platform-profile-menu">

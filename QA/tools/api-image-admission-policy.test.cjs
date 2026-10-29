@@ -1,0 +1,3 @@
+'use strict';
+const{test}=require('node:test'),a=require('node:assert/strict'),{verifyCoupled}=require('./api-image-admission-policy.cjs');
+test('policy/admission oracle requires actual SQL blocking,409 denial, no admission row and one audit',()=>{const r={writerBlockedOnGraph:true,admissionBlockedOnWriter:true,statuses:[200,409],after:{prerequisites:1,enrollments:0},auditDelta:1};verifyCoupled(r);for(const patch of[{admissionBlockedOnWriter:false},{writerBlockedOnGraph:false},{statuses:[200,201]},{after:{prerequisites:1,enrollments:1}},{auditDelta:2}])a.throws(()=>verifyCoupled({...r,...patch}));});

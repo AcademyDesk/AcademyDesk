@@ -1,0 +1,48 @@
+{
+  "entries": [
+    {
+      "name": "providerName",
+      "sha256": "ccf5b2dbbb4275c0b041a2137ae1d4decdfdea497400fa46c8ed20120bc306d5"
+    },
+    {
+      "name": "name",
+      "sha256": "a98901998261de55cc4ad83251a1a0f0f436d483a93e19cf2e19a14371a87291"
+    },
+    {
+      "name": "hasMeetingUrl",
+      "sha256": "3e3d9ded461e33db3ad71e57d3b6ee745d0f14d57b9c7a52e6c9480ee7f49a9e"
+    },
+    {
+      "name": "connected",
+      "sha256": "cdf600385f8e0f2c6fd4f8205296f55f869e1b227b3a89296ff7f57d22693ddb"
+    },
+    {
+      "name": "eligibleBatchIds",
+      "sha256": "dde671da99e4d7904332fbc27055179c1599402c76e69984c6d95df68185b559"
+    },
+    {
+      "name": "eligibleStudents",
+      "sha256": "6fbb7c08f25487fea33f4ed6f07234c74be52ca80b6834299c4b83949028beac"
+    },
+    {
+      "name": "selectedStudents",
+      "sha256": "060c36f596412818fad28b718e12657249222ae30d9df50cdb1b9eec4f712f4f"
+    },
+    {
+      "name": "attendees",
+      "sha256": "64dbf18a9aa9478c69ffc19520cec1db8709dd711652d65ddbba0f9f0c19034b"
+    },
+    {
+      "name": "filtered",
+      "sha256": "ea84bc122e014f7dbb0c5276e357449dfab7ddf6df7f2a96568f1304cbd34c92"
+    },
+    {
+      "name": "addStudent",
+      "sha256": "ac8faf075d954a4e1cd0d3bc3bdf3fd185ce411f93a0d5661f9534ac899d12b9"
+    },
+    {
+      "name": "edit",
+      "sha256": "1d29cb43920586c865e91c168bab1b5fcc7ea65173b8416157cd0399d48e7943"
+    }
+  ]
+}

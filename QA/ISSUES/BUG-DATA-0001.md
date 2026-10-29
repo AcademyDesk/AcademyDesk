@@ -1,5 +1,58 @@
 # BUG-DATA-0001 — Reconciled payments disappear from some balance calculations
 
+2026-10-23 [Native Reports/CSV consumer](../REPORTS/API_IMAGE_REPORT_BROWSER_2026-10-23.md):
+47SQL/API checks/four real-login browser journeys PASS on current image/export.
+Reconciled600+Completed100 collected700/void50 excluded/approved100/balance200,
+exact SQL/UI/details/four actual CSVs; nine domain hashes unchanged/no foreign
+sentinel. Exact owned cleanup/original restoration/full inventory PASS. 15current
+native receipts qualified. Still OPEN for wider roles/fault/devices/release.
+
+2026-10-23 patched-export successor: native SQL
+`5cf31ac559164848b493d9f69330067c`, window
+`9a06d7e7c0464cb78458a630ca7c84e3`, PASS 45 checks/four real Payments journeys
+against the new 627-file export, not the older frontend below. Exact SQL
+1000/two rows/Paid/balance0, 201/400, visible login/picker/reset and original
+service/inventory restoration retained. Current 14-receipt qualification is
+`9c3525fcd8e54ebe9c965f62b9e6f52d`. Still OPEN for remaining consumer, wider
+roles/fault/device/release acceptance. [Current P0 gaps](../REPORTS/CURRENT_P0_ACCEPTANCE_GAPS_2026-10-23.md).
+
+2026-10-23 [Exact-image transition matrix](../REPORTS/API_IMAGE_TRANSITIONS_2026-10-22.md):
+158 native SQL/API checks and 25/25 concurrent pairs PASS across adjusted
+collection, approval/payment, two voids, create/void and reconcile/void. Exact
+ledger rows/balances/evidence/canonical reads, unchanged original regressions,
+owned cleanup and original service restoration verified. Additive acceptance;
+physical-device, wider lifecycle and release requirements remain **OPEN**.
+
+2026-10-22 [Exact exported Payments/browser successor](../REPORTS/API_IMAGE_PAYMENT_BROWSER_2026-10-22.md):
+native run294dd8d8dbe34109a54f80e0f59c2d1c PASS45seed/security checks plus4real UI
+submits:390/1440light201success,390/1440dark stale400/exact message. Real visible
+login, picker collapse, reset/disabled empty form, exact SQL2rows/1000/Paid/balance0,
+no429/page exceptions/horizontal overflow. Accepted immutable export/API source
+unchanged; owned cleanup/exact original service restoration/full inventories PASS.
+QA relay login-query mismatch corrected without application changes; failed first
+attempt retained. Physical devices/broader faults/roles/release remain **OPEN**.
+
+2026-10-22 [Exact current-image finance successor](../REPORTS/API_IMAGE_FINANCE_2026-10-22.md):
+native Kestrel/disposable SQL sequential1000/reconciled600/balance400/excess500→400
+PASS; five barrier-released400pairs each201+400/exact rejection/collected1000/two
+rows/Paid/balance0/no429. Eleven successful-payment audits; original race/runner
+unchanged. Owned cleanup/original services/inventories restored. Additive image
+proof, not adjusted/void/payroll/full browser/device/release acceptance. **OPEN.**
+
+2026-10-21 [Reports consumer successor](../REPORTS/REPORTS_CANONICAL_LEDGER_2026-10-21.md):
+actual TSX before1pass/3fail reproduced excluded Reconciled collections and inaccurate
+currency/expense display. Reports now uses Completed+Reconciled, server canonical
+balance, per-currency integer-cent presentation and existing exact expense/payroll
+fields. Receivables/payroll are separate; NoCashDue not shown unsettled; misleading
+Net cash label removed.20Reports/helper checks and combined101frontend checks pass;
+types/lint/87-route build pass. No backend/money-policy/SQL/model change in this
+read-only slice; actual backend ledger evidence retained. Full-page/physical/device/
+critical/release acceptance remains separately evidenced. Issue stays OPEN.
+
+2026-10-15 [fee reminders frontend successor](../REPORTS/BATCH_2_FEE_PLANS_REMINDERS_PENTA.md):old Completed-only/gross projection reproduced1000 versus canonical200 with reconciled600/adjusted200. UI now uses server balance,excludes settled invoices and separates currencies.152 focused entries/13 targeted InMemory backend tests/228 synthetic browser cases PASS,including retained finance regressions. No backend/SQL change;not live SQL/role/device/delivery/release closure. Issue remains OPEN.
+
+2026-10-15 [invoice/payment UI outcome recovery](../REPORTS/INVOICE_PAYMENT_SUBMIT_RECOVERY.md):page-lifetime same-tick/pending/ready/review guards and explicit unknown-outcome read recovery;authoritative Completed+Reconciled/canonical balance semantics retained.97 focused test entries/138 synthetic browser cases/build-types PASS;no backend/SQL change or SQL rerun. This is not durable server idempotency or physical-device/critical/full-release proof. Issue remains OPEN;prior SQL race/audit evidence retained.
+
 | Field | Value |
 | --- | --- |
 | Status | OPEN / FIX-IN-PROGRESS (local repair) |

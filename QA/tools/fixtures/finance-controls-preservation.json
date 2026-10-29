@@ -1,0 +1,116 @@
+{
+  "note": "Captured from working source before finance-controls presentation changes; includes legitimate prior uncommitted fixes, not clean HEAD.",
+  "head": "b1f8cb6",
+  "entries": [
+    {
+      "path": "apps/web/src/app/finance-reconciliation/page.tsx",
+      "name": "localDate",
+      "sha256": "752ed9d4abefa4449608149cda2c6c6e06859fc688390ff29e2d15e2555d6584"
+    },
+    {
+      "path": "apps/web/src/app/finance-reconciliation/page.tsx",
+      "name": "load",
+      "sha256": "d23a6df74a027a6ef651ccbca34558b9e11d643aed0949a88bf6f488aa48f2ef"
+    },
+    {
+      "path": "apps/web/src/app/finance-reconciliation/page.tsx",
+      "name": "reconcile",
+      "sha256": "74feca178f9858764e03836539ad8fea1c786384903145c90d0fcd1a2598a702"
+    },
+    {
+      "path": "apps/web/src/app/finance-reconciliation/page.tsx",
+      "name": "unreconciled",
+      "sha256": "d40d1c9d735cafdf596c4d2f98e68ff041578303e206486887ab2ddc5a3b708c"
+    },
+    {
+      "path": "apps/web/src/app/finance-reconciliation/page.tsx",
+      "name": "reconciled",
+      "sha256": "9ec694c3f064238e04a009a309188c089b308670c3c127cfe8e8ba61e95a4461"
+    },
+    {
+      "path": "apps/web/src/app/finance-reconciliation/page.tsx",
+      "name": "visible",
+      "sha256": "b986647cca99d71cf6bf619f0c9473ad49a381785f87b4df5e07621f69036ba6"
+    },
+    {
+      "path": "apps/web/src/app/finance-reconciliation/page.tsx",
+      "name": "selected",
+      "sha256": "7423bdbe3350b6ae96ffc7e6e19d8eb51039f3672a17671a3b7914076a8295c9"
+    },
+    {
+      "path": "apps/web/src/app/finance-reconciliation/page.tsx",
+      "name": "invoiceNumber",
+      "sha256": "6ac0f1d0f540f3f3f5db69ecf328a3b729c315ed473818a1197c32eb1d373792"
+    },
+    {
+      "path": "apps/web/src/app/finance-adjustments/page.tsx",
+      "name": "load",
+      "sha256": "9e3afae8f954fb31080cb364364a101ecb12a1b5ba7bb5628dec60e65ac8b49b"
+    },
+    {
+      "path": "apps/web/src/app/finance-adjustments/page.tsx",
+      "name": "save",
+      "sha256": "658231310cb89163eafd9b9a903b44b9c4bebe907bca213948d8145d9fec230a"
+    },
+    {
+      "path": "apps/web/src/app/finance-adjustments/page.tsx",
+      "name": "visible",
+      "sha256": "fba1bff5c74bb3482e08396ad41fe343f196eb3bafbb219215f8e4ff68f26d00"
+    },
+    {
+      "path": "apps/web/src/app/finance-adjustments/page.tsx",
+      "name": "invoiceNumber",
+      "sha256": "fd96fe979ab95713f21936be675939654585992cd957f285535f2c53ec15d180"
+    },
+    {
+      "path": "apps/web/src/app/finance-adjustments/page.tsx",
+      "name": "counts",
+      "sha256": "1714438538a9082eef77cb79451ced9522a0c19e37277e6c8854cdca99c4b890"
+    },
+    {
+      "path": "apps/web/src/app/finance-policy/page.tsx",
+      "name": "save",
+      "sha256": "9a1dc95b857c9e5ea926f7aeedc1b6202201a0f3b738513f293bd6b235875feb"
+    },
+    {
+      "path": "apps/web/src/app/finance-governance/page.tsx",
+      "name": "needsLegacyReview",
+      "sha256": "a5a312d7478ce8d347e89ad27fba98e1786b59eb6f48da3dee80f6072410764b"
+    },
+    {
+      "path": "apps/web/src/app/finance-governance/page.tsx",
+      "name": "load",
+      "sha256": "601fac9cf1412630eb895b1a7ca63bc6c7b7c59f52420619775c2626869513ee"
+    },
+    {
+      "path": "apps/web/src/app/finance-governance/page.tsx",
+      "name": "decide",
+      "sha256": "70ec67e6ef8821950a1826cf90d7dc71a79e8702e799e8dc4be603b531e01f38"
+    },
+    {
+      "path": "apps/web/src/app/finance-governance/page.tsx",
+      "name": "createFollowUp",
+      "sha256": "6f397cee187a999d8d7c866878066f4ac3f057ccfd817b7290befc71b197d224"
+    },
+    {
+      "path": "apps/web/src/app/finance-governance/page.tsx",
+      "name": "updateCollection",
+      "sha256": "4823722e1b9dfb685835a8ec45b627923b2389db9e28be139c6220f49ce64f27"
+    },
+    {
+      "path": "apps/web/src/app/finance-governance/page.tsx",
+      "name": "saveDocumentSettings",
+      "sha256": "8c1a5f4bfa32de429a609c3acd4e8bf58d70d9be2f8f8a6317a75a27d6625d2d"
+    },
+    {
+      "path": "apps/web/src/app/finance-governance/page.tsx",
+      "name": "openCollections",
+      "sha256": "78bb38b8b915b77d633a417cc9ee20a6c29e8565c6de3f2a12ccaed346c1a90f"
+    },
+    {
+      "path": "apps/web/src/app/finance-governance/page.tsx",
+      "name": "pendingAdjustments",
+      "sha256": "1456a5bdc4e4419601ca1e8eca5d85a44e394d66c02feb1f12ee5260dd5b2d6e"
+    }
+  ]
+}

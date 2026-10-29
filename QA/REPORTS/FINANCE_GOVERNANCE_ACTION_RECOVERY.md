@@ -1,0 +1,30 @@
+# Finance governance — action pending and outcome recovery
+
+2026-10-15. Existing worktree `D:\AcademyDesk-codex-p0`, branch `codex/penta-search`, HEAD `b1f8cb6`. Bounded High successor to the reconciliation/adjustment checkpoint, not a new audit or full financial acceptance.
+
+## Delivered
+
+- Approval/rejection, collection follow-up and escalation update share a synchronous ref guard. No second action or manual refresh may start while the request or its readback is pending. Initial reads must succeed before writes; failed manual reads and uncertain outcomes lock actions until explicit successful recovery.
+- Each read checks HTTP, array containers and the settings object before publishing any list. Failed/unavailable data is not presented as zero pending work or a successful empty register. Snapshot generations invalidate old action callbacks after refreshed data replaces their captured records.
+- Pending adjustment/legacy eligibility, rejection reason, current overdue invoice/positive balance, follow-up priority/nonblank note, active Collections task and supported escalation stage are checked before dispatch. These are client UX guards only: existing server authorization, current-state validation, domain rules and transaction safeguards remain authoritative and unchanged.
+- Confirmed saves keep their success message even if subsequent readback fails, close the confirmed approval/follow-up editor and explicitly say not to repeat. HTTP500/408/network uncertainty retains the draft and requires review. Other4xx keep backend/fallback guidance and the draft. No automatic write retry, assumed approval, financial calculation or new permission.
+- Native and shared inputs, confirmation/cancel/action controls and document edit/save UI disable through pending/review states. Document saves already pending block domain actions and refresh independently through their existing ref.
+- Follow-up payload retains `assignedUserId:null` and optional `dueAtUtc:null`; supplied local datetime strings are unchanged, not silently converted to another timezone. Escalation retains optional date-only `promisedPaymentDate:null` and exact entered dates. Endpoint names/methods unchanged; FinanceUser never depends on generic `admin-work-items` access.
+- Existing document-save handler is unchanged by AST hash. An open document editor preserves its draft, original settings version and other document theme through action refresh/manual recovery. This does not bypass409/428 conflict protection or implement new document recovery rules.
+
+## Verification
+
+- Final webpack production build + TypeScript PASS,86 static outputs. No app-source edit after final build. Scoped ESLint0errors/2 existing image warnings; whole-app lint gate remains open.
+- 199 focused node:test entries PASS:103 new governance recovery tests,16 retained governance tests,49 reconciliation/adjustment recovery tests,5 form adapter/policy tests and26 preservation/currency tests. The four intentionally hardened governance declarations now have behavior tests rather than an unchanged-hash claim;14 other pre-edit declaration hashes and12 fractional currency cases remain enforced. Existing tests were not weakened.
+- 252 final-export synthetic browser cases PASS:144 new governance recovery cases (3actions×3widths×2themes×8scenarios),36 existing policy/governance version-conflict cases and72 existing four-screen finance visual cases. Exact request payloads,retained drafts,confirmed editor closure,disabled pending actions,manual recovery and zero automatic repeat writes verified.320/768/1440px,light/dark;no page errors or horizontal page overflow. Phone light approval/dark follow-up uncertainty screenshots inspected. This is synthetic transport,not live SQL/authentication/physical devices.
+- Receipts: `QA/EVIDENCE/finance-governance-recovery-1792040713352/result.json`, `QA/EVIDENCE/finance-settings-conflict-browser-1792040605007/result.json`, `QA/EVIDENCE/finance-controls-visual-1792040615633/result.json`. Recorded app-source hashes checked against final files;6 pinned vendor files unchanged. Script parsing/scoped diff whitespace PASS. Existing112 document-preview cases retained at their previous receipt,not claimed freshly rerun here.
+
+## Test corrections and evidence limits
+
+Two initial new-browser runs failed on locator construction: a relative form filter incorrectly included its `main` ancestor; the retained-textarea assertion then used an exact implicit label containing controlled text. The test now locates the intended form/control directly after the original labelled fill, retains exact payload/draft/no-repeat assertions and uses normal clicks. The screenshot showed the approval draft still present; no application behavior was changed to satisfy those locators. Intermediate failure receipts remain local.
+
+This is page-lifetime pending/recovery protection, not durable cross-tab/reload/server idempotency. A successful refresh asks the operator to inspect the previous action; it does not prove an unknown follow-up was absent. Document settings remain their existing version-guarded workflow, not newly claimed complete recovery. No real SQL/API integration or backend suite rerun in this frontend-only slice; existing finance transaction/RBAC/tenant/audit evidence and open issue/device/release gates remain in force. No financial issue closed.
+
+Next: Medium settled payroll presentation and remaining academics/communications/portal-state parity. Use High if consequential money/authority/integration changes are discovered. PENTA UI2 composition, Mini qualification, domain conversation coverage and integrated release gates remain OPEN. Owner sequence remains complete agreed PENTA+Manual app → authorized go-live → Hayansh onboarding → Academy Desk product website after first customer is live. No project switch or new Mini contract handoff required here.
+
+No backend/schema/Mini/vendor/main/staging/commit/push/Azure/production data/container change. Earlier dirty application/QA work and local evidence preserved.

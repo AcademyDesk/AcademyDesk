@@ -1,10 +1,11 @@
 "use client";
+import Image from "next/image";
 
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { academyApi, apiUrl, clearPortalTokens } from "@/lib/api";
+import { academyApi, apiUrl, clearPortalTokens, portalAccessToken } from "@/lib/api";
 import PentaWorkspace from "@/components/penta/penta-workspace";
 import { WorkspaceDirectory } from "@/components/penta/workspace-directory";
 import pentaShell from "@/components/penta/penta-shell.module.css";
@@ -43,6 +44,7 @@ const navigationGroups: readonly NavigationGroup[] = [
       ["Overview", "/student-overview"],
       ["Onboarding", "/student-onboarding"],
       ["Management", "/students"],
+      ["Enrolments", "/enrollments"],
       ["Fee Details", "/student-fees"],
       ["360", "/student-management"],
     ],
@@ -64,6 +66,7 @@ const navigationGroups: readonly NavigationGroup[] = [
     links: [
       ["Overview", "/batches"],
       ["Create Class / Batch", "/batch-setup"],
+      ["Class schedule", "/schedule"],
       ["Attendance", "/attendance"],
       ["Make-up classes", "/makeup"],
       ["Meeting links", "/meeting-links"],
@@ -74,6 +77,7 @@ const navigationGroups: readonly NavigationGroup[] = [
     icon: "♞",
     links: [
       ["Staff directory & onboarding", "/staff"],
+      ["Leave requests", "/leave"],
       ["Portal access", "/portal-accounts"],
       ["Access review", "/access-review"],
     ],
@@ -283,6 +287,7 @@ export function EnterpriseShell({
   useEffect(() => {
     let mounted = true;
     const loadAnnouncements = async () => {
+      if (!mounted || !portalAccessToken()) return;
       const response = await academyApi("/api/portal/announcements", { cache: "no-store" }).catch(() => undefined);
       if (!mounted || !response?.ok) return;
       const next = await response.json().catch(() => null);
@@ -342,6 +347,15 @@ export function EnterpriseShell({
     for (const item of activeAdministrationNavigation) {
       if (isNavigationActive(item[1])) return item[0];
     }
+    // Resource-context queries (for example studentId on enrolments) do not
+    // change the current workspace name. Exact menu views above still win.
+    for (const group of activeNavigationGroups) {
+      const links = [...(group.links ?? []), ...(group.sections ?? []).flatMap(section => section.links)];
+      const item = links.find(link => link[1] === pathname);
+      if (item) return ["Overview", "Onboarding", "Management", "360"].includes(item[0]) ? `${group.label} · ${item[0]}` : item[0];
+    }
+    const administrationItem = activeAdministrationNavigation.find(item => item[1] === pathname);
+    if (administrationItem) return administrationItem[0];
     return "Browse workspace";
   })();
 
@@ -525,7 +539,7 @@ export function EnterpriseShell({
                   }}
                 >
                   {profileImageUrl ? (
-                    <img src={profileImageUrl} alt="Profile" />
+                    <Image unoptimized loading="eager" width={44} height={44} src={profileImageUrl} alt="Profile" />
                   ) : (
                     <span>{initials}</span>
                   )}

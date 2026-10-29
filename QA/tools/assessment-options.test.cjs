@@ -23,7 +23,7 @@ async function page(config={}) {
    throw Error('Unexpected endpoint '+url);
   }};
  };
- new Function('require','module','exports',code)(n=>n==='react/jsx-runtime'?jsx:n==='react'?react:n==='@/components/design-system/controls'?{StandardSelectField:'select',StandardDateField:'date',StandardTimeField:'time'}:n==='@/components/workspace-nav'?{WorkspaceNav:'nav'}:n==='@/lib/api'?{academyApi:api,apiHeaders:()=>({})}:(()=>{throw Error(n)})(),module,module.exports);
+ new Function('require','module','exports',code)(n=>n==='react/jsx-runtime'?jsx:n==='react'?react:n==='@/components/design-system/controls'?{StandardSelectField:'select',StandardDateField:'date',StandardTimeField:'time'}:n==='@/components/workspace-nav'?{WorkspaceNav:'nav'}:n==='@/lib/api'?{academyApi:api,apiHeaders:()=>({})}:n.endsWith('.module.css')?{default:{}}:(()=>{throw Error(n)})(),module,module.exports);
  const render=()=>{index=0;effectIndex=0;refIndex=0;return module.exports.default();};
  async function settle(){for(let i=0;i<4;i++){for(const fn of pending.splice(0))fn();await new Promise(r=>setImmediate(r));render();}}
  render();await settle();return{state,calls,render,settle};

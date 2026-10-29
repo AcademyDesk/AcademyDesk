@@ -1,5 +1,32 @@
 # BUG-AUTH-REFRESH-001 — Renewed bearer overwritten by stale request headers
 
+22October2026 [PENTA channel/provenance successor](../REPORTS/PENTA_SESSION_OWNERSHIP_2026-10-22.md):
+detached onboarding and read-chat adoption bind to explicit-login epoch,not token
+text alone.729focused assertions/39native SQL-backed browser contexts PASS;
+run`afce2af7fd7c4adabe164e61b5929095`,exit0/395.6s,17new GETs/11scoped read audits/
+unchanged state/owned cleanup. Original guards retained. Broader auth issue OPEN;
+login/logout write atomicity/device/security/release acceptance not claimed.
+
+21October2026 [cross-tab successful renewal](../REPORTS/SESSION_REFRESH_LOCK_2026-10-21.md):
+epoch/native-Web-Locks coordination and peer reuse,219focused/29native-lock probes/
+104exported React/47native HTTP PASS,no429/exact Student/link/audit/owned cleanup.
+Native run`cba591c5e6784d8aab88db30386f9c16` exit0/53.3s. Legacy/unsupported path
+unchanged. Login/logout check-write atomicity/native-device/critical/release OPEN;
+not every-race/server-revocation proof. Earlier cross-tab-success gap is historical
+within this bounded successor. Issue remains OPEN at broader acceptance.
+
+21October2026 [explicit-login epoch successor](../REPORTS/SESSION_LOGIN_EPOCH_2026-10-21.md):
+opaque per-workspace login identity retained across automatic renewal. Completed
+replacement before old refresh adoption rejects even identical-pair/pre-event
+restoration; old views gate on marker/storage/resume.188focused/104exported-browser
+cases/types/lint0/0/87routes PASS; native25HTTP/four overlaps/one Student/link/audit
+PASS, run5009f7540dbb4e61b650976f8b972d0a/exit0/36.4s/exact cleanup. Atomic cross-tab
+check/write synchronization, real suspension/device/security/critical/release breadth
+remain OPEN; not server revocation or all-race proof. Earlier marker-gap notices below
+are historical within this bounded successor, not a reason to redo accepted repairs.
+
+21October2026 successor:[missed-event resume/local logout](../REPORTS/SESSION_RESUME_2026-10-21.md) repairs the UI presence-check gate at focus/page-show/visible-tab resume and prevents signed-out shell announcement reads.130relatedchecks/80exported-page cases PASS;events/APIs controlled,not actual frozen/BFCache/physical/SQL acceptance. Normal renewal/legacyAdmin/otherworkspace sessions preserved. Same-credential ABA before event delivery,account replacement,cross-tab locking and broader session/release remain OPEN.
+
 | Field | Value |
 | --- | --- |
 | Status | OPEN |

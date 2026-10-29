@@ -59,7 +59,7 @@ test('login renders an accessible new-password notice from the redirect', () => 
   const source = fs.readFileSync('apps/web/src/app/login/page.tsx', 'utf8');
   const output = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX } }).outputText;
   const mod = { exports: {} };
-  new Function('require', 'module', 'exports', output)(name => name === 'react/jsx-runtime' ? jsx : name === 'react' ? { useState: x => [x, () => {}] } : name === 'next/navigation' ? { useRouter: () => ({}), useSearchParams: () => new URLSearchParams('passwordChanged=1') } : {}, mod, mod.exports);
+  new Function('require', 'module', 'exports', output)(name => name === 'react/jsx-runtime' ? jsx : name === 'react' ? { useState: x => [x, () => {}], useRef: x => ({ current:x }) } : name === 'next/navigation' ? { useRouter: () => ({}), useSearchParams: () => new URLSearchParams('passwordChanged=1') } : {}, mod, mod.exports);
   const nodes = x => !x || typeof x !== 'object' ? [] : Array.isArray(x) ? x.flatMap(nodes) : [x, ...nodes(x.props?.children)];
   const notice = nodes(mod.exports.default()).find(x => x.props?.role === 'status');
   assert.ok(notice); assert.equal(notice.props.children, 'Password changed. Sign in with your new password.');

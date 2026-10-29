@@ -7,7 +7,7 @@ const nodes=n=>Array.isArray(n)?n.flatMap(nodes):!n||typeof n!=='object'?[]:[n,.
 const tick=()=>new Promise(r=>setImmediate(r));
 async function page(initial,config={}){
  let index=0,mounted=false,value={...initial};const state=[],effects=[],calls=[],module={exports:{}};
- const react={useState:v=>{const k=index++;if(!(k in state))state[k]=v;return[state[k],v=>state[k]=typeof v==='function'?v(state[k]):v];},useEffect:fn=>{if(!mounted){mounted=true;effects.push(fn);}}};
+ const react={useCallback: fn => fn, useState:v=>{const k=index++;if(!(k in state))state[k]=v;return[state[k],v=>state[k]=typeof v==='function'?v(state[k]):v];},useEffect:fn=>{if(!mounted){mounted=true;effects.push(fn);}}};
  const api=async(url,init={})=>{calls.push({url,...init});if(url==='/api/academies')return{ok:true,json:async()=>[{id:'owned'}]};if(url.endsWith('/teachers'))return{ok:true,json:async()=>[{id:'teacher',firstName:'Synthetic',lastName:'Teacher',isActive:true}]};
   if(init.method){if(!config.rejected)value={...JSON.parse(init.body)};return{ok:!config.rejected,json:async()=>config.rejected?{message:'Synthetic policy rejection.'}:value};}return{ok:true,json:async()=>value};};
  new Function('require','module','exports',code)(n=>n==='react/jsx-runtime'?jsx:n==='react'?react:n==='@/lib/api'?{academyApi:api,apiHeaders:()=>({'Content-Type':'application/json'})}:n==='@/components/design-system/controls'?{StandardDateField:'date',StandardSelectField:'select'}:(()=>{throw Error(n)})(),module,module.exports);

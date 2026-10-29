@@ -4,6 +4,8 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import { WorkspaceNav } from "@/components/workspace-nav";
 import { StandardDateField } from "@/components/design-system/controls";
 import { academyApi, apiHeaders } from "@/lib/api";
+import { RequiredControlValue } from "@/components/design-system/required-control-value";
+import styles from "@/components/design-system/operations-workspace.module.css";
 
 type Academy = { id: string };
 type Holiday = { id: string; name: string; holidayDate: string };
@@ -92,7 +94,7 @@ export default function HolidaysPage() {
     );
   }
   return (
-    <main className="enterprise-settings holidays-standard min-h-screen">
+    <main className={`${styles.page} enterprise-settings holidays-standard min-h-screen`}>
       <WorkspaceNav />
       <div className="holidays-content mx-auto max-w-5xl px-6 py-10">
         <header className="holidays-heading">
@@ -117,7 +119,7 @@ export default function HolidaysPage() {
           <p role="status" aria-live="polite" className="enterprise-page-state holidays-message">{message}</p>
         )}
         <section className="holidays-layout">
-          <form onSubmit={create} className="holidays-panel">
+          <form onSubmit={create} className="holidays-panel" aria-label="Add holiday" aria-busy={saving}>
             <header className="holidays-panel-header">
               <div>
                 <p>Calendar closure</p>
@@ -126,9 +128,9 @@ export default function HolidaysPage() {
             </header>
             <div className="holidays-fields">
               <label>
-                <span>Holiday name</span>
+                <span>Holiday name (required)</span>
                 <input
-                  disabled={saving}
+                  disabled={saving || !academy}
                   required
                   value={form.name}
                   onChange={(event) =>
@@ -137,14 +139,15 @@ export default function HolidaysPage() {
                   placeholder="Custom or regional holiday"
                 />
               </label>
-              <fieldset disabled={saving} className="m-0 min-w-0 border-0 p-0"><StandardDateField
+              <fieldset disabled={saving || !academy} className={`${styles.dateField} m-0 min-w-0 border-0 p-0`}><RequiredControlValue value={form.holidayDate} label="Holiday date (required)" disabled={saving || !academy} /><StandardDateField
                 name="holiday-date"
-                label="Date"
+                label="Holiday date (required)"
+                disabled={saving || !academy}
                 value={form.holidayDate}
                 onChange={(holidayDate) => setForm({ ...form, holidayDate })}
                 required
               /></fieldset>
-              <button disabled={saving} className="enterprise-action-button holidays-action">
+              <button disabled={saving || !academy} className="enterprise-action-button holidays-action">
                 {saving ? "Saving…" : "Add holiday"}
               </button>
             </div>
@@ -174,7 +177,7 @@ export default function HolidaysPage() {
                     </div>
                     <button
                       type="button"
-                      disabled={saving}
+                      disabled={saving || !academy}
                       onClick={() => remove(holiday.id)}
                     >
                       Remove

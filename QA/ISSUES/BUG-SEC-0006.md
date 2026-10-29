@@ -1,10 +1,39 @@
 # BUG-SEC-0006 — Minor guardian portal-access revocation is overridden by age rule
 
+## Selected-child presentation successor — 24 October 2026
+
+[Current report](../REPORTS/GUARDIAN_SELECTION_CACHE_2026-10-24.md): actual load
+callback baseline11cases/10fail/1pass reproduced old-child retention/stale-response
+overwrite/unhandled denied read. One portal page repaired: clear old state while
+loading, generation-check transport+JSON, contain denial/error, clear auxiliary
+lists and invalidate on unmount.11new cases and51combined retained read-state
+checks PASS. Fresh build627files/typecheck/targetlint/48synthetic responsive
+Student-Parent cases and exact service-window restoration/inventory PASS.
+Corrected native two-child response-delay/Admin revoke-regrant browser run now
+qualified:50HTTP checks/four real390/1440light-dark guardian journeys/eight
+Admin writes/14table read snapshots/four PNG hashes, no429/page errors/overflow.
+Exact original services healthy/full inventory/cleanup/lease and independent
+qualifier PASS. First QA locator timeout retained/exact restoration PASS.
+API/domain permissions and earlier backend repairs unchanged.
+Existing90/55/queued/reload native evidence remains historical to its exact
+binary/export; no blanket guardian/device/full-security or issue closure.
+Idle already-rendered view without a new read/navigation and current Me selector
+refresh/custom grants/push invalidation remain separate; do not claim immediate
+live revocation from the selected-child loading/denial repair.
+
+## Bounded linked guardian reload UI — 2026-10-13
+
+[Report](../REPORTS/PHASE_2B_LIFECYCLE_LINKED_BROWSER.md): QA-only fresh run4d004a61979c48a8a1623fe163461d8b (262s), four linked guardian journeys at320/1440px/light-dark, real minor grant/revoke/regrant Admin PATCH/eight flag and grant-revoke timestamp-state checks with exact actor/tenant/route audits. Revoked Me200/empty permitted children gives denial UI with no protected heading/KPI/child selector/forms; independent own-child403 excludes protected markers. Same original token restores actual permitted child after reload. Combined eight Teacher/guardian journeys/24 states/16 controls/122 unchanged15-field reads/no429/90+7/exact owned cleanup, nine original containers retained. **OPEN/RETEST**: finance-only and already-rendered/live-context browser, other routes/physical/wider security-release remain separate. Original90 native/40 queued matrix retained, not rerun; no app change. Failed QA teardown evidence retained/redacted, fresh complete gate passed; inspected mobile denial readable, header truncation queued Batch2.
+
+## Queued-before-grant-query successor — 2026-10-13
+
+[Report](../REPORTS/PHASE_2B_LIFECYCLE_QUEUED_AUTHORIZATION.md): QA-only run27e22382a60040608b50b5075c51bfea,174.8s passed original90 cases and10 controlled queued portal/finance revocations/20 denied-restored reads/20 real own-Admin PATCH writes. Committed SQL/response five flags/timestamp ticks, immutable link identity/relationship/other grants and exact success actor/tenant/route audit verified. Same guardian token's queued own details/invoice request gets403 without selected protected content markers or changes to15 snapshot fields; real regrant restores200. No429;90+7/non-admin runtime/negative-marker/exact owned cleanup. Failed overlong synthetic invoice seed retained; only prefix shortened, constraint/assertions unchanged and complete gate rerun. **OPEN/RETEST** for browser/device, already-admitted work, Identity/role/stamp races/other routes/wider release. Not natural SQL-lock contention or whole concurrent-revocation acceptance; no app change.
+
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
 | Confirmation status | RUNTIME-CONFIRMED; bounded repair verified 2026-10-10 |
-| Final verification | PARTIAL:90 native SQL/HTTP cases PASS; browser/device/concurrent/broader critical pending |
+| Final verification | Current selected-child50native HTTP/four linked browser journeys/eight Admin writes +11handlers/48synthetic cases PASS; prior90/55/queued/reload retained; idle-context/device/broader critical OPEN |
 | Severity | Major access revocation failure |
 | Priority | P1 |
 | Category | SEC |
@@ -13,10 +42,10 @@
 | Screen / route | Direct guardian portal-access API |
 | API | PATCH students/{studentId}/guardians/{guardianId}/portal-access |
 | Environment | Source review of local working tree; runtime production state not inferred |
-| Device/viewport | NOT RUN; use QA/06_DEVICE_VIEWPORT_MATRIX.md where UI applies |
+| Device/viewport | Current390/1440 light/dark native selected-child journeys PASS; physical Android/iOS NOT RUN |
 | Baseline | 20bb6047f9edf733ac8e2a226621cc582ec54b3c + pre-existing student UI diff |
 | Discovery test / review ID | SECURITY-GUARDIAN-003 |
-| Evidence classification | Static trace; runtime reproduction pending |
+| Evidence classification | Original server revocation reproduced/repaired; current selected-child presentation reproduced/repaired and native-qualified; wider gates OPEN |
 | Preconditions | Isolated synthetic fixture from QA/10_TEST_DATA_STRATEGY.md; never customer data |
 | Reproduction frequency | Not measured; reproduction instructions are proposed |
 | Source | apps/api/Controllers/StudentGuardiansController.cs:54 |

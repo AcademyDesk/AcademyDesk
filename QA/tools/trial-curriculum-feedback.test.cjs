@@ -42,6 +42,7 @@ async function page(domain, config = {}) {
   new Function('require', 'module', 'exports', code)(n => n === 'react/jsx-runtime' ? jsx : n === 'react' ? react
     : n === '@/lib/api' ? { academyApi: api, apiHeaders: () => ({}) }
     : n === '@/components/workspace-nav' ? { WorkspaceNav: 'nav' }
+    : n.endsWith('.module.css') ? { default: {} }
     : n === '@/components/design-system/controls' ? { StandardSelectField: 'select', StandardDateField: 'date', StandardTimeField: 'time' }
     : (() => { throw Error(n); })(), module, module.exports);
   const render = () => { index = ri = ei = 0; return module.exports.default(); };

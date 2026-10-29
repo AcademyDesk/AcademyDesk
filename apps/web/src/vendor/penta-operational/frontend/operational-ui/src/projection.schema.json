@@ -1,0 +1,1804 @@
+{
+  "$defs": {
+    "AuthenticatedScope": {
+      "additionalProperties": false,
+      "description": "Values must be created from host authentication, never from model/chat.",
+      "properties": {
+        "actor_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "authority_version": {
+          "minimum": 1,
+          "title": "Authority Version",
+          "type": "integer"
+        },
+        "connection_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Connection Id",
+          "type": "string"
+        },
+        "context_version": {
+          "minimum": 1,
+          "title": "Context Version",
+          "type": "integer"
+        },
+        "conversation_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Conversation Id",
+          "type": "string"
+        },
+        "tenant_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Tenant Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "tenant_id",
+        "actor_id",
+        "connection_id",
+        "conversation_id",
+        "authority_version",
+        "context_version"
+      ],
+      "title": "AuthenticatedScope",
+      "type": "object"
+    },
+    "BooleanValue": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "boolean",
+          "title": "Kind",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "kind",
+        "value"
+      ],
+      "title": "BooleanValue",
+      "type": "object"
+    },
+    "CapabilityAvailability": {
+      "additionalProperties": false,
+      "properties": {
+        "available": {
+          "title": "Available",
+          "type": "boolean"
+        },
+        "key": {
+          "enum": [
+            "Pulse",
+            "Executor",
+            "Navigator",
+            "Twin",
+            "Autopilot"
+          ],
+          "title": "Key",
+          "type": "string"
+        },
+        "reason": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "available",
+        "reason"
+      ],
+      "title": "CapabilityAvailability",
+      "type": "object"
+    },
+    "ChartArtifact": {
+      "additionalProperties": false,
+      "properties": {
+        "chart": {
+          "enum": [
+            "bar",
+            "line"
+          ],
+          "title": "Chart",
+          "type": "string"
+        },
+        "kind": {
+          "const": "chart",
+          "title": "Kind",
+          "type": "string"
+        },
+        "points": {
+          "items": {
+            "$ref": "#/$defs/ChartPoint"
+          },
+          "maxItems": 100,
+          "minItems": 1,
+          "title": "Points",
+          "type": "array"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        },
+        "ref": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Ref",
+          "type": "string"
+        },
+        "scope": {
+          "$ref": "#/$defs/AuthenticatedScope"
+        },
+        "title": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        },
+        "unit": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "ref",
+        "scope",
+        "title",
+        "chart",
+        "unit",
+        "points",
+        "provenance"
+      ],
+      "title": "ChartArtifact",
+      "type": "object"
+    },
+    "ChartPoint": {
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "value": {
+          "pattern": "^-?(0|[1-9][0-9]{0,15})(\\.[0-9]{1,6})?$",
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "label",
+        "value"
+      ],
+      "title": "ChartPoint",
+      "type": "object"
+    },
+    "Choice": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label"
+      ],
+      "title": "Choice",
+      "type": "object"
+    },
+    "Controls": {
+      "additionalProperties": false,
+      "properties": {
+        "cancel": {
+          "title": "Cancel",
+          "type": "boolean"
+        },
+        "confirm": {
+          "title": "Confirm",
+          "type": "boolean"
+        },
+        "feedback": {
+          "title": "Feedback",
+          "type": "boolean"
+        },
+        "history": {
+          "title": "History",
+          "type": "boolean"
+        },
+        "pause": {
+          "title": "Pause",
+          "type": "boolean"
+        },
+        "prepare": {
+          "title": "Prepare",
+          "type": "boolean"
+        },
+        "reconcile": {
+          "title": "Reconcile",
+          "type": "boolean"
+        },
+        "resume": {
+          "title": "Resume",
+          "type": "boolean"
+        },
+        "secure_media": {
+          "title": "Secure Media",
+          "type": "boolean"
+        },
+        "send": {
+          "title": "Send",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "send",
+        "prepare",
+        "confirm",
+        "cancel",
+        "pause",
+        "resume",
+        "reconcile",
+        "history",
+        "feedback",
+        "secure_media"
+      ],
+      "title": "Controls",
+      "type": "object"
+    },
+    "DateValue": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "date",
+          "title": "Kind",
+          "type": "string"
+        },
+        "value": {
+          "maxLength": 10,
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "value"
+      ],
+      "title": "DateValue",
+      "type": "object"
+    },
+    "DecimalValue": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "decimal",
+          "title": "Kind",
+          "type": "string"
+        },
+        "value": {
+          "pattern": "^-?(0|[1-9][0-9]{0,15})(\\.[0-9]{1,6})?$",
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "value"
+      ],
+      "title": "DecimalValue",
+      "type": "object"
+    },
+    "Evidence": {
+      "additionalProperties": false,
+      "properties": {
+        "as_of": {
+          "maxLength": 40,
+          "title": "As Of",
+          "type": "string"
+        },
+        "coverage": {
+          "enum": [
+            "complete",
+            "partial",
+            "unknown"
+          ],
+          "title": "Coverage",
+          "type": "string"
+        },
+        "expires_at": {
+          "maxLength": 40,
+          "title": "Expires At",
+          "type": "string"
+        },
+        "facts": {
+          "maxProperties": 30,
+          "minProperties": 1,
+          "patternProperties": {
+            "^[A-Za-z][A-Za-z0-9_]*$": {
+              "discriminator": {
+                "mapping": {
+                  "boolean": "#/$defs/BooleanValue",
+                  "date": "#/$defs/DateValue",
+                  "decimal": "#/$defs/DecimalValue",
+                  "integer": "#/$defs/IntegerValue",
+                  "reference": "#/$defs/ReferenceValue",
+                  "text": "#/$defs/TextValue"
+                },
+                "propertyName": "kind"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/TextValue"
+                },
+                {
+                  "$ref": "#/$defs/IntegerValue"
+                },
+                {
+                  "$ref": "#/$defs/DecimalValue"
+                },
+                {
+                  "$ref": "#/$defs/BooleanValue"
+                },
+                {
+                  "$ref": "#/$defs/DateValue"
+                },
+                {
+                  "$ref": "#/$defs/ReferenceValue"
+                }
+              ]
+            }
+          },
+          "propertyNames": {
+            "maxLength": 64,
+            "minLength": 1
+          },
+          "title": "Facts",
+          "type": "object"
+        },
+        "ref": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Ref",
+          "type": "string"
+        },
+        "scope": {
+          "$ref": "#/$defs/AuthenticatedScope"
+        },
+        "source_ref": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Source Ref",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "current",
+            "revoked",
+            "stale"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ref",
+        "scope",
+        "source_ref",
+        "as_of",
+        "expires_at",
+        "coverage",
+        "status",
+        "facts"
+      ],
+      "title": "Evidence",
+      "type": "object"
+    },
+    "FieldSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "choices": {
+          "items": {
+            "$ref": "#/$defs/Choice"
+          },
+          "maxItems": 100,
+          "title": "Choices",
+          "type": "array"
+        },
+        "clearable": {
+          "title": "Clearable",
+          "type": "boolean"
+        },
+        "columns": {
+          "items": {
+            "$ref": "#/$defs/FieldSpec"
+          },
+          "maxItems": 16,
+          "title": "Columns",
+          "type": "array"
+        },
+        "key": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+          "title": "Key",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "text",
+            "integer",
+            "decimal",
+            "boolean",
+            "date",
+            "reference",
+            "rows"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "label": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "max_length": {
+          "maximum": 2000,
+          "minimum": 1,
+          "title": "Max Length",
+          "type": "integer"
+        },
+        "required": {
+          "title": "Required",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "key",
+        "kind",
+        "label",
+        "required",
+        "clearable",
+        "choices",
+        "columns",
+        "max_length"
+      ],
+      "title": "FieldSpec",
+      "type": "object"
+    },
+    "HistoryItem": {
+      "additionalProperties": false,
+      "properties": {
+        "ref": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Ref",
+          "type": "string"
+        },
+        "title": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ref",
+        "title"
+      ],
+      "title": "HistoryItem",
+      "type": "object"
+    },
+    "HostDraft": {
+      "additionalProperties": false,
+      "properties": {
+        "fields": {
+          "maxProperties": 40,
+          "patternProperties": {
+            "^[A-Za-z][A-Za-z0-9_]*$": {
+              "discriminator": {
+                "mapping": {
+                  "boolean": "#/$defs/BooleanValue",
+                  "date": "#/$defs/DateValue",
+                  "decimal": "#/$defs/DecimalValue",
+                  "integer": "#/$defs/IntegerValue",
+                  "reference": "#/$defs/ReferenceValue",
+                  "rows": "#/$defs/RowsValue",
+                  "text": "#/$defs/TextValue"
+                },
+                "propertyName": "kind"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/TextValue"
+                },
+                {
+                  "$ref": "#/$defs/IntegerValue"
+                },
+                {
+                  "$ref": "#/$defs/DecimalValue"
+                },
+                {
+                  "$ref": "#/$defs/BooleanValue"
+                },
+                {
+                  "$ref": "#/$defs/DateValue"
+                },
+                {
+                  "$ref": "#/$defs/ReferenceValue"
+                },
+                {
+                  "$ref": "#/$defs/RowsValue"
+                }
+              ]
+            }
+          },
+          "propertyNames": {
+            "maxLength": 64,
+            "minLength": 1
+          },
+          "title": "Fields",
+          "type": "object"
+        },
+        "operation_ref": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Operation Ref"
+        },
+        "ref": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Ref",
+          "type": "string"
+        },
+        "revision": {
+          "minimum": 1,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "status": {
+          "enum": [
+            "collecting",
+            "prepared",
+            "awaiting_approval",
+            "approved",
+            "executing",
+            "succeeded",
+            "failed",
+            "cancelled",
+            "paused",
+            "unknown"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "tool_key": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Tool Key",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ref",
+        "revision",
+        "tool_key",
+        "fields",
+        "status",
+        "operation_ref"
+      ],
+      "title": "HostDraft",
+      "type": "object"
+    },
+    "HostSnapshot": {
+      "additionalProperties": false,
+      "properties": {
+        "as_of": {
+          "maxLength": 40,
+          "title": "As Of",
+          "type": "string"
+        },
+        "availability": {
+          "enum": [
+            "ready",
+            "denied",
+            "unavailable",
+            "stale"
+          ],
+          "title": "Availability",
+          "type": "string"
+        },
+        "catalog_revision": {
+          "minimum": 1,
+          "title": "Catalog Revision",
+          "type": "integer"
+        },
+        "draft": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/HostDraft"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "maxItems": 20,
+          "title": "Evidence",
+          "type": "array"
+        },
+        "scope": {
+          "$ref": "#/$defs/AuthenticatedScope"
+        },
+        "tools": {
+          "items": {
+            "$ref": "#/$defs/ToolDescriptor"
+          },
+          "maxItems": 50,
+          "title": "Tools",
+          "type": "array"
+        },
+        "version": {
+          "const": "operational-draft-0.3.0",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "version",
+        "scope",
+        "as_of",
+        "catalog_revision",
+        "tools",
+        "draft",
+        "evidence",
+        "availability"
+      ],
+      "title": "HostSnapshot",
+      "type": "object"
+    },
+    "IntegerValue": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "integer",
+          "title": "Kind",
+          "type": "string"
+        },
+        "value": {
+          "maximum": 9007199254740991,
+          "minimum": -9007199254740991,
+          "title": "Value",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "kind",
+        "value"
+      ],
+      "title": "IntegerValue",
+      "type": "object"
+    },
+    "Issue": {
+      "additionalProperties": false,
+      "properties": {
+        "choices": {
+          "items": {
+            "$ref": "#/$defs/Choice"
+          },
+          "maxItems": 20,
+          "title": "Choices",
+          "type": "array"
+        },
+        "code": {
+          "enum": [
+            "required",
+            "invalid",
+            "duplicate_candidates",
+            "ambiguous_reference",
+            "secure_host_step",
+            "business_rule"
+          ],
+          "title": "Code",
+          "type": "string"
+        },
+        "field": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 1,
+              "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Field"
+        }
+      },
+      "required": [
+        "field",
+        "code",
+        "choices"
+      ],
+      "title": "Issue",
+      "type": "object"
+    },
+    "Message": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "user",
+            "observed",
+            "hypothesis",
+            "recommendation",
+            "status"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "ref": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Ref",
+          "type": "string"
+        },
+        "source_refs": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "maxItems": 20,
+          "title": "Source Refs",
+          "type": "array"
+        },
+        "text": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ref",
+        "kind",
+        "text",
+        "source_refs"
+      ],
+      "title": "Message",
+      "type": "object"
+    },
+    "ModelOption": {
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "qualified": {
+          "title": "Qualified",
+          "type": "boolean"
+        },
+        "ref": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Ref",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ref",
+        "label",
+        "qualified"
+      ],
+      "title": "ModelOption",
+      "type": "object"
+    },
+    "Observation": {
+      "additionalProperties": false,
+      "properties": {
+        "artifacts": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "chart": "#/$defs/ChartArtifact",
+                "table": "#/$defs/TableArtifact",
+                "text": "#/$defs/TextArtifact"
+              },
+              "propertyName": "kind"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/TextArtifact"
+              },
+              {
+                "$ref": "#/$defs/TableArtifact"
+              },
+              {
+                "$ref": "#/$defs/ChartArtifact"
+              }
+            ]
+          },
+          "maxItems": 20,
+          "title": "Artifacts",
+          "type": "array"
+        },
+        "request_ref": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Request Ref",
+          "type": "string"
+        },
+        "scope": {
+          "$ref": "#/$defs/AuthenticatedScope"
+        },
+        "version": {
+          "const": "operational-draft-0.3.0",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "version",
+        "scope",
+        "request_ref",
+        "artifacts"
+      ],
+      "title": "Observation",
+      "type": "object"
+    },
+    "PreparedOperation": {
+      "additionalProperties": false,
+      "description": "Only a trusted host may issue these references/canonical payload hashes.",
+      "properties": {
+        "approval_expires_at": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Approval Expires At"
+        },
+        "approval_ref": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Approval Ref"
+        },
+        "canonical_fields": {
+          "maxProperties": 40,
+          "patternProperties": {
+            "^[A-Za-z][A-Za-z0-9_]*$": {
+              "discriminator": {
+                "mapping": {
+                  "boolean": "#/$defs/BooleanValue",
+                  "date": "#/$defs/DateValue",
+                  "decimal": "#/$defs/DecimalValue",
+                  "integer": "#/$defs/IntegerValue",
+                  "reference": "#/$defs/ReferenceValue",
+                  "rows": "#/$defs/RowsValue",
+                  "text": "#/$defs/TextValue"
+                },
+                "propertyName": "kind"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/TextValue"
+                },
+                {
+                  "$ref": "#/$defs/IntegerValue"
+                },
+                {
+                  "$ref": "#/$defs/DecimalValue"
+                },
+                {
+                  "$ref": "#/$defs/BooleanValue"
+                },
+                {
+                  "$ref": "#/$defs/DateValue"
+                },
+                {
+                  "$ref": "#/$defs/ReferenceValue"
+                },
+                {
+                  "$ref": "#/$defs/RowsValue"
+                }
+              ]
+            }
+          },
+          "propertyNames": {
+            "maxLength": 64,
+            "minLength": 1
+          },
+          "title": "Canonical Fields",
+          "type": "object"
+        },
+        "draft_ref": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Draft Ref",
+          "type": "string"
+        },
+        "draft_revision": {
+          "minimum": 1,
+          "title": "Draft Revision",
+          "type": "integer"
+        },
+        "payload_hash": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Payload Hash",
+          "type": "string"
+        },
+        "preview": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Preview",
+          "type": "string"
+        },
+        "ref": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Ref",
+          "type": "string"
+        },
+        "request_ref": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Request Ref",
+          "type": "string"
+        },
+        "scope": {
+          "$ref": "#/$defs/AuthenticatedScope"
+        },
+        "status": {
+          "enum": [
+            "prepared",
+            "awaiting_approval",
+            "approved",
+            "executing",
+            "succeeded",
+            "failed",
+            "cancelled",
+            "unknown"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "tool_key": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Tool Key",
+          "type": "string"
+        },
+        "tool_revision": {
+          "minimum": 1,
+          "title": "Tool Revision",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "ref",
+        "request_ref",
+        "scope",
+        "tool_key",
+        "tool_revision",
+        "draft_ref",
+        "draft_revision",
+        "payload_hash",
+        "canonical_fields",
+        "preview",
+        "approval_ref",
+        "approval_expires_at",
+        "status"
+      ],
+      "title": "PreparedOperation",
+      "type": "object"
+    },
+    "Provenance": {
+      "additionalProperties": false,
+      "properties": {
+        "as_of": {
+          "maxLength": 40,
+          "title": "As Of",
+          "type": "string"
+        },
+        "coverage": {
+          "enum": [
+            "complete",
+            "partial",
+            "unknown"
+          ],
+          "title": "Coverage",
+          "type": "string"
+        },
+        "source_refs": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "maxItems": 20,
+          "minItems": 1,
+          "title": "Source Refs",
+          "type": "array"
+        }
+      },
+      "required": [
+        "source_refs",
+        "as_of",
+        "coverage"
+      ],
+      "title": "Provenance",
+      "type": "object"
+    },
+    "Receipt": {
+      "additionalProperties": false,
+      "properties": {
+        "audit_ref": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Audit Ref"
+        },
+        "draft_revision": {
+          "minimum": 1,
+          "title": "Draft Revision",
+          "type": "integer"
+        },
+        "error_code": {
+          "enum": [
+            "none",
+            "denied",
+            "invalid",
+            "unavailable",
+            "conflict",
+            "unknown"
+          ],
+          "title": "Error Code",
+          "type": "string"
+        },
+        "operation_ref": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Operation Ref",
+          "type": "string"
+        },
+        "payload_hash": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Payload Hash",
+          "type": "string"
+        },
+        "receipt_ref": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Receipt Ref"
+        },
+        "scope": {
+          "$ref": "#/$defs/AuthenticatedScope"
+        },
+        "source_refs": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "maxItems": 20,
+          "title": "Source Refs",
+          "type": "array"
+        },
+        "status": {
+          "enum": [
+            "prepared",
+            "awaiting_approval",
+            "approved",
+            "executing",
+            "succeeded",
+            "failed",
+            "cancelled",
+            "unknown"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "operation_ref",
+        "scope",
+        "payload_hash",
+        "draft_revision",
+        "status",
+        "receipt_ref",
+        "audit_ref",
+        "source_refs",
+        "error_code"
+      ],
+      "title": "Receipt",
+      "type": "object"
+    },
+    "ReferenceValue": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "reference",
+          "title": "Kind",
+          "type": "string"
+        },
+        "value": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "value"
+      ],
+      "title": "ReferenceValue",
+      "type": "object"
+    },
+    "RowsValue": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "rows",
+          "title": "Kind",
+          "type": "string"
+        },
+        "value": {
+          "items": {
+            "maxProperties": 16,
+            "patternProperties": {
+              "^[A-Za-z][A-Za-z0-9_]*$": {
+                "discriminator": {
+                  "mapping": {
+                    "boolean": "#/$defs/BooleanValue",
+                    "date": "#/$defs/DateValue",
+                    "decimal": "#/$defs/DecimalValue",
+                    "integer": "#/$defs/IntegerValue",
+                    "reference": "#/$defs/ReferenceValue",
+                    "text": "#/$defs/TextValue"
+                  },
+                  "propertyName": "kind"
+                },
+                "oneOf": [
+                  {
+                    "$ref": "#/$defs/TextValue"
+                  },
+                  {
+                    "$ref": "#/$defs/IntegerValue"
+                  },
+                  {
+                    "$ref": "#/$defs/DecimalValue"
+                  },
+                  {
+                    "$ref": "#/$defs/BooleanValue"
+                  },
+                  {
+                    "$ref": "#/$defs/DateValue"
+                  },
+                  {
+                    "$ref": "#/$defs/ReferenceValue"
+                  }
+                ]
+              }
+            },
+            "propertyNames": {
+              "maxLength": 64,
+              "minLength": 1
+            },
+            "type": "object"
+          },
+          "maxItems": 100,
+          "title": "Value",
+          "type": "array"
+        }
+      },
+      "required": [
+        "kind",
+        "value"
+      ],
+      "title": "RowsValue",
+      "type": "object"
+    },
+    "TableArtifact": {
+      "additionalProperties": false,
+      "properties": {
+        "columns": {
+          "items": {
+            "$ref": "#/$defs/FieldSpec"
+          },
+          "maxItems": 20,
+          "minItems": 1,
+          "title": "Columns",
+          "type": "array"
+        },
+        "kind": {
+          "const": "table",
+          "title": "Kind",
+          "type": "string"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        },
+        "ref": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Ref",
+          "type": "string"
+        },
+        "rows": {
+          "items": {
+            "patternProperties": {
+              "^[A-Za-z0-9][A-Za-z0-9_.:-]*$": {
+                "discriminator": {
+                  "mapping": {
+                    "boolean": "#/$defs/BooleanValue",
+                    "date": "#/$defs/DateValue",
+                    "decimal": "#/$defs/DecimalValue",
+                    "integer": "#/$defs/IntegerValue",
+                    "reference": "#/$defs/ReferenceValue",
+                    "text": "#/$defs/TextValue"
+                  },
+                  "propertyName": "kind"
+                },
+                "oneOf": [
+                  {
+                    "$ref": "#/$defs/TextValue"
+                  },
+                  {
+                    "$ref": "#/$defs/IntegerValue"
+                  },
+                  {
+                    "$ref": "#/$defs/DecimalValue"
+                  },
+                  {
+                    "$ref": "#/$defs/BooleanValue"
+                  },
+                  {
+                    "$ref": "#/$defs/DateValue"
+                  },
+                  {
+                    "$ref": "#/$defs/ReferenceValue"
+                  }
+                ]
+              }
+            },
+            "propertyNames": {
+              "maxLength": 128,
+              "minLength": 1
+            },
+            "type": "object"
+          },
+          "maxItems": 100,
+          "title": "Rows",
+          "type": "array"
+        },
+        "scope": {
+          "$ref": "#/$defs/AuthenticatedScope"
+        },
+        "title": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "ref",
+        "scope",
+        "title",
+        "columns",
+        "rows",
+        "provenance"
+      ],
+      "title": "TableArtifact",
+      "type": "object"
+    },
+    "TextArtifact": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "text",
+          "title": "Kind",
+          "type": "string"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        },
+        "ref": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Ref",
+          "type": "string"
+        },
+        "scope": {
+          "$ref": "#/$defs/AuthenticatedScope"
+        },
+        "text": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        },
+        "title": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "ref",
+        "scope",
+        "title",
+        "text",
+        "provenance"
+      ],
+      "title": "TextArtifact",
+      "type": "object"
+    },
+    "TextValue": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "text",
+          "title": "Kind",
+          "type": "string"
+        },
+        "value": {
+          "maxLength": 2000,
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "value"
+      ],
+      "title": "TextValue",
+      "type": "object"
+    },
+    "ToolDescriptor": {
+      "additionalProperties": false,
+      "properties": {
+        "approval_required": {
+          "title": "Approval Required",
+          "type": "boolean"
+        },
+        "capability": {
+          "items": {
+            "enum": [
+              "Pulse",
+              "Executor",
+              "Navigator",
+              "Twin",
+              "Autopilot"
+            ],
+            "type": "string"
+          },
+          "maxItems": 5,
+          "minItems": 1,
+          "title": "Capability",
+          "type": "array"
+        },
+        "description": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Description",
+          "type": "string"
+        },
+        "effect": {
+          "enum": [
+            "read",
+            "write",
+            "external",
+            "bulk",
+            "schedule"
+          ],
+          "title": "Effect",
+          "type": "string"
+        },
+        "family": {
+          "enum": [
+            "AI-01",
+            "AI-02",
+            "AI-03",
+            "AI-04",
+            "AI-05",
+            "AI-06",
+            "AI-07",
+            "AI-08",
+            "AI-09",
+            "AI-10",
+            "AI-11",
+            "AI-12",
+            "AI-13",
+            "AI-14"
+          ],
+          "title": "Family",
+          "type": "string"
+        },
+        "fields": {
+          "items": {
+            "$ref": "#/$defs/FieldSpec"
+          },
+          "maxItems": 40,
+          "title": "Fields",
+          "type": "array"
+        },
+        "key": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Key",
+          "type": "string"
+        },
+        "max_items": {
+          "maximum": 100,
+          "minimum": 1,
+          "title": "Max Items",
+          "type": "integer"
+        },
+        "preparation_required": {
+          "title": "Preparation Required",
+          "type": "boolean"
+        },
+        "revision": {
+          "minimum": 1,
+          "title": "Revision",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "key",
+        "revision",
+        "family",
+        "capability",
+        "description",
+        "effect",
+        "fields",
+        "preparation_required",
+        "approval_required",
+        "max_items"
+      ],
+      "title": "ToolDescriptor",
+      "type": "object"
+    },
+    "ValidationReport": {
+      "additionalProperties": false,
+      "description": "Host-only output. Duplicate matches never select/merge a record automatically.",
+      "properties": {
+        "draft_ref": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Draft Ref",
+          "type": "string"
+        },
+        "draft_revision": {
+          "minimum": 1,
+          "title": "Draft Revision",
+          "type": "integer"
+        },
+        "issues": {
+          "items": {
+            "$ref": "#/$defs/Issue"
+          },
+          "maxItems": 40,
+          "title": "Issues",
+          "type": "array"
+        },
+        "request_ref": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "title": "Request Ref",
+          "type": "string"
+        },
+        "scope": {
+          "$ref": "#/$defs/AuthenticatedScope"
+        },
+        "source_refs": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+            "type": "string"
+          },
+          "maxItems": 20,
+          "title": "Source Refs",
+          "type": "array"
+        },
+        "status": {
+          "enum": [
+            "invalid",
+            "ambiguous",
+            "secure_step_required",
+            "valid"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_ref",
+        "scope",
+        "draft_ref",
+        "draft_revision",
+        "status",
+        "issues",
+        "source_refs"
+      ],
+      "title": "ValidationReport",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "actor_label": {
+      "maxLength": 2000,
+      "minLength": 1,
+      "title": "Actor Label",
+      "type": "string"
+    },
+    "capabilities": {
+      "items": {
+        "$ref": "#/$defs/CapabilityAvailability"
+      },
+      "maxItems": 5,
+      "minItems": 1,
+      "title": "Capabilities",
+      "type": "array"
+    },
+    "context_key": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+      "title": "Context Key",
+      "type": "string"
+    },
+    "controls": {
+      "$ref": "#/$defs/Controls"
+    },
+    "history": {
+      "items": {
+        "$ref": "#/$defs/HistoryItem"
+      },
+      "maxItems": 50,
+      "title": "History",
+      "type": "array"
+    },
+    "host": {
+      "$ref": "#/$defs/HostSnapshot"
+    },
+    "messages": {
+      "items": {
+        "$ref": "#/$defs/Message"
+      },
+      "maxItems": 100,
+      "title": "Messages",
+      "type": "array"
+    },
+    "models": {
+      "items": {
+        "$ref": "#/$defs/ModelOption"
+      },
+      "maxItems": 20,
+      "title": "Models",
+      "type": "array"
+    },
+    "observation": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Observation"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "operation": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/PreparedOperation"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "projection_revision": {
+      "minimum": 1,
+      "title": "Projection Revision",
+      "type": "integer"
+    },
+    "receipt": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Receipt"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "role_label": {
+      "maxLength": 2000,
+      "minLength": 1,
+      "title": "Role Label",
+      "type": "string"
+    },
+    "selected_capability": {
+      "enum": [
+        "Pulse",
+        "Executor",
+        "Navigator",
+        "Twin",
+        "Autopilot"
+      ],
+      "title": "Selected Capability",
+      "type": "string"
+    },
+    "selected_model_ref": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Selected Model Ref"
+    },
+    "surface": {
+      "enum": [
+        "academy",
+        "standalone"
+      ],
+      "title": "Surface",
+      "type": "string"
+    },
+    "validation": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ValidationReport"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "version": {
+      "const": "operational-ui-0.3.0",
+      "title": "Version",
+      "type": "string"
+    },
+    "workspace_label": {
+      "maxLength": 2000,
+      "minLength": 1,
+      "title": "Workspace Label",
+      "type": "string"
+    }
+  },
+  "required": [
+    "version",
+    "context_key",
+    "projection_revision",
+    "workspace_label",
+    "actor_label",
+    "role_label",
+    "surface",
+    "host",
+    "capabilities",
+    "selected_capability",
+    "models",
+    "selected_model_ref",
+    "messages",
+    "history",
+    "observation",
+    "validation",
+    "operation",
+    "receipt",
+    "controls"
+  ],
+  "title": "UIProjection",
+  "type": "object"
+}

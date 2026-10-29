@@ -32,7 +32,7 @@ public static class SubscriptionPlanCatalog
     public static string ModuleForController(string controller) => controller switch
     {
         "LeadsController" or "SalesMarketingController" => "Sales",
-        "CommunicationSettingsController" or "CommunicationPreferencesController" or "CommunicationTemplatesController" or "NotificationsController" => "Engagement",
+        "CommunicationSettingsController" or "CommunicationPreferencesController" or "CommunicationTemplatesController" or "NotificationsController" or "MeetingsController" => "Engagement",
         "CertificatesController" or "LearningResourcesController" or "HolidaysController" or "HolidayDeleteController" or "EventsController" => "Certificates",
         "FeePlansController" or "InvoicesController" or "PaymentsController" or "ExpensesController" or "FeeRemindersController" => "Finance",
         "PayrollController" or "TeacherCompensationController" => "Finance",

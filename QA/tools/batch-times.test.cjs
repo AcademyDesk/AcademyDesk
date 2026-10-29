@@ -14,7 +14,7 @@ for (const mode of ['InPerson', 'Online', 'Hybrid']) for (const populated of [fa
         module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX } }).outputText;
       new Function('require', 'module', 'exports', code)(name => {
         if (name === 'react/jsx-runtime') return jsx;
-        if (name === 'react') return { useState: value => { const key = index++; return [state.has(key) ? state.get(key) : initial[key] === undefined ? value : initial[key], value => state.set(key, value)]; }, useRef: value => ({ current: value }), useEffect: () => {} };
+        if (name === 'react') return { useCallback: fn => fn, useState: value => { const key = index++; return [state.has(key) ? state.get(key) : initial[key] === undefined ? value : initial[key], value => state.set(key, value)]; }, useRef: value => ({ current: value }), useEffect: () => {} };
         if (name === 'next/link') return { default: 'a' };
         if (name === 'next/navigation') return { usePathname: () => '/batch-setup' };
         if (name === '@/components/workspace-nav') return { WorkspaceNav: 'nav' };

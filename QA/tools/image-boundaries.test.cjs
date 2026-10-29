@@ -1,0 +1,12 @@
+// Actual Image props at each migrated site; no optimizer or permission claims.
+const fs=require('node:fs'),assert=require('node:assert/strict'),{test}=require('node:test');
+const ts=require('../../apps/web/node_modules/typescript');
+const files=['app/certificates/page.tsx','app/finance-governance/page.tsx','app/invoices/page.tsx','app/platform/control/page.tsx','app/platform/page.tsx','app/portal/page.tsx','app/teacher/page.tsx','components/enterprise-shell.tsx','components/private-material-actions.tsx','components/teacher-material-uploader.tsx'];
+let total=0;
+for(const file of files){const source=fs.readFileSync('apps/web/src/'+file,'utf8'),ast=ts.createSourceFile(file,source,ts.ScriptTarget.Latest,true,ts.ScriptKind.TSX),images=[];function walk(n){if(ts.isJsxSelfClosingElement(n)&&n.tagName.getText(ast)==='Image')images.push(n);ts.forEachChild(n,walk);}walk(ast);
+ for(const[ordinal,image]of images.entries()){total++;test(file+' image '+ordinal+': direct URL, eager, bounded geometry and accessible text',()=>{const props=Object.fromEntries(image.attributes.properties.filter(ts.isJsxAttribute).map(a=>[a.name.getText(ast),a.initializer?.getText(ast)??true]));assert.equal(props.unoptimized,true);assert.equal(props.loading,'"eager"');assert.ok(props.src);assert.ok(props.alt);assert.ok(props.fill===true||props.width&&props.height);assert.equal(props.loader,undefined);assert.equal(props.overrideSrc,undefined);assert.equal(props.dangerouslyAllowSVG,undefined);});}
+ test(file+': no raw image or optimizer configuration bypass',()=>{assert.doesNotMatch(source,/<img\b|eslint-disable.*no-img/);assert.match(source,/import Image from "next\/image"/);});
+}
+test('all 14 intended image sites covered',()=>assert.equal(total,14));
+test('certificate retains direct image ref and decode-before-print guard',()=>{const s=fs.readFileSync('apps/web/src/app/certificates/page.tsx','utf8');assert.match(s,/ref=\{printLogo\}/);assert.match(s,/await waitForCertificateImage\(printLogo.current, controller.signal\)/);});
+test('private preview retains safe sniffing, error/download fallback and URL revocation',()=>{const s=fs.readFileSync('apps/web/src/components/private-material-actions.tsx','utf8');for(const part of ['boundedMaterialBlob','previewMime','URL.revokeObjectURL','onError','Download the original file.','Close preview'])assert.ok(s.includes(part),part);assert.match(s,/className="private-material-image"/);});

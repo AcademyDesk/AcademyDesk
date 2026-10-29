@@ -1,4 +1,6 @@
-.aiShell { grid-template-columns: minmax(0,1fr); }
+/* Match the actual shell with higher specificity than its global two-column
+   Manual layout. Correctness must not depend on bundler stylesheet order. */
+.aiShell:global(.enterprise-app-shell) { grid-template-columns: minmax(0,1fr); }
 .aiShell > :global(.enterprise-sidebar) { display: none; }
 .aiShell :global(.enterprise-mobile-workspace-nav) { display: none; }
 .banner { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 18px 28px; border-bottom: 1px solid var(--ad-border); background: var(--ad-surface); }

@@ -1,0 +1,48 @@
+.page.page { width: min(100%, 1440px); min-width: 0; overflow-wrap: anywhere; }
+.body.body { width: 100%; min-width: 0; padding: 0; }
+.heading { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+.heading > span { display: grid; place-items: center; flex: 0 0 56px; height: 56px; border-radius: 15px; background: var(--ad-action); color: var(--ad-action-text); font-size: 1.4rem; }
+.heading p { margin: 0 0 6px; color: var(--ad-accent); font-size: .7rem; font-weight: 750; letter-spacing: .12em; text-transform: uppercase; }
+.page .heading h1 { margin: 0; padding: 0; border: 0; font-size: var(--ad-page-title-size); line-height: var(--ad-page-title-line-height); }
+.layout { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); align-items: start; gap: 24px; margin-top: 24px; }
+.panel.panel { min-width: 0; padding: clamp(16px, 2vw, 24px); border: 1px solid var(--ad-border); border-radius: 18px; background: var(--ad-surface); }
+.panel h2 { margin: 0 0 20px; color: var(--ad-text); font-size: 1.05rem; }
+.fields { display: grid; gap: 18px; padding: 0; min-width: 0; border: 0; margin: 0; }
+.page :global(.standard-select-field) { display: grid; min-width: 0; gap: 8px; }
+.page :global(.standard-time-label) { color: var(--ad-text-muted); font-size: .875rem; line-height: 1.5; font-weight: 650; }
+.dates { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.dateField { position: relative; min-width: 0; }
+.register { display: grid; gap: 16px; margin: 0; padding: 0; list-style: none; }
+.record.record { min-width: 0; padding: 16px; border: 1px solid var(--ad-border); border-radius: 16px; background: var(--ad-surface-subtle); }
+.record > div, .record form, .record fieldset { min-width: 0; }
+.record b, .record small { display: block; }
+.record small { margin-top: 6px; color: var(--ad-text-muted); font-size: .875rem; line-height: 1.6; }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 16px; }
+.page .action.action { min-height: 44px !important; min-width: 44px; padding: 10px 14px !important; border: 1px solid var(--ad-border-strong); border-radius: 12px !important; font-size: .875rem !important; font-weight: 650; white-space: normal; background: var(--ad-surface); color: var(--ad-text); }
+.page .primary.primary { background: var(--ad-action) !important; color: var(--ad-action-text) !important; border-color: var(--ad-action); }
+.page .action:disabled { opacity: .6; cursor: not-allowed; }
+.page .action:focus-visible { outline: 3px solid var(--ad-accent); outline-offset: 3px; }
+.page :global(.attendance-panel) { border-radius: 18px; }
+.page :global(.attendance-panel-header) { flex-wrap: wrap; }
+.page :global(.attendance-roster li) { grid-template-columns: minmax(0, 1fr) minmax(130px, .7fr) minmax(0, 1fr) auto; align-items: end; gap: 16px; }
+.page :global(.attendance-roster li > div:first-child) { align-self: center; min-width: 0; }
+.page :global(.attendance-roster li b) { overflow-wrap: anywhere; }
+.page :global(.attendance-save) { min-height: 44px; border-radius: 12px; padding: 10px 14px; font-size: .875rem; }
+.page :is(:global(.makeup-layout), :global(.holidays-layout), :global(.events-layout)) { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; align-items: start; }
+.page :is(:global(.makeup-panel), :global(.holidays-panel), :global(.events-panel)) { min-width: 0; border-radius: 18px !important; }
+.page :is(:global(.makeup-fields), :global(.holidays-fields), :global(.events-fields)) { gap: 18px; padding: clamp(16px, 2vw, 24px); min-width: 0; }
+.page :is(:global(.makeup-panel-header), :global(.holidays-panel-header), :global(.events-panel-header), :global(.holidays-heading)) { flex-wrap: wrap; }
+.page :is(:global(.makeup-date-time), :global(.events-date-time)) { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.page :is(:global(.makeup-directory), :global(.holidays-register), :global(.events-register)) li { min-width: 0; gap: 16px; }
+.page :is(:global(.makeup-directory), :global(.holidays-register), :global(.events-register)) li > div { min-width: 0; overflow-wrap: anywhere; }
+.page :global(.makeup-directory) li { grid-template-columns: minmax(0, 1fr); }
+.page :is(:global(.makeup-create), :global(.holidays-action), :global(.events-action), :global(.holidays-heading) > button, :global(.holidays-register) li > button) { min-height: 44px !important; padding: 10px 14px !important; border-radius: 12px !important; white-space: normal; }
+@media (max-width: 1000px) { .page :is(:global(.makeup-layout), :global(.holidays-layout), :global(.events-layout)) { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 1000px) { .layout { grid-template-columns: minmax(0, 1fr); } .page :global(.attendance-roster li) { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+@media (max-width: 760px) {
+  .heading > span { flex-basis: 46px; height: 46px; }
+  .dates { grid-template-columns: minmax(0, 1fr); }
+  .page :is(:global(.makeup-date-time), :global(.events-date-time)) { grid-template-columns: minmax(0, 1fr); }
+  .page :global(.attendance-roster li) { grid-template-columns: minmax(0, 1fr); }
+  .page :is(input, textarea) { font-size: 16px; }
+}

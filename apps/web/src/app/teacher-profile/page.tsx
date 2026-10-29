@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { academyApi, apiHeaders } from "@/lib/api";
-import { StandardDateField, StandardDetailModal, StandardInteractiveTile, StandardSelectField } from "@/components/design-system/controls";
+import { StandardDateField, StandardDetailModal, StandardInteractiveTile, StandardSelectField, StandardTimeField } from "@/components/design-system/controls";
+import { OnboardingField } from "@/components/design-system/onboarding-field";
+import styles from "@/components/design-system/records-workspace.module.css";
 
 type Academy = { id: string };
 type Teacher = { id: string; firstName: string; lastName: string };
@@ -45,7 +47,7 @@ export default function TeacherProfilePage() {
   const [message, setMessage] = useState("Loading teaching team…");
   const [saving, setSaving] = useState(false);
   const [detail, setDetail] = useState<"batches" | "sessions" | "students" | null>(null);
-  function prepare(value: Profile) {
+  const prepare = useCallback((value: Profile) => {
     setForm({
       employeeCode: value.employeeCode ?? "",
       preferredName: value.preferredName ?? "",
@@ -63,8 +65,8 @@ export default function TeacherProfilePage() {
       specialties: value.specialties ?? "",
       availabilityJson: JSON.stringify(value.availability ?? []),
     });
-  }
-  async function load(id: string, academyId = academy?.id) {
+  }, []);
+  const load = useCallback(async (id: string, academyId: string | undefined) => {
     if (!academyId || !id) return;
     const response = await academyApi(
       `/api/academies/${academyId}/teachers/${id}/profile`,
@@ -73,21 +75,23 @@ export default function TeacherProfilePage() {
     const value: Profile = await response.json();
     setProfile(value);
     prepare(value);
-  }
+  }, [prepare]);
   useEffect(() => {
     void (async () => {
       try {
-        const academies: Academy[] = await (
-          await academyApi("/api/academies")
-        ).json();
+        const academyResponse = await academyApi("/api/academies");
+        if (!academyResponse.ok) throw new Error();
+        const academies: Academy[] = await academyResponse.json();
+        if (!Array.isArray(academies)) throw new Error();
         if (!academies[0])
           return setMessage(
             "Create an academy before managing the teaching team.",
           );
         setAcademy(academies[0]);
-        const rows: Teacher[] = await (
-          await academyApi(`/api/academies/${academies[0].id}/teachers`)
-        ).json();
+        const teacherResponse = await academyApi(`/api/academies/${academies[0].id}/teachers`);
+        if (!teacherResponse.ok) throw new Error();
+        const rows: Teacher[] = await teacherResponse.json();
+        if (!Array.isArray(rows)) throw new Error();
         setTeachers(rows);
         const requestedId = new URLSearchParams(window.location.search).get(
           "teacherId",
@@ -103,11 +107,11 @@ export default function TeacherProfilePage() {
         setMessage("Teacher records could not be loaded.");
       }
     })();
-  }, []);
+  }, [load]);
   async function select(id: string) {
     setTeacherId(id);
     try {
-      await load(id);
+      await load(id, academy?.id);
       setMessage("");
     } catch {
       setMessage("The teacher record could not be loaded.");
@@ -155,12 +159,13 @@ export default function TeacherProfilePage() {
     set("availabilityJson", JSON.stringify(current));
   }
   return (
-    <main className="enterprise-settings teacher-standard teacher-profile-standard">
+    <main className={`enterprise-settings teacher-standard teacher-profile-standard ${styles.records}`}>
       <header className="teacher-profile-heading">
         <div className="teacher-profile-title"><span className="teacher-profile-title-icon" aria-hidden="true">◎</span><div><p>Teachers</p><h1>360</h1></div></div>
       </header>
       <section className="teacher-profile-toolbar">
         <StandardSelectField
+          label="Teacher record"
           name="teacher-record"
           value={teacherId}
           onChange={(value) => void select(value)}
@@ -169,10 +174,11 @@ export default function TeacherProfilePage() {
         />
       </section>
       {message && (
-        <p className="mt-5 rounded-lg border border-amber-700/50 bg-amber-950/30 p-3 text-sm text-amber-100">
+        <p role="status" aria-live="polite" className="enterprise-page-state">
           {message}
         </p>
       )}
+      {!message && !teachers.length && <p role="status" className="enterprise-page-state">No teacher records yet.</p>}
       {profile && (
         <>
           <section className="teacher-profile-summary-grid">
@@ -191,7 +197,7 @@ export default function TeacherProfilePage() {
             <div className="teacher-profile-teaching-grid">
               <article><span>Subjects they can teach</span><input value={form.specialties ?? ""} onChange={(event) => set("specialties", event.target.value)} placeholder="e.g. Piano, Keyboard" aria-label="Subjects this teacher can teach" /></article>
               <article><span>Subjects currently assigned</span><p>{profile.subjects?.join(" · ") || "No current subject assignments"}</p></article>
-              <article><span>Availability</span><div className="teacher-profile-availability-editor">{availabilityDays.map((availabilityDay) => { const slot = availability.find((item) => item.day === availabilityDay); return <div key={availabilityDay}><label><input type="checkbox" checked={Boolean(slot)} onChange={(event) => updateAvailability(availabilityDay, event.target.checked)} />{availabilityDay}</label><input type="time" value={slot?.from ?? ""} disabled={!slot} onChange={(event) => updateAvailability(availabilityDay, true, "from", event.target.value)} aria-label={`${availabilityDay} available from`} /><input type="time" value={slot?.to ?? ""} disabled={!slot} onChange={(event) => updateAvailability(availabilityDay, true, "to", event.target.value)} aria-label={`${availabilityDay} available to`} /></div>; })}</div></article>
+              <article><span>Availability</span><div className="teacher-profile-availability-editor">{availabilityDays.map((availabilityDay) => { const slot = availability.find((item) => item.day === availabilityDay); return <div key={availabilityDay}><label><input type="checkbox" checked={Boolean(slot)} onChange={(event) => updateAvailability(availabilityDay, event.target.checked)} />{availabilityDay}</label>{(["from", "to"] as const).map((edge) => <StandardTimeField key={edge} name={`teacher-${availabilityDay}-${edge}`} label={`${availabilityDay} ${edge === "from" ? "start" : "end"} time`} value={slot?.[edge] ?? ""} disabled={!slot} onChange={(value) => updateAvailability(availabilityDay, true, edge, value)} intervalMinutes={1} allowClear />)}</div>; })}</div></article>
             </div>
           </section>
           <section className="teacher-profile-card">
@@ -206,19 +212,20 @@ export default function TeacherProfilePage() {
               </button>
             </header>
             <div className="teacher-profile-fields">
-              <input
+              <OnboardingField label="Employee code"><input
                 value={form.employeeCode ?? ""}
                 onChange={(e) => set("employeeCode", e.target.value)}
                 placeholder="Employee code"
                 className="field"
-              />
-              <input
+              /></OnboardingField>
+              <OnboardingField label="Preferred name"><input
                 value={form.preferredName ?? ""}
                 onChange={(e) => set("preferredName", e.target.value)}
                 placeholder="Preferred name"
                 className="field"
-              />
+              /></OnboardingField>
               <StandardSelectField
+                label="Employment type"
                 name="teacher-employment-type"
                 value={form.employmentType ?? ""}
                 onChange={(value) => set("employmentType", value)}
@@ -227,55 +234,55 @@ export default function TeacherProfilePage() {
               />
               <StandardDateField name="teacher-date-of-birth" label="Date of birth (DOB)" value={form.dateOfBirth ?? ""} onChange={(value) => set("dateOfBirth", value)} />
               <StandardDateField name="teacher-joining-date" label="Joining date" value={form.joiningDate ?? ""} onChange={(value) => set("joiningDate", value)} />
-              <input
+              <OnboardingField label="Address"><input
                 value={form.addressLine1 ?? ""}
                 onChange={(e) => set("addressLine1", e.target.value)}
                 placeholder="Address"
                 className="field"
-              />
-              <input
+              /></OnboardingField>
+              <OnboardingField label="City"><input
                 value={form.city ?? ""}
                 onChange={(e) => set("city", e.target.value)}
                 placeholder="City"
                 className="field"
-              />
-              <input
+              /></OnboardingField>
+              <OnboardingField label="State"><input
                 value={form.state ?? ""}
                 onChange={(e) => set("state", e.target.value)}
                 placeholder="State"
                 className="field"
-              />
-              <input
+              /></OnboardingField>
+              <OnboardingField label="Postal / PIN code"><input
                 value={form.postalCode ?? ""}
                 onChange={(e) => set("postalCode", e.target.value)}
                 placeholder="Postal / PIN code"
                 className="field"
-              />
-              <input
+              /></OnboardingField>
+              <OnboardingField label="Emergency contact name"><input
                 value={form.emergencyContactName ?? ""}
                 onChange={(e) => set("emergencyContactName", e.target.value)}
                 placeholder="Emergency contact name"
                 className="field"
-              />
-              <input
+              /></OnboardingField>
+              <OnboardingField label="Emergency contact phone"><input
                 value={form.emergencyContactPhone ?? ""}
                 onChange={(e) => set("emergencyContactPhone", e.target.value)}
                 placeholder="Emergency contact phone"
                 className="field"
-              />
+              /></OnboardingField>
             </div>
-            <textarea
+            <div className={styles.notes}><OnboardingField label="Qualifications, certifications and background"><textarea
               value={form.qualifications ?? ""}
               onChange={(e) => set("qualifications", e.target.value)}
               placeholder="Qualifications, certifications and background"
               className="field teacher-profile-notes"
-            />
-            <textarea
+            /></OnboardingField></div>
+            <div className={styles.notes}><OnboardingField label="Internal operational notes — not visible in teacher portal"><textarea
               value={form.adminNotes ?? ""}
               onChange={(e) => set("adminNotes", e.target.value)}
               placeholder="Internal operational notes — not visible in teacher portal"
               className="field teacher-profile-notes"
-            />
+            /></OnboardingField></div>
           </section>
           {detail === "batches" && <StandardDetailModal eyebrow="Teacher 360" title="Assigned batches" onClose={() => setDetail(null)}>
             {profile.batches?.length ? <div className="teacher-profile-detail-list">{profile.batches.map((batch) => <article key={batch.id}><header><div><b>{batch.batchName}</b><small>{batch.courseName} · {batch.isActive ? "Active" : "Inactive"}</small></div><em>{batch.completedSessions} completed</em></header><div className="teacher-profile-cycle"><span>All sessions</span><b>{batch.completedSessions} completed · {batch.pendingSessions} pending</b></div><div className="teacher-profile-cycle"><span>Current cycle</span><b>{batch.currentCycleCompleted} completed · {batch.currentCyclePending} pending</b></div></article>)}</div> : <p className="teacher-profile-detail-empty">No batches are assigned to this teacher.</p>}

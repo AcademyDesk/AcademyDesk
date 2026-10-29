@@ -20,11 +20,11 @@ async function page(config={}){
   const data=url==='/api/academies'?[{id:'owned'}]:url.endsWith('/students')?[{id:'student',firstName:'Synthetic',lastName:'Student'}]:url.endsWith('/teachers')?[{id:'teacher',firstName:'Synthetic',lastName:'Teacher'}]:url.endsWith('/leave-requests')?structuredClone(rows):undefined;
   assert.ok(data,'Unexpected endpoint '+url);return{ok:true,status:200,json:async()=>data};
  };
- new Function('require','module','exports',code)(n=>n==='react/jsx-runtime'?jsx:n==='react'?react:n==='@/lib/api'?{academyApi:api,apiHeaders:()=>({})}:n==='@/components/workspace-nav'?{WorkspaceNav:'nav'}:(()=>{throw Error(n)})(),module,module.exports);
+ new Function('require','module','exports',code)(n=>n==='react/jsx-runtime'?jsx:n==='react'?react:n==='@/lib/api'?{academyApi:api,apiHeaders:()=>({})}:n==='@/components/workspace-nav'?{WorkspaceNav:'nav'}:n.endsWith('.module.css')?{default:{}}:n==='@/components/design-system/controls'?{StandardSelectField:'select',StandardDateField:'date'}:n.endsWith('required-control-value')?{RequiredControlValue:'validation'}:n.endsWith('onboarding-field')?{OnboardingField:'field'}:(()=>{throw Error(n)})(),module,module.exports);
  const render=()=>{index=refIndex=effectIndex=0;return module.exports.default();};
  async function settle(){for(let i=0;i<4;i++){for(const fn of effects.splice(0))fn();await tick();render();}}
- const selects=()=>nodes(render()).filter(n=>n.type==='select');const inputs=()=>nodes(render()).filter(n=>n.type==='input');
- const change=(n,value)=>n.props.onChange({target:{value}});
+ const selects=()=>nodes(render()).filter(n=>n.type==='select');const inputs=()=>nodes(render()).filter(n=>['input','date'].includes(n.type));
+ const change=(n,value)=>n.props.onChange(['select','date'].includes(n.type)&&n.props.name?value:{target:{value}});
  const submit=()=>nodes(render()).find(n=>n.type==='form').props.onSubmit({preventDefault(){}});
  const decision=async label=>{await nodes(render()).find(n=>n.type==='button'&&text(n)===label).props.onClick();await tick();await tick();};
  const writes=()=>calls.filter(c=>c.method);

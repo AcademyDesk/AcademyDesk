@@ -1,6 +1,7 @@
 "use client";
 
 import { StandardSelectField } from "@/components/design-system/controls";
+import visual from "@/components/design-system/engagement-workspace.module.css";
 
 export type MeetingProviderDraft = {
   provider: string;
@@ -41,12 +42,12 @@ export function MeetingProviderSettings({
 }) {
   const current = details[value.provider] ?? details.GoogleWorkspace;
   return (
-    <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6 lg:col-span-2">
-      <h2 className="text-xl font-semibold">Meeting provider</h2>
-      <div className="mt-5 grid gap-3 md:grid-cols-2">
-        <label>
-          Provider
+    <section className={visual.panel}>
+      <header className={visual.panelHeader}><p>Online classes</p><h2>Meeting provider</h2></header>
+      <div className={visual.meetingFields}>
+        <div>
           <StandardSelectField
+            label="Provider"
             name="meeting-provider"
             value={value.provider}
             onChange={(provider) => onChange({ ...value, provider })}
@@ -57,10 +58,10 @@ export function MeetingProviderSettings({
               { value: "Microsoft365", label: "Microsoft 365 · Teams" },
             ]}
           />
-        </label>
-        <label>
-          Connection status
+        </div>
+        <div>
           <StandardSelectField
+            label="Connection status"
             name="meeting-status"
             value={value.status}
             onChange={(status) => onChange({ ...value, status })}
@@ -71,7 +72,7 @@ export function MeetingProviderSettings({
               { value: "Disabled", label: "Disabled" },
             ]}
           />
-        </label>
+        </div>
         <label>
           Organizer name
           <input
@@ -92,7 +93,7 @@ export function MeetingProviderSettings({
             required
           />
         </label>
-        <label className="md:col-span-2">
+        <label className={visual.wide}>
           Connection reference
           <input
             value={value.reference}
@@ -104,12 +105,12 @@ export function MeetingProviderSettings({
           />
         </label>
       </div>
-      <p className="mt-4 text-sm text-slate-400">{current.description}</p>
+      <p className={visual.help}>This form stores one provider draft, not three connected accounts. {current.description} Saving these details alone does not establish an authenticated connection.</p>
       <button
         type="button"
         disabled={disabled}
         onClick={onSave}
-        className="mt-5 rounded-lg bg-cyan-400 px-5 py-2.5 font-semibold text-slate-950 disabled:opacity-60"
+        className={`enterprise-action-button ${visual.meetingSave}`}
       >
         Save meeting provider
       </button>

@@ -19,5 +19,6 @@ public sealed class PayrollPayout : AcademyEntity
     public string Status { get; set; } = "Paid";
     public string PaymentMethod { get; set; } = "BankTransfer";
     public string? Reference { get; set; }
-    public DateTime PaidAtUtc { get; set; } = DateTime.UtcNow;
+    // NULL for new NoCashDue earnings statements; legacy Paid rows are preserved.
+    public DateTime? PaidAtUtc { get; set; } = DateTime.UtcNow;
 }

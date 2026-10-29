@@ -1,5 +1,17 @@
 # Release gates
 
+## Developer workflow implementation — 26 October 2026
+
+Local changes now add a reusable API build/full-suite/zero-skips test gate and
+web lint/types/static-build gate before Azure access. Deployment verifies/promotes
+their exact source/hash/API-origin-bound image/export instead of rebuilding.
+30focused guard tests and17Bash syntax checks PASS; no GitHub run, standard fresh
+release build or deployment has occurred. This is **IMPLEMENTED / LOCALLY TESTED**,
+not staging/production approval or issue closure. Startup migrations/bootstrap,
+model/host/customer-critical and all exact release gates below remain applicable.
+See [current report](REPORTS/CI_RELEASE_ARTIFACT_GATES_2026-10-26.md).
+The older workflow-gap descriptions below record the previous baseline.
+
 These gates are proposed policy for Phase 2 onward. Current production readiness is **NOT ESTABLISHED**. Eight InMemory tests and a successful compiler check cannot satisfy the gates.
 
 | Gate | Mandatory evidence |
@@ -27,7 +39,7 @@ requirements live in Mini/Core; Academy maps them in
 | Activation boundary | Required evidence | Current outcome / owner |
 | --- | --- | --- |
 | Local synthetic/host security tests | Disposable owned data; no production writes/credentials or new model tools; precise source/test manifest | Permitted engineering work, not customer production acceptance / Academy |
-| First real PENTA read | Qualified pinned Mini language/security contract; real current host authority, tenant/resource scope, exact facts, malformed/context/replay/downtime/audit-fault tests; linked browser/manual fallback | NOT ACCEPTED; saved Mini86/94 remains blocking / Academy + Mini |
+| First real PENTA read | Qualified pinned Mini language/security contract; real current host authority, tenant/resource scope, exact facts, malformed/context/replay/downtime/audit-fault tests; linked browser/manual fallback | NOT ACCEPTED;latest isolated3B full-plan fresh6/12/exposed7/12 is not qualified ([E60](REPORTS/PENTA_FULL_PLAN_E5R60.md));earlier86/94 is historical on its different language gate,not a comparable score or current activation / Academy + Mini |
 | Customer personal/minor data pilot | Human-reviewed roles/purpose/basis/notices and child safeguards; minimal model context; processor/location/no-training/retention/egress evidence; actual guardian scope where relevant | OPEN; reference strings and generic consent rows are insufficient / legal/privacy + Academy + Mini |
 | Commercial India operation | Current-law applicability sign-off; CERT incident/PoC/clock/India ICT-log evidence and drill; applicable SPDI/contract/content/telecom/payment controls | OPEN; DPDP future duties distinct from current duties / legal/security/operations |
 | Privacy future dates | Corrected rule/provision mapping, accountable implementation owner and reviewed due date; tested rights/withdrawal/retention/deletion/holds before required commencement | OPEN; canonical one-year/eighteen-month phases retained, no blanket compliance claim / legal/privacy + engineering |

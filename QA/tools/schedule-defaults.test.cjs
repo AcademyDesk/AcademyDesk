@@ -9,7 +9,7 @@ async function page(config={}){
  let index=0,effectIndex=0;const state=new Map(),deps=[],effects=[],calls=[],module={exports:{}},sessions=[];
  const data=config.batches??batches;
  const pendingRef={current:false};
- const react={useRef:()=>pendingRef,useState:v=>{const k=index++;if(!state.has(k))state.set(k,typeof v==='function'?v():v);return[state.get(k),v=>state.set(k,typeof v==='function'?v(state.get(k)):v)];},useEffect:(fn,next)=>{const k=effectIndex++;if(!deps[k]||next.some((v,i)=>v!==deps[k][i])){deps[k]=next;effects.push(fn);}}};
+ const callbackHooks=require('./callback-hook-fixture.cjs')(); const react={useCallback:callbackHooks.useCallback,useRef:()=>pendingRef,useState:v=>{const k=index++;if(!state.has(k))state.set(k,typeof v==='function'?v():v);return[state.get(k),v=>state.set(k,typeof v==='function'?v(state.get(k)):v)];},useEffect:(fn,next)=>{const k=effectIndex++;if(!deps[k]||next.some((v,i)=>v!==deps[k][i])){deps[k]=next;effects.push(fn);}}};
  const api=async(url,init={})=>{
   calls.push({url,...init});
   if(init.method==='POST'){
@@ -20,12 +20,12 @@ async function page(config={}){
   const result=url==='/api/academies'?[{id:'owned',name:'Synthetic academy'}]:url.endsWith('/batches')?data:url.endsWith('/teachers')?[{id:'ta',firstName:'First',lastName:'Teacher'},{id:'tb',firstName:'Second',lastName:'Teacher'}]:url.endsWith('/branches')?[{id:'ra',name:'First branch'},{id:'rb',name:'Second branch'}]:url.endsWith('/sessions')?sessions:undefined;
   if(!result)throw Error('Unexpected endpoint '+url);return{ok:true,status:200,json:async()=>structuredClone(result)};
  };
- new Function('require','module','exports',code)(n=>n==='react/jsx-runtime'?jsx:n==='react'?react:n==='@/components/workspace-nav'?{WorkspaceNav:'nav'}:n==='@/lib/api'?{academyApi:api,apiHeaders:()=>({})}:(()=>{throw Error(n)})(),module,module.exports);
- const render=()=>{index=effectIndex=0;return module.exports.default();};
+ new Function('require','module','exports',code)(n=>n==='react/jsx-runtime'?jsx:n==='react'?react:n==='@/components/workspace-nav'?{WorkspaceNav:'nav'}:n.endsWith('.module.css')?{default:{}}:n==='@/components/design-system/controls'?{StandardSelectField:'select',StandardDateTimeField:'datetime'}:n==='@/components/design-system/onboarding-field'?{OnboardingField:'label'}:n==='@/lib/api'?{academyApi:api,apiHeaders:()=>({})}:(()=>{throw Error(n)})(),module,module.exports);
+ const render=()=>{callbackHooks.reset();index=effectIndex=0;return module.exports.default();};
  const form=()=>nodes(render()).find(n=>n.type==='form');
  const selectors=()=>nodes(form()).filter(n=>n.type==='select');
- const choose=(key,value)=>selectors()[key].props.onChange({target:{value}});
- const times=(day=5)=>{const inputs=nodes(form()).filter(n=>n.type==='input'&&n.props.type==='datetime-local');inputs[0].props.onChange({target:{value:`2026-10-${String(day).padStart(2,'0')}T10:00`}});inputs[1].props.onChange({target:{value:`2026-10-${String(day).padStart(2,'0')}T11:00`}});};
+ const choose=(key,value)=>{const control=selectors()[key];control.props.onChange(control.props.options?value:{target:{value}});};
+ const times=(day=5)=>{const inputs=nodes(form()).filter(n=>n.type==='datetime');inputs[0].props.onChange(`2026-10-${String(day).padStart(2,'0')}T10:00`);inputs[1].props.onChange(`2026-10-${String(day).padStart(2,'0')}T11:00`);};
  const submit=()=>form().props.onSubmit({preventDefault(){}});
  render();for(let i=0;i<4;i++){for(const fn of effects.splice(0))fn();await new Promise(r=>setImmediate(r));render();}
  return{state,calls,sessions,render,form,selectors,choose,times,submit,writes:()=>calls.filter(x=>x.method==='POST')};

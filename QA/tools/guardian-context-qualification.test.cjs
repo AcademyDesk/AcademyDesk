@@ -1,0 +1,3 @@
+'use strict';
+const{test}=require('node:test'),a=require('node:assert/strict'),{uiProof}=require('./guardian-context-qualification.cjs');
+test('guardian UI qualifier requires source build/handlers/current browser and no partial step waiver',()=>{const p={passed:true,exportReady:true,handlerChecks:11,syntheticBrowser:{checks:48},downloaded:false,productionApproved:false,steps:['handlers','typecheck','targeted-lint','build','student-browser'].map(name=>({name,exitCode:0,timedOut:false}))};uiProof(p);for(const edit of[x=>x.passed=false,x=>x.exportReady=false,x=>x.steps.pop(),x=>x.steps[2].exitCode=1,x=>x.steps[3].timedOut=true,x=>x.syntheticBrowser.checks=47,x=>x.downloaded=true]){const bad=structuredClone(p);edit(bad);a.throws(()=>uiProof(bad));}});

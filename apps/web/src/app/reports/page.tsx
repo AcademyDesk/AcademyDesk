@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { academyApi } from "@/lib/api";
+import { spreadsheetCsv } from "@/lib/spreadsheet-csv";
+import { reportMoney, reportBalanceIsOpen, reportDecimal } from "@/lib/report-money";
 import { StandardDetailModal, StandardInteractiveTile } from "@/components/design-system/controls";
 
 type Academy = { id: string };
@@ -17,21 +19,17 @@ type Invoice = {
   invoiceNumber: string;
   totalAmount: number;
   paidAmount: number;
+  adjustedAmount: number;
+  balance: number;
+  currency: string;
   dueDate: string;
 };
-type Payment = { invoiceId: string; amount: number; status: string };
-type Expense = { description: string; amount: number; category: string; expenseDate: string };
-type PayrollPayout = { workerName: string; periodLabel: string; netAmount: number; status: string };
-const money = (amount: number) =>
-  new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(
-    amount,
-  );
+type Payment = { invoiceId: string; amount: number; currency: string; status: string };
+type Expense = { description: string; amount: number; amountExact?: string; currency: string; category: string; expenseDate: string };
+type PayrollPayout = { workerName: string; periodLabel: string; netAmount: number; netAmountExact?: string; currency: string; status: string };
+const money = (amount: string | number, currency: string) => reportMoney([{ amount, currency }]);
 function downloadCsv(filename: string, rows: string[][]) {
-  const content = rows
-    .map((row) =>
-      row.map((value) => `"${value.replaceAll('"', '""')}"`).join(","),
-    )
-    .join("\r\n");
+  const content = spreadsheetCsv(rows);
   const anchor = document.createElement("a");
   anchor.href = URL.createObjectURL(
     new Blob([content], { type: "text/csv;charset=utf-8" }),
@@ -134,17 +132,16 @@ export default function ReportsPage() {
   const activeStudents = students.filter((student) => student.isActive);
   const activeTeachers = teachers.filter((teacher) => teacher.isActive);
   const scheduledClasses = sessions.filter((session) => session.status !== "Cancelled");
-  const collected = payments
-    .filter((payment) => payment.status === "Completed")
-    .reduce((sum, payment) => sum + payment.amount, 0);
-  const invoiced = invoices.reduce(
-    (sum, invoice) => sum + invoice.totalAmount,
-    0,
-  );
-  const spent = expenses.reduce((sum, expense) => sum + expense.amount, 0);
-  const outstandingInvoices = invoices.filter((invoice) => invoice.totalAmount - invoice.paidAmount > 0);
-  const outstandingPayroll = payroll.filter((payout) => payout.status !== "Paid");
-  const payrollDue = outstandingPayroll.reduce((sum, payout) => sum + payout.netAmount, 0);
+  const collectedPayments = payments.filter((payment) => payment.status === "Completed" || payment.status === "Reconciled");
+  const collectedRows = collectedPayments.map((payment) => ({ amount: payment.amount, currency: payment.currency }));
+  const expenseRows = expenses.map((expense) => ({ amount: expense.amountExact ?? expense.amount, currency: expense.currency }));
+  const collected = reportMoney(collectedRows);
+  const invoiced = reportMoney(invoices.map((invoice) => ({ amount: invoice.totalAmount, currency: invoice.currency })));
+  const spent = reportMoney(expenseRows);
+  const outstandingInvoices = invoices.filter((invoice) => reportBalanceIsOpen(invoice.balance));
+  const feeDue = reportMoney(outstandingInvoices.map((invoice) => ({ amount: invoice.balance, currency: invoice.currency })));
+  const outstandingPayroll = payroll.filter((payout) => payout.status !== "Paid" && payout.status !== "NoCashDue");
+  const payrollDue = reportMoney(outstandingPayroll.map((payout) => ({ amount: payout.netAmountExact ?? payout.netAmount, currency: payout.currency })));
   const attendanceRate = attendance.length
     ? Math.round(
         (attendance.filter((record) =>
@@ -170,9 +167,9 @@ export default function ReportsPage() {
     ["Teachers", activeTeachers.length, "teachers"] as const,
     ["Scheduled classes", scheduledClasses.length, "classes"] as const,
     ["Attendance rate", `${attendanceRate}%`, "attendance"] as const,
-    ["Collected", money(collected), "collected"] as const,
-    ["Outstanding", money(Math.max(0, invoiced - collected) + payrollDue), "outstanding"] as const,
-    ["Expenses", money(spent), "expenses"] as const,
+    ["Collected", collected, "collected"] as const,
+    ["Outstanding", `Fees: ${feeDue} · Payroll records: ${payrollDue}`, "outstanding"] as const,
+    ["Expenses", spent, "expenses"] as const,
   ];
   return (
     <main className="enterprise-settings workspace-reports">
@@ -189,15 +186,15 @@ export default function ReportsPage() {
         )}
         <section className="workspace-reports-kpis" aria-label="Operational metrics">
           {metrics.map(([label, value, key]) => <StandardInteractiveTile key={label} label={label} value={value} detail="View details" onClick={() => setDetail(key)} className="workspace-reports-kpi" />)}
-          <article className="workspace-reports-kpi"><span>Net cash</span><strong>{money(collected - spent)}</strong></article>
+          <article className="workspace-reports-kpi"><span>Collections less recorded expenses</span><strong>{reportMoney(collectedRows, expenseRows)}</strong><small>Display subtotal only; not a cash-flow statement or payroll settlement.</small></article>
         </section>
         {detail === "students" && <StandardDetailModal eyebrow="Workspace reports" title="Active students" onClose={() => setDetail(null)}><ReportDetailList rows={activeStudents.map((student) => [studentName(student), "Active student"])} empty="No active students." /></StandardDetailModal>}
         {detail === "teachers" && <StandardDetailModal eyebrow="Workspace reports" title="Teachers" onClose={() => setDetail(null)}><ReportDetailList rows={activeTeachers.map((teacher) => [teacherName(teacher), "Active teacher"])} empty="No active teachers." /></StandardDetailModal>}
         {detail === "classes" && <StandardDetailModal eyebrow="Workspace reports" title="Scheduled classes" onClose={() => setDetail(null)}><ReportDetailList rows={scheduledClasses.map((session) => [batches.find((batch) => batch.id === session.batchId)?.name ?? "Class", `${reportDate(session.startUtc)} · ${session.status}`])} empty="No scheduled classes." /></StandardDetailModal>}
         {detail === "attendance" && <StandardDetailModal eyebrow="Workspace reports" title="Attendance by student" onClose={() => setDetail(null)}><ReportDetailList rows={activeStudents.map((student) => { const records = attendance.filter((record) => record.studentId === student.id); const present = records.filter((record) => ["Present", "Late", "Online"].includes(record.status)).length; return [studentName(student), records.length ? `${Math.round(present * 100 / records.length)}% · ${present} of ${records.length} classes` : "No attendance recorded"]; })} empty="No active students." /></StandardDetailModal>}
-        {detail === "collected" && <StandardDetailModal eyebrow="Workspace reports" title="Collected fee payments" onClose={() => setDetail(null)}><ReportDetailList rows={payments.filter((payment) => payment.status === "Completed").map((payment) => { const invoice = invoices.find((item) => item.id === payment.invoiceId); return [studentName(students.find((student) => student.id === invoice?.studentId)), `${money(payment.amount)} paid · ${invoice?.invoiceNumber ?? "Invoice"}`]; })} empty="No completed fee payments." /></StandardDetailModal>}
-        {detail === "outstanding" && <StandardDetailModal eyebrow="Workspace reports" title="Outstanding fees and salary" onClose={() => setDetail(null)}><div className="standard-detail-group"><h3>Student fee payments</h3><ReportDetailList rows={outstandingInvoices.map((invoice) => [studentName(students.find((student) => student.id === invoice.studentId)), `${invoice.invoiceNumber} · ${money(invoice.totalAmount - invoice.paidAmount)} due`])} empty="No student fees are outstanding." /><h3>Teacher salary payments</h3><ReportDetailList rows={outstandingPayroll.map((payout) => [payout.workerName, `${payout.periodLabel} · ${money(payout.netAmount)} · ${payout.status}`])} empty="No teacher salary payments are outstanding." /></div></StandardDetailModal>}
-        {detail === "expenses" && <StandardDetailModal eyebrow="Workspace reports" title="Expenses" onClose={() => setDetail(null)}><ReportDetailList rows={expenses.map((expense) => [expense.description, `${expense.category} · ${money(expense.amount)} · ${expense.expenseDate}`])} empty="No expenses recorded." /></StandardDetailModal>}
+        {detail === "collected" && <StandardDetailModal eyebrow="Workspace reports" title="Collected fee payments" onClose={() => setDetail(null)}><ReportDetailList rows={collectedPayments.map((payment) => { const invoice = invoices.find((item) => item.id === payment.invoiceId); return [studentName(students.find((student) => student.id === invoice?.studentId)), `${money(payment.amount, payment.currency)} paid · ${invoice?.invoiceNumber ?? "Invoice"}`]; })} empty="No completed or reconciled fee payments." /></StandardDetailModal>}
+        {detail === "outstanding" && <StandardDetailModal eyebrow="Workspace reports" title="Outstanding fees and payroll records" onClose={() => setDetail(null)}><div className="standard-detail-group"><h3>Student fee payments</h3><ReportDetailList rows={outstandingInvoices.map((invoice) => [studentName(students.find((student) => student.id === invoice.studentId)), `${invoice.invoiceNumber} · ${money(invoice.balance, invoice.currency)} due`])} empty="No student fees are outstanding." /><h3>Payroll records requiring review</h3><ReportDetailList rows={outstandingPayroll.map((payout) => [payout.workerName, `${payout.periodLabel} · ${money(payout.netAmountExact ?? payout.netAmount, payout.currency)} · ${payout.status}`])} empty="No unsettled payroll records." /></div></StandardDetailModal>}
+        {detail === "expenses" && <StandardDetailModal eyebrow="Workspace reports" title="Expenses" onClose={() => setDetail(null)}><ReportDetailList rows={expenses.map((expense) => [expense.description, `${expense.category} · ${money(expense.amountExact ?? expense.amount, expense.currency)} · ${expense.expenseDate}`])} empty="No expenses recorded." /></StandardDetailModal>}
         <section className="workspace-reports-grid">
           <section className="workspace-reports-panel">
             <header className="workspace-reports-panel-header">
@@ -242,7 +239,7 @@ export default function ReportsPage() {
               <button
                 onClick={() =>
                   downloadCsv("academydesk-invoices.csv", [
-                    ["Invoice", "Student", "Amount", "Due date"],
+                    ["Invoice", "Student", "Currency", "Gross", "Approved reductions", "Collected", "Outstanding", "Due date"],
                     ...invoices.map((invoice) => {
                       const student = students.find(
                         (item) => item.id === invoice.studentId,
@@ -252,7 +249,11 @@ export default function ReportsPage() {
                         student
                           ? `${student.firstName} ${student.lastName}`
                           : "Unknown",
-                        String(invoice.totalAmount),
+                        invoice.currency,
+                        reportDecimal(invoice.totalAmount),
+                        reportDecimal(invoice.adjustedAmount),
+                        reportDecimal(invoice.paidAmount),
+                        reportDecimal(invoice.balance),
                         invoice.dueDate,
                       ];
                     }),
@@ -264,8 +265,8 @@ export default function ReportsPage() {
               </button>
             </header>
             <div className="workspace-reports-finance-summary">
-              {invoices.length} invoices · {money(invoiced)} issued ·{" "}
-              {money(collected)} collected
+              {invoices.length} invoices · {invoiced} gross issued ·{" "}
+              {collected} collected
             </div>
           </section>
         </section>
@@ -273,9 +274,13 @@ export default function ReportsPage() {
           <header className="workspace-reports-panel-header">
             <div><p>Downloads</p><h2>Export centre</h2></div>
             <span>
-              CSV downloads for operational use
+              Spreadsheet-view CSV downloads
             </span>
           </header>
+          <p className="enterprise-page-state">
+            Formula-like text is exported with a leading tab for spreadsheet safety.
+            Review these display exports before importing them into another system.
+          </p>
           <div className="workspace-reports-export-grid">
             <ExportCard
               title="Students"
@@ -305,7 +310,7 @@ export default function ReportsPage() {
               detail="Issued fees and due dates"
               onClick={() =>
                 downloadCsv("academydesk-invoices.csv", [
-                  ["Invoice", "Student", "Amount", "Due date"],
+                  ["Invoice", "Student", "Currency", "Gross", "Approved reductions", "Collected", "Outstanding", "Due date"],
                   ...invoices.map((invoice) => {
                     const student = students.find(
                       (item) => item.id === invoice.studentId,
@@ -315,7 +320,11 @@ export default function ReportsPage() {
                       student
                         ? `${student.firstName} ${student.lastName}`
                         : "Unknown",
-                      String(invoice.totalAmount),
+                      invoice.currency,
+                        reportDecimal(invoice.totalAmount),
+                        reportDecimal(invoice.adjustedAmount),
+                        reportDecimal(invoice.paidAmount),
+                        reportDecimal(invoice.balance),
                       invoice.dueDate,
                     ];
                   }),

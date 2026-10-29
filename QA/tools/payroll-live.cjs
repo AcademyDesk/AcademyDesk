@@ -45,8 +45,8 @@ const server=http.createServer((req,res)=>{
     const legacy=rows.filter(x=>x.identitySource==='LegacyUnverified');assert.equal(legacy.length,4);assert.ok(legacy.every(x=>x.workerName==='Historical identity not recorded'&&x.workerType==='Unknown (legacy)'));
     if(stage==='initial'){
      const cents=rows.filter(x=>x.netAmount===0.01);assert.equal(cents.length,2);
-     for(const row of cents){const displayed=await page.locator('.payroll-register tbody tr').filter({hasText:row.periodLabel}).locator('td').nth(3).innerText();assert.equal(displayed,'₹0');}
-     console.log(`PAYROLL MONEY OBSERVATION / NOT ACCEPTED: ${width}px/${theme}, two SQL0.01 payouts render ₹0. Separate precision repair required; no calculation or current acceptance assertion relaxed.`);
+     for(const row of cents){const displayed=await page.locator('.payroll-register tbody tr').filter({hasText:row.periodLabel}).locator('td').nth(3).innerText();assert.equal(displayed,process.env.QA_PAYROLL_PRESENTATION==='baseline'?'₹0':'₹0.01');}
+     console.log(`PAYROLL MONEY ${process.env.QA_PAYROLL_PRESENTATION==='baseline'?'BASELINE NOT ACCEPTED':'GUARDED PASS'}: ${width}px/${theme}, two SQL0.01 payouts checked against exact displayed minor units.`);
     }
     assert.equal(await page.locator('.payroll-kpis article').filter({hasText:'Recorded payouts'}).locator('b').innerText(),String(rows.length));
     assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Page horizontal overflow');
@@ -54,6 +54,38 @@ const server=http.createServer((req,res)=>{
     await page.screenshot({path:path.join(evidence,`${width}-${theme}-${stage}.png`),fullPage:true});checks.push({width,theme,stage,rows:rows.length});
    };
    await page.goto(origin+'/payroll');await loaded();const old=await real('GET',base+'/payouts');await verifyRegister('initial');
+   if(process.env.QA_PAYROLL_PRESENTATION==='baseline'){
+    const row=old.find(x=>x.periodLabel==='QA-DEDUCTION-999.99');assert.ok(row);
+    await page.evaluate(()=>{window.__qaPrints=0;window.print=()=>{window.__qaPrints++;};});
+    await page.locator('.payroll-register tbody tr').filter({hasText:row.periodLabel}).getByRole('button',{name:'Print / Save PDF',exact:true}).click();assert.equal(await page.evaluate(()=>window.__qaPrints),1);
+    const file=path.join(evidence,'baseline-selected-payslip.pdf');await page.pdf({path:file,format:'A4',printBackground:true});
+    const cp=require('node:child_process'),python='C:/Users/Admin/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe';
+    const metadata=JSON.parse(cp.execFileSync(python,['-c','import json,sys; from pypdf import PdfReader; r=PdfReader(sys.argv[1]); print(json.dumps({"pages":len(r.pages),"text":"\\n".join(p.extract_text() or "" for p in r.pages)}))',file],{encoding:'utf8'}));
+    assert.ok(!metadata.text.includes(row.payslipNumber));fs.writeFileSync(path.join(evidence,'baseline-print.json'),JSON.stringify({classification:'NOT ACCEPTED',selectedPayslip:row.payslipNumber,...metadata},null,2));
+    console.log(`PAYROLL PRINT BASELINE FAIL / REPRODUCED: ${metadata.pages} pages, selected stored payslip absent from PDF; NOT ACCEPTED.`);await context.close();break;
+   }
+   const printSelected=async(row,kind)=>{
+    const trigger=page.locator(`.payroll-register tbody tr[data-payout-id="${row.id}"]`).getByRole('button',{name:'Preview / Print',exact:true});await trigger.click();
+    const paper=page.getByRole('article',{name:'Selected payroll document'});await paper.waitFor();assert.equal(await paper.getAttribute('data-payout-id'),row.id);assert.equal(await page.locator('dialog[open]').count(),1);
+    if(row.identitySource==='LegacyUnverified')await paper.getByText('Historical worker identity is unverified.',{exact:false}).waitFor();
+    if(row.status==='NoCashDue')await paper.getByText('No cash due',{exact:true}).waitFor();
+    await page.evaluate(()=>{window.__qaPrints=0;window.print=()=>{window.__qaPrints++;};});await page.getByRole('dialog').getByRole('button',{name:'Print / Save PDF',exact:true}).click();assert.equal(await page.evaluate(()=>window.__qaPrints),1);
+    const file=path.join(evidence,`${width}-${theme}-${kind}-selected.pdf`);await page.pdf({path:file,format:'A4',printBackground:true});
+    const cp=require('node:child_process'),python='C:/Users/Admin/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe';
+    const metadata=JSON.parse(cp.execFileSync(python,['-c','import json,sys; from pypdf import PdfReader; r=PdfReader(sys.argv[1]); print(json.dumps({"pages":len(r.pages),"text":"\\n".join(p.extract_text() or "" for p in r.pages)}))',file],{encoding:'utf8'}));
+    // Embedded-font kerning can appear as extra intra-word whitespace in pypdf;
+    // preserve raw extraction and verify exact DOM fields plus whitespace-only
+    // normalized PDF text. Record identifiers and monetary assertions stay exact.
+    const compact=s=>s.replace(/\s+/g,'');assert.equal(await paper.locator('dd').nth(0).textContent(),row.workerName);assert.equal(await paper.locator('dd').nth(2).textContent(),row.periodLabel);
+    assert.equal(metadata.pages,1,'Selected document must fit one A4 page');assert.ok(metadata.text.includes(row.payslipNumber));assert.ok(compact(metadata.text).includes(compact(row.workerName)));assert.ok(compact(metadata.text).includes(compact(row.periodLabel)));assert.ok(metadata.text.includes(row.id));
+    if(kind==='cents')assert.ok(metadata.text.includes('0.01'),'Printed cents lost');
+    for(const other of old.filter(x=>x.id!==row.id))assert.ok(!metadata.text.includes(other.payslipNumber),'Other worker document included');
+    assert.ok(!metadata.text.includes('Save payout profile'));assert.ok(!metadata.text.includes('Refresh payout register'));
+    fs.writeFileSync(path.join(evidence,`${width}-${theme}-${kind}-print.json`),JSON.stringify({selectedId:row.id,...metadata},null,2));
+    await page.getByRole('button',{name:'Close preview',exact:true}).click();assert.equal(await page.locator('dialog[open]').count(),0);assert.equal(await trigger.evaluate(el=>document.activeElement===el),true,'Focus not restored');
+    console.log(`PAYROLL PDF PASS ${width}px/${theme}/${kind}: actual single-page PDF, selected record only, exact money, native modal/focus restored.`);
+   };
+   await printSelected(old.find(x=>x.netAmount===0.01),'cents');await printSelected(old.find(x=>x.identitySource==='LegacyUnverified'),'legacy');await printSelected(old.find(x=>x.status==='NoCashDue'),'no-cash');
    const workers=await real('GET',`/api/academies/${academy}/${session?'staff':'teachers'}`),worker=workers.find(x=>x.id===(session?staff:teacher));assert.ok(worker);
    if(session)await choose(profileForm,'workerType','Staff');
    const name=session?worker.displayName:worker.firstName+' '+worker.lastName;await choose(profileForm,'workerId',name);
@@ -65,7 +97,7 @@ const server=http.createServer((req,res)=>{
    await notice.getByText('Payout profile saved.',{exact:true}).waitFor();await loaded();assert.equal(writes.length,1);assert.equal(writes[0].status,201);
    const profile=writes[0].result;assert.equal(profile.workerName,name);assert.equal(profile.workerType,session?'Staff':'Teacher');assert.equal(profile.staffUserId,session?staff:null);assert.equal(profile.teacherId,session?null:teacher);
    const profiles=await real('GET',base+'/profiles');assert.deepEqual(profiles.find(x=>x.id===profile.id),profile);assert.equal(await profileForm.locator('[name=workerId]').inputValue(),'');assert.equal(await profileForm.locator('[name=effectiveFrom]').inputValue(),'');
-   await choose(payoutForm,'payrollProfileId',session?`${name} · 4 sessions · ₹1,000`:`${name} · Monthly ₹1,000`);
+   await choose(payoutForm,'payrollProfileId',session?`${name} · 4 sessions · ₹1,000.00`:`${name} · Monthly ₹1,000.00`);
    const period=`QA-UI-${index}-FIRST`;await payoutForm.locator('[name=periodLabel]').fill(period);await payoutForm.locator('[name=deductions]').fill('200');if(session){await payoutForm.locator('[name=sessionsCovered]').fill('4');await payoutForm.locator('[name=grossAmount]').fill('1000');}
    if(index===0){
     await real('POST','/__qa/audit/'+nonce,true,204);
@@ -76,7 +108,7 @@ const server=http.createServer((req,res)=>{
    const submit=async()=>{const n=writes.length;await payoutForm.getByRole('button',{name:'Record payout & generate payslip',exact:true}).click();await page.waitForFunction(()=>[...document.querySelectorAll('form')].every(f=>f.getAttribute('aria-busy')==='true'));await payoutForm.evaluate(f=>f.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true})));await notice.getByText('Payout recorded and payslip generated.',{exact:true}).waitFor();await loaded();assert.equal(writes.length,n+1);assert.equal(writes.at(-1).status,201);};
    await submit();const first=writes.at(-1).result;assert.equal(first.netAmount,800);assert.equal(first.reference,null);assert.equal(first.identitySource,'PayoutSnapshot');assert.equal(await payoutForm.locator('[name=periodLabel]').inputValue(),'');
    await verifyRegister('saved',[first]);await page.reload();await loaded();await verifyRegister('reloaded',[first]);
-   const label=session?`${name} · 4 sessions · ₹1,000`:`${name} · Monthly ₹1,000`;await choose(payoutForm,'payrollProfileId',label);
+   const label=session?`${name} · 4 sessions · ₹1,000.00`:`${name} · Monthly ₹1,000.00`;await choose(payoutForm,'payrollProfileId',label);
    await payoutForm.locator('[name=periodLabel]').fill(`QA-UI-${index}-RECOVERED`);await payoutForm.locator('[name=deductions]').fill('2000');if(session){await payoutForm.locator('[name=sessionsCovered]').fill('4');await payoutForm.locator('[name=grossAmount]').fill('1000');}
    await payoutForm.getByRole('button',{name:'Record payout & generate payslip',exact:true}).click();await notice.getByText('Deductions cannot exceed the gross payout amount.',{exact:true}).waitFor();await loaded();assert.equal(writes.at(-1).status,400);assert.equal(await payoutForm.locator('[name=deductions]').inputValue(),'2000');
    await payoutForm.locator('[name=deductions]').fill('200');await submit();const second=writes.at(-1).result;assert.equal(second.netAmount,800);await verifyRegister('denied-recovered',[first,second]);
@@ -88,6 +120,6 @@ const server=http.createServer((req,res)=>{
    assert.equal(writes.filter(x=>x.status===201).length,3);assert.equal(writes.filter(x=>x.status===400).length,1);assert.equal(writes.filter(x=>x.status===500).length,index===0?1:0);assert.ok(reads.length>0);
    await context.close();console.log(`PAYROLL BROWSER PASS: ${width}px/${theme}/${session?'staff-session':'teacher-monthly'}, six register stages, real UI saved/400-recovered/history/legacy/no duplicate/null.`);
   }
-  assert.equal(checks.length,24);fs.writeFileSync(path.join(evidence,'receipt.json'),JSON.stringify({classification:'real browser/Identity/API/owned SQL; physical devices NOT RUN',checks},null,2));console.log('PAYROLL BROWSER PASS: 4 journeys /24 register states; screenshots '+evidence);
+  assert.equal(checks.length,process.env.QA_PAYROLL_PRESENTATION==='baseline'?2:24);fs.writeFileSync(path.join(evidence,'receipt.json'),JSON.stringify({classification:process.env.QA_PAYROLL_PRESENTATION==='baseline'?'diagnostic NOT ACCEPTED':'real browser/Identity/API/owned SQL; physical devices NOT RUN',checks},null,2));console.log('PAYROLL BROWSER RECEIPT: '+checks.length+' register states; screenshots '+evidence);
  }finally{if(browser)await browser.close();await new Promise(r=>server.close(r));}
 })().catch(e=>{console.error(e);process.exitCode=1;});

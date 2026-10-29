@@ -4,6 +4,8 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import { WorkspaceNav } from "@/components/workspace-nav";
 import { academyApi, apiHeaders } from "@/lib/api";
 import { StandardDateField } from "@/components/standard-date-field";
+import { StandardSelectField } from "@/components/design-system/controls";
+import styles from "@/components/design-system/operations-workspace.module.css";
 
 type Academy = { id: string; name: string };
 type Student = { id: string; firstName: string; lastName: string };
@@ -63,7 +65,8 @@ export default function EnrollmentsPage() {
       if (!response.ok) {
         if (response.status >= 500) throw new Error();
         const payload = await response.json().catch(() => null);
-        setMessage(response.status === 409 ? "This student is already actively enrolled in that batch." : typeof payload?.message === "string" ? payload.message : "The change was not accepted. Your draft has been retained.");
+        const explanation = typeof payload?.message === "string" ? payload.message.trim() : "";
+        setMessage(explanation || (response.status === 409 ? "The change conflicts with the current enrolment rules. Your draft has been retained." : "The change was not accepted. Your draft has been retained."));
         return;
       }
       reset?.(); setMessage(success);
@@ -100,24 +103,24 @@ export default function EnrollmentsPage() {
   const studentName = (id: string) => { const student = students.find((item) => item.id === id); return student ? `${student.firstName} ${student.lastName}` : "Unknown student"; };
   const batchName = (id: string) => batches.find((item) => item.id === id)?.name ?? "Unknown batch";
 
-  return <main className="enterprise-settings enterprise-legacy-standard min-h-screen bg-slate-950 text-slate-100"><WorkspaceNav /><div className="mx-auto max-w-6xl px-6 py-10">
-    <p className="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-300">Learning</p><h1 className="mt-3 text-4xl font-semibold tracking-tight">Student enrolments</h1><p className="mt-3 text-slate-300">Connect each learner to the batch they attend. Only active enrolments can be marked for attendance.</p>
+  return <main className={`${styles.page} enterprise-settings enterprise-legacy-standard min-h-screen bg-slate-950 text-slate-100`}><WorkspaceNav /><div className={styles.body}>
+    <header className={styles.heading}><span aria-hidden="true">↗</span><div><p>Learning</p><h1>Student enrolments</h1></div></header>
     {message && <p role="status" aria-live="polite" className="mt-6 rounded-lg border border-amber-700/50 bg-amber-950/40 p-4 text-sm text-amber-100">{message}</p>}
-    <section className="mt-8 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]"><form onSubmit={createEnrollment} className="rounded-2xl border border-slate-800 bg-slate-900 p-6"><h2 className="text-xl font-semibold">Enrol a student</h2><fieldset disabled={saving || !academy} className="m-0 min-w-0 border-0">
-      <select value={studentId} onChange={(event) => setStudentId(event.target.value)} className="mt-5 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" required><option value="">Select student</option>{students.map((student) => <option key={student.id} value={student.id}>{student.firstName} {student.lastName}</option>)}</select>
-      <select value={batchId} onChange={(event) => setBatchId(event.target.value)} className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" required><option value="">Select batch</option>{batches.map((batch) => <option key={batch.id} value={batch.id}>{batch.name}</option>)}</select>
-      <div className="mt-4"><StandardDateField name="startDate" label="Start date" value={startDate} onChange={setStartDate} /></div><select value={initialStatus} onChange={(event) => setInitialStatus(event.target.value)} className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"><option>Active</option><option>Waitlisted</option></select>
-      <button disabled={saving || !academy || !students.length || !batches.length} className="mt-5 w-full rounded-lg bg-cyan-400 px-4 py-2.5 font-semibold text-slate-950 hover:bg-cyan-300 disabled:opacity-60">Enrol student</button></fieldset>
+    <section className={styles.layout}><form onSubmit={createEnrollment} className={styles.panel} aria-label="Enrol a student" aria-busy={saving}><h2>Enrol a student</h2><fieldset disabled={saving || !academy} className={styles.fields}>
+      <StandardSelectField name="student" label="Student (required)" value={studentId} onChange={setStudentId} disabled={saving || !academy} required placeholder="Select student" options={students.map(student => ({ value: student.id, label: `${student.firstName} ${student.lastName}` }))} />
+      <StandardSelectField name="batch" label="Batch (required)" value={batchId} onChange={setBatchId} disabled={saving || !academy} required placeholder="Select batch" options={batches.map(batch => ({ value: batch.id, label: batch.name }))} />
+      <StandardDateField name="startDate" label="Start date (optional)" value={startDate} onChange={setStartDate} disabled={saving || !academy} />
+      <StandardSelectField name="initial-status" label="Initial status" value={initialStatus} onChange={value => { if (value) setInitialStatus(value); }} disabled={saving || !academy} placeholder="Select initial status" options={["Active", "Waitlisted"].map(value => ({ value, label: value }))} />
+      <button disabled={saving || !academy || !students.length || !batches.length} className={`${styles.action} ${styles.primary}`}>Enrol student</button></fieldset>
     </form>
-    <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6"><h2 className="text-xl font-semibold">Current enrolments</h2>{enrollments.length === 0 ? <p className="mt-6 text-slate-400">No students enrolled yet.</p> : <ul className="mt-5 space-y-3">{enrollments.map((enrollment) => {
+    <section className={styles.panel}><h2>Current enrolments</h2>{enrollments.length === 0 ? <p className="mt-6 text-slate-400">No students enrolled yet.</p> : <ul className={styles.register}>{enrollments.map((enrollment) => {
       const draft = lifecycleDrafts[enrollment.id];
-      return <li key={enrollment.id} className="rounded-lg border border-slate-700 bg-slate-950 p-4">
+      return <li key={enrollment.id} className={styles.record}>
         <div className="font-medium">{studentName(enrollment.studentId)}</div><div className="mt-1 text-sm text-cyan-200">{batchName(enrollment.batchId)}</div>
         <div className="mt-2 text-sm text-slate-400">Started {enrollment.startDate}{enrollment.endDate ? ` · Ended ${enrollment.endDate}` : ""} · Current status: {enrollment.status}</div>
         <form className="mt-3" onSubmit={(event) => { event.preventDefault(); if (draft) void updateStatus(enrollment, draft.status, draft.reason); }}>
           <fieldset disabled={saving || !academy} className="m-0 min-w-0 border-0">
-            <label htmlFor={`status-${enrollment.id}`} className="block text-sm font-medium">Lifecycle status</label>
-            <select id={`status-${enrollment.id}`} value={draft?.status ?? enrollment.status} onChange={(event) => chooseStatus(enrollment, event.target.value)} disabled={saving || savingId === enrollment.id} className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm"><option>Active</option><option>Waitlisted</option><option>Paused</option><option>Completed</option><option>Withdrawn</option><option>Cancelled</option></select>
+            <StandardSelectField name={`status-${enrollment.id}`} label={`Lifecycle status for ${studentName(enrollment.studentId)}`} value={draft?.status ?? enrollment.status} onChange={value => { if (value) chooseStatus(enrollment, value); }} disabled={saving || savingId === enrollment.id} placeholder="Select lifecycle status" options={["Active", "Waitlisted", "Paused", "Completed", "Withdrawn", "Cancelled"].map(value => ({ value, label: value }))} />
             {draft && <div className="mt-3 space-y-3">
               <p className="text-sm text-slate-300">Review change: {enrollment.status} → {draft.status}. Nothing changes until you save.</p>
               {draft.status !== "Active" && <div>
@@ -125,9 +128,9 @@ export default function EnrollmentsPage() {
                 <textarea id={`reason-${enrollment.id}`} value={draft.reason} onChange={(event) => { const reason = event.target.value; if (!pending.current) setLifecycleDrafts(previous => ({ ...previous, [enrollment.id]: { ...draft, reason } })); }} required rows={3} className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm" aria-describedby={`reason-help-${enrollment.id}`} />
                 <p id={`reason-help-${enrollment.id}`} className="mt-1 text-xs text-slate-400">Explain this status change. Avoid unnecessary sensitive personal information.</p>
               </div>}
-              <div className="flex flex-wrap gap-2">
-                <button type="submit" disabled={saving} className="rounded-lg bg-cyan-400 px-4 py-2 font-semibold text-slate-950 disabled:opacity-60">Save status</button>
-                <button type="button" disabled={saving} onClick={() => cancelStatus(enrollment.id)} className="rounded-lg border border-slate-700 px-4 py-2">Cancel change</button>
+              <div className={styles.actions}>
+                <button type="submit" disabled={saving} className={`${styles.action} ${styles.primary}`}>Save status</button>
+                <button type="button" disabled={saving} onClick={() => cancelStatus(enrollment.id)} className={styles.action}>Cancel change</button>
               </div>
             </div>}
           </fieldset>

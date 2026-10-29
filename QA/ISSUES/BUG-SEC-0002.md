@@ -1,5 +1,38 @@
 # BUG-SEC-0002 — CSV quoting does not neutralize spreadsheet formula cells
 
+2026-10-23 [Native Reports actual CSV](../REPORTS/API_IMAGE_REPORT_BROWSER_2026-10-23.md):
+four real-login mobile/desktop light/dark downloads preserve exact SQL amounts,
+one own row/formula-like student name with leading tab inside quoted field and
+no foreign sentinel. Exact bytes/hashes retained, not spreadsheet import/save/
+reopen or physical-device acceptance. Issue remains OPEN; no universal safety claim.
+
+## Bounded local export repair — 21 October 2026
+
+Academy register, audit-log and browser Reports downloads now share the same
+spreadsheet-view text policy: quote/escape each cell and prefix formula-like or
+leading-control text with a tab **inside** the quoted cell. Whitespace, format
+marks, apostrophe prefixes and full-width formula markers are covered. Typed
+numeric values are not treated as untrusted strings. Stored records, financial
+calculations, authorization, filters and source query limits are unchanged.
+
+Final SQL successor: run7a2076155e0744069a61a9d18e9c16b6 passed32actual export
+Identity/HTTP/SQL checks plus retained Access regression, exit0/160.8s/102+7
+migrations/no429/exact owned cleanup. The first below-3GiB attempt created no
+resources; RAM later recovered naturally and the unchanged guard passed. No restart
+or weakened assertions. SQL gate now PASS, not issue/client/device/release closure.
+
+27 .NET checks (including scoped read-only InMemory controller output), 27 actual
+TypeScript checks, four native browser Blob/anchor downloads, full API 2861/2861,
+TypeScript and targeted lint passed. Native SQL/Identity/HTTP gate is prepared
+and builds, but a below-3GiB host-memory preflight stopped it before container
+creation; that first attempt is historical and superseded by the final SQL run above.
+Excel/LibreOffice import/save/reopen and physical
+devices remain unaccepted. No universal or lossless CSV-safety claim.
+
+The export UI explains the intentional leading-tab data and programmatic-import
+trade-off. [Report](../REPORTS/CSV_EXPORT_GUARD_2026-10-21.md). Issue remains **OPEN**;
+the original static baseline below is retained, not the latest implementation state.
+
 | Field | Value |
 | --- | --- |
 | Status | OPEN |

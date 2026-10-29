@@ -15,7 +15,7 @@ async function page(config={}){
  const data={batches:config.batches??batches,sessions:config.sessions??[{...session,...config.session}],events:config.events??[], 'makeup-classes':config.makeups??[],students:[{id:'s',firstName:'Synthetic',lastName:'Student'}],teachers:config.teachers??teachers,courses:[{id:'c',name:'Synthetic subject'}],enrollments:[{batchId:'b',studentId:'s',status:'Active'}]};
  const api=async(url,init={})=>{calls.push({url,...init});const key=url.split('/').at(-1);return{ok:true,status:200,json:async()=>url==='/api/academies'?[{id:'owned'}]:data[key]};};
  const clock=config.now?class extends Date{constructor(...args){super(...(args.length?args:[config.now]));}}:Date;
- new Function('require','module','exports','Date','setTimeout','clearTimeout',code)(n=>n==='react/jsx-runtime'?jsx:n==='react'?react:n==='@/lib/api'?{academyApi:api}:(()=>{throw Error(n)})(),module,module.exports,clock,fn=>{timers.set(++timerId,fn);return timerId;},id=>timers.delete(id));
+ new Function('require','module','exports','Date','setTimeout','clearTimeout',code)(n=>n==='react/jsx-runtime'?jsx:n==='react'?react:n.endsWith('.module.css')?{default:{}}:n==='@/lib/api'?{academyApi:api}:(()=>{throw Error(n)})(),module,module.exports,clock,fn=>{timers.set(++timerId,fn);return timerId;},id=>timers.delete(id));
  const render=()=>{index=effectIndex=0;return module.exports.default();};
  const initial=render();for(let i=0;i<4;i++){for(const fn of effects.splice(0))fn();for(const [id,fn]of timers){timers.delete(id);fn();}await new Promise(r=>setImmediate(r));render();}
  if(!config.keepCurrentMonth)state.set(8,new Date(config.month??'2026-10-01T00:00:00Z'));

@@ -1,4 +1,5 @@
 using AcademyDesk.Api.Data;
+using AcademyDesk.Api.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -23,5 +24,5 @@ public sealed class AcademyExportsController(AcademyDeskDbContext db) : Controll
         if (string.IsNullOrEmpty(csv)) return NotFound();
         return File(System.Text.Encoding.UTF8.GetBytes(csv), "text/csv", $"academydesk-{resource}.csv");
     }
-    private static string Csv(params object?[] values) => string.Join(',', values.Select(value => $"\"{(value?.ToString() ?? string.Empty).Replace("\"", "\"\"")}\""));
+    private static string Csv(params object?[] values) => SpreadsheetCsv.Row(values);
 }

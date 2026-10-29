@@ -19,17 +19,20 @@ const server=http.createServer((req,res)=>{try{
    page.on('pageerror',e=>pageErrors.push(e.message));page.on('console',m=>{if(m.type()==='error')pageErrors.push(m.text());});
    await context.addInitScript(theme=>{localStorage.setItem('academydesk.theme',theme);localStorage.setItem('academydesk.accessToken.AcademyAdmin','synthetic-schedule-token');},theme);
    const sessions=[{id:'existing',batchId:'b',startUtc:'2026-10-15T04:30:00Z',endUtc:'2026-10-15T05:30:00Z',deliveryMode:'InPerson',roomName:null,status:'Scheduled'}];
+   let releasePost;const pendingPost=new Promise(resolve=>{releasePost=resolve;});
    await context.route('**/*',async route=>{
     const request=route.request(),url=new URL(request.url());
     if(url.pathname.startsWith('/api/')&&['localhost','127.0.0.1'].includes(url.hostname)){
      const method=request.method();calls.push({path:url.pathname,method,body:request.postDataJSON()});
      if(['POST','PUT'].includes(method)){
       assert.match(url.pathname,/^\/api\/academies\/owned\/sessions(\/existing)?$/);
+      if(method==='POST')await pendingPost;
       if(scenario==='rejected')return route.fulfill({status:400,contentType:'application/json',body:'{}',headers:{'Access-Control-Allow-Origin':origin}});
       const body=request.postDataJSON();if(method==='POST')sessions.push({...body,id:'created',status:'Scheduled'});else Object.assign(sessions[0],body);
       return route.fulfill({status:method==='POST'?201:204,body:'',headers:{'Access-Control-Allow-Origin':origin}});
      }
      assert.equal(method,'GET');
+     if(['/api/academies/owned/events','/api/academies/owned/makeup-classes','/api/academies/owned/students','/api/academies/owned/courses','/api/academies/owned/enrollments'].includes(url.pathname))return route.fulfill({status:200,headers:{'Access-Control-Allow-Origin':origin},contentType:'application/json',body:'[]'});
      if(scenario==='refresh-failure'&&calls.some(x=>['POST','PUT'].includes(x.method))&&url.pathname.endsWith('/sessions'))return route.fulfill({status:503,body:'{}',headers:{'Access-Control-Allow-Origin':origin}});
      const data={'/api/academies':[{id:'owned',name:'Synthetic academy',enabledModulesJson:'["Core"]'}],'/api/auth/session':{academyId:'owned',displayName:'Synthetic admin',roles:['AcademyAdmin'],isPlatformOwner:false},'/api/portal/announcements':[], '/api/academies/owned/batches':[{id:'b',name:'Fixture batch'}],'/api/academies/owned/teachers':[], '/api/academies/owned/branches':[], '/api/academies/owned/sessions':sessions};
      assert.ok(Object.hasOwn(data,url.pathname));return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(data[url.pathname]),headers:{'Access-Control-Allow-Origin':origin}});
@@ -37,19 +40,26 @@ const server=http.createServer((req,res)=>{try{
     if(url.origin===origin||url.protocol==='data:')return route.continue();return route.abort('blockedbyclient');
    });
    await page.goto(origin+'/schedule');await page.getByLabel('Status for Fixture batch').waitFor();
-   const start=page.getByLabel('Start time (IST)'),end=page.getByLabel('End time (IST)');
-   await start.fill('2026-10-16T10:00');await end.fill('2026-10-16T11:00');await page.getByLabel('Room',{exact:true}).fill('Synthetic room');
+   if(width===320){const nav=page.locator('.enterprise-mobile-workspace-nav'),toggle=nav.locator('summary');assert.match(await toggle.innerText(),/Class schedule/);await toggle.click();await nav.getByRole('link',{name:'Calendar',exact:true}).click();await page.waitForURL('**/calendar');await page.locator('main.workspace-calendar').waitFor();const back=page.locator('.enterprise-mobile-workspace-nav');await back.locator('summary').click();await back.getByRole('link',{name:'Class schedule',exact:true}).click();await page.waitForURL('**/schedule');await page.getByLabel('Status for Fixture batch').waitFor();assert.equal(await back.locator('details').getAttribute('open'),null,'Chooser collapses after navigation');}
+   assert.equal(await page.locator('input[type="datetime-local"],input[type="time"]').count(),0,'No native OS date/time controls');
+   await page.getByRole('button',{name:'Schedule class',exact:true}).click();assert.equal(calls.filter(x=>x.method==='POST').length,0,'Empty date/time blocked');await page.getByRole('alert').filter({hasText:'Start (IST) is required.'}).waitFor();
+   await require('./shared-picker-actions.cjs').date(page,'schedule-start-date','2026-10-16');await page.getByRole('button',{name:'Schedule class',exact:true}).click();assert.equal(calls.filter(x=>x.method==='POST').length,0,'Partial date-only blocked');
+   const start=page.locator('input[name="schedule-start-date"]'),end=page.locator('input[name="schedule-end-date"]');
+   await require('./shared-picker-actions.cjs').dateTime(page,'schedule-start','2026-10-16T10:37');await require('./shared-picker-actions.cjs').dateTime(page,'schedule-end','2026-10-16T11:37');await page.getByLabel('Room',{exact:true}).fill('Synthetic room');
+   const validity=await page.locator('form').evaluate(f=>({valid:f.checkValidity(),fields:[...f.elements].filter(e=>e.willValidate&&!e.validity.valid).map(e=>({type:e.type,name:e.name,label:e.getAttribute('aria-label'),message:e.validationMessage}))}));assert.ok(validity.valid,JSON.stringify(validity));
    await page.getByRole('button',{name:'Schedule class',exact:true}).click();
-   const notice=page.getByRole('status');await notice.filter({hasText:scenario==='rejected'?'could not be saved':'Class scheduled successfully.'}).waitFor();
+   await page.locator('form[aria-busy="true"]').waitFor();assert.ok(await page.locator('form .standard-date-trigger,form .standard-time-trigger').evaluateAll(es=>es.length===4&&es.every(el=>el.disabled)));releasePost();
+   const notice=page.getByRole('status');try{await notice.filter({hasText:scenario==='rejected'?'could not be saved':'Class scheduled successfully.'}).waitFor();}catch(e){await page.screenshot({path:path.join(evidence,'failure.png'),fullPage:true});fs.writeFileSync(path.join(evidence,'failure-state.json'),JSON.stringify({calls,pageErrors,notice:await notice.allTextContents(),fields:await page.locator('form input').evaluateAll(es=>es.map(el=>({name:el.name,type:el.type,value:el.value,valid:el.validity.valid})))},null,2));throw e;}
    await page.getByRole('button',{name:'Schedule class',exact:true}).waitFor();await page.waitForFunction(()=>!document.querySelector('form button').disabled);
-   assert.equal(await start.inputValue(),scenario==='rejected'?'2026-10-16T10:00':'');assert.equal(calls.filter(x=>x.method==='POST').length,1);
+   assert.equal(await start.inputValue(),scenario==='rejected'?'2026-10-16':'');assert.equal(await page.locator('input[name="schedule-start-time"]').inputValue(),scenario==='rejected'?'10:37':'');assert.equal(await end.inputValue(),scenario==='rejected'?'2026-10-16':'');assert.equal(calls.filter(x=>x.method==='POST').length,1);
+   assert.equal(await page.locator('form').getByRole('alert').count(),0,'Resolved required alerts do not resurrect after successful reset');
    if(scenario==='refresh-failure')assert.match(await notice.textContent(),/could not be refreshed.*do not submit/);
    if(scenario==='normal')assert.equal(await page.getByLabel('Status for Fixture batch').count(),2);
-   await page.getByLabel('Status for Fixture batch').first().selectOption('Cancelled');
+   await page.getByLabel('Status for Fixture batch').first().click();await page.getByRole('option',{name:'Cancelled',exact:true}).click();
    await notice.filter({hasText:scenario==='rejected'?'could not be updated':'Class status updated to Cancelled.'}).waitFor();await page.waitForFunction(()=>!document.querySelector('form button').disabled);
    assert.equal(calls.filter(x=>x.method==='PUT').length,1);
    if(scenario==='refresh-failure')assert.match(await notice.textContent(),/could not be refreshed.*do not submit/);
-   const payload=calls.find(x=>x.method==='POST').body;assert.equal(payload.startUtc,'2026-10-16T04:30:00.000Z');assert.equal(payload.endUtc,'2026-10-16T05:30:00.000Z');assert.equal(payload.teacherId,null);assert.equal(payload.branchId,null);
+   const payload=calls.find(x=>x.method==='POST').body;assert.equal(payload.startUtc,'2026-10-16T05:07:00.000Z');assert.equal(payload.endUtc,'2026-10-16T06:07:00.000Z');assert.equal(payload.teacherId,null);assert.equal(payload.branchId,null);
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await notice.scrollIntoViewIfNeeded();await page.screenshot({path:path.join(evidence,`${width}-${theme}-${scenario}.png`),fullPage:true});
    // Deliberate 400/503 resource errors are expected; JS/hydration/other errors never are.
    const expectedCode=scenario==='rejected'?'400':scenario==='refresh-failure'?'503':null;

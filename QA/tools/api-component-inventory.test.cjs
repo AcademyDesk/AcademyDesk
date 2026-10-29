@@ -1,0 +1,12 @@
+'use strict';
+const{test}=require('node:test'),a=require('node:assert/strict'),{inventory,safeRelative}=require('./api-component-inventory.cjs');
+function fixture(){return{deps:{runtimeTarget:{name:'synthetic'},targets:{synthetic:{'AcademyDesk.Api/1.0.0':{dependencies:{Example:'1.2.3'},runtime:{'AcademyDesk.Api.dll':{}}},'Example/1.2.3':{runtime:{'lib/net10.0/Example.dll':{}},resources:{'lib/net10.0/fr/Example.resources.dll':{locale:'fr'}},runtimeTargets:{'runtimes/linux-x64/native/example.so':{}}}}},libraries:{'AcademyDesk.Api/1.0.0':{type:'project',sha512:''},'Example/1.2.3':{type:'package',sha512:'sha512-'+Buffer.alloc(64,1).toString('base64')}}},manifest:['AcademyDesk.Api.dll','Example.dll','fr/Example.resources.dll','runtimes/linux-x64/native/example.so'].map(relative=>({path:relative,bytes:12,sha256:'a'.repeat(64)}))};}
+test('offline inventory links every declared runtime asset and complete graph to verified publish hashes without claiming release approval',()=>{
+ const f=fixture(),r=inventory(f.deps,f.manifest);a.equal(r.componentCount,2);a.equal(r.packageCount,1);a.equal(r.declaredAssetCount,4);a.equal(r.productionApproved,false);a.equal(r.wholeImageSbomComplete,false);a.equal(r.licenseReviewComplete,false);a.equal(r.vulnerabilityScanComplete,false);a.equal(r.components[1].packageArchiveVerified,false);
+});
+test('missing files, unresolved dependencies, invalid integrity, extra targets and graph mismatch never qualify',()=>{
+ for(const mutate of[f=>f.manifest.pop(),f=>f.manifest.push(f.manifest[0]),f=>f.deps.targets.synthetic['AcademyDesk.Api/1.0.0'].dependencies.Example='9.9.9',f=>f.deps.libraries['Example/1.2.3'].sha512='not-a-hash',f=>delete f.deps.libraries['Example/1.2.3'],f=>f.deps.targets.other={},f=>delete f.deps.targets.synthetic['AcademyDesk.Api/1.0.0'].dependencies.Example,f=>f.deps.targets.synthetic['Example/1.2.3'].resources['lib/net10.0/fr/Example.resources.dll'].locale='../private',f=>f.deps.targets.synthetic['Example/1.2.3'].unknownAssets={}]){const f=fixture();mutate(f);a.throws(()=>inventory(f.deps,f.manifest));}
+});
+test('publish paths cannot escape the accepted extraction root or use Windows drive/UNC paths',()=>{
+ for(const value of['../secrets','/absolute','C:/private','dir/../private','dir\\private','//server/share','dir//file','file\nprivate','file\0private'])a.throws(()=>safeRelative(value));a.equal(safeRelative('runtimes/linux-x64/native/example.so'),'runtimes/linux-x64/native/example.so');
+});

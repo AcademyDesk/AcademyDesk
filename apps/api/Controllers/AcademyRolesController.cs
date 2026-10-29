@@ -1,5 +1,6 @@
 using System.Text.Json;
 using AcademyDesk.Api.Domain.Identity;
+using AcademyDesk.Api.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -22,6 +23,7 @@ public sealed class AcademyRolesController(UserManager<ApplicationUser> users, R
     }
 
     [HttpPost]
+    [AtomicAcademyMutation(IncludeIdentity = true)]
     public async Task<ActionResult> Create(Guid academyId, CreateAcademyRoleRequest request)
     {
         if (!await IsAdmin(academyId)) return Forbid();
@@ -34,6 +36,7 @@ public sealed class AcademyRolesController(UserManager<ApplicationUser> users, R
     }
 
     [HttpPut("staff/{staffId:guid}/assignment")]
+    [AtomicAcademyMutation(IncludeIdentity = true)]
     public async Task<ActionResult> Assign(Guid academyId, Guid staffId, RoleAssignmentRequest request)
     {
         if (!await IsAdmin(academyId)) return Forbid();

@@ -1,5 +1,47 @@
 # BUG-DATA-0013 — Access-review sign-off omits reviewer identity and record correlation
 
+## Qualified linked browser return — 26 October 2026, OPEN
+
+Backend2995tests/native49HTTP/four rollback controls now linked to fresh UI41
+checks/627file export/eight synthetic journeys/four actual Owner-login native
+sign-offs/both themes/mobile-desktop/one additional audit-fault recovery. Exact
+four browser reviews/two tasks/eight audits/actor correlations/13table fingerprints/
+owned cleanup/original services/inventory/API200/independent qualifier PASS.
+SQL3a0152f3563f44d883c4310f9355f566/window a7c362f7409842f8a9915f03dc702168.
+See `QA/REPORTS/REVIEW_SIGNOFF_FEEDBACK_2026-10-26.md`. Wider concurrency,
+physical devices and release remain OPEN; no full issue or production closure.
+
+## Qualified provenance repair — 26 October 2026, OPEN
+
+Fresh API3368e36621f942bfac353b8ac92824da2995tests/65actual image files;
+SQL23c4ffbcb9054108a85c6505a62f3b2f49HTTP/five attributed sign-offs/four
+500rollback controls/final5reviews3linked tasks10audits. Spoofed actor/scope fields
+ignored, role/tenant/module refusals and overlong400remain no-write. All13tables
+unchanged on faults. Exact originals/inventory/cleanup/independent qualifier PASS.
+Frontend18targeted/41combined checks pass; fresh lint/build/browser pending. Separate
+sign-off concurrency/devices/wider release remain OPEN; historical table below
+describes original discovery, not the current scoped runtime evidence.
+
+## 25 October 2026 provenance/audit continuation — OPEN
+
+Runtime baseline confirmed46ordinary HTTP checks/three missing-provenance200
+sign-offs/two unsafe audit outcomes. Ordinary generic audit500 leaves review/task
+saved; platform200has no required audit. Anonymous/foreign/Teacher/Student HTTP
+refusals remained enforced. Disposable SQL `90c6a162794c44b0b100f1569ab612fc`,
+window `39a3d8718f764732af258c87af9be85e`; exact cleanup/originals/inventory PASS.
+
+Minimal controller repair uses the existing server UserManager, links review/
+optional task/correlated domain audit/receipt, and opts into existing domain audit
+transaction including the existing platform path. Follow-up remains unassigned,
+notes remain optional; overlong follow-up description fails400before save. No
+schema, model tool or role/tenant permission expansion. All2995API tests PASS,
+including13new real EF/UserManager/controller/boundary cases. Fresh image/native
+rollback/recovery/qualification pending; see
+`QA/REPORTS/ACCESS_REVIEW_PROVENANCE_2026-10-25.md`.
+
+This is not issue closure; concurrency/live sign-off UI/device/critical/release
+acceptance remains OPEN. Static discovery metadata below is historical.
+
 | Field | Value |
 | --- | --- |
 | Status | OPEN |

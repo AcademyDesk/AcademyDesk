@@ -2079,6 +2079,596 @@ namespace AcademyDesk.Api.Migrations
                     b.ToTable("MakeupClasses");
                 });
 
+            modelBuilder.Entity("AcademyDesk.Api.Domain.Entities.MeetingAccountReview", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AcademyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ActorUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("BindingId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("BindingVersion")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ConfirmedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("ExchangeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("ExpiresAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Generation")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ProtectedEnvelope")
+                        .IsRequired()
+                        .HasMaxLength(32768)
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("RegistrationFingerprint")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("ReviewHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExchangeId", "BindingVersion")
+                        .IsUnique();
+
+                    b.HasIndex("AcademyId", "Provider", "BindingId");
+
+                    b.HasIndex("AcademyId", "Provider", "ActorUserId", "ExchangeId");
+
+                    b.ToTable("MeetingAccountReviews", t =>
+                        {
+                            t.HasCheckConstraint("CK_MeetingAccountReview_State", "([Status] = 'AwaitingConfirmation' AND [Version] = 0 AND [ConfirmedAtUtc] IS NULL) OR ([Status] = 'ConfirmedNotConnected' AND [Version] = 1 AND [ConfirmedAtUtc] IS NOT NULL)");
+
+                            t.HasCheckConstraint("CK_MeetingAccountReview_Versions", "[Generation] > 0 AND [BindingVersion] > 0");
+                        });
+                });
+
+            modelBuilder.Entity("AcademyDesk.Api.Domain.Entities.MeetingCredentialRevocation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AcademyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ActorUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("BindingId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("BindingVersion")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DeadlineUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("ExchangeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("Fence")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Generation")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ProtectedEnvelope")
+                        .IsRequired()
+                        .HasMaxLength(32768)
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("RegistrationFingerprint")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExchangeId")
+                        .IsUnique();
+
+                    b.HasIndex("AcademyId", "Provider", "BindingId");
+
+                    b.HasIndex("AcademyId", "Provider", "ActorUserId", "ExchangeId");
+
+                    b.ToTable("MeetingCredentialRevocations", t =>
+                        {
+                            t.HasCheckConstraint("CK_MeetingCredentialRevocation_State", "([Status] IN ('Started','ManualRequired') AND [Version] = 0) OR ([Status] IN ('ProviderAcknowledged','OutcomeUnknown') AND [Version] = 1) OR ([Status] = 'ManualReportedUnverified' AND (([Provider] IN ('Microsoft365','Zoom') AND [Version] = 1) OR ([Provider] = 'GoogleWorkspace' AND [Version] IN (1,2))))");
+
+                            t.HasCheckConstraint("CK_MeetingCredentialRevocation_Versions", "[Generation] > 0 AND [BindingVersion] > 0");
+                        });
+                });
+
+            modelBuilder.Entity("AcademyDesk.Api.Domain.Entities.MeetingOAuthAttempt", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AcademyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ActorUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("BindingId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("ClaimedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ExpiresAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Generation")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ProtectedEnvelope")
+                        .IsRequired()
+                        .HasMaxLength(8192)
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("StateHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StateHash")
+                        .IsUnique();
+
+                    b.HasIndex("AcademyId", "ActorUserId", "ExpiresAtUtc");
+
+                    b.HasIndex("AcademyId", "Provider", "BindingId");
+
+                    b.ToTable("MeetingOAuthAttempts", t =>
+                        {
+                            t.HasCheckConstraint("CK_MeetingOAuthAttempt_Generation", "[Generation] > 0");
+
+                            t.HasCheckConstraint("CK_MeetingOAuthAttempt_State", "([Status] = 'Pending' AND [Version] = 0 AND [ClaimedAtUtc] IS NULL) OR ([Status] = 'CallbackCaptured' AND [Version] = 1 AND [ClaimedAtUtc] IS NULL) OR ([Status] = 'Claimed' AND [Version] IN (1,2) AND [ClaimedAtUtc] IS NOT NULL)");
+                        });
+                });
+
+            modelBuilder.Entity("AcademyDesk.Api.Domain.Entities.MeetingOAuthCallback", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AcademyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ActorUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AttemptId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ExpiresAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ProtectedEnvelope")
+                        .IsRequired()
+                        .HasMaxLength(65536)
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AttemptId")
+                        .IsUnique();
+
+                    b.HasIndex("AcademyId", "Provider", "ActorUserId", "AttemptId");
+
+                    b.ToTable("MeetingOAuthCallbacks", t =>
+                        {
+                            t.HasCheckConstraint("CK_MeetingOAuthCallback_State", "([Status] = 'Captured' AND [Version] = 0) OR ([Status] = 'Consumed' AND [Version] = 1)");
+                        });
+                });
+
+            modelBuilder.Entity("AcademyDesk.Api.Domain.Entities.MeetingOAuthExchange", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AcademyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ActorUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AttemptId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("BindingId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("BindingVersion")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DeadlineUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("Fence")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Generation")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ProtectedEnvelope")
+                        .IsRequired()
+                        .HasMaxLength(262144)
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("RegistrationFingerprint")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AttemptId")
+                        .IsUnique();
+
+                    b.HasIndex("AcademyId", "Provider", "BindingId");
+
+                    b.HasIndex("AcademyId", "Provider", "ActorUserId", "AttemptId");
+
+                    b.ToTable("MeetingOAuthExchanges", t =>
+                        {
+                            t.HasCheckConstraint("CK_MeetingOAuthExchange_State", "([Status] = 'Started' AND [Version] = 0) OR ([Status] = 'OutcomeUnknown' AND [Version] = 1) OR ([Status] = 'TokensQuarantined' AND [Version] >= 1 AND [Version] % 2 = 1) OR ([Status] = 'RefreshStarted' AND [Version] >= 2 AND [Version] % 2 = 0) OR ([Status] = 'RefreshUnknown' AND [Version] >= 3 AND [Version] % 2 = 1) OR ([Status] = 'RefreshAbandoned' AND [Version] >= 4 AND [Version] % 2 = 0)");
+
+                            t.HasCheckConstraint("CK_MeetingOAuthExchange_Versions", "[Generation] > 0 AND [BindingVersion] > 0");
+                        });
+                });
+
+            modelBuilder.Entity("AcademyDesk.Api.Domain.Entities.MeetingOperation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AcademyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ActorUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("IdempotencyKey")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("ProtectedEnvelope")
+                        .IsRequired()
+                        .HasMaxLength(32768)
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<Guid>("ReceiptId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("RequestHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("SourceVersion")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AcademyId", "ReceiptId")
+                        .IsUnique();
+
+                    b.HasIndex("AcademyId", "Kind", "IdempotencyKey")
+                        .IsUnique();
+
+                    b.ToTable("MeetingOperations", t =>
+                        {
+                            t.HasCheckConstraint("CK_MeetingOperation_Status", "[Status] IN ('Held','PendingDispatch','Leased','Dispatching','AwaitingReview')");
+
+                            t.HasCheckConstraint("CK_MeetingOperation_Version", "[Version] >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("AcademyDesk.Api.Domain.Entities.MeetingOutbox", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AcademyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("LeaseExpiresAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("LeaseId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("OperationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AcademyId", "OperationId")
+                        .IsUnique();
+
+                    b.ToTable("MeetingOutbox", t =>
+                        {
+                            t.HasCheckConstraint("CK_MeetingOutbox_Lease", "([LeaseId] IS NULL AND [LeaseExpiresAtUtc] IS NULL) OR ([LeaseId] IS NOT NULL AND [LeaseExpiresAtUtc] IS NOT NULL)");
+
+                            t.HasCheckConstraint("CK_MeetingOutbox_Version", "[Version] >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("AcademyDesk.Api.Domain.Entities.MeetingPreviewReceipt", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AcademyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ActorUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ExpiresAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("IdempotencyKey")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("ProtectedEnvelope")
+                        .IsRequired()
+                        .HasMaxLength(32768)
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RequestHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<DateTime?>("ReviewedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("SourceVersion")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AcademyId", "ActorUserId", "ExpiresAtUtc");
+
+                    b.HasIndex("AcademyId", "ActorUserId", "IdempotencyKey")
+                        .IsUnique();
+
+                    b.ToTable("MeetingPreviewReceipts");
+                });
+
+            modelBuilder.Entity("AcademyDesk.Api.Domain.Entities.MeetingProviderBinding", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AcademyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Generation")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AcademyId", "Provider")
+                        .IsUnique();
+
+                    b.ToTable("MeetingProviderBindings", t =>
+                        {
+                            t.HasCheckConstraint("CK_MeetingProviderBinding_Provider", "[Provider] IN ('GoogleWorkspace','Microsoft365','Zoom')");
+
+                            t.HasCheckConstraint("CK_MeetingProviderBinding_Status", "[Status] IN ('NotConnected','AuthorizationPending','VerificationRequired','Disconnected')");
+
+                            t.HasCheckConstraint("CK_MeetingProviderBinding_Versions", "[Version] >= 0 AND [Generation] >= 0");
+                        });
+                });
+
             modelBuilder.Entity("AcademyDesk.Api.Domain.Entities.MusicPiece", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2309,7 +2899,7 @@ namespace AcademyDesk.Api.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<DateTime>("PaidAtUtc")
+                    b.Property<DateTime?>("PaidAtUtc")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("PaymentMethod")
@@ -2755,6 +3345,10 @@ namespace AcademyDesk.Api.Migrations
                     b.Property<Guid?>("PendingRequestId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("ProtectedOnboardingState")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
                     b.Property<string>("ProtectedState")
                         .IsRequired()
                         .HasMaxLength(12000)
@@ -2823,6 +3417,56 @@ namespace AcademyDesk.Api.Migrations
                         .IsUnique();
 
                     b.ToTable("PentaMiniTurns");
+                });
+
+            modelBuilder.Entity("AcademyDesk.Api.Domain.Entities.PentaOnboardingDraft", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AcademyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ActorUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<long>("ContextVersion")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ExpiresAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ProtectedBody")
+                        .IsRequired()
+                        .HasMaxLength(16000)
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("Revision")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("SessionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AcademyId", "ActorUserId", "CreatedAtUtc");
+
+                    b.HasIndex("AcademyId", "ActorUserId", "SessionId");
+
+                    b.ToTable("PentaOnboardingDrafts");
                 });
 
             modelBuilder.Entity("AcademyDesk.Api.Domain.Entities.PentaTask", b =>
@@ -4024,6 +4668,87 @@ namespace AcademyDesk.Api.Migrations
                     b.Navigation("Academy");
                 });
 
+            modelBuilder.Entity("AcademyDesk.Api.Domain.Entities.MeetingAccountReview", b =>
+                {
+                    b.HasOne("AcademyDesk.Api.Domain.Entities.MeetingProviderBinding", null)
+                        .WithMany()
+                        .HasForeignKey("AcademyId", "Provider", "BindingId")
+                        .HasPrincipalKey("AcademyId", "Provider", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("AcademyDesk.Api.Domain.Entities.MeetingOAuthExchange", null)
+                        .WithMany()
+                        .HasForeignKey("AcademyId", "Provider", "ActorUserId", "ExchangeId")
+                        .HasPrincipalKey("AcademyId", "Provider", "ActorUserId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("AcademyDesk.Api.Domain.Entities.MeetingCredentialRevocation", b =>
+                {
+                    b.HasOne("AcademyDesk.Api.Domain.Entities.MeetingProviderBinding", null)
+                        .WithMany()
+                        .HasForeignKey("AcademyId", "Provider", "BindingId")
+                        .HasPrincipalKey("AcademyId", "Provider", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("AcademyDesk.Api.Domain.Entities.MeetingOAuthExchange", null)
+                        .WithMany()
+                        .HasForeignKey("AcademyId", "Provider", "ActorUserId", "ExchangeId")
+                        .HasPrincipalKey("AcademyId", "Provider", "ActorUserId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("AcademyDesk.Api.Domain.Entities.MeetingOAuthAttempt", b =>
+                {
+                    b.HasOne("AcademyDesk.Api.Domain.Entities.MeetingProviderBinding", null)
+                        .WithMany()
+                        .HasForeignKey("AcademyId", "Provider", "BindingId")
+                        .HasPrincipalKey("AcademyId", "Provider", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("AcademyDesk.Api.Domain.Entities.MeetingOAuthCallback", b =>
+                {
+                    b.HasOne("AcademyDesk.Api.Domain.Entities.MeetingOAuthAttempt", null)
+                        .WithMany()
+                        .HasForeignKey("AcademyId", "Provider", "ActorUserId", "AttemptId")
+                        .HasPrincipalKey("AcademyId", "Provider", "ActorUserId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("AcademyDesk.Api.Domain.Entities.MeetingOAuthExchange", b =>
+                {
+                    b.HasOne("AcademyDesk.Api.Domain.Entities.MeetingProviderBinding", null)
+                        .WithMany()
+                        .HasForeignKey("AcademyId", "Provider", "BindingId")
+                        .HasPrincipalKey("AcademyId", "Provider", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("AcademyDesk.Api.Domain.Entities.MeetingOAuthAttempt", null)
+                        .WithMany()
+                        .HasForeignKey("AcademyId", "Provider", "ActorUserId", "AttemptId")
+                        .HasPrincipalKey("AcademyId", "Provider", "ActorUserId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("AcademyDesk.Api.Domain.Entities.MeetingOutbox", b =>
+                {
+                    b.HasOne("AcademyDesk.Api.Domain.Entities.MeetingOperation", null)
+                        .WithOne()
+                        .HasForeignKey("AcademyDesk.Api.Domain.Entities.MeetingOutbox", "AcademyId", "OperationId")
+                        .HasPrincipalKey("AcademyDesk.Api.Domain.Entities.MeetingOperation", "AcademyId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("AcademyDesk.Api.Domain.Entities.NotificationReadReceipt", b =>
                 {
                     b.HasOne("AcademyDesk.Api.Domain.Entities.Notification", null)
@@ -4093,6 +4818,16 @@ namespace AcademyDesk.Api.Migrations
                 });
 
             modelBuilder.Entity("AcademyDesk.Api.Domain.Entities.PentaMiniTurn", b =>
+                {
+                    b.HasOne("AcademyDesk.Api.Domain.Entities.PentaMiniSession", null)
+                        .WithMany()
+                        .HasForeignKey("AcademyId", "ActorUserId", "SessionId")
+                        .HasPrincipalKey("AcademyId", "ActorUserId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("AcademyDesk.Api.Domain.Entities.PentaOnboardingDraft", b =>
                 {
                     b.HasOne("AcademyDesk.Api.Domain.Entities.PentaMiniSession", null)
                         .WithMany()

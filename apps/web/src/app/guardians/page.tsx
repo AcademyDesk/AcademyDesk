@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useState } from "react";
 import { WorkspaceNav } from "@/components/workspace-nav";
 import { academyApi, apiHeaders } from "@/lib/api";
 
@@ -45,59 +45,73 @@ export default function GuardiansPage() {
   const [editEmail, setEditEmail] = useState("");
   const [editPhone, setEditPhone] = useState("");
   const [savingId, setSavingId] = useState<string | null>(null);
-  async function load(id?: string) {
-    const academyId = id ?? academy?.id;
+  const load = useCallback(async (academyId: string | undefined, signal?: AbortSignal) => {
     if (!academyId) return;
     const [studentResponse, guardianResponse] = await Promise.all([
-      academyApi(`/api/academies/${academyId}/students`, { cache: "no-store" }),
+      academyApi(`/api/academies/${academyId}/students`, { cache: "no-store", signal }),
       academyApi(`/api/academies/${academyId}/guardians`, {
-        cache: "no-store",
+        cache: "no-store", signal,
       }),
     ]);
     if (!studentResponse.ok || !guardianResponse.ok) throw new Error();
-    const studentData: Student[] = await studentResponse.json();
+    const [studentData, guardianData]: [Student[], Guardian[]] = await Promise.all([studentResponse.json(), guardianResponse.json()]);
+    if (signal?.aborted) return;
+    if (!Array.isArray(studentData) || !Array.isArray(guardianData)) throw new Error();
     setStudents(studentData);
-    setGuardians(await guardianResponse.json());
-    if (!studentId && studentData.length) setStudentId(studentData[0].id);
+    setGuardians(guardianData);
+    setStudentId(current => current || studentData[0]?.id || "");
     setMessage("");
-  }
-  async function loadLinks(id: string) {
-    if (!academy || !id) return setLinks([]);
+  }, []);
+  async function readLinks(academyId: string, id: string, signal?: AbortSignal) {
     const response = await academyApi(
-      `/api/academies/${academy.id}/students/${id}/guardians`,
-      { cache: "no-store" },
+      `/api/academies/${academyId}/students/${id}/guardians`,
+      { cache: "no-store", signal },
     );
     if (!response.ok) throw new Error();
-    setLinks(await response.json());
+    const data: Link[] = await response.json();
+    if (!Array.isArray(data)) throw new Error();
+    return data;
   }
+  async function loadLinks(id: string) { if (academy && id) setLinks(await readLinks(academy.id, id)); }
   useEffect(() => {
+    const controller = new AbortController();
     async function initialise() {
       try {
         const response = await academyApi("/api/academies", {
-          cache: "no-store",
+          cache: "no-store", signal: controller.signal,
         });
+        if (controller.signal.aborted) return;
         if (response.status === 401)
           return setMessage(
             "Please sign in before managing parent contacts.",
           );
         if (!response.ok) throw new Error();
         const academies: Academy[] = await response.json();
+        if (controller.signal.aborted) return;
+        if (!Array.isArray(academies)) throw new Error();
         if (!academies[0])
           return setMessage("Create your academy and students first.");
         setAcademy(academies[0]);
-        await load(academies[0].id);
+        await load(academies[0].id, controller.signal);
       } catch {
+        if (controller.signal.aborted) return;
         setMessage(
           "Parent contacts could not be loaded. Confirm the API is running on port 5092.",
         );
       }
     }
     void initialise();
-  }, []);
+    return () => controller.abort();
+  }, [load]);
   useEffect(() => {
-    void loadLinks(studentId).catch(() =>
-      setMessage("Student-parent links could not be loaded."),
+    if (!academy || !studentId) return;
+    const controller = new AbortController();
+    void readLinks(academy.id, studentId, controller.signal).then(data => {
+      if (!controller.signal.aborted) setLinks(data);
+    }).catch(() =>
+      { if (!controller.signal.aborted) setMessage("Student-parent links could not be loaded."); },
     );
+    return () => controller.abort();
   }, [academy, studentId]);
   async function createGuardian(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -121,7 +135,7 @@ export default function GuardiansPage() {
     setLastName("");
     setEmail("");
     setPhone("");
-    await load();
+    await load(academy.id);
   }
   async function linkGuardian(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -171,7 +185,7 @@ export default function GuardiansPage() {
     if (!response.ok) return setMessage("The parent could not be updated.");
     setEditingId(null);
     setMessage("Parent updated.");
-    await load();
+    await load(academy.id);
   }
   async function toggleActive(guardian: Guardian) {
     if (!academy) return;
@@ -196,7 +210,7 @@ export default function GuardiansPage() {
     setMessage(
       guardian.isActive ? "Parent marked inactive." : "Parent reactivated.",
     );
-    await load();
+    await load(academy.id);
   }
   return (
     <main className="enterprise-settings enterprise-legacy-standard min-h-screen bg-slate-950 text-slate-100">
@@ -209,7 +223,7 @@ export default function GuardiansPage() {
           Parents
         </h1>
         {message && (
-          <p className="mt-6 rounded-lg border border-amber-700/50 bg-amber-950/40 p-4 text-sm text-amber-100">
+          <p role="status" aria-live="polite" className="enterprise-page-state mt-6 rounded-lg border border-amber-700/50 bg-amber-950/40 p-4 text-sm text-amber-100">
             {message}
           </p>
         )}
@@ -262,7 +276,7 @@ export default function GuardiansPage() {
             <h2 className="text-xl font-semibold">Link parent to student</h2>
             <select
               value={studentId}
-              onChange={(event) => setStudentId(event.target.value)}
+              onChange={(event) => { setStudentId(event.target.value); setLinks([]); }}
               className="mt-5 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
             >
               <option value="">Select student</option>

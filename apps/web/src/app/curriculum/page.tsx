@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import { WorkspaceNav } from "@/components/workspace-nav";
 import { StandardSelectField } from "@/components/design-system/controls";
 import { academyApi, apiHeaders } from "@/lib/api";
+import visual from "@/components/design-system/academic-workspace.module.css";
 
 type Academy = { id: string };
 type Course = { id: string; name: string };
@@ -124,9 +125,9 @@ export default function Curriculum() {
   const courseName = (id: string) =>
     courses.find((course) => course.id === id)?.name ?? "Course";
   return (
-    <main className="enterprise-settings curriculum-standard min-h-screen">
+    <main className={`enterprise-settings curriculum-standard min-h-screen ${visual.page}`}>
       <WorkspaceNav />
-      <div className="curriculum-content mx-auto max-w-6xl px-6 py-10">
+      <div className={`curriculum-content mx-auto max-w-6xl px-6 py-10 ${visual.body}`}>
         <header className="curriculum-heading">
           <div className="curriculum-title">
             <span className="curriculum-title-icon" aria-hidden="true">
@@ -152,6 +153,7 @@ export default function Curriculum() {
             <fieldset disabled={!academy || saving} className="curriculum-fields min-w-0 border-0 m-0">
               <StandardSelectField
                 name="course"
+                label="Course"
                 disabled={!academy || saving}
                 value={courseId}
                 onChange={setCourseId}
@@ -192,11 +194,11 @@ export default function Curriculum() {
               </div>
             </header>
             <div>
-              <b>{modules.filter((module) => !module.isPublished).length}</b>
+              <b>{academy ? modules.filter((module) => !module.isPublished).length : "—"}</b>
               <span>drafts awaiting review</span>
             </div>
             <div>
-              <b>{modules.filter((module) => module.isPublished).length}</b>
+              <b>{academy ? modules.filter((module) => module.isPublished).length : "—"}</b>
               <span>published modules</span>
             </div>
           </section>
@@ -207,12 +209,12 @@ export default function Curriculum() {
               <p>Curriculum planning</p>
               <h2>Syllabus register</h2>
             </div>
-            <span>{modules.length} modules</span>
+            <span>{academy ? `${modules.length} modules` : "Register unavailable"}</span>
           </header>
-          {modules.length === 0 ? (
+          {!academy ? <p className="curriculum-empty">Syllabus register unavailable until loading succeeds.</p> : modules.length === 0 ? (
             <p className="curriculum-empty">No curriculum modules yet.</p>
           ) : (
-            <div className="curriculum-table-wrap">
+            <div className={`curriculum-table-wrap ${visual.scroll}`} role="region" aria-label="Syllabus register — scroll horizontally to view all columns" tabIndex={0}>
               <table>
                 <thead>
                   <tr>

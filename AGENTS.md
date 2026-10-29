@@ -1,3 +1,13 @@
+## Preservation-branch entry point — 29 October 2026
+
+Read `LOCAL_SOURCE_TRANSFER.md` and `SOURCE_TRANSFER_VALIDATION.md` first.
+This branch preserves prior local PENTA/Manual/security source for reviewed
+integration. It is not the common development base or a production release.
+Use `codex/cloud-profile-sync` at verified `00d0d00` as the integration base;
+its owner cloud financial decisions supersede older local choices. Preserve
+both sources/tests and reconcile in bounded task branches, never merge this
+snapshot wholesale. Owner stop before candidate model loading remains active.
+
 # Academy Desk agent instructions
 
 Academy Desk is an existing enterprise SaaS codebase. It is not a greenfield prototype.

@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { WorkspaceNav } from "@/components/workspace-nav";
 import { academyApi } from "@/lib/api";
+import styles from "@/components/design-system/finance-workspace.module.css";
 type Academy = { id: string };
 type Summary = {
   grossBilled: number;
@@ -61,7 +62,7 @@ export default function FinanceSummary() {
       ]
     : [];
   return (
-    <main className="enterprise-settings finance-summary-standard min-h-screen">
+    <main className={`${styles.page} enterprise-settings finance-summary-standard min-h-screen`}>
       <WorkspaceNav />
       <div className="finance-summary-content">
         <header className="finance-summary-heading">
@@ -74,7 +75,7 @@ export default function FinanceSummary() {
           </div>
         </header>
         {message && (
-          <p className="finance-summary-notice" role="status">
+          <p className="finance-summary-notice" role="status" aria-live="polite">
             {message}
           </p>
         )}

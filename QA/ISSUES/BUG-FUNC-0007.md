@@ -1,5 +1,33 @@
 # BUG-FUNC-0007 — Failed teacher upload discards the staged attachment
 
+## Revoked publication / retained bytes recovery — bounded PASS, 2026-10-13
+
+[Report](../REPORTS/PHASE_2B_MEDIA_PUBLICATION_GUARD.md): new publication boundary retains private original upload/Blob bytes while denying current revoked publication;restoring authority resumes the original session/exact bytes/one resource-notification/idempotent retry. Nine native cases/6 admitted404/3 nonpublic-stage200/6 actual SQL1222 lock controls/75 original Blob assertions passed in7340a7d158994fc6a503cd8bf723646a,98.9s/exit0;final1485unit tests. Linked final-backend four Teacher recording-upload-success-reset/history-preview/readback/hash journeys30645035ab98431faef298abf8bb89f2,147.4s/exit0 passed. Original strict failed diagnostic and first role-cache implementation failure retained;exact owned cleanup/nine originals preserved. Original legacy failure remains unexecuted/OPEN / STATIC-FINDING;no physical/network/draft/whole-issue acceptance inferred. No frontend/Mini/schema/Azure change.
+
+## After-admission lifecycle recovery boundary — FAILED security candidate, 2026-10-13
+
+[Report](../REPORTS/PHASE_2B_MEDIA_ADMISSION_REVOCATION.md): six native SQL/Blob timings show already-admitted requests continue after Teacher/academy/batch deactivation,new requests deny404. Three private stage writes and three resource/notification publications return200;not a discard/recovery/browser failure and not an accepted revocation gate. Runeca7d5c6d7be4c699573b9b907216e80,90.4s/nonzero,75 original assertions PASS/22additiveHTTP/no429. QA-only/no app change;future revocation repair must retain private original bytes/idempotent retry and established drafts. Original legacy failure remains unexecuted/OPEN / STATIC-FINDING. Evidence preserved/exact two owned failed containers removed/nine originals retained.
+
+## Recorded-audio linked upload — 2026-10-13
+
+[Report](../REPORTS/PHASE_2B_RECORDER_LINKED_UPLOAD.md): runa2efcad24ca74385b65db07918cc0269,125.3s/exit0. Four native fake-device exported Teacher journeys record→explicit upload→success-reset/authoritative history→exact-byte protected preview/playback PASS. Original75 Blob assertions/101HTTP/93 unchanged snapshots/four no-write complete retries/exact allowed deltas/90+7/owned cleanup/nine originals. QA-only/no app change;failed new type-default oracle assumption retained/corrected against existing Attachment request. Original legacy failure remains unexecuted, hardware/network/physical-device/StudentUI/nativeDownload not accepted;OPEN / STATIC-FINDING retained. Previous controlled recovery/native permissions and other upload failure receipts remain separate.
+
+## Controlled recorder recovery — 2026-10-13
+
+[Report](../REPORTS/PHASE_2B_RECORDER_CONTROLLED_RECOVERY.md): four exported Teacher viewport/theme journeys/16 controlled Cancel-late grant/rejection, error/native-stop and32MiB/final-tail cases PASS; exact saved-file bytes/details/captured File hash/one stop/tracks/explicit confirmation retained. Run9b16ad2cb0cf4a3eb1d6a0ab842edb8e,72.1s/exit0,75 retained Blob assertions/41 unchanged snapshots+final/no writes-no429/90+7/exact cleanup/nine originals. No upload/human prompt/genuine native failure/long-duration/physical-device/original legacy-failure acceptance. QA-only/two failed inert-preview test assumptions preserved/corrected; original native playback oracle unchanged. OPEN / STATIC-FINDING retained; next recorded-audio upload/readback composition, no app change.
+
+## Bounded native recorder browser — 2026-10-13
+
+[Report](../REPORTS/PHASE_2B_RECORDER_NATIVE_BROWSER.md): native CDP denied microphone retains selected file/title/comment and saved-file confirmation; same-page granted synthetic-device recording/playback/stop-unmount track cleanup passed in four320/1440px light-dark journeys. Run1d5fda02379e4d11b066378af73db42b,75.8s/exit0,75 retained Blob assertions/41 unchanged snapshots+final/no writes-no429/90+7/exact cleanup PASS. Final56/56 focused checks after fixture-only updates; old assertions/failed receipts retained. No actual microphone/recording upload/human pending Cancel/device/error-limit/original legacy-failure acceptance; OPEN / STATIC-FINDING retained, no app change.
+
+## Latest bounded native evidence — actual maximum transfer, 2026-10-13
+
+[Report](../REPORTS/PHASE_2B_MEDIA_MAXIMUM_TRANSFER.md): actual2,000,000,000 bytes/239 chunks, retry without duplicate block/session, fresh DI host/Blob adapter after120 chunks with original token/request/progress, one-time publication/exact complete streamed hash passed. Run4ed1c9a93b9445c7a9a99a7b4a3ff9cc,308.5s/exit0,75 retained+590 additive assertions/no429/exact owned cleanup. Client-canceled partial download then new full streamed request does not mutate the immutable file. This is not a new browser draft/preview/reload/recording/physical-device or true OS-process crash test; inert transport fixture is not a valid video. Original legacy failure remains unexecuted; OPEN / STATIC-FINDING retained, prior bounded browser and lifecycle receipts preserved. No application change.
+
+## Latest bounded native evidence — domain/academy lifecycle recovery, 2026-10-13
+
+[Report](../REPORTS/PHASE_2B_MEDIA_LIFECYCLE_RECOVERY.md): original75 Blob assertions plus six domain Teacher/academy revocation-restoration cases passed in112s, with66 exact denied requests/107 unchanged-state comparisons/no429/exact owned cleanup. Pending block0 cannot be overwritten, completed or supplemented while revoked; restoring original tokens/session permits exact8MiB+3-byte recovery with preserved metadata and exactly one resource/Student notification/Blob. Original pre-issued download tickets are re-authorized, not permission bypasses. This is native SQL/API/Blob proof, not a new browser draft/preview/recording/device proof. Original legacy failure remains unexecuted, OPEN / STATIC-FINDING retained. No application change this slice; prior account-switch/failure/completion-loss browser evidence remains separately bounded.
+
 ## Latest bounded evidence — account/draft isolation, 2026-10-01
 
 [Same-browser account switch](../REPORTS/PHASE_2B_DRAFT_ISOLATION_BROWSER.md) passed A pause/sign-out → B empty form/reload → A original metadata recovery/reselect/same-session completion, one resource/notification and exact download. Client 28/28/build PASS, QA-only edits. Original legacy failure remains unexecuted; OPEN / STATIC-FINDING retained. Draft stays owner-scoped on local sign-out, not erased from browser storage; shared-OS/all-role cleanup is not certified.

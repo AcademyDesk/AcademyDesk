@@ -5,6 +5,10 @@ screens stay visually consistent.
 
 ## Core rules
 
+Fee plans/reminders now consume the scoped finance-workspace module:valid shared selector labels,44px wrapping actions,responsive intake/register/history and padded durable notices. Reminder figures must come from server invoice balance;never reconstruct gross minus Completed-only payments or mix currencies. Queue receipts/statuses are not delivery guarantees.
+
+Invoice/payment screens consume finance-workspace.module.css and persistent shared selectors/optional year-month date control. Preview responsive rules are screen-only;preserve print templates/server ledger. Financial retry/recovery safeguards remain a separate High task.
+
 - Use `StandardPanel` for titled workflow tiles. It provides the icon tile,
   uppercase accent heading, soft header gradient, border, radius, and spacing.
 - Use `StandardSectionTitle` for major full-width sections such as timetable,
@@ -14,7 +18,47 @@ screens stay visually consistent.
 - Use `StandardAction` for labelled actions. Primary is for the one main action;
   secondary is for supporting actions.
 - Use `StandardKpi` for label/value/detail summary tiles.
+- Student/teacher intake native fields use `OnboardingField` for persistent
+  labels and the scoped `onboarding.module.css` for responsive field/section
+  spacing. Keep the existing field names, required flags and save handlers.
+  `StandardSelectField` supports an optional persistent `label` independently
+  of the chosen value. Teacher availability uses `StandardTimeField` with
+  `intervalMinutes={1}` and `allowClear`: preserve exact HH:mm values and blank
+  optional times rather than rounding them to the default 15-minute interval.
 - Use `standardClasses` rather than inventing parallel layout classes.
+- Class/batch/calendar/schedule host styling lives in the scoped
+  `scheduling-workspace.module.css`. Keep calendar month scrolling within its
+  named focusable region and retain the mobile agenda. Put page titles in a
+  semantic header: old legacy `h1 + p` helper rules must not hide live status.
+  Batch selected-day required times use `StandardTimeField` with `required`
+  and one-minute precision. Schedule uses `StandardDateTimeField` for required
+  local wall-clock composition; its caller retains timezone conversion.
+  The required-value proxy blocks blank/partial submission, focuses the visible
+  trigger and resets warnings after completion. Disable visible pickers and
+  validation together while saving; never replace server/domain validation.
+  This bounded adoption does not prove every app date/time field is migrated.
+- Directory/profile pages share the scoped `records-workspace.module.css`:
+  labelled phone record cards retain table semantics, action targets stay44px,
+  and profile editors reuse persistent native-field labels. Preserve host data,
+  request shapes and authorization; responsive styling is not a release signoff.
+- Enrolment/attendance/leave use scoped `operations-workspace.module.css` for
+  persistent labels, responsive intake/register/roster and44px actions. Shared
+  selects can opt into `required`; optional selectors remain optional. Preserve
+  lifecycle review/reason/save, session-scoped notes and authoritative decisions.
+  Required leave dates keep native submit validation through the shared value
+  proxy while the visible control remains the year-capable host date picker.
+- Make-up/holidays/events also consume the scoped operations layout. Preserve
+  make-up Offline room vs Online/Hybrid link and next-scheduled inheritance.
+  Use exact-minute shared clocks and persistent optional/required labels.
+  Do not change timezones as a styling edit: make-up and Events now use explicit
+  IST input/display. Events uses its validated civil-time helper, not device-local
+  Date parsing. Existing stored UTC values are not reinterpreted or migrated.
+  General configurable academy timezone/DST support remains a separate task.
+- Finance workspace/summary/expenses use scoped `finance-workspace.module.css`:
+  wrapping summary cards,44px actions and a named keyboard-scroll collections
+  table. Keep exact amounts, separate currencies and existing handlers intact.
+  A failed finance load is unavailable data, not proof of zero balances or no
+  overdue invoices. Expense review/pending states disable the date trigger too.
 - Use `StandardSelectField` from `design-system/controls` for every dropdown
   that needs the AcademyDesk menu visual. Do not use a native `<select>` for
   those controls: the standard menu has the shared blue selection treatment

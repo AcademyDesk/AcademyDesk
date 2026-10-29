@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { academyApi } from "@/lib/api";
 import { EnterprisePageState } from "@/components/enterprise-page-state";
+import styles from "@/components/design-system/finance-workspace.module.css";
 
 type Academy = { id: string };
 type FinanceSummary = {
@@ -84,6 +85,7 @@ export default function FinancePage() {
   const [collections, setCollections] = useState<Collection[]>([]);
   const [notice, setNotice] = useState("Loading finance workspace…");
   const [exporting, setExporting] = useState<string>();
+  const exportPending = useRef(false);
 
   useEffect(() => {
     async function load() {
@@ -125,26 +127,29 @@ export default function FinancePage() {
   }, []);
 
   async function downloadExport(kind: "invoices" | "payments") {
-    if (!academy) return;
+    if (!academy || exportPending.current) return;
+    exportPending.current = true;
     setExporting(kind);
+    let url: string | undefined;
     try {
       const response = await academyApi(
         `/api/academies/${academy.id}/exports/${kind}`,
       );
-      if (!response.ok) throw new Error();
+      if (!response.ok || response.headers.get("content-type")?.split(";")[0].trim().toLowerCase() !== "text/csv") throw new Error();
       const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
+      url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
       link.download = `academydesk-${kind}.csv`;
       link.click();
-      URL.revokeObjectURL(url);
       setNotice(
-        `${kind === "invoices" ? "Invoice" : "Payment"} export downloaded.`,
+        `${kind === "invoices" ? "Invoice" : "Payment"} CSV download started. Formula-like text has a leading tab for spreadsheet safety; review before programmatic import.`,
       );
     } catch {
       setNotice("The export could not be created. Please try again.");
     } finally {
+      if (url) URL.revokeObjectURL(url);
+      exportPending.current = false;
       setExporting(undefined);
     }
   }
@@ -159,12 +164,12 @@ export default function FinancePage() {
     : [];
 
   return (
-    <main className="enterprise-settings">
+    <main className={`${styles.page} enterprise-settings`}>
       <header className="enterprise-page-header">
         <p>Finance / workspace</p>
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h2>Finance operations</h2>
+            <h1>Finance operations</h1>
           </div>
           <div className="flex flex-wrap gap-2">
             <Link href="/invoices" className="enterprise-action-button">
@@ -184,7 +189,7 @@ export default function FinancePage() {
           tone={
             notice.includes("could not") || notice.includes("Please sign")
               ? "error"
-              : notice.includes("downloaded")
+              : notice.includes("download started")
                 ? "success"
                 : "loading"
           }
@@ -193,7 +198,7 @@ export default function FinancePage() {
         </EnterprisePageState>
       )}
       <section
-        className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
+        className={styles.kpis}
         aria-label="Finance summary"
       >
         {cards.map(([label, value]) => (
@@ -203,7 +208,7 @@ export default function FinancePage() {
           </section>
         ))}
       </section>
-      <section className="mt-5 grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
+      <section className={styles.layout}>
         <section className="surface-panel rounded-xl p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
@@ -218,10 +223,10 @@ export default function FinancePage() {
           </div>
           {collections.length === 0 ? (
             <p className="mt-5 rounded border border-dashed border-slate-700 p-4 text-sm text-slate-400">
-              No overdue invoices need collections action.
+              {summary ? "No overdue invoices need collections action." : "Collections data is not available yet."}
             </p>
           ) : (
-            <div className="mt-5 overflow-x-auto">
+            <div className={styles.tableScroll} role="region" aria-label="Collections attention queue — scroll horizontally to view all columns" tabIndex={0}>
               <table className="min-w-full text-left text-sm">
                 <thead className="text-slate-400">
                   <tr>
@@ -295,7 +300,7 @@ export default function FinancePage() {
             Finance summary
           </Link>
         </div>
-        <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <div className={styles.workAreas}>
           {modules.map(([title, href, label]) => (
             <Link
               key={`${href}-${label}`}

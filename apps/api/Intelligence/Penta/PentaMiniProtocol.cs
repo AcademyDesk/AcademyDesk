@@ -30,7 +30,7 @@ public sealed record MiniPlanRequest(
     [property: JsonPropertyName("user_message")] string UserMessage,
     [property: JsonPropertyName("state")] MiniState State,
     [property: JsonPropertyName("available_tools")] string[] AvailableTools);
-public sealed record MiniProviderOutcome(MiniPlan? Plan, string? Error = null);
+public sealed record MiniProviderOutcome(MiniPlan? Plan, string? Error = null, MiniRuntimeIdentity? Runtime = null);
 public interface IPentaProvider
 {
     Task<MiniProviderOutcome> PlanAsync(MiniPlanRequest request, CancellationToken token);

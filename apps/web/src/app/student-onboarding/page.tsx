@@ -2,8 +2,9 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { academyApi, apiHeaders } from "@/lib/api";
-import { StandardDateField } from "@/components/standard-date-field";
-import { StandardSelectField } from "@/components/standard-select-field";
+import { StandardDateField, StandardSelectField } from "@/components/design-system/controls";
+import { OnboardingField } from "@/components/design-system/onboarding-field";
+import styles from "@/components/design-system/onboarding.module.css";
 
 type Academy = { id: string };
 export default function StudentOnboardingPage() {
@@ -15,6 +16,7 @@ export default function StudentOnboardingPage() {
   const [message, setMessage] = useState("Loading onboarding…");
   const [saving, setSaving] = useState(false);
   const [created, setCreated] = useState(false);
+  const [parentPortalAccess, setParentPortalAccess] = useState(false);
   const pending = useRef(false);
   const completed = useRef(false);
   const active = useRef(true);
@@ -82,6 +84,7 @@ export default function StudentOnboardingPage() {
       setDob("");
       setAdmissionDate("");
       setGender("");
+      setParentPortalAccess(false);
       router.push(`/student-management?studentId=${encodeURIComponent(result.id)}&notice=student-created`);
     } catch {
       if (active.current) setMessage(completed.current
@@ -93,11 +96,11 @@ export default function StudentOnboardingPage() {
     }
   }
   return (
-    <main className="enterprise-settings student-onboarding-standard">
+    <main className={`enterprise-settings student-onboarding-standard ${styles.page}`}>
       <header className="student-onboarding-heading">
         <div className="student-onboarding-title">
           <span className="student-onboarding-title-icon" aria-hidden="true">+</span>
-          <div><p>Students</p><h1>Onboarding</h1><span>One governed intake for student, parent, safeguarding contact, and portal access.</span></div>
+          <div><p>Students</p><h1>Onboarding</h1></div>
         </div>
       </header>
       {message && (
@@ -114,21 +117,21 @@ export default function StudentOnboardingPage() {
             <div><h3>Student identity</h3><p>Required admission record</p></div>
           </header>
           <div className="onboarding-fields onboarding-fields-2">
-            <input
+            <OnboardingField label="Student first name (required)"><input
               required
               name="studentFirstName"
               placeholder="Student first name"
-            />
-            <input
+            /></OnboardingField>
+            <OnboardingField label="Student last name (required)"><input
               required
               name="studentLastName"
               placeholder="Student last name"
-            />
-            <input name="studentNumber" placeholder="Student number (optional)" />
-            <input name="preferredName" placeholder="Preferred name (optional)" />
-            <StandardSelectField name="gender" value={gender} onChange={setGender} placeholder="Gender (optional)" options={[{ value: "Female", label: "Female" }, { value: "Male", label: "Male" }, { value: "Non-binary", label: "Non-binary" }, { value: "Prefer not to say", label: "Prefer not to say" }]} />
-            <StandardDateField required name="dateOfBirth" label="Date of birth (DOB)" value={dob} onChange={setDob} />
-            <StandardDateField name="admissionDate" label="Admission date" value={admissionDate} onChange={setAdmissionDate} />
+            /></OnboardingField>
+            <OnboardingField label="Student number (optional)"><input name="studentNumber" placeholder="Student number (optional)" /></OnboardingField>
+            <OnboardingField label="Preferred name (optional)"><input name="preferredName" placeholder="Preferred name (optional)" /></OnboardingField>
+            <StandardSelectField label="Gender (optional)" name="gender" value={gender} onChange={setGender} placeholder="Gender (optional)" options={[{ value: "Female", label: "Female" }, { value: "Male", label: "Male" }, { value: "Non-binary", label: "Non-binary" }, { value: "Prefer not to say", label: "Prefer not to say" }]} />
+            <StandardDateField required name="dateOfBirth" label="Date of birth (DOB) (required)" value={dob} onChange={setDob} />
+            <StandardDateField name="admissionDate" label="Admission date (optional)" value={admissionDate} onChange={setAdmissionDate} />
           </div>
         </section>
         <section className="surface-panel onboarding-section">
@@ -137,19 +140,20 @@ export default function StudentOnboardingPage() {
             <div><h3>Student contact</h3><p>Contact and address details</p></div>
           </header>
           <div className="onboarding-fields onboarding-fields-2">
-            <input
+            <OnboardingField label="Student email (optional)"><input
               name="studentEmail"
               type="email"
               placeholder="Student email (optional)"
-            />
-            <input
+            /></OnboardingField>
+            <OnboardingField label="Student phone (optional)"><input
               name="studentPhone"
+              type="tel"
               placeholder="Student phone (optional)"
-            />
-            <input name="studentAddressLine1" placeholder="Student address" />
-            <input name="studentCity" placeholder="City" />
-            <input name="studentState" placeholder="State" />
-            <input name="studentPostalCode" placeholder="Postal / PIN code" />
+            /></OnboardingField>
+            <OnboardingField label="Student address (optional)"><input name="studentAddressLine1" placeholder="Student address" /></OnboardingField>
+            <OnboardingField label="City (optional)"><input name="studentCity" placeholder="City" /></OnboardingField>
+            <OnboardingField label="State (optional)"><input name="studentState" placeholder="State" /></OnboardingField>
+            <OnboardingField label="Postal / PIN code (optional)"><input name="studentPostalCode" placeholder="Postal / PIN code" /></OnboardingField>
           </div>
         </section>
         <section className="surface-panel onboarding-section">
@@ -158,9 +162,9 @@ export default function StudentOnboardingPage() {
             <div><h3>Care & wellbeing</h3><p>Visible only to authorised staff</p></div>
           </header>
           <div className="onboarding-fields onboarding-fields-2">
-            <input name="emergencyContactName" placeholder="Emergency contact name" />
-            <input name="emergencyContactPhone" placeholder="Emergency contact phone" />
-            <textarea className="onboarding-span-all" name="medicalOrAccessibilityNotes" placeholder="Medical or accessibility notes" />
+            <OnboardingField label="Emergency contact name (optional)"><input name="emergencyContactName" placeholder="Emergency contact name" /></OnboardingField>
+            <OnboardingField label="Emergency contact phone (optional)"><input type="tel" name="emergencyContactPhone" placeholder="Emergency contact phone" /></OnboardingField>
+            <OnboardingField wide label="Medical or accessibility notes (optional)"><textarea name="medicalOrAccessibilityNotes" placeholder="Medical or accessibility notes" /></OnboardingField>
             <p className="onboarding-helper onboarding-span-all">
               {minor
                 ? "Minor student: Parent details and a primary Parent link are required."
@@ -175,26 +179,26 @@ export default function StudentOnboardingPage() {
           </header>
           <div className="onboarding-parent-layout">
             <div className="onboarding-fields onboarding-fields-2">
-            <input
+            <OnboardingField label={`Parent first name (${minor ? "required" : "optional"})`}><input
               required={minor}
               name="parentFirstName"
               placeholder="Parent first name"
-            />
-            <input
+            /></OnboardingField>
+            <OnboardingField label={`Parent last name (${minor ? "required" : "optional"})`}><input
               required={minor}
               name="parentLastName"
               placeholder="Parent last name"
-            />
-            <input
+            /></OnboardingField>
+            <OnboardingField label={`Parent email (${minor ? "required" : "optional"})`}><input
               required={minor}
               name="parentEmail"
               type="email"
               placeholder="Parent email"
-            />
-            <input name="parentPhone" placeholder="Parent phone" />
-            <input name="parentAddressLine1" placeholder="Parent address" />
-            <input name="parentCity" placeholder="City" />
-            <input name="relationship" defaultValue="Parent" />
+            /></OnboardingField>
+            <OnboardingField label="Parent phone (optional)"><input type="tel" name="parentPhone" placeholder="Parent phone" /></OnboardingField>
+            <OnboardingField label="Parent address (optional)"><input name="parentAddressLine1" placeholder="Parent address" /></OnboardingField>
+            <OnboardingField label="Parent city (optional)"><input name="parentCity" placeholder="City" /></OnboardingField>
+            <OnboardingField label="Relationship"><input name="relationship" defaultValue="Parent" /></OnboardingField>
             </div>
             <div className="onboarding-permissions">
               <p>Parent portal permissions</p>
@@ -202,7 +206,8 @@ export default function StudentOnboardingPage() {
               <input
                 name="allowParentPortalAccess"
                 type="checkbox"
-                defaultChecked={minor}
+                checked={minor || parentPortalAccess}
+                onChange={(event) => setParentPortalAccess(event.target.checked)}
                 disabled={minor}
               />{" "}
               Allow Parent portal access{" "}

@@ -30,7 +30,7 @@ function page({ failure, refreshFailure, delayed, delayedRefresh, active = true,
     const module = { exports: {} };
     new Function('require', 'module', 'exports', compile(file))(name => {
       if (name === 'react/jsx-runtime') return jsx;
-      if (name === 'react') return { useState: value => { const key = index++; return [state.has(key) ? state.get(key) : initial[key] === undefined ? value : initial[key],
+      if (name === 'react') return { useCallback: fn => fn, useState: value => { const key = index++; return [state.has(key) ? state.get(key) : initial[key] === undefined ? value : initial[key],
         value => state.set(key, typeof value === 'function' ? value(state.has(key) ? state.get(key) : initial[key]) : value)]; },
         useRef: value => refs[refIndex++] ??= { current: value }, useEffect: () => {} };
       if (name === 'next/link') return { default: 'a' };

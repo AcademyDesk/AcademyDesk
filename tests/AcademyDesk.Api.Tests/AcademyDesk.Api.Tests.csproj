@@ -21,6 +21,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Fixtures\penta-operational-payload-vectors.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Fixtures\penta-prepared-operation.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Fixtures\penta-committed-receipt.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\apps\api\AcademyDesk.Api.csproj" />
   </ItemGroup>
 

@@ -70,6 +70,6 @@ internal static partial class SqlHarnessEntryPoint
             }
             Console.WriteLine($"PAYROLL SESSION CASE {test.Name} PASS: HTTP={(int)response.StatusCode}; fresh profile/ledger and accepted response/list agree; rejection leaves captured financial snapshot unchanged.");
         }
-        Console.WriteLine("PAYROLL REGRESSION PASS: monthly negative-net rejection and original eight boundaries; SessionBlock effective default/override gross, positive cents, zero gross/sessions and negative deductions; no negative payout persisted. Zero-net policy remains pending.");
+        Console.WriteLine("PAYROLL REGRESSION PASS: monthly negative-net rejection and original eight boundaries; SessionBlock effective default/override gross, positive cents, zero gross/sessions and negative deductions; no negative payout persisted. Zero-net versioned to owner-approved FP2 NoCashDue.");
     }
 }

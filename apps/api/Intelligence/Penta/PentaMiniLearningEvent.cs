@@ -24,7 +24,7 @@ public sealed record PentaMiniLearningEvent(
     // Expected artifact from the authoritative handoff, not runtime attestation.
     public const string ExpectedModelRevision = "Qwen3.5-2B-Q4_0@f6d5376be1edb4d416d56da11e5397a961aca8ae";
     public static PentaMiniLearningEvent? ForOutcome(Guid academy, Guid request, DateTimeOffset now,
-        string kind, string? tool, string? error)
+        string kind, string? tool, string? error, MiniRuntimeIdentity? runtime = null)
     {
         var (eventType, category) = kind switch {
             "RESULT" => ("ACTION_SUCCEEDED", (string?)null),
@@ -36,7 +36,7 @@ public sealed record PentaMiniLearningEvent(
             _ => ((string?)null, (string?)null)
         };
         return eventType is null ? null : new(Guid.NewGuid(), now, eventType, academy.ToString("D"),
-            request.ToString("D"), ExpectedModelRevision, "planner-0.1", "0.1", category,
+            request.ToString("D"), "unverified", runtime?.PromptVersion ?? "unverified", "0.1", category,
             tool, null, [], [], kind == "RESULT", false);
     }
 }

@@ -8,6 +8,7 @@ import {
   StandardTimeField,
 } from "@/components/design-system/controls";
 import { academyApi, apiHeaders } from "@/lib/api";
+import visual from "@/components/design-system/learning-workspace.module.css";
 
 type Academy = { id: string };
 type Batch = { id: string; name: string };
@@ -226,7 +227,7 @@ export default function AssessmentsPage() {
   const batchName = (id: string) =>
     batches.find((batch) => batch.id === id)?.name ?? "Unknown batch";
   return (
-    <main className="enterprise-settings assessments-standard min-h-screen">
+    <main className={`enterprise-settings assessments-standard min-h-screen ${visual.page}`}>
       <WorkspaceNav />
       <div className="assessments-content mx-auto max-w-6xl px-6 py-10">
         <header className="assessments-heading">
@@ -254,6 +255,7 @@ export default function AssessmentsPage() {
             <fieldset disabled={creating || Boolean(savingStudentId) || !academy} className="assessments-fields m-0 min-w-0 border-0">
               <StandardSelectField
                 name="batch"
+                label="Batch"
                 disabled={creating || Boolean(savingStudentId) || !academy}
                 value={batchId}
                 onChange={setBatchId}
@@ -275,6 +277,7 @@ export default function AssessmentsPage() {
               <div className="assessments-fields-two">
                 <StandardSelectField
                   name="assessment-type"
+                  label="Assessment type"
                 disabled={creating || Boolean(savingStudentId) || !academy}
                   value={type}
                   onChange={setType}
@@ -298,6 +301,7 @@ export default function AssessmentsPage() {
               </div>
               <StandardSelectField
                 name="grading-scheme"
+                label="Grading scheme (optional)"
                 disabled={creating || Boolean(savingStudentId) || !academy}
                 value={gradingSchemeId}
                 onChange={setGradingSchemeId}
@@ -339,6 +343,7 @@ export default function AssessmentsPage() {
             <div className="assessments-picker">
               <StandardSelectField
                 name="assessment"
+                label="Assessment"
                 disabled={creating || Boolean(savingStudentId) || !academy}
                 value={assessmentId}
                 onChange={setAssessmentId}
@@ -349,6 +354,7 @@ export default function AssessmentsPage() {
                 }))}
               />
             </div>
+            {!selected && <p className="assessments-empty">{academy ? "Select an assessment to record results." : "Assessment register unavailable until loading succeeds."}</p>}
             {selected &&
               (roster.length === 0 ? (
                 <p className="assessments-empty">
@@ -406,10 +412,10 @@ function ResultRow({
         {student.firstName} {student.lastName}
       </b>
       <div>
-        <label className="assessment-grading-mode">
-          Grading mode
+        <div className="assessment-grading-mode">
           <StandardSelectField
             name={`grading-mode-${student.id}`}
+            label="Grading mode"
             placeholder="Select grading mode"
             value={isGradeManual ? "manual" : "automatic"}
             disabled={saving}
@@ -419,12 +425,12 @@ function ResultRow({
               { value: "manual", label: "Manual override" },
             ]}
           />
-        </label>
+        </div>
         <small className="assessment-grading-help">
           Automatic grades follow the assessment’s grading scheme. Without a scheme, only the score is saved.
           {result?.isGradeManual == null && result?.grade?.trim() ? " This existing grade has been preserved. Select Automatic to recalculate it." : ""}
         </small>
-        <input
+        <label className={visual.field}><span>Score / {maxScore}</span><input
           type="number"
           min="0"
           max={maxScore}
@@ -434,20 +440,22 @@ function ResultRow({
           placeholder={`Score / ${maxScore}`}
           aria-label="Assessment score"
           disabled={saving}
-        />
-        <input
+        /></label>
+        <label className={visual.field}><span>{isGradeManual ? "Manual grade" : "Automatic grade"}</span><input
           value={grade}
           disabled={saving || !isGradeManual}
           maxLength={30}
           aria-label="Manual grade"
           onChange={(event) => setGrade(event.target.value)}
           placeholder={isGradeManual ? "Manual grade" : "Calculated when saved"}
-        />
-        <input
+        /></label>
+        <label className={visual.field}><span>Remarks (optional)</span><input
           value={remarks}
+          disabled={saving}
+          aria-label="Remarks (optional)"
           onChange={(event) => setRemarks(event.target.value)}
           placeholder="Remarks"
-        />
+        /></label>
         <button
           disabled={saving || score.trim() === "" || !Number.isFinite(Number(score)) || Number(score) < 0 || Number(score) > maxScore || (isGradeManual && !grade.trim())}
           type="button"

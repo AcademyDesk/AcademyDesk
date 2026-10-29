@@ -1,5 +1,13 @@
 # BUG-SEC-0003 — Teacher resource actions bypass academy suspension checks
 
+## Bounded linked Teacher reload UI — 2026-10-13
+
+[Report](../REPORTS/PHASE_2B_LIFECYCLE_LINKED_BROWSER.md): QA-only fresh run4d004a61979c48a8a1623fe163461d8b (262s), original62 cases +four linked Teacher journeys at320/1440px/light-dark. Domain Teacher inactive: existing clear Admin-contact message/no protected content/forms after reload, actual Teacher Me403 and independent403 probe; restore actual authority, same original token opens own workspace. Included in combined eight Teacher/guardian journeys/24 states/16 controls/122 unchanged15-field reads/no429/90+7/exact owned cleanup. Failed driver teardown retained/redacted, fresh complete run passed; no app change. **OPEN/RETEST**: academy-suspension browser, live-stale/already-admitted/role-stamp timing, other mutations/module/private-media/physical/wider release remain separate. Two mobile denied views inspected; truncated header label queued Batch2, not full mobile acceptance.
+
+## Queued-before-authorization successor — 2026-10-13
+
+[Report](../REPORTS/PHASE_2B_LIFECYCLE_QUEUED_AUTHORIZATION.md): QA-only run24c7d301f2624cbb865d738ffca698e5,174.3s passed original62 lifecycle cases and30 controlled queued requests/60 denial-restoration checks (academy suspension/domain Teacher deactivation x resources/note/upload x five). Revocation commits before real authorization SQL; same original token gets403, all15 snapshot fields/files unchanged; restoring exact state returns own-scoped200 without foreign/unassigned sentinel. No429;90+7 migrations/non-admin runtime/mismatched-marker refusal/exact owned cleanup. **OPEN/RETEST**, not natural SQL-lock contention or already-authorized cancellation, Identity/role/stamp race, browser/device/module/other-route/full-release acceptance. No application/permission change; earlier bounded evidence retained.
+
 | Field | Value |
 | --- | --- |
 | Status | OPEN |

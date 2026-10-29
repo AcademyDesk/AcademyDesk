@@ -45,6 +45,7 @@ public sealed class StaffController(
     }
 
     [HttpPost]
+    [AtomicAcademyMutation(IncludeIdentity = true, IncludePlatformOwner = true)]
     public async Task<ActionResult<StaffAccountSummary>> Create(Guid academyId, CreateStaffAccountRequest request)
     {
         if (!await IsOwner(academyId)) return Forbid();
@@ -85,6 +86,7 @@ public sealed class StaffController(
     }
 
     [HttpPatch("{staffId:guid}/status")]
+    [AtomicAcademyMutation(IncludeIdentity = true, IncludePlatformOwner = true)]
     public async Task<ActionResult> UpdateStatus(Guid academyId, Guid staffId, StaffStatusRequest request)
     {
         if (!await IsOwner(academyId)) return Forbid();
@@ -113,6 +115,8 @@ public sealed class StaffController(
         var identityConnection = db.Database.CurrentTransaction is null ? AcademyIdentityTransaction.Validate(db, identityDb) : null;
         await using var transaction = identityConnection is not null ? await db.Database.BeginTransactionAsync(token) : null;
         await using var identityTransaction = transaction is not null ? await AcademyIdentityTransaction.EnlistAsync(db, identityDb, transaction, identityConnection!, token) : null;
+        var prepareRole = await EnsureSupportedRoleAsync(roleManager, requestedRole);
+        if (!prepareRole.Succeeded) return Problem("The staff role could not be prepared. No changes were saved.");
         var currentRoles = await userManager.GetRolesAsync(staff);
         var removableRoles = currentRoles.Where(role => !ProtectedRoles.Contains(role, StringComparer.OrdinalIgnoreCase)).ToArray();
         if (removableRoles.Length > 0)
@@ -142,6 +146,7 @@ public sealed class StaffController(
     }
 
     [HttpPatch("{staffId:guid}/password")]
+    [AtomicAcademyMutation(IncludeIdentity = true, IncludePlatformOwner = true)]
     public async Task<ActionResult> ResetPassword(Guid academyId, Guid staffId, StaffPasswordRequest request)
     {
         if (!await IsOwner(academyId)) return Forbid();
@@ -156,6 +161,7 @@ public sealed class StaffController(
     }
 
     [HttpPost("{staffId:guid}/offboard")]
+    [AtomicAcademyMutation(IncludeIdentity = true, IncludePlatformOwner = true)]
     public async Task<ActionResult> Offboard(Guid academyId, Guid staffId)
     {
         if (!await IsOwner(academyId)) return Forbid();
@@ -170,6 +176,16 @@ public sealed class StaffController(
         var result = await userManager.UpdateAsync(staff);
         if (!result.Succeeded) return Problem("Staff offboarding could not be completed.");
         return Ok(new { message = "Staff access revoked and active sessions invalidated." });
+    }
+
+    internal static async Task<IdentityResult> EnsureSupportedRoleAsync(RoleManager<ApplicationRole> roles, string name)
+    {
+        // Use the same canonical allowlist as staff creation. Preparation belongs
+        // inside the caller's Identity transaction, before existing roles change.
+        var canonical = AllowedRoles.SingleOrDefault(role => role.Equals(name, StringComparison.OrdinalIgnoreCase));
+        if (canonical is null) return IdentityResult.Failed(new IdentityError { Code = "UnsupportedStaffRole", Description = "Choose a supported staff role." });
+        return await roles.RoleExistsAsync(canonical) ? IdentityResult.Success
+            : await roles.CreateAsync(new ApplicationRole { Name = canonical });
     }
 
     private async Task<bool> IsOwner(Guid academyId)

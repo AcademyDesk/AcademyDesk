@@ -7,6 +7,7 @@ import {
   StandardTimeField,
 } from "@/components/design-system/controls";
 import { academyApi, apiHeaders } from "@/lib/api";
+import visual from "@/components/design-system/engagement-workspace.module.css";
 type Academy = { id: string };
 type Person = { id: string; firstName: string; lastName: string };
 type Teacher = { id: string; firstName: string; lastName: string };
@@ -213,7 +214,7 @@ export default function CommunicationsPage() {
     label: `${person.firstName} ${person.lastName}`,
   }));
   return (
-    <main className="enterprise-settings messages-standard min-h-screen">
+    <main className={`enterprise-settings messages-standard min-h-screen ${visual.page}`}>
       <WorkspaceNav />
       <div className="messages-content">
         <header className="messages-heading">
@@ -239,9 +240,8 @@ export default function CommunicationsPage() {
               </h2>
             </header>
             <fieldset className="messages-fields m-0 min-w-0 border-0 p-0" disabled={saving}>
-              <label>
-                Message type
-                <StandardSelectField
+              <div>
+                <StandardSelectField label="Message type"
                   name="recipientType"
                   value={recipientType}
                   onChange={chooseRecipientType}
@@ -253,12 +253,11 @@ export default function CommunicationsPage() {
                     { value: "Academy", label: "Portal banner message" },
                   ]}
                 />
-              </label>
+              </div>
               {isAnnouncement ? (
                 <>
-                  <label>
-                    Show to
-                    <StandardSelectField
+                  <div>
+                <StandardSelectField label="Show to"
                       name="announcementAudience"
                       value={announcementAudience}
                       onChange={setAnnouncementAudience}
@@ -272,7 +271,7 @@ export default function CommunicationsPage() {
                         },
                       ]}
                     />
-                  </label>
+                  </div>
                   <label>
                     Display duration (hours)
                     <input
@@ -299,19 +298,17 @@ export default function CommunicationsPage() {
                 </>
               ) : (
                 <>
-                  <label>
-                    Recipient
-                    <StandardSelectField
+                  <div>
+                <StandardSelectField label="Recipient"
                       name="recipientId"
                       value={recipientId}
                       onChange={setRecipientId}
                       placeholder={`Select ${recipientType.toLowerCase()}`}
                       options={recipientOptions}
                     />
-                  </label>
-                  <label>
-                    Template
-                    <StandardSelectField
+                  </div>
+                  <div>
+                <StandardSelectField label="Template"
                       name="templateId"
                       value={templateId}
                       onChange={chooseTemplate}
@@ -323,7 +320,7 @@ export default function CommunicationsPage() {
                           label: `${item.channel} · ${item.name}`,
                         }))}
                     />
-                  </label>
+                  </div>
                   {templateVariables.map((name) => (
                     <label key={name}>
                       {name.replaceAll("_", " ")}
@@ -360,9 +357,8 @@ export default function CommunicationsPage() {
               </label>
               {!isAnnouncement && (
                 <>
-                  <label>
-                    Channel
-                    <StandardSelectField
+                  <div>
+                <StandardSelectField label="Channel"
                       name="channel"
                       value={channel}
                       onChange={chooseChannel}
@@ -373,7 +369,7 @@ export default function CommunicationsPage() {
                         { value: "WhatsApp", label: "WhatsApp" },
                       ]}
                     />
-                  </label>
+                  </div>
                   <StandardDateField
                     name="scheduledDate"
                     value={scheduledDate}

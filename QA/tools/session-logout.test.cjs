@@ -12,14 +12,58 @@ function tabs(){const data=new Map(),realms=[];return{data,realms,tab(workspace)
  const storage={getItem:k=>data.get(k)??null,setItem:(k,v)=>data.set(k,String(v)),removeItem:k=>data.delete(k)};
  const window={location:{pathname:paths[workspace]},localStorage:storage,addEventListener:(name,fn)=>{if(!listeners.has(name))listeners.set(name,new Set());listeners.get(name).add(fn);},removeEventListener:(name,fn)=>listeners.get(name)?.delete(fn),dispatchEvent:event=>{for(const fn of [...listeners.get(event.type)??[]])fn(event);return !event.defaultPrevented;}};
  const fetch=async(url,init={})=>{calls.push({url,headers:new Headers(init.headers)});if(url.endsWith('/refresh')){await new Promise(r=>pending.push(r));return{ok:true,json:async()=>({accessToken:'renewed',refreshToken:'renewed-refresh'})};}return{status:calls.at(-1).headers.get('Authorization')==='Bearer renewed'?200:401};};
- const mod={exports:{}};vm.runInNewContext(apiCode,{module:mod,exports:mod.exports,process:{env:{}},window,Headers,AbortController,CustomEvent,fetch});
- const frame={exports:{}};new Function('require','module','exports','window',frameCode)(name=>name==='react/jsx-runtime'?jsx:name==='react'?{useState:x=>{const n=i++;if(!(n in state))state[n]=x;return[state[n],v=>state[n]=v];},useEffect:fn=>{if(!mounted){cleanup=fn();mounted=true;}}}:name==='next/navigation'?{usePathname:()=>window.location.pathname}:name==='next/link'?{default:'a'}:name==='@/lib/api'?mod.exports:{EnterpriseShell:'shell'},frame,frame.exports,window);
+ const mod={exports:{}};vm.runInNewContext(apiCode,{module:mod,exports:mod.exports,process:{env:{}},window,crypto:require('node:crypto').webcrypto,Headers,AbortController,CustomEvent,fetch});
+ const document={visibilityState:'visible',addEventListener(){},removeEventListener(){}};
+ const frame={exports:{}};new Function('require','module','exports','window','document',frameCode)(name=>name==='react/jsx-runtime'?jsx:name==='react'?{useState:x=>{const n=i++;if(!(n in state))state[n]=x;return[state[n],v=>state[n]=v];},useEffect:fn=>{if(!mounted){cleanup=fn();mounted=true;}}}:name==='next/navigation'?{usePathname:()=>window.location.pathname}:name==='next/link'?{default:'a'}:name==='@/lib/api'?mod.exports:{EnterpriseShell:'shell'},frame,frame.exports,window,document);
  const resolve=x=>x&&typeof x.type==='function'?resolve(x.type(x.props)):x;
  const render=()=>{i=0;return resolve(frame.exports.WorkspaceFrame({children:'PRIVATE-SYNTHETIC-DATA'}));};
  const emit=(key,newValue=null,storageArea=storage)=>{for(const fn of [...listeners.get('storage')??[]])fn({key,newValue,storageArea});};
  const api=mod.exports,realm={api,window,storage,calls,pending,render,emit,dispose:()=>cleanup?.()};realms.push(realm);return realm;
 }};}
 function flatten(x){if(x==null)return[];if(Array.isArray(x))return x.flatMap(flatten);if(typeof x!=='object')return[x];return[x,...flatten(x.props?.children)];}
+for(const workspace of workspaces){
+ test('changed persistent marker fences a waiting old realm '+workspace,async()=>{
+  const h=tabs(),peer=h.tab(workspace),source=h.tab(workspace);
+  source.api.savePortalTokens(workspace,'old','refresh-old');h.data.set('academydesk.sessionEpoch.'+workspace,'synthetic-old-epoch');
+  const request=peer.api.academyApi('/api/synthetic');await tick();
+  h.data.set('academydesk.sessionEpoch.'+workspace,'synthetic-new-epoch');
+  peer.pending.forEach(r=>r());a.equal((await request).status,401);a.equal(peer.calls.length,2);
+ });
+ test('undelivered identical-pair replacement cannot restore old refresh '+workspace,async()=>{
+  const h=tabs(),peer=h.tab(workspace),source=h.tab(workspace);
+  source.api.beginPortalSession(workspace,'old','refresh-old');const marker=h.data.get('academydesk.sessionEpoch.'+workspace);
+  const request=peer.api.academyApi('/api/synthetic');await tick();a.equal(peer.pending.length,1);
+  source.api.clearPortalTokens(workspace);source.api.beginPortalSession(workspace,'old','refresh-old');
+  a.notEqual(h.data.get('academydesk.sessionEpoch.'+workspace),marker);
+  // Deliberately deliver no storage event to the waiting realm.
+  peer.pending.forEach(r=>r());a.equal((await request).status,401);a.equal(peer.calls.length,2);
+  a.equal(h.data.get('academydesk.accessToken.'+workspace),'old');
+ });
+ test('other-tab replacement marker gates old view '+workspace,()=>{
+  const h=tabs(),peer=h.tab(workspace),source=h.tab(workspace);
+  source.api.beginPortalSession(workspace,'old','refresh-old');peer.render();
+  source.api.beginPortalSession(workspace,'other-account','other-refresh');
+  peer.emit('academydesk.sessionEpoch.'+workspace,h.data.get('academydesk.sessionEpoch.'+workspace));
+  a.ok(!flatten(peer.render()).includes('PRIVATE-SYNTHETIC-DATA'));
+  a.equal(h.data.get('academydesk.accessToken.'+workspace),'other-account');
+ });
+ test('same-tab replacement unmounts old view '+workspace,()=>{
+  const h=tabs(),page=h.tab(workspace);page.api.beginPortalSession(workspace,'old','refresh-old');page.render();
+  page.api.beginPortalSession(workspace,'other','other-refresh');a.ok(!flatten(page.render()).includes('PRIVATE-SYNTHETIC-DATA'));
+ });
+ test('normal automatic renewal preserves login marker '+workspace,async()=>{
+  const h=tabs(),peer=h.tab(workspace),source=h.tab(workspace);
+  source.api.beginPortalSession(workspace,'old','refresh-old');const marker=h.data.get('academydesk.sessionEpoch.'+workspace);peer.render();
+  const request=peer.api.academyApi('/api/synthetic');await tick();peer.pending.forEach(r=>r());a.equal((await request).status,200);
+  a.equal(h.data.get('academydesk.sessionEpoch.'+workspace),marker);a.ok(flatten(peer.render()).includes('PRIVATE-SYNTHETIC-DATA'));
+ });
+ test('new login without refresh cannot inherit old account refresh '+workspace,()=>{
+  const h=tabs(),page=h.tab(workspace);page.api.beginPortalSession(workspace,'old','refresh-old');
+  if(workspace==='AcademyAdmin')h.data.set('academydesk.refreshToken','legacy-other-refresh');
+  page.api.beginPortalSession(workspace,'new');a.equal(h.data.has('academydesk.refreshToken.'+workspace),false);
+  if(workspace==='AcademyAdmin')a.equal(h.data.has('academydesk.refreshToken'),false);
+ });
+}
 for(const workspace of workspaces)test('peer logout gates old '+workspace+' page, retains other workspace pairs',()=>{
  const h=tabs(),peer=h.tab(workspace),source=h.tab(workspace);for(const w of workspaces)source.api.savePortalTokens(w,'old-'+w,'refresh-'+w);peer.render();
  source.api.clearPortalTokens(workspace);peer.emit('academydesk.accessToken.'+workspace);

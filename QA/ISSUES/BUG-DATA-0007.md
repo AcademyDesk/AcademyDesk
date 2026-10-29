@@ -1,5 +1,16 @@
 # BUG-DATA-0007 — Student onboarding account-created flags can report an account that was not created
 
+## Current native no-account browser control — 23 October 2026
+
+[Student native report](../REPORTS/API_IMAGE_STUDENT_BROWSER_2026-10-23.md):
+four real390/1440light/dark form submissions return both account-created flags
+false, matching zero linked portal accounts and unchanged Identity tables.
+Selected records actually load after success redirect; exact SQL/window finally
+PASS. This existing Manual form does not expose optional credential provisioning,
+so this is only its no-account control, NOT a browser retest of all partial-
+credential combinations or a claim that portal accounts were created. Retain
+the earlier33native account cases. Physical/wider release gates and issue OPEN.
+
 | Field | Value |
 | --- | --- |
 | Status | OPEN |

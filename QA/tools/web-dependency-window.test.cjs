@@ -1,0 +1,7 @@
+'use strict';
+const{test}=require('node:test'),a=require('node:assert/strict'),{verifyWitness,witnessImage}=require('./web-dependency-window.cjs');
+function fixture(){return{Id:'a'.repeat(64),Name:'/owned',Image:witnessImage,Config:{Labels:{'academydesk.qa.run':'run'},User:'101:101',Entrypoint:['/bin/sleep'],Cmd:['3000']},State:{Running:true},HostConfig:{NetworkMode:'none',ReadonlyRootfs:true,Privileged:false,Memory:16*1024**2,NanoCpus:100000000,PidsLimit:8,CapDrop:['ALL'],SecurityOpt:['no-new-privileges']},Mounts:[],NetworkSettings:{Ports:{}}};}
+test('frontend idle witness is exactly owned, time/resource bounded, nonroot/read-only and disconnected',()=>{a.equal(verifyWitness(fixture(),'run','owned'),true);});
+test('foreign, connected, mounted, privileged, unbounded or publicly exposed idle witnesses fail',()=>{
+ for(const mutate of[r=>r.Image='foreign',r=>r.Config.Labels['academydesk.qa.run']='foreign',r=>r.Name='/foreign',r=>r.State.Running=false,r=>r.HostConfig.NetworkMode='bridge',r=>r.HostConfig.Memory=0,r=>r.HostConfig.NanoCpus=0,r=>r.HostConfig.PidsLimit=0,r=>r.Config.User='root',r=>r.HostConfig.ReadonlyRootfs=false,r=>r.HostConfig.Privileged=true,r=>r.Mounts=[{}],r=>r.Config.Cmd=['infinity'],r=>r.HostConfig.CapDrop=[],r=>r.HostConfig.SecurityOpt=[],r=>r.NetworkSettings.Ports={'80/tcp':[{HostIp:'127.0.0.1',HostPort:'3000'}]}]){const row=fixture();mutate(row);a.throws(()=>verifyWitness(row,'run','owned'));}
+});

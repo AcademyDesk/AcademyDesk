@@ -49,23 +49,24 @@ public sealed class PaymentsController(AcademyDeskDbContext dbContext) : Control
         if (invoiceId is null) return NotFound();
         if (request.Status is not ("Completed" or "Reconciled" or "Voided"))
             return BadRequest(new { message = "Status must be Completed, Reconciled, or Voided." });
-        if (request.Status == "Reconciled")
-            return BadRequest(new { message = "Use the reconciliation action and provide a bank/cash reference." });
 
         // Match Create's invoice-first lock order. The finance filter owns the
         // normal request transaction; direct/platform callers own this one.
         // Read the payment again after acquiring the lock so concurrent voids
         // cannot each calculate against the other's pre-void state.
-        await using var ownedTransaction = request.Status == "Voided" &&
-            dbContext.Database.IsSqlServer() && dbContext.Database.CurrentTransaction is null
+        await using var ownedTransaction = dbContext.Database.IsSqlServer() && dbContext.Database.CurrentTransaction is null
                 ? await dbContext.Database.BeginTransactionAsync(token) : null;
-        var invoiceQuery = dbContext.Database.IsSqlServer() && request.Status == "Voided"
+        var invoiceQuery = dbContext.Database.IsSqlServer()
             ? dbContext.Invoices.FromSqlInterpolated($"SELECT * FROM [Invoices] WITH (UPDLOCK, HOLDLOCK) WHERE [AcademyId] = {academyId} AND [Id] = {invoiceId.Value}")
             : dbContext.Invoices.Where(x => x.Id == invoiceId.Value && x.AcademyId == academyId);
-        var invoice = request.Status == "Voided" ? await invoiceQuery.SingleOrDefaultAsync(token) : null;
-        if (request.Status == "Voided" && invoice is null) return NotFound();
+        var invoice = await invoiceQuery.SingleOrDefaultAsync(token);
+        if (invoice is null) return NotFound();
         var payment = await dbContext.Payments.SingleOrDefaultAsync(x => x.Id == paymentId && x.AcademyId == academyId, token);
         if (payment is null) return NotFound();
+        if (payment.Status == "Voided" && request.Status != "Voided")
+            return BadRequest(new { message = "Voided payments cannot be restored. Record a new verified payment." });
+        if (request.Status == "Reconciled")
+            return BadRequest(new { message = "Use the reconciliation action and provide a bank/cash reference." });
         if (payment.Status == request.Status) return Ok();
         if (request.Status == "Voided")
         {
@@ -112,15 +113,7 @@ public sealed class PaymentsController(AcademyDeskDbContext dbContext) : Control
 
         if (payment.Status == "Voided")
         {
-            var otherCollected = await dbContext.Payments.Where(x => x.AcademyId == academyId && x.InvoiceId == invoice.Id &&
-                x.Id != payment.Id && (x.Status == "Completed" || x.Status == "Reconciled"))
-                .SumAsync(x => (decimal?)x.Amount, token) ?? 0m;
-            var collected = otherCollected + payment.Amount;
-            var collectible = invoice.TotalAmount - invoice.AdjustedAmount;
-            if (collected > collectible)
-                return BadRequest(new { message = "Payment exceeds the invoice balance." });
-            if (!string.Equals(invoice.Status, "Cancelled", StringComparison.OrdinalIgnoreCase))
-                invoice.Status = collected == collectible ? "Paid" : "PartiallyPaid";
+            return BadRequest(new { message = "Voided payments cannot be restored. Record a new verified payment." });
         }
 
         payment.Status = "Reconciled";

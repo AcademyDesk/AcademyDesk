@@ -1,0 +1,45 @@
+'use strict';
+// Existing bounded local SQL/API/frontend validation authority; exact original
+// service restoration. No suite duplication, downloads, model or Azure work.
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),os=require('node:os'),a=require('node:assert/strict');
+const{execFileSync,spawn}=require('node:child_process');const root=path.resolve(__dirname,'../..'),sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const originals=[['pentaaimodels-api-1','978357d1b07fc4e52fddd2530f4c485a1bbe34858a199de4e752bda621131278','sha256:c7eb72ae4cc71208006b57e32122165f4f45b4e9c88d709b8ce05d28ceed6bdf'],['pentaaimodels-inference-1','c06a0392290ce1b9198ff49e2bf6d1e9d4c2891b88e115b40e0329dda580aca2','sha256:559ac229adefe0f7e2d4e32f5222f26927b6bb8ba44b9db08e2544afebf41984']];
+const hash=p=>crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
+function docker(args){return execFileSync('docker',args,{windowsHide:true,encoding:'utf8',timeout:30000,stdio:['ignore','pipe','pipe']}).trim();}
+function inventory(){return Object.fromEntries([['containers',['ps','-aq','--no-trunc']],['volumes',['volume','ls','-q']],['networks',['network','ls','-q','--no-trunc']],['images',['image','ls','-aq','--no-trunc']]].map(([key,args])=>[key,[...new Set(docker(args).split(/\r?\n/).filter(Boolean))].sort()]));}
+async function guard(){const end=Date.now()+45000;while(os.freemem()<3*1024**3&&Date.now()<end)await sleep(2000);a.ok(os.freemem()>=3*1024**3,'Unchanged3GiB memory guard refused.');}
+async function work(){
+ a.equal(root.toLowerCase(),'d:\\academydesk-codex-p0');a.equal(process.argv.length,3);const build=process.argv[2];a.match(build||'',/^[a-f0-9]{32}$/);
+ const proof=JSON.parse(fs.readFileSync(path.join(root,'QA/EVIDENCE/default-web-build-'+build+'/result.json')));a.equal(proof.passed,true);a.equal(proof.downloaded,false);a.equal(proof.sourceUnchanged,true);
+ const helper=require('./default-web-build.cjs'),web=path.join(root,'apps/web');a.deepEqual(helper.sourcePins(web),proof.sourcePins);
+ const apiPins=require('./api-image-build.cjs').inputs(),apiProof=JSON.parse(fs.readFileSync(path.join(root,'QA/EVIDENCE/penta-teacher-core-qualified-c8ed13746d9c4cfbbcdfa2b4632f9cc2/result.json')));a.equal(apiProof.passed,true);a.deepEqual(apiPins,apiProof.apiSourcePins);
+ a.deepEqual(docker(['ps','--format','{{.Names}}']).split(/\r?\n/).sort(),originals.map(x=>x[0]).sort());for(const[name,id,image]of originals){const s=JSON.parse(docker(['inspect',id]))[0];a.equal(s.Name,'/'+name);a.equal(s.Image,image);a.equal(s.State.Running,true);}
+ docker(['image','inspect','mcr.microsoft.com/mssql/server:2022-latest']);const exported=path.join(root,'.build-check/default-web-build',build,'app/out');a.equal(fs.realpathSync(exported).toLowerCase(),exported.toLowerCase());
+ const exportPins=()=>helper.inventory(exported).map(({file,bytes})=>({path:path.relative(exported,file).replaceAll('\\','/'),bytes,sha256:hash(file)}));
+ const files=['QA/tools/teacher-browser-window.cjs','QA/tools/penta-teacher-live.cjs','QA/tools/SqlHarness/PentaTeacherBrowserRegression.cs','QA/tools/SqlHarness/PentaTeacherCoreRegression.cs','QA/tools/SqlHarness/PentaTeacherCreationRegression.cs','QA/tools/SqlHarness/TeacherCreationRegression.cs','QA/tools/SqlHarness/Program.cs','QA/tools/SqlHarness/Run-ReconciledPayment.ps1'];
+ const harnessPins=()=>files.map(p=>({path:p,sha256:hash(path.join(root,p))}));
+ const run=crypto.randomUUID().replaceAll('-',''),evidence=path.join(root,'QA/EVIDENCE/teacher-browser-window-'+run);fs.mkdirSync(evidence);
+ const result={run,passed:false,webBuild:build,sourcePins:proof.sourcePins,apiSourcePins:apiPins,exportPins:exportPins(),harnessPins:harnessPins(),before:inventory(),services:originals,steps:[],downloaded:false,modelLoaded:false,productionApproved:false};
+ const save=()=>fs.writeFileSync(path.join(evidence,'result.json'),JSON.stringify(result,null,2));save();let stopped=false;
+ async function child(name,binary,args,timeout,extra={}){await guard();console.log(JSON.stringify({run,phase:name}));const stream=fs.createWriteStream(path.join(evidence,name+'.log'));let tail='';
+  const p=spawn(binary,args,{cwd:root,windowsHide:true,env:{...process.env,DOTNET_CLI_TELEMETRY_OPTOUT:'1',DOTNET_NOLOGO:'1',DOTNET_GCHeapHardLimit:'0x60000000',NODE_OPTIONS:'--max-old-space-size=768',...extra},stdio:['ignore','pipe','pipe']});p.stdout.on('data',b=>tail=(tail+b.toString()).slice(-1048576));p.stdout.pipe(stream,{end:false});p.stderr.pipe(stream,{end:false});let timedOut=false;
+  const timer=setTimeout(()=>{if(p.exitCode===null){timedOut=true;execFileSync('taskkill.exe',['/PID',String(p.pid),'/T','/F'],{windowsHide:true,stdio:'ignore'});}},timeout);
+  const code=await new Promise((resolve,reject)=>{p.on('error',reject);p.on('close',resolve);}).finally(()=>clearTimeout(timer));await new Promise(r=>stream.end(r));result.steps.push({name,exitCode:code,timedOut});save();a.equal(code,0,name+' failed; private log retained');a.equal(timedOut,false);
+  a.deepEqual(helper.sourcePins(web),result.sourcePins);a.deepEqual(require('./api-image-build.cjs').inputs(),apiPins);a.deepEqual(harnessPins(),result.harnessPins);a.deepEqual(exportPins(),result.exportPins);return tail;
+ }
+ try{stopped=true;for(const[,id]of originals)docker(['stop','--time','15',id]);await guard();result.admissionFreeBytes=os.freemem();
+  await child('harness-build','dotnet',['build','QA/tools/SqlHarness/SqlHarness.csproj','--no-restore','--artifacts-path','.build-check/teacher-availability-sql','-p:UseSharedCompilation=false'],300000);
+  const output=await child('sql-browser','powershell',['-NoProfile','-ExecutionPolicy','Bypass','-File',path.join(root,'QA/tools/SqlHarness/Run-ReconciledPayment.ps1'),'-Module','TeacherAvailability'],600000,{QA_TEACHER_CREATION_SERVICE:'1',QA_PENTA_TEACHER_WORKFLOW:'1',QA_PENTA_TEACHER_CORE:'1',QA_PENTA_TEACHER_BROWSER_EXPORT:build});
+  a.match(output,/PASS: PENTATEACHERBROWSER six actual browser\/SQL journeys/);a.match(output,/run-owned database and login removed/);
+  result.sqlRun=/QA TeacherAvailability run=([a-f0-9]{32})/.exec(output)?.[1];a.match(result.sqlRun,/^[a-f0-9]{32}$/);
+  const native=JSON.parse(fs.readFileSync(path.join(root,'QA/EVIDENCE/penta-teacher-live-'+result.sqlRun+'/result.json'))),post=JSON.parse(fs.readFileSync(path.join(root,'QA/EVIDENCE/penta-teacher-live-'+result.sqlRun+'/sql-postconditions.json')));
+  a.equal(native.passed,true);a.equal(native.checks.length,6);a.ok(native.checks.every(x=>x.passed));a.equal(post.passed,true);a.equal(post.createdTeachers,3);a.equal(post.executionAudits,3);a.equal(post.succeededDrafts,3);a.equal(post.cancelledDrafts,1);a.equal(post.modelInference,false);result.browserChecks=6;result.actualHttpRequests=post.actualHttpRequests;result.validationComplete=true;
+ }catch(error){result.failure=String(error.message).slice(0,220);}
+ finally{console.log(JSON.stringify({run,phase:'restore-exact-original-services'}));if(stopped)for(const[,id,image]of[...originals].reverse()){const s=JSON.parse(docker(['inspect',id]))[0];a.equal(s.Image,image);if(!s.State.Running)docker(['start',id]);}
+  const end=Date.now()+120000;do{result.restored=originals.map(([name,id,image])=>{const s=JSON.parse(docker(['inspect',id]))[0];return{name,id:s.Id,image:s.Image,expectedImage:image,running:s.State.Running,health:s.State.Health?.Status||null};});if(result.restored.every(s=>s.running&&s.image===s.expectedImage&&(!s.health||s.health==='healthy')))break;await sleep(2000);}while(Date.now()<end);
+  result.restorationPassed=result.restored.every(s=>s.running&&s.image===s.expectedImage&&(!s.health||s.health==='healthy'));result.after=inventory();result.inventoryPreserved=JSON.stringify(result.before)===JSON.stringify(result.after);
+  result.sourceUnchanged=JSON.stringify(helper.sourcePins(web))===JSON.stringify(result.sourcePins)&&JSON.stringify(require('./api-image-build.cjs').inputs())===JSON.stringify(apiPins)&&JSON.stringify(harnessPins())===JSON.stringify(result.harnessPins)&&JSON.stringify(exportPins())===JSON.stringify(result.exportPins);
+  result.passed=!!(result.validationComplete&&result.restorationPassed&&result.inventoryPreserved&&result.sourceUnchanged);save();console.log(JSON.stringify({run,passed:result.passed,webBuild:build,sqlRun:result.sqlRun,browserChecks:result.browserChecks,actualHttpRequests:result.actualHttpRequests,restorationPassed:result.restorationPassed,inventoryPreserved:result.inventoryPreserved,failure:result.failure,evidence}));if(!result.passed)process.exitCode=1;
+ }
+}
+require('./local-validation-lease.cjs').withLease(path.join(root,'.build-check'),'teacher-native-browser',work).catch(e=>{console.error('Teacher browser preflight refused: '+String(e.message).slice(0,160));process.exitCode=1;});

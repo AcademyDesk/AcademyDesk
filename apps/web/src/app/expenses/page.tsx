@@ -5,6 +5,7 @@ import { StandardDateField, StandardSelectField } from "@/components/design-syst
 import { academyApi, apiHeaders } from "@/lib/api";
 import { expenseAmountJson, expenseCents, formatExpenseCents } from "@/lib/expense-money";
 import styles from "./expenses.module.css";
+import visual from "@/components/design-system/finance-workspace.module.css";
 
 type Academy = { id: string };
 type Branch = { id: string; name: string };
@@ -107,7 +108,7 @@ export default function ExpensesPage() {
   const filtered = useMemo(() => filter === "All" ? expenses : expenses.filter(expense => expense.category === filter), [expenses, filter]);
   const categories = ["General", "TeacherPayout", "Rent", "Utilities", "Marketing", "Supplies", "Equipment"];
   const blocked = !ready || saving || needsReview;
-  return <main className={`enterprise-settings finance-module expenses-standard ${styles.content}`}>
+  return <main className={`${visual.page} enterprise-settings finance-module expenses-standard ${styles.content}`}>
     <header className="expenses-heading"><span className="expenses-title-icon" aria-hidden="true">₹</span><div><p>Finance</p><h1>Expenses</h1></div></header>
     {message && <p className="expenses-notice" role="status" aria-live="polite">{message}</p>}
     {academy && <button type="button" disabled={saving} onClick={refreshRegister} className="enterprise-action-button">Refresh expense register</button>}
@@ -122,14 +123,14 @@ export default function ExpensesPage() {
         <fieldset className="expenses-fields" disabled={blocked} style={{ border: 0, margin: 0, minWidth: 0 }}>
           <label className="expenses-wide"><span>Description</span><input value={draft.description} onChange={event => change("description", event.target.value)} placeholder="e.g. August piano instructor payment" className="field" maxLength={300} required disabled={blocked} /></label>
           <label><span>Amount</span><input type="number" min="0.01" step="0.01" value={draft.amount} onChange={event => change("amount", event.target.value)} placeholder="Amount in INR" className="field" required disabled={blocked} /></label>
-          <label><span>Category</span><StandardSelectField name="expenseCategory" value={draft.category} onChange={value => change("category", value)} placeholder="Choose category" options={categories.map(value => ({ value, label: value === "TeacherPayout" ? "Teacher payout" : value }))} disabled={blocked} /></label>
-          <label><span>Branch</span><StandardSelectField name="branchId" value={branchAvailable ? draft.branchId : ""} onChange={value => change("branchId", value)} placeholder="All academy / no branch" options={branches.map(branch => ({ value: branch.id, label: branch.name }))} disabled={blocked || !branchAvailable} />{!branchAvailable && ready && <small>Branch selection is unavailable for this account. You can record an expense without a branch.</small>}</label>
-          <StandardDateField name="expenseDate" value={draft.expenseDate} onChange={value => change("expenseDate", value)} label="Expense date" />
+          <StandardSelectField name="expenseCategory" label="Category" value={draft.category} onChange={value => change("category", value)} placeholder="Choose category" options={categories.map(value => ({ value, label: value === "TeacherPayout" ? "Teacher payout" : value }))} disabled={blocked} />
+          <div><StandardSelectField name="branchId" label="Branch (optional)" value={branchAvailable ? draft.branchId : ""} onChange={value => change("branchId", value)} placeholder="All academy / no branch" options={branches.map(branch => ({ value: branch.id, label: branch.name }))} disabled={blocked || !branchAvailable} />{!branchAvailable && ready && <small>Branch selection is unavailable for this account. You can record an expense without a branch.</small>}</div>
+          <StandardDateField name="expenseDate" value={draft.expenseDate} onChange={value => change("expenseDate", value)} label="Expense date (optional)" disabled={blocked} />
           <button disabled={blocked || !academy || !draft.description.trim() || !draft.amount} className="enterprise-action-button expenses-action expenses-wide">{saving ? "Saving…" : "Record expense"}</button>
         </fieldset>
       </form>
       <section className="expenses-panel expenses-register">
-        <header className="expenses-panel-header"><div><p>Expense register</p><h2>Recorded expenses</h2></div><div className="expenses-filter"><StandardSelectField name="expenseFilter" value={filter} onChange={setFilter} placeholder="Filter category" options={[{ value: "All", label: `All expenses (${expenses.length})` }, ...categories.map(value => ({ value, label: value === "TeacherPayout" ? "Teacher payout" : value }))]} /></div></header>
+        <header className="expenses-panel-header"><div><p>Expense register</p><h2>Recorded expenses</h2></div><div className="expenses-filter"><StandardSelectField name="expenseFilter" label="Filter category" value={filter} onChange={setFilter} placeholder="Filter category" options={[{ value: "All", label: `All expenses (${expenses.length})` }, ...categories.map(value => ({ value, label: value === "TeacherPayout" ? "Teacher payout" : value }))]} /></div></header>
         {filtered.length === 0 ? <p className="expenses-empty">No expenses match this view.</p> : <ul className="expenses-list">{filtered.map(expense => <li key={expense.id}><div><b>{expense.description}</b><small>{expense.category === "TeacherPayout" ? "Teacher payout" : expense.category} · {branchName(expense.branchId)} · {expense.expenseDate || "No date recorded"}</small></div><strong>{money(expense)}</strong></li>)}</ul>}
       </section>
     </section>

@@ -1,5 +1,17 @@
 # BUG-DATA-0008 — Blank optional student numbers collide under the unique index
 
+## Current-image native browser successor — 23 October 2026
+
+[Native student report](../REPORTS/API_IMAGE_STUDENT_BROWSER_2026-10-23.md):
+SQL `6375e819f5a847bcbd378e1b22e17a19`, window
+`4eed1898f83342c583e5684beca1fb08` PASS30setup/security checks plus four real
+390/1440light/dark form submissions with blank student numbers. All four200,
+SQL StudentNumbernull, one write/audit each; actual selected saved profile loads
+after success redirect. Two adults/two minors/parent links, Identity/unrelated
+hashes and exact cleanup/restoration/inventories verified. Original early-loading
+capture retained as narrower proof, not reused. No app change or index bypass;
+physical devices/wider critical/release acceptance and issue remain OPEN.
+
 | Field | Value |
 | --- | --- |
 | Status | OPEN |

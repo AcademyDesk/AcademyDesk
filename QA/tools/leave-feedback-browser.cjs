@@ -35,8 +35,8 @@ const server=http.createServer((req,res)=>{try{
     if(url.origin===origin||url.protocol==='data:')return route.continue();return route.abort('blockedbyclient');
    });
    await page.goto(origin+'/leave');await page.getByRole('button',{name:'Approve',exact:true}).waitFor();
-   const form=page.locator('form');await form.locator('select').nth(1).selectOption('student');
-   const dates=form.locator('input[type="date"]');await dates.nth(0).fill('2026-10-31');await dates.nth(1).fill('2026-10-31');
+   const form=page.locator('form');await require('./shared-picker-actions.cjs').select(page,'requester','Synthetic Student');
+   const dates=form.locator('input[name="leave-start"],input[name="leave-end"]');await require('./shared-picker-actions.cjs').date(page,'leave-start','2026-10-31');await require('./shared-picker-actions.cjs').date(page,'leave-end','2026-10-31');
    const reason=page.getByPlaceholder('Reason');await reason.fill('Synthetic reason');await page.getByRole('button',{name:'Submit request',exact:true}).click();
    const notice=page.getByRole('status'),failed=scenario==='rejected'||scenario==='uncertain-committed';
    await notice.filter({hasText:failed?'Synthetic service guidance':'Leave request submitted.'}).waitFor();await page.waitForFunction(()=>!document.querySelector('form button').disabled);

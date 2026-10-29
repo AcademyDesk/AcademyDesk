@@ -3,6 +3,7 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import { WorkspaceNav } from "@/components/workspace-nav";
 import { StandardSelectField } from "@/components/design-system/controls";
 import { academyApi, apiHeaders } from "@/lib/api";
+import visual from "@/components/design-system/engagement-workspace.module.css";
 type Academy = { id: string };
 type Person = {
   id: string;
@@ -119,7 +120,7 @@ export default function CommunicationPreferencesPage() {
     }
   }
   return (
-    <main className="enterprise-settings preferences-standard min-h-screen">
+    <main className={`enterprise-settings preferences-standard min-h-screen ${visual.page}`}>
       <WorkspaceNav />
       <div className="preferences-content">
         <header className="preferences-heading">
@@ -142,9 +143,8 @@ export default function CommunicationPreferencesPage() {
             <h2>Communication permissions</h2>
           </header>
           <fieldset className="preferences-fields m-0 min-w-0 border-0 p-0" disabled={saving}>
-            <label>
-              Contact type
-              <StandardSelectField
+            <div>
+                <StandardSelectField label="Contact type"
                 name="recipientType"
                 value={recipientType}
                 onChange={(value) => {
@@ -157,10 +157,9 @@ export default function CommunicationPreferencesPage() {
                   { value: "Student", label: "Student" },
                 ]}
               />
-            </label>
-            <label>
-              Contact
-              <StandardSelectField
+            </div>
+            <div>
+                <StandardSelectField label="Contact"
                 name="recipientId"
                 value={recipientId}
                 onChange={chooseRecipient}
@@ -170,7 +169,7 @@ export default function CommunicationPreferencesPage() {
                   label: `${person.firstName} ${person.lastName}${person.email ? ` · ${person.email}` : ""}`,
                 }))}
               />
-            </label>
+            </div>
             {recipientId && (
               <>
                 <section className="preferences-options">

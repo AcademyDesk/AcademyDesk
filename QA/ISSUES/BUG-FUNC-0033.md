@@ -1,5 +1,17 @@
 # BUG-FUNC-0033 — Payroll Print / Save PDF has no visible selected payslip in print output
 
+## Linked Teacher selected-document successor — 2026-10-13
+
+[Report](../REPORTS/PHASE_2B_PAYROLL_DOCUMENT_LINKED.md): final run484f34cba03446dea79468d462c2f25b,577.8s passed four real Teacher journeys/16 actual selected one-page PDFs, exact recorded session/monthly/NoCashDue/maximum amounts, identity/period/source/exclusion and print/focus checks. Four final PDFs rendered and visually inspected. Eight linked Admin precision journeys/16 writes/four Teacher finance403/304 unchanged five-table reads/retained native controls/exact owned cleanup PASS. **OPEN/RETEST**, not whole-device/release closure.320px Teacher history row/action clipping observed separately and queued Batch2; no PDF template changes this slice. Earlier Teacher-browser-pending wording below is historical.
+
+## Batch1 checkpoint — Selected payroll document — 2026-10-12
+
+Frozen native/browser baseline reproduced absent selected payslip in three-page PDF. Shared React-escaped native-dialog preview now prints only the selected record. Linked run50823642199a46988c2ea153f2d4b69f passed12 actual one-page A4 PDFs (cents/legacy/NoCashDue across320/1440 and light/dark), exact record/name/period/amount/other-record exclusions and focus restoration. Three PDFs were rendered and visually inspected. Teacher self-service cycle/provenance completeness and Teacher browser PDF proof remain separate; physical devices/full-release gates NOT RUN. No issue closure.
+
+Teacher DTO follow-up: recorded session counts/monthly nulls and UTC identity ticks/Z now match actual owned SQL in fresh runae7e21a764b14276b7b735aad0fce37d,191.9s, alongside exact money/authorized-set/no-write checks and retained native guards/cleanup. Fresh full unit suite1474/1474. This supersedes the preceding cycle/provenance-pending note, not the separate actual Teacher browser/PDF, physical or full-release gates.
+
+Current bounded evidence: [Batch1 ledger](../REPORTS/BATCH_1_CORE_INTEGRITY.md). Changes are local/uncommitted; **OPEN / RETEST, not closed**. The original baseline fields and historical findings below are retained, not a claim that the new runtime checks were unexecuted.
+
 | Field | Value |
 | --- | --- |
 | Status | OPEN |

@@ -80,6 +80,10 @@ public sealed class PentaMiniOrchestrator(AcademyDeskDbContext db, IdentityDbCon
             var session = await OwnSession(academy, actor, sessionId, token);
             if (session is null) return new(404);
             if (session.ExpiresAtUtc <= Now) return new(410, Error: "This conversation expired. Start a new one.");
+            // Explicit operational ownership must not be silently interpreted as
+            // an old read-only turn, even when its request ID collides.
+            if (session.ProtectedOnboardingState is not null)
+                return new(409, Error: "This conversation belongs to onboarding. Use its current workflow or start a separate read-only conversation.");
             var replay = await db.PentaMiniTurns.SingleOrDefaultAsync(x => x.AcademyId == academy && x.ActorUserId == actor &&
                 x.SessionId == sessionId && x.RequestId == input.RequestId, token);
             if (replay is not null)
@@ -130,7 +134,7 @@ public sealed class PentaMiniOrchestrator(AcademyDeskDbContext db, IdentityDbCon
         await LockAcademyAsync(academy, token);
         if (!await Reauthorize(principal, academy, token))
         {
-            Audit(academy, actor, sessionId, input.RequestId, "DeniedAfterPlanning", planned.Plan?.ToolCall?.Name, watch.ElapsedMilliseconds, "Authorization", input.Capability);
+            Audit(academy, actor, sessionId, input.RequestId, "DeniedAfterPlanning", planned.Plan?.ToolCall?.Name, watch.ElapsedMilliseconds, "Authorization", input.Capability, runtime: planned.Runtime);
             await db.SaveChangesAsync(token); await complete.CommitAsync(token); return new(403);
         }
         var owned = await OwnSession(academy, actor, sessionId, token);
@@ -151,7 +155,7 @@ public sealed class PentaMiniOrchestrator(AcademyDeskDbContext db, IdentityDbCon
         var turn = await db.PentaMiniTurns.SingleAsync(x => x.AcademyId == academy && x.ActorUserId == actor && x.SessionId == sessionId && x.RequestId == input.RequestId, token);
         turn.Status = outcome.Kind; turn.ProtectedReceipt = protector.Protect(serialized);
         Audit(academy, actor, sessionId, input.RequestId, outcome.Kind, valid ? plan!.ToolCall?.Name : null,
-            watch.ElapsedMilliseconds, planned.Error ?? (outcome.Kind == "ERROR" ? "ToolValidation" : null), input.Capability, valid ? plan : null);
+            watch.ElapsedMilliseconds, planned.Error ?? (outcome.Kind == "ERROR" ? "ToolValidation" : null), input.Capability, valid ? plan : null, planned.Runtime);
         await db.SaveChangesAsync(token); await complete.CommitAsync(token);
         return new(201, receiptValue);
     }
@@ -169,17 +173,19 @@ public sealed class PentaMiniOrchestrator(AcademyDeskDbContext db, IdentityDbCon
         _ => "This pilot can find students, filter subjects and show verified outstanding fees. No writes, sends or scheduling are enabled."
     };
     private void Audit(Guid academy, Guid actor, Guid session, Guid request, string kind, string? tool, long latency, string? error,
-        string? capability = null, MiniPlan? proposal = null)
+        string? capability = null, MiniPlan? proposal = null, MiniRuntimeIdentity? runtime = null)
     {
         db.AuditLogs.Add(new AuditLog { AcademyId = academy, ActorUserId = actor, EntityType = "PentaMiniSession", EntityId = session,
             Action = "PentaMini" + kind, OccurredAtUtc = Now, MetadataJson = JsonSerializer.Serialize(new {
                 conversationId = session, requestId = request, capability, provider = "PentaMini", protocol = "0.1", riskClass = "READ",
-                serviceVersion = "0.1.0", promptVersion = "planner-0.1", kind, tool = PentaMiniTools.Available.Contains(tool) ? tool : null,
+                serviceVersion = runtime?.ServiceVersion, promptVersion = runtime?.PromptVersion,
+                runtimeProvenanceStatus = runtime is null ? "NotObserved" : "ResponseReported", runtimeProvenance = runtime,
+                kind, tool = PentaMiniTools.Available.Contains(tool) ? tool : null,
                 expectedModelRevision = PentaMiniLearningEvent.ExpectedModelRevision, runtimeModelAttested = false,
                 argumentKeys = proposal?.ToolCall?.Arguments.Keys.Where(x => x is "name" or "subject" or "balance_status" or "sort_by" or "learner_id").Order().ToArray() ?? [],
                 authorization = kind == "DeniedAfterPlanning" ? "Denied" : "Allowed", latencyMs = latency, error,
                 learningEvent = PentaMiniLearningEvent.ForOutcome(academy, request, clock.GetUtcNow(), kind,
-                    PentaMiniTools.Available.Contains(tool) ? tool : null, error)
+                    PentaMiniTools.Available.Contains(tool) ? tool : null, error, runtime)
             }) });
     }
 }

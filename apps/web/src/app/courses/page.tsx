@@ -5,6 +5,7 @@ import { WorkspaceNav } from "@/components/workspace-nav";
 import { StandardSelectField } from "@/components/design-system/controls";
 import { academyApi, apiHeaders } from "@/lib/api";
 import { courseUpdatePayload, type CourseUpdateSource } from "@/lib/course-update";
+import visual from "@/components/design-system/academic-workspace.module.css";
 
 type Academy = { id: string; name: string };
 type Course = CourseUpdateSource;
@@ -36,30 +37,40 @@ export default function CoursesPage() {
     try { await loadCourses(id); }
     catch { setMessage(`${notice} The course list could not be refreshed. Refresh the page to see the latest courses.`); }
   }
-  async function loadAcademies() {
-    const response = await academyApi("/api/academies", { cache: "no-store" });
-    if (!response.ok) throw new Error();
-    const data: Academy[] = await response.json();
-    setAcademies(data);
-    if (!academyId && data.length) setAcademyId(data[0].id);
-  }
-  async function loadCourses(id: string) {
-    if (!id) return setCourses([]);
+  async function loadCourses(id: string, signal?: AbortSignal) {
+    if (!id) return;
     const response = await academyApi(`/api/academies/${id}/courses`, {
-      cache: "no-store",
+      cache: "no-store", signal,
     });
     if (!response.ok) throw new Error();
-    setCourses(await response.json());
+    const data: Course[] = await response.json();
+    if (signal?.aborted) return;
+    if (!Array.isArray(data) || !data.every(item => item && typeof item.id === "string" && typeof item.name === "string" && typeof item.academyType === "string" && typeof item.isActive === "boolean")) throw new Error();
+    setCourses(data);
   }
   useEffect(() => {
-    void loadAcademies().catch(() =>
-      setMessage("The AcademyDesk API is not reachable."),
+    const controller = new AbortController();
+    async function initialise() {
+      const response = await academyApi("/api/academies", { cache: "no-store", signal: controller.signal });
+      if (!response.ok) throw new Error();
+      const data: Academy[] = await response.json();
+      if (controller.signal.aborted) return;
+      if (!Array.isArray(data) || !data.every(item => item && typeof item.id === "string" && typeof item.name === "string")) throw new Error();
+      setAcademies(data);
+      setAcademyId(current => current || data[0]?.id || "");
+    }
+    void initialise().catch(() =>
+      { if (!controller.signal.aborted) setMessage("The AcademyDesk API is not reachable."); },
     );
+    return () => controller.abort();
   }, []);
   useEffect(() => {
-    void loadCourses(academyId).catch(() =>
-      setMessage("Courses could not be loaded."),
+    if (!academyId) return;
+    const controller = new AbortController();
+    void loadCourses(academyId, controller.signal).catch(() =>
+      { if (!controller.signal.aborted) setMessage("Courses could not be loaded."); },
     );
+    return () => controller.abort();
   }, [academyId]);
   async function createCourse(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -140,9 +151,9 @@ export default function CoursesPage() {
   }
   const typeOptions = courseTypes.map((value) => ({ value, label: value }));
   return (
-    <main className="enterprise-settings courses-standard min-h-screen">
+    <main className={`enterprise-settings courses-standard min-h-screen ${visual.page}`}>
       <WorkspaceNav />
-      <div className="courses-content mx-auto max-w-6xl px-6 py-10">
+      <div className={`courses-content mx-auto max-w-6xl px-6 py-10 ${visual.body}`}>
         <header className="courses-heading">
           <div className="courses-title">
             <span className="courses-title-icon" aria-hidden="true">
@@ -162,12 +173,12 @@ export default function CoursesPage() {
         ) : (
           <>
             <section className="courses-academy">
-              <span>Academy</span>
               <StandardSelectField
                 disabled={savingId !== null}
                 name="academy"
+                label="Academy"
                 value={academyId}
-                onChange={(id) => { if (!saveInFlight.current) setAcademyId(id); }}
+                onChange={(id) => { if (!saveInFlight.current && id !== academyId) { setAcademyId(id); setCourses([]); setEditingId(null); } }}
                 placeholder="Select academy"
                 options={academies.map((academy) => ({
                   value: academy.id,
@@ -197,6 +208,7 @@ export default function CoursesPage() {
                   <StandardSelectField
                     disabled={savingId !== null}
                     name="course-type"
+                    label="Course type"
                     value={type}
                     onChange={setType}
                     placeholder="Course type"
@@ -247,6 +259,7 @@ export default function CoursesPage() {
                             <StandardSelectField
                               disabled={savingId !== null}
                               name={`course-type-${course.id}`}
+                              label="Course type"
                               value={editType}
                               onChange={setEditType}
                               placeholder="Course type"

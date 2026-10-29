@@ -10,7 +10,7 @@ async function page(config={}){
  const Controls={StandardSelectField(){},StandardDateField(){},StandardTimeField(){}};
  const data={students:[{id:'student',firstName:'Synthetic',lastName:'Student'}],batches:[{id:'batch',name:'Synthetic batch'}],teachers:[], 'makeup-classes':config.rows??[]};
  const api=async(url,init={})=>{calls.push({url,...init});return{ok:true,status:200,json:async()=>init.method?{}:url==='/api/academies'?[{id:'owned'}]:data[url.split('/').at(-1)]};};
- new Function('require','module','exports',code)(n=>n==='react/jsx-runtime'?jsx:n==='react'?react:n==='@/lib/api'?{academyApi:api,apiHeaders:()=>({})}:n==='@/components/workspace-nav'?{WorkspaceNav(){}}:n==='@/components/design-system/controls'?Controls:(()=>{throw Error(n)})(),module,module.exports);
+ new Function('require','module','exports',code)(n=>n==='react/jsx-runtime'?jsx:n==='react'?react:n==='@/lib/api'?{academyApi:api,apiHeaders:()=>({})}:n==='@/components/workspace-nav'?{WorkspaceNav(){}}:n==='@/components/design-system/controls'?Controls:n.endsWith('.module.css')?{default:{}}:n.endsWith('required-control-value')?{RequiredControlValue:'validation'}:n.endsWith('onboarding-field')?{OnboardingField:'field'}:(()=>{throw Error(n)})(),module,module.exports);
  const render=()=>{index=refIndex=effectIndex=0;return module.exports.default();};
  render();for(let i=0;i<4;i++){for(const fn of effects.splice(0))fn();await new Promise(r=>setImmediate(r));render();}
  const control=name=>nodes(render()).find(n=>n.props?.name===name),input=placeholder=>nodes(render()).find(n=>n.props?.placeholder===placeholder);

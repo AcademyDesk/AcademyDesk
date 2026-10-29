@@ -3,44 +3,66 @@
 import { useEffect, useMemo, useState } from "react";
 import { academyApi } from "@/lib/api";
 import { StandardDateField, StandardSelectField } from "@/components/design-system/controls";
-type Academy = { id: string };
-type Audit = {
-  id: string;
-  action: string;
-  entityType: string;
-  metadataJson?: string | null;
-  occurredAtUtc: string;
-};
+import { activityMatches, activityTimestamp, validActivityRecord, type ActivityRecord } from "@/lib/activity-view";
 export default function ActivityPage() {
-  const [items, setItems] = useState<Audit[]>([]);
+  const [items, setItems] = useState<ActivityRecord[]>([]);
   const [message, setMessage] = useState("Loading activity…");
+  const [loaded, setLoaded] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const [clock, setClock] = useState(0);
   const [query, setQuery] = useState("");
   const [entity, setEntity] = useState("");
   const [period, setPeriod] = useState("");
   const [activityDate, setActivityDate] = useState("");
   useEffect(() => {
+    const controller = new AbortController();
+    let active = true;
     async function load() {
       try {
         const academyResponse = await academyApi("/api/academies", {
-          cache: "no-store",
+          cache: "no-store", signal: controller.signal,
         });
         if (!academyResponse.ok) throw new Error();
-        const academies: Academy[] = await academyResponse.json();
-        if (!academies[0]) return setMessage("Create your academy first.");
+        const academies: unknown = await academyResponse.json();
+        if (!active) return;
+        if (!Array.isArray(academies)) throw new Error();
+        if (!academies.length) { setMessage("Create your academy first."); return; }
+        const academy = academies[0];
+        if (!academy || typeof academy.id !== "string" || !academy.id.trim()) throw new Error();
         const response = await academyApi(
-          `/api/academies/${academies[0].id}/audit-logs`,
-          { cache: "no-store" },
+          `/api/academies/${encodeURIComponent(academy.id)}/audit-logs`,
+          { cache: "no-store", signal: controller.signal },
         );
         if (!response.ok) throw new Error();
-        setItems(await response.json());
+        const records: unknown = await response.json();
+        if (!active) return;
+        if (!Array.isArray(records) || !records.every(validActivityRecord)) throw new Error();
+        setItems(records);
+        setClock(Date.now());
+        setLoaded(true);
         setMessage("");
       } catch {
+        if (!active) return;
+        setFailed(true);
         setMessage(
           "Activity could not be loaded. Confirm the API is running and you are signed in.",
         );
       }
     }
     void load();
+    return () => { active = false; controller.abort(); };
+  }, []);
+  useEffect(() => {
+    // Snapshot rolling-window time outside render; no background API reads.
+    const update = () => { if (document.visibilityState !== "hidden") setClock(Date.now()); };
+    const timer = window.setInterval(update, 60000);
+    window.addEventListener("focus", update);
+    document.addEventListener("visibilitychange", update);
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener("focus", update);
+      document.removeEventListener("visibilitychange", update);
+    };
   }, []);
   const entityTypes = useMemo(
     () => [...new Set(items.map((item) => item.entityType))].sort(),
@@ -48,23 +70,8 @@ export default function ActivityPage() {
   );
   const visible = useMemo(
     () =>
-      items.filter((item) => {
-        const searchable =
-          `${item.action} ${item.entityType} ${item.metadataJson ?? ""}`.toLowerCase();
-        const age = Date.now() - new Date(item.occurredAtUtc).getTime();
-        const periodMatch =
-          !period ||
-          (period === "Today" && age <= 86400000) ||
-          (period === "7 days" && age <= 604800000) ||
-          (period === "30 days" && age <= 2592000000);
-        return (
-          (!entity || item.entityType === entity) &&
-          (!activityDate || new Date(item.occurredAtUtc).toLocaleDateString("en-CA") === activityDate) &&
-          periodMatch &&
-          searchable.includes(query.toLowerCase())
-        );
-      }),
-    [items, entity, period, query, activityDate],
+      items.filter(item => activityMatches(item, { query, entity, period, date: activityDate, now: clock })),
+    [items, entity, period, query, activityDate, clock],
   );
   const label = (value: string) =>
     value.replace(/([a-z])([A-Z])/g, "$1 $2").replaceAll("_", " ");
@@ -77,20 +84,22 @@ export default function ActivityPage() {
         </div>
       </header>
         {message && (
-          <p className="enterprise-page-state enterprise-page-state-loading workspace-activity-message">
+          <p role={failed ? "alert" : "status"} className="enterprise-page-state workspace-activity-message">
             {message}
           </p>
         )}
         <section className="workspace-activity-panel">
           <header className="workspace-activity-panel-header">
             <div><p>Audit trail</p><h2>Recent activity</h2></div>
-            <span>{visible.length} matching events</span>
+            <span>{loaded ? `${visible.length} matching events` : "Activity unavailable"}</span>
           </header>
           <div className="workspace-activity-filters">
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Search activity"
+              aria-label="Search activity"
+              disabled={!loaded}
               className="field"
             />
             <StandardSelectField
@@ -98,17 +107,23 @@ export default function ActivityPage() {
               value={entity}
               onChange={setEntity}
               placeholder="All record types"
+              label="Record type"
+              disabled={!loaded}
               options={entityTypes.map((value) => ({ value, label: label(value) }))}
             />
             <StandardSelectField
               name="activity-period"
               value={period}
-              onChange={setPeriod}
+              onChange={value => { setPeriod(value); setClock(Date.now()); }}
               placeholder="All time"
-              options={["Today", "7 days", "30 days"].map((value) => ({ value, label: value }))}
+              label="Time range"
+              disabled={!loaded}
+              options={[{ value: "Today", label: "Last 24 hours" }, { value: "7 days", label: "Last 7 days" }, { value: "30 days", label: "Last 30 days" }]}
             />
-            <StandardDateField name="activity-date" value={activityDate} onChange={setActivityDate} label="Activity date" />
+            <StandardDateField name="activity-date" value={activityDate} onChange={setActivityDate} label="Activity date (IST)" disabled={!loaded} />
             <button
+              type="button"
+              disabled={!loaded}
               onClick={() => {
                 setQuery("");
                 setEntity("");
@@ -120,7 +135,9 @@ export default function ActivityPage() {
               Clear filters
             </button>
           </div>
-          {visible.length === 0 ? (
+          {!loaded ? (
+            <p className="workspace-activity-empty">Activity records are unavailable until the list loads.</p>
+          ) : visible.length === 0 ? (
             <p className="workspace-activity-empty">No activity recorded for this view.</p>
           ) : (
             <ul className="workspace-activity-list">
@@ -137,7 +154,7 @@ export default function ActivityPage() {
                       dateStyle: "medium",
                       timeStyle: "short",
                       timeZone: "Asia/Kolkata",
-                    }).format(new Date(item.occurredAtUtc))}
+                    }).format(new Date(activityTimestamp(item.occurredAtUtc)))}
                     </small>
                     {item.metadataJson && (
                     <details>

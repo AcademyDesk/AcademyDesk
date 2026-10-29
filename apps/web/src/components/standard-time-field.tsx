@@ -1,14 +1,18 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useId, useRef, useState } from "react";
 import { AnchoredPopup } from "./design-system/anchored-popup";
+import { RequiredControlValue } from "./design-system/required-control-value";
 
 type StandardTimeFieldProps = {
   name: string;
   value: string;
   onChange: (value: string) => void;
   label: string;
-  intervalMinutes?: 15 | 30;
+  intervalMinutes?: 1 | 15 | 30;
+  allowClear?: boolean;
+  disabled?: boolean;
+  required?: boolean;
 };
 
 const pad = (value: number) => String(value).padStart(2, "0");
@@ -34,7 +38,11 @@ export function StandardTimeField({
   onChange,
   label,
   intervalMinutes = 15,
+  allowClear = false,
+  disabled = false,
+  required = false,
 }: StandardTimeFieldProps) {
+  const labelId = useId();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const close = useCallback(() => setOpen(false), []);
@@ -53,20 +61,23 @@ export function StandardTimeField({
   }
 
   return (
-    <div className="standard-time-field" ref={ref}>
-      <span className="standard-time-label">{label}</span>
+    <div className="standard-time-field" ref={ref} style={{ position: "relative" }}>
+      <span id={labelId} className="standard-time-label">{label}</span>
       <input type="hidden" name={name} value={value} />
+      {required && <RequiredControlValue value={/^\d{2}:\d{2}$/.test(value) ? value : ""} label={label} disabled={disabled} />}
       <button
         type="button"
+        disabled={disabled}
         className="standard-time-trigger"
         aria-expanded={open}
         aria-haspopup="dialog"
+        aria-labelledby={labelId}
         onClick={() => setOpen((current) => !current)}
       >
-        <span>{readableTime(value)}</span>
+        <span>{value ? readableTime(value) : "Select time"}</span>
         <i aria-hidden="true">◷</i>
       </button>
-      {open && <AnchoredPopup anchorRef={ref} className="standard-time-popover" label={`${label} picker`} width={360} onClose={close}>
+      {open && !disabled && <AnchoredPopup anchorRef={ref} className="standard-time-popover" label={`${label} picker`} width={360} onClose={close}>
           <div>
             <span>Hour</span>
             <div className="standard-time-options">
@@ -119,6 +130,7 @@ export function StandardTimeField({
               ))}
             </div>
           </div>
+          {allowClear && <button type="button" className="standard-time-done" onClick={() => { onChange(""); close(); ref.current?.querySelector("button")?.focus({ preventScroll: true }); }}>Clear time</button>}
           <button type="button" className="standard-time-done" onClick={() => { close(); ref.current?.querySelector("button")?.focus({ preventScroll: true }); }}>Done</button>
         </AnchoredPopup>}
     </div>

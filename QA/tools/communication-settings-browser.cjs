@@ -32,6 +32,7 @@ const server=http.createServer((req,res)=>{try{
       return route.fulfill({status:200,headers,contentType:'application/json',body:JSON.stringify(saved)});
      }
      assert.equal(method,'GET');
+     if(url.pathname==='/api/academies/owned/meetings/capabilities')return route.fulfill({status:200,headers,contentType:'application/json',body:JSON.stringify(require('./meeting-integration-fixture.cjs')())});
      const data={'/api/academies':[{id:'owned',name:'Synthetic academy',enabledModulesJson:'["Core","Engagement"]'}],'/api/auth/session':{academyId:'owned',displayName:'Synthetic admin',roles:['AcademyAdmin'],isPlatformOwner:false},'/api/portal/announcements':[],'/api/academies/owned/communication-settings':rows};
      assert.ok(Object.hasOwn(data,url.pathname));return route.fulfill({status:200,headers,contentType:'application/json',body:JSON.stringify(data[url.pathname])});
     }

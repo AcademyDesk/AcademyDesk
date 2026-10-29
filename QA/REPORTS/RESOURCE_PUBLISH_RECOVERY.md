@@ -1,0 +1,28 @@
+# Resource publishing — pending and outcome recovery
+
+2026-10-15. `D:\AcademyDesk-codex-p0`, branch `codex/penta-search`, HEAD `b1f8cb6`. Bounded High successor to learning presentation,not full library/upload/enterprise acceptance.
+
+## Implemented
+
+- Three prerequisite reads check HTTP/array containers and publish one complete resource/batch/course snapshot. Unavailable/denied initial data no longer enables publishing or claims a successfully empty resource register. Existing backend authorization remains authoritative.
+- Synchronous ready/pending/review/snapshot guards block same-tick duplicate POSTs,refresh during pending write/readback,stale callbacks after successful refresh andfurther writes after uncertain outcomes or failed manual reads. Visible/native/shared controls disable consistently. Explicit read-only refresh is available for recovery;no automatic POST retry.
+- Confirmed successful response says `Resource published.` before readback;subsequent list failure keeps success and says not to repeat.500/408/network failures retain title/link/file/options andrequire deliberate read review. Known4xx use nonempty backend string guidance or a safe fallback,not null/object output or success. A successful refresh asks the operator to check the previous resource;it does not prove an unknown publish was absent.
+- Form draft revisions protect newer native/selector/file edits from being cleared by an earlier confirmed save. Matching confirmed drafts reset title/link/file andthe native file input;existing type/subject/audience selection retention preserved. Unmounted responses do not clear drafts or update UI.
+- Basic title/link-or-file/type/current optional course/batch validity checked before request. Existing link JSON fields including `description:null`,optional IDs asnull and`isPublished:true` retained. Upload still uses FormData withfile/title/type andonly nonempty scope IDs,no forced JSON content-type or link field. File accept list,storage/provider,scope andserver policy unchanged.
+- Existing PENTA visual styling retained. Callback-stable load removes the inherited Resources effect dependency warning without suppression. No finance/AI/tool/approval/permission change.
+
+## Verification
+
+- Final webpack build/TypeScript/static export86 PASS. Resources ESLint0errors/0warnings. No app-source edit after final build. Script parse/scoped whitespace/vendor6 PASS.
+- 120 focused node:test entries PASS:51 new resource link/upload recovery/validation/payload tests plus69 retained assessment/assignment/grade/options/create/preservation entries. The2 intentionally hardened Resources load/create declarations are explicitly excluded from historical unchanged claims;8 other learning-domain function hashes remain checked. Multipart field identity/nullable JSON scope/rejected guidance/408+500/network locks/failed manual recovery/stale callbacks/held write-read/newer draft/unmount guards verified. Tests are controlled handlers,not real SQL/storage/RBAC.
+- New108-case synthetic browser matrix:link/upload×320/768/1440×light/dark×9scenarios (normal,initial failure,rejection,408,network,confirmed-save/read failure,pending write,pending read,later draft). Actual DOM/shared selectors/native file selection,exact JSON/raw multipart fields andboundary/file bytes,no duplicate POST,disabled controls,retained file/draft,safe recovery,matching reset andno page errors/overflow checked. Late draft uses a labelled programmatic input event while normal controls remain disabled,explicitly not a claim those controls are editable during pending. No real upload persistence/Blob acceptance.
+- Existing54 learning-layout browser cases rerun on same export;assessment result/assignment/resource presentation andnormal requests preserved. Final receipts/source hashes/phone review recorded below after completion. Existing32assessment-create/16assignment detailed-browser evidence retained at their prior source point,not claimed freshly rerun in this resource-only functional batch.
+- Final162/162 synthetic browser cases PASS: `QA/EVIDENCE/resource-recovery-1792048167215/result.json` (108) and `QA/EVIDENCE/learning-visual-1792048177451/result.json` (54). Recorded source hashes match final files;final phone dark upload-timeout/light confirmed-publish-read-failure screenshots reviewed. A small scoped resource-fieldset background/refresh spacing correction was made after the earlier screenshots,then rebuilt andboth full browser suites rerun. No app-source changes after final build. No actual storage/SQL/auth/device acceptance claimed.
+
+## Limits and next
+
+Page-lifetime safeguards are not durable cross-tab/reload/server idempotency or a substitute for server authorization,tenant/scope validation,virus/file/content policy,quota or storage transactions. Checked array containers are not exhaustive response-schema validation. Unknown upload may already exist;refresh prompts inspection rather than automatic rollback/retry. Existing private-media/Blob,resource-scope,real Identity/API/SQL,physical Android/iOS andenterprise release gates remain OPEN;no issue closure/no liveSQL backend tests rerun for this frontend-only change.
+
+Next Medium:communications andremaining academic/portal-state Manual presentation. Use High for consequential authority/unknown-outcome/runtime/AI integration. Existing PENTA UI2/Mini/domain conversation/E9–E10 gates andowner full app→authorized go-live→Hayansh→Academy Desk product website order unchanged. No new engine/project handoff required.
+
+No backend/schema/Mini/vendor/main/staging/commit/push/Azure/production data/container change. Earlier unrelated dirty application work andlocal QA/EVIDENCE preserved.

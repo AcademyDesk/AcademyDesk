@@ -1,0 +1,10 @@
+'use strict';
+const{test}=require('node:test'),a=require('node:assert/strict'),{candidateManifest,validateManifest,environment}=require('./web-dependency-candidate.cjs');
+test('candidate changes only exact Next and matching lint pin plus explicit source-map fix',()=>{const original={dependencies:{next:'16.3.5',react:'19.2.8'},devDependencies:{'eslint-config-next':'16.3.5',eslint:'^9'},scripts:{build:'next build'}};const candidate=candidateManifest(original);validateManifest(original,candidate);a.equal(original.dependencies.next,'16.3.5');for(const mutate of[p=>p.dependencies.react='other',p=>p.scripts.build='changed',p=>p.overrides.braces='fake-fix']){const proposed=structuredClone(candidate);mutate(proposed);a.throws(()=>validateManifest(original,proposed));}});
+test('dependency environment uses only public registry and D cache/temp/configs, no inherited npm credentials',()=>{const env=environment('D:\\synthetic',false);a.equal(env.npm_config_registry,'https://registry.npmjs.org/');a.equal(env.npm_config_ignore_scripts,'true');a.ok(env.npm_config_cache.toLowerCase().startsWith('d:'));a.ok(env.TEMP.startsWith('D:'));a.equal(env.NPM_TOKEN,undefined);a.equal(env.NODE_OPTIONS,undefined);a.equal(environment('D:\\synthetic',true).npm_config_offline,'true');});
+
+test('candidate lineage accepts only complete original or complete validated candidate source pins',()=>{
+ const{worktreeState}=require('./web-dependency-candidate.cjs'),original=[{path:'package.json',sha256:'old'},{path:'src/page.tsx',sha256:'same'}],candidate=[{path:'package.json',sha256:'new'},{path:'src/page.tsx',sha256:'same'}],r={originalSourcePins:original,candidateSourcePins:candidate,validated:true};
+ a.equal(worktreeState(original,r),'original');a.equal(worktreeState(candidate,r),'exact-candidate');
+ a.throws(()=>worktreeState(candidate,{...r,validated:false}));a.throws(()=>worktreeState([...candidate,{path:'.env',sha256:'unknown'}],r));a.throws(()=>worktreeState([{...candidate[0]}, {path:'src/page.tsx',sha256:'unrelated-edit'}],r));
+});

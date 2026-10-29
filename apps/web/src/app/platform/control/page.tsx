@@ -1,7 +1,8 @@
 "use client";
+import Image from "next/image";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { StandardDateField, StandardSelectField, StandardDetailModal } from "@/components/design-system/controls";
@@ -11,6 +12,7 @@ import navigationStyles from "@/components/platform-navigation.module.css";
 import { PlatformMobileNavigation } from "@/components/platform-mobile-navigation";
 import manualStyles from "@/components/manual-workspace.module.css";
 import { usePentaManualTheme } from "@/components/penta-manual-theme";
+import { useLiveClock } from "@/lib/live-clock";
 
 type Academy = {
   id: string;
@@ -96,7 +98,10 @@ export default function PlatformControlPage() {
   const manualTheme = usePentaManualTheme();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [tab, setTab] = useState("Tenants");
+  const [tab, setTab] = useState(() => {
+    const requested = searchParams.get("tab");
+    return requested && platformControlTabs.includes(requested) ? requested : "Tenants";
+  });
   const [academies, setAcademies] = useState<Academy[]>([]);
   const [admins, setAdmins] = useState<Admin[]>([]);
   const [cases, setCases] = useState<Case[]>([]);
@@ -134,55 +139,80 @@ export default function PlatformControlPage() {
   const [announcementAcademyId, setAnnouncementAcademyId] = useState("");
   const [announcementHours, setAnnouncementHours] = useState("24");
   const [settingsCurrency, setSettingsCurrency] = useState("");
-  const [tenantProfile, setTenantProfile] = useState<TenantProfile>();
+  const [tenantProfileState, setTenantProfileState] = useState<{ academyId: string; profile?: TenantProfile }>();
+  const tenantProfile = tenantProfileState?.academyId === selectedAcademy ? tenantProfileState.profile : undefined;
+  const setTenantProfile = useCallback((profile?: TenantProfile, academyId = selectedAcademy) => { setTenantProfileState({ academyId, profile }); }, [selectedAcademy]);
   const [onboardingSection, setOnboardingSection] = useState("Personal");
-  const [startingTenant, setStartingTenant] = useState(false);
+  const [startingTenant, setStartingTenant] = useState(() => searchParams.get("start") === "true");
   const [message, setMessage] = useState("Loading platform controls…");
   const [busy, setBusy] = useState(false);
   const profileImageInput = useRef<HTMLInputElement>(null);
+  const currentTime = useLiveClock();
+  const [tenantSource, setTenantSource] = useState<Academy>();
+  const [settingsSource, setSettingsSource] = useState<Settings>();
+  const queryKey = searchParams.toString();
+  const [querySource, setQuerySource] = useState(queryKey);
 
-  async function load() {
+  async function read(signal?: AbortSignal) {
     const [a, ad, c, i, s, au, h, ownerResponse, announcementResponse] = await Promise.all([
-      academyApi("/api/platform/academies"),
-      academyApi("/api/platform/admins"),
-      academyApi("/api/platform/support-cases"),
-      academyApi("/api/platform/billing-invoices"),
-      academyApi("/api/platform/settings"),
-      academyApi("/api/platform/audit"),
-      academyApi("/api/platform/health"),
-      academyApi("/api/auth/session"),
-      academyApi("/api/platform/announcements"),
+      academyApi("/api/platform/academies", { signal }),
+      academyApi("/api/platform/admins", { signal }),
+      academyApi("/api/platform/support-cases", { signal }),
+      academyApi("/api/platform/billing-invoices", { signal }),
+      academyApi("/api/platform/settings", { signal }),
+      academyApi("/api/platform/audit", { signal }),
+      academyApi("/api/platform/health", { signal }),
+      academyApi("/api/auth/session", { signal }),
+      academyApi("/api/platform/announcements", { signal }),
     ]);
     if (a.status === 401 || a.status === 403) {
-      router.replace("/login?returnTo=/platform/control");
-      return;
+      return null;
     }
     if (!a.ok) throw new Error("The Platform Owner controls could not be loaded.");
-    const academyRows = await a.json();
+    const [academyRows, adminRows, caseRows, invoiceRows, settingsRow, auditRows, healthRow, ownerRow, announcementRows] = await Promise.all([
+      a.json(), ad.ok ? ad.json() : undefined, c.ok ? c.json() : undefined,
+      i.ok ? i.json() : undefined, s.ok ? s.json() : undefined, au.ok ? au.json() : undefined,
+      h.ok ? h.json() : undefined, ownerResponse.ok ? ownerResponse.json() : undefined,
+      announcementResponse.ok ? announcementResponse.json() : undefined,
+    ]);
+    if (!Array.isArray(academyRows) || [adminRows, caseRows, invoiceRows, auditRows, announcementRows].some(rows => rows !== undefined && !Array.isArray(rows))) throw new Error("The Platform Owner controls could not be loaded.");
+    return { academyRows, adminRows, caseRows, invoiceRows, settingsRow, auditRows, healthRow, ownerRow, announcementRows };
+  }
+  const publish = useCallback((snapshot: Awaited<ReturnType<typeof read>>) => {
+    if (!snapshot) { router.replace("/login?returnTo=/platform/control"); return; }
+    const { academyRows, adminRows, caseRows, invoiceRows, settingsRow, auditRows, healthRow, ownerRow, announcementRows } = snapshot;
     setAcademies(academyRows);
     setSelectedAcademy((current) => current || academyRows[0]?.id || "");
-    if (ad.ok) setAdmins(await ad.json());
-    if (c.ok) setCases(await c.json());
-    if (i.ok) setInvoices(await i.json());
-    if (s.ok) setSettings(await s.json());
-    if (au.ok) setAudit(await au.json());
-    if (h.ok) setHealth(await h.json());
-    if (ownerResponse.ok) setOwner(await ownerResponse.json());
-    if (announcementResponse.ok) setAnnouncements(await announcementResponse.json());
+    if (adminRows) setAdmins(adminRows);
+    if (caseRows) setCases(caseRows);
+    if (invoiceRows) setInvoices(invoiceRows);
+    if (settingsRow) setSettings(settingsRow);
+    if (auditRows) setAudit(auditRows);
+    if (healthRow) setHealth(healthRow);
+    if (ownerRow) setOwner(ownerRow);
+    if (announcementRows) setAnnouncements(announcementRows);
     setMessage("");
-  }
+  }, [router]);
+  async function load() { publish(await read()); }
   useEffect(() => {
-    void load().catch((error) => setMessage(error.message));
-  }, []);
-  async function loadActivityLogs() {
+    const controller = new AbortController();
+    void read(controller.signal).then(snapshot => {
+      if (!controller.signal.aborted) publish(snapshot);
+    }).catch(() => { if (!controller.signal.aborted) setMessage("The Platform Owner controls could not be loaded."); });
+    return () => controller.abort();
+  }, [publish]);
+  const readActivityLogs = useCallback(async (signal?: AbortSignal) => {
     const query = new URLSearchParams();
     if (activityScope !== "All") query.set("scope", activityScope === "Platform owner" ? "PlatformOwner" : "AcademyAdmin");
     if (activityFrom) query.set("fromUtc", new Date(`${activityFrom}T00:00:00`).toISOString());
     if (activityTo) { const end = new Date(`${activityTo}T00:00:00`); end.setDate(end.getDate() + 1); query.set("toUtc", end.toISOString()); }
-    const response = await academyApi(`/api/platform/activity-logs?${query.toString()}`);
+    const response = await academyApi(`/api/platform/activity-logs?${query.toString()}`, { signal });
     if (!response.ok) throw new Error("Activity logs could not be loaded.");
-    setActivityLogs(await response.json());
-  }
+    const rows: ActivityLog[] = await response.json();
+    if (!Array.isArray(rows)) throw new Error("Activity logs could not be loaded.");
+    return rows;
+  }, [activityScope, activityFrom, activityTo]);
+  async function loadActivityLogs() { setActivityLogs(await readActivityLogs()); }
   async function deleteActivityLogs() {
     if (!deleteLogMonth || !deleteLogYear) { setMessage("Choose a month and year before deleting logs."); return; }
     const from = new Date(Number(deleteLogYear), Number(deleteLogMonth) - 1, 1); const end = new Date(Number(deleteLogYear), Number(deleteLogMonth), 1);
@@ -211,7 +241,6 @@ export default function PlatformControlPage() {
   const resolvedCases = cases.filter((item) => ["Resolved", "Closed"].includes(item.status));
   const caseModalTitle = caseModal === "open" ? "Open support cases" : caseModal === "urgent" ? "High-priority support cases" : caseModal === "resolved" ? "Resolved support cases" : "All support cases";
   const caseModalRecords = caseModal === "open" ? openCases : caseModal === "urgent" ? urgentCases : caseModal === "resolved" ? resolvedCases : cases;
-  const currentTime = Date.now();
   const activeAnnouncements = announcements.filter((item) => item.expiresAtUtc && new Date(item.expiresAtUtc).getTime() > currentTime);
   const announcementModalTitle = announcementModal === "active" ? "Active announcements" : "Recent announcements";
   const announcementModalRecords = announcementModal === "active" ? activeAnnouncements : announcements;
@@ -223,28 +252,37 @@ export default function PlatformControlPage() {
   ];
   const selectedHealthDetail = healthDetails.find((item) => item.key === healthModal);
   const controlIcon = tab === "Tenant onboarding" ? "✦" : tab === "Tenant information" ? "ⓘ" : tab === "Admins" ? "♙" : tab === "Billing" ? "₹" : tab === "Support" ? "?" : tab === "Announcements" ? "!" : tab === "Activity logs" ? "☷" : tab === "Settings" ? "⚙" : tab === "Audit & health" ? "✓" : "◫";
-  useEffect(() => {
+  // Reset this component's own draft before committing a different server
+  // record. Conditional previous-source reconciliation avoids an effect frame
+  // containing another tenant's editable values; it does not save anything.
+  if (tenantSource !== selected) {
+    setTenantSource(selected);
     setTenantPlan(selected?.subscriptionPlan ?? "");
     setTenantStatus(selected?.subscriptionStatus ?? "");
     setTenantEndsAt(selected?.subscriptionEndsAtUtc?.slice(0, 10) ?? "");
-  }, [selected]);
-  useEffect(() => { setSettingsCurrency(settings?.defaultCurrency ?? ""); }, [settings]);
-  useEffect(() => { if (tab === "Activity logs") void loadActivityLogs().catch((error) => setMessage(error.message)); }, [tab, activityScope, activityFrom, activityTo]);
+  }
+  if (settingsSource !== settings) { setSettingsSource(settings); setSettingsCurrency(settings?.defaultCurrency ?? ""); }
   useEffect(() => {
-    setTenantProfile(undefined);
+    if (tab !== "Activity logs") return;
+    const controller = new AbortController();
+    void readActivityLogs(controller.signal).then(rows => { if (!controller.signal.aborted) setActivityLogs(rows); }).catch(() => { if (!controller.signal.aborted) setMessage("Activity logs could not be loaded."); });
+    return () => controller.abort();
+  }, [tab, readActivityLogs]);
+  useEffect(() => {
     if (!selectedAcademy) return;
-    void academyApi(`/api/platform/academies/${selectedAcademy}/onboarding`)
+    const controller = new AbortController();
+    void academyApi(`/api/platform/academies/${selectedAcademy}/onboarding`, { signal: controller.signal })
       .then(async (response) => {
-        if (!response.ok) { setTenantProfile(undefined); return; }
+        if (!response.ok) { if (!controller.signal.aborted) setTenantProfile(undefined); return; }
         const body = await response.text();
-        setTenantProfile(body ? JSON.parse(body) : undefined);
+        if (!controller.signal.aborted) setTenantProfile(body ? JSON.parse(body) : undefined);
       })
-      .catch(() => setTenantProfile(undefined));
-  }, [selectedAcademy]);
+      .catch(() => { if (!controller.signal.aborted) setTenantProfile(undefined); });
+    return () => controller.abort();
+  }, [selectedAcademy, setTenantProfile]);
   async function saveTenant(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!selected) return;
-    const form = new FormData(event.currentTarget);
     await request(
       `/api/platform/academies/${selected.id}/configuration`,
       "PUT",
@@ -357,7 +395,7 @@ export default function PlatformControlPage() {
         throw new Error("The academy was created, but your Platform Owner session expired before the tenant information could be saved. Please sign in again and complete the tenant record.");
       }
       if (!detailsResponse.ok) throw new Error(detailsPayload?.message ?? "The academy was created, but the tenant information could not be saved.");
-      setTenantProfile(detailsPayload); setStartingTenant(false); setSelectedAcademy(payload.id); await load(); setMessage("Academy, Academy Admin, and tenant information have been saved.");
+      setTenantProfile(detailsPayload, payload.id); setStartingTenant(false); setSelectedAcademy(payload.id); await load(); setMessage("Academy, Academy Admin, and tenant information have been saved.");
     } catch (error) { setMessage(error instanceof Error ? error.message : "The academy could not be created."); } finally { setBusy(false); }
   }
   async function createInvoice(event: FormEvent<HTMLFormElement>) {
@@ -496,12 +534,13 @@ export default function PlatformControlPage() {
     router.push("/login");
   }
 
-  useEffect(() => {
+  if (querySource !== queryKey) {
+    setQuerySource(queryKey);
     const requestedTab = searchParams.get("tab");
     setStartingTenant(searchParams.get("start") === "true");
     if (requestedTab && platformControlTabs.includes(requestedTab))
       setTab(requestedTab);
-  }, [searchParams]);
+  }
 
   function selectWorkspace(nextTab: (typeof platformControlTabs)[number]) {
     setTab(nextTab);
@@ -569,7 +608,7 @@ export default function PlatformControlPage() {
             <ThemeToggle />
             <details className="platform-profile enterprise-profile">
               <summary className="enterprise-profile-trigger" aria-label="Open Platform Owner profile menu">
-                {owner?.profileImageUrl ? <img className="platform-avatar-image" src={`${apiUrl}${owner.profileImageUrl}`} alt="Profile"/> : <span className="platform-avatar">{owner?.displayName?.[0]?.toUpperCase() || "S"}</span>}
+                {owner?.profileImageUrl ? <Image unoptimized loading="eager" width={42} height={42} className="platform-avatar-image" src={`${apiUrl}${owner.profileImageUrl}`} alt="Profile"/> : <span className="platform-avatar">{owner?.displayName?.[0]?.toUpperCase() || "S"}</span>}
                 <span className="platform-topbar-owner-copy"><b>{owner?.displayName || "Platform Owner"}</b><small>Platform Owner</small></span>
               </summary>
               <div className="platform-profile-menu">
@@ -768,7 +807,7 @@ export default function PlatformControlPage() {
             <section className="platform-settings-layout">
               <section className="platform-settings-panel platform-owner-settings">
                 <header className="platform-control-panel-header"><div><p>Owner account</p><h2>Profile and security</h2></div></header>
-                <div className="platform-owner-profile"><button type="button" className="platform-owner-photo" onClick={() => profileImageInput.current?.click()} disabled={busy}>{owner?.profileImageUrl ? <img src={`${apiUrl}${owner.profileImageUrl}`} alt="Owner profile"/> : <span>{owner?.displayName?.[0]?.toUpperCase() || "S"}</span>}<i aria-hidden="true">⌁</i></button><div><b>{owner?.displayName || "Platform Owner"}</b><span>Platform Owner</span></div></div>
+                <div className="platform-owner-profile"><button type="button" className="platform-owner-photo" onClick={() => profileImageInput.current?.click()} disabled={busy}>{owner?.profileImageUrl ? <Image unoptimized loading="eager" width={62} height={62} src={`${apiUrl}${owner.profileImageUrl}`} alt="Owner profile"/> : <span>{owner?.displayName?.[0]?.toUpperCase() || "S"}</span>}<i aria-hidden="true">⌁</i></button><div><b>{owner?.displayName || "Platform Owner"}</b><span>Platform Owner</span></div></div>
                 <input ref={profileImageInput} className="sr-only" type="file" accept="image/jpeg,image/png,image/webp" onChange={uploadOwnerImage}/>
                 <form onSubmit={saveOwnerProfile} className="platform-owner-form">
                   <label>Display name<input name="displayName" defaultValue={owner?.displayName || ""} required/></label>
@@ -816,75 +855,5 @@ export default function PlatformControlPage() {
         </div>
       </section>
     </main>
-  );
-}
-
-function Field({
-  name,
-  label,
-  type = "text",
-  value,
-}: {
-  name: string;
-  label: string;
-  type?: string;
-  value?: string | number;
-}) {
-  return (
-    <label className="mt-3 block text-sm text-slate-300">
-      {label}
-      <input
-        name={name}
-        type={type}
-        defaultValue={value}
-        required
-        className="mt-1 w-full rounded border border-slate-700 bg-slate-950 p-2"
-      />
-    </label>
-  );
-}
-function FieldSelect({
-  name,
-  label,
-  items,
-}: {
-  name: string;
-  label: string;
-  items: string[][];
-}) {
-  return (
-    <label className="mt-3 block text-sm text-slate-300">
-      {label}
-      <select
-        name={name}
-        className="mt-1 w-full rounded border border-slate-700 bg-slate-950 p-2"
-      >
-        {items.map(([value, label]) => (
-          <option key={value} value={value}>
-            {label}
-          </option>
-        ))}
-      </select>
-    </label>
-  );
-}
-function RecordList({
-  title,
-  records,
-}: {
-  title: string;
-  records: React.ReactNode[];
-}) {
-  return (
-    <section className="rounded-xl border border-slate-800 bg-slate-900 p-5">
-      <h2 className="font-semibold">{title}</h2>
-      <div className="mt-4 space-y-3">
-        {records.length ? (
-          records
-        ) : (
-          <p className="text-sm text-slate-400">No records yet.</p>
-        )}
-      </div>
-    </section>
   );
 }

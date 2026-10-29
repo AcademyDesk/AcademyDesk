@@ -55,18 +55,18 @@ const server = http.createServer((req, res) => { try {
       if (promo) {
         for (const [index, label] of [[0, 'Synthetic Learner'], [1, 'Source'], [2, 'Target · 0/10']]) { await form.locator('.standard-select-trigger').nth(index).click(); await page.getByRole('option', { name: label, exact: true }).click(); }
         await form.locator('textarea').fill(' Draft note ');
-      } else { await form.locator('select').nth(0).selectOption('student'); await form.locator('select').nth(1).selectOption('source'); await form.locator('select').nth(2).selectOption('Waitlisted'); }
+      } else { await require('./shared-picker-actions.cjs').select(page,'student','Synthetic Learner'); await require('./shared-picker-actions.cjs').select(page,'batch','Source'); await require('./shared-picker-actions.cjs').select(page,'initial-status','Waitlisted'); }
       await form.locator('.standard-date-trigger').click(); await page.getByLabel('Select year').selectOption('2026'); await page.getByLabel('Select month').selectOption('9'); await page.locator('.standard-date-days button[data-current="true"]').filter({ hasText: /^20$/ }).click();
       if (action === 'create') await page.getByRole('button', { name: promo ? 'Request promotion' : 'Enrol student', exact: true }).click();
       else if (promo) await page.getByRole('button', { name: action === 'approve' ? 'Approve' : 'Reject', exact: true }).click();
-      else { await page.locator('li select').selectOption('Paused'); await page.getByLabel('Lifecycle reason (required)', {exact:true}).fill(' Decision note '); await page.getByRole('button', {name:'Save status',exact:true}).click(); }
+      else { await require('./shared-picker-actions.cjs').select(page,'status-enrollment','Paused'); await page.getByLabel('Lifecycle reason (required)', {exact:true}).fill(' Decision note '); await page.getByRole('button', {name:'Save status',exact:true}).click(); }
       const success = promo ? action === 'create' ? 'Promotion request recorded.' : action === 'approve' ? 'Promotion approved.' : 'Promotion rejected.' : action === 'create' ? 'Enrolment created.' : 'Enrolment updated.';
       const failed = ['rejected', 'uncertain-committed'].includes(scenario), notice = page.getByRole('status');
       await notice.filter({ hasText: failed ? scenario === 'rejected' ? 'Synthetic policy refusal.' : 'could not be confirmed' : success }).waitFor(); await page.waitForFunction(() => !document.querySelector('fieldset').disabled);
       const reset = !failed && action === 'create';
       assert.equal(await form.locator('input[name="' + (promo ? 'effective' : 'startDate') + '"]').inputValue(), reset ? '' : '2026-10-20');
       if (promo) { assert.equal(await form.locator('textarea').inputValue(), ' Draft note '); assert.equal(await form.locator('input[name="student"]').inputValue(), 'student'); assert.equal(await form.locator('input[name="source"]').inputValue(), 'source'); assert.equal(await form.locator('input[name="target"]').inputValue(), reset ? '' : 'target'); }
-      else { assert.equal(await form.locator('select').nth(0).inputValue(), 'student'); assert.equal(await form.locator('select').nth(1).inputValue(), 'source'); assert.equal(await form.locator('select').nth(2).inputValue(), 'Waitlisted'); }
+      else { assert.equal(await form.locator('input[name="student"]').inputValue(), 'student'); assert.equal(await form.locator('input[name="batch"]').inputValue(), 'source'); assert.equal(await form.locator('input[name="initial-status"]').inputValue(), 'Waitlisted'); }
       const writes = calls.filter(c => ['POST', 'PUT', 'PATCH'].includes(c.method)); assert.equal(writes.length, 1);
       assert.deepEqual(writes[0].body, promo ? action === 'create' ? { studentId: 'student', sourceBatchId: 'source', targetBatchId: 'target', effectiveDate: '2026-10-20', notes: ' Draft note ' } : { status: action === 'approve' ? 'Approved' : 'Rejected', notes: ' Decision note ' } : action === 'create' ? { studentId: 'student', batchId: 'source', startDate: '2026-10-20', status: 'Waitlisted' } : { status: 'Paused', endDate: null, lifecycleReason: 'Decision note' });
       if (scenario === 'refresh-failure') assert.match(await notice.textContent(), /could not be refreshed.*Do not repeat/);

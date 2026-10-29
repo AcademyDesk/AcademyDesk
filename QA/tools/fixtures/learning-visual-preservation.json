@@ -1,0 +1,54 @@
+{
+  "entries": [
+    {
+      "path": "apps/web/src/app/assessments/page.tsx",
+      "name": "fetchAssessments",
+      "sha256": "b3474c91015d88b3656a2463852eafff148bdbe56fa93c4f5be5b298988c0a79"
+    },
+    {
+      "path": "apps/web/src/app/assessments/page.tsx",
+      "name": "applyWorkspace",
+      "sha256": "198257c3fa1a3d0af8a006b70ac2906995400e352f2f90335ef2adada77f68d6"
+    },
+    {
+      "path": "apps/web/src/app/assessments/page.tsx",
+      "name": "loadResults",
+      "sha256": "47026255d621f1e5e0c310d746c69e3acd04335c2eb066a8c0076663ad2aefb0"
+    },
+    {
+      "path": "apps/web/src/app/assessments/page.tsx",
+      "name": "createAssessment",
+      "sha256": "34a6ad46254838c74d0362c017060181e6abda8c1ecb033fdb72997fae4ff1ae"
+    },
+    {
+      "path": "apps/web/src/app/assessments/page.tsx",
+      "name": "saveResult",
+      "sha256": "a2deb0736a262f8b9f01120d4df7fac22ac78f13749f779e0531b833374214cb"
+    },
+    {
+      "path": "apps/web/src/app/assignments/page.tsx",
+      "name": "fetchWorkspace",
+      "sha256": "95587424f79830380617f1f334e7e270282e95110e92e56c3943963a89943585"
+    },
+    {
+      "path": "apps/web/src/app/assignments/page.tsx",
+      "name": "initialise",
+      "sha256": "6effea1aff1f80a94d8f9dc6b8c16d26720c689c652787edbe0992cf8b3d605d"
+    },
+    {
+      "path": "apps/web/src/app/assignments/page.tsx",
+      "name": "createAssignment",
+      "sha256": "8bab1fba71768698f9d2d4d001edd3da121fc50b2b3f776ba4ed3ba2a95ddf87"
+    },
+    {
+      "path": "apps/web/src/app/resources/page.tsx",
+      "name": "load",
+      "sha256": "503f1c9dc1a3af1429d1dc79cd5bf2cd1ccd89de3271845b192b688c5a942bc5"
+    },
+    {
+      "path": "apps/web/src/app/resources/page.tsx",
+      "name": "create",
+      "sha256": "d13c0354de9aba298fe299eabb54134a003521a2ba388f8fef2d79fefcbab612"
+    }
+  ]
+}

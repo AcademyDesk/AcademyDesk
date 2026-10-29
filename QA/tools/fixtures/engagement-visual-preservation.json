@@ -1,0 +1,79 @@
+{
+  "entries": [
+    {
+      "path": "apps/web/src/app/communications/page.tsx",
+      "name": "fetchWorkspace",
+      "sha256": "00975af2e65a66a8f16585bfff4c6db5484999a8f8cf57927980b5bf1b7801c4"
+    },
+    {
+      "path": "apps/web/src/app/communications/page.tsx",
+      "name": "chooseTemplate",
+      "sha256": "d2c1a1ad574d286e8ad1d3f42afd74d143091b34d60bd80e7ff36a84d44ed23a"
+    },
+    {
+      "path": "apps/web/src/app/communications/page.tsx",
+      "name": "detachTemplate",
+      "sha256": "27b49de67485242c63203982f30b272335db401a3e2ea9b0b4339ae5cb365e7b"
+    },
+    {
+      "path": "apps/web/src/app/communications/page.tsx",
+      "name": "chooseRecipientType",
+      "sha256": "a914a451b45ce6cf125844a2d815d4c160326713ab02d0a3cd13a2cb113f5341"
+    },
+    {
+      "path": "apps/web/src/app/communications/page.tsx",
+      "name": "chooseChannel",
+      "sha256": "3e536b39495a4325d6295a9252eddb9d14bf13ef4088ce75e0dc4a01c89416dd"
+    },
+    {
+      "path": "apps/web/src/app/communications/page.tsx",
+      "name": "create",
+      "sha256": "2f72a95ee9ac165589b249692c8518519b7f10a364b26b26247030332d141d50"
+    },
+    {
+      "path": "apps/web/src/app/message-templates/page.tsx",
+      "name": "load",
+      "sha256": "e1c17a020cdb74278fd32d102675a4611067218a28f083378b85970e5c734a0c"
+    },
+    {
+      "path": "apps/web/src/app/message-templates/page.tsx",
+      "name": "toggle",
+      "sha256": "8ff4c961d171a94072bb31a4d582a3529a0aefb34c03ca18eea36f05ee387919"
+    },
+    {
+      "path": "apps/web/src/app/message-templates/page.tsx",
+      "name": "toggleGroup",
+      "sha256": "5bfbdfe3aab9a66ebd361f8b263b91acbaf8521821dee9124385985e5709db14"
+    },
+    {
+      "path": "apps/web/src/app/message-templates/page.tsx",
+      "name": "addSelected",
+      "sha256": "7916e2768bef71028379c68bc300aeb08bf721a06bdecb9ee84791a548de5632"
+    },
+    {
+      "path": "apps/web/src/app/message-templates/page.tsx",
+      "name": "create",
+      "sha256": "670788c9984d94b434865dcc5400ca9acbcf6207f9e60830306634ac46b4b527"
+    },
+    {
+      "path": "apps/web/src/app/communication-preferences/page.tsx",
+      "name": "fetchWorkspace",
+      "sha256": "f0e8eab46f366cbaaccc26d232130e4dfdceaeb8a3aae62739704dfb1f5e9e3e"
+    },
+    {
+      "path": "apps/web/src/app/communication-preferences/page.tsx",
+      "name": "applyPreference",
+      "sha256": "104cf0f421aac280e0511a1dbdd1ed328ee0b1d334379ecb45a3f73048432d7b"
+    },
+    {
+      "path": "apps/web/src/app/communication-preferences/page.tsx",
+      "name": "chooseRecipient",
+      "sha256": "426646881786576f35a0950114518bce991cbf1cc5929433d1bf230eef50b1cd"
+    },
+    {
+      "path": "apps/web/src/app/communication-preferences/page.tsx",
+      "name": "save",
+      "sha256": "473b9db6bcd6e0d14ee47a4d167cc6b563baa2d0416f025553567ca436dec3d2"
+    }
+  ]
+}

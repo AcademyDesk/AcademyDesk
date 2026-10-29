@@ -154,6 +154,12 @@ internal static partial class SqlHarnessEntryPoint
                 voidClient.PatchAsJsonAsync($"{fixture.PaymentsPath}/{fixture.PaymentId}/status",
                     new { status = "Voided" }));
             var codes = responses.Select(response => (int)response.StatusCode).ToArray();
+            if (codes[0] == 400)
+            {
+                using var rejection = JsonDocument.Parse(await responses[0].Content.ReadAsStringAsync());
+                if (rejection.RootElement.GetProperty("message").GetString() != "Voided payments cannot be restored. Record a new verified payment.")
+                    throw new InvalidOperationException("Concurrent terminal refusal gave the wrong message.");
+            }
             foreach (var response in responses) response.Dispose();
             if (codes.Contains(429)) throw new InvalidOperationException("Rate limit prevented the reconcile/void race.");
             var after = await ReadAdjustmentSnapshotAsync(factory, academyId, studentId, fixture.InvoiceId,
@@ -161,14 +167,16 @@ internal static partial class SqlHarnessEntryPoint
             var view = await ReadAdjustedInvoiceViewAsync(client, fixture.InvoicesPath, fixture.InvoiceId);
             var listed = await CollectionsIncludesAsync(client, fixture);
             var row = after.Payments.Single();
-            var collected = row.Status == "Reconciled";
-            var consistent = codes.SequenceEqual(new[] { 200, 200 }) && after.Payments.Count == 1 &&
+            // FP3 approved 2026-10-12: whichever request gets the invoice lock first,
+            // the final row is terminal Voided. Reconcile-first preserves evidence;
+            // void-first rejects reconciliation and creates no new evidence.
+            var reconciledFirst = codes[0] == 200;
+            var consistent = codes[1] == 200 && codes[0] is 200 or 400 && after.Payments.Count == 1 &&
                 row.Id == fixture.PaymentId && row.Amount == 1000m - adjustment &&
-                row.ReconciliationReference == "QA-RECONCILE-VOID-RACE" && row.ReconciledAtUtc is not null &&
+                (reconciledFirst ? row.ReconciliationReference == "QA-RECONCILE-VOID-RACE" && row.ReconciledAtUtc is not null : row.ReconciliationReference is null && row.ReconciledAtUtc is null) &&
                 after.Adjusted == adjustment && after.Adjustments.Count == (adjustment > 0m ? 1 : 0) &&
-                (collected && after.Status == "Paid" && view == (1000m - adjustment, 0m, "Paid") && !listed ||
-                 !collected && row.Status == "Voided" && after.Status == "Overdue" &&
-                 view == (0m, 1000m - adjustment, "Overdue") && listed);
+                row.Status == "Voided" && after.Status == "Overdue" &&
+                view == (0m, 1000m - adjustment, "Overdue") && listed;
             if (consistent) guarded++;
             Console.WriteLine($"TRANSITION RECONCILE/VOID attempt={attempt} adjusted={adjustment} " +
                 $"statuses={string.Join(',', codes)} payment={row.Status} invoice={after.Status} " +
@@ -176,21 +184,22 @@ internal static partial class SqlHarnessEntryPoint
         }
         if (guarded != 5) throw new InvalidOperationException($"Concurrent reconcile/void ledger/status mismatch: {guarded}/5 guarded.");
 
-        // Existing explicit restoration remains available, but it must restore
-        // the invoice atomically and cannot revive an already-replaced amount.
+        // Preserve the old-policy receipt; current FP3 forbids restoration even
+        // without a replacement. The existing five race iterations stay intact.
         var restore = await CreateTransitionFixtureAsync(factory, client, academyId, studentId, 1000m, 0m,
             "reconcile-after-void");
         using (var voidResponse = await client.PatchAsJsonAsync($"{restore.PaymentsPath}/{restore.PaymentId}/status",
             new { status = "Voided" }))
             RequireFinanceStatus(voidResponse, HttpStatusCode.OK, "void before explicit reconciliation");
+        var terminalBefore = await ReadAdjustmentSnapshotAsync(factory, academyId, studentId, restore.InvoiceId, "terminal-before");
         using (var reconcileResponse = await client.PatchAsJsonAsync($"{restore.PaymentsPath}/{restore.PaymentId}/reconcile",
             new { reference = "QA-EXPLICIT-RESTORE" }))
-            RequireFinanceStatus(reconcileResponse, HttpStatusCode.OK, "explicit reconciliation after void");
+            RequireFinanceStatus(reconcileResponse, HttpStatusCode.BadRequest, "terminal reconciliation after void");
         var restored = await ReadAdjustmentSnapshotAsync(factory, academyId, studentId, restore.InvoiceId,
             "reconcile-after-void-restored");
-        if (restored.Status != "Paid" || restored.Payments.Single().Status != "Reconciled" ||
-            await ReadAdjustedInvoiceViewAsync(client, restore.InvoicesPath, restore.InvoiceId) != (1000m, 0m, "Paid"))
-            throw new InvalidOperationException("Explicit reconciliation restored a payment without restoring the invoice.");
+        if (JsonSerializer.Serialize(terminalBefore) != JsonSerializer.Serialize(restored) || restored.Status != "Overdue" || restored.Payments.Single().Status != "Voided" ||
+            await ReadAdjustedInvoiceViewAsync(client, restore.InvoicesPath, restore.InvoiceId) != (0m, 1000m, "Overdue"))
+            throw new InvalidOperationException("Terminal refusal changed payment/invoice evidence.");
 
         var replacement = await CreateTransitionFixtureAsync(factory, client, academyId, studentId, 1000m, 0m,
             "reconcile-replaced-void");
@@ -205,8 +214,8 @@ internal static partial class SqlHarnessEntryPoint
         {
             RequireFinanceStatus(rejected, HttpStatusCode.BadRequest, "overcollecting reconciliation");
             using var rejection = JsonDocument.Parse(await rejected.Content.ReadAsStringAsync());
-            if (rejection.RootElement.GetProperty("message").GetString() != "Payment exceeds the invoice balance.")
-                throw new InvalidOperationException("Overcollecting reconciliation returned the wrong balance message.");
+            if (rejection.RootElement.GetProperty("message").GetString() != "Voided payments cannot be restored. Record a new verified payment.")
+                throw new InvalidOperationException("Terminal reconciliation returned the wrong refusal message.");
         }
         var unchanged = await ReadAdjustmentSnapshotAsync(factory, academyId, studentId, replacement.InvoiceId,
             "reconcile-replaced-unchanged");
@@ -214,6 +223,6 @@ internal static partial class SqlHarnessEntryPoint
             unchanged.Payments.Single(x => x.Id == replacement.PaymentId) is not { Status: "Voided", ReconciliationReference: null, ReconciledAtUtc: null } ||
             unchanged.Payments.Where(x => x.Status is "Completed" or "Reconciled").Sum(x => x.Amount) != 1000m)
             throw new InvalidOperationException("Rejected restoration changed the replacement ledger.");
-        Console.WriteLine("TRANSITION RECONCILE/VOID PASS: 5/5 concurrent pairs, explicit restoration updates invoice, replaced amount rejected without writes. Restoration policy remains pending.");
+        Console.WriteLine("TRANSITION RECONCILE/VOID FP3 PASS: 5/5 concurrent pairs end terminal Voided, exact evidence/collections preserved, standalone and replaced void restoration rejected without writes; no429. Old-policy receipts retained.");
     }
 }

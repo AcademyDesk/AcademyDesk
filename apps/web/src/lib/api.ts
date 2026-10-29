@@ -2,11 +2,13 @@ export const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5092"
 
 export type PortalWorkspace = "AcademyAdmin" | "Teacher" | "Portal" | "Platform";
 export const portalSignOutEvent = "academydesk:portal-sign-out";
+export const portalSessionChangedEvent = "academydesk:portal-session-changed";
 
-type Session = { accessToken: string | null; refreshToken: string | null; generation: number };
+type Session = { accessToken: string | null; refreshToken: string | null; generation: number; epoch: string | null };
 type RenewedSession = Session & { accessToken: string };
 type RefreshFlight = { session: Session; controller: AbortController; consumers: number; finished: boolean; result: RenewedSession | null; promise: Promise<RenewedSession | null> };
-// One entry per workspace, scoped to this JS realm. Cross-tab coordination is separate.
+// Same-realm waiters share a flight. Supporting browsers also serialize renewal
+// across tabs with a workspace-scoped Web Lock (not a login/logout transaction).
 const sessionGenerations = new Map<PortalWorkspace, number>();
 const refreshFlights = new Map<PortalWorkspace, RefreshFlight>();
 const sessionGeneration = (workspace: PortalWorkspace) => sessionGenerations.get(workspace) ?? 0;
@@ -29,6 +31,10 @@ export function portalWorkspaceForPath(path: string): PortalWorkspace {
 
 function tokenKey(kind: "accessToken" | "refreshToken", workspace: PortalWorkspace) {
   return `academydesk.${kind}.${workspace}`;
+}
+/** Opaque UI/login identity, never a server grant or decoded user identity. */
+export function portalSessionEpoch(workspace: PortalWorkspace) {
+  return typeof window === "undefined" ? null : window.localStorage.getItem(`academydesk.sessionEpoch.${workspace}`);
 }
 
 /** A delivered same-origin logout event, not a token renewal or another storage area. */
@@ -56,10 +62,26 @@ export function savePortalTokens(workspace: PortalWorkspace, accessToken: string
   if (refreshToken) window.localStorage.setItem(tokenKey("refreshToken", workspace), refreshToken);
 }
 
+/** Called only after explicit login and verified workspace profile. Renewal uses
+ * savePortalTokens instead, retaining the epoch so normal refresh does not unmount UI.
+ * Write the marker first: old realms must fail closed even for identical token pairs.
+ */
+export function beginPortalSession(workspace: PortalWorkspace, accessToken: string, refreshToken?: string) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(`academydesk.sessionEpoch.${workspace}`, crypto.randomUUID());
+  if (!refreshToken) {
+    window.localStorage.removeItem(tokenKey("refreshToken", workspace));
+    if (workspace === "AcademyAdmin") window.localStorage.removeItem("academydesk.refreshToken");
+  }
+  savePortalTokens(workspace, accessToken, refreshToken);
+  window.dispatchEvent(new CustomEvent(portalSessionChangedEvent, { detail: workspace }));
+}
+
 /** Signs out only from the portal currently open, without disturbing other role workspaces. */
 export function clearPortalTokens(workspace = currentWorkspace()) {
   if (typeof window === "undefined") return;
   invalidateSession(workspace);
+  window.localStorage.removeItem(`academydesk.sessionEpoch.${workspace}`);
   window.localStorage.removeItem(tokenKey("accessToken", workspace));
   window.localStorage.removeItem(tokenKey("refreshToken", workspace));
   // Remove the former shared keys only when the administrator session is being cleared.
@@ -94,7 +116,21 @@ export function apiHeaders(json = false): Record<string, string> {
 }
 
 function sessionMatches(workspace: PortalWorkspace, session: Session) {
-  return sessionGeneration(workspace) === session.generation && portalAccessToken(workspace) === session.accessToken && portalRefreshToken(workspace) === session.refreshToken;
+  return sessionGeneration(workspace) === session.generation && portalSessionEpoch(workspace) === session.epoch && portalAccessToken(workspace) === session.accessToken && portalRefreshToken(workspace) === session.refreshToken;
+}
+
+function sameLogin(workspace: PortalWorkspace, session: Session) {
+  return sessionGeneration(workspace) === session.generation && portalSessionEpoch(workspace) === session.epoch;
+}
+
+// Only an explicit login epoch can establish peer-renewal continuity. An old
+// epoch-less session must not infer account identity from changed token strings.
+function peerRenewal(workspace: PortalWorkspace, session: Session): RenewedSession | null {
+  if (!session.epoch || !sameLogin(workspace, session)) return null;
+  const accessToken = portalAccessToken(workspace);
+  const refreshToken = portalRefreshToken(workspace);
+  if (!accessToken?.trim() || !refreshToken?.trim() || accessToken === session.accessToken) return null;
+  return { accessToken, refreshToken, generation: session.generation, epoch: session.epoch };
 }
 
 function startRefresh(workspace: PortalWorkspace, session: Session): RefreshFlight {
@@ -102,16 +138,43 @@ function startRefresh(workspace: PortalWorkspace, session: Session): RefreshFlig
   refreshFlights.set(workspace, flight);
   flight.promise = (async () => {
     try {
-      const response = await fetch(`${apiUrl}/api/auth/refresh`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ refreshToken: session.refreshToken }), signal: flight.controller.signal });
-      if (!response.ok) return null;
-      const tokens = await response.json().catch(() => null);
-      if (typeof tokens?.accessToken !== "string" || !tokens.accessToken.trim() ||
-        (tokens.refreshToken != null && (typeof tokens.refreshToken !== "string" || !tokens.refreshToken.trim())) ||
-        flight.controller.signal.aborted || !sessionMatches(workspace, session)) return null;
-      savePortalTokens(workspace, tokens.accessToken, tokens.refreshToken);
-      flight.result = { accessToken: tokens.accessToken, refreshToken: portalRefreshToken(workspace), generation: sessionGeneration(workspace) };
+      const renew = async (allowPeer: boolean): Promise<RenewedSession | null> => {
+        if (flight.controller.signal.aborted) return null;
+        if (allowPeer) {
+          const peer = peerRenewal(workspace, session);
+          if (peer) return peer;
+        }
+        // A queued request must recheck after the lock is granted, before sending.
+        if (!sessionMatches(workspace, session)) return null;
+        const response = await fetch(`${apiUrl}/api/auth/refresh`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ refreshToken: session.refreshToken }), signal: flight.controller.signal });
+        if (!response.ok) return null;
+        const tokens = await response.json().catch(() => null);
+        if (typeof tokens?.accessToken !== "string" || !tokens.accessToken.trim() ||
+          (tokens.refreshToken != null && (typeof tokens.refreshToken !== "string" || !tokens.refreshToken.trim())) ||
+          flight.controller.signal.aborted || !sessionMatches(workspace, session)) return null;
+        savePortalTokens(workspace, tokens.accessToken, tokens.refreshToken);
+        return { accessToken: tokens.accessToken, refreshToken: portalRefreshToken(workspace), generation: sessionGeneration(workspace), epoch: session.epoch };
+      };
+      const locks = session.epoch && typeof navigator !== "undefined" ? navigator.locks : undefined;
+      if (locks) {
+        // Bound only queue acquisition. A frozen peer must not leave this tab
+        // waiting forever. Never retry unlocked after a supported lock fails.
+        const timeout = setTimeout(() => flight.controller.abort(), 10_000);
+        try {
+          flight.result = await locks.request(`academydesk:session-refresh:${workspace}`, { signal: flight.controller.signal }, () => {
+            clearTimeout(timeout);
+            return renew(true);
+          });
+        } finally {
+          clearTimeout(timeout);
+        }
+      } else {
+        // Existing behavior for legacy epoch-less sessions and browsers without
+        // Web Locks; neither may infer a peer's login identity from token changes.
+        flight.result = await renew(false);
+      }
       // Keep the successful original-pair receipt for late401s; a new login/refresh replaces it.
-      refreshFlights.set(workspace, flight);
+      if (flight.result && !flight.controller.signal.aborted && sessionMatches(workspace, flight.result)) refreshFlights.set(workspace, flight);
       return flight.result;
     } catch {
       return null;
@@ -148,7 +211,7 @@ export async function academyApi(path: string, init: RequestInit = {}) {
   const workspace = currentWorkspace();
   const originalToken = portalAccessToken(workspace);
   const refreshToken = portalRefreshToken(workspace);
-  const session = { accessToken: originalToken, refreshToken, generation: sessionGeneration(workspace) };
+  const session = { accessToken: originalToken, refreshToken, generation: sessionGeneration(workspace), epoch: portalSessionEpoch(workspace) };
   const originalHeaders = new Headers(init.headers);
   if (!originalHeaders.has("Authorization") && originalToken) originalHeaders.set("Authorization", `Bearer ${originalToken}`);
   const request = (renewedToken?: string) => {
@@ -163,9 +226,9 @@ export async function academyApi(path: string, init: RequestInit = {}) {
   // Explicit foreign credentials and replaced/signed-out sessions must not be refreshed on this account's behalf.
   if (!refreshToken || originalHeaders.get("Authorization") !== (originalToken ? `Bearer ${originalToken}` : null)) return response;
   let flight = refreshFlights.get(workspace);
-  const matchingFlight = flight && flight.session.generation === session.generation && flight.session.accessToken === originalToken && flight.session.refreshToken === refreshToken;
+  const matchingFlight = flight && flight.session.generation === session.generation && flight.session.epoch === session.epoch && flight.session.accessToken === originalToken && flight.session.refreshToken === refreshToken;
   if (!matchingFlight) {
-    if (!sessionMatches(workspace, session)) return response;
+    if (!sessionMatches(workspace, session) && !(typeof navigator !== "undefined" && navigator.locks && peerRenewal(workspace, session))) return response;
     flight = startRefresh(workspace, session);
   } else if (!flight?.result && !sessionMatches(workspace, session)) return response;
   const renewed = await waitForRefresh(workspace, flight!, init.signal);

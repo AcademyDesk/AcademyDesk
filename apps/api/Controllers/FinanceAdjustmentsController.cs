@@ -22,6 +22,7 @@ public sealed class FinanceAdjustmentsController(AcademyDeskDbContext db) : Cont
         var invoice = await db.Invoices.SingleOrDefaultAsync(x => x.AcademyId == academyId && x.Id == request.InvoiceId, token);
         if (invoice is null) return NotFound();
         if (request.Amount <= 0 || string.IsNullOrWhiteSpace(request.Reason) || !AllowedTypes.Contains(request.Type ?? "")) return BadRequest(new { message = "Enter a valid type, positive amount, and reason." });
+        if (IsLegacyDocumentType(request.Type)) return BadRequest(new { message = "Refunds and credit notes require dedicated reviewed workflows; submit only invoice reductions here." });
         var adjustment = new FinanceAdjustment { AcademyId = academyId, InvoiceId = invoice.Id, Type = request.Type!, Amount = request.Amount, Currency = invoice.Currency, Reason = request.Reason.Trim() };
         db.FinanceAdjustments.Add(adjustment); await db.SaveChangesAsync(token); return Ok(ToSummary(adjustment));
     }
@@ -46,6 +47,7 @@ public sealed class FinanceAdjustmentsController(AcademyDeskDbContext db) : Cont
         var item = await db.FinanceAdjustments.SingleOrDefaultAsync(x => x.AcademyId == academyId && x.Id == adjustmentId, token);
         if (item is null) return NotFound();
         if (item.Status != "PendingApproval") return Conflict(new { message = "This adjustment has already been decided." });
+        if (IsLegacyDocumentType(item.Type)) return Conflict(new { message = "Legacy refund/credit-note requests require reviewed disposition; no decision has been applied." });
         var decidedAtUtc = DateTime.UtcNow;
         if (request.Approve)
         {
@@ -68,8 +70,13 @@ public sealed class FinanceAdjustmentsController(AcademyDeskDbContext db) : Cont
         return Ok(ToSummary(item));
     }
     private static readonly HashSet<string> AllowedTypes = new(StringComparer.OrdinalIgnoreCase) { "Discount", "Scholarship", "Concession", "Refund", "CreditNote" };
+    private static bool IsLegacyDocumentType(string? type) => string.Equals(type, "Refund", StringComparison.OrdinalIgnoreCase) || string.Equals(type, "CreditNote", StringComparison.OrdinalIgnoreCase);
     private static FinanceAdjustmentSummary ToSummary(FinanceAdjustment x) => new(x.Id, x.InvoiceId, x.Type, x.Amount, x.Currency, x.Reason, x.Status, x.ApprovedAtUtc, x.ApprovalNotes);
 }
 public sealed record CreateFinanceAdjustmentRequest(Guid InvoiceId, string? Type, decimal Amount, string? Reason);
 public sealed record FinanceAdjustmentDecisionRequest(bool Approve, string? Notes);
-public sealed record FinanceAdjustmentSummary(Guid Id, Guid InvoiceId, string Type, decimal Amount, string Currency, string Reason, string Status, DateTime? ApprovedAtUtc, string? ApprovalNotes);
+public sealed record FinanceAdjustmentSummary(Guid Id, Guid InvoiceId, string Type, decimal Amount, string Currency, string Reason, string Status, DateTime? ApprovedAtUtc, string? ApprovalNotes)
+{
+    public string FinancialEffect => string.Equals(Type, "Refund", StringComparison.OrdinalIgnoreCase) || string.Equals(Type, "CreditNote", StringComparison.OrdinalIgnoreCase) ? "LegacyInvoiceReductionNotSettlement" : "InvoiceReduction";
+    public bool RequiresReviewedDisposition => FinancialEffect == "LegacyInvoiceReductionNotSettlement" && Status == "PendingApproval";
+}

@@ -28,3 +28,14 @@ docs
 *.pubxml.user
 .azure
 **/.azure
+# Local-only configuration/IDE artifacts must not enter Docker's source context.
+**/secrets.json
+**/appsettings.Local.json
+**/appsettings.local.json
+**/appsettings.*.local.json
+**/NuGet.Config
+**/nuget.config
+**/Properties/PublishProfiles
+**/.vs
+**/.idea
+**/.vscode

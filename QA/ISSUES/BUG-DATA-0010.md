@@ -1,5 +1,28 @@
 # BUG-DATA-0010 — Payment status transitions leave invoice state and reconciliation evidence inconsistent
 
+2026-10-23 [Exact-image transition matrix](../REPORTS/API_IMAGE_TRANSITIONS_2026-10-22.md):
+five pairs each for two voids, create/void and reconcile/void PASS within the
+complete 25-pair/158-check native run. Gross/reduced invoice balances, terminal
+rows and reconciliation evidence match SQL/canonical API; both reconcile outcomes
+observed. Original regression hashes and exact cleanup/restoration verified.
+Separate corrections, wider lifecycle/device and release gates remain **OPEN**.
+
+## Exact-candidate terminal-void transport — 22 October 2026
+
+[Native policy report](../REPORTS/API_IMAGE_POLICIES_2026-10-22.md):57checks PASS,
+real payment/reconcile/void followed by both status restores and dedicated
+reconcile400/exact terminal message. Original reconciliation evidence preserved;
+voided amount excluded, exact six-table no-write snapshots for every rejection.
+Current immutable API/real SQL/109histories/source unchanged/exact cleanup and
+original service restoration PASS. No new correction/refund workflow or wider
+device/release acceptance. **OPEN / RETEST**, not closed.
+
+## Batch1 checkpoint — Approved terminal-void contract — 2026-10-12
+
+Owner-approved FP3 makes Voided payments terminal: generic Completed/Reconciled and dedicated reconciliation reject400 with the approved terminal-void message; repeat void remains idempotent. Invoice-first SQL transaction/lock covers status decisions. Run50823642199a46988c2ea153f2d4b69f passed5 simultaneous reconcile/void pairs with both response orders observed and exact zero final collection/historical evidence, plus standalone/replaced restoration rejection. Old restoration-permitted receipts remain historical; no race iterations or financial/no-write/429 assertions were removed. Separate verified correction workflow, broader browser/device/release acceptance and qualified review remain pending.
+
+Current bounded evidence: [Batch1 ledger](../REPORTS/BATCH_1_CORE_INTEGRITY.md). Changes are local/uncommitted; **OPEN / RETEST, not closed**. The original baseline fields and historical findings below are retained, not a claim that the new runtime checks were unexecuted.
+
 | Field | Value |
 | --- | --- |
 | Status | OPEN / FIX-IN-PROGRESS |

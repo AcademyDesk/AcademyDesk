@@ -33,7 +33,8 @@ internal static partial class SqlHarnessEntryPoint
             var outcome = await inner.PlanAsync(request, token);
             trace.Plans[request.ConversationId] = new {
                 inputState = request.State, kind = outcome.Plan?.Kind, error = outcome.Error,
-                tool = outcome.Plan?.ToolCall, returnedState = outcome.Plan?.State
+                tool = outcome.Plan?.ToolCall, returnedState = outcome.Plan?.State,
+                runtime = outcome.Runtime
             };
             return outcome;
         }
@@ -210,6 +211,43 @@ internal static partial class SqlHarnessEntryPoint
         PentaRequire(failures.Count == 0, $"Fixed Mini sequence diagnostic failed {failures.Count}/{trialCount}: {string.Join("; ", failures)}");
         var (session, fourth) = flows[0];
         Console.WriteLine("PENTA MINI REAL FLOW PASS: SQL pending=4 piano=3 sorted=400,300,200 second=Ananya balance=300; actual Qwen planning, no mock inference.");
+        if (Environment.GetEnvironmentVariable("QA_PENTA_CONTEXT") == "1")
+        {
+            // Three fixed independent conversations, not retries. Preserve the
+            // original admin's unchanged security-test quota; use fixture admin C.
+            Guid[] allPage; int allCount;
+            await using (var scope = factory.Services.CreateAsyncScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+                var active = db.Students.Where(x => x.AcademyId == academyA && x.IsActive);
+                allCount = await active.CountAsync();
+                allPage = await active.OrderBy(x => x.LastName).ThenBy(x => x.FirstName).ThenBy(x => x.Id).Select(x => x.Id).Take(10).ToArrayAsync();
+            }
+            for (var trial = 1; trial <= 3; trial++)
+            {
+                var contextSession = await Create(trialAdmin);
+                var filtered = await Turn(trialAdmin, contextSession, "Show piano learners with pending fees.");
+                PentaRequire(filtered.Kind == "RESULT" && filtered.Result is { Count: 3 }, "Context setup lost the scoped pending-piano set.");
+                var ordered = await Turn(trialAdmin, contextSession with { Version = filtered.Version }, "Highest first.");
+                PentaRequire(ordered.Kind == "RESULT" && ordered.Result!.Rows.Select(x => x.SourceId).SequenceEqual(new[] { meera.Id, ananya.Id, duplicate.Id }), "Corrected reference setup is not the exact source order.");
+                var corrected = await Turn(trialAdmin, contextSession with { Version = ordered.Version }, "Sorry, not the second student; open the third one instead.");
+                PentaRequire(corrected.Kind == "RESULT" && corrected.Result is { Count: 1, Rows.Length: 1 } && corrected.Result.Rows[0].SourceId == duplicate.Id &&
+                    corrected.Result.Rows[0].RecordCode == "AD-M002" && corrected.Result.Rows[0].Balances.Single().Outstanding == 200 &&
+                    corrected.Context.CurrentLearnerId == duplicate.Id.ToString("D"), "Corrected ordinal did not select the replacement source/INR200.");
+                var reset = await Turn(trialAdmin, contextSession with { Version = corrected.Version }, "Clear all previous filters and list all students again.");
+                PentaRequire(reset.Kind == "RESULT" && reset.Result is not null && reset.Result.Count == allCount && reset.Result.HasMore == (allCount > 10) &&
+                    reset.Result.Rows.Select(x => x.SourceId).SequenceEqual(allPage) && reset.Context.Filters.Count == 0 && reset.Context.SortBy is null &&
+                    reset.Context.CurrentLearnerId is null && reset.Context.CurrentResultIds.SequenceEqual(allPage.Select(x => x.ToString("D"))), "Filter reset did not replace filters/sort/selection with the exact bounded active own-academy SQL page.");
+                var narrowed = await Turn(trialAdmin, contextSession with { Version = reset.Version }, "Show piano learners with pending fees.");
+                PentaRequire(narrowed.Kind == "RESULT" && narrowed.Result is { Count: 3 }, "Post-reset refinement lost source context.");
+                var codeReset = await Turn(trialAdmin, contextSession with { Version = narrowed.Version }, "New lookup: student code AD-M001. Drop the old piano, unpaid and ordering filters.");
+                PentaRequire(codeReset.Kind == "RESULT" && codeReset.Result is { Count: 1, Rows.Length: 1 } && codeReset.Result.Rows[0].SourceId == meera.Id &&
+                    codeReset.Result.Rows[0].Balances.Single().Outstanding == 400 && codeReset.Context.Filters.Count == 1 &&
+                    codeReset.Context.Filters.GetValueOrDefault("name") == "AD-M001" && codeReset.Context.SortBy is null && codeReset.Context.CurrentLearnerId is null,
+                    "Combined code/reset did not replace the old query with exactly the owned code/source/INR400.");
+                Console.WriteLine($"PENTA MINI CONTEXT trial={trial}/3 PASS: corrected third AD-M002/INR200, reset exact SQL count={allCount}/page={allPage.Length}, code reset AD-M001/INR400; no host prompt parser.");
+            }
+        }
         var namedSession = await Create(admin);
         var broad = await Turn(admin, namedSession, "Show students named Meera.");
         PentaRequire(broad.Kind == "CLARIFICATION_REQUIRED" && broad.Result is { Count: 14, HasMore: true, Rows.Length: 10 } &&
@@ -427,6 +465,20 @@ internal static partial class SqlHarnessEntryPoint
                 !x.ProtectedReceipt.Contains("Ananya") && !x.ProtectedReceipt.Contains("pending fees")), "Private state/receipt was persisted as plaintext.");
             PentaRequire(await db.AuditLogs.CountAsync(x => x.EntityId == session.ConversationId && x.Action == "PentaMiniRESULT") >= 4,
                 "Real multi-turn reads lacked authoritative audit.");
+            var audits = await db.AuditLogs.Where(x => x.EntityId == session.ConversationId && x.Action == "PentaMiniRESULT").ToArrayAsync();
+            foreach (var audit in audits)
+            {
+                using var metadata = JsonDocument.Parse(audit.MetadataJson!);
+                var value = metadata.RootElement;
+                var runtime = value.GetProperty("runtimeProvenance").Deserialize<MiniRuntimeIdentity>();
+                PentaRequire(MiniRuntimeIdentity.Valid(runtime) && value.GetProperty("runtimeProvenanceStatus").GetString() == "ResponseReported" &&
+                    value.GetProperty("serviceVersion").GetString() == runtime!.ServiceVersion &&
+                    value.GetProperty("promptVersion").GetString() == runtime.PromptVersion &&
+                    !value.GetProperty("runtimeModelAttested").GetBoolean() &&
+                    value.GetProperty("learningEvent").GetProperty("model_revision").GetString() == "unverified" &&
+                    value.GetProperty("learningEvent").GetProperty("prompt_version").GetString() == runtime.PromptVersion,
+                    "Real response audit lost provenance or fabricated model attestation.");
+            }
             PentaRequire(await db.Invoices.CountAsync(x => x.AcademyId == academyA && x.InvoiceNumber.StartsWith("MINI-")) == 8 &&
                 await db.Payments.CountAsync(x => invoices.Select(i => i.Id).Contains(x.InvoiceId)) == 7, "Read tools mutated finance rows.");
         }

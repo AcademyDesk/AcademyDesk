@@ -1,5 +1,6 @@
 using AcademyDesk.Api.Data;
 using AcademyDesk.Api.Domain.Entities;
+using AcademyDesk.Api.Infrastructure;
 using AcademyDesk.Api.Security;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -40,6 +41,10 @@ public sealed class AcademicGovernanceController(AcademyDeskDbContext db) : Cont
         // bypass/direct SQL calls still need their own graph write boundary.
         await using var ownedTransaction = db.Database.IsSqlServer() && db.Database.CurrentTransaction is null
             ? await db.Database.BeginTransactionAsync(t) : null;
+        // Admission policy must not change between its eligibility read and
+        // commit. Keep one lock order everywhere: academy admission, then graph.
+        if (!await EnrollmentAdmissionBoundary.TryLockAsync(db, academyId, t))
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, new { message = EnrollmentAdmissionBoundary.BusyMessage });
         if (db.Database.IsSqlServer() && !await LockGraphAsync(academyId, t))
             return StatusCode(StatusCodes.Status503ServiceUnavailable, new { message = "Course prerequisites are being updated. Please try again." });
 

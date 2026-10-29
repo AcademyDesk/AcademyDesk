@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { academyApi, apiHeaders } from "@/lib/api";
 import { batchUpdatePayload, type BatchUpdateSource } from "@/lib/batch-update";
 import { StandardDetailModal, StandardInteractiveTile, StandardSelectField } from "@/components/design-system/controls";
+import { OnboardingField } from "@/components/design-system/onboarding-field";
+import styles from "@/components/design-system/records-workspace.module.css";
 
 type Academy = { id: string; name: string };
 type Branch = { id: string; name: string };
@@ -49,8 +51,7 @@ export default function TeachersPage() {
   const pendingPayroll = payroll.filter((payout) => payout.status !== "Paid");
   const money = (value: number) => `₹${value.toLocaleString("en-IN")}`;
 
-  async function load(academyId?: string) {
-    const id = academyId ?? academy?.id;
+  const load = useCallback(async (id: string | undefined) => {
     if (!id) return;
     const [teacherResponse, branchResponse, batchResponse, payrollResponse] = await Promise.all([
       academyApi(`/api/academies/${id}/teachers`, { cache: "no-store" }),
@@ -67,7 +68,7 @@ export default function TeachersPage() {
     setBatches(await batchResponse.json());
     setPayroll(payrollResponse.ok ? await payrollResponse.json() : []);
     setMessage("");
-  }
+  }, []);
 
   useEffect(() => {
     async function initialise() {
@@ -92,7 +93,7 @@ export default function TeachersPage() {
       }
     }
     void initialise();
-  }, []);
+  }, [load]);
 
   function beginEdit(teacher: Teacher) {
     setEditingId(teacher.id);
@@ -102,6 +103,14 @@ export default function TeachersPage() {
     setEditPhone(teacher.phone ?? "");
     setEditSpecialties(teacher.specialties ?? "");
     setEditBranchId(teacher.branchId ?? "");
+  }
+  async function refreshAfterSave(confirmation: string) {
+    try {
+      await load(academy?.id);
+      setMessage(confirmation);
+    } catch {
+      setMessage(`${confirmation} The refreshed directory could not be loaded. Refresh the page to check the saved record; do not repeat this save.`);
+    }
   }
   async function saveTeacher(teacher: Teacher) {
     if (!academy || !editFirstName.trim() || !editLastName.trim())
@@ -126,8 +135,7 @@ export default function TeachersPage() {
     setSavingId(null);
     if (!response.ok) return setMessage("The teacher could not be updated.");
     setEditingId(null);
-    setMessage("Teacher updated.");
-    await load();
+    await refreshAfterSave("Teacher updated.");
   }
   async function toggleActive(teacher: Teacher) {
     if (!academy) return;
@@ -151,10 +159,9 @@ export default function TeachersPage() {
     setSavingId(null);
     if (!response.ok)
       return setMessage("The teacher status could not be updated.");
-    setMessage(
+    await refreshAfterSave(
       teacher.isActive ? "Teacher marked inactive." : "Teacher reactivated.",
     );
-    await load();
   }
   async function assignBatch() {
     if (!academy || !assignmentTeacherId || !assignmentBatchId)
@@ -172,8 +179,7 @@ export default function TeachersPage() {
       if (!response.ok) throw new Error(result?.message ?? "The teacher could not be assigned.");
       setAssignmentTeacherId("");
       setAssignmentBatchId("");
-      setMessage("Teacher assigned to class or batch.");
-      await load();
+      await refreshAfterSave("Teacher assigned to class or batch.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "The teacher could not be assigned.");
     } finally {
@@ -182,7 +188,7 @@ export default function TeachersPage() {
   }
 
   return (
-    <main className="enterprise-settings teacher-standard teacher-management-standard">
+    <main className={`enterprise-settings teacher-standard teacher-management-standard ${styles.records}`}>
       <div className="teacher-management-content">
         <header className="teacher-management-heading">
           <div className="teacher-management-title">
@@ -190,7 +196,7 @@ export default function TeachersPage() {
             <div><p>Teachers</p><h1>Management</h1></div>
           </div>
         </header>
-        {message && <p className="enterprise-page-state">{message}</p>}
+        {message && <p role="status" aria-live="polite" className="enterprise-page-state">{message}</p>}
         <section className="teacher-management-kpis">
           <StandardInteractiveTile label="Active teachers" value={activeTeachers.length} detail="View active teacher names" onClick={() => setDetail("active")} className="teacher-management-kpi" />
           <StandardInteractiveTile label="Due this cycle" value={pendingPayroll.length} detail="View teacher payments due" onClick={() => setDetail("due")} className="teacher-management-kpi" />
@@ -208,6 +214,7 @@ export default function TeachersPage() {
             </div>
             <div className="teacher-assignment-control mt-2">
               <StandardSelectField
+                label="Teacher"
                 name="assignment-teacher"
                 value={assignmentTeacherId}
                 onChange={setAssignmentTeacherId}
@@ -217,6 +224,7 @@ export default function TeachersPage() {
             </div>
             <div className="teacher-assignment-control mt-2">
               <StandardSelectField
+                label="Class or batch"
                 name="assignment-batch"
                 value={assignmentBatchId}
                 onChange={setAssignmentBatchId}
@@ -242,35 +250,36 @@ export default function TeachersPage() {
                       className="teacher-directory-record teacher-directory-record-editing"
                     >
                       <div className="grid gap-2 sm:grid-cols-2">
-                        <input
+                        <OnboardingField label="First name"><input
                           value={editFirstName}
                           onChange={(e) => setEditFirstName(e.target.value)}
                           className="field"
-                        />
-                        <input
+                        /></OnboardingField>
+                        <OnboardingField label="Last name"><input
                           value={editLastName}
                           onChange={(e) => setEditLastName(e.target.value)}
                           className="field"
-                        />
-                        <input
+                        /></OnboardingField>
+                        <OnboardingField label="Email"><input
                           value={editEmail}
                           onChange={(e) => setEditEmail(e.target.value)}
                           placeholder="Email"
                           className="field"
-                        />
-                        <input
+                        /></OnboardingField>
+                        <OnboardingField label="Phone"><input
                           value={editPhone}
                           onChange={(e) => setEditPhone(e.target.value)}
                           placeholder="Phone"
                           className="field"
-                        />
-                        <input
+                        /></OnboardingField>
+                        <OnboardingField label="Specialties"><input
                           value={editSpecialties}
                           onChange={(e) => setEditSpecialties(e.target.value)}
                           placeholder="Specialties"
                           className="field"
-                        />
+                        /></OnboardingField>
                         <StandardSelectField
+                          label="Branch"
                           name="teacher-branch"
                           value={editBranchId}
                           onChange={setEditBranchId}
@@ -278,7 +287,7 @@ export default function TeachersPage() {
                           options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
                         />
                       </div>
-                      <div className="mt-3 flex gap-2">
+                      <div className={`mt-3 ${styles.actions}`}>
                         <Link
                           href={`/teacher-profile?teacherId=${teacher.id}`}
                           className="enterprise-action-button enterprise-action-button-secondary"

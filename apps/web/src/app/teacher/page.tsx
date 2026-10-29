@@ -1,11 +1,14 @@
 "use client";
-import { useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { TeacherMaterialUploader } from "@/components/teacher-material-uploader";
 import { PrivateMaterialActions } from "@/components/private-material-actions";
 import { useRouter } from "next/navigation";
 import { academyApi, apiHeaders, apiUrl, clearPortalTokens } from "@/lib/api";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { TeacherWorkspaceError, teacherWorkspaceFailure } from "@/lib/teacher-workspace";
+import { PayrollPayslip, type Payout } from "../payroll/payslip";
+import { payrollMoney, payrollTotals } from "../payroll/payroll-money";
 import { ManualSectionNavigation } from "@/components/manual-section-navigation";
 import manualStyles from "@/components/manual-workspace.module.css";
 import { usePentaManualTheme } from "@/components/penta-manual-theme";
@@ -72,36 +75,47 @@ export default function Teacher() {
   const [busy, setBusy] = useState("");
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [messages, setMessages] = useState<PortalNotification[]>([]);
-  async function loadRoster(id = sid) {
+  const rosterVersion = useRef({ version: 0 });
+  const loadRoster = useCallback(async (id: string, signal?: AbortSignal) => {
+    const version = ++rosterVersion.current.version;
     if (!id) return;
     const [a, b] = await Promise.all([
-      academyApi(`/api/teacher/sessions/${id}/roster`),
-      academyApi(`/api/teacher/sessions/${id}/attendance`),
+      academyApi(`/api/teacher/sessions/${id}/roster`, { signal }),
+      academyApi(`/api/teacher/sessions/${id}/attendance`, { signal }),
     ]);
     if (!a.ok) throw Error();
-    setRoster(await a.json());
-    setAttendance(b.ok ? await b.json() : []);
-  }
-  async function load() {
-    const r = await academyApi("/api/teacher/me");
-    if (!r.ok) throw new TeacherWorkspaceError(r.status);
-    const x: P = await r.json();
-    setP(x);
-    if (x.sessions[0]) {
-      setSid(x.sessions[0].id);
-      await loadRoster(x.sessions[0].id);
-    }
-    setM("");
-  }
+    const [people, records]: [S[], A[]] = await Promise.all([a.json(), b.ok ? b.json() : []]);
+    if (signal?.aborted || version !== rosterVersion.current.version) return;
+    if (!Array.isArray(people) || !Array.isArray(records)) throw Error();
+    setRoster(people);
+    setAttendance(records);
+  }, []);
   useEffect(() => {
-    void load().catch((error: unknown) => {
+    const controller = new AbortController();
+    const epoch = rosterVersion.current;
+    async function initialise() {
+      const r = await academyApi("/api/teacher/me", { signal: controller.signal });
+      if (!r.ok) throw new TeacherWorkspaceError(r.status);
+      const x: P = await r.json();
+      if (controller.signal.aborted) return;
+      if (!x || !Array.isArray(x.sessions) || !Array.isArray(x.batches)) throw Error();
+      setP(x);
+      if (x.sessions[0]) {
+        setSid(x.sessions[0].id);
+        await loadRoster(x.sessions[0].id, controller.signal);
+      }
+      if (!controller.signal.aborted) setM("");
+    }
+    void initialise().catch((error: unknown) => {
+      if (controller.signal.aborted) return;
       const failure = teacherWorkspaceFailure(error);
       setM(failure.message);
       setNeedsSignIn(failure.signIn);
     });
-    void academyApi("/api/portal/announcements").then(async (response) => { if (response.ok) setAnnouncements(await response.json()); }).catch(() => undefined);
-    void academyApi("/api/portal/notifications").then(async (response) => { if (response.ok) setMessages(await response.json()); }).catch(() => undefined);
-  }, []);
+    void academyApi("/api/portal/announcements", { signal: controller.signal }).then(async (response) => { if (response.ok) { const rows = await response.json(); if (!controller.signal.aborted && Array.isArray(rows)) setAnnouncements(rows); } }).catch(() => undefined);
+    void academyApi("/api/portal/notifications", { signal: controller.signal }).then(async (response) => { if (response.ok) { const rows = await response.json(); if (!controller.signal.aborted && Array.isArray(rows)) setMessages(rows); } }).catch(() => undefined);
+    return () => { controller.abort(); epoch.version++; };
+  }, [loadRoster]);
   async function submitAttendance(teacherStatus: string, records: { studentId: string; status: string }[]) {
     if (!sid) return;
     setBusy("attendance");
@@ -111,11 +125,12 @@ export default function Teacher() {
     ]);
     if (studentsResponse.ok && teacherResponse.ok) {
       setP((current) => current ? { ...current, sessions: current.sessions.map((session) => session.id === sid ? { ...session, teacherAttendanceStatus: teacherStatus } : session) } : current);
-      await loadRoster();
+      await loadRoster(sid);
     } else setM("Attendance could not be submitted. Please try again.");
     setBusy("");
   }
   async function selectClassroomSession(id: string) {
+    rosterVersion.current.version++;
     setSid(id);
     setRoster([]);
     setAttendance([]);
@@ -136,7 +151,7 @@ export default function Teacher() {
         <nav className="enterprise-nav-section teacher-portal-nav" aria-label="Teacher workspace">
           <p>Teacher portal</p>
           {tabs.map(([k, x, i]) => (
-            <button key={k} data-active={t === k} aria-current={t === k ? "page" : undefined} onClick={() => { if (k === "classroom") { setSid(""); setRoster([]); setAttendance([]); } setT(k); }}>
+            <button key={k} data-active={t === k} aria-current={t === k ? "page" : undefined} onClick={() => { if (k === "classroom") { rosterVersion.current.version++; setSid(""); setRoster([]); setAttendance([]); } setT(k); }}>
               <i aria-hidden="true">{i}</i>
               {x}
             </button>
@@ -204,8 +219,7 @@ export default function Teacher() {
                         className="teacher-timetable-row"
                         key={x.id}
                         onClick={() => {
-                          setSid(x.id);
-                          void loadRoster(x.id);
+                          void selectClassroomSession(x.id);
                           setT("classroom");
                         }}
                       >
@@ -217,7 +231,7 @@ export default function Teacher() {
                     </div>
                   </section>
                 )}
-                {t === "classes" && <TeacherCalendar batches={p.batches} compact onOpen={(id) => { setSid(id); void loadRoster(id); setT("classroom"); }} />}
+                {t === "classes" && <TeacherCalendar batches={p.batches} compact onOpen={(id) => { void selectClassroomSession(id); setT("classroom"); }} />}
                 {t === "homework" && <TeacherTasks batches={p.batches} />}{" "}
                 {t === "batchProgress" && <section className="teacher-my-progress-view"><TeacherProgress includeMetrics /><TeacherBatchProgress /></section>}
                 {t === "progress" && <TeacherProgress />}
@@ -261,7 +275,7 @@ function TeacherPortalProfile() {
   function signOut() { clearPortalTokens(); router.push("/login"); }
   return <div className="enterprise-profile" ref={ref}>
     <button type="button" className="enterprise-profile-trigger" onClick={() => { setMessage(""); setOpen((value) => !value); }} aria-label="Open profile menu" aria-expanded={open}>
-      {imageUrl ? <img src={imageUrl} alt="Profile" /> : <span>{initials}</span>}
+      {imageUrl ? <Image unoptimized loading="eager" width={44} height={44} src={imageUrl} alt="Profile" /> : <span>{initials}</span>}
     </button>
     {open && <div className="enterprise-profile-menu" role="menu"><strong>{name}</strong><small>Teacher portal</small><input ref={inputRef} className="sr-only" type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => void upload(event)} /><button type="button" className="enterprise-profile-menu-action" onClick={() => inputRef.current?.click()}>Edit profile picture</button><button type="button" className="enterprise-profile-menu-action" onClick={signOut}>Sign out</button>{message && <small role="status">{message}</small>}</div>}
   </div>;
@@ -281,20 +295,6 @@ function R({ a, b }: { a: string; b: string }) {
       <b>{a}</b>
       <small>{b}</small>
     </article>
-  );
-}
-function Panel({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="learner-panel">
-      <h3>{title}</h3>
-      <div className="learner-list">{children}</div>
-    </section>
   );
 }
 function TeacherActionPanel({ title, icon, children }: { title: string; icon: string; children: React.ReactNode }) {
@@ -332,10 +332,15 @@ function TeacherCalendar({ batches, onOpen, compact = false }: { batches: P["bat
 type TeacherBatch = P["batches"][number];
 type Resource = { id: string; batchId: string; studentId?: string; classSessionId?: string; title: string; description?: string; type: string; url: string; createdAtUtc: string };
 
-function TeacherAttendanceRoster({ sessionId, roster, attendance, teacherStatus, busy, onSubmit }: { sessionId: string; roster: S[]; attendance: A[]; teacherStatus?: string | null; busy: boolean; onSubmit: (teacherStatus: string, records: { studentId: string; status: string }[]) => Promise<void> }) {
-  const [draft, setDraft] = useState<Record<string, string>>({});
+type AttendanceRosterProps = { sessionId: string; roster: S[]; attendance: A[]; teacherStatus?: string | null; busy: boolean; onSubmit: (teacherStatus: string, records: { studentId: string; status: string }[]) => Promise<void> };
+function TeacherAttendanceRoster(props: AttendanceRosterProps) {
+  // A changed session or authoritative attendance snapshot owns a fresh editor.
+  // Keying avoids committing the previous class's draft for one effect cycle.
+  return <TeacherAttendanceDraft key={JSON.stringify([props.sessionId, props.roster.map(student => student.id), props.attendance, props.teacherStatus])} {...props} />;
+}
+function TeacherAttendanceDraft({ sessionId, roster, attendance, teacherStatus, busy, onSubmit }: AttendanceRosterProps) {
+  const [draft, setDraft] = useState<Record<string, string>>(() => Object.fromEntries(roster.map(student => [student.id, attendance.find(item => item.studentId === student.id)?.status ?? ""])));
   const [teacherDraft, setTeacherDraft] = useState(teacherStatus ?? "");
-  useEffect(() => { setDraft(Object.fromEntries(roster.map((student) => [student.id, attendance.find((item) => item.studentId === student.id)?.status ?? ""]))); setTeacherDraft(teacherStatus ?? ""); }, [attendance, roster, teacherStatus, sessionId]);
   const recorded = attendance.length;
   const attendanceReady = Boolean(teacherDraft) && roster.every((student) => Boolean(draft[student.id]));
   return <section className="teacher-attendance-panel">
@@ -386,6 +391,13 @@ function TeacherBatchDropdown({ batches }: { batches: { id: string; name: string
 }
 
 type ClassroomActivity = { resources: Resource[]; homework: { id: string; batchId: string; studentId?: string; title: string; description?: string; dueAtUtc?: string; type: string; isPublished: boolean }[] };
+function validClassroomActivity(value: unknown): value is ClassroomActivity {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const data = value as ClassroomActivity;
+  return Array.isArray(data.resources) && Array.isArray(data.homework)
+    && data.resources.every(item => item && typeof item.id === "string" && typeof item.title === "string" && typeof item.url === "string" && typeof item.createdAtUtc === "string" && Number.isFinite(Date.parse(item.createdAtUtc)))
+    && data.homework.every(item => item && typeof item.id === "string" && typeof item.title === "string" && (!item.dueAtUtc || Number.isFinite(Date.parse(item.dueAtUtc))));
+}
 function TeacherActiveClassBanner({ batch, rosterCount, status }: { batch?: TeacherBatch; rosterCount: number; status?: string }) {
   return <section className="teacher-active-class-banner">
     <span className="teacher-live-dot" /><div><b>Active class</b><small>{batch ? `${batch.name} · ${batch.capacity === 1 ? "1:1 lesson" : `${rosterCount || batch.capacity} students`}` : "Select a class to begin"}</small></div><em>{status ?? "Ready"}</em>
@@ -410,30 +422,35 @@ function TeacherClassroomHero({ batch, sessionId, sessionStatus, onStatusChange 
   </section>;
 }
 function TeacherClassroom({ ownerId, batches, sessions, sessionId, roster, onSessionSelect }: { ownerId: string; batches: TeacherBatch[]; sessions: P["sessions"]; sessionId: string; roster: S[]; onSessionSelect: (id: string) => void }) {
-  const [batchId, setBatchId] = useState("");
-  const [studentId, setStudentId] = useState("");
-  const [activity, setActivity] = useState<ClassroomActivity>({ resources: [], homework: [] });
+  const [batchChoice, setBatchChoice] = useState({ sessionId: "", value: "" });
+  const [studentChoice, setStudentId] = useState("");
+  const batchId = sessions.find(session => session.id === sessionId)?.batchId ?? (batchChoice.sessionId === sessionId ? batchChoice.value : "");
+  const selected = batches.find(batch => batch.id === batchId);
+  const studentId = selected?.capacity === 1 ? roster[0]?.id ?? "" : roster.some(student => student.id === studentChoice) ? studentChoice : "";
+  const [activityResult, setActivityResult] = useState<{ scope: string; data: ClassroomActivity }>();
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [message, setMessage] = useState("");
-  const selected = batches.find((batch) => batch.id === batchId);
+  const activityScope = JSON.stringify([batchId, studentId, fromDate, toDate]);
+  const activity: ClassroomActivity = activityResult?.scope === activityScope ? activityResult.data : { resources: [], homework: [] };
+  const setActivity = useCallback((data: ClassroomActivity) => { setActivityResult({ scope: activityScope, data }); }, [activityScope]);
   const selectedStudent = roster.find((student) => student.id === studentId);
   async function refresh(id = batchId) {
     if (!id) return;
     const history = await academyApi(`/api/teacher/classroom-activity?batchId=${id}${studentId ? `&studentId=${studentId}` : ""}${fromDate ? `&fromUtc=${encodeURIComponent(fromDate)}` : ""}${toDate ? `&toUtc=${encodeURIComponent(toDate)}` : ""}`);
     if (!history.ok) throw Error("Class history could not be refreshed.");
-    setActivity(await history.json());
+    const data: unknown = await history.json();
+    if (!validClassroomActivity(data)) throw Error("Class history could not be refreshed.");
+    setActivity(data);
   }
-  useEffect(() => { setBatchId(sessions.find((session) => session.id === sessionId)?.batchId ?? ""); }, [sessionId, sessions]);
-  useEffect(() => { if (selected?.capacity === 1 && roster[0] && studentId !== roster[0].id) setStudentId(roster[0].id); }, [selected?.capacity, selected?.id, roster, studentId]);
   useEffect(() => {
     if (!batchId) return;
     let active = true;
     void academyApi(`/api/teacher/classroom-activity?batchId=${batchId}${studentId ? `&studentId=${studentId}` : ""}${fromDate ? `&fromUtc=${encodeURIComponent(fromDate)}` : ""}${toDate ? `&toUtc=${encodeURIComponent(toDate)}` : ""}`)
-      .then(async response => { if (!response.ok) throw Error(); const history = await response.json(); if (active) setActivity(history); })
+      .then(async response => { if (!response.ok) throw Error(); const history: unknown = await response.json(); if (!validClassroomActivity(history)) throw Error(); if (active) setActivity(history); })
       .catch(() => { if (active) setMessage("Class history could not be refreshed. Try again."); });
     return () => { active = false; };
-  }, [batchId, studentId, fromDate, toDate]);
+  }, [batchId, studentId, fromDate, toDate, setActivity]);
   async function addNote(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault(); const formElement = event.currentTarget; const form = new FormData(formElement);
     const response = await academyApi("/api/teacher/resources/note", { method: "POST", headers: apiHeaders(true), body: JSON.stringify({ batchId, studentId: studentId || null, classSessionId: sessionId || null, title: form.get("title"), notes: form.get("notes"), type: "Note" }) });
@@ -442,7 +459,7 @@ function TeacherClassroom({ ownerId, batches, sessions, sessionId, roster, onSes
   const uploadScope = useMemo(() => ({ ownerId, batchId, studentId: studentId || null, classSessionId: sessionId || null }), [ownerId, batchId, studentId, sessionId]);
   return <>
     <section className="teacher-classroom-controls" data-selected={Boolean(selected)}>
-      <label>Class<TeacherDropdown label="Class" value={batchId} onChange={(value) => { setBatchId(value); setStudentId(""); const nextSession = sessions.find((session) => session.batchId === value && session.status !== "Completed") ?? sessions.find((session) => session.batchId === value); onSessionSelect(nextSession?.id ?? ""); }} options={[{ value: "", label: "Select class" }, ...batches.map((batch) => ({ value: batch.id, label: `${batch.name}${batch.capacity === 1 ? " · 1:1" : ""}` }))]} /></label>
+      <label>Class<TeacherDropdown label="Class" value={batchId} onChange={(value) => { setStudentId(""); const nextSession = sessions.find((session) => session.batchId === value && session.status !== "Completed") ?? sessions.find((session) => session.batchId === value); setBatchChoice({ sessionId: nextSession?.id ?? "", value }); onSessionSelect(nextSession?.id ?? ""); }} options={[{ value: "", label: "Select class" }, ...batches.map((batch) => ({ value: batch.id, label: `${batch.name}${batch.capacity === 1 ? " · 1:1" : ""}` }))]} /></label>
       {selected && (selected.capacity === 1 ? <label>Teaching focus<div className="teacher-single-focus">{selectedStudent ? `${selectedStudent.firstName} ${selectedStudent.lastName}` : "Loading student…"}</div></label> : <label>Teaching focus<TeacherDropdown label="Teaching focus" value={studentId} onChange={setStudentId} options={[{ value: "", label: "Whole class" }, ...roster.map((student) => ({ value: student.id, label: `${student.firstName} ${student.lastName}` }))]} /></label>)}
     </section>
     {selected && <>
@@ -459,26 +476,45 @@ function TeacherClassroom({ ownerId, batches, sessions, sessionId, roster, onSes
 function TeacherProgress({ includeMetrics = false }: { includeMetrics?: boolean }) {
   const [progress, setProgress] = useState<{ completedClasses: number; upcomingClasses: number; attendanceRecords: number; presentOrOnline: number }>();
   const [payments, setPayments] = useState<TeacherPaymentData>();
-  const [viewing, setViewing] = useState<TeacherPaymentData["payslips"][number] | null>(null);
+  const [viewing, setViewing] = useState<Payout | null>(null);
   const [payslipMonth, setPayslipMonth] = useState("");
-  useEffect(() => { if (includeMetrics) void academyApi("/api/teacher/progress").then(async (response) => { if (response.ok) setProgress(await response.json()); }); }, [includeMetrics]);
-  useEffect(() => { if (!includeMetrics) { const [year, month] = payslipMonth.split("-"); const query = year && month ? `?year=${year}&month=${Number(month)}` : ""; void academyApi(`/api/teacher/payments${query}`).then(async (response) => { if (response.ok) setPayments(await response.json()); }); } }, [includeMetrics, payslipMonth]);
-  function download(item: TeacherPaymentData["payslips"][number]) { const popup = window.open("", "_blank"); if (!popup) return; popup.document.write(`<!doctype html><title>${item.payslipNumber}</title><style>body{font-family:Arial,sans-serif;color:#13233b;padding:44px}header{display:flex;justify-content:space-between;border-bottom:2px solid #1674c6;padding-bottom:18px}h1{margin:0;font-size:24px}.label{color:#59708e;font-size:12px;text-transform:uppercase;letter-spacing:1px}.amount{font-size:28px;color:#1674c6;font-weight:700}.row{display:flex;justify-content:space-between;padding:13px 0;border-bottom:1px solid #dce6f1}</style><header><div><div class="label">AcademyDesk</div><h1>Salary payslip</h1></div><div><div class="label">Payslip number</div><b>${item.payslipNumber}</b></div></header><p class="label" style="margin-top:28px">Pay period</p><h2>${item.periodLabel}</h2><div class="row"><span>Gross amount</span><b>₹${item.grossAmount.toLocaleString("en-IN")}</b></div><div class="row"><span>Deductions</span><b>₹${item.deductions.toLocaleString("en-IN")}</b></div><div class="row"><span>Payment method</span><b>${item.paymentMethod}</b></div><div class="row"><span>Reference</span><b>${item.reference ?? "—"}</b></div><p class="label" style="margin-top:28px">Net payment</p><div class="amount">₹${item.netAmount.toLocaleString("en-IN")}</div><p>Paid on ${dt(item.paidAtUtc)}</p>`); popup.document.close(); popup.focus(); popup.print(); }
+  const [notice, setNotice] = useState("");
+  useEffect(() => { if (includeMetrics) void academyApi("/api/teacher/progress").then(async response => { if (response.ok) setProgress(await response.json()); }); }, [includeMetrics]);
+  useEffect(() => {
+    if (includeMetrics) return;
+    let active = true;
+    const [year, month] = payslipMonth.split("-"), query = year && month ? `?year=${year}&month=${Number(month)}` : "";
+    void (async () => {
+      try {
+        const response = await academyApi(`/api/teacher/payments${query}`, { cache: "no-store" });
+        if (!response.ok) throw new Error();
+        const data: TeacherPaymentData = await response.json();
+        if (!Array.isArray(data.payslips)) throw new Error();
+        if (active) { setPayments(data); setNotice(""); }
+      } catch { if (active) { setPayments(undefined); setNotice("Payslips could not be loaded. Please try again later."); } }
+    })();
+    return () => { active = false; };
+  }, [includeMetrics, payslipMonth]);
   if (includeMetrics) return <section className="learner-kpis"><K a="Classes completed" b={String(progress?.completedClasses ?? "—")} c="Delivered sessions" /><K a="Upcoming classes" b={String(progress?.upcomingClasses ?? "—")} c="Scheduled ahead" /><K a="Attendance marked" b={String(progress?.attendanceRecords ?? "—")} c="Student records" /><K a="Present" b={String(progress?.presentOrOnline ?? "—")} c="Attendance outcomes" /></section>;
-  return <><TeacherActionPanel icon="₹" title="Payment and payslips"><section className="teacher-payment-model"><b>Payment model: {payments?.paymentModel ?? "Not configured"}</b><small>{payments?.monthlyAmount ? `Monthly salary ₹${payments.monthlyAmount.toLocaleString("en-IN")}` : payments?.amountPerCycle ? `₹${payments.amountPerCycle.toLocaleString("en-IN")} per ${payments.sessionsPerCycle ?? "configured"} sessions` : ""}</small></section><div className="teacher-payslip-filter"><label>Month<input type="month" value={payslipMonth} onChange={(event) => setPayslipMonth(event.target.value)} /></label>{payslipMonth && <button type="button" onClick={() => setPayslipMonth("")}>All months</button>}</div><section className="teacher-payslip-list">{payments?.payslips?.length ? payments.payslips.map((item) => <article key={item.id}><div><b>{item.periodLabel}</b><small>{item.payslipNumber} · ₹{item.netAmount.toLocaleString("en-IN")}</small></div><div><em data-paid={item.status === "Paid"}>{item.status === "PendingApproval" ? "Awaiting approval" : item.status}</em>{item.status === "Paid" ? <><button type="button" onClick={() => setViewing(item)}>View</button><button type="button" onClick={() => download(item)}>Download PDF</button></> : <button type="button" disabled>Available after approval</button>}</div></article>) : <p className="learner-empty">No payslips were issued for this month.</p>}</section></TeacherActionPanel>{viewing && <div className="teacher-payslip-modal" role="dialog" aria-modal="true" aria-label="Payslip preview"><article><header><div><span>Salary payslip</span><h2>{viewing.periodLabel}</h2></div><button type="button" aria-label="Close payslip" onClick={() => setViewing(null)}>×</button></header><p>{viewing.payslipNumber}</p><div><span>Gross amount</span><b>₹{viewing.grossAmount.toLocaleString("en-IN")}</b></div><div><span>Deductions</span><b>₹{viewing.deductions.toLocaleString("en-IN")}</b></div><div><span>Net payment</span><b>₹{viewing.netAmount.toLocaleString("en-IN")}</b></div><div><span>Payment method</span><b>{viewing.paymentMethod}</b></div><footer><button type="button" onClick={() => download(viewing)}>Download PDF</button></footer></article></div>}</>;
+  return <><TeacherActionPanel icon="₹" title="Payment and payslips">
+    <section className="teacher-payment-model"><b>Payment model: {payments?.paymentModel ?? "Not configured"}</b></section>
+    <p>Only records with verified payout-time teacher ownership are shown. Unverified historical identity requires administrator review.</p>
+    {notice && <p role="status">{notice}</p>}
+    <div className="teacher-payslip-filter"><label>Month<input type="month" value={payslipMonth} onChange={event => { setViewing(null); setPayslipMonth(event.target.value); }} /></label>{payslipMonth && <button type="button" onClick={() => { setViewing(null); setPayslipMonth(""); }}>All months</button>}</div>
+    <section className="teacher-payslip-list">{payments?.payslips?.length ? payments.payslips.map(item => <article key={item.id}><div><b>{item.periodLabel}</b><small>{item.payslipNumber} · {payrollMoney(item.netAmount, item.netAmountExact, item.currency)}</small></div><div><em data-paid={item.status === "Paid"}>{item.status === "NoCashDue" ? "No cash due" : item.status}</em><button type="button" onClick={() => setViewing(item)}>Preview / Print</button></div></article>) : <p className="learner-empty">No verified payslips or earnings statements for this view.</p>}</section>
+  </TeacherActionPanel>{viewing && <PayrollPayslip payout={viewing} onClose={() => setViewing(null)} />}</>;
 }
 
-type TeacherPaymentData = { paymentModel?: string; monthlyAmount?: number; amountPerCycle?: number; sessionsPerCycle?: number; payslips: { id: string; payslipNumber: string; periodLabel: string; grossAmount: number; deductions: number; netAmount: number; currency: string; status: string; paymentMethod: string; reference?: string; paidAtUtc: string }[] };
+type TeacherPaymentData = { paymentModel?: string; monthlyAmount?: number; amountPerCycle?: number; sessionsPerCycle?: number; payslips: Payout[] };
 function TeacherOverviewFinance() {
   const [payments, setPayments] = useState<TeacherPaymentData>();
   useEffect(() => { void academyApi("/api/teacher/payments").then(async (response) => { if (response.ok) setPayments(await response.json()); }); }, []);
   const payouts = payments?.payslips ?? [];
   const paid = payouts.filter((item) => item.status === "Paid");
-  const pending = payouts.filter((item) => item.status !== "Paid");
-  const earnings = paid.reduce((total, item) => total + item.netAmount, 0);
+  const pending = payouts.filter((item) => item.status !== "Paid" && item.status !== "NoCashDue");
   const next = pending[0];
   const expected = next?.netAmount ?? payments?.monthlyAmount ?? payments?.amountPerCycle ?? 0;
-  return <TeacherActionPanel icon="₹" title="Salary & payments"><section className="teacher-finance-summary"><article><span>Earnings so far</span><b>₹{earnings.toLocaleString("en-IN")}</b><small>Paid salary and session payouts</small></article><article><span>Upcoming payment</span><b>₹{expected.toLocaleString("en-IN")}</b><small>{next ? next.periodLabel : payments?.paymentModel ?? "Not configured"}</small></article><article data-pending={pending.length > 0}><span>Awaiting approval</span><b>₹{pending.reduce((total, item) => total + item.netAmount, 0).toLocaleString("en-IN")}</b><small>{pending.length ? `${pending.length} payment awaiting approval` : "No payments awaiting approval"}</small></article></section><section className="teacher-recent-payments"><header><span>Recent payments</span></header>{paid.length ? paid.slice(0, 3).map((item) => <article key={item.id}><div><b>{item.periodLabel}</b><small>{item.payslipNumber} · {dt(item.paidAtUtc)}</small></div><strong>₹{item.netAmount.toLocaleString("en-IN")}</strong></article>) : <p className="learner-empty">No payments have been made yet.</p>}</section></TeacherActionPanel>;
+  return <TeacherActionPanel icon="₹" title="Salary & payments"><section className="teacher-finance-summary"><article><span>Earnings so far</span><b>{payrollTotals(paid)}</b><small>Paid salary and session payouts</small></article><article><span>Upcoming payment</span><b>₹{expected.toLocaleString("en-IN")}</b><small>{next ? next.periodLabel : payments?.paymentModel ?? "Not configured"}</small></article><article data-pending={pending.length > 0}><span>Awaiting approval</span><b>{payrollTotals(pending)}</b><small>{pending.length ? `${pending.length} payment awaiting approval` : "No payments awaiting approval"}</small></article></section><section className="teacher-recent-payments"><header><span>Recent payments</span></header>{paid.length ? paid.slice(0, 3).map((item) => <article key={item.id}><div><b>{item.periodLabel}</b><small>{item.payslipNumber} · {item.paidAtUtc ? dt(item.paidAtUtc) : "No cash payment date"}</small></div><strong>{payrollMoney(item.netAmount, item.netAmountExact, item.currency)}</strong></article>) : <p className="learner-empty">No payments have been made yet.</p>}</section></TeacherActionPanel>;
 }
 
 type TeacherBatchProgressData = { batchId: string; batchName: string; sessionMinutes: number; sessionsPerWeek: number; paymentCycle: string; cycleTotal: number; completedInCycle: number; remainingInCycle: number; paymentReady: boolean; coveredClassDates: string[]; upcomingClasses: { startUtc: string; endUtc: string }[] };

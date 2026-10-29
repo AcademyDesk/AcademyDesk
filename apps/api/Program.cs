@@ -27,6 +27,13 @@ if (!builder.Environment.IsEnvironment("Testing")) Directory.CreateDirectory(web
 // Add services to the container.
 
 builder.Services.AddScoped<AcademyAccessFilter>();
+builder.Services.AddScoped<StudentOnboardingService>();
+builder.Services.AddScoped<TeacherCreationService>();
+builder.Services.AddScoped<EnrollmentMutationService>();
+builder.Services.AddScoped<AcademyDesk.Api.Infrastructure.Meetings.MeetingReadinessService>();
+builder.Services.AddScoped<AcademyDesk.Api.Infrastructure.Meetings.MeetingPreviewService>();
+builder.Services.AddScoped<AcademyDesk.Api.Infrastructure.Meetings.MeetingReceiptService>();
+builder.Services.AddScoped<AcademyDesk.Api.Infrastructure.Meetings.MeetingOperationService>();
 builder.Services.AddScoped<PentaPilotPolicy>();
 builder.Services.AddSingleton<IPentaSyntheticProvider, FixedPentaSyntheticProvider>();
 builder.Services.AddScoped<PentaSyntheticDispatcher>();
@@ -41,6 +48,8 @@ builder.Services.AddScoped<OutstandingFeesService>();
 builder.Services.AddScoped<PentaFinancePolicy>();
 builder.Services.AddScoped<AcademyDeskConnector>();
 builder.Services.AddScoped<PentaMiniOrchestrator>();
+builder.Services.AddScoped<PentaOnboardingDraftService>();
+builder.Services.AddScoped<PentaTeacherCreationWorkflow>();
 builder.Services.AddHttpClient<IPentaProvider, PentaMiniProvider>(client => client.Timeout = TimeSpan.FromSeconds(130))
     .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false, UseProxy = false });
 builder.Services.AddHttpClient<IPentaModelProvider, PentaOpenAiProbeAdapter>()

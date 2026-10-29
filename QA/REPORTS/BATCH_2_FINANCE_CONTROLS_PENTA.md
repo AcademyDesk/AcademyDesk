@@ -1,0 +1,30 @@
+# Batch2 — reconciliation, adjustments, policy and governance
+
+2026-10-15. `D:\AcademyDesk-codex-p0`, branch `codex/penta-search`, HEAD `b1f8cb6`. Four-screen presentation/control checkpoint, not full finance or enterprise release acceptance.
+
+## Implemented
+
+- Scoped PENTA module supplies responsive surfaces, wrapping actions,44px buttons/links, readable theme text, persistent labels and named keyboard-focusable horizontal ledger/history scroll regions. New stylesheet is isolated from prior finance workspace/expense pages.
+- Reconciliation and adjustment figures retain currency precision instead of rounding to whole units. Reconciliation awaiting-match totals are separated by currency. Existing eligibility, date filter and ledger/API arithmetic unchanged; no stored financial values changed.
+- Adjustment invoice/type fields no longer wrap interactive button controls in native labels; shared labels/required invoice and pending-disabled inputs are explicit. Discount/Scholarship/Concession options and legacy Refund/CreditNote warnings/restrictions preserved.
+- Policy theme, governance document/theme, follow-up priority and escalation/date inputs use shared themed controls. Two small uncontrolled-form adapters retain initial values and exact native FormData names,optional date clear,date-only payloads and explicit disabled state. Empty required select choices do not erase current values. Follow-up's remaining native datetime is explicitly local and optional; no timezone or optionality policy changed.
+- Document examples explicitly labelled illustrative,not real invoices/payslips. Seven configured template designs and source values retained,including branded long-content responsive rules. Manual remains independent of PENTA availability.
+- Policy initial GETs now check response success and minimum settings shape before rendering an editable form. A403 error object previously looked like loaded settings;denial/error now shows loading failure and no editable settings. Save/version/409/428/length-error handlers unchanged.
+
+## Verification
+
+- Final webpack production build and TypeScript PASS,86 outputs. No app-source edits after final build. Changed pages/adapters lint0errors/5 pre-existing warnings (three effect dependencies/two branding images);no suppression. Whole-app lint gate remains OPEN.
+-66 focused tests PASS:22 pre-edit working-source declaration hashes (load/save/reconcile/decide/follow-up/escalation/versioned-document handlers and related projections),12 actual money formatter/currency cases,retained16 governance/11 policy tests,and5 adapter/denied-load cases. Snapshot captures legitimate existing uncommitted work,not a falsely clean HEAD; changes to policy initialization and formatting are explicitly intentional. Existing save/authority assertions retained,fixtures/imports/locators updated for shared controls.
+-236 final-export synthetic browser cases PASS:72 new four-page cases (320/768/1440×light/dark×populated/empty/denied),36 retained stale-settings/version/missing-version/background-refresh conflict cases,16 retained hidden-payslip-theme preservation cases,and112 read-only preview geometry cases spanning seven themes/long/default branding. Native settings/stage/date FormData contracts,year/leap-day selection,table keyboard scroll,44px actions,pending legacy restriction,exact fractional/currency display and current template state verified. Synthetic403 policy case reproduced failure before response checking;assertion preserved.
+- Receipts: `QA/EVIDENCE/finance-controls-visual-1792039169301/result.json`, `QA/EVIDENCE/finance-settings-conflict-browser-1792039169305/result.json`, `QA/EVIDENCE/finance-policy-theme-browser-1792039169309/result.json`, `QA/EVIDENCE/finance-document-preview-1792039169343/result.json`. New suite records final application/CSS/adapter hashes. Final phone light reconciliation and dark governance images inspected. Table image intentionally shows right-hand columns after scroll test.
+- Six vendor hashes unchanged;scoped diff whitespace/script parse PASS. Older `validate-finance-governance.cjs` is pinned to historical commit20bb604 and114 source hashes;it correctly rejects current HEADb1f8cb6 and is not weakened/relabelled PASS. Its historical snapshot validation is not a current release validator. Initial fixture-import patch location error and obsolete native-stage locator repaired without dropping assertions;failed/intermediate evidence retained.
+
+## Remaining financial acceptance — not hidden by styling
+
+Reconciliation's existing load swallows failure and clears success notices;adjustment submission similarly loses its success notice on successful read. Their pending flags lack durable/ref uncertainty protection. Governance collection/approval flows retain their prior handler limits. These are existing functional/release work,not repaired by source preservation or a synthetic visual PASS. Next focused High batch should group reconciliation/adjustment outcome recovery and pending/uncertain guards,retain reason/approval/version/null/transaction contracts and extend existing live/race/audit gates only where needed. No P0/critical issue is closed here.
+
+New controls do not provide cross-tab/server idempotency,financial approval,bank evidence verification,full precision beyond existing JavaScript Number contracts or general academy timezone support. Preserve real SQL/Identity/tenant isolation,audit failures,stale browser,physical Android/iOS and exact-release acceptance. No SQL suite rerun in this presentation slice;backend/schema unchanged.
+
+Then finish remaining payroll visual states and academics/communications/full Platform/Teacher/Student parity. Medium for settled presentation;High for financial/security/real integration. Existing Mini/UI2 qualification and90%AI backlog remain OPEN. Owner sequence stays complete app→authorized go-live→Hayansh onboarding→Academy Desk product website after first live customer.
+
+No stage/commit/push/main/Azure/productionDB/container/backend/schema/Mini/vendor changes. Existing unrelated dirty work and QA evidence preserved.

@@ -35,15 +35,15 @@ const server=http.createServer((req,res)=>{try{
     }
     if(url.origin===origin||url.protocol==='data:')return route.continue();return route.abort('blockedbyclient');
    });
-   await page.goto(origin+'/lesson-plans');await page.locator('form select option[value="second"]').waitFor({state:'attached'});
-   const form=page.locator('form'),title=page.getByPlaceholder('Lesson title'),description=page.getByPlaceholder('Learning objectives'),batch=form.locator('select');
-   await batch.selectOption('second');await title.fill('Synthetic plan');await description.fill('Practice instructions');
+   await page.goto(origin+'/lesson-plans');await page.locator('form input[name="batchId"]').waitFor({state:'attached'});
+   const form=page.locator('form'),title=page.getByPlaceholder('Lesson title'),description=page.getByPlaceholder('Learning objectives');
+   await require('./shared-picker-actions.cjs').select(page,'batchId','Second batch');await title.fill('Synthetic plan');await description.fill('Practice instructions');
    await page.getByRole('button',{name:'Create plan',exact:true}).click();
    const notice=page.getByRole('status'),failed=scenario==='rejected'||scenario==='uncertain-committed';
    await notice.filter({hasText:failed?'Synthetic service guidance':'Lesson plan created.'}).waitFor();
    await page.waitForFunction(()=>!document.querySelector('form fieldset').disabled);
    assert.equal(await title.inputValue(),failed?'Synthetic plan':'');assert.equal(await description.inputValue(),failed?'Practice instructions':'');
-   assert.equal(await batch.inputValue(),'second');
+   assert.equal(await form.locator('input[name="batchId"]').inputValue(),'second');
    assert.equal(calls.filter(x=>x.method==='POST').length,1);
    assert.deepEqual(calls.find(x=>x.method==='POST').body,{batchId:'second',title:'Synthetic plan',courseModuleId:null,classSessionId:null,objectives:'Practice instructions'});
    if(scenario==='refresh-failure')assert.match(await notice.textContent(),/could not be refreshed.*do not repeat/);

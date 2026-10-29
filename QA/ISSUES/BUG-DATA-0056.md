@@ -1,5 +1,17 @@
 # BUG-DATA-0056 — Editing a payroll profile rewrites the worker name shown on historical payouts
 
+## Linked Teacher history/document successor — 2026-10-13
+
+[Report](../REPORTS/PHASE_2B_PAYROLL_DOCUMENT_LINKED.md): final run484f34cba03446dea79468d462c2f25b,577.8s passed four real Teacher own-history/month-empty/default12/reload journeys, snapshot identity/exact money/session/UTC equality to SQL, four finance403 and304 unchanged five-table reads.16 actual selected one-page Teacher PDFs/four rendered inspections and retained native history/authority/audit/migration controls PASS; exact owned cleanup. **OPEN/RETEST** for physical/direct/platform/concurrent lifecycle/broader release, not all Teacher UI/finance acceptance.320px list/action clipping queued Batch2; earlier Teacher-browser-pending notes below historical.
+
+## Batch1 checkpoint — Immutable teacher payroll visibility — 2026-10-12
+
+Batch1 extends recorded-identity ownership to teacher self-service: only same-academy TeacherIdSnapshot/Teacher type/verified snapshot records are returned, not another worker's records reachable through today's mutable profile. Linked run50823642199a46988c2ea153f2d4b69f includes own inactive-profile history and excludes borrowed/foreign/legacy records, with the exact authorized SQL set and no financial writes. Admin selected-document PDFs preserve recorded or explicitly unverified legacy identity. Teacher cycle/UTC provenance completeness and physical/full-release acceptance remain OPEN.
+
+Teacher DTO follow-up: recorded session counts/monthly nulls and UTC identity ticks/Z now match actual owned SQL in fresh runae7e21a764b14276b7b735aad0fce37d,191.9s, alongside exact money/authorized-set/no-write checks and retained native guards/cleanup. Fresh full unit suite1474/1474. This supersedes the preceding cycle/provenance-pending note, not the separate actual Teacher browser/PDF, physical or full-release gates.
+
+Current bounded evidence: [Batch1 ledger](../REPORTS/BATCH_1_CORE_INTEGRITY.md). Changes are local/uncommitted; **OPEN / RETEST, not closed**. The original baseline fields and historical findings below are retained, not a claim that the new runtime checks were unexecuted.
+
 | Field | Value |
 | --- | --- |
 | Status | OPEN |

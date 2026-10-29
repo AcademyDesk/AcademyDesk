@@ -13,7 +13,7 @@ const server=http.createServer((req,res)=>{try{
  await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://127.0.0.1:'+server.address().port;let browser;const checks=[],errors=[];
  try{
   browser=await chromium.launch({headless:true,executablePath:process.env.QA_BROWSER_EXECUTABLE||'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'});
-  for(const width of [320,1440])for(const theme of ['light','dark'])for(const scenario of ['normal','refresh-failure','rejected','uncertain-committed']){
+  for(const width of [320,768,1440])for(const theme of ['light','dark'])for(const scenario of ['normal','refresh-failure','rejected','uncertain-committed']){
    const context=await browser.newContext({viewport:{width,height:900},timezoneId:'America/Los_Angeles'}),page=await context.newPage(),calls=[],pageErrors=[];
    page.on('pageerror',e=>pageErrors.push(e.message));page.on('console',m=>{if(m.type()==='error')pageErrors.push(m.text());});
    await context.addInitScript(theme=>{localStorage.setItem('academydesk.theme',theme);localStorage.setItem('academydesk.accessToken.AcademyAdmin','synthetic-makeup-token');},theme);
@@ -36,7 +36,7 @@ const server=http.createServer((req,res)=>{try{
    });
    const choose=async(name,label)=>{await page.locator(`input[name="${name}"]`).locator('..').getByRole('button').click();await page.getByRole('option',{name:label,exact:true}).click();};
    await page.goto(origin+'/makeup');await page.locator('input[name="makeup-status-existing"]').waitFor({state:'attached'});
-   await choose('student','Synthetic Student');await choose('batch','Fixture batch');
+   await choose('student','Synthetic Student');await choose('batch','Fixture batch');await page.getByRole('button',{name:'Schedule make-up',exact:true}).click();assert.equal(calls.filter(x=>x.method==='POST').length,0);await page.getByRole('alert').filter({hasText:'Make-up date (required) is required.'}).waitFor();
    await page.locator('.standard-date-trigger').click();await page.getByLabel('Select year').selectOption('2026');await page.getByLabel('Select month').selectOption('9');await page.locator('.standard-date-days button[data-current="true"]').filter({hasText:/^31$/}).click();
    const room=page.getByPlaceholder('Room or venue (optional)');await room.fill('Synthetic room');await page.getByRole('button',{name:'Schedule make-up',exact:true}).click();
    const notice=page.getByRole('status'),failed=scenario==='rejected'||scenario==='uncertain-committed';
@@ -50,12 +50,12 @@ const server=http.createServer((req,res)=>{try{
    assert.equal(calls.filter(x=>x.method==='PATCH').length,1);assert.deepEqual(calls.find(x=>x.method==='PATCH').body,{status:'Cancelled'});
    assert.equal(rows[0].status,scenario==='rejected'?'Scheduled':'Cancelled');assert.equal(rows.length,scenario==='rejected'?1:2);
    if(scenario==='uncertain-committed')assert.doesNotMatch(await notice.textContent(),/updated to Cancelled/);
-   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await notice.scrollIntoViewIfNeeded();await page.screenshot({path:path.join(evidence,`${width}-${theme}-${scenario}.png`),fullPage:true});
+   assert.equal(await page.locator('form').getByRole('alert').count(),0,'Resolved required alerts remain cleared');for(const input of await page.locator('main input:not([type="hidden"]),main textarea').all())assert.ok(await input.evaluate(e=>e.labels.length||e.getAttribute('aria-label')),'Persistent native labels');assert.ok(await page.locator('main button:visible').evaluateAll(es=>es.every(e=>e.getBoundingClientRect().height>=44)),'Settled actions44px');assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await notice.scrollIntoViewIfNeeded();await page.screenshot({path:path.join(evidence,`${width}-${theme}-${scenario}.png`),fullPage:true});
    const code=scenario==='rejected'?'400':scenario==='refresh-failure'?'503':scenario==='uncertain-committed'?'500':null;
    const unexpected=pageErrors.filter(x=>!code||!x.startsWith('Failed to load resource:')||!x.includes(code));assert.deepEqual(unexpected,[]);errors.push(...unexpected);
    checks.push({width,theme,scenario,calls,notice:await notice.textContent(),expectedResourceErrors:pageErrors.length});console.log(`PASS MAKEUP ${width} ${theme} ${scenario}`);await context.close();
   }
-  assert.equal(checks.length,16);fs.writeFileSync(path.join(evidence,'result.json'),JSON.stringify({checks,errors,transport:'synthetic API, not live Identity/SQL',physicalDevices:'NOT RUN'},null,2));console.log(JSON.stringify({passed:checks.length,evidence}));
+  assert.equal(checks.length,24);fs.writeFileSync(path.join(evidence,'result.json'),JSON.stringify({checks,errors,transport:'synthetic API, not live Identity/SQL',physicalDevices:'NOT RUN'},null,2));console.log(JSON.stringify({passed:checks.length,evidence}));
  }catch(e){fs.writeFileSync(path.join(evidence,'failed.json'),JSON.stringify({checks,errors,failure:e.message},null,2));throw e;}
  finally{if(browser)await browser.close();await new Promise(r=>server.close(r));}
 })().catch(e=>{console.error(e);process.exitCode=1;server.close();});

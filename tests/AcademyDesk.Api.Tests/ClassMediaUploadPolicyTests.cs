@@ -58,4 +58,18 @@ public sealed class ClassMediaUploadPolicyTests
         b.OwnerUserId = Guid.NewGuid(); Assert.False(ClassMediaUploadPolicy.Matches(a, b)); b.OwnerUserId = a.OwnerUserId;
         b.StudentId = Guid.NewGuid(); Assert.False(ClassMediaUploadPolicy.Matches(a, b));
     }
+
+    [Fact]
+    public async Task DomainScopeCheckAloneDoesNotAuthorizeAnInactiveAccount()
+    {
+        await using var db = new AcademyDeskDbContext(new DbContextOptionsBuilder<AcademyDeskDbContext>().UseInMemoryDatabase(Guid.NewGuid().ToString()).Options);
+        var academy = new Academy { Name = "QA" };
+        var teacher = new Teacher { AcademyId = academy.Id, FirstName = "QA", LastName = "Teacher" };
+        var batch = new Batch { AcademyId = academy.Id, TeacherId = teacher.Id, CourseId = Guid.NewGuid(), Name = "QA" };
+        db.AddRange(academy, teacher, batch); await db.SaveChangesAsync();
+        var policy = new ClassMediaUploadPolicy(db);
+        Assert.True(await policy.CanUseTeachingScopeAsync(academy.Id, teacher.Id, batch.Id, null, null, default));
+        Assert.False(await policy.CanUploadAsync(new ApplicationUser { AcademyId = academy.Id, TeacherId = teacher.Id, IsActive = false }, batch.Id, null, null, default));
+        Assert.False(await policy.CanUseTeachingScopeAsync(Guid.NewGuid(), teacher.Id, batch.Id, null, null, default));
+    }
 }

@@ -1,7 +1,9 @@
+using System.Data;
 using AcademyDesk.Api.Data;
 using AcademyDesk.Api.Domain.Entities;
 using AcademyDesk.Api.Domain.Identity;
 using AcademyDesk.Api.Infrastructure.Media;
+using AcademyDesk.Api.Security;
 using Azure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -12,7 +14,7 @@ using Microsoft.EntityFrameworkCore;
 namespace AcademyDesk.Api.Controllers;
 
 [ApiController, Authorize, Route("api/teacher/media-uploads")]
-public sealed class ClassMediaUploadsController(AcademyDeskDbContext db, UserManager<ApplicationUser> users,
+public sealed class ClassMediaUploadsController(AcademyDeskDbContext db, IdentityDbContext identityDb, UserManager<ApplicationUser> users,
     ClassMediaUploadPolicy policy, IMediaBlobStore store, MediaStorageOptions options, ILogger<ClassMediaUploadsController> logger) : ControllerBase
 {
     [HttpPost, RequestSizeLimit(16384)]
@@ -102,6 +104,8 @@ public sealed class ClassMediaUploadsController(AcademyDeskDbContext db, UserMan
         var row = await AuthorizedSession(uploadId, token);
         if (row is null) return NotFound();
         if (!store.IsConfigured) return Unavailable();
+        // Validate linked configuration before committing any provider bytes.
+        var identityConnection = AcademyIdentityTransaction.Validate(db, identityDb);
         try { _ = await store.CommitAsync(Manifest(row), token); }
         catch (RequestFailedException error)
         {
@@ -113,7 +117,16 @@ public sealed class ClassMediaUploadsController(AcademyDeskDbContext db, UserMan
 
         // Blob and SQL cannot share a transaction. A committed Blob with failed SQL
         // completion stays bound to this session and is safely resumed on retry.
-        await using var transaction = await db.Database.BeginTransactionAsync(token);
+        await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.Serializable, token);
+        await using var identityTransaction = await AcademyIdentityTransaction.EnlistAsync(db, identityDb, transaction, identityConnection, token);
+        // Serialize publication in this academy and retain domain/Identity read
+        // locks through its SQL commit. No lock is held during Blob transfer.
+        await db.Database.ExecuteSqlInterpolatedAsync($"SELECT [Id] FROM [Academies] WITH (UPDLOCK,HOLDLOCK) WHERE [Id]={row.AcademyId}", token);
+        if (!await policy.CanUseTeachingScopeAsync(row.AcademyId, row.TeacherId, row.BatchId, row.StudentId, row.ClassSessionId, token))
+        { await transaction.RollbackAsync(token); return NotFound(); }
+        var current = await CurrentTeacher();
+        if (current is null || current.Id != row.OwnerUserId || current.AcademyId != row.AcademyId || current.TeacherId != row.TeacherId)
+        { await transaction.RollbackAsync(token); return NotFound(); }
         var now = DateTime.UtcNow;
         var won = await db.ClassMediaUploadSessions.Where(x => x.Id == row.Id && x.CompletedAtUtc == null)
             .ExecuteUpdateAsync(setters => setters.SetProperty(x => x.CompletedAtUtc, now), token);
@@ -142,9 +155,18 @@ public sealed class ClassMediaUploadsController(AcademyDeskDbContext db, UserMan
 
     private async Task<ApplicationUser?> CurrentTeacher()
     {
-        var user = await users.GetUserAsync(User);
-        return user is not null && user.IsActive && user.AcademyId.HasValue && user.TeacherId.HasValue &&
-            await users.IsInRoleAsync(user, "Teacher") ? user : null;
+        if (!Guid.TryParse(users.GetUserId(User), out var id)) return null;
+        // Authentication may have tracked an earlier account before provider IO.
+        // Never let that cached entity authorize durable publication.
+        var user = await users.Users.AsNoTracking().SingleOrDefaultAsync(x => x.Id == id, HttpContext.RequestAborted);
+        var stamp = User.FindFirst(users.Options.ClaimsIdentity.SecurityStampClaimType)?.Value;
+        if (user is null || string.IsNullOrEmpty(stamp) || !string.Equals(user.SecurityStamp, stamp, StringComparison.Ordinal)) return null;
+        if (!user.IsActive || !user.AcademyId.HasValue || !user.TeacherId.HasValue) return null;
+        // UserStore.IsInRoleAsync may Find() a membership tracked before Blob IO.
+        // Query the current association rather than trusting that cached entry.
+        var roleName = users.NormalizeName("Teacher");
+        return await identityDb.UserRoles.AsNoTracking().AnyAsync(link => link.UserId == user.Id &&
+            identityDb.Roles.Any(role => role.Id == link.RoleId && role.NormalizedName == roleName), HttpContext.RequestAborted) ? user : null;
     }
     private async Task<ClassMediaUploadSession?> AuthorizedSession(Guid id, CancellationToken token)
     {

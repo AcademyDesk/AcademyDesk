@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { academyApi, apiHeaders } from "@/lib/api";
 import { StandardDateField, StandardSelectField } from "@/components/design-system/controls";
+import { OnboardingField } from "@/components/design-system/onboarding-field";
 
 type Profile = {
   studentNumber?: string;
@@ -123,19 +124,20 @@ function ProfileEditor({
       {message && <p role="status" aria-live="polite" className="mt-3 text-sm text-amber-200">{message}</p>}
       <fieldset disabled={saving} className="min-w-0 border-0 p-0">
       <div className="mt-5 grid gap-3 md:grid-cols-2">
-        <input
+        <OnboardingField label="Student number"><input
           value={form.studentNumber}
           onChange={(e) => set("studentNumber", e.target.value)}
           placeholder="Student number, e.g. HMA-2026-001"
           className="field"
-        />
-        <input
+        /></OnboardingField>
+        <OnboardingField label="Preferred name"><input
           value={form.preferredName}
           onChange={(e) => set("preferredName", e.target.value)}
           placeholder="Preferred name"
           className="field"
-        />
+        /></OnboardingField>
         <StandardSelectField
+          label="Gender (optional)"
           disabled={saving}
           name="student-gender"
           value={form.gender}
@@ -150,55 +152,55 @@ function ProfileEditor({
         />
         <StandardDateField key={saving ? "dob-saving" : "dob-editable"} name="dateOfBirthDisplay" label="Date of birth" value={form.dateOfBirth} onChange={(value) => set("dateOfBirth", value)} />
         <StandardDateField key={saving ? "admission-saving" : "admission-editable"} name="admissionDateDisplay" label="Admission date" value={form.admissionDate} onChange={(value) => set("admissionDate", value)} />
-        <input
+        <OnboardingField label="Address"><input
           value={form.addressLine1}
           onChange={(e) => set("addressLine1", e.target.value)}
           placeholder="Address"
           className="field"
-        />
-        <input
+        /></OnboardingField>
+        <OnboardingField label="City"><input
           value={form.city}
           onChange={(e) => set("city", e.target.value)}
           placeholder="City"
           className="field"
-        />
-        <input
+        /></OnboardingField>
+        <OnboardingField label="State"><input
           value={form.state}
           onChange={(e) => set("state", e.target.value)}
           placeholder="State"
           className="field"
-        />
-        <input
+        /></OnboardingField>
+        <OnboardingField label="Postal / PIN code"><input
           value={form.postalCode}
           onChange={(e) => set("postalCode", e.target.value)}
           placeholder="Postal / PIN code"
           className="field"
-        />
-        <input
+        /></OnboardingField>
+        <OnboardingField label="Emergency contact name"><input
           value={form.emergencyContactName}
           onChange={(e) => set("emergencyContactName", e.target.value)}
           placeholder="Emergency contact name"
           className="field"
-        />
-        <input
+        /></OnboardingField>
+        <OnboardingField label="Emergency contact phone"><input
           value={form.emergencyContactPhone}
           onChange={(e) => set("emergencyContactPhone", e.target.value)}
           placeholder="Emergency contact phone"
           className="field"
-        />
+        /></OnboardingField>
       </div>
-      <textarea
+      <div className="mt-3"><OnboardingField label="Medical or accessibility notes — authorised staff only"><textarea
         value={form.medicalOrAccessibilityNotes}
         onChange={(e) => set("medicalOrAccessibilityNotes", e.target.value)}
         placeholder="Medical or accessibility notes — authorised staff only"
         className="field mt-3 min-h-24"
-      />
-      <textarea
+      /></OnboardingField></div>
+      <div className="mt-3"><OnboardingField label="Internal admin notes — never shown in portals"><textarea
         value={form.adminNotes}
         onChange={(e) => set("adminNotes", e.target.value)}
         placeholder="Internal admin notes — never shown in portals"
         className="field mt-3 min-h-24"
-      />
+      /></OnboardingField></div>
       </fieldset>
     </section>
   );

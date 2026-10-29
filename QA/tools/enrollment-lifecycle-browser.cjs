@@ -41,15 +41,15 @@ const server = http.createServer((req, res) => { try {
         if(url.origin===origin||url.protocol==='data:')return route.continue();return route.abort('blockedbyclient');
       });
       await page.goto(origin+'/enrollments?studentId=student');
-      await page.waitForFunction(()=>{const s=document.querySelector('li select');return s&&!s.disabled;});
-      const create=page.locator('form').first();await create.locator('select').nth(2).selectOption('Waitlisted');
+      await page.waitForFunction(()=>{const s=document.querySelector('li .standard-select-trigger');return s&&!s.disabled;});
+      const create=page.locator('form').first();await require('./shared-picker-actions.cjs').select(page,'initial-status','Waitlisted');
       const target=['Active','Completed','Waitlisted','Withdrawn','Cancelled'].includes(scenario)?scenario:'Paused';
-      await page.getByLabel('Lifecycle status',{exact:true}).selectOption(target);
+      await require('./shared-picker-actions.cjs').select(page,'status-enrollment',target);
       assert.equal(calls.filter(c=>c.method==='PUT').length,0);
       if(target!=='Active')await page.getByLabel('Lifecycle reason (required)',{exact:true}).fill(scenario==='whitespace'?'   ':'  Synthetic lifecycle explanation  ');
       if(scenario==='cancel'){
         await page.getByRole('button',{name:'Cancel change',exact:true}).click();
-        assert.equal(await page.getByLabel('Lifecycle status',{exact:true}).inputValue(),'Active');
+        assert.equal(await page.locator('input[name="status-enrollment"]').inputValue(),'Active');
         assert.equal(await page.getByRole('button',{name:'Save status',exact:true}).count(),0);
       }else{
         await page.getByRole('button',{name:'Save status',exact:true}).click();
@@ -57,17 +57,17 @@ const server = http.createServer((req, res) => { try {
         await page.getByRole('status').filter({hasText:expected}).waitFor();
         await page.waitForFunction(()=>!document.querySelector('fieldset').disabled);
         if(['whitespace','denied','uncertain'].includes(scenario)){
-          assert.equal(await page.getByLabel('Lifecycle status',{exact:true}).inputValue(),target);
+          assert.equal(await page.locator('input[name="status-enrollment"]').inputValue(),target);
           assert.equal(await page.getByLabel('Lifecycle reason (required)',{exact:true}).inputValue(),scenario==='whitespace'?'   ':'  Synthetic lifecycle explanation  ');
         }else{
           assert.equal(await page.getByRole('button',{name:'Save status',exact:true}).count(),0);
           if(scenario==='refresh-failure')assert.match(await page.getByRole('status').textContent(),/could not be refreshed.*Do not repeat/);
-          else assert.equal(await page.getByLabel('Lifecycle status',{exact:true}).inputValue(),target);
+          else assert.equal(await page.locator('input[name="status-enrollment"]').inputValue(),target);
         }
       }
       const writes=calls.filter(c=>c.method==='PUT');assert.equal(writes.length,['cancel','whitespace'].includes(scenario)?0:1);
       if(writes.length)assert.deepEqual(writes[0].body,{status:target,endDate:null,lifecycleReason:target==='Active'?null:'Synthetic lifecycle explanation'});
-      assert.equal(await create.locator('select').nth(2).inputValue(),'Waitlisted');
+      assert.equal(await create.locator('input[name="initial-status"]').inputValue(),'Waitlisted');
       assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
       const status=scenario==='denied'?'403':scenario==='uncertain'?'500':scenario==='refresh-failure'?'503':null;
       assert.deepEqual(errors.filter(x=>!status||!x.startsWith('Failed to load resource:')||!x.includes(status)),[]);

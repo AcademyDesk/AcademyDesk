@@ -1,5 +1,14 @@
 # BUG-DATA-0043 — Practice-log creation accepts unchecked learner and caller-supplied review lifecycle
 
+## Frontend successor —21 October2026
+
+Verified create/review feedback, draft preservation, overlap/uncertain-write recovery,
+active learner selection and validated read states implemented locally.57affected
+checks/40actual exported React browser cases,TypeScript/targetlint/87-route export
+PASS. Synthetic API browser only,not linked SQL/role/device/race/fault closure.
+Existing backend evidence retained;issue remains OPEN. See
+[frontend report](../REPORTS/PRACTICE_FEEDBACK_2026-10-21.md).
+
 | Field | Value |
 | --- | --- |
 | Status | OPEN |

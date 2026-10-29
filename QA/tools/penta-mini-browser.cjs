@@ -150,6 +150,48 @@ const pass = name => { checks.push(name); console.log('PENTA MINI BROWSER PASS '
     assert.equal(http.filter(x => x.method === 'POST' && /\/turns$/.test(x.path)).length, 9, 'No automatic duplicate model calls');
     assert.ok(http.filter(x => /\/turns$/.test(x.path)).every(x => x.status === 201), 'No 429 or failed HTTP turns');
     pass('no browser runtime errors and exactly nine explicit turn POSTs');
+    let contextChecks = null;
+    if (process.env.QA_PENTA_CONTEXT === '1') {
+      await page.getByRole('button', { name: 'New conversation', exact: true }).click();
+      const filtered = await send('Show piano learners with pending fees.');
+      assert.equal(filtered.result.count, 3);
+      const ordered = await send('Highest first.');
+      assert.deepEqual(ordered.result.rows.map(row => row.balances[0].outstanding), [400, 300, 200]);
+      const corrected = await send('Sorry, not the second student; open the third one instead.');
+      assert.equal(corrected.result.count, 1);
+      assert.equal(corrected.result.rows.length, 1);
+      assert.equal(corrected.result.rows[0].sourceId, ordered.result.rows[2].sourceId);
+      assert.equal(corrected.result.rows[0].recordCode, 'AD-M002');
+      assert.equal(corrected.result.rows[0].balances[0].outstanding, 200);
+      assert.equal(corrected.context.current_learner_id, ordered.result.rows[2].sourceId);
+      await panel.getByText('Student code: AD-M002', { exact: true }).last().waitFor();
+      const reset = await send('Clear all previous filters and list all students again.');
+      assert.ok(reset.result.count > 10);
+      assert.equal(reset.result.rows.length, 10);
+      assert.equal(reset.result.hasMore, true);
+      assert.deepEqual(reset.context.filters, {});
+      assert.equal(reset.context.sort_by, null);
+      assert.equal(reset.context.current_learner_id, null);
+      assert.deepEqual(reset.context.current_result_ids, reset.result.rows.map(row => row.sourceId));
+      assert.ok(reset.result.rows.every(row => !row.displayName.includes('Foreign') && !row.displayName.includes('Inactive')));
+      const narrowed = await send('Show piano learners with pending fees.');
+      assert.equal(narrowed.result.count, 3);
+      const codeReset = await send('New lookup: student code AD-M001. Drop the old piano, unpaid and ordering filters.');
+      assert.equal(codeReset.result.count, 1);
+      assert.equal(codeReset.result.rows.length, 1);
+      assert.equal(codeReset.result.rows[0].sourceId, code.result.rows[0].sourceId);
+      assert.equal(codeReset.result.rows[0].balances[0].outstanding, 400);
+      assert.deepEqual(codeReset.context.filters, { name: 'AD-M001' });
+      assert.equal(codeReset.context.sort_by, null);
+      assert.equal(codeReset.context.current_learner_id, null);
+      assert.equal(http.filter(x => x.method === 'POST' && /\/turns$/.test(x.path)).length, 15);
+      assert.ok(http.filter(x => /\/turns$/.test(x.path)).every(x => x.status === 201));
+      assert.equal(errors.length, 0);
+      await page.getByLabel('Message PENTA AI', { exact: true }).scrollIntoViewIfNeeded();
+      await page.screenshot({ path: path.join(evidence, 'penta-context-390-light.png') });
+      contextChecks = { correctedSource: corrected.result.rows[0].sourceId, outstanding: 200, resetCount: reset.result.count, resetPage: 10, codeSource: codeReset.result.rows[0].sourceId, explicitTurns: 15 };
+      pass('six added explicit chat turns: corrected replacement/INR200, bounded reset and combined code/reset/INR400; original nine retained');
+    }
     // Open the source after same-page preservation assertions: Next's development
     // route compilation may refresh peer tabs; navigation intentionally resets chat.
     const sourcePage = await context.newPage();
@@ -164,6 +206,6 @@ const pass = name => { checks.push(name); console.log('PENTA MINI BROWSER PASS '
     await sourcePage.close();
     assert.equal(errors.length, 0, 'Source link must not introduce console/hydration errors');
     pass('verified Student 360 sources match adjusted Ananya INR 300 and code-selected Meera INR 400 without hydration errors');
-    fs.writeFileSync(path.join(evidence, 'browser-result.json'), JSON.stringify({ run, fixtureAdmin: admin, checks, errors, http, sourceIds: third.result.rows.map(row => row.sourceId), ordinal: fourth.result.rows[0].sourceId, codeSourceId: code.result.rows[0].sourceId, codeRecord: code.result.rows[0].recordCode, codeOutstanding: 400, emptyCodeCases: 2, physicalDevices: 'NOT RUN' }, null, 2));
+    fs.writeFileSync(path.join(evidence, 'browser-result.json'), JSON.stringify({ run, fixtureAdmin: admin, checks, errors, http, sourceIds: third.result.rows.map(row => row.sourceId), ordinal: fourth.result.rows[0].sourceId, codeSourceId: code.result.rows[0].sourceId, codeRecord: code.result.rows[0].recordCode, codeOutstanding: 400, emptyCodeCases: 2, contextChecks, physicalDevices: 'NOT RUN' }, null, 2));
   } finally { await browser.close(); }
 })().catch(error => { console.error('PENTA MINI BROWSER FAIL ' + error.message); process.exitCode = 1; });

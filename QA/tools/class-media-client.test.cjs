@@ -185,12 +185,13 @@ test('two owners sharing one browser and teaching scope cannot read or clear eac
 test('actual Teacher sign-out clears only Teacher credentials; scoped draft stays recoverable only for its owner', async () => {
   const source = ts.transpileModule(fs.readFileSync(path.join(root,'api.ts'),'utf8'), {compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
   const store = storage(); const job = await lib.prepareUpload(new File(['A'], 'owner-a.bin'), scope, 'Private A', '', store);
-  const module = {exports:{}}; let httpCalls = 0;
+  const module = {exports:{}}; let httpCalls = 0; const events=[];
   new Function('module','exports','window','fetch','process',source)(module,module.exports,
-    {localStorage:store,location:{pathname:'/teacher'}}, () => { httpCalls++; throw Error('Sign-out is local, no HTTP expected'); }, {env:{NEXT_PUBLIC_API_URL:apiUrl}});
+    {localStorage:store,location:{pathname:'/teacher'},dispatchEvent:event=>{events.push(event);return true;}}, () => { httpCalls++; throw Error('Sign-out is local, no HTTP expected'); }, {env:{NEXT_PUBLIC_API_URL:apiUrl}});
   module.exports.savePortalTokens('Teacher', 'synthetic-A', 'synthetic-A-refresh');
   module.exports.savePortalTokens('Portal', 'synthetic-family', 'synthetic-family-refresh');
   module.exports.clearPortalTokens();
+  assert.equal(events.length,1);assert.equal(events[0].detail,'Teacher');assert.equal(events[0].type,module.exports.portalSignOutEvent);
   assert.equal(module.exports.portalAccessToken(), null);
   assert.equal(store.getItem('academydesk.refreshToken.Teacher'), null);
   assert.equal(module.exports.portalAccessToken('Portal'), 'synthetic-family');
@@ -249,7 +250,7 @@ test('actual shared transport sends current workspace bearer and refreshes a ret
   const fetch=async (url,init)=>{ calls.push({url,init}); if(url.endsWith('/api/auth/refresh')) return json({accessToken:'synthetic-new'}); return calls.length===1?new Response(null,{status:401}):json({message:'saved'}); };
   new Function('module','exports','window','fetch','process',source)(module,module.exports,fakeWindow,fetch,{env:{NEXT_PUBLIC_API_URL:apiUrl}});
   const body=new Blob(['abc']); await module.exports.academyApi('/api/teacher/media-uploads/'+id+'/chunks/0',{method:'PUT',body,headers:{'Content-Type':'application/octet-stream'},redirect:'error'});
-  assert.equal(calls[0].init.headers.Authorization,'Bearer synthetic-old'); assert.equal(calls[2].init.headers.Authorization,'Bearer synthetic-new'); assert.equal(calls[2].init.body,body);
+  assert.equal(new Headers(calls[0].init.headers).get('Authorization'),'Bearer synthetic-old'); assert.equal(new Headers(calls[2].init.headers).get('Authorization'),'Bearer synthetic-new'); assert.equal(calls[2].init.body,body);
   assert.ok(calls.every(call=>!call.url.includes('synthetic-')));
 });
 test('new client components prerender without accessing browser storage or creating file URLs', () => {
@@ -259,6 +260,7 @@ test('new client components prerender without accessing browser storage or creat
     const module={exports:{}};
     new Function('require','module','exports',source)(id=>{
       if(id==='react') return React; if(id==='react/jsx-runtime') return require('../../apps/web/node_modules/react/jsx-runtime');
+      if(id==='next/image') return require('../../apps/web/node_modules/next/image');
       if(id==='@/lib/class-media-upload') return lib; if(id==='@/lib/private-material') return material; if(id==='@/lib/api') return {academyApi(){throw Error('No server HTTP expected');}};
       throw Error('Unexpected component import '+id);
     },module,module.exports); return module.exports;

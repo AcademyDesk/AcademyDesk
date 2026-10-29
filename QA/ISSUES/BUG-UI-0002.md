@@ -1,5 +1,24 @@
 # BUG-UI-0002 — Shared modal and select omit expected keyboard focus behavior
 
+## 25 October 2026 select checkpoint — OPEN
+
+Shared select focus/keyboard gap reproduced (nine actual-source cases,3PASS/
+6FAIL), repaired and retested9/9, with five required-field cases plus23Access
+Review/26Staff handlers retained63/63. Typecheck/lint/fresh627file export and
+eight synthetic-read actual-browser journeys at320/390/768/1440light-dark PASS.
+Selected/first-option focus, Arrow/Home/End, type-ahead, Enter/Space, Tab/reverse
+Tab, Escape, pointer parity, accessible label+value and no implicit writes checked.
+All eight screenshots inspected; independent exact-source/build/browser/resource
+qualifier PASS. Original failed browser-capture envelope retained FAIL; no app
+change/rebuild or assertion relaxation for the successful viewport-capture retry.
+See `QA/REPORTS/SHARED_SELECT_KEYBOARD_2026-10-25.md`.
+
+The modal was already repaired/qualified in the historical32case Admin overview
+matrix (`QA/REPORTS/E3_MANUAL_DETAIL_MODAL_FOUNDATION.md`); it was not rewritten
+or rerun here. These are bounded component/browser proofs, not physical Android/
+iOS/Safari, assistive-technology speech, all-consumer or full WCAG/release closure.
+The static discovery table below is historical, not the current retest status.
+
 | Field | Value |
 | --- | --- |
 | Status | OPEN |

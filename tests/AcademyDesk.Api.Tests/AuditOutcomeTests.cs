@@ -71,6 +71,17 @@ public sealed class AuditOutcomeTests
     [InlineData(typeof(TeachersController), "Update", true)]
     [InlineData(typeof(ClassMediaUploadsController), "Complete", false)]
     [InlineData(typeof(InvoicesController), "Create", true)]
+    [InlineData(typeof(AccessGrantsController), "Create", true)]
+    [InlineData(typeof(AccessGrantsController), "Revoke", true)]
+    [InlineData(typeof(AccessGrantsController), "List", false)]
+    [InlineData(typeof(AcademyRolesController), "Create", true)]
+    [InlineData(typeof(AcademyRolesController), "Assign", true)]
+    [InlineData(typeof(AcademyRolesController), "List", false)]
+    [InlineData(typeof(StaffController), "Create", true)]
+    [InlineData(typeof(StaffController), "UpdateStatus", true)]
+    [InlineData(typeof(StaffController), "ResetPassword", true)]
+    [InlineData(typeof(StaffController), "Offboard", true)]
+    [InlineData(typeof(StaffController), "List", false)]
     public void Atomic_scope_is_action_level_not_controller_wide(Type controller, string method, bool expected)
     {
         var descriptor = new ControllerActionDescriptor { MethodInfo = controller.GetMethod(method)! };
@@ -93,12 +104,25 @@ public sealed class AuditOutcomeTests
 
     [Theory]
     [InlineData(typeof(StudentsController), "Create", false)]
-    [InlineData(typeof(TeachersController), "Create", false)]
+    // Shared teacher creation now holds current Identity authority through its
+    // domain/audit commit; the explicit opt-in is required, not a relaxed test.
+    [InlineData(typeof(TeachersController), "Create", true)]
     [InlineData(typeof(StudentsController), "Update", true)]
     [InlineData(typeof(TeachersController), "Update", true)]
     [InlineData(typeof(ClassMediaUploadsController), "Complete", false)]
     [InlineData(typeof(InvoicesController), "Create", false)]
     [InlineData(typeof(StudentOnboardingController), "Create", true)]
+    [InlineData(typeof(AccessGrantsController), "Create", true)]
+    [InlineData(typeof(AccessGrantsController), "Revoke", true)]
+    [InlineData(typeof(AccessGrantsController), "List", false)]
+    [InlineData(typeof(AcademyRolesController), "Create", true)]
+    [InlineData(typeof(AcademyRolesController), "Assign", true)]
+    [InlineData(typeof(AcademyRolesController), "List", false)]
+    [InlineData(typeof(StaffController), "Create", true)]
+    [InlineData(typeof(StaffController), "UpdateStatus", true)]
+    [InlineData(typeof(StaffController), "ResetPassword", true)]
+    [InlineData(typeof(StaffController), "Offboard", true)]
+    [InlineData(typeof(StaffController), "List", false)]
     public void Identity_enlistment_requires_explicit_action_opt_in(Type controller, string method, bool expected) =>
         Assert.Equal(expected, AcademyAccessFilter.IncludesIdentity(new ControllerActionDescriptor { MethodInfo = controller.GetMethod(method)! }));
 
@@ -107,8 +131,14 @@ public sealed class AuditOutcomeTests
 
     [Theory]
     [InlineData(typeof(StudentOnboardingController), "Create", true)]
+    [InlineData(typeof(TeachersController), "Create", true)]
     [InlineData(typeof(TeachersController), "Update", false)]
     [InlineData(typeof(StudentsController), "Create", false)]
+    [InlineData(typeof(StaffController), "Create", true)]
+    [InlineData(typeof(StaffController), "UpdateStatus", true)]
+    [InlineData(typeof(StaffController), "ResetPassword", true)]
+    [InlineData(typeof(StaffController), "Offboard", true)]
+    [InlineData(typeof(StaffController), "List", false)]
     public void Platform_owner_atomicity_requires_explicit_action_opt_in(Type controller, string method, bool expected) =>
         Assert.Equal(expected, AcademyAccessFilter.IncludesPlatformOwner(new ControllerActionDescriptor { MethodInfo = controller.GetMethod(method)! }));
 

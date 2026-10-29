@@ -1,8 +1,11 @@
 "use client";
 import { FormEvent, useEffect, useRef, useState } from "react";
+import { StandardSelectField } from "@/components/design-system/controls";
+import visual from "@/components/design-system/engagement-workspace.module.css";
 import { WorkspaceNav } from "@/components/workspace-nav";
 import { academyApi, apiHeaders } from "@/lib/api";
 import { MeetingProviderDraft, MeetingProviderSettings } from "@/components/meeting-provider-settings";
+import { MeetingIntegrationOptions } from "@/components/meeting-integration-options";
 
 type Academy = { id: string };
 type ChannelName = "Email" | "WhatsApp" | "Meeting";
@@ -101,7 +104,56 @@ export default function CommunicationSettingsPage() {
     await persist("Meeting", { provider: submitted.provider, status: submitted.status, senderName: submitted.organizerName, senderAddress: submitted.organizerEmail, replyToAddress: saved?.replyToAddress ?? null, phoneNumber: saved?.phoneNumber ?? null, externalAccountReference: submitted.reference, messagesEnabled: saved?.messagesEnabled ?? false },
       (row) => setMeeting((current) => reconcileDraft(current, submitted, toMeetingDraft(row))));
   }
-  const fields = "w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2";
-  const senderForm = (channel: "Email" | "WhatsApp", draft: Draft) => <form onSubmit={(event: FormEvent) => { event.preventDefault(); void save(channel, draft); }} className="rounded-2xl border border-slate-800 bg-slate-900 p-6"><h2 className="text-xl font-semibold">{channel === "Email" ? "Email sender" : "WhatsApp sender"}</h2><div className="mt-5 grid gap-3"><select value={draft.provider} onChange={(event) => editSender(channel, { ...draft, provider: event.target.value })} className={fields}>{channel === "Email" ? <><option value="GoogleWorkspace">Google Workspace</option><option value="Microsoft365">Microsoft 365</option><option value="SMTP">Custom SMTP</option></> : <><option value="MetaCloudApi">Meta WhatsApp Cloud API</option><option value="BSP">Business solution provider</option></>}</select><input value={draft.senderName} onChange={(event) => editSender(channel, { ...draft, senderName: event.target.value })} placeholder="Display name" className={fields} />{channel === "Email" ? <input type="email" value={draft.senderAddress} onChange={(event) => editSender(channel, { ...draft, senderAddress: event.target.value })} placeholder="Sender email" className={fields} /> : <input value={draft.phoneNumber} onChange={(event) => editSender(channel, { ...draft, phoneNumber: event.target.value })} placeholder="Dedicated WhatsApp number" className={fields} />}</div><button disabled={!academy || !loaded || pending[channel]} className="mt-5 w-full rounded-lg bg-cyan-400 px-4 py-2.5 font-semibold text-slate-950 disabled:opacity-60">{pending[channel] ? "Saving…" : `Save ${channel.toLowerCase()} settings`}</button>{notices[channel] && <p role="status" aria-live="polite" data-channel-notice={channel} className="mt-3 text-sm">{notices[channel]}</p>}</form>;
-  return <main className="enterprise-settings enterprise-legacy-standard min-h-screen bg-slate-950 text-slate-100"><WorkspaceNav /><div className="mx-auto max-w-6xl px-6 py-10"><p className="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-300">Engagement</p><h1 className="mt-3 text-4xl font-semibold tracking-tight">Channel settings</h1><p className="mt-3 max-w-3xl text-slate-300">Configure academy communication channels and the provider that creates online class meetings.</p>{message && <p className="mt-6 rounded-lg border border-amber-700/50 bg-amber-950/40 p-4 text-sm text-amber-100">{message}</p>}<div className="mt-8 grid gap-6 lg:grid-cols-2">{senderForm("Email", email)}{senderForm("WhatsApp", whatsApp)}<div className="lg:col-span-2"><MeetingProviderSettings value={meeting} onChange={editMeeting} onSave={() => void saveMeeting()} disabled={!academy || !loaded || pending.Meeting} />{notices.Meeting && <p role="status" aria-live="polite" data-channel-notice="Meeting" className="mt-3 text-sm">{notices.Meeting}</p>}</div></div><section className="mt-6 rounded-2xl border border-slate-800 bg-slate-900 p-6"><h2 className="text-xl font-semibold">Secure connection</h2><p className="mt-2 text-sm text-slate-300">{items.some((item) => item.hasSecureConnection) ? "A secure provider connection is recorded." : "Save the provider information first. OAuth client secrets and access tokens are connected securely in the next step."}</p></section></div></main>;
+  const senderForm = (channel: "Email" | "WhatsApp", draft: Draft) => (
+    <form onSubmit={(event: FormEvent) => { event.preventDefault(); void save(channel, draft); }} className={visual.panel} aria-busy={pending[channel]}>
+      <header className={visual.panelHeader}><p>Sender identity</p><h2>{channel === "Email" ? "Email sender" : "WhatsApp sender"}</h2></header>
+      <div className={visual.editor}>
+        <StandardSelectField
+          label="Provider" name={`provider-${channel}`} value={draft.provider}
+          onChange={(provider) => editSender(channel, { ...draft, provider })}
+          placeholder="Select provider"
+          options={channel === "Email" ? [
+            { value: "GoogleWorkspace", label: "Google Workspace" },
+            { value: "Microsoft365", label: "Microsoft 365" },
+            { value: "SMTP", label: "Custom SMTP" },
+          ] : [
+            { value: "MetaCloudApi", label: "Meta WhatsApp Cloud API" },
+            { value: "BSP", label: "Business solution provider" },
+          ]}
+        />
+        <label>Display name<input value={draft.senderName} onChange={(event) => editSender(channel, { ...draft, senderName: event.target.value })} placeholder="Display name" /></label>
+        {channel === "Email" ?
+          <label>Sender email<input type="email" value={draft.senderAddress} onChange={(event) => editSender(channel, { ...draft, senderAddress: event.target.value })} placeholder="Sender email" /></label> :
+          <label>Dedicated WhatsApp number<input value={draft.phoneNumber} onChange={(event) => editSender(channel, { ...draft, phoneNumber: event.target.value })} placeholder="Dedicated WhatsApp number" /></label>}
+        <button disabled={!academy || !loaded || pending[channel]} className="enterprise-action-button">{pending[channel] ? "Saving…" : `Save ${channel.toLowerCase()} settings`}</button>
+        {notices[channel] && <p role="status" aria-live="polite" data-channel-notice={channel} className={visual.notice}>{notices[channel]}</p>}
+      </div>
+    </form>
+  );
+  return (
+    <main className={`enterprise-settings settings-standard min-h-screen ${visual.page} ${visual.settings}`}>
+      <WorkspaceNav />
+      <div className={visual.content}>
+        <header className="standard-workspace-heading">
+          <span className="standard-heading-icon" aria-hidden="true">⚙</span>
+          <div><p>Engagement</p><h1>Channel settings</h1></div>
+        </header>
+        <p className={visual.lead}>Manage sender identities and meeting-provider details. Secure connections are configured separately; never enter passwords, client secrets or access tokens here.</p>
+        {message && <p role="status" className={visual.notice}>{message}</p>}
+        <MeetingIntegrationOptions academyId={loaded ? academy?.id : undefined} />
+        <div className={visual.settingsGrid}>
+          {senderForm("Email", email)}
+          {senderForm("WhatsApp", whatsApp)}
+          <div className={visual.wide}>
+            <MeetingProviderSettings value={meeting} onChange={editMeeting} onSave={() => void saveMeeting()} disabled={!academy || !loaded || pending.Meeting} />
+            {notices.Meeting && <p role="status" aria-live="polite" data-channel-notice="Meeting" className={visual.notice}>{notices.Meeting}</p>}
+          </div>
+        </div>
+        <section className={visual.panel}>
+          <header className={visual.panelHeader}><p>Connection security</p><h2>Secure connection</h2></header>
+          <p className={visual.editor}>{items.some((item) => item.hasSecureConnection) ? "A secure provider connection is recorded. This is not a live delivery or meeting-creation test." : "No secure provider connection is recorded. Saving provider information alone does not establish OAuth or enable delivery. Use the approved secure connection setup; do not enter credentials in these fields."}</p>
+        </section>
+      </div>
+    </main>
+  );
 }

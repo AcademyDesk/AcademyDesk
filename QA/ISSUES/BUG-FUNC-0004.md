@@ -1,10 +1,36 @@
 # BUG-FUNC-0004 — Frontend quality check fails on current baseline
 
+Latest image successor, 21 October 2026: full configured lint **0 errors / 0
+warnings, exit 0, PASS**. All 14 image warnings addressed without lint/config
+suppression or image-optimizer/auth changes. 438 selected checks and 172 synthetic
+exported-browser cases PASS; TypeScript/87-route export/diff PASS. Certificate
+image ref/print preparation and private preview cleanup covered. Not real SQL,
+role/device/PDF acceptance. Issue remains OPEN for normal review/critical closure.
+[Latest report](../REPORTS/FRONTEND_IMAGE_BOUNDARIES_2026-10-21.md).
+The 14/36-warning results below are retained historical checkpoints.
+
+Latest warning successor, 21 October 2026: full configured lint **0 errors / 14
+image warnings, exit 0, PASS**. All 14 hook and eight unused warnings repaired
+without suppressions. 455 selected regressions and 196 exported-browser cases
+PASS; TypeScript/87-route build/diff checks PASS. Synthetic APIs, not linked SQL,
+real role/tenant or physical-device acceptance. Issue remains OPEN for normal
+review/critical-regression closure; image warnings retained, not hidden.
+[Current report](../REPORTS/FRONTEND_WARNING_REPAIR_2026-10-21.md).
+The 36-warning checkpoint below is historical, not current lint status.
+
+21October2026 latest gate:full configured ESLint **0errors/36warnings,exit0,PASS**.
+All16previous errors repaired across six remaining pages without rule/config
+suppression. TypeScript/87-route export/diff checks and478selected regressions PASS;
+six-page browser72PASS,final Teacher12rerun with60unchanged retained. Synthetic
+transport,not linkedSQL/role/device acceptance. Issue remainsOPEN for normal
+review/critical-regression closure;36warnings still recorded. [Latest report](../REPORTS/FRONTEND_QUALITY_GATE_2026-10-21.md).
+Earlier27/41→19/40→18/40→16/38 and original46/81 are retained history,not current errors.
+
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
 | Confirmation status | RUNTIME-REPRODUCED |
-| Final verification | NOT RUN |
+| Final verification | PARTIAL: configured lint PASS; review/critical closure OPEN |
 | Severity | Major release-quality gap |
 | Priority | P1 |
 | Category | FUNC |

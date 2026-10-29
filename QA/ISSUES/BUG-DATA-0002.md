@@ -1,5 +1,28 @@
 # BUG-DATA-0002 — Payment guard ignores approved invoice adjustments
 
+2026-10-23 [Exact-image transition matrix](../REPORTS/API_IMAGE_TRANSITIONS_2026-10-22.md):
+five adjusted-collection pairs and five approval/payment pairs PASS within the
+complete 25-pair/158-check native run. Both serializable approval/payment orders
+observed; canonical reads match exact SQL amounts/disposition. Original regression
+hashes, source, cleanup and service restoration verified. No new policy or refund/
+credit-note workflow; qualified review/devices/wider release remain **OPEN**.
+
+## Exact-candidate approved policy transport — 22 October 2026
+
+[Native policy report](../REPORTS/API_IMAGE_POLICIES_2026-10-22.md):57checks PASS,
+15exact six-table no-write guards; new generic Refund/CreditNote400, retained
+legacy decisions409 and positive Discount100against1000 with no fabricated payment.
+Same current immutable API/real Kestrel/private SQL/109histories/source unchanged,
+owned cleanup/original services restored/inventories PASS. No policy rewrite or
+qualified accounting/tax sign-off; dedicated reviewed workflows/device/release
+remain separate. **OPEN / RETEST**, not closed.
+
+## Batch1 checkpoint — Approved invoice-reduction boundary — 2026-10-12
+
+Owner-approved FP1 blocks new generic Refund/CreditNote requests and either unreviewed decision on pending legacy documents, while retaining their records and allowing explicit approved invoice reductions. Native Batch1 controls in run50823642199a46988c2ea153f2d4b69f verify400/409 exact six-table no-write and a positive approved reduction without fabricated settlement. Dedicated reviewed credit-note/refund workflows are not implemented or authorized by this approval. Retained adjusted collection/approval race results are recorded in the Batch1 ledger; broader browser/device/compliance/release gates stay OPEN.
+
+Current bounded evidence: [Batch1 ledger](../REPORTS/BATCH_1_CORE_INTEGRITY.md). Changes are local/uncommitted; **OPEN / RETEST, not closed**. The original baseline fields and historical findings below are retained, not a claim that the new runtime checks were unexecuted.
+
 | Field | Value |
 | --- | --- |
 | Status | OPEN / FIX-IN-PROGRESS (local guard/status and consumer repair) |

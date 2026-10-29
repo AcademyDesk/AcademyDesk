@@ -13,10 +13,10 @@ function nodes(n, predicate) { if (Array.isArray(n)) return n.flatMap(x => nodes
 function text(n) { if (Array.isArray(n)) return n.map(text).join(''); if (n == null || typeof n === 'boolean') return ''; return typeof n === 'object' ? text(n.props?.children) : String(n); }
 async function page({ documentStatus = 200, documentThrows = false, data = settings, legacyDenied = true } = {}) {
   const states = new Map(), effects = [], calls = []; let index = 0;
-  const react = { useState: initial => { const key = index++; return [states.has(key) ? states.get(key) : initial, value => states.set(key, value)]; }, useEffect: f => effects.push(f), useMemo: f => f() };
+  const react = { useCallback: fn => fn, useState: initial => { const key = index++; return [states.has(key) ? states.get(key) : initial, value => states.set(key, typeof value === 'function' ? value(states.has(key) ? states.get(key) : initial) : value)]; }, useEffect: f => effects.push(f), useRef: v => ({ current: v }), useMemo: f => f() };
   const module = { exports: {} };
   new Function('require', 'module', 'exports', compiled)(name => {
-    if (name === 'react') return react; if (name === 'react/jsx-runtime') return jsx;
+    if (name === 'react') return react; if (name === 'next/image') return { default: 'img' }; if (name === 'react/jsx-runtime') return jsx;
     if (name === '@/lib/api') return { academyApi: async url => {
       calls.push(url); const document = url.endsWith('/invoices/document-settings'), legacy = url.endsWith('/finance-governance/settings');
       if (document && documentThrows) throw Error('Synthetic network failure');
@@ -24,6 +24,11 @@ async function page({ documentStatus = 200, documentThrows = false, data = setti
       return { status, ok: status === 200, json: async () => url === '/api/academies' ? [{ id: 'a', name: 'Synthetic Academy', legalName: 'Synthetic Legal Academy' }]
         : url.endsWith('/student-options') ? [student] : url.endsWith('/invoices') ? [invoice] : document || legacy ? data : [] };
     }, apiHeaders: () => ({}) };
+    if (name.endsWith('.module.css')) return new Proxy({}, {get: (_, key) => key});
+    if (name === '@/components/standard-select-field') return { StandardSelectField: 'shared-select' };
+    if (name === '@/components/standard-date-field') return { StandardDateField: 'shared-date' };
+    if (name === '@/components/design-system/onboarding-field') return { OnboardingField: 'label' };
+    if (name === '@/components/invoice-ledger-summary') return { InvoiceLedgerSummary: 'invoice-ledger-summary' };
     throw Error('Unexpected import ' + name);
   }, module, module.exports);
   function render() { index = 0; return module.exports.default(); }

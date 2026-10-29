@@ -1,5 +1,21 @@
 # BUG-SEC-0004 — Standard staff role replacement retains custom-role permissions
 
+## Missing supported-role successor — 25 October 2026
+
+Existing retained-permission repair stays accepted. Actual exported Staff page/
+native SQL `30ac76d5ff1f47beb01b7391df275672` now found a separate related
+role-route prerequisite: Operations creation201works, but changing it to the
+already-supported FrontDesk option returns500because bootstrap lacks that role.
+Transaction rollback keeps membership intact; no permission leakage is asserted.
+Prepare the canonical supported role inside the current transaction before
+membership replacement; preserve authorization/protected identities/explicit
+grants/stamp/audit rules. Eleven RoleManager/EF regressions/full2982API/fresh
+offline image and final52native HTTP/four actual journeys/three audit faults/
+FrontDesk zero→one preparation/session invalidation and exact original services/
+inventory/source-bound qualifier PASS. Narrow mobile clipping found and repaired
+with measured24–42nested control bounds; broader issue OPEN. See
+[Staff linked report](../REPORTS/STAFF_LINKED_FEEDBACK_2026-10-25.md).
+
 ## Current repair checkpoint — 2026-10-03
 
 **PARTIALLY FIXED / LOCAL BOUNDED REPAIR VERIFIED.** Standard staff replacement removes obsolete custom roles, discloses actual remaining memberships, preserves protected identities/explicit grants, checks stamp failure and atomically saves Identity plus attributed success audit, including the existing same-academy platform-bypass actor.

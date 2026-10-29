@@ -20,7 +20,7 @@ async function page(config={}) {
   if(calls.some(c=>c.method)){if(config.readGate)await config.readGate;if(config.refreshFailure)return{ok:false,status:503};}
   return{ok:!config.initialFailure,status:config.initialFailure?403:200,json:async()=>config.malformed?{}:url.endsWith('/options')?options:assessments};
  };
- new Function('require','module','exports',code)(n=>n==='react/jsx-runtime'?jsx:n==='react'?react:n==='@/lib/api'?{academyApi:api,apiHeaders:()=>({})}:n==='@/components/workspace-nav'?{WorkspaceNav:'nav'}:n==='@/components/design-system/controls'?{StandardSelectField:'select',StandardDateField:'date',StandardTimeField:'time'}:(()=>{throw Error(n)})(),module,module.exports);
+ new Function('require','module','exports',code)(n=>n==='react/jsx-runtime'?jsx:n==='react'?react:n==='@/lib/api'?{academyApi:api,apiHeaders:()=>({})}:n==='@/components/workspace-nav'?{WorkspaceNav:'nav'}:n==='@/components/design-system/controls'?{StandardSelectField:'select',StandardDateField:'date',StandardTimeField:'time'}:n.endsWith('.module.css')?{default:{}}:(()=>{throw Error(n)})(),module,module.exports);
  const render=()=>{i=r=e=0;return module.exports.default();};
  async function settle(){for(let i=0;i<5;i++){for(const fn of effects.splice(0))fn();await tick();render();}}
  render();await settle();for(const[k,v]of drafts)state.set(k,v);

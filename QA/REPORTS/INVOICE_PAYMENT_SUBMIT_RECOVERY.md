@@ -1,0 +1,28 @@
+# Invoice/payment submit and outcome recovery
+
+2026-10-15. `D:\AcademyDesk-codex-p0`, `codex/penta-search`, HEAD `b1f8cb6`. Continuation of the two-page visual checkpoint's explicit safety findings, not a new financial-policy or enterprise audit.
+
+## Implemented
+
+- Stable ref guards prevent same-tick/reused-handler submit and refresh overlap through both POST and readback. Initial unsuccessful/malformed-list loading cannot authorize an entry. All visible entry controls disable while pending or awaiting outcome review; loading errors no longer render an empty register as if it loaded successfully.
+- Capture request fields once. Preserve existing number/null/date-only/plan/method/reference payload contracts. Clear only matching captured fields after a confirmed successful response, retaining a programmatically changed later draft.
+- Confirmed POST with failed readback now explicitly says the invoice/payment was recorded and must not be repeated. Successful completion keeps accessible durable feedback on the same screen. A500/408/lost response is uncertain, not a guaranteed failed transaction:retain draft, block further attempts, require explicit successful register/balance refresh and tell the user to check for the previous entry. Failed recovery/manual refresh keeps the lock. Recovery only reads; never retries the POST automatically.
+- Preserve rejected-payment exact400 balance wording and obsolete invoice/amount reset. Other4xx retain draft and safe server/fallback guidance. Failed rejected-payment readback requires explicit recovery. Fully settled current API balance cannot be collected through this form.
+- Money/projection helpers, invoice templates/printing, authoritative server adjustments and Completed+Reconciled collection remain unchanged. No backend, schema, SQL transaction, authorization, tenant, approval or model changes.
+
+## Evidence
+
+- Final webpack build and TypeScript PASS,86 static outputs. No application source change afterward.
+-97 node:test entries PASS:43 new handler cases plus retained balance/settings/finance-lookup/money/source-preservation checks. Money script contains16 internal assertions.30 unchanged declaration comparisons remain; the four intentionally changed load/create declarations now have explicit handler/state/transport regressions instead of falsely claiming unchanged source.
+- Frozen HEAD counterfactual on16 selected read-failure/unknown-outcome/not-ready cases fails16/16 as expected. These are assertions demonstrating gaps, not16 unique defects. Baseline run has no network and does not mutate source. Initial new-test CSS mock omitted default export and failed; corrected the fixture, not product assertions. Static balance fixture now explicitly models the successful-load ready state; all original financial assertions retained.
+-84 final-export controlled-failure browser cases PASS:2pages ×3widths320/768/1440 ×2themes ×7scenarios(initial failure,400 rejection,500-committed uncertainty, lost response, confirmed-save/read failure, delayed write, delayed read). Exact payload/nulls, no duplicate/automatic POST, disabled controls, preserved/reset draft, failed recovery lock, deliberate read recovery and authoritative committed ledger readback asserted. `QA/EVIDENCE/invoice-payment-safety-1792036690454/result.json`.
+-54 unchanged visual browser cases PASS on the same final export, covering four invoice templates, empty/denied, actual date/year/Clear, anchored top-layer selection/collapse/focus,44px actions, scroll region, success/reset and canonical balance. `QA/EVIDENCE/invoice-payment-visual-1792036701100/result.json`. **138 final synthetic browser cases total**, not real SQL/authentication acceptance.
+- Scoped ESLint0 errors/4 inherited warnings, same two effect dependencies/two document images as preceding checkpoint. Six vendor hashes unchanged; source-hash receipts, script parse and scoped whitespace checks PASS. Final phone recovered invoice/light and payment/dark images inspected. One lint command launched from the repository root found no target; rerun using the installed web-local binary and correct cwd. No project dependency/package file changed.
+
+## Limits and continuation
+
+These page-lifetime UI guards do not provide durable cross-tab/reload/server idempotency, a verified bank settlement, or automatic duplicate reconciliation. Successful refresh instructs a human to inspect the register/ledger; it does not prove that an unknown payment was absent. Retain backend transaction/concurrency/audit and live linked SQL/physical-device release gates. Existing BUG-DATA-0001 and related issues remain OPEN. No SQL suite rerun here because persistence source/contracts are unchanged; prior SQL receipts are retained, not claimed current-release acceptance.
+
+Next bounded E3 work:fee plans/reminders and remaining finance/academic/communications/portal visual states using Sol Medium; use Sol High for consequential financial/security/integration/release work. The owner's clarified order is **complete the app and established gates → authorized go-live → onboard Hayansh Academy → Academy Desk public product website after the first customer is live**. This is sequencing, not approval to drop full PENTA/Manual goals or permit a reduced-scope production pilot. Website is not Hayansh's website; no website work starts now.
+
+Prior dirty work/local QA evidence preserved. No stage/commit/push/main/Azure/production data/container action. Main remains `f7af512f884ca5fe8ac3ddb287c852492592e709`. Enterprise, Mini/UI2 qualification, privacy/legal/operational and exact-candidate release gates remain OPEN.

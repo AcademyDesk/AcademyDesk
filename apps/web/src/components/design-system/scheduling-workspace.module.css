@@ -1,0 +1,55 @@
+.page.page { min-width: 0; width: min(100%, 1440px); overflow-wrap: anywhere; }
+.page :is(h1, h2, h3, header > div) { min-width: 0; overflow-wrap: anywhere; }
+.page :global(.batch-setup-layout) { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+.page :global(.batch-setup-form-fields) { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 20px; align-items: start; }
+.page :global(.batch-setup-form-fields > .mt-3), .page :global(.batch-setup-form-fields > .mt-5) { margin-top: 0; }
+.page :global(.batch-setup-form-fields > fieldset), .page :global(.batch-setup-form-fields > button), .page :global(.batch-setup-form-fields > div.grid) { grid-column: 1 / -1; }
+.page :global(.batch-setup-form-fields) label > input { margin-top: 0; }
+.page :global(.standard-select-field) { display: grid; gap: 8px; min-width: 0; }
+.page :global(.standard-time-label) { color: var(--ad-text-muted); font-size: .875rem; font-weight: 650; line-height: 1.5; }
+.page :is(:global(.batch-setup-panel), :global(.batch-overview-panel)) { border-radius: 18px; min-width: 0; }
+.page :global(.batch-directory-panel li) { min-width: 0; border-radius: 16px; padding: 18px; }
+.page :global(.batch-directory-panel li > div:first-child) { gap: 12px; flex-wrap: wrap; }
+.page :global(.batch-directory-panel li > div:first-child > div) { min-width: 0; }
+.page :global(.batch-directory-panel li > div.mt-3) { flex-wrap: wrap; }
+.page :global(.batch-directory-panel li > div.mt-3 button) { min-height: 44px !important; padding: 10px 14px !important; border-radius: 12px !important; white-space: normal; font-size: .875rem !important; }
+.page :global(.batch-directory-panel li fieldset) { gap: 16px; }
+.page :global(.batch-overview-row) { min-width: 0; gap: 16px; flex-wrap: wrap; }
+.page :global(.batch-overview-row > div) { min-width: 0; }
+.page :global(.batch-overview-row-action) { min-height: 44px; display: inline-flex; align-items: center; padding: 10px 14px; border-radius: 12px; white-space: normal; }
+.page :global(.consent-check) { min-height: 44px; }
+.scheduleBody { min-width: 0; width: 100%; padding: 0; }
+.scheduleHeading { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+.scheduleHeading > span { flex: 0 0 56px; width: 56px; height: 56px; display: grid; place-items: center; border-radius: 15px; background: var(--ad-action); color: var(--ad-action-text); font-size: 1.4rem; }
+.scheduleHeading p { margin: 0 0 6px; color: var(--ad-accent); font-size: .7rem; font-weight: 750; letter-spacing: .12em; text-transform: uppercase; }
+.page .scheduleHeading h1 { margin: 0; padding: 0; border: 0; font-size: var(--ad-page-title-size); line-height: var(--ad-page-title-line-height); }
+.scheduleLayout { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; margin-top: 24px; align-items: start; }
+.scheduleForm, .sessionPanel { min-width: 0; padding: clamp(16px, 2vw, 24px); border: 1px solid var(--ad-border); border-radius: 18px; background: var(--ad-surface); }
+.scheduleForm { display: grid; gap: 18px; }
+.scheduleForm > :is(h2, div, input, button) { margin-top: 0; }
+.scheduleForm h2, .sessionPanel h2 { font-size: 1.05rem; color: var(--ad-text); }
+.sessionPanel ul { list-style: none; padding: 0; }
+.sessionPanel li { border-radius: 16px; border: 1px solid var(--ad-border); background: var(--ad-surface-subtle); padding: 16px; }
+.sessionPanel li > div { flex-wrap: wrap; min-width: 0; }
+.sessionPanel li > div > div { min-width: 0; }
+.sessionPanel li :global(.standard-select-field) { width: 100%; }
+.page :global(.workspace-calendar-month-actions), .page :global(.workspace-calendar-filters), .page :global(.workspace-calendar-agenda-header-actions) { flex-wrap: wrap; gap: 8px; }
+.page :global(.workspace-calendar-panel-header), .page :global(.workspace-calendar-agenda-header) { flex-wrap: wrap; gap: 16px; }
+.page :global(.workspace-calendar-month-actions button), .page :global(.calendar-filter), .page :global(.workspace-calendar-agenda-toggle) { min-height: 44px !important; min-width: 44px; border-radius: 12px; }
+.page :global(.workspace-calendar-agenda) { border-radius: 18px; }
+.monthScroll { max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: thin; }
+.monthScroll:focus-visible { outline: 3px solid var(--ad-accent); outline-offset: -3px; }
+.monthScroll :global(.calendar-grid) { min-width: 720px; }
+.monthScroll :global(.calendar-day) { min-height: 126px; min-width: 0; }
+.monthScroll :global(.calendar-event) { overflow-wrap: anywhere; }
+.calendarHint { margin: 0; padding: 12px 18px; color: var(--ad-text-muted); font-size: .875rem; line-height: 1.5; }
+.page :global(.workspace-calendar-agenda-action) { min-height: 44px !important; white-space: normal; border-radius: 12px; }
+@media (max-width: 1000px) { .scheduleLayout { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 760px) {
+  .scheduleHeading > span { width: 46px; height: 46px; flex-basis: 46px; }
+  .page :global(.batch-setup-form-fields) { grid-template-columns: minmax(0, 1fr); }
+  .page :global(.batch-overview-row) { display: flex; flex-direction: column; align-items: stretch; }
+  .page :global(.batch-overview-kpis) { grid-template-columns: minmax(0, 1fr); }
+  .scheduleForm :is(input, select) { font-size: 16px; }
+  .page :global(.workspace-calendar-agenda-header-actions) { width: 100%; justify-content: space-between; }
+}

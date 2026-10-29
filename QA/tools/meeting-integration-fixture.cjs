@@ -1,0 +1,2 @@
+// Synthetic current host capabilities; never an OAuth or connected-account proof.
+module.exports=()=>({contractVersion:'meeting-host/0.1',asOfUtc:'2026-10-15T12:00:00Z',providers:['GoogleWorkspace','Zoom','Microsoft365'].map(provider=>({provider,implemented:false,available:false,reasonCode:'IntegrationUnavailable',operations:{preview:false,create:false,update:false,cancel:false,history:false},supportedSettings:[]}))});
