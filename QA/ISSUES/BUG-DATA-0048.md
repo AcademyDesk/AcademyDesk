@@ -3,8 +3,8 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | STATIC-FINDING |
-| Final verification | NOT RUN |
+| Confirmation status | FIX-IN-PROGRESS |
+| Final verification | Controlled reference matrix PASS; candidate SQL/browser/concurrency/critical acceptance pending |
 | Severity | Major operational ownership integrity |
 | Priority | P1 |
 | Category | DATA |
@@ -69,3 +69,15 @@ Queue ownership, follow-up routing and entity-linked work tracking can point to 
 OPERATIONS-WORK-IDENTITY-001: HTTP/SQL local/foreign/missing/null user and entity matrix, allowed user role policy, type/entity mismatch, list filtering, status updates and rejected no-write assertions.
 
 Also run all endpoint/form cases pointing to this issue in QA/03_TEST_MATRIX.md and the critical regression suite before closure.
+
+## 29 October 2026 IST — Controller repair and SQL acceptance candidate
+
+Original reference/ownership failures reproduced in controlled API tests; both
+Admin create and Finance collections follow-up now validate same-academy active
+staff Identity assignees. Generic entity links require complete scoped Invoice
+or PersonDocument pairs; unsupported types reject. Null assignment/link controls
+remain. Existing domain/audit transaction boundary covers Admin mutations.
+Mandatory owned `WorkItemIntegrity` CI module checks actual Identity/HTTP/fresh
+SQL and audit rollback. See [continuation report](../REPORTS/CLOUD_WORK_ITEM_VALIDATION_2026-10-29.md).
+Issue remains OPEN for exact candidate SQL/HTTP, browser, concurrent eligibility
+changes and broader critical acceptance; no closure or new assignment permission.

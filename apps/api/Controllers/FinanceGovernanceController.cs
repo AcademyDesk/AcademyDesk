@@ -1,5 +1,6 @@
 using AcademyDesk.Api.Data;
 using AcademyDesk.Api.Domain.Entities;
+using AcademyDesk.Api.Security;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 namespace AcademyDesk.Api.Controllers;
@@ -12,7 +13,7 @@ public sealed record CollectionInvoiceSummary(Guid Id, string InvoiceNumber, Gui
 }
 [ApiController]
 [Route("api/academies/{academyId:guid}/finance-governance")]
-public sealed class FinanceGovernanceController(AcademyDeskDbContext db) : ControllerBase
+public sealed class FinanceGovernanceController(AcademyDeskDbContext db, IdentityDbContext identity) : ControllerBase
 {
  private static string? Clean(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
@@ -66,9 +67,14 @@ public sealed class FinanceGovernanceController(AcademyDeskDbContext db) : Contr
          .SumAsync(p => (decimal?)p.Amount, t) ?? 0;
      if (invoice.Status is "Paid" or "Cancelled" || invoice.TotalAmount - invoice.AdjustedAmount - paid <= 0)
          return Conflict(new { message = "This invoice no longer requires collections follow-up." });
+     var priority = string.IsNullOrWhiteSpace(r.Priority) ? "High" : r.Priority.Trim();
+     if (!WorkItemValidation.ValidPriority(priority)) return BadRequest(new { message = "Invalid priority." });
+     if (r.Note?.Trim().Length > 4000) return BadRequest(new { message = "Follow-up note exceeds its allowed length." });
+     if (!await WorkItemValidation.ValidAssignee(identity, academyId, r.AssignedUserId, t))
+         return BadRequest(new { message = "Choose an active staff assignee in this academy." });
      var item = new AdminWorkItem { AcademyId = academyId, Type = "Collections", Title = $"Collect {invoice.InvoiceNumber}",
          Description = string.IsNullOrWhiteSpace(r.Note) ? $"Overdue invoice {invoice.InvoiceNumber}." : r.Note.Trim(),
-         Priority = string.IsNullOrWhiteSpace(r.Priority) ? "High" : r.Priority.Trim(), AssignedUserId = r.AssignedUserId,
+         Priority = priority, AssignedUserId = r.AssignedUserId,
          EntityType = "Invoice", EntityId = invoice.Id, DueAtUtc = r.DueAtUtc };
      db.AdminWorkItems.Add(item); await db.SaveChangesAsync(t); return Ok(item);
  }

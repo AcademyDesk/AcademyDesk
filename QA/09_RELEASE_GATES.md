@@ -27,3 +27,13 @@ Production smoke must be non-destructive: health, correct deployed commit/artifa
 Run [40738226886](https://github.com/AcademyDesk/AcademyDesk/actions/runs/40738226886) completed SUCCESS for exact commit `10a60eebc2e193b06de31622e897e755062dd72c`. The workflow enforces finance/record SQL and audit cases, payroll upgrade/history, private media/Blob, fresh communication evidence, full frontend, API regressions, builds and container smoke. Earlier API-observability limitations and failed candidates above remain historical. Detailed logs/artifacts have not been imported here. This does not close the five P0 issues or prove the full staging/production gate; exact final-source browser/security/critical workflow and isolated restore/rollback/deployed configuration acceptance remain necessary. The new payroll-print batch requires its own candidate run. Workflow/deploy guards remain development-branch changes until reviewed integration into `main`; no new deployment occurred.
 
 Security/recovery follow-up (29 October IST):candidate verification adds existing role/session/refresh SQL modules and a new ownership-guarded synthetic backup/restore drill. Compilation is observed; actual execution is pending. See [current acceptance report](REPORTS/CLOUD_RELEASE_ACCEPTANCE_2026-10-29.md). This does not establish Azure PITR/retention/private-media restoration or production rollback. The five P0 records and all existing release requirements remain unchanged.
+
+Observed continuation, 29 October IST: exact c7fca5f run40840527086 SUCCESS is
+verified through actual job steps/logs. Strict role/session/refresh/concurrency
+and all6 owned Recovery stages passed, including actual restore and exact70-table
+fingerprints/Identity/HTTP. Full frontend1,152/1,152 PASS with generated SQL logs;
+API1,179 PASS. This supersedes pending execution/observability statements above
+for that source only. See [current scoped evidence](REPORTS/CLOUD_WORK_ITEM_VALIDATION_2026-10-29.md).
+The five P0 records still block release; production Azure PITR/retention/media
+recovery/rollback, full browser/device and critical acceptance remain mandatory.
+New work-item validation source requires its own successful candidate CI.

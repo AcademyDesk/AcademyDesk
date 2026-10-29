@@ -706,3 +706,33 @@ missing historical SQL-evidence failures/0skip-cancel. Attendance34 and assessme
 61checks/safe diagnostics PASS. Strict RoleRevocation/SessionRefresh/Recovery
 PowerShell routing probe PASS without provisioning; SQLharness0warnings/errors.
 New candidate still requires real CI; earlier eaa95e5 is FAILED, not accepted.
+
+## 2026-10-29 IST — Recovered continuation and work-item validation
+
+- Both repositories accessible with push permission. Fresh workspace contained
+  clean older snapshots, no interrupted work-item/SQL edits. Fetched AcademyDesk
+  feature branch exactly c7fca5f; PentaMini remote/local2bf76b5 unchanged. No reset,
+  clean/stash or overwrite. Required governance files read.
+- Exact c7fca5f CI40840527086/job123335512505 SUCCESS; actual steps/logs read.
+  Strict role replacement/revocation and session repair/refresh/concurrency PASS.
+  All6 Recovery stages PASS, including actual RESTORE and exact70-table/schema
+  fingerprint equality, restored privileges/migrations/Identity/HTTP. Full web
+  1,152 PASS with real generated SQL evidence; API1,179 PASS. This is bounded
+  synthetic SQL acceptance, not Azure/customer/media/production rollback proof.
+- BUG-DATA-0048 rebuilt:33 initial tests29FAIL/4PASS. Both writers now validate
+  active/unlocked same-academy staff assignees; unassigned/admin/custom staff
+  controls remain. Public generic links limited to existing Invoice/PersonDocument
+  complete same-academy pairs. Priority/text bounds checked. Admin mutations use
+  existing domain/audit boundary; Finance already did. No payroll/payment policy,
+  schema or endpoint RBAC change.
+- Added mandatory owned WorkItemIntegrity SQL module for reference/role/no-write/
+  accepted-control/list/status and4 audit-fault rollback paths. Harness compiles
+  0warnings/errors. Focused61PASS and API1,212PASS initially; final API1,217PASS/0fail/skip
+  after lockout/action-boundary additions. Exact candidate CI is pending.
+- Local SQL image pull remains Forbidden; configured DB/normal seeder untouched.
+  NuGet writes use /workspace/work caches; shell network permission enables Git.
+  Report:QA/REPORTS/CLOUD_WORK_ITEM_VALIDATION_2026-10-29.md.
+- Production guard14fixtures PASS; actual guard blocks all5P0 as required. Issues
+  stay OPEN; browser/device/full critical and production recovery gates remain.
+  No main merge, deployment, environment publication or PentaMini source change.
+- Next route:Codex for exact candidate CI triage and remaining critical acceptance.

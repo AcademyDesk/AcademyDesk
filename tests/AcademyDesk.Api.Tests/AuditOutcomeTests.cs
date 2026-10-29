@@ -72,6 +72,10 @@ public sealed class AuditOutcomeTests
     [InlineData(typeof(InvoicesController), "Create", true)]
     [InlineData(typeof(HolidaysController), "Delete", true)]
     [InlineData(typeof(StudentImportsController), "Import", true)]
+    [InlineData(typeof(AdminWorkItemsController), "Create", true)]
+    [InlineData(typeof(AdminWorkItemsController), "Status", true)]
+    [InlineData(typeof(AdminWorkItemsController), "CollectionState", true)]
+    [InlineData(typeof(AdminWorkItemsController), "List", false)]
     public void Atomic_scope_is_action_level_not_controller_wide(Type controller, string method, bool expected)
     {
         var descriptor = new ControllerActionDescriptor { MethodInfo = controller.GetMethod(method)! };
