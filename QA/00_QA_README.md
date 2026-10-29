@@ -1,5 +1,24 @@
 # AcademyDesk QA control centre — Phase 1
 
+## Latest finance/source-continuity checkpoint — 29 October 2026
+
+Published source preservation: Academy6887e6e / Mini c3c61b9; local original
+folders/evidence/main unchanged. Read each LOCAL_SOURCE_TRANSFER.md before use;
+cloud-policy integration remains a separate reviewed operation.
+
+Finance branch from00d0d00:1,265cloud-based API/zero skips; retained finance,
+adjustment, transition and reconciliation SQL plus28new cases/10observed lock
+races/one new audit rollback PASS. Original unchanged collection-race source now
+passes5/5regular and5/5adjusted201/400/exact message/two rows/1000or800collected.
+Exact original services/images/health/inventory restored and owned cleanup PASS.
+No model load/inference experiment/download/Azure/main merge. Owner approved finance-branch publication; current-source GitHub CI not claimed.
+
+BUG-DATA-0001/0002 and other broad issue/release gates remain OPEN. PENTA source,
+contracts/services/migrations/Manual/UI/tests/CI still need coherent integration;
+real Mini interpretation and remaining conversational cohorts are not accepted.
+Reports: REPORTS/CLOUD_FINANCE_RECONCILIATION_2026-10-29.md and
+REPORTS/LAPTOP_SOURCE_CONTINUITY_2026-10-29.md. Earlier checkpoints are historical.
+
 ## Payroll reconciliation checkpoint — 29 October 2026
 
 - [x] Cloud positive-net rule reconciled with local worker/period/precision/

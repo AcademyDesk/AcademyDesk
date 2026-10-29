@@ -1,5 +1,17 @@
 # BUG-DATA-0002 — Payment guard ignores approved invoice adjustments
 
+## Cloud/local adjustment retest — 29 October 2026
+
+Remain OPEN. Current finance slice from00d0d00 retains adjusted collection guards
+and validated cloud restoration; adds approval cap against Completed/Reconciled
+collections/prior reductions, reviewed legacy documents, precision/currency/type
+validation and stale-proposal refresh under invoice lock.28new actual SQL/HTTP
+cases/10observed reduction races/required-audit rollback pass; original adjusted
+collection race remains byte-identical and passes5/5exact201/400/two rows/800paid
+plus200adjusted. Retained Adjustment/Transition/Reconciliation also pass. Current
+live UI/Guardian/device/critical closure and combined-source release remain open.
+Report: ../REPORTS/CLOUD_FINANCE_RECONCILIATION_2026-10-29.md.
+
 | Field | Value |
 | --- | --- |
 | Status | OPEN / FIX-IN-PROGRESS (local guard/status and consumer repair) |

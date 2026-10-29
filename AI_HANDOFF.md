@@ -1,5 +1,34 @@
 # Academy Desk handoff
 
+## Finance qualified and PENTA source portable — 29 October 2026
+
+- [x] Two owner-approved source checkpoints published/verified: Academy6887e6e
+  on codex/penta-local-source-20261029; Mini c3c61b9 on
+  codex/mini-local-source-20261029. Read LOCAL_SOURCE_TRANSFER.md there. Original
+  dirty folders/evidence and main preserved. They are preservation branches,
+  not wholesale merges or production releases.
+- [x] Current finance branch codex/finance-cloud-reconcile-20261029 from00d0d00
+  restores invoice-reduction/refund/legacy/precision/stale-proposal safeguards
+  while retaining cloud's validated Voided restoration and payroll rules.
+- [x] Full cloud-based API1,265/zero skips; retained four SQL modules plus28new
+  cases/10observed-lock races/mandatory audit rollback pass. Original collection
+  race source ported byte-for-byte;5/5 regular and5/5 adjusted pairs have exact
+  201/400, rejection message, two rows and1000/800collected. Both windows restored
+  exact original services/images/API200/full Docker inventory and owned cleanup.
+- [x] CI SQL list includes both original race modules;14critical-gate guard tests
+  pass. Current-source GitHub CI still pending. API TRX reused only after exact
+  unchanged app/test pins; changed harness rebuilt and original races rerun.
+- [ ] Owner approved this finance branch commit/push; verify the published SHA and exact-source CI.
+  BUG-DATA-0001/0002 and other P0/critical/browser/device/release gates stay OPEN.
+- [ ] Next coherent PENTA/security/services/Manual/test/CI integration from the
+  published source checkpoints; qualified Mini and conversational cohorts still
+  pending. No replacement/addition of overlapping3,183/1,265test totals.
+
+Reports: QA/REPORTS/CLOUD_FINANCE_RECONCILIATION_2026-10-29.md and
+QA/REPORTS/LAPTOP_SOURCE_CONTINUITY_2026-10-29.md. Stop before candidate model
+loading remains active. No main merge/model experiment/Azure/production DB use.
+Sol High next for PENTA/authority integration; Sol Medium for settled UI/docs.
+
 ## Approved shared GitHub checkpoint — 29 October 2026
 
 Owner approved one feature-branch commit/push of the validated payroll batch and

@@ -1,5 +1,16 @@
 # BUG-DATA-0001 — Reconciled payments disappear from some balance calculations
 
+## Cloud/local backend retest — 29 October 2026
+
+Remain OPEN. Current finance slice from00d0d00 passes the original reconciled
+sequential module and the byte-for-byte retained collection race:5/5exact201/400,
+existing balance refusal message, collected1000 and exactly two rows; no429.
+Adjusted counterpart also5/5with800collected/approved200. Full cloud-based API
+1,265/zero skips, retained finance modules and new reduction races/audit rollback
+pass. Live Payments browser and physical-device/critical closure remain open;
+this does not close the issue or establish the combined PENTA release.
+Report: ../REPORTS/CLOUD_FINANCE_RECONCILIATION_2026-10-29.md.
+
 | Field | Value |
 | --- | --- |
 | Status | OPEN / FIX-IN-PROGRESS (local repair) |

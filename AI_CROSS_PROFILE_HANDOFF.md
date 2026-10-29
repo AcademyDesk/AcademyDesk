@@ -1,5 +1,31 @@
 # Academy Desk — shared continuation across profiles
 
+## Laptop-independent source and latest finance slice — 29 October 2026
+
+Owner approved both source-transfer pushes. Exact fetched GitHub checkpoints:
+
+- AcademyDesk/AcademyDesk, codex/penta-local-source-20261029:
+  6887e6eb26e88f8fc99eee7a00c267a14c12883f.
+- AcademyDesk/PentaMini, codex/mini-local-source-20261029:
+  c3c61b9ef3f239035c8b8f46649c66997e98f2b6.
+
+Each includes LOCAL_SOURCE_TRANSFER.md, portable hash manifest and honest
+validation/exclusion record. Prior laptop-only PENTA/Core/Manual/security source
+is now retrievable; it is still not integrated into the shared00d0d00application.
+Never merge these snapshots wholesale or restore their superseded finance rules.
+
+New bounded finance slice is in D:\AcademyDesk-finance-sync on
+codex/finance-cloud-reconcile-20261029 from00d0d00; owner approved this branch publication; verify the resulting remote SHA. Full API1,265/zero skips, four retained SQL modules plus28new cases,
+10observed reduction races, mandatory audit rollback and unchanged original
+collection-race5/5regular+5/5adjusted PASS. Current-source GitHub CI pending.
+Follow QA/REPORTS/CLOUD_FINANCE_RECONCILIATION_2026-10-29.md for exact proof.
+
+Next review this finance slice, then integrate the preserved PENTA/security/
+services, migrations, Manual visuals and tests coherently in bounded branches.
+Qualified Mini/remaining workflows/all-role/device/security/restore/staging and
+release gates remain OPEN. Source access does not authorize candidate loading,
+training/activation/paid compute, main merge, customer DB or Azure deployment.
+
 Updated: 29 October 2026. Read this file before selecting or editing a task.
 
 ## Owner-authorized feature-branch publication — 29 October 2026
