@@ -37,3 +37,9 @@ for that source only. See [current scoped evidence](REPORTS/CLOUD_WORK_ITEM_VALI
 The five P0 records still block release; production Azure PITR/retention/media
 recovery/rollback, full browser/device and critical acceptance remain mandatory.
 New work-item validation source requires its own successful candidate CI.
+
+Exact97f301e continuation run40920810451 is SUCCESS, actual job/logs read:
+work-item SQL module exit0 with audit rollback/owned cleanup, API1,217 and web1,152
+PASS; role/session/concurrent refresh and full owned Recovery repeated PASS.
+Application source is unchanged in the follow-up export-verification-only batch.
+All5P0, broad critical/browser/device/staging and production recovery gates remain.

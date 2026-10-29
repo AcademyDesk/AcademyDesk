@@ -113,3 +113,93 @@ devices, broader authenticated browser journeys, full critical regression,
 production Azure backup/PITR/retention, private-media restore and application/
 schema rollback remain required. This synthetic owned SQL recovery drill cannot
 accept those production controls. No merge into main or deployment occurred.
+
+## Supplemental consumer and access checks
+
+- Both repositories' clean status and remote refs were checked. PentaMini remains
+  at2bf76b54054ba610071e3435c94cf36bedff3a99; its existing virtual environment
+  reran49 tests PASS, one inherited Starlette deprecation warning. The initial
+  restricted-socket invocation stalled in TestClient; it was interrupted and the
+  normal network-permitted run completed in0.38s. No inference readiness claim.
+- Actionlint1.7.7 passes all repository workflows after the work-item wiring.
+- Actual LibreOfficeDev26.8.0.0.alpha0 build2c87e51eeaa2b413ff4ae097b2705eea1995d8e5
+  imported a synthetic corpus produced by the unchanged frontend csv.ts encoder.
+  Its raw calibration imported =1+1 as a formula with numeric result2. All18
+  non-NUL protected rows imported with zero formula cells, including15-style
+  marker/control cases, quoted comma/newline, Unicode and ordinary/blank controls.
+  Import settings explicitly enabled formula evaluation and disabled forced text:
+  `44,34,76,1,,1033,false,true,true,false,false,0,true`.
+- The initial multi-file invocation (including NUL) timed out after45s and
+  produced no protected document. The18-row non-NUL retry converted. A fresh
+  per-document/profile probe then passed both18 non-NUL and19 NUL-containing
+  corpora, with zero formula cells; raw calibration remained numeric2. The
+  original timeout is retained; it was not established as a NUL product defect.
+  Apostrophes remained visible and control whitespace was normalized by Calc;
+  no exact spreadsheet roundtrip/content-preservation guarantee is claimed.
+- Consumer checks use simple arithmetic only, no macros, external functions or links,
+  fresh workspace-owned LibreOffice profiles and scratch files under
+  /workspace/work/csv-spreadsheet. They do not exercise HTTP/SQL/browser downloads.
+  The repeatable probe is QA/tools/check-csv-spreadsheet.py (requires Node24,
+  Python3 and soffice); it preserves exact encoder bytes, records source/encoder/
+  probe hashes and import/version details, owns fresh profiles, and fails on
+  timeout/missing documents/failed calibration/formula cells. Its first draft
+  normalized line endings during subprocess capture; corrected byte-preserving
+  final source was rerun successfully. Exact-byte evidence is under
+  /workspace/work/csv-consumer-exact/c513bcbfcc0a49758a9b2da47e492a21.
+  The available alpha build is not acceptance of supported stable Excel/Calc.
+  BUG-SEC-0002 remains OPEN. Import token meanings were checked against the
+  [official filter documentation](https://help.libreoffice.org/latest/en-US/text/shared/guide/csv_params.html).
+
+## Critical acceptance mapping
+
+These are scoped evidence boundaries, not a replacement test program or issue
+closure. All five existing critical records remain mandatory under09_RELEASE_GATES.
+
+| Issue / gate | Observed bounded evidence atc7fca5f | Remaining acceptance |
+| --- | --- | --- |
+| BUG-DATA-0001 reconciled balances | Real reconciliation/consumer reads, exact settlement/excess denial, deterministic collection races and audit rollback | Real Admin/family browser workflow through refreshed SQL-backed UI; complete critical/role/device matrix |
+| BUG-DATA-0002 adjustment limits | Three original variants, approved/pending/rejected consumer distinctions, final-cent/overbalance checks, duplicate/concurrent approvals and audit rollback | Broader real browser approval/payment workflow and complete critical matrix |
+| BUG-DATA-0003 payroll | Monthly/SessionBlock default/override positive/zero-net boundaries and fresh no-write snapshots; stored-history migration; synthetic browser PDFs | Real authenticated payout/teacher workflow; duplicate/concurrent payout behavior and full critical/device acceptance |
+| BUG-DATA-0010 payment transitions | Actual full/partial/adjusted void/evidence paths, approved restoration matrix and deterministic restore/collect/void/reconcile races | Complete browser/permission/lifecycle regression and refreshed UI agreement on final candidate |
+| BUG-SEC-0001 private files | Original legacy/direct/range denial and revocation checks;75 private Blob assertions including native tickets, durable resume and completion rollback/recovery | Wider real portal/device/recording/large-transfer acceptance and critical regression; production storage configuration |
+| Security/recovery | Strict role/session/native refresh modules and six-stage real owned SQL restore | Cross-tab/browser/device/lifetime/security configuration cases; Azure PITR/retention, private-media restoration and application/schema rollback |
+
+## Export security SQL/HTTP acceptance expansion
+
+The next QA-only increment adds mandatory `ExportSecurity` to the existing owned
+runner/CI. It seeds15 synthetic dangerous-text variants in each actual export
+path (students, guardians, enrollments, invoices, payments and filtered audit).
+Invoice suffixes avoid collation/uniqueness collisions without changing dangerous
+leading characters. Actual response bytes are decoded as strict UTF-8 and parsed
+by the framework TextFieldParser with quoting enabled and whitespace retained.
+The oracle requires exact apostrophe-prefixed field content, expected column
+shape, ordinary typed amount values, attachment/content-type headers, no foreign/
+filtered sentinel and unchanged full fresh SQL domain/audit snapshots.
+
+The31 grouped HTTP cases include Admin success, anonymous401, foreign403,
+Teacher403, existing FinanceUser export permission200 versus audit403 and unknown
+resource404. No role grants, production export changes or altered business rules.
+SQL harness compilation0warnings/errors and workflow actionlint PASS. Actual
+candidate execution remains pending until its source-bound run is observed.
+
+Independent local parser calibration also passed all15 dangerous values through
+actual API SpreadsheetCsv output and the framework TextFieldParser, with exact
+cell boundaries/content and typed42 amount; no configured database was used.
+
+## Verified work-item candidate CI
+
+Run [40920810451](https://github.com/AcademyDesk/AcademyDesk/actions/runs/40920810451)
+completed SUCCESS for exact97f301ebb62aed223f4cf90c4d3b297151a396b6; actual
+job123613198709 steps/logs read. WorkItemIntegrity ran its fresh owned fixture,
+audit fault enabled/removed, exit0, migrations83+7 and guarded cleanup PASS. The
+runner's older log allowlist suppressed WORKITEM case/summary lines; it did not
+skip the module or relax failure propagation. The next QA increment explicitly
+allows the known WORKITEM/EXPORTSECURITY prefixes and checks57/31 inventories.
+
+API1,217/1,217 and frontend1,152/1,152 passed. Strict role/session/native refresh
+modules passed; six-stage Recovery again restored exact70-table/schema hashes,
+ownership/migrations/privileges and Identity/HTTP. FinanceIntegrity12, Blob75,
+dependency audits, types/lint, build, payroll PDFs/assessment DOM, API image/smoke
+and tracked-source cleanliness all passed. These validate the work-item product
+source. The subsequent export verification batch has no application changes and
+still requires its own actual SQL execution.

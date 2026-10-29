@@ -736,3 +736,28 @@ New candidate still requires real CI; earlier eaa95e5 is FAILED, not accepted.
   stay OPEN; browser/device/full critical and production recovery gates remain.
   No main merge, deployment, environment publication or PentaMini source change.
 - Next route:Codex for exact candidate CI triage and remaining critical acceptance.
+
+## 2026-10-29 IST — Export consumer/SQL verification increment
+
+- Work-item implementation97f301ebb62aed223f4cf90c4d3b297151a396b6 pushed and
+  remote verified; CI40920810451 is being checked. Local finalAPI1,217PASS.
+- Unchanged frontend encoder checked in actual LibreOfficeDev26.8alpha. Final
+  byte-preserving per-profile probe:raw =1+1 evaluates2;18 non-NUL and19 NUL-
+  containing protected rows have0formula cells. Initial combined timeout retained;
+  not established as NUL product failure. Added repeatable check-csv-spreadsheet.py
+  with private profiles, bounded process groups, hashes, fail-closed calibration.
+  Stable supported Excel/Calc and browser download acceptance still required.
+- Added owned ExportSecurity SQL module for6 paths x15 dangerous text variants,
+  strict UTF8/framework CSV parsing, exact fields/typed amounts/headers, tenant/
+  role/filter and unchanged full fresh SQL rows.31 grouped HTTP cases scheduled;
+  compilation0warnings/errors and all-workflow actionlint PASS; actual CI pending.
+- PentaMini49tests PASS using its existing virtual environment; unchanged source.
+  No inference/integration claim. Current security matrix/critical acceptance
+  mapping updated; all5P0 and CSV issue remain OPEN. No deployment/publication.
+
+Work-item candidate verification completed:97f301e CI40920810451 SUCCESS, actual
+job123613198709 logs read. API1,217/frontend1,152 PASS; WorkItemIntegrity fresh
+owned SQL/audit fault/exit0/cleanup PASS. Older runner whitelist hid its per-case
+lines (execution/failure propagation intact); next QA batch exposes safe prefixes
+and57/31 case inventories. Strict security and all6 Recovery stages repeated PASS,
+as did finance races/private Blob/build/browser/image checks. No P0 closure.

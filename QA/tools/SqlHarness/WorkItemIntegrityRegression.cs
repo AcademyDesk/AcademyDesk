@@ -144,6 +144,7 @@ internal static partial class SqlHarnessEntryPoint
             await NoWrite("followup-audit-fault-rollback", "POST", followPath, new { assignedUserId = staff }, HttpStatusCode.InternalServerError, financeToken);
         }
         finally { await SetAuditInsertDeniedAsync(manifest, false); }
+        if (count != 57) throw new InvalidOperationException("Work item case inventory changed: " + count);
         Console.WriteLine($"WORKITEM REGRESSION PASS:{count} real Identity/HTTP/fresh SQL cases; scoped assignees/entity pairs, accepted controls, existing roles, status/list and audit rollback. Browser, concurrent eligibility changes and full release acceptance remain separate.");
     }
 }

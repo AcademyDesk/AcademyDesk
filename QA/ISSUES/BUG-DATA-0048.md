@@ -30,9 +30,9 @@
 | API response | Not captured for this issue; use synthetic request/response in isolated reproduction |
 | Database before/after | Not executed; fixture and fresh-context assertions defined below |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | Not implemented (Phase 1) |
-| Retest result | NOT RUN |
-| Regression result | NOT RUN |
+| Fix commit | 97f301ebb62aed223f4cf90c4d3b297151a396b6; feature branch only |
+| Retest result | Controlled validation matrix and97f301e owned SQL module exit0 PASS |
+| Regression result | Full API1,217 and owned SQL module PASS; browser/concurrency/critical acceptance pending |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
 ## Exact reproduction
@@ -81,3 +81,9 @@ Mandatory owned `WorkItemIntegrity` CI module checks actual Identity/HTTP/fresh
 SQL and audit rollback. See [continuation report](../REPORTS/CLOUD_WORK_ITEM_VALIDATION_2026-10-29.md).
 Issue remains OPEN for exact candidate SQL/HTTP, browser, concurrent eligibility
 changes and broader critical acceptance; no closure or new assignment permission.
+
+Exact97f301e CI40920810451 completed SUCCESS; owned WorkItemIntegrity reached
+audit-fault rollback, exit0 and guarded cleanup. The old output whitelist hid
+individual WORKITEM lines; the next QA increment exposes that safe prefix and
+asserts its57-case inventory. Browser/concurrent eligibility/full critical gates
+remain; this is bounded verification, not closure.

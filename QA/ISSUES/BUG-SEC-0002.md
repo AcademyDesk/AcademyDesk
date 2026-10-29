@@ -88,3 +88,18 @@ This is exported-byte/encoder evidence, not actual spreadsheet execution proof.
 Issue stays OPEN for real HTTP/SQL export checks, supported Excel/LibreOffice
 behavior, browser download behavior, and critical release regression. CSV safety
 must be reassessed if a consumer strips the prefix or re-exports the data.
+
+## 29 October 2026 IST — Bounded spreadsheet consumer probe
+
+Unchanged frontend encoder output was opened by real LibreOfficeDev26.8 alpha,
+with formula evaluation enabled and forced-text import disabled. Raw =1+1
+calibration evaluated to2;18 protected non-NUL rows contained zero formula cells.
+An initial multi-file NUL-containing batch timed out. The final exact-byte
+probe, using a fresh profile per document, passes both18 non-NUL and19 NUL-
+containing rows with zero formulas; raw calibration still evaluates to2. The
+timeout remains historical and was not established as a product defect. The
+repeatable QA/tools/check-csv-spreadsheet.py records version/options/hashes and
+fails on missing/timeout/formula output. This alpha-build check does not establish
+supported stable Excel/Calc, backend HTTP/SQL or browser download acceptance. Issue remains OPEN. Full version, import options,
+limitations and scratch evidence location are recorded in the
+[continuation report](../REPORTS/CLOUD_WORK_ITEM_VALIDATION_2026-10-29.md).
