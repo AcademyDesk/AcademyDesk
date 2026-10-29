@@ -1,0 +1,20 @@
+{
+  "operation_ref": "fixture-operation",
+  "scope": {
+    "tenant_id": "synthetic-academy",
+    "actor_id": "synthetic-admin",
+    "connection_id": "fixture",
+    "conversation_id": "fixture-conversation",
+    "authority_version": 1,
+    "context_version": 1
+  },
+  "payload_hash": "cd0392819903dc700bb9ba45b2bc035e7cc9f2d048370447dd5969d6cbb4cf01",
+  "draft_revision": 3,
+  "status": "succeeded",
+  "receipt_ref": "fixture-receipt",
+  "audit_ref": "fixture-audit",
+  "source_refs": [
+    "fixture-student"
+  ],
+  "error_code": "none"
+}

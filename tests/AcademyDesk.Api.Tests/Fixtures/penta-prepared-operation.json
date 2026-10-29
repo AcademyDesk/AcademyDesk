@@ -1,0 +1,47 @@
+{
+  "ref": "fixture-operation",
+  "request_ref": "fixture-prepare",
+  "scope": {
+    "tenant_id": "synthetic-academy",
+    "actor_id": "synthetic-admin",
+    "connection_id": "fixture",
+    "conversation_id": "fixture-conversation",
+    "authority_version": 1,
+    "context_version": 1
+  },
+  "tool_key": "PrepareStudentOnboarding",
+  "tool_revision": 1,
+  "draft_ref": "fixture-draft",
+  "draft_revision": 3,
+  "payload_hash": "cd0392819903dc700bb9ba45b2bc035e7cc9f2d048370447dd5969d6cbb4cf01",
+  "canonical_fields": {
+    "firstName": {
+      "kind": "text",
+      "value": "Mira"
+    },
+    "lastName": {
+      "kind": "text",
+      "value": "Rao"
+    },
+    "dateOfBirth": {
+      "kind": "date",
+      "value": "2010-05-12"
+    },
+    "parentFirstName": {
+      "kind": "text",
+      "value": "Anika"
+    },
+    "parentLastName": {
+      "kind": "text",
+      "value": "Rao"
+    },
+    "parentEmail": {
+      "kind": "text",
+      "value": "anika@example.invalid"
+    }
+  },
+  "preview": "SYNTHETIC PREVIEW · Create student Mira Rao, DOB 2010-05-12. Parent Anika Rao, anika@example.invalid. No accounts or credentials will be created by this fixture.",
+  "approval_ref": "fixture-host-challenge",
+  "approval_expires_at": "2026-10-16T10:00:00+00:00",
+  "status": "awaiting_approval"
+}

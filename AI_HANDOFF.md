@@ -1,5 +1,28 @@
 # Academy Desk handoff
 
+## PENTA contract foundation integrated — 29 October 2026
+
+- [x] Finance published/verified a74a9e4 on
+  codex/finance-cloud-reconcile-20261029; source preservation Academy6887e6e and
+  Mini c3c61b9 remain accessible. Main and original dirty folders untouched.
+- [x] Inactive PENTA payload/binding/protocol/runtime/provider/learning source
+  imported byte-for-byte onto finance base, with retained tests/fixtures/security
+  policy. No DI/route/tool activation, schema/domain/finance change or model call.
+- [x] Full integrated API1,372/zero skips;107retained PENTA cases overfinance1,265.
+  Ten actual Core/Python compatibility checks pass against Mini c3c61b9. Guarded
+  window48a74c3a581c4c08b985a7af7d751150 restores exact original services/images/
+  health/API200/inventory. No new SQL/online-audit/CI/model acceptance claim.
+- [ ] This new slice on codex/penta-contract-integration-20261029 has owner approval for
+  publication; verify the resulting remote SHA and exact-source CI. Next protected domain/service/authority/persistence/
+  approval/receipt/recovery and migration integration, then UI and real qualified
+  interpretation. Preserve existing tests and cloud owner rules; no broad merge.
+- [ ] Mini NOT ACCEPTED, owner stop before candidate loading remains active.
+  Full conversational coverage/all-role/device/P0/security/restore/staging/release
+  gates remain OPEN. No main merge/customer DB/Azure/model experiment.
+
+Report: QA/REPORTS/PENTA_SHARED_CONTRACT_INTEGRATION_2026-10-29.md.
+Next Sol High for consequential host integration; Sol Medium for settled UI/docs.
+
 ## Finance qualified and PENTA source portable — 29 October 2026
 
 - [x] Two owner-approved source checkpoints published/verified: Academy6887e6e

@@ -1,0 +1,121 @@
+[
+  {
+    "id": "all-scalars",
+    "payload": {
+      "tool_key": "PrepareProfile",
+      "tool_revision": 1,
+      "fields": {
+        "z": {
+          "kind": "boolean",
+          "value": false
+        },
+        "name": {
+          "kind": "text",
+          "value": "Mira \"Rao\"\\\n"
+        },
+        "date": {
+          "kind": "date",
+          "value": "2024-02-29"
+        },
+        "amount": {
+          "kind": "decimal",
+          "value": "-0.010000"
+        },
+        "count": {
+          "kind": "integer",
+          "value": 9007199254740991
+        },
+        "ref": {
+          "kind": "reference",
+          "value": "student:001"
+        }
+      }
+    },
+    "canonical": "{\"fields\":{\"amount\":{\"kind\":\"decimal\",\"value\":\"-0.010000\"},\"count\":{\"kind\":\"integer\",\"value\":9007199254740991},\"date\":{\"kind\":\"date\",\"value\":\"2024-02-29\"},\"name\":{\"kind\":\"text\",\"value\":\"Mira \\\"Rao\\\"\\\\\\n\"},\"ref\":{\"kind\":\"reference\",\"value\":\"student:001\"},\"z\":{\"kind\":\"boolean\",\"value\":false}},\"tool_key\":\"PrepareProfile\",\"tool_revision\":1}",
+    "sha256": "15233e9a9dcbd1bfaf18c05039346a29f2ccf26cade7c4258748e7e153132325"
+  },
+  {
+    "id": "unicode",
+    "payload": {
+      "tool_key": "PrepareProfile",
+      "tool_revision": 2,
+      "fields": {
+        "name": {
+          "kind": "text",
+          "value": "ಕಾವ್ಯ हिन्दी தமிழ் é é 😀 / <>&  "
+        },
+        "control": {
+          "kind": "text",
+          "value": "\b\f\n\r\t\u0000\u0001"
+        }
+      }
+    },
+    "canonical": "{\"fields\":{\"control\":{\"kind\":\"text\",\"value\":\"\\b\\f\\n\\r\\t\\u0000\\u0001\"},\"name\":{\"kind\":\"text\",\"value\":\"\\u0c95\\u0cbe\\u0cb5\\u0ccd\\u0caf \\u0939\\u093f\\u0928\\u094d\\u0926\\u0940 \\u0ba4\\u0bae\\u0bbf\\u0bb4\\u0bcd \\u00e9 e\\u0301 \\ud83d\\ude00 / <>& \\u007f\\u0085\\u2028\"}},\"tool_key\":\"PrepareProfile\",\"tool_revision\":2}",
+    "sha256": "0f87ac1daafb0b84287e7adaa8ab262922dd4bd9bf415ce2533ef49e8b375b8a"
+  },
+  {
+    "id": "rows",
+    "payload": {
+      "tool_key": "PrepareAttendance",
+      "tool_revision": 1,
+      "fields": {
+        "rows": {
+          "kind": "rows",
+          "value": [
+            {
+              "student": {
+                "kind": "reference",
+                "value": "student-1"
+              },
+              "present": {
+                "kind": "boolean",
+                "value": true
+              }
+            },
+            {
+              "student": {
+                "kind": "reference",
+                "value": "student-2"
+              },
+              "present": {
+                "kind": "boolean",
+                "value": false
+              }
+            }
+          ]
+        }
+      }
+    },
+    "canonical": "{\"fields\":{\"rows\":{\"kind\":\"rows\",\"value\":[{\"present\":{\"kind\":\"boolean\",\"value\":true},\"student\":{\"kind\":\"reference\",\"value\":\"student-1\"}},{\"present\":{\"kind\":\"boolean\",\"value\":false},\"student\":{\"kind\":\"reference\",\"value\":\"student-2\"}}]}},\"tool_key\":\"PrepareAttendance\",\"tool_revision\":1}",
+    "sha256": "4e00190c1626cbbef31656ba0b8f57bc16c7776fcd56b0c9e04168936eff9d4d"
+  },
+  {
+    "id": "empty-text-and-rows",
+    "payload": {
+      "tool_key": "PrepareProfile",
+      "tool_revision": 1,
+      "fields": {
+        "note": {
+          "kind": "text",
+          "value": ""
+        },
+        "rows": {
+          "kind": "rows",
+          "value": []
+        }
+      }
+    },
+    "canonical": "{\"fields\":{\"note\":{\"kind\":\"text\",\"value\":\"\"},\"rows\":{\"kind\":\"rows\",\"value\":[]}},\"tool_key\":\"PrepareProfile\",\"tool_revision\":1}",
+    "sha256": "01260a9907c9139cda78293826fa8ab69e6778cb7d9c41129c9fbc41149a572b"
+  },
+  {
+    "id": "empty-fields",
+    "payload": {
+      "tool_key": "ReadStatus",
+      "tool_revision": 3,
+      "fields": {}
+    },
+    "canonical": "{\"fields\":{},\"tool_key\":\"ReadStatus\",\"tool_revision\":3}",
+    "sha256": "16609ac53680b6331cd11645001f58792dadbac99bfe8bf1bd9d1f9cf45d06f9"
+  }
+]
