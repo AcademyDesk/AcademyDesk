@@ -659,3 +659,50 @@ regressions or existing security gates, with focused tests and handoff updates.
 - No main merge, deployment, configured DB access, environment publication or
   Penta changes. Next route:Codex/Sol High actual candidate CI and remaining
   attendance/form integrity/production acceptance.
+
+## 2026-10-29 IST — Attendance fresh-load guards and real assessment DOM
+
+- BUG-DATA-0018 attendance:10 new failures reproduced; final34checks PASS
+  (10new +24retained notes). Cached/revisited sessions require fresh matching
+  reads; failure/malformed records lock with retry. Save/readback/callbacks are
+  academy/session generation-scoped. A-B-A, unmount and duplicate guards retain
+  newer drafts; previous notes/payload/clear/null/Unicode/length behavior kept.
+- Full frontend51files/1,148tests:1,145PASS/3same historical missing SQL-evidence
+  failures/0skip-cancel. TypeScript/webpack PASS; targeted lint0errors/1inherited
+  workspace-load warning. Earlier API1,179 PASS retained, not rerun.
+- Assessment actual Chrome at1280x900/390x844:8grouped DOM/transport checks PASS
+  for pending/failure/retry/reversed reads/draft rejection/readback uncertainty,
+  exact selected write payload and unchanged other assessment;0page errors.
+  Synthetic intercepted transport only, not Identity/SQL. Added to CI browser step.
+- Report:QA/REPORTS/CLOUD_ATTENDANCE_ISOLATION_2026-10-29.md. Broader issue,
+  actual authenticated SQL/concurrent server/device and release remain OPEN.
+- Remoteeaa95e5fa1e76bca53e8e00ebdb54b76b863c8b6 was verified pushed; expanded
+  role/session/Recovery run40838396103 is being checked. Source128604b prior run
+  40836452644 SUCCESS is observed. New attendance/browser-QA source needs CI.
+- No main merge, configured DB access, deployment, publication or Penta change.
+  Next route:Codex/Sol High real candidate CI failures and remaining critical gates.
+
+## 2026-10-29 IST — Actual native-session CI adapter failure repaired
+
+- eaa95e5 run40838396103 FAILURE in10m16s at native SessionRefresh client exit.
+  RoleReplacement/SessionRevocationRepair completed earlier; RoleRevocation was
+  diagnostic-only, not strict acceptance. Later refresh-concurrency/Recovery
+  stages did not execute. Older128604b green remains historical.
+- Actual native VM lacked AbortController required by current api.ts. Controlled
+  probe reproduces ReferenceError with old globals and401/refresh/replay200 with
+  supplied global. QA-only fix; production helper unchanged.
+- Added token-safe client diagnostics:known exception/global, bounded numeric
+  mismatch and known .cjs source line only. Four leakage/bounds tests PASS;
+  combined existing refresh/concurrency/diagnostic61tests PASS.
+- CI RoleRevocation now uses explicit fixed mode, preserving old diagnostic mode
+  but requiring zero policy gaps for CI. No expected denials relaxed.
+- Harness compile0warnings/errors, PowerShell/actionlint/diff PASS. Report
+  QA/REPORTS/CLOUD_NATIVE_SESSION_QA_2026-10-29.md. Next real SQL result pending;
+  do not claim restore/concurrency acceptance until actual success.
+
+Final combined checkpoint:52frontend files/1,152tests;1,149PASS/3same local
+missing historical SQL-evidence failures/0skip-cancel. Attendance34 and assessment
+44controlled checks retained; real assessment browser8groups PASS. Native client
+61checks/safe diagnostics PASS. Strict RoleRevocation/SessionRefresh/Recovery
+PowerShell routing probe PASS without provisioning; SQLharness0warnings/errors.
+New candidate still requires real CI; earlier eaa95e5 is FAILED, not accepted.

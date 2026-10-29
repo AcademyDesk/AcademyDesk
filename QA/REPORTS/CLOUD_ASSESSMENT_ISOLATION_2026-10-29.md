@@ -13,3 +13,5 @@ Assessment results now belong to one academy/assessment load generation. Changin
 - TypeScript and production webpack build PASS. Changed-page lint0 errors/1 inherited workspace-load effect warning. Diff check PASS. Prior API1,179 PASS retained, not rerun for this UI-only change.
 
 This is controlled TSX/transport proof, not real browser/HTTP/SQL acceptance. Server-side concurrent edits, authenticated browser/device acceptance, attendance/remaining broad BUG-DATA-0018 slices and critical/release gates remain OPEN. No API/schema/policy/customer-data change, main merge, deployment, environment publication or PentaMini change. Next route:Codex/Sol High inspect expanded security/recovery candidate CI, then continue remaining critical form and workflow acceptance.
+
+Real DOM follow-up:Chrome at1280x900 and390x844 passed8 grouped pending/failure/retry/reversed-read and retained-draft/readback checks, with exact selected synthetic write targets and no page errors. See the attendance report for current full-suite counts and CI wiring. This adds actual browser evidence with intercepted transport; authenticated SQL acceptance remains pending.
