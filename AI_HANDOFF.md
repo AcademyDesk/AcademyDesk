@@ -580,3 +580,40 @@ regressions or existing security gates, with focused tests and handoff updates.
   compilation PASS. Push this plus fixture repair for source-bound CI.
 - No issue closure/deployment. Next route:Codex/Sol High inspect latest run and
   repair actual failures before production gates can pass.
+
+## 2026-10-28 — Saved payroll print/PDF repair
+
+- BUG-FUNC-0033:10 controlled failures reproduced; final11 print and23 existing
+  form cases PASS. Fresh selected-ID read, shape checks, same-tick guard, explicit
+  retry, retired-page protection and committed document before print. Stored
+  name/type/amounts/status/currency/reference included; cents preserved.
+- Real Chrome156/Playwright Core1.64.1 at1280x900 and390x844 produced4 complete
+  one-page PDFs PASS. Initial actual PDF clipping was reproduced, retained and
+  fixed with payroll-only print shell resets. No other records/app UI in PDFs.
+- Browser uses only intercepted synthetic API responses;0API writes/page errors.
+  Auth/SQL/settlement, other engines/long content and full release remain OPEN.
+- Full frontend49files:1,123tests/1,120PASS/3same missing historical SQL fixture
+  failures/0skip-cancel. No fake SQL log. TypeScript/webpack PASS; targeted lint
+  0errors/1inherited warning. API1,179 prior PASS retained, not rerun.
+- CI now requires this browser/PDF check and saves synthetic artifacts. Its
+  loopback export is separate from the deployment's production-configured build.
+  Actionlint/diff checks PASS. Report:QA/REPORTS/CLOUD_PAYROLL_PRINT_2026-10-28.md.
+- Runtime tools live under /workspace/.tools/browser and /workspace/.tools/chrome;
+  no production dependencies added. Source/fixture evidence is being checkpointed; PDFs
+  stay ignored. Issue remains OPEN; no deployment/main merge/publication.
+- Next route:Codex/Sol High inspect actual candidate CI, fix failures and continue
+  critical payroll/finance/tenant acceptance.
+
+## 2026-10-29 IST — Verified remote checkpoint before print publication
+
+- GitHub run40738226886 for10a60eebc2e193b06de31622e897e755062dd72c is
+  observed COMPLETED/SUCCESS on the ordinary Actions overview. This includes
+  the corrected FinanceIntegrity fixture and mandatory real SQL modules, payroll
+  upgrade/history, operational record/audit cases, private Blob, full frontend
+  with fresh communication SQL evidence, builds and API container smoke.
+- Detailed remote logs/artifact contents were not imported. Local3 historical
+  SQL-evidence failures remain local; remote run generated its own actual data.
+- Payroll-print final source has local browser/PDF/unit/build evidence and is now
+  being checkpointed for its own CI. Older run success does not cover that source.
+- PentaMini research tests rerun49 PASS; no actual AcademyDesk gateway/connector
+  or broad90%AI completion claim. Production release gates still OPEN.

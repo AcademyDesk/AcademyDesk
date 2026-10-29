@@ -7,7 +7,7 @@ Bounded runtime follow-up [DRAFT-ISOLATION-UX-001](../REPORTS/PHASE_2B_TEACHER_S
 | Issue ID | Title | Priority | Severity | Evidence type | Regression test |
 | --- | --- | --- | --- | --- | --- |
 | [BUG-DATA-0056](BUG-DATA-0056.md) | Editing a payroll profile rewrites the worker name shown on historical payouts | P1 | Major payroll history attribution integrity | PARTIAL controlled repair / SQL-browser pending | PAYROLL-HISTORY-IDENTITY-001 |
-| [BUG-FUNC-0033](BUG-FUNC-0033.md) | Payroll Print / Save PDF has no visible selected payslip in print output | P1 | Major payroll document workflow failure | STATIC FINDING / reproduction pending | PAYROLL-PRINT-001 |
+| [BUG-FUNC-0033](BUG-FUNC-0033.md) | Payroll Print / Save PDF has no visible selected payslip in print output | P1 | Major payroll document workflow failure | PARTIAL11 TSX/4 real Chrome PDFs PASS; authenticated SQL/other engines OPEN | PAYROLL-PRINT-001 |
 | [BUG-DATA-0055](BUG-DATA-0055.md) | Direct invoice status edit can mark an unpaid invoice Paid | P1 | Major invoice-ledger status integrity | Controlled repair33 cases/full API1,141 PASS; new SQL races/HTTP/browser OPEN | FINANCE-INVOICE-STATUS-001 |
 | [BUG-FUNC-0032](BUG-FUNC-0032.md) | Certificate preview can be printed before issuance and diverge from the register | P1 | Major credential issuance integrity | OPEN / synthetic real-DOM browser checks added; 143 regressions PASS; PDF/device/full-portal pending | CERTIFICATE-PRINT-ISSUANCE-001 |
 | [BUG-DATA-0054](BUG-DATA-0054.md) | Changing music progress status erases a stored zero score | P1 | Major learner-progress data integrity | Controlled TSX repair/eight payload cases PASS; SQL/browser/critical OPEN | LEARNING-PROGRESS-ZERO-001 |
