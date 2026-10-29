@@ -1,5 +1,31 @@
 # Academy Desk — shared continuation across profiles
 
+## Enrollment integrated into shared backend — 29 October 2026
+
+- [x] Previous PENTA contract slice published/verified d44aea5; finance a74a9e4,
+  Academy source6887e6e and Mini source c3c61b9 are retrievable from GitHub.
+- [x] Shared Manual/service enrollment create/lifecycle/transfer, admission lock,
+  duplicate/prerequisite/capacity rules and inactive typed fields integrated from
+  preserved source. Current-authority SQL/Identity facade remains separate from
+  future model tool/conversation approval/receipt. Existing finance unchanged.
+- [x] Full API1,515/zero skips;28retained lifecycle+57shared actual SQL/HTTP/service
+  checks,15mixed Manual/service races and required-audit rollback controls PASS.
+  Window20426cd275d842a6904dd9db822451c9/SQL445147690a884b37bca71fa7751f4576;
+  exact original services/images/API200/full inventory/owned cleanup restored.
+- [ ] Owner approved this enrollment checkpoint commit/push; verify remote SHA/CI.
+  Protected conversational enrollment draft/approval/execution/receipt/recovery,
+  student/teacher host/UI/migrations, remaining cohorts and release gates remain.
+- [ ] Mini automatic preservation-branch CI40804103447 FAILED:26failed/1,651passed/
+  1skipped/60errors; actual logs include missing laptop-only historical evidence
+  prerequisites. Source availability is not full cloud-runtime/test acceptance.
+  Preserve failed results; no deleted assertions, invented receipts or hidden skips.
+- [ ] Qualified Mini/model gate remains NOT ACCEPTED, stop before candidate
+  loading remains active. No main merge/customer DB/Azure/model experiment.
+
+Reports: QA/REPORTS/PENTA_ENROLLMENT_INTEGRATION_2026-10-29.md and
+QA/REPORTS/MINI_CLOUD_PORTABILITY_FAILURE_2026-10-29.md. Sol High next for
+consequential protected host integration; Sol Medium for settled UI/docs.
+
 ## PENTA contract foundation integrated — 29 October 2026
 
 - [x] Finance published/verified a74a9e4 on

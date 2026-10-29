@@ -18,13 +18,15 @@ internal sealed class QaApiFactory : WebApplicationFactory<Program>
     private readonly IReadOnlyDictionary<string, string?> overrides;
     private readonly IMediaBlobStore? isolatedMediaStore;
     private readonly IInterceptor? isolatedIdentityInterceptor;
+    private readonly IInterceptor? isolatedDomainInterceptor;
 
-    public QaApiFactory(QaRunManifest manifest, IReadOnlyDictionary<string, string?>? overrides = null, IMediaBlobStore? isolatedMediaStore = null, IInterceptor? isolatedIdentityInterceptor = null)
+    public QaApiFactory(QaRunManifest manifest, IReadOnlyDictionary<string, string?>? overrides = null, IMediaBlobStore? isolatedMediaStore = null, IInterceptor? isolatedIdentityInterceptor = null, IInterceptor? isolatedDomainInterceptor = null)
     {
         this.manifest = manifest;
         this.overrides = overrides ?? new Dictionary<string, string?>();
         this.isolatedMediaStore = isolatedMediaStore;
         this.isolatedIdentityInterceptor = isolatedIdentityInterceptor;
+        this.isolatedDomainInterceptor = isolatedDomainInterceptor;
     }
 
     public bool PreflightPassed { get; private set; }
@@ -93,6 +95,8 @@ internal sealed class QaApiFactory : WebApplicationFactory<Program>
             // Trusted local QA injection only, after exact owned SQL preflight.
             if (isolatedIdentityInterceptor is not null)
                 services.ConfigureDbContext<IdentityDbContext>(options => options.AddInterceptors(isolatedIdentityInterceptor));
+            if (isolatedDomainInterceptor is not null)
+                services.ConfigureDbContext<AcademyDeskDbContext>(options => options.AddInterceptors(isolatedDomainInterceptor));
 
             // Trusted harness injection only, after its labelled loopback emulator
             // guard. Configuration still cannot enable any live Azure provider.

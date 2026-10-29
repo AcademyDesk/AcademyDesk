@@ -1,5 +1,6 @@
 using AcademyDesk.Api.Data;
 using AcademyDesk.Api.Domain.Entities;
+using AcademyDesk.Api.Infrastructure;
 using AcademyDesk.Api.Security;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -36,6 +37,8 @@ public sealed class BatchPromotionsController(AcademyDeskDbContext db) : Control
         // still needs an owned atomic decision boundary.
         await using var ownedTransaction = db.Database.IsSqlServer() && db.Database.CurrentTransaction is null
             ? await db.Database.BeginTransactionAsync(t) : null;
+        if (!await EnrollmentAdmissionBoundary.TryLockAsync(db, academyId, t))
+            return StatusCode(503, new { message = EnrollmentAdmissionBoundary.BusyMessage });
         if (db.Database.IsSqlServer() && !await LockDecisionAsync(academyId, id, t))
             return StatusCode(StatusCodes.Status503ServiceUnavailable, new { message = "This promotion is being decided. Please try again." });
 
@@ -46,14 +49,22 @@ public sealed class BatchPromotionsController(AcademyDeskDbContext db) : Control
 
         if (r.Status == "Approved")
         {
+            var target = await db.Batches.SingleOrDefaultAsync(x => x.Id == promotion.TargetBatchId && x.AcademyId == academyId, t);
+            if (target is null || !target.IsActive || !string.Equals(target.EnrollmentStatus, "Open", StringComparison.OrdinalIgnoreCase))
+                return Conflict(new { message = "The target batch is not open for enrolment." });
+            if (await db.Enrollments.CountAsync(x => x.AcademyId == academyId && x.BatchId == target.Id && x.Status == "Active", t) >= target.Capacity)
+                return Conflict(new { message = "Target batch is at capacity." });
             var source = await db.Enrollments.SingleOrDefaultAsync(e => e.AcademyId == academyId && e.StudentId == promotion.StudentId &&
                 e.BatchId == promotion.SourceBatchId && e.Status == "Active", t);
             if (source is null)
                 return Conflict(new { message = "The source enrollment is no longer active; this promotion cannot be approved." });
 
-            if (await db.Enrollments.AnyAsync(e => e.AcademyId == academyId && e.StudentId == promotion.StudentId &&
-                e.BatchId == promotion.TargetBatchId && e.Status == "Active", t))
-                return Conflict(new { message = "The student already has an active enrollment in the target batch." });
+            if (await EnrollmentAdmissionRules.HasOtherAdmissionAsync(db, academyId, promotion.StudentId, target.Id, null, t))
+                return Conflict(new { message = EnrollmentAdmissionRules.DuplicateMessage });
+            var sourceBatch = await db.Batches.AsNoTracking().SingleOrDefaultAsync(x => x.Id == source.BatchId && x.AcademyId == academyId, t);
+            if (sourceBatch is null) return Conflict(new { message = "The source batch does not belong to this academy." });
+            if (!await EnrollmentAdmissionRules.HasCompletedPrerequisitesAsync(db, academyId, promotion.StudentId, target.CourseId, t, sourceBatch.CourseId))
+                return Conflict(new { message = EnrollmentAdmissionRules.PrerequisiteMessage });
 
             source.Status = "Completed";
             source.EndDate = promotion.EffectiveDate;
