@@ -5,6 +5,7 @@ namespace AcademyDesk.Api.Security;
 
 internal static class WorkItemValidation
 {
+    private static readonly HashSet<string> PortalRoles = new(StringComparer.OrdinalIgnoreCase) { "Student", "Guardian", "Teacher" };
     internal static bool ValidPriority(string? priority) => priority is null or "Low" or "Normal" or "High" or "Critical";
 
     internal static async Task<bool> ValidAssignee(IdentityDbContext identity, Guid academyId, Guid? userId, CancellationToken token)
@@ -21,7 +22,7 @@ internal static class WorkItemValidation
                            where membership.UserId == userId
                            select new { role.Name, role.AcademyId }).ToListAsync(token);
         return roles.Count > 0 && roles.All(x => !string.IsNullOrWhiteSpace(x.Name) &&
-            (x.AcademyId is null || x.AcademyId == academyId) && x.Name is not ("Student" or "Guardian" or "Teacher"));
+            (x.AcademyId is null || x.AcademyId == academyId) && !PortalRoles.Contains(x.Name));
     }
 
     internal static async Task<bool> ValidEntity(AcademyDeskDbContext db, Guid academyId, string? type, Guid? id, CancellationToken token)

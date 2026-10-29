@@ -761,3 +761,21 @@ owned SQL/audit fault/exit0/cleanup PASS. Older runner whitelist hid its per-cas
 lines (execution/failure propagation intact); next QA batch exposes safe prefixes
 and57/31 case inventories. Strict security and all6 Recovery stages repeated PASS,
 as did finance races/private Blob/build/browser/image checks. No P0 closure.
+
+## 2026-10-29 IST — Final Identity role-case correction
+
+- Remaining active staff validation gap reproduced:12 assignee cases11PASS/1FAIL;
+  lowercase teacher role name was accepted, despite Identity's normalized Teacher
+  role semantics. Shared portal exclusion now uses OrdinalIgnoreCase. No grants,
+  schema or payroll/restoration policy changed.
+- WorkItemIntegrity now verifies actual TEACHER-normalized/teacher-display role
+  representation in both writer paths, retaining57 cases. ExportSecurity31 and
+  safe per-case logging remain scheduled. Final fullAPI1,218PASS/0fail/skip;
+  harness0warnings/errors, actionlint/diff PASS. Local SQL image still blocked.
+- Latest verified complete CI is97f301e/run40920810451 SUCCESS.256b160 QA-only
+  candidate is superseded by this corrected source; final candidate needs its own
+  observed actual SQL/HTTP/security/recovery result. Continue checking CI without
+  assuming historical green covers it. All5P0 and broader gates remain OPEN.
+- No main merge, configured DB access, deployment, publication or Penta changes.
+  Next route:Codex exact candidate CI/remaining acceptance; recurring pushes remain
+  authorized and no repeat continue confirmation is needed.

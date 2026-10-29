@@ -25,7 +25,7 @@ public sealed class WorkItemValidationTests
             Identity.Add(user);
             if (kind != "roleless")
             {
-                var role = new ApplicationRole { Id = Guid.NewGuid(), Name = kind is "Student" or "Guardian" or "Teacher" ? kind : "Operations", AcademyId = kind == "foreign-role" ? Guid.NewGuid() : null };
+                var role = new ApplicationRole { Id = Guid.NewGuid(), Name = kind == "teacher-lower" ? "teacher" : kind is "Student" or "Guardian" or "Teacher" ? kind : "Operations", AcademyId = kind == "foreign-role" ? Guid.NewGuid() : null };
                 Identity.Add(role); Identity.Add(new IdentityUserRole<Guid> { UserId = user.Id, RoleId = role.Id });
             }
             await Identity.SaveChangesAsync(); return user.Id;
@@ -39,7 +39,7 @@ public sealed class WorkItemValidationTests
     }
 
     [Theory]
-    [InlineData("missing")][InlineData("foreign")][InlineData("inactive")][InlineData("Student")][InlineData("Guardian")][InlineData("Teacher")][InlineData("roleless")][InlineData("foreign-role")][InlineData("platform")][InlineData("empty")][InlineData("locked")]
+    [InlineData("missing")][InlineData("foreign")][InlineData("inactive")][InlineData("Student")][InlineData("Guardian")][InlineData("Teacher")][InlineData("roleless")][InlineData("foreign-role")][InlineData("platform")][InlineData("empty")][InlineData("locked")][InlineData("teacher-lower")]
     public async Task Invalid_assignee_rejected_by_both_writers_without_rows(string kind)
     {
         using var f = new Fixture(); var invoice = await f.Invoice(); var user = kind == "empty" ? Guid.Empty : await f.User(kind);

@@ -46,6 +46,9 @@ internal static partial class SqlHarnessEntryPoint
         using (var scope = factory.Services.CreateScope())
         {
             var identity = scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
+            // Identity normalizes role lookup; a display-name case change must
+            // not make a Teacher eligible for staff work-item assignment.
+            (await identity.Roles.SingleAsync(x => x.NormalizedName == "TEACHER")).Name = "teacher";
             adminId = await identity.Users.Where(x => x.Email == "qa-admin-a@example.invalid").Select(x => x.Id).SingleAsync();
             foreignAdminId = await identity.Users.Where(x => x.Email == "qa-admin-b@example.invalid").Select(x => x.Id).SingleAsync();
             (await identity.Users.SingleAsync(x => x.Id == inactive)).IsActive = false;

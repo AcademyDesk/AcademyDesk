@@ -87,3 +87,9 @@ audit-fault rollback, exit0 and guarded cleanup. The old output whitelist hid
 individual WORKITEM lines; the next QA increment exposes that safe prefix and
 asserts its57-case inventory. Browser/concurrent eligibility/full critical gates
 remain; this is bounded verification, not closure.
+
+Final role-case follow-up: lowercase teacher display name with normalized
+TEACHER was accepted by the first case-sensitive exclusion. Reproduced one
+failure, fixed shared OrdinalIgnoreCase portal exclusion, full API1,218PASS.
+The57-case owned SQL fixture now includes that real Identity representation;
+corrected candidate SQL/HTTP is pending its own CI, so issue remains OPEN.

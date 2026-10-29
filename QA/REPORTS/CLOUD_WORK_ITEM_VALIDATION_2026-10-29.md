@@ -203,3 +203,21 @@ dependency audits, types/lint, build, payroll PDFs/assessment DOM, API image/smo
 and tracked-source cleanliness all passed. These validate the work-item product
 source. The subsequent export verification batch has no application changes and
 still requires its own actual SQL execution.
+
+## Final assignee role-name normalization correction
+
+Review found a remaining mismatch with Identity's case-insensitive normalized
+roles: an active same-academy user with role display name `teacher` passed the
+case-sensitive portal exclusion. Added a focused reproduction:12 assignee cases,
+11 passed/1 failed; the new lowercase Teacher case was accepted before repair.
+The shared exclusion now uses OrdinalIgnoreCase for Student/Guardian/Teacher.
+No permissions or valid staff/admin/custom-role eligibility were changed.
+
+The owned WorkItemIntegrity fixture now retains normalized role TEACHER while
+changing its display name to teacher, testing the real Identity representation
+in both writer paths. Its inventory remains57. Final full API **1,218/1,218 PASS**,
+zero failures/skips; SQL harness compilation0warnings/errors and actionlint/diff
+checks PASS. This supersedes1217 only for the corrected candidate. The earlier
+97f301e successful CI remains historical;256b160's QA-only run is superseded by
+this fix. The final candidate must execute its own WorkItemIntegrity, ExportSecurity
+and security/recovery modules before its SQL/CI result is accepted.
