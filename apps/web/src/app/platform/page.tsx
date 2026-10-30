@@ -19,9 +19,10 @@ type Academy = {
 type Notice = { text: string; tone: "success" | "error" | "neutral" };
 type PlatformOverview = {
   openSupportCases: number;
-  totalBilled: number;
-  collectedBilling: number;
-  outstandingBilling: number;
+  totalBilled: number | null;
+  collectedBilling: number | null;
+  outstandingBilling: number | null;
+  currencyTotals?: { currency: string; totalBilled: number; collectedBilling: number; outstandingBilling: number }[];
   overdueInvoices: number;
   recentAudit: {
     id: string;
@@ -30,7 +31,16 @@ type PlatformOverview = {
     occurredAtUtc: string;
   }[];
 };
-const money = (value: number) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(value);
+function billingTotal(overview: PlatformOverview | undefined, field: "totalBilled" | "collectedBilling" | "outstandingBilling") {
+  if (!Array.isArray(overview?.currencyTotals)) return "Currency totals unavailable";
+  if (!overview.currencyTotals.length) return "No billing activity";
+  return overview.currencyTotals.map(row => {
+    if (!Number.isFinite(row[field])) return "Amount unavailable";
+    const code = typeof row.currency === "string" ? row.currency.trim().toUpperCase() : "";
+    return /^[A-Z]{3}$/.test(code) ? `${code} ${new Intl.NumberFormat("en-IN", { style: "currency", currency: code, minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(row[field])}`
+      : `${new Intl.NumberFormat("en-IN", { minimumFractionDigits: 2 }).format(row[field])} (currency unavailable)`;
+  }).join(" · ");
+}
 type PlatformHealth = {
   api: string;
   database: string;
@@ -114,9 +124,9 @@ export default function PlatformPage() {
     { key: "activeAcademies" as const, label: "Active academies", value: activeAcademies.length, detail: "Academies currently able to operate" },
     { key: "learners" as const, label: "Active learners", value: totalStudents, detail: "Learners across all academies" },
     { key: "support" as const, label: "Open support", value: overview?.openSupportCases ?? 0, detail: "Support cases needing attention" },
-    { key: "billed" as const, label: "Platform billed", value: money(overview?.totalBilled ?? 0), detail: "Issued platform invoices", className: "platform-finance-kpi" },
-    { key: "collected" as const, label: "Collected", value: money(overview?.collectedBilling ?? 0), detail: "Paid platform invoices", className: "platform-finance-kpi collected" },
-    { key: "outstanding" as const, label: "Outstanding", value: money(overview?.outstandingBilling ?? 0), detail: `${overview?.overdueInvoices ?? 0} overdue invoice${overview?.overdueInvoices === 1 ? "" : "s"}`, className: "platform-finance-kpi outstanding" },
+    { key: "billed" as const, label: "Platform billed", value: billingTotal(overview, "totalBilled"), detail: "Issued platform invoices", className: "platform-finance-kpi" },
+    { key: "collected" as const, label: "Collected", value: billingTotal(overview, "collectedBilling"), detail: "Paid platform invoices", className: "platform-finance-kpi collected" },
+    { key: "outstanding" as const, label: "Outstanding", value: billingTotal(overview, "outstandingBilling"), detail: `${overview?.overdueInvoices ?? 0} overdue invoice${overview?.overdueInvoices === 1 ? "" : "s"}`, className: "platform-finance-kpi outstanding" },
   ];
   const selectedOverviewTile = overviewTiles.find((tile) => tile.key === overviewModal);
 
@@ -402,7 +412,7 @@ export default function PlatformPage() {
             </div>
             <div>
               <span>Billing exposure</span>
-              <strong>₹{overview?.outstandingBilling ?? 0}</strong>
+              <strong>{billingTotal(overview, "outstandingBilling")}</strong>
             </div>
           </section>
           {notice.text && (

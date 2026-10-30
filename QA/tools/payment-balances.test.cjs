@@ -81,3 +81,9 @@ test('empty ledger has no amounts or assumed currency and no collection options'
   assert.equal(kpi(tree, 'Outstanding'), 'No amounts');
   assert.equal(all(tree, n => n.type === 'option').filter(n => n.props.value).length, 0);
 });
+
+test('stored two-decimal payment balances are not rounded by a currency display default', () => {
+  const { tree } = render([{ ...invoice, currency: 'JPY', balance: 100.25 }]);
+  const directory = all(tree, n => n.props?.className?.includes('payments-directory'))[0];
+  assert.match(text(directory), /100\.25/);
+});

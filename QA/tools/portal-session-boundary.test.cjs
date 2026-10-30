@@ -36,3 +36,18 @@ test('A failing consumer cannot prevent sign-out or other consumer notifications
   f.api.subscribePortalSessionChanges('AcademyAdmin',()=>{throw Error('synthetic subscriber failure');});f.api.subscribePortalSessionChanges('AcademyAdmin',()=>notified=true);
   f.api.clearPortalTokens('AcademyAdmin');assert.equal(notified,true);assert.equal(f.data.has('academydesk.accessToken.AcademyAdmin'),false);
 });
+for (const replacementRefresh of [undefined, '']) test('New explicit session cannot inherit a previous refresh token when replacement refresh is ' + String(replacementRefresh), async () => {
+  const f=fixture(); f.api.savePortalTokens('AcademyAdmin','synthetic-old','synthetic-old-refresh');
+  f.api.savePortalTokens('AcademyAdmin','synthetic-new',replacementRefresh);
+  assert.equal(f.api.portalAccessToken('AcademyAdmin'),'synthetic-new');
+  assert.equal((await f.api.academyApi('/api/synthetic')).status,401);
+  assert.equal(f.calls.some(call=>call.url.endsWith('/refresh')),false);
+});
+test('Explicit admin login retires legacy credential fallback without touching Teacher tokens', () => {
+  const f=fixture(); f.data.set('academydesk.accessToken','synthetic-legacy'); f.data.set('academydesk.refreshToken','synthetic-legacy-refresh');
+  f.api.savePortalTokens('Teacher','synthetic-teacher','synthetic-teacher-refresh');
+  f.api.savePortalTokens('AcademyAdmin','synthetic-new');
+  assert.equal(f.data.has('academydesk.refreshToken.AcademyAdmin'),false);
+  assert.equal(f.data.has('academydesk.accessToken'),false); assert.equal(f.data.has('academydesk.refreshToken'),false);
+  assert.equal(f.data.get('academydesk.refreshToken.Teacher'),'synthetic-teacher-refresh');
+});

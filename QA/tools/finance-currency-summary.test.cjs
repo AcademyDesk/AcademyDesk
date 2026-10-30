@@ -41,10 +41,10 @@ async function page(kind, response, { failed = false } = {}) {
   return text(render()).replace(/\s+/g, ' ');
 }
 for (const kind of ['finance', 'finance-summary']) {
-  for (const currency of ['INR', 'USD']) test(`${kind}: single ${currency} identifies its real currency`, async () => {
-    const shown = await page(kind, summary([group(currency, 1000, 200, 600, 400)]));
+  for (const currency of ['INR', 'USD', 'JPY']) test(`${kind}: single ${currency} identifies its real currency`, async () => {
+    const shown = await page(kind, summary([group(currency, 1000.25, 200.10, 600.05, 400.01)]));
     assert.match(shown, new RegExp(currency));
-    assert.match(shown, /1,000/);
+    assert.match(shown, /1,000\.25/); assert.match(shown, /600\.05/);
     if (currency === 'USD') assert.doesNotMatch(shown, /₹[\s\d]/);
   });
   test(`${kind}: original INR/USD reproduction renders separate totals without a combined INR value`, async () => {

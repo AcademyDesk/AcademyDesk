@@ -1,5 +1,28 @@
 # Academy Desk handoff
 
+## Offline recovery continuation — 30 October 2026 IST
+
+Exact20a8b6c CI41096554763 PASSED both jobs:1,655API/1,226frontend,23core+13extended
+ownedSQL modules(850extra cases), Blob, actual70-table restore, builds/container.
+Actual real-finance browser desktopAdmin/phoneFinanceUser PASS: normal login,
+same-tick double submit gives onePOST201, visible/canonicalbalance100, independent
+SQL/audit. Broader finance/portal/device/release/model gates remainOPEN.
+
+Execution workspace disconnected. Local3e46c20 platform/currency completion and
+uncommitted session helper/tests must be preserved, not reset or overwritten.
+Recorded source patches are replayed onto20a8b6c on a separate feature branch
+codex/offline-readiness-recovery-20261030 via GitHub connector. New exact CI is
+required; do not inherit old pass counts or claim byte identity to inaccessible
+local files. Reconnect, inspect status/HEAD and compare both histories before
+integration. Report:QA/REPORTS/OFFLINE_READINESS_RECOVERY_2026-10-30.md.
+
+Local pre-outageAPI1,662PASS/frontend1,236PASS+3missing SQL receipt cases;115focused
+session/media PASS. Replay adds FinanceCurrency+PlatformBilling SQL gates and
+session replacement token isolation. Final post-session build completion unknown.
+No main merge, deployment, environment publication, configured DB access, model
+loading or90%AI claim. Laptop connection still absent. Codex/Sol High continues.
+
+
 ## 30 October 2026 IST — Finance/provider production follow-up
 
 Current branch `codex/penta-shared-readiness-20261030`, based on verified45b6bd3.

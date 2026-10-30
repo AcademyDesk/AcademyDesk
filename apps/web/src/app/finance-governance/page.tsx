@@ -12,7 +12,7 @@ type DocumentSettings = { taxRegistrationNumber: string; taxLabel: string; taxRa
 const money = (amount: number, currency?: string) => {
   const unit = currency?.trim().toUpperCase();
   if (!unit || !/^[A-Z]{3}$/.test(unit)) return `${amount.toLocaleString("en-IN", { minimumFractionDigits: 2 })} (currency unavailable)`;
-  return new Intl.NumberFormat("en-IN", { style: "currency", currency: unit }).format(amount);
+  return new Intl.NumberFormat("en-IN", { style: "currency", currency: unit, minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
 };
 
 export default function FinanceGovernancePage() {

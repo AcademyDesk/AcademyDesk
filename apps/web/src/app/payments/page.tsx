@@ -9,7 +9,7 @@ type Invoice = { id: string; invoiceNumber: string; studentId: string; totalAmou
 type Payment = { id: string; invoiceId: string; amount: number; currency: string; method: string; status: string; reference?: string | null; paidAtUtc: string };
 const money = (amount: number, currency: string) => {
   const code = typeof currency === "string" ? currency.trim().toUpperCase() : "";
-  return /^[A-Z]{3}$/.test(code) ? new Intl.NumberFormat("en-IN", { style: "currency", currency: code }).format(amount)
+  return /^[A-Z]{3}$/.test(code) ? new Intl.NumberFormat("en-IN", { style: "currency", currency: code, minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount)
     : `${new Intl.NumberFormat("en-IN").format(amount)} (currency unavailable)`;
 };
 function currencyTotals(rows: { amount: number; currency: string }[]) {
