@@ -69,3 +69,13 @@ Gross billed, collected, outstanding and reconciled finance cards for multi-curr
 FINANCE-CURRENCY-001: Real SQL/HTTP plus browser assertions for INR-only, USD-only and mixed currencies; verify exact decimal totals and displayed units without inventing exchange rates.
 
 Also run all endpoint/form cases pointing to this issue in QA/03_TEST_MATRIX.md and the critical regression suite before closure.
+
+
+## 30 October 2026 — Bounded repair pending acceptance
+
+Finance summary/actual finance consumers now group currency; platform overview currency aggregation remains open.
+
+Controlled original-case/regression evidence is recorded in
+[production follow-up](../REPORTS/PRODUCTION_FOLLOWUP_2026-10-30.md).
+Exact-source CI and real browser/device retest remain required. Status stays OPEN;
+provider integration or complete currency/platform acceptance is not claimed.

@@ -69,3 +69,13 @@ Fresh Google/Zoom/Microsoft meeting setup and external-channel readiness; Config
 COMMUNICATION-CONNECTION-001: Future isolated integration lifecycle: configure/connect/cancel/denied consent/invalid callback/refresh expiry/revoke/provider switch/test failure, with provider stubs and protected tenant-bound credentials. Assert configuration alone never claims verified connection; do not set a database flag as a workaround.
 
 Also run all endpoint/form cases pointing to this issue in QA/03_TEST_MATRIX.md and the critical regression suite before closure.
+
+
+## 30 October 2026 — Bounded repair pending acceptance
+
+Genuine channel metadata PUTs retained, with truthful provider connection/delivery unavailability.
+
+Controlled original-case/regression evidence is recorded in
+[production follow-up](../REPORTS/PRODUCTION_FOLLOWUP_2026-10-30.md).
+Exact-source CI and real browser/device retest remain required. Status stays OPEN;
+provider integration or complete currency/platform acceptance is not claimed.

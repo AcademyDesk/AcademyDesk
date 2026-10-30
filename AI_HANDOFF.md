@@ -1,5 +1,27 @@
 # Academy Desk handoff
 
+## 30 October 2026 IST — Finance/provider production follow-up
+
+Current branch `codex/penta-shared-readiness-20261030`, based on verified45b6bd3.
+That exact commit's CI41039615424 PASSED all1,645API/1,152frontend,23owned SQL
+modules/private Blob, actual owned recovery, PDF/assessment browser/build/smoke.
+The older Access fixture failure is preserved and corrected in that source.
+
+New increment fixes same-tick finance submission, uncertain-write/late-session
+handling, finance currency grouping and misleading provider promises. Local full
+API1,655PASS; exact-lockfrontend1,223PASS/3historical missing-real-SQL-receipt
+failures (zero skips). Exact-lockweb/tsc/lint/harness compile/actionlint PASS.
+New real finance UI→Identity→ownedSQL and13additional existing SQL modules are
+mandatory CI checks, pending actual execution; compilation is not acceptance.
+
+All5P0/browser/device/production recovery gates remainOPEN. No main merge,
+deployment, environment publication, configured DB access or model activation.
+Laptop permission granted but no local execution/SSH connection attached yet;
+preserve unpublished work and reconcile genuine evidence once connected.
+Report:QA/REPORTS/PRODUCTION_FOLLOWUP_2026-10-30.md. Next:Codex/Sol High inspect
+exact CI and finish remaining acceptance. Do not rerun older prototype engines.
+
+
 ## Cloud fixes joined with PENTA service checkpoint — 30 October 2026
 
 - [x] Published student checkpoint13ed932 is the base of

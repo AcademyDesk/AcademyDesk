@@ -105,7 +105,7 @@ jobs:
         id: web_build
         working-directory: apps/web
         env:
-          # This CI export is used only with intercepted synthetic browser data.
+          # This CI export is used with isolated synthetic browser fixtures, including real owned SQL.
           # The deployment workflow builds its own production-configured export.
           NEXT_PUBLIC_API_URL: http://127.0.0.1:49142
         run: npm run build -- --webpack
@@ -122,6 +122,17 @@ jobs:
           npm install --prefix .build-check/ci-browser --ignore-scripts --no-audit --no-fund playwright-core@1.64.1
           node QA/tools/payroll-print-browser.cjs | tee .build-check/ci/payroll-print-browser.log
           node QA/tools/assessment-isolation-browser.cjs | tee .build-check/ci/assessment-isolation-browser.log
+      - name: Real finance browser, Identity and owned SQL acceptance
+        id: finance_browser
+        shell: pwsh
+        env:
+          QA_BROWSER_API_PORT: '49142'
+          QA_BROWSER_ORIGIN: http://127.0.0.1:49141
+          QA_PLAYWRIGHT_MODULE: ${{ github.workspace }}/.build-check/ci-browser/node_modules/playwright-core
+          QA_BROWSER_EXECUTABLE: /usr/bin/google-chrome
+        run: |
+          $harness = Join-Path $PWD '.build-check/ci-sql/bin/SqlHarness/debug/SqlHarness.dll'
+          & ./QA/tools/SqlHarness/Run-ReconciledPayment.ps1 -Module FinanceBrowser -HarnessPath $harness 2>&1 | Tee-Object -FilePath '.build-check/ci/finance-critical-browser.log'
       - name: Build API runtime image
         id: api_image
         run: docker build -f apps/api/Dockerfile -t academydesk-ci-api:${{ github.sha }} .
@@ -146,6 +157,7 @@ jobs:
           QA_FRONTEND_RESULT: ${{ steps.frontend_tests.outcome }}
           QA_WEB_RESULT: ${{ steps.web_build.outcome }}
           QA_PAYROLL_BROWSER_RESULT: ${{ steps.payroll_browser.outcome }}
+          QA_FINANCE_BROWSER_RESULT: ${{ steps.finance_browser.outcome }}
           QA_IMAGE_RESULT: ${{ steps.api_image.outcome }}
           QA_SMOKE_RESULT: ${{ steps.api_smoke.outcome }}
         run: |
@@ -158,6 +170,7 @@ jobs:
             printf '| Full frontend suite | %s |\n' "$QA_FRONTEND_RESULT"
             printf '| Web build | %s |\n' "$QA_WEB_RESULT"
             printf '| Payroll PDF and assessment browser | %s |\n' "$QA_PAYROLL_BROWSER_RESULT"
+            printf '| Real finance browser + Identity + SQL | %s |\n' "$QA_FINANCE_BROWSER_RESULT"
             printf '| API image build | %s |\n' "$QA_IMAGE_RESULT"
             printf '| API container smoke | %s |\n' "$QA_SMOKE_RESULT"
             printf '\nAutomated verification supplements the required release acceptance gates.\n'
@@ -175,5 +188,50 @@ jobs:
             .build-check/frontend-tests/
             .build-check/payroll-print-browser/
             .build-check/assessment-browser/
+            .build-check/finance-critical-browser/
             QA/EVIDENCE/logs/phase-2b-communication-roundtrip-ui.log
             QA/EVIDENCE/logs/phase-2b-communication-roundtrip-sql.log
+
+  extended_acceptance:
+    name: Additional guarded access and finance acceptance
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.403'
+      - name: Prepare source-bound extended verification
+        run: |
+          mkdir -p .build-check/extended
+          git rev-parse HEAD > .build-check/extended/source-commit.txt
+          dotnet build QA/tools/SqlHarness/SqlHarness.csproj --nologo --artifacts-path .build-check/extended-sql
+      - name: Additional real SQL modules
+        shell: pwsh
+        run: |
+          $harness = Join-Path $PWD '.build-check/extended-sql/bin/SqlHarness/debug/SqlHarness.dll'
+          $failed = @()
+          foreach ($module in @('GuardianFlags', 'CertificateFamily', 'CertificateEnrollment', 'AnnouncementAudience', 'ResourceScope', 'MarketingConsent', 'TemplateState', 'PreferenceAccess', 'InboxLifecycle', 'Lookups', 'Governance', 'Collections', 'InvoiceSettings')) {
+            try {
+              & ./QA/tools/SqlHarness/Run-ReconciledPayment.ps1 -Module $module -HarnessPath $harness 2>&1 | Tee-Object -FilePath ".build-check/extended/$module-sql.log"
+              "Extended SQL ${module}: PASS" >> $env:GITHUB_STEP_SUMMARY
+            } catch {
+              $failed += $module
+              "Extended SQL ${module}: FAIL" >> $env:GITHUB_STEP_SUMMARY
+            }
+          }
+          if ($failed.Count) { throw "Extended SQL modules failed: $($failed -join ', ')" }
+      - name: Preserve extended synthetic acceptance evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: extended-acceptance-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 7
+          if-no-files-found: error
+          include-hidden-files: true
+          path: .build-check/extended/

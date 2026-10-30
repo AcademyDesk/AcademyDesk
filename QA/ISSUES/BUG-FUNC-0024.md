@@ -69,3 +69,13 @@ Meeting creation, recurring rules, access/chat/recording promises and advertised
 SCHEDULE-MEETING-CREATE-001: Isolated component/full HTTP tests with stubbed provider transport only; verify actual payload, authorized stored meeting, provider result and durable history. Until implemented assert truthful unavailable state. Never create real provider meetings or send invites during QA.
 
 Also run all endpoint/form cases pointing to this issue in QA/03_TEST_MATRIX.md and the critical regression suite before closure.
+
+
+## 30 October 2026 — Bounded repair pending acceptance
+
+Unsupported provider meeting creation is disabled; fake meeting history/edit promises removed.
+
+Controlled original-case/regression evidence is recorded in
+[production follow-up](../REPORTS/PRODUCTION_FOLLOWUP_2026-10-30.md).
+Exact-source CI and real browser/device retest remain required. Status stays OPEN;
+provider integration or complete currency/platform acceptance is not claimed.

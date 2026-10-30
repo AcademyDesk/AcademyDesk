@@ -97,3 +97,20 @@ Third slice: [Teacher media client integration](../REPORTS/PHASE_2B_MEDIA_CLIENT
 Second slice: [authenticated Blob sessions](../REPORTS/PHASE_2B_BLOB_UPLOAD_SESSIONS.md) creates durable immutable ownership-bound sessions, resumable bounded chunks, idempotent completion/recovery and authenticated content/ranges. 47 real HTTP/SQL/Azurite assertions passed on two fresh runs; prior concurrency failures are retained. Legacy read gate passed again. Production storage remains disabled and browser clients still use the legacy upload route. Only owned disposable SQL received the new migration; development/Azure untouched. Remain OPEN / FIX-IN-PROGRESS. The paragraph below describes the first-slice checkpoint historically.
 
 [Legacy access-gate report](../REPORTS/PHASE_2B_CLASS_MEDIA_ACCESS_GATE.md): public static access is excluded for teacher and learning-material folders, and existing GET/HEAD URLs now require current tenant/role/recipient checks before any ordinary or Range bytes. Authorized teacher/student/guardian controls and revocation cases passed locally. Staff retain authorized draft management; unpublishing revokes family access. No live file was migrated or deleted. Disk-backed upload writers, authenticated Blob sessions and bearer-aware browser viewers still need integration; this is not a complete media-delivery release or issue closure. The initial combined run hit HTTP 429 later in finance and is retained as failed evidence. Remain OPEN / FIX-IN-PROGRESS until the required closure chain is satisfied.
+
+
+## 30 October 2026 — Shared-source qualification update
+
+Exact45b6bd30761ba9e5f7c00c42dc8e3ef66b62210a passed
+[CI41039615424](https://github.com/AcademyDesk/AcademyDesk/actions/runs/41039615424):
+1,645API/1,152frontend,23actual owned SQL modules/private Blob, financial race
+and audit rollback checks, and actual owned backup/restore. Approved positive-net
+payroll and validated voided-payment restoration policies remain enforced.
+Historical failures above remain evidence; old SQL-PENDING text describes those
+earlier checkpoints, not this verified source.
+
+The new finance submission/currency/provider increment and real browser module
+require their own exact-source CI. This issue remains OPEN; complete browser,
+physical-device, critical and operational acceptance is not inferred. See
+[production follow-up](../REPORTS/PRODUCTION_FOLLOWUP_2026-10-30.md) for qualified
+scope and outstanding evidence. No production deployment or closure.

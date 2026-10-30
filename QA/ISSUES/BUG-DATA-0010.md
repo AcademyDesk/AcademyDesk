@@ -90,3 +90,20 @@ Invoice/collection status, payment ledger evidence, amounts counted in read view
 FINANCE-RULE-003: Real SQL/HTTP transition matrix Completed/Reconciled/Voided; full/partial payments, adjustments, repeated transitions and concurrent change; assert invoice state, fresh balances, unchanged rejected rows and reconciliation evidence.
 
 Also run all endpoint/form cases pointing to this issue in QA/03_TEST_MATRIX.md and the critical regression suite before closure.
+
+
+## 30 October 2026 — Shared-source qualification update
+
+Exact45b6bd30761ba9e5f7c00c42dc8e3ef66b62210a passed
+[CI41039615424](https://github.com/AcademyDesk/AcademyDesk/actions/runs/41039615424):
+1,645API/1,152frontend,23actual owned SQL modules/private Blob, financial race
+and audit rollback checks, and actual owned backup/restore. Approved positive-net
+payroll and validated voided-payment restoration policies remain enforced.
+Historical failures above remain evidence; old SQL-PENDING text describes those
+earlier checkpoints, not this verified source.
+
+The new finance submission/currency/provider increment and real browser module
+require their own exact-source CI. This issue remains OPEN; complete browser,
+physical-device, critical and operational acceptance is not inferred. See
+[production follow-up](../REPORTS/PRODUCTION_FOLLOWUP_2026-10-30.md) for qualified
+scope and outstanding evidence. No production deployment or closure.
