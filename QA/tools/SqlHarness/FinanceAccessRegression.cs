@@ -177,7 +177,9 @@ internal static partial class SqlHarnessEntryPoint
             new("profile-create", "POST", root + "/payroll/profiles", AccessProfileBody(f), HttpStatusCode.Created, true),
             new("profile-update", "PUT", root + $"/payroll/profiles/{f.Profile}", AccessProfileBody(f), HttpStatusCode.OK, true),
             new("payout-list", "GET", root + "/payroll/payouts", null, HttpStatusCode.OK, true),
-            new("payout-create", "POST", root + "/payroll/payouts", new { payrollProfileId = f.Profile, periodLabel = "QA-ACCESS", deductions = 10m }, HttpStatusCode.Created, true)
+            // Keep each actor's role check independent of another fixture's
+            // regular statement for the same teacher and pay period.
+            new("payout-create", "POST", root + "/payroll/payouts", new { payrollProfileId = f.Profile, periodLabel = $"QA-ACCESS-{f.Profile:N}", deductions = 10m }, HttpStatusCode.Created, true)
         ];
     }
     private static object AccessProfileBody(AccessFixture f) => new { workerType = "Teacher", teacherId = f.Teacher,
@@ -279,7 +281,7 @@ internal static partial class SqlHarnessEntryPoint
             "reminder-queue" => await db.Notifications.AsNoTracking().AnyAsync(x => x.AcademyId == f.Academy && x.RecipientId == f.Student && x.Title == "Fee payment reminder"),
             "profile-create" => await db.PayrollProfiles.AsNoTracking().AnyAsync(x => x.Id == responseId && x.AcademyId == f.Academy && x.TeacherId == f.Teacher && x.MonthlyAmount == 1000m),
             "profile-update" => await db.PayrollProfiles.AsNoTracking().AnyAsync(x => x.Id == f.Profile && x.TeacherId == f.Teacher && x.MonthlyAmount == 1000m),
-            "payout-create" => await db.PayrollPayouts.AsNoTracking().AnyAsync(x => x.Id == responseId && x.AcademyId == f.Academy && x.PayrollProfileId == f.Profile && x.GrossAmount == 1000m && x.Deductions == 10m && x.NetAmount == 990m),
+            "payout-create" => await db.PayrollPayouts.AsNoTracking().AnyAsync(x => x.Id == responseId && x.AcademyId == f.Academy && x.PayrollProfileId == f.Profile && x.PeriodLabel == $"QA-ACCESS-{f.Profile:N}" && x.GrossAmount == 1000m && x.Deductions == 10m && x.NetAmount == 990m),
             _ => false
         };
         if (!valid) throw new InvalidOperationException("Allowed access response not persisted correctly: " + action.Name);

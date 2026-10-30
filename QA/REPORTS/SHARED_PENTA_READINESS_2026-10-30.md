@@ -27,3 +27,17 @@ All five critical issues, supported-device, staging and production recovery gate
 remain open. No production database, environment publication, deployment or
 activation is authorized or performed. Continue the existing program from actual
 CI results rather than reconstructing missing evidence or accepting older green.
+
+## First current-source CI and repaired fixture
+
+57bd223/run41038160727/job124004046956 failed at the Access SQL module after
+Reconciliation, CollectionRace, Adjustment, AdjustmentRace, Payroll, Transition
+and Consumers passed. API1,645 and dependency/type/lint checks passed. Later
+SQL/Blob/frontend/browser/recovery stages did not run; this is not a green release.
+
+The Access test reused QA-ACCESS for the same teacher under AcademyAdmin and
+Owner fixtures. The regular-payroll protection correctly returned409 on the second
+statement. Each fixture now uses a bounded period derived from its profile GUID,
+and the exact persisted period is checked. Expected successful RBAC status remains
+201; no duplicate, worker, financial, role or audit guard is relaxed. Application
+code is unchanged. The fixed candidate requires its own actual CI run.

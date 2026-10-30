@@ -1059,3 +1059,11 @@ as did finance races/private Blob/build/browser/image checks. No P0 closure.
   No main merge, deployment, environment publication or production activation.
 - Report:QA/REPORTS/SHARED_PENTA_READINESS_2026-10-30.md. Next route:Codex/Sol High
   inspect exact shared-source CI and retain existing cross-profile ownership.
+
+Exact57bd223 CI41038160727/job124004046956 failed in Access after seven finance
+modules passed. API1,645/audits/tsc/lint PASS; later acceptance stages NOT RUN.
+Owner payout201 expectation collided with earlier admin payout for the same
+teacher/QA-ACCESS period: domain correctly409. QA fixture period now profile-GUID
+scoped, persisted exact value checked, expected201 retained. No production/domain
+policy changed. Current candidate needs fresh CI. Local shared webpack PASS,
+SQLharness0warnings/errors; frontend1,149PASS/3same absent SQL evidence failures.
