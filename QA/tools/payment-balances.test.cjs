@@ -12,20 +12,20 @@ const compiled = ts.transpileModule(source, { compilerOptions: {
 const money = amount => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount);
 const invoice = { id: 'i', invoiceNumber: 'QA-I', studentId: 's', totalAmount: 1000,
   adjustedAmount: 200, paidAmount: 700, balance: 100, currency: 'INR', dueDate: '2026-10-01', status: 'PartiallyPaid' };
-const payments = [{ id: 'r', invoiceId: 'i', amount: 600, status: 'Reconciled' },
-  { id: 'c', invoiceId: 'i', amount: 100, status: 'Completed' },
-  { id: 'v', invoiceId: 'i', amount: 75, status: 'Voided' }];
+const payments = [{ id: 'r', invoiceId: 'i', amount: 600, currency: 'INR', status: 'Reconciled' },
+  { id: 'c', invoiceId: 'i', amount: 100, currency: 'INR', status: 'Completed' },
+  { id: 'v', invoiceId: 'i', amount: 75, currency: 'INR', status: 'Voided' }];
 function render(invoices = [invoice], rows = payments, selected = 'i') {
   const states = [{ id: 'a' }, [{ id: 's', firstName: 'Synthetic', lastName: 'Student' }],
-    invoices, rows, selected, '', 'UPI', '', ''];
+    invoices, rows, selected, '', 'UPI', '', '', 'idle', true];
   const writes = new Map(); let index = 0;
   const react = { useState: () => { const key = index++; return [states[key], value => writes.set(key, value)]; },
-    useEffect: () => {}, useMemo: fn => fn() };
+    useEffect: () => {}, useMemo: fn => fn(), useRef: value => ({ current: value }) };
   const module = { exports: {} };
   new Function('require', 'module', 'exports', compiled)(name => {
     if (name === 'react') return react;
     if (name === 'react/jsx-runtime') return jsx;
-    if (name === '@/lib/api') return { academyApi: () => { throw Error('No network in controlled page test'); } };
+    if (name === '@/lib/api') return { subscribePortalSessionChanges: () => () => {}, academyApi: () => { throw Error('No network in controlled page test'); } };
     throw Error('Unexpected import ' + name);
   }, module, module.exports);
   return { tree: module.exports.default(), writes };
@@ -75,9 +75,9 @@ test('fully adjusted invoice is not open or selectable for collection', () => {
   assert.equal(kpi(tree, 'Outstanding'), money(0));
   assert.equal(all(tree, n => n.type === 'option' && n.props.value === 'i').length, 0);
 });
-test('empty ledger remains zero and has no invoice collection options', () => {
+test('empty ledger has no amounts or assumed currency and no collection options', () => {
   const { tree } = render([], [], '');
-  assert.equal(kpi(tree, 'Collected'), money(0));
-  assert.equal(kpi(tree, 'Outstanding'), money(0));
+  assert.equal(kpi(tree, 'Collected'), 'No amounts');
+  assert.equal(kpi(tree, 'Outstanding'), 'No amounts');
   assert.equal(all(tree, n => n.type === 'option').filter(n => n.props.value).length, 0);
 });

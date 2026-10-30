@@ -11,6 +11,8 @@ public sealed record CollectionInvoiceSummary(Guid Id, string InvoiceNumber, Gui
 {
     public decimal Balance => Math.Max(0, TotalAmount - AdjustedAmount - PaidAmount);
 }
+public sealed record FinanceCurrencyTotals(string Currency, decimal GrossBilled, decimal ApprovedAdjustments,
+    decimal Collected, decimal Outstanding, decimal Reconciled);
 [ApiController]
 [Route("api/academies/{academyId:guid}/finance-governance")]
 public sealed class FinanceGovernanceController(AcademyDeskDbContext db, IdentityDbContext identity) : ControllerBase
@@ -57,7 +59,41 @@ public sealed class FinanceGovernanceController(AcademyDeskDbContext db, Identit
  [HttpGet("collections")]
  public async Task<ActionResult<IReadOnlyList<CollectionInvoiceSummary>>> Collections(Guid academyId, CancellationToken token) =>
      Ok(await OverdueCollections(academyId, DateOnly.FromDateTime(DateTime.UtcNow), token));
- [HttpGet("summary")] public async Task<ActionResult> Summary(Guid academyId,CancellationToken t){var invoices=await db.Invoices.Where(x=>x.AcademyId==academyId).ToListAsync(t);var payments=await db.Payments.Where(x=>x.AcademyId==academyId&&x.Status!="Voided").ToListAsync(t);return Ok(new{GrossBilled=invoices.Sum(x=>x.TotalAmount),ApprovedAdjustments=invoices.Sum(x=>x.AdjustedAmount),Collected=payments.Sum(x=>x.Amount),Outstanding=Math.Max(0,invoices.Sum(x=>x.TotalAmount-x.AdjustedAmount)-payments.Sum(x=>x.Amount)),Reconciled=payments.Where(x=>x.Status=="Reconciled").Sum(x=>x.Amount),OverdueInvoices=(await OverdueCollections(academyId, DateOnly.FromDateTime(DateTime.UtcNow), t)).Count});}
+ [HttpGet("summary")]
+ public async Task<ActionResult> Summary(Guid academyId, CancellationToken token)
+ {
+     var invoices = await db.Invoices.AsNoTracking().Where(x => x.AcademyId == academyId)
+         .Select(x => new { x.Currency, x.TotalAmount, x.AdjustedAmount }).ToListAsync(token);
+     var payments = await db.Payments.AsNoTracking().Where(x => x.AcademyId == academyId && x.Status != "Voided")
+         .Select(x => new { x.Currency, x.Amount, x.Status }).ToListAsync(token);
+     // Match fee-plan currency normalization, preserving unknown stored units rather
+     // than assigning INR or inventing an exchange rate. Unlike units never net off.
+     static string Unit(string? value) => value?.Trim().ToUpperInvariant() ?? "";
+     static bool HasCurrencyCode(string value) => value.Length == 3 && value.All(c => c is >= 'A' and <= 'Z');
+     var invoiceGroups = invoices.ToLookup(x => Unit(x.Currency));
+     var paymentGroups = payments.ToLookup(x => Unit(x.Currency));
+     var totals = invoiceGroups.Select(x => x.Key).Union(paymentGroups.Select(x => x.Key), StringComparer.Ordinal)
+         .Order(StringComparer.Ordinal).Select(currency =>
+         {
+             var gross = invoiceGroups[currency].Sum(x => x.TotalAmount);
+             var adjusted = invoiceGroups[currency].Sum(x => x.AdjustedAmount);
+             var collected = paymentGroups[currency].Sum(x => x.Amount);
+             return new FinanceCurrencyTotals(currency, gross, adjusted, collected,
+                 Math.Max(0, gross - adjusted - collected), paymentGroups[currency].Where(x => x.Status == "Reconciled").Sum(x => x.Amount));
+         }).ToArray();
+     // Retain numeric legacy fields for a single currency and an empty ledger.
+     // Mixed/malformed currencies have no meaningful aggregate monetary scalar.
+     var single = totals.Length == 1 && HasCurrencyCode(totals[0].Currency) ? totals[0] : null;
+     var legacy = totals.Length == 0 ? new FinanceCurrencyTotals("", 0, 0, 0, 0, 0) : single;
+     return Ok(new
+     {
+         GrossBilled = legacy?.GrossBilled, ApprovedAdjustments = legacy?.ApprovedAdjustments,
+         Collected = legacy?.Collected, Outstanding = legacy?.Outstanding, Reconciled = legacy?.Reconciled,
+         Currency = single?.Currency, HasMixedCurrencies = totals.Length > 1,
+         HasInvalidCurrency = totals.Any(x => !HasCurrencyCode(x.Currency)), CurrencyTotals = totals,
+         OverdueInvoices = (await OverdueCollections(academyId, DateOnly.FromDateTime(DateTime.UtcNow), token)).Count
+     });
+ }
  [HttpPost("collections/{invoiceId:guid}/follow-up")]
  public async Task<ActionResult> CreateFollowUp(Guid academyId, Guid invoiceId, CollectionFollowUpRequest r, CancellationToken t)
  {

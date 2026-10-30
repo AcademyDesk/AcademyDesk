@@ -15,12 +15,12 @@ async function loadPage(page, lookupStatus = 200) {
   } }).outputText;
   const effects = [], calls = [], writes = new Map(); let index = 0;
   const react = { useState: initial => { const key = index++; return [writes.has(key) ? writes.get(key) : initial, value => writes.set(key, value)]; },
-    useEffect: fn => effects.push(fn), useMemo: fn => fn() };
+    useEffect: fn => effects.push(fn), useMemo: fn => fn(), useRef: value => ({ current: value }) };
   const module = { exports: {} };
   new Function('require', 'module', 'exports', compiled)(name => {
     if (name === 'react') return react;
     if (name === 'react/jsx-runtime') return jsx;
-    if (name === '@/lib/api') return { academyApi: async url => {
+    if (name === '@/lib/api') return { subscribePortalSessionChanges: () => () => {}, academyApi: async url => {
       calls.push(url);
       const lookup = url.endsWith('/invoices/student-options');
       const status = url.endsWith('/students') ? 403 : lookup ? lookupStatus : 200;

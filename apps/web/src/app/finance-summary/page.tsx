@@ -3,15 +3,21 @@ import { useEffect, useState } from "react";
 import { WorkspaceNav } from "@/components/workspace-nav";
 import { academyApi } from "@/lib/api";
 type Academy = { id: string };
-type Summary = {
+type CurrencyTotal = {
+  currency: string;
   grossBilled: number;
   approvedAdjustments: number;
   collected: number;
   outstanding: number;
   reconciled: number;
-  overdueInvoices: number;
 };
-const money = (amount: number) => `₹${amount.toLocaleString("en-IN")}`;
+type Summary = { currencyTotals: CurrencyTotal[]; hasMixedCurrencies: boolean; overdueInvoices: number };
+const money = (amount: number, currency: string) => {
+  const unit = currency.trim().toUpperCase();
+  if (!/^[A-Z]{3}$/.test(unit))
+    return `${amount.toLocaleString("en-IN", { minimumFractionDigits: 2 })} (currency unavailable)`;
+  return new Intl.NumberFormat("en-IN", { style: "currency", currency: unit, currencyDisplay: "code" }).format(amount);
+};
 export default function FinanceSummary() {
   const [summary, setSummary] = useState<Summary>();
   const [message, setMessage] = useState("Loading finance summary…");
@@ -32,33 +38,23 @@ export default function FinanceSummary() {
       }
     })();
   }, []);
-  const netBillable = summary
-    ? Math.max(0, summary.grossBilled - summary.approvedAdjustments)
-    : 0;
-  const collectionRate = netBillable
-    ? Math.min(100, Math.round((summary!.collected / netBillable) * 100))
-    : 0;
-  const awaitingReconciliation = summary
-    ? Math.max(0, summary.collected - summary.reconciled)
-    : 0;
+  const currencyTotals = summary?.currencyTotals ?? [];
   const cards = summary
-    ? [
-        { label: "Gross billed", value: money(summary.grossBilled) },
-        {
-          label: "Approved adjustments",
-          value: money(summary.approvedAdjustments),
-        },
-        { label: "Collected", value: money(summary.collected) },
-        { label: "Outstanding", value: money(summary.outstanding) },
-        { label: "Reconciled", value: money(summary.reconciled) },
-        { label: "Overdue invoices", value: String(summary.overdueInvoices) },
-        { label: "Net billable", value: money(netBillable) },
-        { label: "Collection rate", value: `${collectionRate}%` },
-        {
-          label: "Awaiting reconciliation",
-          value: money(awaitingReconciliation),
-        },
-      ]
+    ? [...currencyTotals.flatMap((total) => {
+        const netBillable = Math.max(0, total.grossBilled - total.approvedAdjustments);
+        const collectionRate = netBillable ? Math.min(100, Math.round((total.collected / netBillable) * 100)) : 0;
+        const unit = total.currency || "Currency unavailable";
+        return [
+          { label: `Gross billed · ${unit}`, value: money(total.grossBilled, total.currency) },
+          { label: `Approved adjustments · ${unit}`, value: money(total.approvedAdjustments, total.currency) },
+          { label: `Collected · ${unit}`, value: money(total.collected, total.currency) },
+          { label: `Outstanding · ${unit}`, value: money(total.outstanding, total.currency) },
+          { label: `Reconciled · ${unit}`, value: money(total.reconciled, total.currency) },
+          { label: `Net billable · ${unit}`, value: money(netBillable, total.currency) },
+          { label: `Collection rate · ${unit}`, value: `${collectionRate}%` },
+          { label: `Awaiting reconciliation · ${unit}`, value: money(Math.max(0, total.collected - total.reconciled), total.currency) },
+        ];
+      }), { label: "Overdue invoices", value: String(summary.overdueInvoices) }]
     : [];
   return (
     <main className="enterprise-settings finance-summary-standard min-h-screen">
@@ -66,7 +62,7 @@ export default function FinanceSummary() {
       <div className="finance-summary-content">
         <header className="finance-summary-heading">
           <span className="finance-summary-title-icon" aria-hidden="true">
-            ₹
+            ¤
           </span>
           <div className="finance-summary-title">
             <p>Finance</p>
@@ -78,6 +74,8 @@ export default function FinanceSummary() {
             {message}
           </p>
         )}
+        {summary?.hasMixedCurrencies && <p className="finance-summary-notice">Totals are shown separately by currency. No exchange rate conversion is applied.</p>}
+        {summary && currencyTotals.length === 0 && <p className="finance-summary-notice">{summary.currencyTotals ? "No financial activity to summarize." : "Currency totals are unavailable. Refresh the page to try again."}</p>}
         <section className="finance-summary-grid">
           {cards.map((card) => (
             <article key={card.label}>

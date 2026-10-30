@@ -6,14 +6,15 @@ import { academyApi } from "@/lib/api";
 import { EnterprisePageState } from "@/components/enterprise-page-state";
 
 type Academy = { id: string };
-type FinanceSummary = {
+type CurrencyTotal = {
+  currency: string;
   grossBilled: number;
   approvedAdjustments: number;
   collected: number;
   outstanding: number;
   reconciled: number;
-  overdueInvoices: number;
 };
+type FinanceSummary = { currencyTotals: CurrencyTotal[]; hasMixedCurrencies: boolean; overdueInvoices: number };
 type Collection = {
   id: string;
   invoiceNumber: string;
@@ -25,11 +26,15 @@ type Collection = {
   daysOverdue: number;
 };
 
-const money = (amount: number, currency = "INR") =>
-  new Intl.NumberFormat("en-IN", {
+const money = (amount: number, currency?: string) => {
+  const unit = currency?.trim().toUpperCase();
+  if (!unit || !/^[A-Z]{3}$/.test(unit))
+    return `${amount.toLocaleString("en-IN", { minimumFractionDigits: 2 })} (currency unavailable)`;
+  return new Intl.NumberFormat("en-IN", {
     style: "currency",
-    currency,
+    currency: unit,
   }).format(amount);
+};
 const modules = [
   [
     "Create & generate invoices",
@@ -149,14 +154,13 @@ export default function FinancePage() {
     }
   }
 
-  const cards = summary
-    ? [
-        ["Gross billed", money(summary.grossBilled)],
-        ["Collected", money(summary.collected)],
-        ["Outstanding", money(summary.outstanding)],
-        ["Reconciled", money(summary.reconciled)],
-      ]
-    : [];
+  const currencyTotals = summary?.currencyTotals ?? [];
+  const cards = currencyTotals.flatMap((total) => [
+    [`Gross billed · ${total.currency || "Currency unavailable"}`, money(total.grossBilled, total.currency)],
+    [`Collected · ${total.currency || "Currency unavailable"}`, money(total.collected, total.currency)],
+    [`Outstanding · ${total.currency || "Currency unavailable"}`, money(total.outstanding, total.currency)],
+    [`Reconciled · ${total.currency || "Currency unavailable"}`, money(total.reconciled, total.currency)],
+  ]);
 
   return (
     <main className="enterprise-settings">
@@ -192,6 +196,8 @@ export default function FinancePage() {
           {notice}
         </EnterprisePageState>
       )}
+      {summary?.hasMixedCurrencies && <p className="mt-5 text-sm text-slate-400">Totals are shown separately by currency. No exchange rate conversion is applied.</p>}
+      {summary && currencyTotals.length === 0 && <p className="mt-5 text-sm text-slate-400">{summary.currencyTotals ? "No financial activity to summarize." : "Currency totals are unavailable. Refresh the page to try again."}</p>}
       <section
         className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
         aria-label="Finance summary"

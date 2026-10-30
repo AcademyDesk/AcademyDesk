@@ -9,6 +9,21 @@ type RefreshFlight = { session: Session; controller: AbortController; consumers:
 const sessionGenerations = new Map<PortalWorkspace, number>();
 const refreshFlights = new Map<PortalWorkspace, RefreshFlight>();
 const sessionGeneration = (workspace: PortalWorkspace) => sessionGenerations.get(workspace) ?? 0;
+const sessionBoundaryListeners = new Map<PortalWorkspace, Set<() => void>>();
+function notifySessionBoundary(workspace: PortalWorkspace) {
+  for (const listener of [...sessionBoundaryListeners.get(workspace) ?? []]) {
+    // A page retiring its state must never prevent sign-out or token storage.
+    try { listener(); } catch { /* Other consumers still need notification. */ }
+  }
+}
+
+/** Notifies views of account replacement/sign-out without exposing credentials. */
+export function subscribePortalSessionChanges(workspace: PortalWorkspace, listener: () => void) {
+  let listeners = sessionBoundaryListeners.get(workspace);
+  if (!listeners) sessionBoundaryListeners.set(workspace, listeners = new Set());
+  listeners.add(listener);
+  return () => { listeners.delete(listener); if (!listeners.size) sessionBoundaryListeners.delete(workspace); };
+}
 function invalidateSession(workspace: PortalWorkspace) {
   sessionGenerations.set(workspace, sessionGeneration(workspace) + 1);
   refreshFlights.delete(workspace);
@@ -43,16 +58,25 @@ if (typeof window !== "undefined" && typeof window.addEventListener === "functio
   window.addEventListener("storage", (event) => {
     for (const workspace of ["AcademyAdmin", "Teacher", "Portal", "Platform"] as const) {
       if (isPortalSignOutEvent(event, workspace)) invalidateSession(workspace);
+      if (event.storageArea === window.localStorage && (event.key === null
+        || event.key === tokenKey("accessToken", workspace) || event.key === tokenKey("refreshToken", workspace)
+        || (workspace === "AcademyAdmin" && (event.key === "academydesk.accessToken" || event.key === "academydesk.refreshToken"))))
+        notifySessionBoundary(workspace);
     }
   });
 }
 
 /** Saves a session separately for each role workspace so portal testing does not replace another role's login. */
 export function savePortalTokens(workspace: PortalWorkspace, accessToken: string, refreshToken?: string) {
+  storePortalTokens(workspace, accessToken, refreshToken, true);
+}
+
+function storePortalTokens(workspace: PortalWorkspace, accessToken: string, refreshToken: string | undefined, boundary: boolean) {
   if (typeof window === "undefined") return;
   invalidateSession(workspace);
   window.localStorage.setItem(tokenKey("accessToken", workspace), accessToken);
   if (refreshToken) window.localStorage.setItem(tokenKey("refreshToken", workspace), refreshToken);
+  if (boundary) notifySessionBoundary(workspace);
 }
 
 /** Signs out only from the portal currently open, without disturbing other role workspaces. */
@@ -66,6 +90,7 @@ export function clearPortalTokens(workspace = currentWorkspace()) {
     window.localStorage.removeItem("academydesk.accessToken");
     window.localStorage.removeItem("academydesk.refreshToken");
   }
+  notifySessionBoundary(workspace);
 }
 
 export function portalAccessToken(workspace = currentWorkspace()) {
@@ -105,7 +130,7 @@ function startRefresh(workspace: PortalWorkspace, session: Session): RefreshFlig
       if (typeof tokens?.accessToken !== "string" || !tokens.accessToken.trim() ||
         (tokens.refreshToken != null && (typeof tokens.refreshToken !== "string" || !tokens.refreshToken.trim())) ||
         flight.controller.signal.aborted || !sessionMatches(workspace, session)) return null;
-      savePortalTokens(workspace, tokens.accessToken, tokens.refreshToken);
+      storePortalTokens(workspace, tokens.accessToken, tokens.refreshToken, false);
       flight.result = { accessToken: tokens.accessToken, refreshToken: portalRefreshToken(workspace), generation: sessionGeneration(workspace) };
       // Keep the successful original-pair receipt for late401s; a new login/refresh replaces it.
       refreshFlights.set(workspace, flight);

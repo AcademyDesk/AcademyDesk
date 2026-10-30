@@ -1,5 +1,5 @@
 "use client";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import {
   StandardDateField,
   StandardSelectField,
@@ -25,16 +25,6 @@ type Channel = {
   provider: string;
   hasSecureConnection: boolean;
 };
-type Meeting = {
-  id: string;
-  title: string;
-  provider: string;
-  createdAt: string;
-  attendeeEmails: string[];
-  start: string;
-  joinUrl?: string;
-  status: string;
-};
 type Provider = "GoogleWorkspace" | "Zoom" | "Microsoft365";
 const providerName: Record<Provider, string> = {
   GoogleWorkspace: "Google Meet",
@@ -46,14 +36,14 @@ const name = (p: Person) =>
 
 const hasMeetingUrl = (meetingLink?: string) =>
   /^https?:\/\//i.test(meetingLink?.trim() ?? "");
+const unavailableMessage =
+  "Meeting creation is unavailable in this release. Provider connection, invitations and meeting changes are not supported here.";
 export default function MeetingLinksPage() {
-  const [academy, setAcademy] = useState<Academy>();
   const [students, setStudents] = useState<Person[]>([]);
   const [teachers, setTeachers] = useState<Person[]>([]);
   const [batches, setBatches] = useState<Batch[]>([]);
   const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
   const [channels, setChannels] = useState<Channel[]>([]);
-  const [meetings] = useState<Meeting[]>([]);
   const [provider, setProvider] = useState<Provider>("GoogleWorkspace");
   const [title, setTitle] = useState("");
   const [batchId, setBatchId] = useState("");
@@ -69,9 +59,6 @@ export default function MeetingLinksPage() {
   const [chat, setChat] = useState("Disabled");
   const [recording, setRecording] = useState("Off");
   const [message, setMessage] = useState("Loading meeting workspace…");
-  const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
-  const [emailFilter, setEmailFilter] = useState("");
   useEffect(() => {
     void (async () => {
       try {
@@ -79,7 +66,6 @@ export default function MeetingLinksPage() {
         const academies: Academy[] = await r.json();
         if (!r.ok || !academies[0]) throw new Error();
         const current = academies[0];
-        setAcademy(current);
         const rs = await Promise.all(
           [
             "students",
@@ -137,41 +123,13 @@ export default function MeetingLinksPage() {
       .map((x) => x.trim())
       .filter(Boolean),
   ];
-  const filtered = useMemo(
-    () =>
-      meetings.filter(
-        (m) =>
-          (!from || m.createdAt.slice(0, 10) >= from) &&
-          (!to || m.createdAt.slice(0, 10) <= to) &&
-          (!emailFilter ||
-            m.attendeeEmails.some((e) =>
-              e.toLowerCase().includes(emailFilter.toLowerCase()),
-            )),
-      ),
-    [meetings, from, to, emailFilter],
-  );
   function addStudent(id: string) {
     if (id && !attendeeIds.includes(id)) setAttendeeIds((x) => [...x, id]);
     setStudentToAdd("");
   }
-  function edit(meeting: Meeting) {
-    setTitle(meeting.title);
-    setProvider(meeting.provider as Provider);
-    setDate(meeting.start.slice(0, 10));
-    setTime(meeting.start.slice(11, 16));
-    setMessage(
-      `Editing ${meeting.title}. Change any detail, then save once the provider connection is active.`,
-    );
-  }
   function submit(e: FormEvent) {
     e.preventDefault();
-    if (!connected)
-      return setMessage(
-        `Connect ${providerName[provider]} in Engagement → Channel settings before creating a link.`,
-      );
-    setMessage(
-      "Meeting creation will send the selected settings to the connected provider.",
-    );
+    setMessage(unavailableMessage);
   }
   return (
     <main className="enterprise-settings meeting-links-standard min-h-screen">
@@ -184,25 +142,25 @@ export default function MeetingLinksPage() {
               <h1>Meeting Links</h1>
             </div>
           </div>
-          <div
-            className={`meeting-provider-status ${connected ? "is-connected" : ""}`}
-          >
-            {connected
-              ? `${providerName[provider]} connected`
-              : `${providerName[provider]} needs connection`}
+          <div className="meeting-provider-status">
+            Meeting creation unavailable
           </div>
         </header>
+        <p id="meeting-availability" role="status" className="enterprise-page-state mt-6">
+          {unavailableMessage}
+        </p>
         {message && <p className="enterprise-page-state mt-6">{message}</p>}
         <section className="meeting-links-metrics" aria-label="Meeting link summary">
           <article><span>Eligible classes</span><strong>{eligibleBatchIds.length}</strong><small>Online or Hybrid without a link</small></article>
           <article><span>Selected invitees</span><strong>{attendees.length}</strong><small>Students and additional guests</small></article>
-          <article><span>Provider</span><strong>{connected ? "Connected" : "Action needed"}</strong><small>{providerName[provider]}</small></article>
+          <article><span>Provider</span><strong>Unavailable</strong><small>{providerName[provider]}{connected ? " · connection recorded; operations unavailable" : ""}</small></article>
         </section>
         <section className="meeting-links-layout">
-          <form onSubmit={submit} className="meeting-links-panel">
+          <form onSubmit={submit} className="min-w-0">
+            <fieldset disabled aria-describedby="meeting-availability" className="meeting-links-panel m-0 min-w-0 p-0">
             <header>
               <div>
-                <p>Create</p>
+                <p>Unavailable</p>
                 <h2>New meeting link</h2>
               </div>
               <StandardSelectField
@@ -386,16 +344,15 @@ export default function MeetingLinksPage() {
               </section>
               <button
                 className="enterprise-action-button"
-                disabled={!connected}
+                disabled
               >
-                {connected
-                  ? "Create meeting link"
-                  : `Connect ${providerName[provider]} first`}
+                Meeting creation unavailable
               </button>
             </div>
+            </fieldset>
           </form>
           <aside className="meeting-links-help">
-            <header><p>Ready to create</p><h2>Meeting summary</h2></header>
+            <header><p>Preview only</p><h2>Meeting summary</h2></header>
             <dl>
               <div><dt>Provider</dt><dd>{providerName[provider]}</dd></div>
               <div><dt>Class</dt><dd>{batches.find((item) => item.id === batchId)?.name || "Not selected"}</dd></div>
@@ -404,62 +361,17 @@ export default function MeetingLinksPage() {
               <div><dt>Chat</dt><dd>{chat === "Disabled" ? "Disabled" : chat === "HostsOnly" ? "Hosts only" : "Enabled"}</dd></div>
               <div><dt>Recording</dt><dd>{recording === "Off" ? "Off" : recording === "Auto" ? "Automatic" : "Host decides"}</dd></div>
             </dl>
-            {!connected && <a href="/communication-settings">Connect provider</a>}
+            <a href="/communication-settings">View provider metadata settings</a>
           </aside>
         </section>
         <section className="meeting-history">
           <header>
             <div>
               <p>History</p>
-              <h2>Created meeting links</h2>
-            </div>
-            <div className="meeting-history-filters">
-              <StandardDateField
-                name="created-from"
-                label="Created from"
-                value={from}
-                onChange={setFrom}
-              />
-              <StandardDateField
-                name="created-to"
-                label="Created to"
-                value={to}
-                onChange={setTo}
-              />
-              <input
-                value={emailFilter}
-                onChange={(e) => setEmailFilter(e.target.value)}
-                placeholder="Filter attendee email"
-              />
+              <h2>Meeting history unavailable</h2>
             </div>
           </header>
-          {filtered.length ? (
-            <ul>
-              {filtered.map((m) => (
-                <li key={m.id}>
-                  <div>
-                    <b>{m.title}</b>
-                    <small>
-                      {providerName[m.provider as Provider]} · {m.start} ·{" "}
-                      {m.attendeeEmails.length} attendees
-                    </small>
-                  </div>
-                  <div className="meeting-history-actions">
-                    {m.joinUrl && <a href={m.joinUrl}>Open meeting</a>}
-                    <button type="button" onClick={() => edit(m)}>
-                      Edit details
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p>
-              No meeting links have been created yet. When created, use Edit
-              details to change the date, time, recurrence, invitees,
-              restrictions, or any other setting.
-            </p>
-          )}
+          <p>This page does not load saved meeting links or support editing them.</p>
         </section>
       </div>
     </main>

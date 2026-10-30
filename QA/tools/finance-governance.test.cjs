@@ -20,8 +20,9 @@ function text(node) {
   if (node == null || typeof node === 'boolean') return '';
   return typeof node === 'object' ? text(node.props?.children) : String(node);
 }
-function page({ ready = false, deniedRead = false, deniedWrite = false, failRefresh = false, allowGeneric = false } = {}) {
-  const states = ready ? [{ id: 'a' }, [adjustment], [invoice], [item], settings, '', undefined, false, 'Invoice', false] : [];
+function page({ ready = false, deniedRead = false, deniedWrite = false, failRefresh = false, allowGeneric = false, adjustmentCurrency = 'INR' } = {}) {
+  const adjustmentRow = { ...adjustment, currency: adjustmentCurrency };
+  const states = ready ? [{ id: 'a' }, [adjustmentRow], [invoice], [item], settings, '', undefined, false, 'Invoice', false] : [];
   const writes = new Map(), effects = [], calls = []; let index = 0, mutated = false;
   const react = { useState: initial => { const key = index++; return [writes.has(key) ? writes.get(key) : ready ? states[key] : initial,
     value => writes.set(key, typeof value === 'function' ? value(writes.has(key) ? writes.get(key) : states[key]) : value)]; }, useEffect: fn => effects.push(fn) };
@@ -37,7 +38,7 @@ function page({ ready = false, deniedRead = false, deniedWrite = false, failRefr
       if (write && status === 200) mutated = true;
       return { ok: status === 200, status, json: async () => url === '/api/academies' ? [{ id: 'a' }]
         : url.endsWith('/collection-tasks') || generic ? [item] : url.endsWith('/collections') ? [invoice]
-        : url.endsWith('/finance-adjustments') ? [adjustment] : url.endsWith('/settings') ? settings : {} };
+        : url.endsWith('/finance-adjustments') ? [adjustmentRow] : url.endsWith('/settings') ? settings : {} };
     } };
     throw Error('Unexpected import ' + name);
   }, module, module.exports, class { constructor(fields) { this.fields = fields; } get(key) { return this.fields[key] ?? null; } }, { prompt: () => '' });
@@ -57,6 +58,14 @@ test('FinanceUser loads the collection register without generic admin-work-items
 test('Denied prerequisite does not falsely present successful loading', async () => {
   const p = page({ deniedRead: true }); await p.initialise();
   assert.equal(p.writes.has(3), false); assert.match(p.writes.get(5), /could not be loaded/);
+});
+test('Adjustment approval shows the returned USD currency instead of assuming INR', () => {
+  const shown = text(page({ ready: true, adjustmentCurrency: 'USD' }).render());
+  assert.match(shown, /\$1\.00/); assert.doesNotMatch(shown, /₹1\.00/);
+});
+test('Adjustment approval with an invalid stored currency remains explicit and usable', () => {
+  const shown = text(page({ ready: true, adjustmentCurrency: '' }).render());
+  assert.match(shown, /currency unavailable/); assert.doesNotMatch(shown, /₹1\.00/);
 });
 for (const scenario of ['saved', 'denied', 'refresh-failed']) test(`Escalation ${scenario}: narrow route, nullable date and honest notice`, async () => {
   const p = page({ ready: true, deniedWrite: scenario === 'denied', failRefresh: scenario === 'refresh-failed' });
