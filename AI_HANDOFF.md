@@ -1,5 +1,20 @@
 # Academy Desk handoff
 
+## Subsequent currency completion — 30 October 2026 IST
+
+Platform billing overview/Billing exposure now group stored currency, preserving
+same-currency/status/owner authority. Financial displays preserve stored decimal
+precision. Original platformAPI6FAIL/1authorizationPASS and page6FAIL reproduced;
+repaired fullAPI1,662PASS; frontend1,233PASS/3genuine missing SQL receipt cases;
+locked build/tsc, scoped lint, SQL harness compile and actionlint PASS.
+New FinanceCurrency and retained PlatformBilling real SQL modules extend CI to
+15additional modules; exact runtime results pending. Do not mark any issue or
+production gate closed from these local results. Report records original tests,
+normalization fixture correction, preserved history and all remaining gates.
+20a8b6c CI41096554763 continues before this follow-up is pushed. Laptop access
+still requires an actual attached execution/SSH connection. Codex/Sol High next.
+
+
 ## 30 October 2026 IST — Finance/provider production follow-up
 
 Current branch `codex/penta-shared-readiness-20261030`, based on verified45b6bd3.

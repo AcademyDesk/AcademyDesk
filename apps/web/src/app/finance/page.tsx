@@ -32,7 +32,7 @@ const money = (amount: number, currency?: string) => {
     return `${amount.toLocaleString("en-IN", { minimumFractionDigits: 2 })} (currency unavailable)`;
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
-    currency: unit,
+    currency: unit, minimumFractionDigits: 2, maximumFractionDigits: 2,
   }).format(amount);
 };
 const modules = [

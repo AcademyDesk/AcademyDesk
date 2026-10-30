@@ -1,5 +1,31 @@
 # Academy Desk — continue from the work laptop or another profile
 
+## Latest shared feature branch — 30 October 2026 IST
+
+Fetch `codex/penta-shared-readiness-20261030`; verify its actual remote SHA and
+read `AI_HANDOFF.md` plus `QA/REPORTS/PRODUCTION_FOLLOWUP_2026-10-30.md` first.
+Source20a8b6c adds finance submission/currency/provider repairs, real finance
+browser acceptance and broader owned SQL CI. Its exact CI41096554763 is pending
+at this checkpoint. Earlier45b6bd3/CI41039615424 completed all23ownedSQL modules,
+Blob/recovery,1,645API/1,152frontend and existing browser/build/container checks.
+Do not replace these changes with an older preservation worktree or test count.
+
+The cloud session cannot inspect the laptop unless a local execution environment
+or an existing SSH/Tailscale connection is actually attached. General permission
+does not mount D: or supply a remote host. No laptop snapshot is inferred.
+Before changing the separately owned protected-host worktree, read its real
+handoff/AGENTS and capture `git status --short`, `git branch --show-current`,
+`git rev-parse HEAD`, and `git worktree list` there. Preserve dirty files and
+unpublished commits; do not reset/clean/stash or switch that active worktree.
+Transfer only reviewed source/non-secret required evidence. Never send keys,
+passwords, environment files, database backups or unreviewed evidence wholesale.
+The existing model-loading stop and all production gates remain in force.
+
+The owner's current task authorizes logical feature-branch commits and pushes;
+it does not authorize main merge, deployment or model loading. Older publication
+wording below is chronological history. Next route:Codex/Sol High.
+
+
 Updated30October2026. GitHub source is available; the original laptop's running
 services, ignored evidence, dependencies and model caches are not transferred.
 

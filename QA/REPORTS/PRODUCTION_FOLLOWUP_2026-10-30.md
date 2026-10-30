@@ -86,3 +86,33 @@ existing cross-profile ownership and model stop; no loading/activation inferred.
 
 Next route: Codex/Sol High, inspect exact feature-branch CI, repair any failures,
 continue the remaining acceptance, and preserve local laptop changes.
+
+## Subsequent platform/currency completion packet
+
+After publishing20a8b6c, the platform half of BUG-DATA-0016 was reproduced:
+6of7newAPI checks failed, and all6initial platform page cases failed. The
+platform owner authorization control passed before the repair. The API now
+returns separately grouped platform billing totals, excludes existing Draft/Void
+statuses and retains existing Paid/Issued/Overdue/Payment submitted semantics.
+Single-currency/empty legacy values remain compatible; mixed/invalid units have
+no combined monetary scalar. The dashboard and Billing exposure both use the
+currency groups, never a hardcoded INR fallback. A local test expectation was
+corrected to expect the documented uppercase normalization of malformed units;
+no product validation was loosened.
+
+A further4controlled checks reproduced currency-default rounding of stored
+2decimal amounts (including JPY). All changed financial displays now preserve the
+stored2decimal precision. No currency conversion or new monetary policy added.
+
+Latest local evidence:1,662API passed, zero skips/failures. Frontend1,236tests:
+1,233passed,3historical absent-real-SQL-receipt failures, zero skips/cancellations.
+Exact-lock webpack export/TypeScript PASS; scoped lint0errors/5warnings; guarded
+SQL harness0warnings/errors; actionlint/diff PASS. Adds actual FinanceCurrency SQL
+HTTP/read-only snapshot checks and the existing PlatformBilling lifecycle module
+to extended CI (15modules total). Their real SQL results remain pending until the
+new source is pushed and exact CI completes. Earlier packet results above are
+source-specific history, not replaced or double-counted.
+
+The platform source gap is now repaired; BUG-DATA-0016 staysOPEN pending actual
+SQL/browser acceptance. CI41096554763 for20a8b6c is allowed to finish before
+publishing this packet so that the earlier source retains complete evidence.

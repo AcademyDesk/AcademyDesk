@@ -79,3 +79,16 @@ Controlled original-case/regression evidence is recorded in
 [production follow-up](../REPORTS/PRODUCTION_FOLLOWUP_2026-10-30.md).
 Exact-source CI and real browser/device retest remain required. Status stays OPEN;
 provider integration or complete currency/platform acceptance is not claimed.
+
+
+## Subsequent platform repair — qualification pending
+
+PlatformControl.Overview now groups billing by normalized stored currency, and
+both platform cards and Billing exposure display these explicit groups.
+Single-currency/empty-book legacy values and existing status/owner semantics are
+retained. Financial displays preserve stored two-decimal amounts across currency
+format defaults. Original platformAPI6FAIL/1owner-denialPASS and page6FAIL were
+reproduced before repair; latest fullAPI1,662PASS and relevant page checks PASS.
+New actual owned SQL FinanceCurrency/PlatformBilling CI and real browser/device
+acceptance are still pending. This does not close the issue. See the production
+follow-up report for exact local results and remaining release gates.

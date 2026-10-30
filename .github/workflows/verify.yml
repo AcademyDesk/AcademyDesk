@@ -216,7 +216,7 @@ jobs:
         run: |
           $harness = Join-Path $PWD '.build-check/extended-sql/bin/SqlHarness/debug/SqlHarness.dll'
           $failed = @()
-          foreach ($module in @('GuardianFlags', 'CertificateFamily', 'CertificateEnrollment', 'AnnouncementAudience', 'ResourceScope', 'MarketingConsent', 'TemplateState', 'PreferenceAccess', 'InboxLifecycle', 'Lookups', 'Governance', 'Collections', 'InvoiceSettings')) {
+          foreach ($module in @('GuardianFlags', 'CertificateFamily', 'CertificateEnrollment', 'AnnouncementAudience', 'ResourceScope', 'MarketingConsent', 'TemplateState', 'PreferenceAccess', 'InboxLifecycle', 'Lookups', 'Governance', 'Collections', 'InvoiceSettings', 'FinanceCurrency', 'PlatformBilling')) {
             try {
               & ./QA/tools/SqlHarness/Run-ReconciledPayment.ps1 -Module $module -HarnessPath $harness 2>&1 | Tee-Object -FilePath ".build-check/extended/$module-sql.log"
               "Extended SQL ${module}: PASS" >> $env:GITHUB_STEP_SUMMARY

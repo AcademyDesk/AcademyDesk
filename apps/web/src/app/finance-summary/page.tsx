@@ -16,7 +16,7 @@ const money = (amount: number, currency: string) => {
   const unit = currency.trim().toUpperCase();
   if (!/^[A-Z]{3}$/.test(unit))
     return `${amount.toLocaleString("en-IN", { minimumFractionDigits: 2 })} (currency unavailable)`;
-  return new Intl.NumberFormat("en-IN", { style: "currency", currency: unit, currencyDisplay: "code" }).format(amount);
+  return new Intl.NumberFormat("en-IN", { style: "currency", currency: unit, currencyDisplay: "code", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
 };
 export default function FinanceSummary() {
   const [summary, setSummary] = useState<Summary>();
