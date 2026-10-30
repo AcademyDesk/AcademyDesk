@@ -1,12 +1,13 @@
 # Academy Desk — continue from the work laptop or another profile
 
-Updated29October2026. GitHub source is available; the original laptop's running
+Updated30October2026. GitHub source is available; the original laptop's running
 services, ignored evidence, dependencies and model caches are not transferred.
 
-## Verified published checkpoints before this teacher slice
+## Verified published checkpoints
 
 | Repository | Branch | Commit |
 | --- | --- | --- |
+| AcademyDesk/AcademyDesk | codex/penta-teacher-service-integration-20261029 | c248912041ac55fbc84ea640fa5b355a54a4e45a |
 | AcademyDesk/AcademyDesk | codex/penta-enrollment-integration-20261029 | 4e707629f23a9ef14a92186890fcf85b65c7d85b |
 | AcademyDesk/AcademyDesk | codex/penta-contract-integration-20261029 | d44aea500dc14f050e50c78923b0435119b892aa |
 | AcademyDesk/AcademyDesk | codex/finance-cloud-reconcile-20261029 | a74a9e44385441a885056ad485229f30b77118d6 |
@@ -14,10 +15,17 @@ services, ignored evidence, dependencies and model caches are not transferred.
 | AcademyDesk/AcademyDesk | codex/penta-local-source-20261029 | 6887e6eb26e88f8fc99eee7a00c267a14c12883f |
 | AcademyDesk/PentaMini | codex/mini-local-source-20261029 | c3c61b9ef3f239035c8b8f46649c66997e98f2b6 |
 
-The first four integration commits form a chain. The original application/Mini
+The first five integration commits form a chain. The original application/Mini
 preservation branches hold the remaining source; they must not be merged wholesale.
 Accepted main is unchanged atf7af512. Do not mistake a preservation branch for
 the integrated application or a production release.
+
+Teacher publication has been independently fetched and verified atc248912.
+The next student-service checkpoint is
+`codex/penta-student-service-integration-20261029` fromc248912, with1606API and
+50SQL/HTTP/service checks including5mixed duplicate races. Owner authorized its
+publication on30October. Fetch and verify the actual remote branch/SHA before
+using it; do not infer publication from this document alone.
 
 The teacher-service continuation is on
 `codex/penta-teacher-service-integration-20261029`, based on4e70762. Fetch and
@@ -33,8 +41,8 @@ Continue Academy Desk's existing enterprise/PENTA implementation. Do not restart
 the backend, repeat accepted audits or use another profile's chat as evidence.
 
 Fetch GitHub metadata for AcademyDesk/AcademyDesk. Prefer the verified published
-codex/penta-teacher-service-integration-20261029 checkpoint if present; otherwise
-use codex/penta-enrollment-integration-20261029 at4e70762. Record exact branch/SHA
+codex/penta-student-service-integration-20261029 checkpoint if present; otherwise
+use codex/penta-teacher-service-integration-20261029 atc248912. Record exact branch/SHA
 and status. Read AGENTS.md, WORK_LAPTOP_START.md, AI_HANDOFF.md,
 AI_CROSS_PROFILE_HANDOFF.md, AI_MODEL_ROUTING.md, AI_PRODUCT_VISION.md,
 PENTA_HOST_SECURITY_POLICY.md and ENTERPRISE_TESTING_ROADMAP.md.
@@ -52,7 +60,12 @@ validated Voided restoration, preserve invoice reductions/refund restrictions,
 current tenant/role/resource authority, exact finance, transactions and audit.
 Enrollment Manual/service operations and typed adapters are integrated; protected
 enrollment conversation approval/execution/receipt/recovery is still pending.
-Continue protected student/teacher domain/host persistence, approvals and recovery,
+Student/teacher domain services are integrated in the student checkpoint; their
+protected conversational approvals/receipts/recovery are still pending. Preserve
+and join the8new cloud commits througha63e392 fromcodex/release-export-security,
+including role/session/recovery/export, payroll print, assessment/attendance and
+work-item validation; do not replace those fixes with the preserved older source.
+Continue protected student/teacher host persistence, approvals and recovery,
 the explicit cloud/local migration path, then connected PENTA/Manual visuals and
 remaining conversational workflows using the existing source and tests.
 

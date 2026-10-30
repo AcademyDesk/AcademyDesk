@@ -66,6 +66,7 @@ public sealed class AuditOutcomeTests
     [Theory]
     [InlineData(typeof(StudentsController), "Create", true)]
     [InlineData(typeof(TeachersController), "Create", true)]
+    [InlineData(typeof(StudentOnboardingController), "Create", true)]
     [InlineData(typeof(StudentsController), "Update", true)]
     [InlineData(typeof(TeachersController), "Update", true)]
     [InlineData(typeof(ClassMediaUploadsController), "Complete", false)]
@@ -97,6 +98,7 @@ public sealed class AuditOutcomeTests
     // Shared teacher creation holds current Identity authority through the
     // domain/audit commit; this explicit requirement strengthens the boundary.
     [InlineData(typeof(TeachersController), "Create", true)]
+    [InlineData(typeof(StudentOnboardingController), "Create", true)]
     [InlineData(typeof(StudentsController), "Update", true)]
     [InlineData(typeof(TeachersController), "Update", true)]
     [InlineData(typeof(ClassMediaUploadsController), "Complete", false)]
@@ -109,6 +111,7 @@ public sealed class AuditOutcomeTests
 
     [Theory]
     [InlineData(typeof(TeachersController), "Create", true)]
+    [InlineData(typeof(StudentOnboardingController), "Create", true)]
     [InlineData(typeof(TeachersController), "Update", false)]
     [InlineData(typeof(StudentsController), "Create", false)]
     [InlineData(typeof(EnrollmentsController), "Create", false)]

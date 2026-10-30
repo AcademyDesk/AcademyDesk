@@ -25,6 +25,7 @@ if (!builder.Environment.IsEnvironment("Testing")) Directory.CreateDirectory(web
 builder.Services.AddScoped<AcademyAccessFilter>();
 builder.Services.AddScoped<EnrollmentMutationService>();
 builder.Services.AddScoped<TeacherCreationService>();
+builder.Services.AddScoped<StudentOnboardingService>();
 builder.Services.AddControllers(options => options.Filters.AddService<AcademyAccessFilter>());
 builder.Services.AddPrivateMediaStorage(builder.Configuration, builder.Environment);
 builder.Services.AddScoped<ClassMaterialAccess>();

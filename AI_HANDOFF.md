@@ -1,5 +1,62 @@
 # Academy Desk handoff
 
+## Student onboarding qualified; publication approved — 30 October 2026
+
+- [x] Branch `codex/penta-student-service-integration-20261029` fromc248912
+  integrates existing shared student service/rules and strict credential-free
+  fields. Manual request shape retained; current authenticated stored authority,
+  academy duplicate locking and one SQL/Identity/audit transaction enforced.
+- [x]1606API/zero failed/zero skipped; final50real SQL/HTTP/service checks,
+  including21retained atomic cases,7retained direct cases,22additional cases,
+ 5mixed Manual/service duplicate races and three parent-account missing-email
+ 400/no-partial-save checks. No schema, finance, teacher or frontend change.
+- [x] Overnight interrupted SQL is not accepted. Actual30October successor
+  a7c520047e1245eba28c556ae0a0e822/SQLff5e776ca0274a02bc32c7ff89fb7416
+  reuses only source-matched passing1606API evidence, rebuilds the harness and
+  completes84app/7Identity migrations/owned cleanup. Exact original service IDs/images/healthy state,API200,
+  complete Docker inventory and owned cleanup restoration PASS. Original interrupted
+  stopped container/evidence and archived verified lease are preserved.
+- [x] Owner authorized publishing validated work for office-laptop continuation.
+  Verify actual remote SHA/0ahead0behind; no automatic main/Azure/model action.
+- [ ] New cloud a63e392(8commits after10a60ee) still requires coherent join;
+  protected host/session/draft/approval/receipt/recovery and migration integration,
+  connected UI/remaining cohorts, failed Mini portability/semantic qualification,
+  browser/device/P0/security/restore/staging/release gates remain OPEN.
+
+Report:QA/REPORTS/PENTA_STUDENT_SERVICE_INTEGRATION_2026-10-30.md. No90%AI or
+production-ready claim. Candidate model-loading stop stands. Sol High next.
+
+
+## Student onboarding integration in progress — 29 October 2026
+
+Branch `codex/penta-student-service-integration-20261029`, worktree
+`D:\AcademyDesk-penta-student`, starts at published teacher checkpoint
+`c248912041ac55fbc84ea640fa5b355a54a4e45a`. No new publication is authorized.
+The teacher checkpoint is independently verified at that remote SHA with0ahead/
+0behind. Its earlier publication-pending wording is chronological history.
+
+Existing shared student service/rules and strict non-credential fields are
+integrated with Manual create's existing request shape. Current stored actor/
+role/tenant checks and required SQL/Identity/audit boundary are strengthened.
+Parent account creation now rejects null/blank email before any domain write;
+adult optional guardian details without an account remain allowed. Platform-
+marked actors retain the existing same-academy Owner/Admin restriction.
+
+First source-bound local window `c47faf81014b475fa797cecde97c92c7` passed1597API/
+zero skips and47actual SQL/HTTP/service checks, including21retained atomic HTTP,
+7retained direct boundary cases and19additive cases/5mixed duplicate races.
+SQLrun `941c48bae939412bb0678837c96aa868` applied84app/7Identity migrations.
+Exact original services/images,API200,full Docker inventory and owned cleanup
+restored. Final null-email correction adds9unit and3real SQL cases; its retest
+is IN PROGRESS. Do not reuse the first result for the changed rules/test source.
+
+No AI tool/route/model is activated; domain success is not a conversational
+receipt. Protected session/draft/approval/execution/recovery/migrations and
+connected UI remain the next integration packet. Mini qualification/failed cloud
+CI and all enterprise/release gates remain open. Stop before candidate loading
+stands. Sol High remains appropriate for current authority/transaction work.
+
+
 ## Teacher service qualified; work-laptop continuation ready — 29 October 2026
 
 - [x] Current branch codex/penta-teacher-service-integration-20261029 from4e70762
