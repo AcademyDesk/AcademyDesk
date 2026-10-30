@@ -2,7 +2,7 @@ name: Verify AcademyDesk
 
 on:
   push:
-    branches: [main, codex/release-export-security]
+    branches: [main, codex/release-export-security, codex/penta-shared-readiness-20261030]
   pull_request:
     branches: [main]
   workflow_call:
