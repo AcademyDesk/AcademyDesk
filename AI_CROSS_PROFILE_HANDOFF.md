@@ -1,5 +1,32 @@
 # Academy Desk — shared continuation across profiles
 
+## Cloud fixes joined with PENTA service checkpoint — 30 October 2026
+
+- [x] Published student checkpoint13ed932 is the base of
+  `codex/cloud-penta-reconcile-20261030`. The other profile's8cloud commits through
+  a63e392 are reconciled:41exact unchanged-base paths and6explicitly combined
+  files. Both SQL gate inventories/financial races and domain services retained.
+- [x]1645full API/zero skips,93affected frontend checks and8real SQL modules PASS:
+  work items, exports, role replacement/revocation, session revocation/refresh,
+  concurrent refresh and real owned SQL backup/restore. First5SQL results retained
+  only after exact source/compiled-binary match; final3fresh. No scenario assertions
+  or release gates weakened. Source-bound report records all run IDs and failures.
+- [x] Startup authentication was made an explicit bounded prerequisite before DB
+  creation. Native Node helpers use pinned cached dependencies locally. No package
+  update/download/model experiment. Exact original services/images/health,API200,complete inventory
+  and released shared lease PASS before publication.
+- [ ] Exact-lock web build/current GitHub CI/browser/device/release gates OPEN.
+  No main merge/Azure/customer DB/issue closure or90%AI readiness claim.
+- [ ] Protected PENTA host preparation inD:\AcademyDesk-penta-host is UNVALIDATED,
+  not included here. Continue it on this combined base, preserving all prepared
+  source; additive migration, safe rollback and retained actual SQL flows next.
+  Mini semantic qualification/failed cloud portability and candidate-loading stop
+  remain. Sol High continues; settled UI/docs route toSol Medium.
+
+Report:QA/REPORTS/CLOUD_PENTA_RECONCILIATION_2026-10-30.md. Verify actual published
+SHA rather than assuming a push/CI result. Do not reapplya63e392wholesale again.
+
+
 ## Student onboarding qualified; publication approved — 30 October 2026
 
 - [x] Branch `codex/penta-student-service-integration-20261029` fromc248912

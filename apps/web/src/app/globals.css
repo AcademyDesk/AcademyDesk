@@ -5697,3 +5697,22 @@ html[data-theme="light"] .field-label { color: #475569; }
 .standard-select-menu button:hover,.standard-select-menu button[aria-selected="true"] { border-color:color-mix(in srgb,var(--ad-accent) 25%,transparent); background:var(--ad-accent-soft); color:var(--ad-accent); }
 .assessments-results-panel .assessment-grading-mode { grid-column:1 / -1; display:grid; gap:7px; min-width:0; color:var(--ad-text-muted); font-size:.78rem; font-weight:650; }
 .assessments-results-panel .assessment-grading-help { grid-column:1 / -1; color:var(--ad-text-muted); font-size:.75rem; line-height:1.5; }
+
+/* A payroll print action commits exactly one freshly read saved payout. */
+.payroll-payslip { max-width: 760px; margin: 24px auto; padding: 28px; border: 1px solid #cbd5e1; background: #fff; color: #111827; overflow-wrap: anywhere; }
+.payroll-payslip header { padding-bottom: 18px; border-bottom: 2px solid #334155; }
+.payroll-payslip header p { margin: 0; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; }
+.payroll-payslip h2 { margin: 6px 0 12px; font-size: 28px; }
+.payroll-payslip dl > div { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 20px; padding: 12px 0; border-bottom: 1px solid #e2e8f0; }
+.payroll-payslip dt { font-weight: 600; }
+.payroll-payslip dd { margin: 0; }
+.payroll-payslip-net { font-weight: 800; font-size: 18px; }
+@media print {
+  html:has(.payroll-payslip), body:has(.payroll-payslip) { display: block !important; height: auto !important; min-height: 0 !important; overflow: visible !important; margin: 0 !important; background: #fff !important; }
+  .enterprise-app-shell:has(.payroll-payslip), .enterprise-workspace:has(.payroll-payslip), .payroll-standard:has(.payroll-payslip) { display: block !important; position: static !important; width: 100% !important; height: auto !important; min-height: 0 !important; max-height: none !important; overflow: visible !important; margin: 0 !important; padding: 0 !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; background: #fff !important; }
+  .enterprise-app-shell:has(.payroll-payslip) > :not(:has(.payroll-payslip)), .enterprise-workspace:has(.payroll-payslip) > :not(:has(.payroll-payslip)) { display: none !important; }
+  .payroll-standard > :not(.payroll-payslip) { display: none !important; }
+  .payroll-payslip, .payroll-payslip * { visibility: visible !important; color: #111827 !important; }
+  .payroll-payslip { position: static; width: 100%; max-width: none; margin: 0; padding: 20px; border: 0; box-shadow: none; background: #fff !important; }
+  .payroll-payslip dl > div { break-inside: avoid; }
+}

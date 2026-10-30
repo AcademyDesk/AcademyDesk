@@ -1,5 +1,32 @@
 # Academy Desk handoff
 
+## Cloud fixes joined with PENTA service checkpoint — 30 October 2026
+
+- [x] Published student checkpoint13ed932 is the base of
+  `codex/cloud-penta-reconcile-20261030`. The other profile's8cloud commits through
+  a63e392 are reconciled:41exact unchanged-base paths and6explicitly combined
+  files. Both SQL gate inventories/financial races and domain services retained.
+- [x]1645full API/zero skips,93affected frontend checks and8real SQL modules PASS:
+  work items, exports, role replacement/revocation, session revocation/refresh,
+  concurrent refresh and real owned SQL backup/restore. First5SQL results retained
+  only after exact source/compiled-binary match; final3fresh. No scenario assertions
+  or release gates weakened. Source-bound report records all run IDs and failures.
+- [x] Startup authentication was made an explicit bounded prerequisite before DB
+  creation. Native Node helpers use pinned cached dependencies locally. No package
+  update/download/model experiment. Exact original services/images/health,API200,complete inventory
+  and released shared lease PASS before publication.
+- [ ] Exact-lock web build/current GitHub CI/browser/device/release gates OPEN.
+  No main merge/Azure/customer DB/issue closure or90%AI readiness claim.
+- [ ] Protected PENTA host preparation inD:\AcademyDesk-penta-host is UNVALIDATED,
+  not included here. Continue it on this combined base, preserving all prepared
+  source; additive migration, safe rollback and retained actual SQL flows next.
+  Mini semantic qualification/failed cloud portability and candidate-loading stop
+  remain. Sol High continues; settled UI/docs route toSol Medium.
+
+Report:QA/REPORTS/CLOUD_PENTA_RECONCILIATION_2026-10-30.md. Verify actual published
+SHA rather than assuming a push/CI result. Do not reapplya63e392wholesale again.
+
+
 ## Student onboarding qualified; publication approved — 30 October 2026
 
 - [x] Branch `codex/penta-student-service-integration-20261029` fromc248912
@@ -808,3 +835,208 @@ regressions or existing security gates, with focused tests and handoff updates.
   compilation PASS. Push this plus fixture repair for source-bound CI.
 - No issue closure/deployment. Next route:Codex/Sol High inspect latest run and
   repair actual failures before production gates can pass.
+
+
+## Other-profile cloud history imported for reconciliation — 30 October 2026
+
+Source a63e392; these are historical cloud results, not acceptance of the current combined candidate.
+
+
+## 2026-10-28 — Saved payroll print/PDF repair
+
+- BUG-FUNC-0033:10 controlled failures reproduced; final11 print and23 existing
+  form cases PASS. Fresh selected-ID read, shape checks, same-tick guard, explicit
+  retry, retired-page protection and committed document before print. Stored
+  name/type/amounts/status/currency/reference included; cents preserved.
+- Real Chrome156/Playwright Core1.64.1 at1280x900 and390x844 produced4 complete
+  one-page PDFs PASS. Initial actual PDF clipping was reproduced, retained and
+  fixed with payroll-only print shell resets. No other records/app UI in PDFs.
+- Browser uses only intercepted synthetic API responses;0API writes/page errors.
+  Auth/SQL/settlement, other engines/long content and full release remain OPEN.
+- Full frontend49files:1,123tests/1,120PASS/3same missing historical SQL fixture
+  failures/0skip-cancel. No fake SQL log. TypeScript/webpack PASS; targeted lint
+  0errors/1inherited warning. API1,179 prior PASS retained, not rerun.
+- CI now requires this browser/PDF check and saves synthetic artifacts. Its
+  loopback export is separate from the deployment's production-configured build.
+  Actionlint/diff checks PASS. Report:QA/REPORTS/CLOUD_PAYROLL_PRINT_2026-10-28.md.
+- Runtime tools live under /workspace/.tools/browser and /workspace/.tools/chrome;
+  no production dependencies added. Source/fixture evidence is being checkpointed; PDFs
+  stay ignored. Issue remains OPEN; no deployment/main merge/publication.
+- Next route:Codex/Sol High inspect actual candidate CI, fix failures and continue
+  critical payroll/finance/tenant acceptance.
+
+## 2026-10-29 IST — Verified remote checkpoint before print publication
+
+- GitHub run40738226886 for10a60eebc2e193b06de31622e897e755062dd72c is
+  observed COMPLETED/SUCCESS on the ordinary Actions overview. This includes
+  the corrected FinanceIntegrity fixture and mandatory real SQL modules, payroll
+  upgrade/history, operational record/audit cases, private Blob, full frontend
+  with fresh communication SQL evidence, builds and API container smoke.
+- Detailed remote logs/artifact contents were not imported. Local3 historical
+  SQL-evidence failures remain local; remote run generated its own actual data.
+- Payroll-print final source has local browser/PDF/unit/build evidence and is now
+  being checkpointed for its own CI. Older run success does not cover that source.
+- PentaMini research tests rerun49 PASS; no actual AcademyDesk gateway/connector
+  or broad90%AI completion claim. Production release gates still OPEN.
+
+## 2026-10-29 IST — Security/recovery acceptance expansion
+
+- Payroll print source committed/pushed128604b. Its candidate verification run
+  40836452644 is being checked; historical10a60ee run40738226886 is SUCCESS.
+- CI adds existing real SQL RoleReplacement, RoleRevocation, SessionRevocationRepair,
+  SessionRefresh and RefreshConcurrency modules, plus new6-stage Recovery drill.
+- Recovery uses only this invocation's fresh marked GUID database in its verified
+  loopback Docker container. Copy-only/checksum backup and VERIFYONLY/header checks;
+  QA canary mutation; actual guarded RESTORE; all ordered table/column SHA256s;
+  restored marker/migrations/runtime privileges/HTTP+Identity checks. No configured
+  DB or external target accepted. Raw rows/backup contents are not published.
+- New harness compile0warnings/errors, PowerShell syntax/actionlint/diff PASS.
+  Production guard14synthetic cases and11host/ownership guard cases PASS.
+  Actual added SQL modules await CI.
+- This is synthetic SQL recovery, not Azure PITR/customer/media/production rollback
+  evidence. Report:QA/REPORTS/CLOUD_RELEASE_ACCEPTANCE_2026-10-29.md.
+- All five P0 and remaining critical P1/full staging/production gates remain OPEN.
+  No issue closure, main merge, deployment, environment publication or Penta change.
+- Next route:Codex/Sol High inspect exact candidate CI and repair actual failures;
+  continue remaining form/workflow integrity and release acceptance.
+
+## 2026-10-29 IST — Assessment result generation isolation
+
+- BUG-DATA-0018 assessment slice:9 original controlled cases reproduced8failures.
+  Final44 assessment checks PASS(14isolation +29retained +1other-row lock).
+- Fresh academy/assessment generation gates editor visibility/save. Pending/failed/
+  malformed/null/missing-score/duplicate result rows lock; explicit retry; retired
+  callbacks/late saves/readbacks/A-B-A/unmount and same-tick duplicates guarded.
+  All rows lock during save; only actual learner shows Saving. Existing grading/
+  options payload/control cases preserved via the effect-aware page harness.
+- Full frontend50files/1,138tests:1,135PASS/3same absent historical SQL-evidence
+  failures/0skip-cancel. TypeScript/webpack PASS; scoped lint0errors/1inherited
+  load-effect warning. API1,179 earlier PASS retained, not rerun.
+- Report:QA/REPORTS/CLOUD_ASSESSMENT_ISOLATION_2026-10-29.md. Actual browser/SQL
+  and broad issue/critical acceptance remain OPEN. No API/schema changes.
+- GitHub payroll-print job123322240946 for run40836452644/source128604b is
+  observed SUCCEEDED in13m58s, including mandatory Chrome/PDF verification.
+  Expanded security/recovery +this newer source need their own exact run.
+- No main merge, deployment, configured DB access, environment publication or
+  Penta changes. Next route:Codex/Sol High actual candidate CI and remaining
+  attendance/form integrity/production acceptance.
+
+## 2026-10-29 IST — Attendance fresh-load guards and real assessment DOM
+
+- BUG-DATA-0018 attendance:10 new failures reproduced; final34checks PASS
+  (10new +24retained notes). Cached/revisited sessions require fresh matching
+  reads; failure/malformed records lock with retry. Save/readback/callbacks are
+  academy/session generation-scoped. A-B-A, unmount and duplicate guards retain
+  newer drafts; previous notes/payload/clear/null/Unicode/length behavior kept.
+- Full frontend51files/1,148tests:1,145PASS/3same historical missing SQL-evidence
+  failures/0skip-cancel. TypeScript/webpack PASS; targeted lint0errors/1inherited
+  workspace-load warning. Earlier API1,179 PASS retained, not rerun.
+- Assessment actual Chrome at1280x900/390x844:8grouped DOM/transport checks PASS
+  for pending/failure/retry/reversed reads/draft rejection/readback uncertainty,
+  exact selected write payload and unchanged other assessment;0page errors.
+  Synthetic intercepted transport only, not Identity/SQL. Added to CI browser step.
+- Report:QA/REPORTS/CLOUD_ATTENDANCE_ISOLATION_2026-10-29.md. Broader issue,
+  actual authenticated SQL/concurrent server/device and release remain OPEN.
+- Remoteeaa95e5fa1e76bca53e8e00ebdb54b76b863c8b6 was verified pushed; expanded
+  role/session/Recovery run40838396103 is being checked. Source128604b prior run
+  40836452644 SUCCESS is observed. New attendance/browser-QA source needs CI.
+- No main merge, configured DB access, deployment, publication or Penta change.
+  Next route:Codex/Sol High real candidate CI failures and remaining critical gates.
+
+## 2026-10-29 IST — Actual native-session CI adapter failure repaired
+
+- eaa95e5 run40838396103 FAILURE in10m16s at native SessionRefresh client exit.
+  RoleReplacement/SessionRevocationRepair completed earlier; RoleRevocation was
+  diagnostic-only, not strict acceptance. Later refresh-concurrency/Recovery
+  stages did not execute. Older128604b green remains historical.
+- Actual native VM lacked AbortController required by current api.ts. Controlled
+  probe reproduces ReferenceError with old globals and401/refresh/replay200 with
+  supplied global. QA-only fix; production helper unchanged.
+- Added token-safe client diagnostics:known exception/global, bounded numeric
+  mismatch and known .cjs source line only. Four leakage/bounds tests PASS;
+  combined existing refresh/concurrency/diagnostic61tests PASS.
+- CI RoleRevocation now uses explicit fixed mode, preserving old diagnostic mode
+  but requiring zero policy gaps for CI. No expected denials relaxed.
+- Harness compile0warnings/errors, PowerShell/actionlint/diff PASS. Report
+  QA/REPORTS/CLOUD_NATIVE_SESSION_QA_2026-10-29.md. Next real SQL result pending;
+  do not claim restore/concurrency acceptance until actual success.
+
+Final combined checkpoint:52frontend files/1,152tests;1,149PASS/3same local
+missing historical SQL-evidence failures/0skip-cancel. Attendance34 and assessment
+44controlled checks retained; real assessment browser8groups PASS. Native client
+61checks/safe diagnostics PASS. Strict RoleRevocation/SessionRefresh/Recovery
+PowerShell routing probe PASS without provisioning; SQLharness0warnings/errors.
+New candidate still requires real CI; earlier eaa95e5 is FAILED, not accepted.
+
+## 2026-10-29 IST — Recovered continuation and work-item validation
+
+- Both repositories accessible with push permission. Fresh workspace contained
+  clean older snapshots, no interrupted work-item/SQL edits. Fetched AcademyDesk
+  feature branch exactly c7fca5f; PentaMini remote/local2bf76b5 unchanged. No reset,
+  clean/stash or overwrite. Required governance files read.
+- Exact c7fca5f CI40840527086/job123335512505 SUCCESS; actual steps/logs read.
+  Strict role replacement/revocation and session repair/refresh/concurrency PASS.
+  All6 Recovery stages PASS, including actual RESTORE and exact70-table/schema
+  fingerprint equality, restored privileges/migrations/Identity/HTTP. Full web
+  1,152 PASS with real generated SQL evidence; API1,179 PASS. This is bounded
+  synthetic SQL acceptance, not Azure/customer/media/production rollback proof.
+- BUG-DATA-0048 rebuilt:33 initial tests29FAIL/4PASS. Both writers now validate
+  active/unlocked same-academy staff assignees; unassigned/admin/custom staff
+  controls remain. Public generic links limited to existing Invoice/PersonDocument
+  complete same-academy pairs. Priority/text bounds checked. Admin mutations use
+  existing domain/audit boundary; Finance already did. No payroll/payment policy,
+  schema or endpoint RBAC change.
+- Added mandatory owned WorkItemIntegrity SQL module for reference/role/no-write/
+  accepted-control/list/status and4 audit-fault rollback paths. Harness compiles
+  0warnings/errors. Focused61PASS and API1,212PASS initially; final API1,217PASS/0fail/skip
+  after lockout/action-boundary additions. Exact candidate CI is pending.
+- Local SQL image pull remains Forbidden; configured DB/normal seeder untouched.
+  NuGet writes use /workspace/work caches; shell network permission enables Git.
+  Report:QA/REPORTS/CLOUD_WORK_ITEM_VALIDATION_2026-10-29.md.
+- Production guard14fixtures PASS; actual guard blocks all5P0 as required. Issues
+  stay OPEN; browser/device/full critical and production recovery gates remain.
+  No main merge, deployment, environment publication or PentaMini source change.
+- Next route:Codex for exact candidate CI triage and remaining critical acceptance.
+
+## 2026-10-29 IST — Export consumer/SQL verification increment
+
+- Work-item implementation97f301ebb62aed223f4cf90c4d3b297151a396b6 pushed and
+  remote verified; CI40920810451 is being checked. Local finalAPI1,217PASS.
+- Unchanged frontend encoder checked in actual LibreOfficeDev26.8alpha. Final
+  byte-preserving per-profile probe:raw =1+1 evaluates2;18 non-NUL and19 NUL-
+  containing protected rows have0formula cells. Initial combined timeout retained;
+  not established as NUL product failure. Added repeatable check-csv-spreadsheet.py
+  with private profiles, bounded process groups, hashes, fail-closed calibration.
+  Stable supported Excel/Calc and browser download acceptance still required.
+- Added owned ExportSecurity SQL module for6 paths x15 dangerous text variants,
+  strict UTF8/framework CSV parsing, exact fields/typed amounts/headers, tenant/
+  role/filter and unchanged full fresh SQL rows.31 grouped HTTP cases scheduled;
+  compilation0warnings/errors and all-workflow actionlint PASS; actual CI pending.
+- PentaMini49tests PASS using its existing virtual environment; unchanged source.
+  No inference/integration claim. Current security matrix/critical acceptance
+  mapping updated; all5P0 and CSV issue remain OPEN. No deployment/publication.
+
+Work-item candidate verification completed:97f301e CI40920810451 SUCCESS, actual
+job123613198709 logs read. API1,217/frontend1,152 PASS; WorkItemIntegrity fresh
+owned SQL/audit fault/exit0/cleanup PASS. Older runner whitelist hid its per-case
+lines (execution/failure propagation intact); next QA batch exposes safe prefixes
+and57/31 case inventories. Strict security and all6 Recovery stages repeated PASS,
+as did finance races/private Blob/build/browser/image checks. No P0 closure.
+
+## 2026-10-29 IST — Final Identity role-case correction
+
+- Remaining active staff validation gap reproduced:12 assignee cases11PASS/1FAIL;
+  lowercase teacher role name was accepted, despite Identity's normalized Teacher
+  role semantics. Shared portal exclusion now uses OrdinalIgnoreCase. No grants,
+  schema or payroll/restoration policy changed.
+- WorkItemIntegrity now verifies actual TEACHER-normalized/teacher-display role
+  representation in both writer paths, retaining57 cases. ExportSecurity31 and
+  safe per-case logging remain scheduled. Final fullAPI1,218PASS/0fail/skip;
+  harness0warnings/errors, actionlint/diff PASS. Local SQL image still blocked.
+- Latest verified complete CI is97f301e/run40920810451 SUCCESS.256b160 QA-only
+  candidate is superseded by this corrected source; final candidate needs its own
+  observed actual SQL/HTTP/security/recovery result. Continue checking CI without
+  assuming historical green covers it. All5P0 and broader gates remain OPEN.
+- No main merge, configured DB access, deployment, publication or Penta changes.
+  Next route:Codex exact candidate CI/remaining acceptance; recurring pushes remain
+  authorized and no repeat continue confirmation is needed.

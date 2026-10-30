@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { WorkspaceNav } from "@/components/workspace-nav";
 import {
   StandardDateField,
@@ -42,12 +42,23 @@ type AssessmentOptions = {
   gradingSchemes: GradingScheme[];
 };
 const assessmentTypes = ["Performance", "Exam", "Recital", "Test", "Practical"];
+type ResultScope = { key: string; generation: object; phase: "loading" | "ready" | "error" };
+const initialResults = (key: string): ResultScope => ({ key, generation: {}, phase: "loading" });
 
 async function readResults(academyId: string | undefined, assessmentId: string): Promise<Result[]> {
   if (!academyId || !assessmentId) return [];
   const response = await academyApi(`/api/academies/${academyId}/assessments/${assessmentId}/results`, { cache: "no-store" });
   if (!response.ok) throw new Error();
-  return response.json();
+  const data: unknown = await response.json();
+  const optionalString = (value: unknown) => value == null || typeof value === "string";
+  if (!Array.isArray(data) || !data.every(row => row !== null && typeof row === "object"
+      && typeof row.studentId === "string" && Boolean(row.studentId.trim())
+      && typeof row.score === "number" && Number.isFinite(row.score)
+      && optionalString(row.grade) && optionalString(row.remarks)
+      && (row.isGradeManual == null || typeof row.isGradeManual === "boolean")
+      && typeof row.isPublished === "boolean") || new Set(data.map(row => row.studentId)).size !== data.length)
+    throw new Error("Invalid assessment result list.");
+  return data as Result[];
 }
 
 export default function AssessmentsPage() {
@@ -68,6 +79,23 @@ export default function AssessmentsPage() {
   const [gradingSchemeId, setGradingSchemeId] = useState("");
   const [message, setMessage] = useState("Loading assessments…");
   const [savingStudentId, setSavingStudentId] = useState("");
+  const selectionKey = academy?.id && assessmentId ? `${academy.id}:${assessmentId}` : "";
+  const [resultScope, setResultScope] = useState(initialResults(selectionKey));
+  const currentScope = useRef(resultScope);
+  const pendingSave = useRef<object | null>(null);
+  const mounted = useRef(false);
+  if (resultScope.key !== selectionKey) {
+    const next = initialResults(selectionKey);
+    setResultScope(next); setResults([]); setSavingStudentId(""); setMessage("");
+  }
+  const resultsReady = Boolean(selectionKey) && resultScope.key === selectionKey && resultScope.phase === "ready";
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
+  useEffect(() => { currentScope.current = resultScope; }, [resultScope]);
+  function resetResults(id = assessmentId) {
+    const next = initialResults(academy?.id && id ? `${academy.id}:${id}` : "");
+    currentScope.current = next; setResultScope(next); setResults([]); setSavingStudentId(""); setMessage(""); setAssessmentId(id);
+  }
+
   async function load(academyId?: string) {
     const id = academyId ?? academy?.id;
     if (!id) return;
@@ -96,9 +124,6 @@ export default function AssessmentsPage() {
       setAssessmentId(assessmentData[0].id);
     setMessage("");
   }
-  async function loadResults(id: string) {
-    setResults(await readResults(academy?.id, id));
-  }
   useEffect(() => {
     void (async () => {
       try {
@@ -119,12 +144,22 @@ export default function AssessmentsPage() {
     })();
   }, []);
   useEffect(() => {
+    if (!selectionKey) return;
     let active = true;
+    const generation = resultScope.generation;
     void readResults(academy?.id, assessmentId).then((data) => {
-      if (active) setResults(data);
-    }).catch(() => { if (active) setMessage("Assessment results could not be loaded."); });
+      if (active && mounted.current && currentScope.current.generation === generation) {
+        setResults(data);
+        setResultScope(current => current.generation === generation ? { ...current, phase: "ready" } : current);
+      }
+    }).catch(() => {
+      if (active && mounted.current && currentScope.current.generation === generation) {
+        setResultScope(current => current.generation === generation ? { ...current, phase: "error" } : current);
+        setMessage("Assessment results could not be loaded.");
+      }
+    });
     return () => { active = false; };
-  }, [academy?.id, assessmentId]);
+  }, [academy?.id, assessmentId, selectionKey, resultScope.generation]);
   async function createAssessment(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!academy || !batchId) return;
@@ -175,7 +210,10 @@ export default function AssessmentsPage() {
     remarks: string,
     isGradeManual: boolean,
   ) {
-    if (!academy || !selected || Number.isNaN(score)) return;
+    const generation = resultScope.generation;
+    const active = () => mounted.current && currentScope.current.generation === generation;
+    if (!academy || !selected || !resultsReady || !active() || pendingSave.current === generation || !roster.some(student => student.id === studentId) || !Number.isFinite(score)) return;
+    pendingSave.current = generation;
     setSavingStudentId(studentId);
     setMessage("");
     try {
@@ -194,21 +232,24 @@ export default function AssessmentsPage() {
           }),
         },
       );
+      if (!active()) return;
       if (!response.ok) {
         const details = await response.json().catch(() => null);
-        setMessage(details?.message ?? "Assessment result could not be saved. Your entries have been retained.");
+        if (active()) setMessage(typeof details?.message === "string" && details.message.trim() ? details.message : "Assessment result could not be saved. Your entries have been retained.");
         return;
       }
       setMessage("Assessment result saved.");
       try {
-        await loadResults(selected.id);
+        const data = await readResults(academy.id, selected.id);
+        if (active()) setResults(data);
       } catch {
-        setMessage("Assessment result saved, but results could not be refreshed. Refresh the page to see the saved result.");
+        if (active()) setMessage("Assessment result saved, but results could not be refreshed. Refresh the page to see the saved result.");
       }
     } catch {
-      setMessage("Assessment result could not be confirmed. Your entries have been retained; check the saved result before retrying.");
+      if (active()) setMessage("Assessment result could not be confirmed. Your entries have been retained; check the saved result before retrying.");
     } finally {
-      setSavingStudentId("");
+      if (pendingSave.current === generation) pendingSave.current = null;
+      if (active()) setSavingStudentId("");
     }
   }
   const batchName = (id: string) =>
@@ -325,7 +366,8 @@ export default function AssessmentsPage() {
               <StandardSelectField
                 name="assessment"
                 value={assessmentId}
-                onChange={setAssessmentId}
+                onChange={resetResults}
+                disabled={Boolean(savingStudentId)}
                 placeholder="Select assessment"
                 options={assessments.map((assessment) => ({
                   value: assessment.id,
@@ -334,7 +376,7 @@ export default function AssessmentsPage() {
               />
             </div>
             {selected &&
-              (roster.length === 0 ? (
+              (!resultsReady ? <div className="assessments-empty" role="status">{resultScope.phase === "error" ? <>Results are unavailable. <button type="button" onClick={() => resetResults()}>Retry results</button></> : "Loading assessment results…"}</div> : roster.length === 0 ? (
                 <p className="assessments-empty">
                   No active students are enrolled in this assessment’s batch.
                 </p>
@@ -347,6 +389,7 @@ export default function AssessmentsPage() {
                       result={currentResult(student.id)}
                       maxScore={selected.maxScore}
                       saving={savingStudentId === student.id}
+                      locked={Boolean(savingStudentId)}
                       onSave={saveResult}
                     />
                   ))}
@@ -364,12 +407,14 @@ function ResultRow({
   result,
   maxScore,
   saving,
+  locked = false,
   onSave,
 }: {
   student: Student;
   result?: Result;
   maxScore: number;
   saving: boolean;
+  locked?: boolean;
   onSave: (
     studentId: string,
     score: number,
@@ -396,7 +441,7 @@ function ResultRow({
             name={`grading-mode-${student.id}`}
             placeholder="Select grading mode"
             value={isGradeManual ? "manual" : "automatic"}
-            disabled={saving}
+            disabled={saving || locked}
             onChange={(value) => setIsGradeManual(value === "manual")}
             options={[
               { value: "automatic", label: "Automatic (grading scheme)" },
@@ -417,11 +462,11 @@ function ResultRow({
           onChange={(event) => setScore(event.target.value)}
           placeholder={`Score / ${maxScore}`}
           aria-label="Assessment score"
-          disabled={saving}
+          disabled={saving || locked}
         />
         <input
           value={grade}
-          disabled={saving || !isGradeManual}
+          disabled={saving || locked || !isGradeManual}
           maxLength={30}
           aria-label="Manual grade"
           onChange={(event) => setGrade(event.target.value)}
@@ -429,11 +474,12 @@ function ResultRow({
         />
         <input
           value={remarks}
+          disabled={saving || locked}
           onChange={(event) => setRemarks(event.target.value)}
           placeholder="Remarks"
         />
         <button
-          disabled={saving || score.trim() === "" || !Number.isFinite(Number(score)) || Number(score) < 0 || Number(score) > maxScore || (isGradeManual && !grade.trim())}
+          disabled={saving || locked || score.trim() === "" || !Number.isFinite(Number(score)) || Number(score) < 0 || Number(score) > maxScore || (isGradeManual && !grade.trim())}
           type="button"
           onClick={() => void onSave(student.id, Number(score), grade, remarks, isGradeManual)}
         >

@@ -1,12 +1,12 @@
 # Fresh local owned SQL only. Real auth/API and strict selected finance regression.
-param([ValidateSet('StudentOnboardingShared','TeacherCreationShared','EnrollmentShared','CollectionRace','AdjustmentRace','Reconciliation','Adjustment','Payroll','Transition','Consumers','Access','AuditBaseline','AuditFixed','PeopleBaseline','PeopleFixed','LinkedBaseline','LinkedFixed','BranchBaseline','BranchFixed','Lookups','Governance','CollectionsBaseline','Collections','InvoiceSettingsBaseline','InvoiceSettings','BranchAddressBaseline','BranchAddress','BatchTimesBaseline','BatchTimes','YearClosure','CoursePrerequisites','CoursePreservation','PromotionDecisions','AssessmentGrades','AssessmentRoster','AssessmentAccess','AssessmentOptions','AttendanceNotes','CalendarDetails','ScheduleDefaults','LeaveIdentity','MakeupLocation','RoleReplacement','RoleRevocation','SessionRevocationRepair','SessionRevocation','RefreshConcurrency','SessionRefresh','BrowserSession','BrowserProvisioning','ProvisioningConflict','ProvisioningConcurrency','AcademyProvisioning','PortalProvisioning','PlatformProvisioning','TrialDuration','TenantPlan','PlatformBilling','ActivityDeletion','AnnouncementAudience','GuardianFlags','CertificateFamily','CertificateEnrollment','ComplianceIdentity','ResourceScope','PracticeIdentity','SubmissionIdentity','ReviewContext','MarketingConsent','TemplateState','PreferenceAccess','InboxLifecycle','NotificationChannel','CommunicationRoundtrip','BatchPreservationBaseline','BatchPreservation','ClassMedia','FinanceIntegrity','RecordIntegrity')][string]$Module = 'Reconciliation', [string]$HarnessPath = '')
+param([ValidateSet('StudentOnboardingShared','TeacherCreationShared','EnrollmentShared','CollectionRace','AdjustmentRace','Reconciliation','Adjustment','Payroll','Transition','Consumers','Access','AuditBaseline','AuditFixed','PeopleBaseline','PeopleFixed','LinkedBaseline','LinkedFixed','BranchBaseline','BranchFixed','Lookups','Governance','CollectionsBaseline','Collections','InvoiceSettingsBaseline','InvoiceSettings','BranchAddressBaseline','BranchAddress','BatchTimesBaseline','BatchTimes','YearClosure','CoursePrerequisites','CoursePreservation','PromotionDecisions','AssessmentGrades','AssessmentRoster','AssessmentAccess','AssessmentOptions','AttendanceNotes','CalendarDetails','ScheduleDefaults','LeaveIdentity','MakeupLocation','RoleReplacement','RoleRevocation','SessionRevocationRepair','SessionRevocation','RefreshConcurrency','SessionRefresh','BrowserSession','BrowserProvisioning','ProvisioningConflict','ProvisioningConcurrency','AcademyProvisioning','PortalProvisioning','PlatformProvisioning','TrialDuration','TenantPlan','PlatformBilling','ActivityDeletion','AnnouncementAudience','GuardianFlags','CertificateFamily','CertificateEnrollment','ComplianceIdentity','ResourceScope','PracticeIdentity','SubmissionIdentity','ReviewContext','MarketingConsent','TemplateState','PreferenceAccess','InboxLifecycle','NotificationChannel','CommunicationRoundtrip','BatchPreservationBaseline','BatchPreservation','ClassMedia','FinanceIntegrity','RecordIntegrity','WorkItemIntegrity','ExportSecurity','Recovery')][string]$Module = 'Reconciliation', [string]$HarnessPath = '')
 $ErrorActionPreference = 'Stop'
 $qaRepo = (Resolve-Path (Join-Path $PSScriptRoot '../../..')).Path
 if ($HarnessPath) {
     $HarnessPath = (Resolve-Path -LiteralPath $HarnessPath).Path
     if (!(Test-Path -LiteralPath $HarnessPath -PathType Leaf) -or [IO.Path]::GetFileName($HarnessPath) -ne 'SqlHarness.dll') { throw 'An existing SqlHarness.dll is required before SQL provisioning.' }
 }
-if ($env:QA_CLOUD_FINANCE_RECONCILIATION -and ($env:QA_CLOUD_FINANCE_RECONCILIATION -ne '1' -or $Module -notin @('Payroll','FinanceIntegrity','Adjustment','Transition','Reconciliation','CollectionRace','AdjustmentRace','EnrollmentShared','StudentOnboardingShared','TeacherCreationShared'))) { throw 'Invalid bounded finance validation mode.' }
+if ($env:QA_CLOUD_FINANCE_RECONCILIATION -and ($env:QA_CLOUD_FINANCE_RECONCILIATION -ne '1' -or $Module -notin @('Payroll','FinanceIntegrity','Adjustment','Transition','Reconciliation','CollectionRace','AdjustmentRace','EnrollmentShared','StudentOnboardingShared','TeacherCreationShared','WorkItemIntegrity','ExportSecurity','Recovery','RoleReplacement','RoleRevocation','SessionRevocationRepair','SessionRefresh','RefreshConcurrency'))) { throw 'Invalid bounded finance validation mode.' }
 $qaRun = [Guid]::NewGuid().ToString('N')
 $qaContainer = "academydesk-qa-$qaRun"
 $qaPreviousSa = $env:QA_SQL_SA_PASSWORD
@@ -14,6 +14,9 @@ $qaPreviousMssql = $env:MSSQL_SA_PASSWORD
 $qaStarted = [DateTime]::UtcNow
 $qaSwitch = switch ($Module) { 'StudentOnboardingShared' { '--audit-student-onboarding-shared' }; 'TeacherCreationShared' { '--audit-teacher-creation-service' }; 'EnrollmentShared' { '--audit-enrollment-shared' }; 'CollectionRace' { '--finance-collection-race' }; 'AdjustmentRace' { '--finance-adjustment-race' }; 'YearClosure' { '--audit-year-closure' }; 'CoursePrerequisites' { '--audit-course-prerequisites' }; 'CoursePreservation' { '--audit-course-preservation' }; 'PromotionDecisions' { '--audit-promotion-decisions' }; 'Adjustment' { '--finance-adjustment' }; 'Payroll' { '--payroll-net' }; 'Transition' { '--payment-transition' }; 'Consumers' { '--finance-consumers' }; 'Access' { '--finance-access' }; 'Lookups' { '--finance-lookups' }; 'Governance' { '--finance-governance' }; 'CollectionsBaseline' { '--collections-baseline' }; 'Collections' { '--collections-balance' }; 'InvoiceSettingsBaseline' { '--invoice-settings-baseline' }; 'InvoiceSettings' { '--invoice-settings' }; 'BatchTimesBaseline' { '--audit-batch-times-baseline' }; 'BatchTimes' { '--audit-batch-times-fixed' }; 'BatchPreservationBaseline' { '--audit-batch-preservation-baseline' }; 'BatchPreservation' { '--audit-batch-preservation-fixed' }; 'BranchAddressBaseline' { '--audit-branch-address-baseline' }; 'BranchAddress' { '--audit-branch-address-fixed' }; 'AuditBaseline' { '--audit-baseline' }; 'AuditFixed' { '--audit-fixed' }; 'PeopleBaseline' { '--audit-people-baseline' }; 'PeopleFixed' { '--audit-people-fixed' }; 'LinkedBaseline' { '--audit-linked-baseline' }; 'LinkedFixed' { '--audit-linked-fixed' }; 'BranchBaseline' { '--audit-branch-baseline' }; 'BranchFixed' { '--audit-branch-fixed' }; default { '--finance-reconciliation' } }
 try {
+    if ($Module -eq 'Recovery') { $qaSwitch = '--audit-recovery' }
+    if ($Module -eq 'ExportSecurity') { $qaSwitch = '--audit-export-security' }
+    if ($Module -eq 'WorkItemIntegrity') { $qaSwitch = '--audit-work-item-integrity' }
     if ($Module -eq 'RecordIntegrity') { $qaSwitch = '--audit-record-integrity' }
     if ($Module -eq 'FinanceIntegrity') { $qaSwitch = '--audit-finance-integrity' }
     if ($Module -eq 'ClassMedia') { $qaSwitch = '--class-media' }
@@ -44,7 +47,7 @@ try {
     if ($Module -eq 'BrowserSession') { $qaSwitch = '--browser-session' }
     if ($Module -eq 'BrowserProvisioning') { $qaSwitch = '--browser-provisioning' }
     if ($Module -eq 'RoleReplacement') { $qaSwitch = '--audit-role-replacement' }
-    if ($Module -eq 'RoleRevocation') { $qaSwitch = '--audit-role-revocation' }
+    if ($Module -eq 'RoleRevocation') { $qaSwitch = '--audit-role-revocation-fixed' }
     if ($Module -eq 'SessionRevocationRepair') { $qaSwitch = '--audit-session-revocation-repair' }
     if ($Module -eq 'SessionRevocation') { $qaSwitch = '--audit-session-revocation' }
     if ($Module -eq 'SessionRefresh') { $qaSwitch = '--audit-session-refresh' }
@@ -103,6 +106,7 @@ try {
         } else { $qaCommand = @('run', '--project', 'QA/tools/SqlHarness/SqlHarness.csproj', '--no-build', '--', $qaRun, $qaPort, $qaContainer, $qaSwitch) }
         dotnet @qaCommand 2>&1 | ForEach-Object {
             $qaLine=$_.ToString()
+            if ($qaLine -match '^QA (failure frame|client failure): ') { Write-Output $qaLine; return }
             # Publish source locations only, never raw stack arguments or SQL
             # connection details, so CI summaries remain useful without logs.
             if ($qaLine -match '\bat SqlHarnessEntryPoint\..+ in .+[/\\](?<file>[A-Za-z0-9_.-]+\.cs):line (?<line>[0-9]+)') {
@@ -110,7 +114,7 @@ try {
                 return
             }
             if ($qaLine -match '^(GRADE|ROSTER|ACADEMICACCESS|ACADEMICOPTIONS|ATTENDANCENOTES|CALENDARDETAILS|SCHEDULEDEFAULTS|LEAVEIDENTITY|MAKEUPLOCATION|CHANNELROUNDTRIP|CHANNELCHOICE|INBOXLIFE|CONSENTACCESS|TEMPLATESTATE|MARKETING|REVIEWCONTEXT|SUBMISSIONIDENTITY|PRACTICEIDENTITY|RESOURCESCOPE|COMPLIANCE|CERTIFICATE|CERTFAMILY|GUARDIANFLAGS|ANNOUNCEMENTAUDIENCE|ACTIVITYDELETE|PLATFORMBILLING|TENANTPLAN|TRIALDURATION|PLATFORMPROVISION|PORTALPROVISION|ACADEMYPROVISION|PROVISIONRACE|PROVISIONCONFLICT|ROLEREPLACE|ROLESESSION|PROVISIONUI|SESSIONBROWSER|SESSIONREVOCATION|SESSIONREFRESH|REFRESHFLIGHT)') { Write-Output $qaLine; return }
-            if ($qaLine -match '^(RECORDINTEGRITY|SECURITY-FILE|MEDIA|CLASSMATERIAL|Runtime inventory|Created run-owned|HTTP controls|Tenant controls|FINANCE|ADJUSTMENT|PAYROLL|TRANSITION|CONSUMER|ACCESS|AUDIT|PEOPLE|LINKED|BRANCH|BATCHPRESERVE|BATCHTIMES|COURSEPRESERVE|PREREQUISITE|YEARCLOSURE|PROMOTION|LOOKUP|GOVERNANCE|COLLECTIONS|INVOICESETTINGS|Negative cleanup|PASS:|Unhandled exception)' -or $_ -is [System.Management.Automation.ErrorRecord]) { Write-Output $qaLine }
+            if ($qaLine -match '^(WORKITEM|EXPORTSECURITY|RECOVERY|RECORDINTEGRITY|SECURITY-FILE|MEDIA|CLASSMATERIAL|Runtime inventory|Created run-owned|HTTP controls|Tenant controls|FINANCE|ADJUSTMENT|PAYROLL|TRANSITION|CONSUMER|ACCESS|AUDIT|PEOPLE|LINKED|BRANCH|BATCHPRESERVE|BATCHTIMES|COURSEPRESERVE|PREREQUISITE|YEARCLOSURE|PROMOTION|LOOKUP|GOVERNANCE|COLLECTIONS|INVOICESETTINGS|Negative cleanup|PASS:|Unhandled exception)' -or $_ -is [System.Management.Automation.ErrorRecord]) { Write-Output $qaLine }
         }
         $qaExit=$LASTEXITCODE
     } finally { Pop-Location }

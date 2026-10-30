@@ -41,8 +41,8 @@ Continue Academy Desk's existing enterprise/PENTA implementation. Do not restart
 the backend, repeat accepted audits or use another profile's chat as evidence.
 
 Fetch GitHub metadata for AcademyDesk/AcademyDesk. Prefer the verified published
-codex/penta-student-service-integration-20261029 checkpoint if present; otherwise
-use codex/penta-teacher-service-integration-20261029 atc248912. Record exact branch/SHA
+codex/cloud-penta-reconcile-20261030 checkpoint if present; otherwise use the
+published codex/penta-student-service-integration-20261029 at13ed932. Record exact branch/SHA
 and status. Read AGENTS.md, WORK_LAPTOP_START.md, AI_HANDOFF.md,
 AI_CROSS_PROFILE_HANDOFF.md, AI_MODEL_ROUTING.md, AI_PRODUCT_VISION.md,
 PENTA_HOST_SECURITY_POLICY.md and ENTERPRISE_TESTING_ROADMAP.md.
@@ -61,10 +61,12 @@ current tenant/role/resource authority, exact finance, transactions and audit.
 Enrollment Manual/service operations and typed adapters are integrated; protected
 enrollment conversation approval/execution/receipt/recovery is still pending.
 Student/teacher domain services are integrated in the student checkpoint; their
-protected conversational approvals/receipts/recovery are still pending. Preserve
-and join the8new cloud commits througha63e392 fromcodex/release-export-security,
+protected conversational approvals/receipts/recovery are still pending. The cloud-PENTA checkpoint already reconciles
+the8new cloud commits througha63e392 fromcodex/release-export-security,
 including role/session/recovery/export, payroll print, assessment/attendance and
-work-item validation; do not replace those fixes with the preserved older source.
+work-item validation. Do not reapply them wholesale or replace those fixes with
+the preserved older source. Protected host preparation is unvalidated; do not
+assume it was included or that an actual model was qualified.
 Continue protected student/teacher host persistence, approvals and recovery,
 the explicit cloud/local migration path, then connected PENTA/Manual visuals and
 remaining conversational workflows using the existing source and tests.

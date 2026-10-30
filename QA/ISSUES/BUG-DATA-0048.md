@@ -3,8 +3,8 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | STATIC-FINDING |
-| Final verification | NOT RUN |
+| Confirmation status | FIX-IN-PROGRESS |
+| Final verification | Controlled reference matrix PASS; candidate SQL/browser/concurrency/critical acceptance pending |
 | Severity | Major operational ownership integrity |
 | Priority | P1 |
 | Category | DATA |
@@ -30,9 +30,9 @@
 | API response | Not captured for this issue; use synthetic request/response in isolated reproduction |
 | Database before/after | Not executed; fixture and fresh-context assertions defined below |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | Not implemented (Phase 1) |
-| Retest result | NOT RUN |
-| Regression result | NOT RUN |
+| Fix commit | 97f301ebb62aed223f4cf90c4d3b297151a396b6; feature branch only |
+| Retest result | Controlled validation matrix and97f301e owned SQL module exit0 PASS |
+| Regression result | Full API1,217 and owned SQL module PASS; browser/concurrency/critical acceptance pending |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
 ## Exact reproduction
@@ -69,3 +69,27 @@ Queue ownership, follow-up routing and entity-linked work tracking can point to 
 OPERATIONS-WORK-IDENTITY-001: HTTP/SQL local/foreign/missing/null user and entity matrix, allowed user role policy, type/entity mismatch, list filtering, status updates and rejected no-write assertions.
 
 Also run all endpoint/form cases pointing to this issue in QA/03_TEST_MATRIX.md and the critical regression suite before closure.
+
+## 29 October 2026 IST — Controller repair and SQL acceptance candidate
+
+Original reference/ownership failures reproduced in controlled API tests; both
+Admin create and Finance collections follow-up now validate same-academy active
+staff Identity assignees. Generic entity links require complete scoped Invoice
+or PersonDocument pairs; unsupported types reject. Null assignment/link controls
+remain. Existing domain/audit transaction boundary covers Admin mutations.
+Mandatory owned `WorkItemIntegrity` CI module checks actual Identity/HTTP/fresh
+SQL and audit rollback. See [continuation report](../REPORTS/CLOUD_WORK_ITEM_VALIDATION_2026-10-29.md).
+Issue remains OPEN for exact candidate SQL/HTTP, browser, concurrent eligibility
+changes and broader critical acceptance; no closure or new assignment permission.
+
+Exact97f301e CI40920810451 completed SUCCESS; owned WorkItemIntegrity reached
+audit-fault rollback, exit0 and guarded cleanup. The old output whitelist hid
+individual WORKITEM lines; the next QA increment exposes that safe prefix and
+asserts its57-case inventory. Browser/concurrent eligibility/full critical gates
+remain; this is bounded verification, not closure.
+
+Final role-case follow-up: lowercase teacher display name with normalized
+TEACHER was accepted by the first case-sensitive exclusion. Reproduced one
+failure, fixed shared OrdinalIgnoreCase portal exclusion, full API1,218PASS.
+The57-case owned SQL fixture now includes that real Identity representation;
+corrected candidate SQL/HTTP is pending its own CI, so issue remains OPEN.

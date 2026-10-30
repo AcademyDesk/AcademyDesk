@@ -73,7 +73,7 @@ jobs:
         shell: pwsh
         run: |
           $harness = Join-Path $PWD '.build-check/ci-sql/bin/SqlHarness/debug/SqlHarness.dll'
-          foreach ($module in @('Reconciliation', 'CollectionRace', 'Adjustment', 'AdjustmentRace', 'Payroll', 'Transition', 'Consumers', 'Access', 'EnrollmentShared', 'TeacherCreationShared', 'StudentOnboardingShared', 'FinanceIntegrity', 'RecordIntegrity', 'ClassMedia', 'CommunicationRoundtrip')) {
+          foreach ($module in @('Reconciliation', 'CollectionRace', 'Adjustment', 'AdjustmentRace', 'Payroll', 'Transition', 'Consumers', 'Access', 'EnrollmentShared', 'TeacherCreationShared', 'StudentOnboardingShared', 'FinanceIntegrity', 'RecordIntegrity', 'ClassMedia', 'CommunicationRoundtrip', 'WorkItemIntegrity', 'ExportSecurity', 'RoleReplacement', 'RoleRevocation', 'SessionRevocationRepair', 'SessionRefresh', 'RefreshConcurrency', 'Recovery')) {
             $log = if ($module -eq 'CommunicationRoundtrip') {
               'QA/EVIDENCE/logs/phase-2b-communication-roundtrip-sql.log'
             } else { ".build-check/ci/$module-sql.log" }
@@ -83,7 +83,7 @@ jobs:
             } catch {
               "SQL module ${module}: FAIL" >> $env:GITHUB_STEP_SUMMARY
               if (Test-Path -LiteralPath $log) {
-                Get-Content -LiteralPath $log | Where-Object { $_ -match '^QA failure frame: [A-Za-z0-9_.-]+\.cs:[0-9]+$' } | Select-Object -Last 10 | ForEach-Object {
+                Get-Content -LiteralPath $log | Where-Object { $_ -match '^QA failure frame: [A-Za-z0-9_.-]+\.(cs|cjs|js):[0-9]+$' -or $_ -match '^QA client failure: [A-Za-z]+( expected=[0-9]+ actual=[0-9]+)?( missing=[A-Za-z]+)?$' } | Select-Object -Last 10 | ForEach-Object {
                   $_ >> $env:GITHUB_STEP_SUMMARY
                   Write-Output "::error title=SQL $module source location::$_"
                 }
@@ -105,8 +105,23 @@ jobs:
         id: web_build
         working-directory: apps/web
         env:
-          NEXT_PUBLIC_API_URL: ${{ vars.PRODUCTION_API_URL || 'http://127.0.0.1:5092' }}
+          # This CI export is used only with intercepted synthetic browser data.
+          # The deployment workflow builds its own production-configured export.
+          NEXT_PUBLIC_API_URL: http://127.0.0.1:49142
         run: npm run build -- --webpack
+      - name: Payroll PDF and assessment browser verification
+        id: payroll_browser
+        env:
+          QA_PLAYWRIGHT_MODULE: ${{ github.workspace }}/.build-check/ci-browser/node_modules/playwright-core
+          QA_BROWSER_EXECUTABLE: /usr/bin/google-chrome
+        run: |
+          test -x "$QA_BROWSER_EXECUTABLE"
+          "$QA_BROWSER_EXECUTABLE" --version
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends poppler-utils
+          npm install --prefix .build-check/ci-browser --ignore-scripts --no-audit --no-fund playwright-core@1.64.1
+          node QA/tools/payroll-print-browser.cjs | tee .build-check/ci/payroll-print-browser.log
+          node QA/tools/assessment-isolation-browser.cjs | tee .build-check/ci/assessment-isolation-browser.log
       - name: Build API runtime image
         id: api_image
         run: docker build -f apps/api/Dockerfile -t academydesk-ci-api:${{ github.sha }} .
@@ -130,6 +145,7 @@ jobs:
           QA_BLOB_RESULT: ${{ steps.blob_tests.outcome }}
           QA_FRONTEND_RESULT: ${{ steps.frontend_tests.outcome }}
           QA_WEB_RESULT: ${{ steps.web_build.outcome }}
+          QA_PAYROLL_BROWSER_RESULT: ${{ steps.payroll_browser.outcome }}
           QA_IMAGE_RESULT: ${{ steps.api_image.outcome }}
           QA_SMOKE_RESULT: ${{ steps.api_smoke.outcome }}
         run: |
@@ -141,6 +157,7 @@ jobs:
             printf '| Private Blob checks | %s |\n' "$QA_BLOB_RESULT"
             printf '| Full frontend suite | %s |\n' "$QA_FRONTEND_RESULT"
             printf '| Web build | %s |\n' "$QA_WEB_RESULT"
+            printf '| Payroll PDF and assessment browser | %s |\n' "$QA_PAYROLL_BROWSER_RESULT"
             printf '| API image build | %s |\n' "$QA_IMAGE_RESULT"
             printf '| API container smoke | %s |\n' "$QA_SMOKE_RESULT"
             printf '\nAutomated verification supplements the required release acceptance gates.\n'
@@ -156,5 +173,7 @@ jobs:
           path: |
             .build-check/ci/
             .build-check/frontend-tests/
+            .build-check/payroll-print-browser/
+            .build-check/assessment-browser/
             QA/EVIDENCE/logs/phase-2b-communication-roundtrip-ui.log
             QA/EVIDENCE/logs/phase-2b-communication-roundtrip-sql.log

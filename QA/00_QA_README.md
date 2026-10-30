@@ -1,5 +1,32 @@
 # AcademyDesk QA control centre — Phase 1
 
+## Cloud fixes joined with PENTA service checkpoint — 30 October 2026
+
+- [x] Published student checkpoint13ed932 is the base of
+  `codex/cloud-penta-reconcile-20261030`. The other profile's8cloud commits through
+  a63e392 are reconciled:41exact unchanged-base paths and6explicitly combined
+  files. Both SQL gate inventories/financial races and domain services retained.
+- [x]1645full API/zero skips,93affected frontend checks and8real SQL modules PASS:
+  work items, exports, role replacement/revocation, session revocation/refresh,
+  concurrent refresh and real owned SQL backup/restore. First5SQL results retained
+  only after exact source/compiled-binary match; final3fresh. No scenario assertions
+  or release gates weakened. Source-bound report records all run IDs and failures.
+- [x] Startup authentication was made an explicit bounded prerequisite before DB
+  creation. Native Node helpers use pinned cached dependencies locally. No package
+  update/download/model experiment. Exact original services/images/health,API200,complete inventory
+  and released shared lease PASS before publication.
+- [ ] Exact-lock web build/current GitHub CI/browser/device/release gates OPEN.
+  No main merge/Azure/customer DB/issue closure or90%AI readiness claim.
+- [ ] Protected PENTA host preparation inD:\AcademyDesk-penta-host is UNVALIDATED,
+  not included here. Continue it on this combined base, preserving all prepared
+  source; additive migration, safe rollback and retained actual SQL flows next.
+  Mini semantic qualification/failed cloud portability and candidate-loading stop
+  remain. Sol High continues; settled UI/docs route toSol Medium.
+
+Report:QA/REPORTS/CLOUD_PENTA_RECONCILIATION_2026-10-30.md. Verify actual published
+SHA rather than assuming a push/CI result. Do not reapplya63e392wholesale again.
+
+
 ## Student onboarding qualified; publication approved — 30 October 2026
 
 - [x] Branch `codex/penta-student-service-integration-20261029` fromc248912
@@ -571,3 +598,15 @@ An issue remains OPEN until original reproduction → understood cause → fix c
 Confirmation status is separate from OPEN/CLOSED: STATIC-FINDING → RUNTIME-REPRODUCED → FIX-IN-PROGRESS → FIXED → RETESTED → VERIFIED → CLOSED. Each transition requires new linked evidence. RUNTIME-REPRODUCED for BUG-FUNC-0004 refers only to the executed lint failure, not a business workflow. Never promote a source hypothesis because another related test passed.
 
 Stop after Phase 1 review. No deployment, business-logic repair, golden-image approval, or bulk test implementation is part of this phase.
+
+
+## Other-profile cloud history imported for reconciliation — 30 October 2026
+
+Source a63e392; these are historical cloud results, not acceptance of the current combined candidate.
+
+
+Latest cloud checkpoint (29 October 2026 IST): [Attendance selection/save isolation](REPORTS/CLOUD_ATTENDANCE_ISOLATION_2026-10-29.md). Ten failures reproduced;34 attendance checks PASS including24 retained note cases. Fresh matching load required after cached-session revisit; stale saves/callbacks cannot clear newer drafts. Full frontend1,145/1,148 PASS; same3 missing historical SQL-evidence failures. TypeScript/webpack PASS. Assessment real Chrome desktop/phone8grouped checks PASS and wired to CI; synthetic transport. Expanded security/restore candidate pending. Issues/release OPEN.
+
+Latest cloud checkpoint (29 October 2026 IST): [Assessment selection/save isolation](REPORTS/CLOUD_ASSESSMENT_ISOLATION_2026-10-29.md). Eight failures reproduced;44 current assessment checks PASS. Pending/failed/malformed loads and stale callbacks cannot save into another assessment; retry and duplicate/unmount guards added. Full frontend1,135/1,138 PASS; same3 missing historical SQL-evidence failures. TypeScript/webpack PASS. Payroll-print source128604b GitHub job observed SUCCEEDED. New security/recovery/assessment candidate still requires CI; issues/release OPEN.
+
+Latest cloud checkpoint (2026-10-28): [Saved payroll print/PDF](REPORTS/CLOUD_PAYROLL_PRINT_2026-10-28.md). Eleven print and23 form cases PASS; real Chrome at desktop/phone produces4 complete selected payslips on one A4 page each. Actual PDF clipping was caught and repaired. Full frontend1,120/1,123 PASS; same3 missing historical SQL-evidence failures. TypeScript/webpack PASS; CI requires PDF checks. Synthetic transport only; authenticated SQL/other-engine/full release gates OPEN; no deployment/publication.

@@ -111,3 +111,11 @@ three missing historical SQL-evidence failures; TypeScript/lint/build PASS.
 Remaining tenant/assessment/attendance editors, real HTTP/SQL/browser/device,
 same-record server races and critical gates stay OPEN. See
 [student editor report](../REPORTS/CLOUD_STUDENT_EDITORS_2026-10-28.md).
+
+## Assessment results slice — 29 October 2026 IST
+
+Nine initial controlled actual-TSX cases reproduced8 failures. Results/readiness and saves now belong to one academy/assessment load generation. Pending/failed/malformed responses cannot unlock stale/blank rows; explicit retry, same-tick duplicate guards and late save/readback/A-B-A/unmount isolation added. All44 assessment checks PASS, with all existing grading/options cases retained. Full frontend1,135/1,138 PASS;3 unchanged missing historical SQL-evidence failures. TypeScript/webpack PASS. See [assessment report](../REPORTS/CLOUD_ASSESSMENT_ISOLATION_2026-10-29.md). Actual authenticated browser/SQL, attendance and broader issue/critical closure remain OPEN.
+
+## Attendance and assessment-browser slice — 29 October 2026 IST
+
+Ten attendance failures reproduced; final34cases PASS with24 original note payload/error controls retained. Cached-session revisit now waits for a fresh matching read; failed/malformed rows lock with retry. Generation-scoped callbacks/save/readback handle A→B→A/unmount without erasing newer notes. Separately8 grouped actual Chrome checks pass at desktop/phone for assessment pending/failure/retry/reversal and retained drafts; intercepted synthetic transport only. Full frontend1,145/1,148 PASS with3 unchanged missing historical SQL-evidence failures; TypeScript/webpack PASS. See [attendance report](../REPORTS/CLOUD_ATTENDANCE_ISOLATION_2026-10-29.md). Broad authenticated SQL/server concurrency/actual-device/critical closure remains OPEN.

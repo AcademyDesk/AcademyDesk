@@ -3,8 +3,8 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | STATIC-FINDING |
-| Final verification | NOT RUN |
+| Confirmation status | CONTROLLED-TSX-REPRODUCED / bounded CHROME-PDF-RETESTED |
+| Final verification | PARTIAL Chrome/PDF PASS; authenticated SQL/full closure pending |
 | Severity | Major payroll document workflow failure |
 | Priority | P1 |
 | Category | FUNC |
@@ -69,3 +69,7 @@ Academy payroll operators cannot obtain the promised selected payslip from this 
 PAYROLL-PRINT-001: Browser print/PDF snapshots for each synthetic payout row and no-row state; assert selected-row payslipNumber, gross/deductions/net, period, worker and status, exclude other rows, test mobile and browser print engines.
 
 Also run all endpoint/form cases pointing to this issue in QA/03_TEST_MATRIX.md and the critical regression suite before closure.
+
+## 2026-10-28 — Partial cloud print repair
+
+Ten controlled actual-TSX cases failed before repair. Final11 print/23 form checks PASS. Real Chrome desktop/phone runs produced4 complete selected-row PDFs with cents, currency and stored status. An interim real-PDF clipping failure was preserved and fixed; final documents exclude other payouts/app UI. Fresh read failures, missing records, pending requests and retries are controlled. See [print report](../REPORTS/CLOUD_PAYROLL_PRINT_2026-10-28.md). Synthetic transport is not Identity/SQL/settlement proof. Other engines, long-content/device coverage, authenticated payroll and full critical/release gates remain OPEN.

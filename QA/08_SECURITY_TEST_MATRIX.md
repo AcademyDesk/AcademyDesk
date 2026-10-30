@@ -27,3 +27,22 @@ and tests; both transitive-inclusive audits report zero known vulnerable package
 The full API suite passes 1,073 tests. This does not close deployment/runtime,
 SQL integration or other security gates. See
 [dependency remediation report](REPORTS/CLOUD_DEPENDENCY_AND_LINT_2026-10-28.md).
+
+## Observed scoped verification — 29 October 2026 IST
+
+Exactc7fca5f CI40840527086 completed SUCCESS; actual job steps/logs were read.
+RoleReplacement37 core/56 extended cases; strict RoleRevocation37 observations;
+SessionRevocation36cases; native SessionRefresh11 requests; RefreshConcurrency25
+requests/four controlled overlaps all passed with zero reported policy gaps.
+Private Blob75 assertions and legacy direct/range/revocation controls passed.
+All6 owned SQL backup/restore stages passed, including exact70-table/schema
+fingerprints and restored Identity/HTTP/privileges. These supersede the earlier
+not-run statements only for their actual bounded cases, not the entire matrix.
+
+[Current acceptance mapping](REPORTS/CLOUD_WORK_ITEM_VALIDATION_2026-10-29.md)
+records remaining P0/browser/device/runtime-header/rate/proxy/storage and Azure
+PITR/media/application-schema recovery requirements. A synthetic frontend CSV
+probe on LibreOfficeDev alpha accepted18 non-NUL and19 NUL-containing rows as
+non-formulas; the initial multi-file timeout is retained. Stable supported
+consumers/real HTTP exports remain pending. No issue
+was closed or production security acceptance inferred from CI alone.

@@ -34,7 +34,7 @@ async function page(config={}){
  async function settle(){for(let i=0;i<4;i++){for(const fn of effects.splice(0))fn();await tick();render();}}
  const select=name=>nodes(render()).find(n=>n.type==='select'&&n.props.name===name);
  const input=()=>nodes(render()).find(n=>n.type==='input');
- const button=()=>nodes(render()).find(n=>n.type==='button');
+ const button=()=>nodes(render()).find(n=>n.type==='button'&&n.props.className==='attendance-save');
  const writes=()=>calls.filter(c=>c.method==='POST');
  const edit=value=>input().props.onChange({target:{value}});
  async function save(status){if(status)select('attendance-s').props.onChange(status);else button().props.onClick();await tick();await tick();render();}
@@ -62,7 +62,7 @@ test('Drafts follow their session and survive switching back without leaking',as
  const p=await page();p.edit('Session one draft');p.select('session').props.onChange('two');await p.settle();assert.equal(p.input().props.value,'Session two note');p.edit('Session two draft');p.select('session').props.onChange('one');await p.settle();assert.equal(p.input().props.value,'Session one draft');await p.save();assert.equal(p.state.get(9)['two:s'],'Session two draft');assert.equal(p.stored.two[0].notes,'Session two note');
 });
 test('Late session response cannot overwrite the selected session',async()=>{
- let release;const gate=new Promise(r=>release=r);const p=await page({getGate:id=>id==='one'?gate:Promise.resolve()});assert.equal(p.input(),undefined);p.select('session').props.onChange('two');await p.settle();assert.equal(p.input().props.value,'Session two note');release();await p.settle();assert.equal(p.input().props.value,'Session two note');assert.equal(p.state.get(6).one[0].notes,'Saved note');
+ let release;const gate=new Promise(r=>release=r);const p=await page({getGate:id=>id==='one'?gate:Promise.resolve()});assert.equal(p.input(),undefined);p.select('session').props.onChange('two');await p.settle();assert.equal(p.input().props.value,'Session two note');release();await p.settle();assert.equal(p.input().props.value,'Session two note');assert.equal(p.state.get(6).one,undefined,'A retired read must not populate its old session cache');
 });
 test('Unloaded or malformed records cannot be saved as empty notes',async()=>{const p=await page({malformed:true});assert.equal(p.input(),undefined);assert.equal(p.button(),undefined);assert.match(p.state.get(7),/could not be loaded/);assert.equal(p.writes().length,0);});
 test('Same-tick repeated saves produce one request and disable all editable controls',async()=>{
