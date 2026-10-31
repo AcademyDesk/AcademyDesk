@@ -76,7 +76,16 @@ function storePortalTokens(workspace: PortalWorkspace, accessToken: string, refr
   invalidateSession(workspace);
   window.localStorage.setItem(tokenKey("accessToken", workspace), accessToken);
   if (refreshToken) window.localStorage.setItem(tokenKey("refreshToken", workspace), refreshToken);
-  if (boundary) notifySessionBoundary(workspace);
+  // A new login must not silently renew using a previous account's credential.
+  // Automatic renewal may legitimately retain its own unchanged refresh token.
+  if (boundary) {
+    if (!refreshToken) window.localStorage.removeItem(tokenKey("refreshToken", workspace));
+    if (workspace === "AcademyAdmin") {
+      window.localStorage.removeItem("academydesk.accessToken");
+      window.localStorage.removeItem("academydesk.refreshToken");
+    }
+    notifySessionBoundary(workspace);
+  }
 }
 
 /** Signs out only from the portal currently open, without disturbing other role workspaces. */

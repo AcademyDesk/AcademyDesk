@@ -1,5 +1,20 @@
 # Academy Desk handoff
 
+## Pre-VPN source preservation — 31 October 2026 IST
+
+Cloud workspace recovered with original3e46c20 and two dirty session files intact.
+Production/test paths exactly match recovery7db8171; actualCI41100668488 is fully
+SUCCESS:1,662API/1,239frontend,23core+15extended SQL, Blob/recovery/browser/build.
+Source comparison excludes the workflow's additional recovery trigger and docs.
+Commit the unchanged session files and publish this preserved local lineage on
+codex/pre-vpn-source-preserve-20261031; keep both histories and older candidates.
+Report:QA/REPORTS/PRE_VPN_SOURCE_PRESERVATION_2026-10-31.md. Laptop terminal access
+still requires configured cloud VPN/TCP and verified SSH authentication; setup is
+not a connection proof. No credentials/laptop identities are committed.
+All5P0/device/operational/protected-host/model gates remainOPEN. No deployment,
+main merge, environment publication or model loading. Codex/Sol High continues.
+
+
 ## Subsequent currency completion — 30 October 2026 IST
 
 Platform billing overview/Billing exposure now group stored currency, preserving
