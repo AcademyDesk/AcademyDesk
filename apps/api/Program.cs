@@ -3,6 +3,7 @@ using AcademyDesk.Api.Domain.Identity;
 using AcademyDesk.Api.Security;
 using AcademyDesk.Api.Infrastructure;
 using AcademyDesk.Api.Infrastructure.Media;
+using AcademyDesk.Api.Intelligence.Penta;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -15,6 +16,8 @@ var builder = WebApplication.CreateBuilder(args);
 var developmentSeedCredentials = builder.Environment.IsDevelopment()
     ? DevelopmentSeedCredentials.FromConfiguration(builder.Configuration)
     : null;
+// Validate opted-in private key storage before migrations or bootstrap.
+builder.Services.AddProtectedKeyRing(builder.Configuration, builder.Environment);
 var webRootPath = Path.Combine(builder.Environment.ContentRootPath, "wwwroot");
 // The isolated test host supplies its own web root. Do not create a directory
 // until that host has validated its final effective configuration.
@@ -26,6 +29,28 @@ builder.Services.AddScoped<AcademyAccessFilter>();
 builder.Services.AddScoped<EnrollmentMutationService>();
 builder.Services.AddScoped<TeacherCreationService>();
 builder.Services.AddScoped<StudentOnboardingService>();
+builder.Services.AddScoped<PentaPilotPolicy>();
+builder.Services.AddSingleton<IPentaSyntheticProvider, FixedPentaSyntheticProvider>();
+builder.Services.AddScoped<PentaSyntheticDispatcher>();
+builder.Services.AddScoped<PentaExecutionService>();
+builder.Services.AddScoped<PentaBudgetService>();
+builder.Services.AddScoped<PentaDraftApprovalService>();
+builder.Services.AddScoped<PentaAcademyContextService>();
+builder.Services.AddScoped<PentaStudentSearchService>();
+builder.Services.AddScoped<PentaBatchSearchService>();
+builder.Services.AddScoped<PentaConversationService>();
+builder.Services.AddScoped<OutstandingFeesService>();
+builder.Services.AddScoped<PentaFinancePolicy>();
+builder.Services.AddScoped<AcademyDeskConnector>();
+builder.Services.AddScoped<PentaMiniOrchestrator>();
+builder.Services.AddScoped<PentaOnboardingDraftService>();
+builder.Services.AddScoped<PentaTeacherCreationWorkflow>();
+builder.Services.AddSingleton<PentaPrivateContextLeases>();
+builder.Services.AddHttpClient<IPentaProvider, PentaMiniProvider>(client => client.Timeout = TimeSpan.FromSeconds(130))
+    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false, UseProxy = false });
+builder.Services.AddHttpClient<IPentaModelProvider, PentaOpenAiProbeAdapter>()
+    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
+builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddControllers(options => options.Filters.AddService<AcademyAccessFilter>());
 builder.Services.AddPrivateMediaStorage(builder.Configuration, builder.Environment);
 builder.Services.AddScoped<ClassMaterialAccess>();

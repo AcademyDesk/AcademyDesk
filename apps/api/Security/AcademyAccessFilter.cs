@@ -109,7 +109,10 @@ public sealed class AcademyAccessFilter(UserManager<ApplicationUser> userManager
 
         var controllerName = context.Controller.GetType().Name;
         var controller = controllerName.Replace("Controller", string.Empty, StringComparison.Ordinal);
-        if (string.Equals(controller, "AuditLogs", StringComparison.Ordinal))
+        // Protected PENTA services commit their own actor-bound outcome/audit transaction.
+        // A separate post-commit generic audit could turn a committed write into an uncertain result.
+        if (string.Equals(controller, "AuditLogs", StringComparison.Ordinal) ||
+            controller is "Penta" or "PentaConversations" or "PentaOnboarding" or "PentaChat")
         {
             await next();
             return;
