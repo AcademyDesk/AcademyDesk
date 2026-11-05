@@ -26,6 +26,31 @@ jobs:
           persist-credentials: false
       - name: Require completed critical issue acceptance
         run: node QA/tools/check-production-gates.cjs
+      - name: Require Azure configuration and implemented operational safeguards
+        env:
+          AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+          AZURE_STATIC_WEB_APPS_API_TOKEN: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          AZURE_SQL_CONNECTION_STRING: ${{ secrets.AZURE_SQL_CONNECTION_STRING }}
+          AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+          AZURE_REGISTRY_NAME: ${{ vars.AZURE_REGISTRY_NAME }}
+          AZURE_REGISTRY_LOGIN_SERVER: ${{ vars.AZURE_REGISTRY_LOGIN_SERVER }}
+          AZURE_API_CONTAINER_APP: ${{ vars.AZURE_API_CONTAINER_APP }}
+          WEB_APP_ORIGIN: ${{ vars.WEB_APP_ORIGIN }}
+          PRODUCTION_API_URL: ${{ vars.PRODUCTION_API_URL }}
+          # Proposed configuration contract only. Nothing below provisions or
+          # enables storage, mounts, identities, certificates or migrations.
+          AZURE_MEDIA_SERVICE_URI: ${{ vars.AZURE_MEDIA_SERVICE_URI }}
+          AZURE_MEDIA_CONTAINER: ${{ vars.AZURE_MEDIA_CONTAINER }}
+          AZURE_KEY_RING_DIRECTORY: ${{ vars.AZURE_KEY_RING_DIRECTORY }}
+          AZURE_KEY_RING_CERTIFICATE_PATH: ${{ vars.AZURE_KEY_RING_CERTIFICATE_PATH }}
+          AZURE_KEY_RING_CERTIFICATE_PASSWORD: ${{ secrets.AZURE_KEY_RING_CERTIFICATE_PASSWORD }}
+          AZURE_MIGRATION_ARTIFACT_SHA256: ${{ vars.AZURE_MIGRATION_ARTIFACT_SHA256 }}
+          AZURE_SQL_RESTORE_EVIDENCE_SHA256: ${{ vars.AZURE_SQL_RESTORE_EVIDENCE_SHA256 }}
+          AZURE_ROLLBACK_IMAGE_SHA256: ${{ vars.AZURE_ROLLBACK_IMAGE_SHA256 }}
+          PLATFORM_OWNER_EMAIL: ${{ vars.PLATFORM_OWNER_EMAIL }}
+          PLATFORM_OWNER_NAME: ${{ vars.PLATFORM_OWNER_NAME }}
+          PLATFORM_OWNER_PASSWORD: ${{ secrets.PLATFORM_OWNER_PASSWORD }}
+        run: node QA/tools/check-azure-preflight.cjs
       - uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
