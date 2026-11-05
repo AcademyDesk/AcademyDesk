@@ -17,3 +17,7 @@ An existing published Mini commit f2adfbaaadca43dbdf982458942e3d21c067b674 conta
 No model acquisition/loading/inference/training, main merge, Azure/customer database access or environment publication. Mini semantic, host integration and production gates remain open. Existing local evidence is absent, not fabricated. No CI green is inferred from local tests.
 
 Next owner: Cloud Codex / Sol High completes bounded C1 verification; local Codex retains L1 and receives source-bound return tests. Publication SHA is obtained from this report's enclosing commit; final publication verification will follow.
+
+## C1 claim extension: deterministic cancellation regression
+
+The first post-restoration full run exposed a timing-sensitive pure mocked Core check: an 80 ms test deadline can expire before the transport enters its held phase, making the late-transport ownership assertion test a different scenario. Claim `tests/test_intent_provider_e5r59.py` in the private repository to coordinate transport entry and explicitly trigger its actual timeout contexts. Preserve the exact production timeout/profile, timeout/no-retry/busy/ownership/drain assertions and all runtime source. This report and the existing private report are the only public/private documentation edits; L1 remains untouched. Publish this extension before editing the added test file.
