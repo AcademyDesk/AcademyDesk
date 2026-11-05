@@ -1,5 +1,15 @@
 # Academy Desk — continue from the work laptop or another profile
 
+## Current parallel continuation — 5 November 2026 IST
+
+Start with [the cloud/Desktop work split](CLOUD_DESKTOP_WORK_SPLIT_2026-11-05.md)
+on `codex/cloud-production-readiness-20261105` and the private Desktop packet on
+`codex/mini-cloud-production-readiness-20261105`. They record the verified launch
+bases, fresh scoped results, separate ownership and required original D: inputs.
+Preserve and compare actual D: work before pulling or replacing anything. The
+older checkpoint sequence below is retained history, not the latest starting
+instruction. No model experiment, main merge or deployment is authorized.
+
 Updated30October2026. GitHub source is available; the original laptop's running
 services, ignored evidence, dependencies and model caches are not transferred.
 

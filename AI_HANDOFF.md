@@ -1,5 +1,30 @@
 # Academy Desk handoff
 
+## Cloud audit and Desktop coordination — 5 November 2026 IST
+
+Verified launch source `9ea34e9e5d8600545aeac76999e16b85854a2387` on
+`codex/ai-launch-readiness-20261104`. Fresh full API 1,991 PASS/zero fail/skip;
+web 2,125 PASS/3 genuine evidence-dependent communication failures/zero skip;
+webpack and TypeScript PASS; lint zero errors/61 warnings. API dependency audit
+and 249 release/preflight regressions PASS. npm audit timed out, current remote
+CI/actual laptop SQL remain unverified. Do not combine overlapping test totals.
+All five P0 and broader acceptance gates stay open; no production-ready claim.
+
+`codex/cloud-production-readiness-20261105` adds only documentation and the
+current [cloud/Desktop work split](CLOUD_DESKTOP_WORK_SPLIT_2026-11-05.md).
+The tested source is the launch base, not a claimed CI pass for the new docs.
+Original restored checkouts were archived and Git bundles verified outside the
+checkout roots, but still inside the cloud environment; off-environment recovery
+must precede any replacement. Actual D: work may contain newer excluded source
+and evidence, so Desktop preserves and compares it before integration. Cloud and
+Desktop use separate bounded branches and explicit file ownership.
+
+Next route: Codex / Sol High for exact CI and protected host/SQL/security repairs;
+Desktop first follows D1 preservation and the private recovery packet. Current
+infrastructure, all-family AI, Manual/device and production recovery gates remain.
+No model acquisition/loading/inference/training/activation, main merge, Azure
+deployment or environment publication. Older baseline sections below are history.
+
 ## Protected host recovery — 5 November 2026 UTC
 
 Working branch `codex/ai-launch-readiness-20261104` starts at verified `7db8171`.

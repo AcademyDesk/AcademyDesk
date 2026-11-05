@@ -1,5 +1,16 @@
 # Academy Desk — shared continuation across profiles
 
+## Parallel cloud/Desktop ownership — 5 November 2026 IST
+
+Owner authorized feature-branch commits/pushes for coordinated continuation.
+Read [the current work split](CLOUD_DESKTOP_WORK_SPLIT_2026-11-05.md) before
+choosing files. Cloud owns bounded CI/harness/backend/host/migration repairs;
+Desktop first inventories and preserves actual D: source, recovers genuine
+private evidence and runs local SQL/browser/device acceptance. Separate branches
+do not permit overlapping edits. Record a specific ownership transfer before
+changing the other side's active files. This is an allocated handoff, not proof
+that Desktop has started or claimed a file. All model and release stops remain.
+
 ## Cloud fixes joined with PENTA service checkpoint — 30 October 2026
 
 - [x] Published student checkpoint13ed932 is the base of
