@@ -2,7 +2,7 @@ export const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5092"
 
 export type PortalWorkspace = "AcademyAdmin" | "Teacher" | "Portal" | "Platform";
 
-type Session = { accessToken: string | null; refreshToken: string | null; generation: number };
+type Session = { accessToken: string | null; refreshToken: string | null; generation: number; epoch: string | null };
 type RenewedSession = Session & { accessToken: string };
 type RefreshFlight = { session: Session; controller: AbortController; consumers: number; finished: boolean; result: RenewedSession | null; promise: Promise<RenewedSession | null> };
 // One entry per workspace, scoped to this JS realm. Cross-tab coordination is separate.
@@ -45,6 +45,11 @@ function tokenKey(kind: "accessToken" | "refreshToken", workspace: PortalWorkspa
   return `academydesk.${kind}.${workspace}`;
 }
 
+/** Opaque login marker for UI freshness, never an identity or permission grant. */
+export function portalSessionEpoch(workspace: PortalWorkspace) {
+  return typeof window === "undefined" ? null : window.localStorage.getItem(`academydesk.sessionEpoch.${workspace}`);
+}
+
 /** A delivered same-origin logout event, not a token renewal or another storage area. */
 export function isPortalSignOutEvent(event: StorageEvent, workspace: PortalWorkspace) {
   if (typeof window === "undefined" || event.storageArea !== window.localStorage || event.newValue !== null) return false;
@@ -57,8 +62,9 @@ export function isPortalSignOutEvent(event: StorageEvent, workspace: PortalWorks
 if (typeof window !== "undefined" && typeof window.addEventListener === "function") {
   window.addEventListener("storage", (event) => {
     for (const workspace of ["AcademyAdmin", "Teacher", "Portal", "Platform"] as const) {
-      if (isPortalSignOutEvent(event, workspace)) invalidateSession(workspace);
+      if (isPortalSignOutEvent(event, workspace) || event.storageArea === window.localStorage && event.key === `academydesk.sessionEpoch.${workspace}`) invalidateSession(workspace);
       if (event.storageArea === window.localStorage && (event.key === null
+        || event.key === `academydesk.sessionEpoch.${workspace}`
         || event.key === tokenKey("accessToken", workspace) || event.key === tokenKey("refreshToken", workspace)
         || (workspace === "AcademyAdmin" && (event.key === "academydesk.accessToken" || event.key === "academydesk.refreshToken"))))
         notifySessionBoundary(workspace);
@@ -73,6 +79,9 @@ export function savePortalTokens(workspace: PortalWorkspace, accessToken: string
 
 function storePortalTokens(workspace: PortalWorkspace, accessToken: string, refreshToken: string | undefined, boundary: boolean) {
   if (typeof window === "undefined") return;
+  // Write before credentials so old realms fail closed even when tokens repeat.
+  // Internal renewal keeps the marker and all existing refresh safeguards.
+  if (boundary) window.localStorage.setItem(`academydesk.sessionEpoch.${workspace}`, crypto.randomUUID());
   invalidateSession(workspace);
   window.localStorage.setItem(tokenKey("accessToken", workspace), accessToken);
   if (refreshToken) window.localStorage.setItem(tokenKey("refreshToken", workspace), refreshToken);
@@ -91,6 +100,7 @@ function storePortalTokens(workspace: PortalWorkspace, accessToken: string, refr
 /** Signs out only from the portal currently open, without disturbing other role workspaces. */
 export function clearPortalTokens(workspace = currentWorkspace()) {
   if (typeof window === "undefined") return;
+  window.localStorage.setItem(`academydesk.sessionEpoch.${workspace}`, crypto.randomUUID());
   invalidateSession(workspace);
   window.localStorage.removeItem(tokenKey("accessToken", workspace));
   window.localStorage.removeItem(tokenKey("refreshToken", workspace));
@@ -125,7 +135,7 @@ export function apiHeaders(json = false): Record<string, string> {
 }
 
 function sessionMatches(workspace: PortalWorkspace, session: Session) {
-  return sessionGeneration(workspace) === session.generation && portalAccessToken(workspace) === session.accessToken && portalRefreshToken(workspace) === session.refreshToken;
+  return sessionGeneration(workspace) === session.generation && portalSessionEpoch(workspace) === session.epoch && portalAccessToken(workspace) === session.accessToken && portalRefreshToken(workspace) === session.refreshToken;
 }
 
 function startRefresh(workspace: PortalWorkspace, session: Session): RefreshFlight {
@@ -140,7 +150,7 @@ function startRefresh(workspace: PortalWorkspace, session: Session): RefreshFlig
         (tokens.refreshToken != null && (typeof tokens.refreshToken !== "string" || !tokens.refreshToken.trim())) ||
         flight.controller.signal.aborted || !sessionMatches(workspace, session)) return null;
       storePortalTokens(workspace, tokens.accessToken, tokens.refreshToken, false);
-      flight.result = { accessToken: tokens.accessToken, refreshToken: portalRefreshToken(workspace), generation: sessionGeneration(workspace) };
+      flight.result = { accessToken: tokens.accessToken, refreshToken: portalRefreshToken(workspace), generation: sessionGeneration(workspace), epoch: portalSessionEpoch(workspace) };
       // Keep the successful original-pair receipt for late401s; a new login/refresh replaces it.
       refreshFlights.set(workspace, flight);
       return flight.result;
@@ -179,7 +189,7 @@ export async function academyApi(path: string, init: RequestInit = {}) {
   const workspace = currentWorkspace();
   const originalToken = portalAccessToken(workspace);
   const refreshToken = portalRefreshToken(workspace);
-  const session = { accessToken: originalToken, refreshToken, generation: sessionGeneration(workspace) };
+  const session = { accessToken: originalToken, refreshToken, generation: sessionGeneration(workspace), epoch: portalSessionEpoch(workspace) };
   const originalHeaders = new Headers(init.headers);
   if (!originalHeaders.has("Authorization") && originalToken) originalHeaders.set("Authorization", `Bearer ${originalToken}`);
   const request = (renewedToken?: string) => {
@@ -194,7 +204,7 @@ export async function academyApi(path: string, init: RequestInit = {}) {
   // Explicit foreign credentials and replaced/signed-out sessions must not be refreshed on this account's behalf.
   if (!refreshToken || originalHeaders.get("Authorization") !== (originalToken ? `Bearer ${originalToken}` : null)) return response;
   let flight = refreshFlights.get(workspace);
-  const matchingFlight = flight && flight.session.generation === session.generation && flight.session.accessToken === originalToken && flight.session.refreshToken === refreshToken;
+  const matchingFlight = flight && flight.session.generation === session.generation && flight.session.epoch === session.epoch && flight.session.accessToken === originalToken && flight.session.refreshToken === refreshToken;
   if (!matchingFlight) {
     if (!sessionMatches(workspace, session)) return response;
     flight = startRefresh(workspace, session);

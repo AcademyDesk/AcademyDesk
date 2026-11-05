@@ -11,7 +11,7 @@ function harness(config={}) {
   if(url.endsWith('/api/auth/refresh')) {config.onRefresh?.(window,storage);if(config.hold)await config.hold;if(config.refreshNetwork)throw Error('synthetic network');return {ok:!config.refreshDenied,json:async()=>{if(config.badJson)throw Error('synthetic JSON');return config.tokens??{accessToken:'renewed',refreshToken:'renewed-refresh'};}};}
   attempt++;if(attempt===1){config.onRequest?.(window,storage);if(config.requestNetwork)throw Error('synthetic network');return config.success?ok:original;}return config.replayDenied?original:ok;
  };
- const module={exports:{}};vm.runInNewContext(code,{module,exports:module.exports,process:{env:{}},window,Headers,fetch,AbortController});
+ const module={exports:{}};vm.runInNewContext(code,{module,exports:module.exports,process:{env:{}},crypto:require("node:crypto").webcrypto,window,Headers,fetch,AbortController});
  const api=module.exports;const workspace=config.workspace??'AcademyAdmin';
  if(!config.noTokens)api.savePortalTokens(workspace,'old','original-refresh');
  return{api,window,storage,calls,original,ok};

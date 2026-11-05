@@ -1,0 +1,51 @@
+/* PENTA UI 0.1: product-independent tokens, scoped to the integrated pilot.
+   No ERP routes, domain types, inference or shared-package dependency. */
+.system {
+  --penta-ui-version: "0.1";
+  --penta-canvas: #f4f7fb;
+  --penta-surface: #ffffff;
+  --penta-surface-muted: #edf2f8;
+  --penta-input: #edf2f8;
+  --penta-text: #172033;
+  --penta-text-muted: #5f7088;
+  --penta-border: #b9c8da;
+  --penta-accent: #0f6cbd;
+  --penta-accent-soft: #e5f1fb;
+  --penta-on-accent: #ffffff;
+  --penta-danger: #b42318;
+  --penta-success: #16835d;
+  --penta-warning: #ad6a00;
+  --penta-space-1: 4px;
+  --penta-space-2: 8px;
+  --penta-space-3: 12px;
+  --penta-space-4: 16px;
+  --penta-space-5: 20px;
+  --penta-space-6: 24px;
+  --penta-radius-control: 10px;
+  --penta-radius-card: 14px;
+  --penta-radius-panel: 20px;
+  --penta-touch-target: 44px;
+  --penta-overlay-layer: 5;
+  --penta-font-body: 14px;
+  --penta-font-meta: 12px;
+  --penta-line-body: 1.6;
+  --penta-shadow-overlay: 0 16px 40px #0002;
+  font-family: inherit;
+}
+
+:global([data-theme="dark"]) .system {
+  --penta-canvas: #07111f;
+  --penta-surface: #0d1a2b;
+  --penta-surface-muted: #111f32;
+  --penta-input: #1a2d43;
+  --penta-text: #e7edf7;
+  --penta-text-muted: #aebed1;
+  --penta-border: #405774;
+  --penta-accent: #48b7ef;
+  --penta-accent-soft: #10354f;
+  --penta-on-accent: #07111f;
+  --penta-danger: #fb8e83;
+  --penta-success: #57c99b;
+  --penta-warning: #f2b84c;
+  --penta-shadow-overlay: 0 16px 40px #0006;
+}

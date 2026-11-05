@@ -1,0 +1,56 @@
+.page { max-width: 1400px; margin: 0 auto; padding: 28px; color: var(--ad-text); }
+.heading { padding: 12px 0 28px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.heading h1 { font-size: 30px; line-height: 1.2; margin: 10px 0; }
+.heading p, .hint, .resultHead p { color: var(--ad-text-muted); }
+.eyebrow { color: var(--ad-accent); font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.badge { display: inline-block; border: 1px solid var(--ad-border); border-radius: 20px; padding: 5px 10px; font-size: 12px; background: var(--ad-surface-subtle); }
+.panel { background: var(--ad-surface); border: 1px solid var(--ad-border); border-radius: 18px; padding: 24px; }
+.panelHead { display: flex; gap: 16px; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px solid var(--ad-border); }
+.panelHead h2, .resultHead h2 { margin: 6px 0; font-size: 20px; }
+.academy { max-width: 40%; overflow-wrap: anywhere; color: var(--ad-text-muted); font-size: 14px; }
+.form { padding-top: 20px; }
+.choices { border: 0; padding: 0; margin: 0 0 22px; display: flex; gap: 10px; }
+.choices legend { font-size: 14px; font-weight: 600; margin-bottom: 10px; }
+.choices label { display: flex; align-items: center; gap: 8px; border: 1px solid var(--ad-border); border-radius: 10px; padding: 10px 16px; cursor: pointer; }
+.choices .selected { border-color: var(--ad-accent); background: var(--ad-surface-subtle); }
+.form > label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; }
+.searchRow { display: flex; gap: 10px; align-items: stretch; }
+.searchRow input { flex: 1; min-width: 0; min-height: 48px; padding: 12px 14px; border: 1px solid var(--ad-border); border-radius: 10px; background: var(--ad-control-surface); color: var(--ad-text); font: inherit; }
+.searchRow button { min-height: 48px; }
+.page :is(a,button,input,summary):focus-visible { outline: 3px solid var(--ad-accent); outline-offset: 3px; }
+.hint { font-size: 13px; line-height: 1.5; margin-top: 12px; }
+.error { padding: 12px 14px; border: 1px solid var(--ad-danger); color: var(--ad-text); border-radius: 10px; }
+.results { padding: 24px 0 0; }
+.resultHead p { font-size: 13px; overflow-wrap: anywhere; }
+.cards { display: grid; gap: 12px; }
+.card { display: flex; justify-content: space-between; gap: 20px; padding: 20px; border: 1px solid var(--ad-border); border-radius: 14px; background: var(--ad-surface); }
+.card > div { min-width: 0; }
+.card h3 { font-size: 18px; margin: 12px 0 8px; overflow-wrap: anywhere; }
+.card p { font-size: 13px; overflow-wrap: anywhere; }
+.card details { font-size: 12px; color: var(--ad-text-muted); }
+.card summary { cursor: pointer; padding: 6px 0; }
+.open { align-self: center; white-space: nowrap; font-size: 14px; color: var(--ad-accent); font-weight: 600; padding: 12px; }
+.notice { padding: 12px; background: var(--ad-surface-subtle); border-radius: 10px; }
+.footer { display: flex; flex-wrap: wrap; gap: 16px; border-top: 1px solid var(--ad-border); margin-top: 28px; padding-top: 20px; font-size: 13px; }
+.footer a { color: var(--ad-accent); }
+.experiences { display: flex; gap: 8px; overflow-x: auto; padding: 4px 2px 20px; }
+.experiences button { flex: 1; min-width: 155px; display: flex; align-items: center; gap: 10px; padding: 14px; border: 1px solid var(--ad-border); border-radius: 12px; background: var(--ad-surface); color: var(--ad-text); text-align: left; }
+.experiences button[aria-selected="true"] { border-color: var(--ad-accent); background: var(--ad-accent-soft); }
+.experiences strong, .experiences small { display: block; }
+.experiences strong { font-size: 14px; }
+.experiences small { font-size: 11px; margin-top: 4px; color: var(--ad-text-muted); }
+.experienceLetter { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 9px; background: var(--ad-surface-subtle); color: var(--ad-accent); font-weight: 700; }
+.operatingGrid { display: grid; grid-template-columns: minmax(0, 1fr) 260px; align-items: start; gap: 24px; }
+.trust { padding: 22px; border: 1px solid var(--ad-border); border-radius: 16px; }
+.trust h2 { font-size: 16px; margin: 12px 0 24px; }
+.trust dt { color: var(--ad-text-muted); font-size: 12px; margin: 20px 0 6px; }
+.trust dd { margin: 0; font-size: 13px; line-height: 1.5; overflow-wrap: anywhere; }
+.trust > div { border-top: 1px solid var(--ad-border); padding-top: 20px; margin-top: 24px; font-size: 13px; }
+.trust a { display: block; color: var(--ad-accent); padding-top: 14px; }
+.future { padding: 32px; border: 1px solid var(--ad-border); border-radius: 18px; background: var(--ad-surface); }
+.future h2 { font-size: 22px; margin: 12px 0; }
+.future p { color: var(--ad-text-muted); line-height: 1.6; }
+.future a { display: inline-block; padding-left: 0; margin-right: 16px; }
+@media (max-width: 1050px) { .operatingGrid { grid-template-columns: minmax(0, 1fr); } .trust { display: none; } }
+@media (max-width: 760px) { .heading { flex-direction: column; align-items: flex-start; gap: 8px; } .heading h1 { font-size: 28px; } }
+@media (max-width: 600px) { .page { padding: 16px; } .panel { padding: 18px; } .panelHead, .card { flex-direction: column; align-items: stretch; } .academy { max-width: 100%; } .searchRow { flex-wrap: wrap; } .searchRow input { flex-basis: 100%; } .searchRow button { flex: 1; } .open { align-self: flex-start; padding-left: 0; } .experiences button { min-width: 145px; padding: 12px; } .future { padding: 20px; } }

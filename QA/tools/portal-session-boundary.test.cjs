@@ -2,12 +2,12 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const ts=require('../../apps/web/node_modules/typescript');
 const code=ts.transpileModule(fs.readFileSync('apps/web/src/lib/api.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
-function fixture(){
-  const data=new Map(),events=new Map(),calls=[];
+function fixture(data=new Map()){
+  const events=new Map(),calls=[];
   const storage={getItem:key=>data.get(key)??null,setItem:(key,value)=>data.set(key,value),removeItem:key=>data.delete(key)};
   const window={location:{pathname:'/payments'},localStorage:storage,addEventListener:(name,fn)=>events.set(name,fn)};
   const fetch=async(url,init={})=>{calls.push({url,init});if(url.endsWith('/refresh'))return{ok:true,json:async()=>({accessToken:'synthetic-renewed',refreshToken:'synthetic-refresh-new'})};return{status:new Headers(init.headers).get('Authorization')==='Bearer synthetic-renewed'?200:401};};
-  const mod={exports:{}};vm.runInNewContext(code,{module:mod,exports:mod.exports,process:{env:{}},window,Headers,AbortController,fetch});
+  const mod={exports:{}};vm.runInNewContext(code,{module:mod,exports:mod.exports,process:{env:{}},crypto:require("node:crypto").webcrypto,window,Headers,AbortController,fetch});
   return{api:mod.exports,data,calls,emit:(key,newValue=null,storageArea=storage)=>events.get('storage')({key,newValue,storageArea})};
 }
 test('Explicit login/replacement notifies once after storage, with no credential arguments',()=>{
@@ -50,4 +50,23 @@ test('Explicit admin login retires legacy credential fallback without touching T
   assert.equal(f.data.has('academydesk.refreshToken.AcademyAdmin'),false);
   assert.equal(f.data.has('academydesk.accessToken'),false); assert.equal(f.data.has('academydesk.refreshToken'),false);
   assert.equal(f.data.get('academydesk.refreshToken.Teacher'),'synthetic-teacher-refresh');
+});
+test('identical-token login in another realm advances the marker even before storage events arrive', () => {
+  const shared=new Map(), original=fixture(shared), loginTab=fixture(shared);
+  original.api.savePortalTokens('AcademyAdmin','synthetic-identical','synthetic-refresh');
+  const epoch=original.api.portalSessionEpoch('AcademyAdmin');
+  loginTab.api.savePortalTokens('AcademyAdmin','synthetic-identical','synthetic-refresh');
+  assert.notEqual(original.api.portalSessionEpoch('AcademyAdmin'),epoch);
+  assert.equal(original.api.portalAccessToken('AcademyAdmin'),'synthetic-identical');
+  let notified=0; original.api.subscribePortalSessionChanges('AcademyAdmin',()=>notified++);
+  original.emit('academydesk.sessionEpoch.AcademyAdmin',original.api.portalSessionEpoch('AcademyAdmin'));
+  assert.equal(notified,1);
+});
+test('internal renewal preserves persisted login identity and sign-out advances it',async()=>{
+  const f=fixture();f.api.savePortalTokens('AcademyAdmin','synthetic-old','synthetic-refresh');
+  const epoch=f.api.portalSessionEpoch('AcademyAdmin');
+  assert.equal((await f.api.academyApi('/api/synthetic')).status,200);
+  assert.equal(f.api.portalSessionEpoch('AcademyAdmin'),epoch);
+  f.api.clearPortalTokens('AcademyAdmin');
+  assert.notEqual(f.api.portalSessionEpoch('AcademyAdmin'),epoch);
 });

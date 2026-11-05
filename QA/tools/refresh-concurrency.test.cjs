@@ -12,7 +12,7 @@ function harness(config={}){
   return{ok:false,status:401};
  };
  const mod={exports:{}};const code=ts.transpileModule(fs.readFileSync(process.env.QA_REFRESH_CONCURRENCY_SOURCE||'apps/web/src/lib/api.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
- vm.runInNewContext(code,{module:mod,exports:mod.exports,process:{env:{}},window,Headers,AbortController,fetch});const api=mod.exports;
+ vm.runInNewContext(code,{module:mod,exports:mod.exports,process:{env:{}},crypto:require("node:crypto").webcrypto,window,Headers,AbortController,fetch});const api=mod.exports;
  const seed=(workspace,access='old',refresh='refresh-old')=>api.savePortalTokens(workspace,access,refresh);
  const route=workspace=>window.location.pathname=workspace==='AcademyAdmin'?'/portal-accounts':workspace==='Teacher'?'/teacher':workspace==='Portal'?'/portal':'/platform';
  const request=(name,signal)=>api.academyApi('/api/'+name,{method:'POST',body:JSON.stringify({name}),headers:api.apiHeaders(true),signal});
@@ -31,3 +31,12 @@ for(const change of ['signout','replacement','same-credentials-signin'])test('sh
 test('old flight completion cannot evict a replacement session flight',async()=>{const h=harness();h.seed('AcademyAdmin');const old=h.request('old');await tick();h.seed('AcademyAdmin','different','different-refresh');const fresh=h.request('fresh');await tick();h.refreshes[0].gate.resolve();a.equal((await old).status,401);const freshTwo=h.request('fresh-two');await tick();const observed=h.refreshes.length;h.refreshes.forEach(x=>x.gate.resolve());a.equal((await fresh).status,200);a.equal((await freshTwo).status,200);a.equal(observed,2);});
 test('second401 never creates a refresh loop for any waiter',async()=>{const h=harness({replayDenied:true});h.seed('AcademyAdmin');const requests=[h.request('first'),h.request('second')];await tick();const observed=h.refreshes.length;h.refreshes.forEach(x=>x.gate.resolve());a.ok((await Promise.all(requests)).every(x=>x.status===401));a.equal(observed,1);a.equal(h.calls.filter(x=>!x.url.endsWith('/refresh')).length,4);});
 test('cancelled flight can be replaced without old completion deleting the new one',async()=>{const h=harness(),controller=new AbortController();h.seed('AcademyAdmin');const old=h.request('old',controller.signal);await tick();controller.abort();await tick();a.equal((await old).status,401);const fresh=h.request('fresh');await tick();h.refreshes[0].gate.resolve();await tick();const freshTwo=h.request('fresh-two');await tick();const observed=h.refreshes.length;h.refreshes.forEach(x=>x.gate.resolve());a.equal((await fresh).status,200);a.equal((await freshTwo).status,200);a.equal(observed,2);});
+test('missed peer identical-token replacement invalidates pending renewal by persisted epoch',async()=>{
+ const h=harness();h.seed('AcademyAdmin');const pending=h.request('pending');await tick();
+ const prior=h.api.portalSessionEpoch('AcademyAdmin');
+ h.storage.set('academydesk.sessionEpoch.AcademyAdmin',require('node:crypto').randomUUID());
+ a.notEqual(h.api.portalSessionEpoch('AcademyAdmin'),prior);
+ h.refreshes[0].gate.resolve();a.equal((await pending).status,401);
+ a.equal(h.storage.get('academydesk.accessToken.AcademyAdmin'),'old');
+ a.equal(h.calls.filter(x=>!x.url.endsWith('/refresh')).length,1);
+});

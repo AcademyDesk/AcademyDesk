@@ -12,7 +12,7 @@ function tabs(){const data=new Map(),realms=[];return{data,realms,tab(workspace)
  const storage={getItem:k=>data.get(k)??null,setItem:(k,v)=>data.set(k,String(v)),removeItem:k=>data.delete(k)};
  const window={location:{pathname:paths[workspace]},localStorage:storage,addEventListener:(name,fn)=>{if(!listeners.has(name))listeners.set(name,new Set());listeners.get(name).add(fn);},removeEventListener:(name,fn)=>listeners.get(name)?.delete(fn)};
  const fetch=async(url,init={})=>{calls.push({url,headers:new Headers(init.headers)});if(url.endsWith('/refresh')){await new Promise(r=>pending.push(r));return{ok:true,json:async()=>({accessToken:'renewed',refreshToken:'renewed-refresh'})};}return{status:calls.at(-1).headers.get('Authorization')==='Bearer renewed'?200:401};};
- const mod={exports:{}};vm.runInNewContext(apiCode,{module:mod,exports:mod.exports,process:{env:{}},window,Headers,AbortController,fetch});
+ const mod={exports:{}};vm.runInNewContext(apiCode,{module:mod,exports:mod.exports,process:{env:{}},crypto:require("node:crypto").webcrypto,window,Headers,AbortController,fetch});
  const frame={exports:{}};new Function('require','module','exports','window',frameCode)(name=>name==='react/jsx-runtime'?jsx:name==='react'?{useState:x=>{const n=i++;if(!(n in state))state[n]=x;return[state[n],v=>state[n]=v];},useEffect:fn=>{if(!mounted){cleanup=fn();mounted=true;}}}:name==='next/navigation'?{usePathname:()=>window.location.pathname}:name==='next/link'?{default:'a'}:name==='@/lib/api'?mod.exports:{EnterpriseShell:'shell'},frame,frame.exports,window);
  const resolve=x=>x&&typeof x.type==='function'?resolve(x.type(x.props)):x;
  const render=()=>{i=0;return resolve(frame.exports.WorkspaceFrame({children:'PRIVATE-SYNTHETIC-DATA'}));};
