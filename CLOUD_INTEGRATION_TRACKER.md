@@ -1,5 +1,23 @@
 # Academy Desk shared integration tracker
 
+## Current ownership plan — 5 November 2026
+
+Read CLOUD_LOCAL_WORK_PLAN.md first; older next-task notes below are history.
+
+- [x] Verify published payroll/finance/contracts/enrollment/teacher/student/cloud
+  checkpoint chain and preserve original local sources.
+- [x] Inventory 15 relevant source worktrees and index 507 historical QA reports.
+- [x] Prepare source-only protected-host checkpoint and complete cloud start prompt.
+- [ ] Verify publication of the enclosing host checkpoint by actual remote SHA.
+- [ ] C1 cloud: pure Core/Mini portability; no weights or model activation.
+- [ ] C2 cloud: read-only eligible Manual-action to PENTA outcome map.
+- [ ] L1 local: final guarded protected host/student/teacher SQL acceptance.
+- [ ] C3/C4: claimed frontend/current-lock/runtime checks, subject to prerequisites.
+- [ ] L2/L3/R1: approved actual model integration, combined device/release gates.
+
+The host is NOT QUALIFIED; no new runtime test result or production readiness is
+claimed by this documentation/sync packet. D: resources do not transfer via GitHub.
+
 Updated30October2026. This tracks the combined cloud/local application. Historical
 local feature passes remain preserved, but are not automatically acceptance of a
 different combined source. Do not add overlapping test totals into a percentage.
@@ -13,8 +31,8 @@ different combined source. Do not add overlapping test totals into a percentage.
 | Enrollment operations | Integrated/published4e70762;1,515API and85SQL/service cases,15mixed races | Protected conversational draft/approval/execute/receipt/recovery and UI |
 | Shared teacher creation | Published/verified c248912:1,564API and16actual SQL/service cases; exact services restored | Protected teacher conversation still separate; current-source cloud CI pending |
 | Student onboarding domain service | Published/verified13ed932;1606API/50SQL checks,5mixed races | Verify published remote SHA and current-source CI; protected conversation remains separate |
-| New other-profile cloud work | Reconciled into local cloud-PENTA candidate:1645API/93frontend/8SQL modules PASS; publication authorized | Exact source CI/full web build/browser/device/release acceptance pending; do not reapply the8cloud commits wholesale |
-| Protected student/teacher host flows | Preserved6887e6e source prepared in separate host worktree; UNVALIDATED | Carry preparation onto combined cloud base; compile/additive migration/rollback/SQL host acceptance, then frontend integration |
+| New other-profile cloud work | Published/verified64b222d:1645API/93frontend/8SQL modules PASS | Exact source CI/full web build/browser/device/release acceptance pending; do not reapply the8cloud commits wholesale |
+| Protected student/teacher host flows | Source restored on64b222d:1976API,4migration checks and foundation SQL pass; continuation checkpoint NOT QUALIFIED | Final scripted bridge/student/teacher SQL retest blocked by RAM guard; one Docker-restart approval pending; then actual interpreter/UI/remaining cohorts |
 | Database migration history | Cloud payroll upgrade qualified on disposable SQL; no new schema in contract/enrollment slices | Explicit compatible combined PENTA/local migration path; restore/rollback/staging proof |
 | Mini cloud portability | Automatic CI40804103447FAILED | Resolve genuine missing prerequisites/path portability without hidden skips/fabricated provenance; full rerun |
 | Mini semantic qualification | NOT ACCEPTED:6/12fresh,7/12exposed | Owner stop before candidate loading remains; no model experiment authorized |
@@ -27,8 +45,8 @@ verified coverage. Website work remains deferred until the app launches and the
 first academy is onboarded. No automatic main merge, Azure deployment, customer
 database access, model loading/training/activation or paid compute.
 
-Next engineering work: publish the qualified cloud-PENTA checkpoint, then
-finish protected host persistence/migration integration from the
+Next engineering work: qualify the protected host source checkpoint after the
+resource block is resolved; then connect actual qualified interpreter/UI from the
 existing source. Use Sol High for these authority/transaction decisions; Sol
 Medium for settled UI and documentation. Read WORK_LAPTOP_START.md first when
 changing laptop/profile. The original testing program continues; do not restart.

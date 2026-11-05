@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Data.SqlClient;
 using AcademyDesk.Api.Infrastructure.Media;
+using AcademyDesk.Api.Intelligence.Penta;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using AcademyDesk.Api.Data;
 using Microsoft.EntityFrameworkCore;
@@ -19,14 +20,26 @@ internal sealed class QaApiFactory : WebApplicationFactory<Program>
     private readonly IMediaBlobStore? isolatedMediaStore;
     private readonly IInterceptor? isolatedIdentityInterceptor;
     private readonly IInterceptor? isolatedDomainInterceptor;
+    private readonly TimeProvider? isolatedClock;
+    private readonly IPentaSyntheticProvider? isolatedPentaProvider;
+    private readonly IPentaProvider? isolatedMiniProvider;
+    private readonly IPentaOnboardingInterpreter? isolatedOnboardingInterpreter;
+    private readonly PentaPrivateContextLeases? isolatedOnboardingLeases;
+    private readonly IPentaTeacherInterpreter? isolatedTeacherInterpreter;
 
-    public QaApiFactory(QaRunManifest manifest, IReadOnlyDictionary<string, string?>? overrides = null, IMediaBlobStore? isolatedMediaStore = null, IInterceptor? isolatedIdentityInterceptor = null, IInterceptor? isolatedDomainInterceptor = null)
+    public QaApiFactory(QaRunManifest manifest, IReadOnlyDictionary<string, string?>? overrides = null, IMediaBlobStore? isolatedMediaStore = null, IInterceptor? isolatedIdentityInterceptor = null, IPentaSyntheticProvider? isolatedPentaProvider = null, IInterceptor? isolatedDomainInterceptor = null, TimeProvider? isolatedClock = null, IPentaProvider? isolatedMiniProvider = null,IPentaOnboardingInterpreter? isolatedOnboardingInterpreter=null,PentaPrivateContextLeases? isolatedOnboardingLeases=null,IPentaTeacherInterpreter? isolatedTeacherInterpreter=null)
     {
         this.manifest = manifest;
         this.overrides = overrides ?? new Dictionary<string, string?>();
         this.isolatedMediaStore = isolatedMediaStore;
         this.isolatedIdentityInterceptor = isolatedIdentityInterceptor;
         this.isolatedDomainInterceptor = isolatedDomainInterceptor;
+        this.isolatedClock = isolatedClock;
+        this.isolatedPentaProvider = isolatedPentaProvider;
+        this.isolatedMiniProvider = isolatedMiniProvider;
+        this.isolatedOnboardingInterpreter=isolatedOnboardingInterpreter;
+        this.isolatedOnboardingLeases=isolatedOnboardingLeases;
+        this.isolatedTeacherInterpreter=isolatedTeacherInterpreter;
     }
 
     public bool PreflightPassed { get; private set; }
@@ -97,6 +110,11 @@ internal sealed class QaApiFactory : WebApplicationFactory<Program>
                 services.ConfigureDbContext<IdentityDbContext>(options => options.AddInterceptors(isolatedIdentityInterceptor));
             if (isolatedDomainInterceptor is not null)
                 services.ConfigureDbContext<AcademyDeskDbContext>(options => options.AddInterceptors(isolatedDomainInterceptor));
+            if (isolatedClock is not null)
+            {
+                services.RemoveAll<TimeProvider>();
+                services.AddSingleton(isolatedClock);
+            }
 
             // Trusted harness injection only, after its labelled loopback emulator
             // guard. Configuration still cannot enable any live Azure provider.
@@ -106,7 +124,26 @@ internal sealed class QaApiFactory : WebApplicationFactory<Program>
                 services.AddSingleton(isolatedMediaStore);
             }
 
+            // Synthetic QA replacement only after the run-owned SQL host guard.
+            if (isolatedPentaProvider is not null)
+            {
+                services.RemoveAll<IPentaSyntheticProvider>();
+                services.AddSingleton(isolatedPentaProvider);
+            }
+
             services.AddDataProtection().PersistKeysToFileSystem(new DirectoryInfo(manifest.DataProtectionRoot));
+            if (isolatedMiniProvider is not null)
+            {
+                services.RemoveAll<IPentaProvider>();
+                services.AddSingleton(isolatedMiniProvider);
+            }
+            if(isolatedOnboardingInterpreter is not null) {
+                services.RemoveAll<IPentaOnboardingInterpreter>();services.AddSingleton(isolatedOnboardingInterpreter);
+            }
+            if(isolatedOnboardingLeases is not null)services.AddSingleton(isolatedOnboardingLeases);
+            if(isolatedTeacherInterpreter is not null){
+                services.RemoveAll<IPentaTeacherInterpreter>();services.AddSingleton(isolatedTeacherInterpreter);
+            }
         });
     }
 

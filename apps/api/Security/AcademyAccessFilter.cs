@@ -109,7 +109,13 @@ public sealed class AcademyAccessFilter(UserManager<ApplicationUser> userManager
 
         var controllerName = context.Controller.GetType().Name;
         var controller = controllerName.Replace("Controller", string.Empty, StringComparison.Ordinal);
-        if (string.Equals(controller, "AuditLogs", StringComparison.Ordinal))
+        // These preserved host services commit their outcome/attempt/audit
+        // inside their own transaction. SQL audit-failure acceptance is required.
+        if (string.Equals(controller, "AuditLogs", StringComparison.Ordinal) ||
+            string.Equals(controller, "Penta", StringComparison.Ordinal) ||
+            string.Equals(controller, "PentaConversations", StringComparison.Ordinal) ||
+            string.Equals(controller, "PentaOnboarding", StringComparison.Ordinal) ||
+            string.Equals(controller, "PentaChat", StringComparison.Ordinal))
         {
             await next();
             return;

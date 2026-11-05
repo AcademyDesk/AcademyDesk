@@ -82,17 +82,19 @@ public sealed class StudentOnboardingService(AcademyDeskDbContext db, IdentityDb
             await db.SaveChangesAsync(token);
             if (parent is not null) { var parentAccess = isMinor || request.AllowParentPortalAccess; db.StudentGuardians.Add(new StudentGuardian { AcademyId = academyId, StudentId = student.Id, GuardianId = parent.Id, Relationship = string.IsNullOrWhiteSpace(request.Relationship) ? "Parent" : request.Relationship.Trim(), IsPrimary = true, CanAccessPortal = parentAccess, CanViewAcademicProgress = parentAccess && request.AllowAcademicProgress, CanViewFinance = parentAccess && request.AllowFinance, CanViewDocuments = parentAccess && request.AllowDocuments, CanManageLeave = parentAccess && request.AllowLeave, AccessGrantedAtUtc = parentAccess ? DateTime.UtcNow : null }); }
             await db.SaveChangesAsync(token);
-            await EnsureRole("Student");
-            await EnsureRole("Guardian");
             var studentAccountCreated = false;
             var parentAccountCreated = false;
             if (!string.IsNullOrWhiteSpace(request.StudentUserName) && !string.IsNullOrWhiteSpace(request.StudentTemporaryPassword))
             {
+                // Secure Manual account creation owns this role provisioning.
+                // The credential-free PENTA operation must never bootstrap roles.
+                await EnsureRole("Student");
                 await CreateAccount(request.StudentUserName, request.StudentEmail ?? $"{request.StudentUserName}@academydesk.local", request.StudentTemporaryPassword, student.FirstName + " " + student.LastName, academyId, "Student", student.Id, null, token);
                 studentAccountCreated = true;
             }
             if (parent is not null && !string.IsNullOrWhiteSpace(request.ParentUserName) && !string.IsNullOrWhiteSpace(request.ParentTemporaryPassword))
             {
+                await EnsureRole("Guardian");
                 await CreateAccount(request.ParentUserName, parent.Email!, request.ParentTemporaryPassword, parent.FirstName + " " + parent.LastName, academyId, "Guardian", null, parent.Id, token);
                 parentAccountCreated = true;
             }

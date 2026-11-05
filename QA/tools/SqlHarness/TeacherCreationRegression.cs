@@ -35,19 +35,19 @@ internal static partial class SqlHarnessEntryPoint
         var platform=await LoginAsync(client,"qa-teacher-create-platform@example.invalid","Synthetic!39Ab");
         client.DefaultRequestHeaders.Authorization=null;
         var count=0;void Pass(string label){count++;Console.WriteLine("PASS: TEACHERCREATION "+label);}
-        // This cloud-based slice has not introduced the protected-draft tables.
-        // Inspect actual SQL schema/data rather than inventing an empty snapshot.
-        // If a later migration adds the table, its rows remain part of the same
-        // no-side-effect comparison. No draft assertion or action is skipped.
-        async Task<string> ProtectedDraftState(AcademyDeskDbContext db) {
+        // Inspect actual migrated protected-draft rows in every no-write snapshot.
+        // A separate exact run-owned table tests absent/present and long JSON
+        // snapshots without creating or dropping a mapped application table.
+        async Task<string> ProtectedDraftState(AcademyDeskDbContext db,bool fixture=false) {
+            var table=fixture?"[dbo].[QaTeacherProtectedDraftSnapshotFixture]":"[dbo].[PentaOnboardingDrafts]";
             await db.Database.OpenConnectionAsync();
             try {
                 await using var command=db.Database.GetDbConnection().CreateCommand();
-                command.CommandText="SELECT CASE WHEN OBJECT_ID(N'[dbo].[PentaOnboardingDrafts]', N'U') IS NULL THEN 0 ELSE 1 END";
+                command.CommandText=$"SELECT CASE WHEN OBJECT_ID(N'{table}', N'U') IS NULL THEN 0 ELSE 1 END";
                 if(Convert.ToInt32(await command.ExecuteScalarAsync())==0)return "schema:not-present";
                 // Nest FOR JSON so SqlClient receives one nvarchar(max) value,
                 // not just the first fragment of a potentially multi-row JSON result.
-                command.CommandText="SELECT (SELECT * FROM [dbo].[PentaOnboardingDrafts] ORDER BY [Id] FOR JSON PATH, INCLUDE_NULL_VALUES)";
+                command.CommandText=$"SELECT (SELECT * FROM {table} ORDER BY [Id] FOR JSON PATH, INCLUDE_NULL_VALUES)";
                 return "schema:present:"+(string?)(await command.ExecuteScalarAsync());
             } finally { await db.Database.CloseConnectionAsync(); }
         }
@@ -138,32 +138,36 @@ internal static partial class SqlHarnessEntryPoint
         using(var scope=factory.Services.CreateScope()){
             var identity=scope.ServiceProvider.GetRequiredService<IdentityDbContext>();var stored=await identity.Users.SingleAsync(x=>x.Id==actor);stored.IsActive=false;await identity.SaveChangesAsync();}
         await Reject("revoked actor old bearer cannot create",HttpStatusCode.Forbidden,token,academy,optional);
-        // The original local fixture had a mapped protected-draft table. This
-        // integration slice intentionally has not introduced that migration yet.
-        // Prove both optional-schema states and capture beyond SQL's JSON fragment
-        // size using a synthetic table in this exact disposable run-owned database.
         using(var scope=factory.Services.CreateScope()){
             var db=scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
-            if(await ProtectedDraftState(db)!="schema:not-present")throw new InvalidOperationException("Unexpected protected-draft schema in isolated teacher fixture.");
+            if(!(await ProtectedDraftState(db)).StartsWith("schema:present:",StringComparison.Ordinal))
+                throw new InvalidOperationException("Mapped protected-draft schema was not migrated.");
+        }
+        Pass("mapped protected-draft table participates in actual no-write snapshots");
+        // Actual protected drafts are now mapped and included in all snapshots.
+        // Keep absent/present/long-row checks in a distinct owned fixture table.
+        using(var scope=factory.Services.CreateScope()){
+            var db=scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+            if(await ProtectedDraftState(db,true)!="schema:not-present")throw new InvalidOperationException("Unexpected protected-draft schema in isolated teacher fixture.");
             await using var sql=new SqlConnection(Connection(manifest.SqlServer,manifest.Database,"sa",Environment.GetEnvironmentVariable("QA_SQL_SA_PASSWORD")!));
             await sql.OpenAsync();var createdTable=false;
             try {
-                await using var command=new SqlCommand("CREATE TABLE [dbo].[PentaOnboardingDrafts] ([Id] uniqueidentifier NOT NULL PRIMARY KEY,[ProtectedBody] nvarchar(max) NOT NULL)",sql);
+                await using var command=new SqlCommand("CREATE TABLE [dbo].[QaTeacherProtectedDraftSnapshotFixture] ([Id] uniqueidentifier NOT NULL PRIMARY KEY,[ProtectedBody] nvarchar(max) NOT NULL)",sql);
                 await command.ExecuteNonQueryAsync();createdTable=true;
                 var id=Guid.NewGuid();var body="Synthetic-only:"+new string('x',12000)+":last-fragment";
-                command.CommandText="INSERT INTO [dbo].[PentaOnboardingDrafts] ([Id],[ProtectedBody]) VALUES (@id,@body)";
+                command.CommandText="INSERT INTO [dbo].[QaTeacherProtectedDraftSnapshotFixture] ([Id],[ProtectedBody]) VALUES (@id,@body)";
                 command.Parameters.AddWithValue("@id",id);command.Parameters.AddWithValue("@body",body);await command.ExecuteNonQueryAsync();
-                var before=await ProtectedDraftState(db);
+                var before=await ProtectedDraftState(db,true);
                 if(!before.StartsWith("schema:present:",StringComparison.Ordinal))throw new InvalidOperationException("Protected-draft table presence was not observed.");
                 using(var longRowJson=JsonDocument.Parse(before["schema:present:".Length..]))
                     if(longRowJson.RootElement.EnumerateArray().Single().GetProperty("ProtectedBody").GetString()!=body)throw new InvalidOperationException("Protected-draft snapshot truncated the actual SQL row.");
-                command.CommandText="UPDATE [dbo].[PentaOnboardingDrafts] SET [ProtectedBody]=@body WHERE [Id]=@id";
+                command.CommandText="UPDATE [dbo].[QaTeacherProtectedDraftSnapshotFixture] SET [ProtectedBody]=@body WHERE [Id]=@id";
                 command.Parameters["@body"].Value=body+":changed-at-end";await command.ExecuteNonQueryAsync();
-                if(before==await ProtectedDraftState(db))throw new InvalidOperationException("Protected-draft snapshot missed a change beyond the first JSON fragment.");
+                if(before==await ProtectedDraftState(db,true))throw new InvalidOperationException("Protected-draft snapshot missed a change beyond the first JSON fragment.");
             } finally {
-                if(createdTable){await using var cleanup=new SqlCommand("DROP TABLE [dbo].[PentaOnboardingDrafts]",sql);await cleanup.ExecuteNonQueryAsync();}
+                if(createdTable){await using var cleanup=new SqlCommand("DROP TABLE [dbo].[QaTeacherProtectedDraftSnapshotFixture]",sql);await cleanup.ExecuteNonQueryAsync();}
             }
-            if(await ProtectedDraftState(db)!="schema:not-present")throw new InvalidOperationException("Synthetic optional-schema fixture was not restored.");
+            if(await ProtectedDraftState(db,true)!="schema:not-present")throw new InvalidOperationException("Synthetic optional-schema fixture was not restored.");
         }
         Pass("actual optional draft schema and full long-row snapshot detect tail changes; fixture restored");
         var evidence=Path.GetFullPath(Path.Combine("QA","EVIDENCE","teacher-creation-sql-"+manifest.RunId.ToString("N")));Directory.CreateDirectory(evidence);

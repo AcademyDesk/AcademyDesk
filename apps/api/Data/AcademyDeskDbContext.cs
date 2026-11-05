@@ -66,9 +66,147 @@ public sealed class AcademyDeskDbContext(DbContextOptions<AcademyDeskDbContext> 
     public DbSet<PlatformBillingInvoice> PlatformBillingInvoices => Set<PlatformBillingInvoice>();
     public DbSet<TenantOnboardingProfile> TenantOnboardingProfiles => Set<TenantOnboardingProfile>();
 
+    public DbSet<PentaTask> PentaTasks => Set<PentaTask>();
+    public DbSet<PentaExecution> PentaExecutions => Set<PentaExecution>();
+    public DbSet<PentaAttempt> PentaAttempts => Set<PentaAttempt>();
+    public DbSet<PentaApproval> PentaApprovals => Set<PentaApproval>();
+    public DbSet<PentaUsageReservation> PentaUsageReservations => Set<PentaUsageReservation>();
+    public DbSet<PentaUsageEntry> PentaUsageEntries => Set<PentaUsageEntry>();
+    public DbSet<PentaConversation> PentaConversations => Set<PentaConversation>();
+    public DbSet<PentaConversationTurn> PentaConversationTurns => Set<PentaConversationTurn>();
+    public DbSet<PentaConversationMessage> PentaConversationMessages => Set<PentaConversationMessage>();
+    public DbSet<PentaMiniSession> PentaMiniSessions => Set<PentaMiniSession>();
+    public DbSet<PentaMiniTurn> PentaMiniTurns => Set<PentaMiniTurn>();
+    public DbSet<PentaOnboardingDraft> PentaOnboardingDrafts => Set<PentaOnboardingDraft>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<PentaOnboardingDraft>(entity =>
+        {
+            entity.Property(x => x.Revision).IsConcurrencyToken();
+            entity.Property(x => x.Status).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.ProtectedBody).HasMaxLength(16000).IsRequired();
+            entity.HasIndex(x => new { x.AcademyId, x.ActorUserId, x.CreatedAtUtc });
+            entity.HasOne<PentaMiniSession>().WithMany()
+                .HasForeignKey(x => new { x.AcademyId, x.ActorUserId, x.SessionId })
+                .HasPrincipalKey(x => new { x.AcademyId, x.ActorUserId, x.Id }).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<PentaMiniSession>(entity =>
+        {
+            entity.Property(x => x.Version).IsConcurrencyToken();
+            entity.Property(x => x.ProtectedState).HasMaxLength(12000).IsRequired();
+            entity.Property(x => x.ProtectedOnboardingState).HasMaxLength(4000);
+            entity.HasAlternateKey(x => new { x.AcademyId, x.ActorUserId, x.Id });
+            entity.HasOne<Academy>().WithMany().HasForeignKey(x => x.AcademyId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasIndex(x => new { x.AcademyId, x.ActorUserId, x.CreatedAtUtc });
+        });
+        modelBuilder.Entity<PentaMiniTurn>(entity =>
+        {
+            entity.Property(x => x.InputDigest).HasMaxLength(300).IsRequired();
+            entity.Property(x => x.Status).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.ProtectedReceipt).HasMaxLength(60000);
+            entity.HasIndex(x => new { x.AcademyId, x.ActorUserId, x.SessionId, x.RequestId }).IsUnique();
+            entity.HasIndex(x => new { x.AcademyId, x.ActorUserId, x.CreatedAtUtc });
+            entity.HasOne<PentaMiniSession>().WithMany().HasForeignKey(x => new { x.AcademyId, x.ActorUserId, x.SessionId })
+                .HasPrincipalKey(x => new { x.AcademyId, x.ActorUserId, x.Id }).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<PentaConversation>(entity =>
+        {
+            entity.Property(x => x.ContextVersion).IsConcurrencyToken();
+            entity.HasAlternateKey(x => new { x.AcademyId, x.ActorUserId, x.Id });
+            entity.HasIndex(x => new { x.AcademyId, x.ActorUserId, x.RequestId }).IsUnique();
+            entity.HasIndex(x => new { x.AcademyId, x.ActorUserId, x.ExpiresAtUtc });
+        });
+        modelBuilder.Entity<PentaConversationTurn>(entity =>
+        {
+            entity.Property(x => x.Capability).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.InputDigest).HasMaxLength(64).IsRequired();
+            entity.HasAlternateKey(x => new { x.AcademyId, x.ActorUserId, x.ConversationId, x.Id });
+            entity.HasIndex(x => new { x.AcademyId, x.ActorUserId, x.ConversationId, x.RequestId }).IsUnique();
+            entity.HasIndex(x => new { x.AcademyId, x.ActorUserId, x.ConversationId, x.CompletedContextVersion }).IsUnique();
+            entity.HasOne<PentaConversation>().WithMany().HasForeignKey(x => new { x.AcademyId, x.ActorUserId, x.ConversationId })
+                .HasPrincipalKey(x => new { x.AcademyId, x.ActorUserId, x.Id }).OnDelete(DeleteBehavior.Restrict);
+        });
+        modelBuilder.Entity<PentaConversationMessage>(entity =>
+        {
+            entity.Property(x => x.Role).HasMaxLength(20).IsRequired();
+            entity.Property(x => x.Content).HasMaxLength(250).IsRequired();
+            entity.HasIndex(x => new { x.AcademyId, x.ActorUserId, x.ConversationId, x.Sequence }).IsUnique();
+            entity.HasOne<PentaConversationTurn>().WithMany()
+                .HasForeignKey(x => new { x.AcademyId, x.ActorUserId, x.ConversationId, x.TurnId })
+                .HasPrincipalKey(x => new { x.AcademyId, x.ActorUserId, x.ConversationId, x.Id }).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<PentaTask>(entity =>
+        {
+            entity.Property(x => x.Capability).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.Status).HasMaxLength(30).IsRequired();
+            entity.HasIndex(x => new { x.AcademyId, x.ActorUserId, x.CreatedAtUtc });
+            entity.HasAlternateKey(x => new { x.AcademyId, x.Id });
+        });
+        modelBuilder.Entity<PentaExecution>(entity =>
+        {
+            entity.Property(x => x.ToolName).HasMaxLength(80).IsRequired();
+            entity.Property(x => x.IdempotencyKey).HasMaxLength(128).IsRequired();
+            entity.Property(x => x.InputDigest).HasMaxLength(64).IsRequired();
+            entity.Property(x => x.Status).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.ApprovalMode).HasMaxLength(20).HasDefaultValue("None").IsRequired();
+            entity.Property(x => x.ResultMessage).HasMaxLength(250);
+            entity.Property(x => x.ProposalPayloadJson).HasMaxLength(600);
+            entity.HasIndex(x => new { x.AcademyId, x.ActorUserId, x.ToolName, x.IdempotencyKey }).IsUnique();
+            entity.HasAlternateKey(x => new { x.AcademyId, x.Id });
+            entity.HasOne<PentaTask>().WithMany().HasForeignKey(x => new { x.AcademyId, x.TaskId })
+                .HasPrincipalKey(x => new { x.AcademyId, x.Id }).OnDelete(DeleteBehavior.Restrict);
+        });
+        modelBuilder.Entity<PentaAttempt>(entity =>
+        {
+            entity.Property(x => x.Outcome).HasMaxLength(30).IsRequired();
+            entity.HasIndex(x => new { x.AcademyId, x.ExecutionId }).IsUnique();
+            entity.HasOne<PentaExecution>().WithMany().HasForeignKey(x => new { x.AcademyId, x.ExecutionId })
+                .HasPrincipalKey(x => new { x.AcademyId, x.Id }).OnDelete(DeleteBehavior.Restrict);
+        });
+        modelBuilder.Entity<PentaApproval>(entity =>
+        {
+            entity.Property(x => x.Status).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.DecisionDigest).HasMaxLength(64).IsRequired();
+            entity.Property(x => x.PolicyVersion).HasMaxLength(40).IsRequired();
+            entity.Property(x => x.RowVersion).IsRowVersion();
+            entity.HasIndex(x => new { x.AcademyId, x.ExecutionId }).IsUnique();
+            entity.HasOne<PentaExecution>().WithMany().HasForeignKey(x => new { x.AcademyId, x.ExecutionId })
+                .HasPrincipalKey(x => new { x.AcademyId, x.Id }).OnDelete(DeleteBehavior.Restrict);
+        });
+        modelBuilder.Entity<PentaUsageReservation>(entity =>
+        {
+            entity.Property(x => x.UnitKind).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.Status).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.Currency).HasMaxLength(3).IsRequired();
+            entity.Property(x => x.PriceVersion).HasMaxLength(40).IsRequired();
+            entity.Property(x => x.ProviderName).HasMaxLength(80);
+            entity.Property(x => x.ModelName).HasMaxLength(80);
+            entity.Property(x => x.InputUsdPerMillion).HasPrecision(18, 6);
+            entity.Property(x => x.OutputUsdPerMillion).HasPrecision(18, 6);
+            entity.Property(x => x.EstimatedCost).HasPrecision(18, 6);
+            entity.Property(x => x.ActualCost).HasPrecision(18, 6);
+            entity.HasAlternateKey(x => new { x.AcademyId, x.Id });
+            entity.HasIndex(x => new { x.AcademyId, x.ExecutionId }).IsUnique();
+            entity.HasIndex(x => new { x.AcademyId, x.WindowStartUtc, x.ActorUserId });
+            entity.HasOne<PentaExecution>().WithMany().HasForeignKey(x => new { x.AcademyId, x.ExecutionId })
+                .HasPrincipalKey(x => new { x.AcademyId, x.Id }).OnDelete(DeleteBehavior.Restrict);
+        });
+        modelBuilder.Entity<PentaUsageEntry>(entity =>
+        {
+            entity.Property(x => x.EventKey).HasMaxLength(60).IsRequired();
+            entity.Property(x => x.Outcome).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.Currency).HasMaxLength(3).IsRequired();
+            entity.Property(x => x.ActualCost).HasPrecision(18, 6);
+            entity.HasIndex(x => new { x.AcademyId, x.ReservationId, x.EventKey }).IsUnique();
+            entity.HasOne<PentaUsageReservation>().WithMany().HasForeignKey(x => new { x.AcademyId, x.ReservationId })
+                .HasPrincipalKey(x => new { x.AcademyId, x.Id }).OnDelete(DeleteBehavior.Restrict);
+        });
 
         modelBuilder.Entity<Academy>(entity =>
         {

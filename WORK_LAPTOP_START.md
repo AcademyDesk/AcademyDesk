@@ -1,5 +1,14 @@
 # Academy Desk — continue from the work laptop or another profile
 
+## Current start — 5 November 2026
+
+Use CLOUD_CODEX_START.md and CLOUD_LOCAL_WORK_PLAN.md from this published feature
+checkpoint. They supersede the older single-task continuation prompt below with
+the owner's daytime-cloud / evening-local split. Confirm the remote SHA before
+starting. The protected host source remains NOT QUALIFIED. Cloud first takes
+pure Core portability and read-only action coverage; local owns protected host
+SQL. No cloud task was automatically launched or directly messaged.
+
 Updated30October2026. GitHub source is available; the original laptop's running
 services, ignored evidence, dependencies and model caches are not transferred.
 
@@ -34,77 +43,60 @@ validation report. Do not assume that this document itself grants publication
 or that an intermediate running validation passed. If not published,4e70762 is
 the last verified integration checkpoint listed here.
 
+## Current source continuation and resource block
+
+The qualified integration base is64b222d oncodex/cloud-penta-reconcile-20261030.
+A newer SOURCE CHECKPOINT,NOT QUALIFIED iscodex/penta-host-integration-20261030.
+Fetch and verify it if present to retrieve all remaining host work. It contains
+1976passing API source and an additive12table migration with4actual migration
+checks/foundation SQL passed. Final private bridge/student/teacher SQL is still
+unaccepted:bridge fixture was restored/configured, but3GiB guard refused the
+latest retest. Production writes stay Testing-only. No model was qualified.
+
+Do not rerun accepted audits or replace this source with an older branch. Runtime,
+models, ignored evidence, secrets and local dependency caches do not transfer.
+Read AI_HANDOFF.md and PENTA_HOST_IMPLEMENTATION_STATUS.md for exact pending work.
+
 ## Exact continuation prompt
 
 ```text
-Continue Academy Desk's existing enterprise/PENTA implementation. Do not restart
-the backend, repeat accepted audits or use another profile's chat as evidence.
+Continue Academy Desk from the verified published codex/penta-host-integration-20261030
+SOURCE CHECKPOINT if present; otherwise use qualified codex/cloud-penta-reconcile-20261030
+at64b222d. Record exact branch/SHA/status and preserve uncommitted work. Read AGENTS,
+AI_HANDOFF,AI_CROSS_PROFILE_HANDOFF,AI_MODEL_ROUTING,AI_PRODUCT_VISION,
+ENTERPRISE_TESTING_ROADMAP,WORK_LAPTOP_START and PENTA_HOST_IMPLEMENTATION_STATUS.
 
-Fetch GitHub metadata for AcademyDesk/AcademyDesk. Prefer the verified published
-codex/cloud-penta-reconcile-20261030 checkpoint if present; otherwise use the
-published codex/penta-student-service-integration-20261029 at13ed932. Record exact branch/SHA
-and status. Read AGENTS.md, WORK_LAPTOP_START.md, AI_HANDOFF.md,
-AI_CROSS_PROFILE_HANDOFF.md, AI_MODEL_ROUTING.md, AI_PRODUCT_VISION.md,
-PENTA_HOST_SECURITY_POLICY.md and ENTERPRISE_TESTING_ROADMAP.md.
+This source already includes student13ed932,teacherc248912,enrollment4e70762,
+financea74a9e4,contractsd44aea5and payroll00d0d00, plus the other profile's8cloud
+commits througha63e392. Do not reapply them wholesale. The retained source
+snapshots are Academy6887e6e and Mini c3c61b9. Main and Azure are unchanged.
 
-Start a separate bounded codex/<task> branch from the verified integration tip.
-Do not have other profiles edit the same files. The preserved remaining Academy
-source is on codex/penta-local-source-20261029 at6887e6e. Mini/Core/frontend source
-is in AcademyDesk/PentaMini on codex/mini-local-source-20261029 atc3c61b9. Inspect
-each LOCAL_SOURCE_TRANSFER.md and manifest. Bring forward coherent source/tests,
-not a wholesale merge. Do not replace the larger retained local test set with
-the smaller integration subset or add overlapping counts.
+Finish only unaccepted host validation first: configure QA_PENTA_BRIDGE_SOURCE
+with the actual pinned Mini checkout and QA_PENTA_BRIDGE_PYTHON with an available
+Python>=3.12. Use the existing pure Core requirements and scripted fixture, no
+real model/generation. Current fixtures pass no customer data and reject ML
+runtime imports. The original machine needs3GiB free RAM; Docker restart needs
+its pending separate approval. Do not weaken guards or stop unknown apps. Original
+machine service-stop windows do not authorize stopping office-laptop services.
 
-Retain owner-selected financial rules: reject new zero-net payroll, allow only
-validated Voided restoration, preserve invoice reductions/refund restrictions,
-current tenant/role/resource authority, exact finance, transactions and audit.
-Enrollment Manual/service operations and typed adapters are integrated; protected
-enrollment conversation approval/execution/receipt/recovery is still pending.
-Student/teacher domain services are integrated in the student checkpoint; their
-protected conversational approvals/receipts/recovery are still pending. The cloud-PENTA checkpoint already reconciles
-the8new cloud commits througha63e392 fromcodex/release-export-security,
-including role/session/recovery/export, payroll print, assessment/attendance and
-work-item validation. Do not reapply them wholesale or replace those fixes with
-the preserved older source. Protected host preparation is unvalidated; do not
-assume it was included or that an actual model was qualified.
-Continue protected student/teacher host persistence, approvals and recovery,
-the explicit cloud/local migration path, then connected PENTA/Manual visuals and
-remaining conversational workflows using the existing source and tests.
+Build/run the existing SqlHarness PentaHostMigration,PentaFoundation,
+PentaOnboardingProtected and PentaTeacherProtected modules on fresh owned SQL.
+QA_PENTA_HOST_SECURITY=1 activates fake-planner security; QA_PENTA_MINI=0 keeps
+real/optional model tests off. Reuse only exact source-bound passing evidence;
+retain failures, full assertions, owned cleanup and exact service restoration.
+API1976is a combined subset, not a replacement for the preserved3183test program.
 
-Mini is NOT ACCEPTED. The owner explicitly stopped before candidate weights
-loading: no model loading/training/inference experiment/activation/downloads,
-paid compute or Azure. Source access does not override that stop. Current Mini
-preservation CI40804103447 failed with26failed/1651passed/1skipped/60errors;
-logs include missing laptop-only evidence prerequisites. Do not fabricate those
-receipts, erase failing tests or hide failures with skips. Review portability
-without changing historical provenance or promoting training/model acceptance.
+Student/teacher writes stay Testing-only. Complete the actual qualified
+interpreter/host connection,remaining workflow cohorts and PENTA/Manual frontend
+integration/all-role/device acceptance next. Owner stop before candidate loading
+stands: no training/inference experiment/activation/downloads/paid compute/Azure.
+Mini semantic result is NOT ACCEPTED; full Mini cloud CI previously failed.
+Private paired-Core CI may need PENTA_SOURCE_READ_TOKEN; do not create credentials
+or change repository settings without authorization. No fabricated receipts or
+hidden test skips. Finish exact-source web/CI/security/privacy/migration/restore/
+critical/staging/release gates before proposing production. Website stays deferred.
 
-Preserve independent Academy host authorization, typed allowed tools, required
-scoped approval, deterministic services, real results and mandatory audit. Keep
-Manual usable if AI is unavailable. No arbitrary model SQL/code/roles/tenants.
-
-Run relevant existing tests against exact source and disposable owned SQL only.
-Never access production/customer DBs or copy laptop credentials. Existing local
-Docker/RAM permissions refer to the original machine, not unrelated work-laptop
-processes. Obtain/setup a suitable approved runtime instead of stopping unknown
-services. No main merge, Azure deployment or repository-settings change. New
-commits/pushes require current task authorization.
-
-Update handoff with actual source/results/failures, remaining gates and next
-model. Sol High for security/transactions/host integration; Sol Medium for settled
-UI/docs.90%conversational AI/10%Manual remains a target, not verified coverage.
+Stay onSol High for consequential host/authority/transaction work;Sol Medium for
+settled UI/docs. Publish reviewed source to a feature branch under the owner's
+current authorization. Never merge main,force-push or deploy implicitly.
 ```
-
-## Laptop-specific prerequisites still local
-
-The D: model checkpoints/training environment and historical QA review/runtime
-receipts remain on the original laptop. They are not needed merely to review or
-edit shared source. They are required where an existing native/provenance test
-explicitly depends on them; that test cannot be declared passed without its
-actual prerequisites. No model qualification was performed by the source transfer.
-
-Use the existing configured cloud environment if one is available to the current
-profile. This chat has not selected/started a cloud task automatically. The new
-machine must have repository access to both AcademyDesk and private PentaMini;
-do not paste credentials into chat or project files. The public product website
-remains deferred until the app launches and the first academy is onboarded.

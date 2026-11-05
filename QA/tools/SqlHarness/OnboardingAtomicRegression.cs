@@ -18,7 +18,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 internal static partial class SqlHarnessEntryPoint
 {
-    private static async Task VerifyOnboardingAtomicAsync(QaApiFactory factory, HttpClient client, QaRunManifest manifest)
+    private static async Task VerifyOnboardingAtomicAsync(QaApiFactory factory, HttpClient client, QaRunManifest manifest, bool includeProtected = false)
     {
         Guid academy, foreign;
         using (var scope = factory.Services.CreateScope())
@@ -181,6 +181,20 @@ internal static partial class SqlHarnessEntryPoint
             Console.WriteLine("PASS: ONBOARDINGSERVICE " + mode + "; real SQL boundary/authority/rollback verified");
         }
         Console.WriteLine("PASS: ONBOARDINGSERVICE all 7 additive direct SQL/Identity guard cases; no committed records or synthetic approval claims.");
+        if (includeProtected) {
+        await VerifyPentaOnboardingDraftsAsync(factory, manifest);
+        await VerifyPentaOnboardingExecutionAsync(factory, manifest);
+        await VerifyPentaOnboardingHttpAsync(factory, manifest);
+        await VerifyPentaOnboardingCoreContextAsync(factory, manifest);
+        await VerifyPentaOnboardingPreparationAsync(factory, manifest);
+        await VerifyPentaOnboardingLifecycleAsync(factory, manifest);
+        await VerifyPentaOnboardingApprovalAsync(factory, manifest);
+        await VerifyPentaOnboardingPartialAsync(factory, manifest);
+        await VerifyPentaOnboardingConversationAsync(factory, manifest);
+        await VerifyPentaOnboardingTurnAsync(factory, manifest);
+        await VerifyPentaOnboardingGatewayAsync(factory, manifest);
+        await VerifyPentaOnboardingStartAsync(manifest);
+        }
         await VerifyStudentOnboardingSharedExtrasAsync(factory, client, manifest, academy, foreign);
 
     }

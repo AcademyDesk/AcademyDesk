@@ -1,5 +1,62 @@
 # Academy Desk — shared continuation across profiles
 
+## Current cross-profile entry point — 5 November 2026
+
+Read CLOUD_LOCAL_WORK_PLAN.md and CLOUD_CODEX_START.md first. The owner will use
+Cloud Codex during 08:00-21:00 Asia/Calcutta and this local machine outside that
+window. GitHub transfers reviewed source and sanitized reports, not D: drives,
+Docker state, model caches, user-secrets or raw QA/EVIDENCE. No automatic task or
+remote laptop connection was created. Existing local/model/release restrictions
+remain. The source-only host checkpoint does not supersede its pending acceptance.
+
+Cloud's initial claim is C1 Mini pure Core/cloud portability; C2 is read-only
+Manual-to-AI coverage. L1 local owns current protected host/API/SQL/migrations.
+Further task claims must list exact files and dependencies before edits. Publish
+separate packet reports; one integrator updates shared status documents. Verify
+remote SHA/status on every exchange; never overwrite another profile's dirty work.
+See QA/HANDOFF/LOCAL_SOURCE_INVENTORY_2026-11-05.json and the historical report index
+for checked source provenance and the completed-work history. Do not repeat audits.
+
+## Protected PENTA source continuation — 30 October 2026
+
+SOURCE CHECKPOINT / NOT QUALIFIED / NOT PRODUCTION READY.
+Branchcodex/penta-host-integration-20261030; base published64b222d. Owner authorized
+source publication for the office laptop. Verify the actual remote SHA/status.
+
+- [x] Existing PENTA host source/retained tests restored on the reconciled cloud
+  base. Full1976API PASS/zero skipped; protected-key-ring and strict host contracts
+  retained. Credential-free student creation cannot initialize roles or write
+  Identity; secure Manual account requests retain explicit role provisioning.
+- [x]12table additive cloud84-to85 migration; nonempty downgrade blocked; empty
+  rollback/re-upgrade and unchanged normal/Identity rows/history verified in4real
+  SQL checks. Foundation/fake-planner-security SQL module passed. Snapshot now
+  includes actual protected drafts; long-JSON fixture uses a separate owned table.
+- [ ] Protected student SQL reached approval/receipt/expiry/replay/abandonment,
+  but its scripted bridge file was missing. File restored, paired source/Python
+  paths configurable and actual model runtime imports rejected. Latest17bd8635
+  retest refused before tests at unchanged3GiB RAM guard. These corrections and
+  final protected student/teacher SQL are NOT ACCEPTED yet. No skipped failures.
+- [x] Original two PENTA services restored at exact IDs/images,healthy/API200;
+  owned failed SQL fixtures retained stopped; no pruning or QA/EVIDENCE deletion.
+- [ ] Separate approval requested for one Docker restart; standing validation
+  windows exclude restart. Do not treat silence/preselection as approval.
+- [ ] CI needs pinned paired Mini c3c61b9checkout, pure Core fixture dependencies
+  and authorized read access (PENTA_SOURCE_READ_TOKEN if default token cannot read
+  the private repo). No repository setting/credential was created or exposed.
+
+Protected writes remain Testing-only; no model/tool/provider is activated. The
+pilot remains Owner/AcademyAdmin, not all-role AI. Mini semantic/portability,
+actual interpreter connection, other workflows/UI, locked web build/current CI,
+privacy/role/device/P0/restore/staging/release remain OPEN.90%AI is a target, not
+accepted coverage. Owner stop before candidate model loading stays. Sol High
+continues for remaining host/transaction checks; Sol Medium for settled UI/docs.
+
+Reports:QA/REPORTS/PENTA_PROTECTED_HOST_INTEGRATION_2026-10-30.md and
+PENTA_HOST_IMPLEMENTATION_STATUS.md. Office continuation must preserve completed
+cloud/student work and current failures. No main merge/Azure/customer DB/model
+experiment is authorized by this source checkpoint.
+
+
 ## Cloud fixes joined with PENTA service checkpoint — 30 October 2026
 
 - [x] Published student checkpoint13ed932 is the base of

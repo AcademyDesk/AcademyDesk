@@ -11,15 +11,20 @@ using AcademyDesk.Api.Infrastructure;
 using AcademyDesk.Api.Intelligence.Penta;
 using AcademyDesk.Api.Security;
 using AcademyDesk.Api.Tests.Infrastructure;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 internal static partial class SqlHarnessEntryPoint
 {
     private static async Task VerifyStudentOnboardingSharedExtrasAsync(QaApiFactory factory, HttpClient client,
         QaRunManifest manifest, Guid academy, Guid foreign)
     {
-        var bearer = await LoginAsync(client, "qa-admin-a@example.invalid", "Synthetic!39Ab");
+        var extrasEmail = "qa-student-shared-extras-" + manifest.RunId.ToString("N") + "@example.invalid";
+        await CreateAccessActorAsync(factory, extrasEmail, "AcademyAdmin", academy);
+        var bearer = await LoginAsync(client, extrasEmail, "Synthetic!39Ab");
         client.DefaultRequestHeaders.Authorization = null;
         var count = 0;
         void Pass(string label) { count++; Console.WriteLine("PASS: ONBOARDINGSHARED " + label); }
@@ -98,7 +103,7 @@ internal static partial class SqlHarnessEntryPoint
         Guid actor, teacher;
         using (var scope = factory.Services.CreateScope()) {
             var identity = scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
-            actor = await identity.Users.Where(x => x.UserName == "qa-admin-a@example.invalid").Select(x => x.Id).SingleAsync();
+            actor = await identity.Users.Where(x => x.UserName == extrasEmail).Select(x => x.Id).SingleAsync();
             teacher = await identity.Users.Where(x => x.UserName == "qa-teacher-a@example.invalid").Select(x => x.Id).SingleAsync();
         }
         ClaimsPrincipal Principal(Guid id, bool authenticated = true) => new(new ClaimsIdentity(
@@ -145,6 +150,29 @@ internal static partial class SqlHarnessEntryPoint
         }
         Pass("strict inactive typed candidate shares host transaction/domain/audit; no AI dispatch");
 
+        var roleProbe = new OnboardingRoleBootstrapProbe();
+        using (var protectedFactory = new QaApiFactory(manifest))
+        using (var guarded = protectedFactory.WithWebHostBuilder(builder => builder.ConfigureServices(services => {
+            services.AddSingleton(roleProbe);
+            services.AddScoped<RoleManager<ApplicationRole>, NoAccountRoleManager>();
+        })))
+        using (var guardedClient = guarded.CreateClient())
+        {
+            var before = await Snapshot();
+            using var request = new HttpRequestMessage(HttpMethod.Post, $"/api/academies/{academy}/student-onboarding") { Content = JsonContent.Create(candidate) };
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", bearer);
+            using var response = await guardedClient.SendAsync(request);
+            RequireFinanceStatus(response, HttpStatusCode.OK, "credential-free role bootstrap denial");
+            var result = (await response.Content.ReadFromJsonAsync<StudentOnboardingResult>())!;
+            using var old = JsonDocument.Parse(before); using var after = JsonDocument.Parse(await Snapshot());
+            foreach (var field in new[] { "users", "roles", "memberships" })
+                if (old.RootElement.GetProperty(field).GetRawText() != after.RootElement.GetProperty(field).GetRawText())
+                    throw new InvalidOperationException("Credential-free onboarding changed Identity: " + field);
+            if (roleProbe.Calls != 0 || result.StudentAccountCreated || result.ParentAccountCreated)
+                throw new InvalidOperationException("Credential-free onboarding attempted role/account provisioning.");
+        }
+        Pass("credential-free typed candidate through actual HTTP/SQL never calls role bootstrap or writes Identity");
+
         // Real concurrent Manual and direct host callers compete for the same
         // academy/student number. This is actual SQL contention, not a mock.
         for (var attempt = 1; attempt <= 5; attempt++) {
@@ -184,5 +212,17 @@ internal static partial class SqlHarnessEntryPoint
             browserDevices = "NOT RUN", protectedConversation = "NOT INTEGRATED"
         }, new JsonSerializerOptions { WriteIndented = true }));
         Console.WriteLine($"PASS: ONBOARDINGSHARED {count} additive SQL/HTTP/service cases,5 mixed races; retained21+7 atomic cases unchanged.");
+    }
+
+    private sealed class OnboardingRoleBootstrapProbe { public int Calls; }
+    private sealed class NoAccountRoleManager(IRoleStore<ApplicationRole> store, IEnumerable<IRoleValidator<ApplicationRole>> validators,
+        ILookupNormalizer normalizer, IdentityErrorDescriber errors, ILogger<RoleManager<ApplicationRole>> logger, OnboardingRoleBootstrapProbe probe)
+        : RoleManager<ApplicationRole>(store, validators, normalizer, errors, logger)
+    {
+        public override Task<bool> RoleExistsAsync(string roleName)
+        {
+            Interlocked.Increment(ref probe.Calls);
+            throw new InvalidOperationException("Credential-free operation cannot bootstrap role configuration.");
+        }
     }
 }
