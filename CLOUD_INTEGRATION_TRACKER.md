@@ -13,6 +13,9 @@ Read CLOUD_LOCAL_WORK_PLAN.md first; older next-task notes below are history.
 - [ ] C2 cloud: read-only eligible Manual-action to PENTA outcome map.
 - [x] L1 local: migration/foundation/student SQL PASS; corrected teacher-only
   retest PASS. Source-binding and retained failure documented; full CI still open.
+- [x] Local cached current-source API runtime diagnostic:startup/DB503/anonymous401
+  PASS; exact services/resources restored. Actual Dockerfile offline NuGet restore
+  FAILED; connected production build/fresh audit remain C4/release prerequisites.
 - [ ] C3/C4: claimed frontend/current-lock/runtime checks, subject to prerequisites.
 - [ ] L2/L3/R1: approved actual model integration, combined device/release gates.
 

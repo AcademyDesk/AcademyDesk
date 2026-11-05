@@ -1,5 +1,14 @@
 # Academy Desk — shared continuation across profiles
 
+## Additional local runtime result — 5 November 2026
+
+Fetch latest codex/penta-host-integration-20261030; L1 code/results are f19de88.
+New report PENTA_API_CONTAINER_DIAGNOSTIC_2026-11-05 records current-source cached
+runtime startup/503-unavailable-DB/401-anonymous PASS. The actual production
+Dockerfile offline restore failed NU1301; build/fresh audit remain a cloud C4
+prerequisite, not an accepted release. No source/dependency/model change. Exact
+original services and resources restored,one owned diagnostic image local.
+
 ## L1 local results available — 5 November 2026
 
 Local protected host migration/foundation/student SQL passed. Teacher-only

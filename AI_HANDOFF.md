@@ -1,5 +1,17 @@
 # Academy Desk handoff
 
+## Current-source container diagnostic — 5 November 2026
+
+L1 published/fetched f19de88,0ahead0behind; tracked clean,raw evidence local,
+main unchanged. Current actual Dockerfile offline build2aabdfb5failed its NuGet
+restore prerequisite. No package changes/download or weakened audit. Subsequent
+cached Release publish/runtime-only imagec9b50f81passed actual startup, unavailable
+isolated DB503 and anonymous academy401. This is not a production Dockerfile build.
+Owned container removed; one owned diagnostic image retained. Original full
+inventory (plus that image),exact services/healthy/API200 and lease release PASS.
+Read QA/REPORTS/PENTA_API_CONTAINER_DIAGNOSTIC_2026-11-05.md. Cloud C4 inherits the
+real Dockerfile/fresh-audit prerequisite; C1/C2 continue. No main/Azure/model action.
+
 ## L1 host SQL checks completed — 5 November 2026
 
 - [x] Published source base8d7a02c was tested in guarded local window

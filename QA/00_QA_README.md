@@ -1,5 +1,14 @@
 # AcademyDesk QA control centre — Phase 1
 
+## Current-source API container diagnostic — 5 November 2026
+
+Cached Release publish/runtime-only image PASS:actual startup,isolated unavailable
+DB503,anonymous academy401,owned cleanup and original service/resource restoration.
+Actual production Dockerfile offline restore failed NU1301; that build and fresh
+dependency audit remain OPEN,not bypassed. No application/dependency/model change.
+Report:QA/REPORTS/PENTA_API_CONTAINER_DIAGNOSTIC_2026-11-05.md. L1 published f19de88;
+current full CI/real model/all-role UI/security/device/staging/release stay OPEN.
+
 ## L1 host SQL module results — 5 November 2026
 
 Migration/foundation/protected student modules passed in a46a5f2b; teacher failed
