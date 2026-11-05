@@ -8,10 +8,11 @@ Read CLOUD_LOCAL_WORK_PLAN.md first; older next-task notes below are history.
   checkpoint chain and preserve original local sources.
 - [x] Inventory 15 relevant source worktrees and index 507 historical QA reports.
 - [x] Prepare source-only protected-host checkpoint and complete cloud start prompt.
-- [ ] Verify publication of the enclosing host checkpoint by actual remote SHA.
+- [x] Host source checkpoint8d7a02cpublished/fetched/verified0ahead0behind.
 - [ ] C1 cloud: pure Core/Mini portability; no weights or model activation.
 - [ ] C2 cloud: read-only eligible Manual-action to PENTA outcome map.
-- [ ] L1 local: final guarded protected host/student/teacher SQL acceptance.
+- [x] L1 local: migration/foundation/student SQL PASS; corrected teacher-only
+  retest PASS. Source-binding and retained failure documented; full CI still open.
 - [ ] C3/C4: claimed frontend/current-lock/runtime checks, subject to prerequisites.
 - [ ] L2/L3/R1: approved actual model integration, combined device/release gates.
 
@@ -32,7 +33,7 @@ different combined source. Do not add overlapping test totals into a percentage.
 | Shared teacher creation | Published/verified c248912:1,564API and16actual SQL/service cases; exact services restored | Protected teacher conversation still separate; current-source cloud CI pending |
 | Student onboarding domain service | Published/verified13ed932;1606API/50SQL checks,5mixed races | Verify published remote SHA and current-source CI; protected conversation remains separate |
 | New other-profile cloud work | Published/verified64b222d:1645API/93frontend/8SQL modules PASS | Exact source CI/full web build/browser/device/release acceptance pending; do not reapply the8cloud commits wholesale |
-| Protected student/teacher host flows | Source restored on64b222d:1976API,4migration checks and foundation SQL pass; continuation checkpoint NOT QUALIFIED | Final scripted bridge/student/teacher SQL retest blocked by RAM guard; one Docker-restart approval pending; then actual interpreter/UI/remaining cohorts |
+| Protected student/teacher host flows | Local5November migration/foundation/student PASS; corrected teacher-only SQL PASS. API1976source-bound reuse; source checkpoint8d7a02c plus isolated helper fix | Actual qualified interpreter/UI/remaining cohorts/current full CI/release remain OPEN; see PENTA_HOST_SQL_QUALIFICATION_2026-11-05 report |
 | Database migration history | Cloud payroll upgrade qualified on disposable SQL; no new schema in contract/enrollment slices | Explicit compatible combined PENTA/local migration path; restore/rollback/staging proof |
 | Mini cloud portability | Automatic CI40804103447FAILED | Resolve genuine missing prerequisites/path portability without hidden skips/fabricated provenance; full rerun |
 | Mini semantic qualification | NOT ACCEPTED:6/12fresh,7/12exposed | Owner stop before candidate loading remains; no model experiment authorized |

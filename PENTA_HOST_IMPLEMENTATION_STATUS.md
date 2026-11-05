@@ -1,6 +1,10 @@
-# PENTA host integration status — 30 October 2026
+# PENTA host integration status — 5 November 2026
 
-SOURCE CONTINUATION / NOT QUALIFIED.
+HOST-ONLY SQL MODULES PASSED / MODEL AND PRODUCTION NOT QUALIFIED.
+
+Read QA/REPORTS/PENTA_HOST_SQL_QUALIFICATION_2026-11-05.md. Three modules passed
+in the first window; a private teacher snapshot helper repair passed a teacher-only
+successor. No application/model change. This is not a full corrected-binary CI run.
 
 Current task:codex/penta-host-integration-20261030 inD:\AcademyDesk-penta-host.
 Base published64b222d joins student13ed932 and the other profile'sa63e392source.
@@ -10,7 +14,7 @@ This document does not establish publication or production acceptance.
 | --- | --- |
 | Independent authority | Current stored authenticated actor/academy/role, allowed fields/tools, branch/domain validation; memory/model output is not authority |
 | Domain services | Shared student/teacher/enrollment operations and deterministic finance retained; credential-free student operations cannot initialize roles |
-| Protected host | Existing private sessions/drafts/approvals/receipts/recovery imported from6887e6e; 1976API pass; migration/foundation SQL passed; final bridge/student/teacher SQL retest blocked by3GiB RAM guard |
+| Protected host | API1976source-bound reuse; migration/foundation/protected student SQL PASS including actual scripted .NET/Python sockets; corrected teacher-only SQL PASS. Guards preserved and services restored |
 | Persistence |12new PENTA tables; additive cloud84-to85 migration. Nonempty downgrade is blocked, empty downgrade and re-upgrade preserve existing rows/history |
 | Model calls | No new real Mini/model invocation or activation. Fake planner/interpreter tests establish host enforcement only |
 | Available roles | Retained pilot is Owner/AcademyAdmin only. This is not Teacher/Student/Platform-owner conversational acceptance |

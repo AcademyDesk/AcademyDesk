@@ -2,6 +2,11 @@
 
 ## Current start — 5 November 2026
 
+Local L1 host SQL module results are now available in
+QA/REPORTS/PENTA_HOST_SQL_QUALIFICATION_2026-11-05.md: migration/foundation/student
+PASS plus corrected teacher-only successor PASS, services restored. Actual model,
+current full CI and release remain OPEN. Cloud C1/C2 continue; no audit restart.
+
 Use CLOUD_CODEX_START.md and CLOUD_LOCAL_WORK_PLAN.md from this published feature
 checkpoint. They supersede the older single-task continuation prompt below with
 the owner's daytime-cloud / evening-local split. Confirm the remote SHA before

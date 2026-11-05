@@ -112,14 +112,14 @@ configured and authorized connection. No such connection was configured here.
 
 ## 4. Current blockers: retain exact facts
 
-1. **Protected host SQL:** run the existing modules `PentaHostMigration`,
-   `PentaFoundation`, `PentaOnboardingProtected`, `PentaTeacherProtected` against
-   fresh owned disposable SQL. Use the retained runners/assertions. Migration and
-   foundation previously passed; protected student reached many cases then failed
-   because the Python bridge fixture was missing. The fixture is now restored and
-   source/Python paths configurable. Protected teacher module was not reached.
-   The latest corrected attempt refused before testing at the unchanged 3 GiB
-   RAM guard. Source report records all run IDs, including failures.
+1. **Protected host SQL — L1 completed 5 November:** existing migration,
+   foundation and protected student modules passed, including actual scripted
+   .NET/Python sockets. Teacher found empty SQL JSON/DBNull in its private snapshot
+   helper. Corrected teacher-only retest passed with stronger empty-table checks;
+   unchanged application/API source retains bound1976API evidence. No full CI or
+   real model qualification is implied. See
+   QA/REPORTS/PENTA_HOST_SQL_QUALIFICATION_2026-11-05.md for exact source scope,
+   native run IDs, preserved failures and successful final restoration.
 2. **Model/Core:** latest recorded full Mini cloud CI `40804103447` failed
    (26 failed / 1,651 passed / one skipped / 60 errors). Some missing historical
    laptop-only evidence prerequisites were observed; do not attribute all failures
@@ -157,8 +157,11 @@ The original two local PENTA services were running at this handoff inspection:
 `pentaaimodels-api-1` and `pentaaimodels-inference-1` (inference healthy).
 The original validation lease is absent. Existing bounded service-stop windows
 apply only to those exact local services with restoration, not office/cloud
-services. One Docker restart was requested but not approved; do not infer approval
-from a generic continue message. Do not stop user applications to free memory.
+services. On5November the owner authorized automatic safe development-memory
+reclamation without repeated questions. A controlled restart retained all
+containers/volumes/images, with default bridge ID regeneration documented; the
+teacher retest used safe Linux page-cache release and kept the3GiB guard.
+Preserve all data/evidence/unsaved work. Do not kill unrelated user applications.
 
 ## 5. Work split: cloud 08:00-21:00, local 21:00-08:00 IST
 
@@ -169,7 +172,7 @@ Cloud can continue independent tasks from published source while it is away.
 | Packet | Default owner / priority | Deliverable and limits |
 | --- | --- | --- |
 | C1 — cloud prerequisites and Mini portability | Cloud, first daytime task | Verify both source pins and available tools; reproduce failed pure Core/contract/portability tests, classify missing evidence vs source bugs. Fix real portability without fabricated provenance, hidden skips or loading weights. Publish a bounded Mini branch and sanitized test report. |
-| L1 — protected host qualification | Local, first evening task | Finish four SQL modules with existing guards, exact owned cleanup and service restoration. Compile latest bridge fixes; fix genuine failures; retain audit/duplicate/tenant/approval checks. No model or production activation. |
+| L1 — protected host qualification | Local, completed5November | Four module results accepted within recorded source scope; isolated teacher-helper fix retested. Final exact services/health/post-restart inventory/lease PASS. No real model or production activation; current full CI remains open. |
 | C2 — remaining operation coverage map | Cloud, parallel read-only | Map each eligible Manual action to current typed domain service, PENTA tool/approval/receipt/UI and an existing regression. Mark implemented/accepted/missing separately. Prioritize Hayansh first-launch journeys. No new architecture/audit restart. |
 | C3 — frontend integration | Cloud, after claiming bounded paths | Reconcile preserved premium PENTA/Manual sources and approved shared design; verify PENTA-first entry, role-visible actions, chat results/status/approvals, fallback, Prism/Orbit/Aura and responsive behavior. First claim specific files; never overwrite L1 API/SQL ownership. Model responses may be synthetic only when clearly labelled QA. |
 | C4 — host-independent runtime checks | Cloud, prerequisite-dependent | Exact-lock install/build/typecheck/tests, disposable SQL/Blob/container/browser checks only when its environment supports them and dependency/access scope is authorized. If unavailable, report prerequisite and return tests for L1; do not repeatedly attempt impossible laptop access. No new paid infrastructure. |

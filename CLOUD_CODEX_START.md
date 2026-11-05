@@ -36,8 +36,9 @@ tasks. This document is the prompt to give the existing Cloud Codex task.
 6. Existing qualified domain/finance/security checkpoints are already included.
    Do not reapply a63e392 or preservation branches wholesale. Protected writes are
    still Testing-only; Owner/Admin pilot is not all-role acceptance. Host 1,976
-   API pass and prior migration/foundation SQL do not accept the latest bridge
-   changes or final student/teacher SQL. Mini semantic qualification and full
+   API pass is source-bound reuse. Local L1now passed migration/foundation/student
+   SQL and a corrected teacher-only successor; read the5November report for exact
+   source scope and avoid repeating accepted audits. Mini semantic qualification and full
    cloud CI remain NOT ACCEPTED. Reuse evidence only against matching source.
 7. Publish bounded reviewed feature commits and sanitized QA/HANDOFF packet
    reports under the owner's feature-branch publication authorization. Verify the

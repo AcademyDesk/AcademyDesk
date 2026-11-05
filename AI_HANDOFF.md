@@ -1,5 +1,31 @@
 # Academy Desk handoff
 
+## L1 host SQL checks completed — 5 November 2026
+
+- [x] Published source base8d7a02c was tested in guarded local window
+  a46a5f2b7b614e8e869acf04620206b6: migration/foundation/protected student PASS.
+- [x] Teacher snapshot helper initially failed on empty SQL JSON/DBNull. Fixed
+  COALESCE/strict JSON text; added explicit empty-table checks while retaining
+  absent/present/long-row/tail-change assertions. No application/model change.
+- [x] Corrected teacher-only windowe7cb191030fa4fb6b9c32d091d832a52 PASS:
+  18shared creation/30execution/21Core/43conversation/46startup SQL cases.
+  Harness build0warnings/errors. API1976reused only with unchanged app/test source.
+- [x] Earlier three modules retain source-bound results; only isolated teacher
+  helper changed. This is not a corrected-binary full CI/all-module rerun.
+- [x] Final original service IDs/images/healthy/API200,full post-restart inventory
+  and lease release PASS. Failed teacher SQL fixture retained stopped. Controlled
+  restart kept containers/images/volumes; default bridge ID changed, so its earlier
+  strict full-inventory receipt stays FALSE. Safe cache release passed RAM guard.
+- [ ] Actual model qualification/activation, remaining workflows/all roles/UI,
+  exact-lock web/current CI/device/privacy/legacy migrations/staging/release OPEN.
+
+Owner permits automatic safe development-memory reclamation without repeated
+questions; preserve data/evidence/unsaved work and unchanged guards. No unrelated
+user-app killing or model experiment. Cloud C1/C2 remain assigned; do not duplicate.
+Read QA/REPORTS/PENTA_HOST_SQL_QUALIFICATION_2026-11-05.md and
+QA/HANDOFF/L1_PROTECTED_HOST_2026-11-05.md. Next Sol High integration/runtime;
+Sol Medium for settled UI/docs. No main/Azure/customer DB/issue closure.
+
 ## Local / Cloud Codex exchange — 5 November 2026
 
 Read CLOUD_LOCAL_WORK_PLAN.md and CLOUD_CODEX_START.md before selecting work.

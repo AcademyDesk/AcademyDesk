@@ -1,5 +1,21 @@
 # Academy Desk — shared continuation across profiles
 
+## L1 local results available — 5 November 2026
+
+Local protected host migration/foundation/student SQL passed. Teacher-only
+successor passed after fixing its private SQL snapshot helper's empty JSON/DBNull
+handling and adding empty-table assertions. No application/domain/model change.
+Read QA/REPORTS/PENTA_HOST_SQL_QUALIFICATION_2026-11-05.md for exact run IDs and
+source-binding scope; API1976is reused, not rerun. Final two original services
+restored/healthy/API200/full post-restart inventory/lease release PASS.
+
+Do not repeat L1's accepted checks as a new audit. Current full CI/release and real
+model remain OPEN; source-bound tests do not enable production writes. Cloud C1
+Mini portability and C2 operation-gap mapping continue, then claimed frontend
+work. Local awaits these results for combined runtime integration. Candidate
+loading stop remains. Owner permits safe dev-memory reclamation; no data/evidence
+deletion, guard weakening, unrelated user-app killing or model experiment.
+
 ## Current cross-profile entry point — 5 November 2026
 
 Read CLOUD_LOCAL_WORK_PLAN.md and CLOUD_CODEX_START.md first. The owner will use

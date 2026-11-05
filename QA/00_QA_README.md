@@ -1,5 +1,16 @@
 # AcademyDesk QA control centre — Phase 1
 
+## L1 host SQL module results — 5 November 2026
+
+Migration/foundation/protected student modules passed in a46a5f2b; teacher failed
+on a private snapshot helper's empty SQL JSON/DBNull. Corrected helper retains
+full no-write/long-row/tail assertions and adds explicit empty tables. Teacher-only
+successore7cb1910PASS; services restored/healthy/API200/full post-restart inventory
+and lease released. API1976source-bound reuse. No application/model change,
+production enablement, issue closure or corrected-binary full CI claim.
+Report:QA/REPORTS/PENTA_HOST_SQL_QUALIFICATION_2026-11-05.md. Existing failures/raw
+evidence preserved; Cloud C1/C2 and other release/model gates remain open.
+
 ## Local / cloud continuation — 5 November 2026
 
 Current entry point: CLOUD_LOCAL_WORK_PLAN.md, CLOUD_CODEX_START.md and

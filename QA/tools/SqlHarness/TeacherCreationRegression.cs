@@ -47,8 +47,12 @@ internal static partial class SqlHarnessEntryPoint
                 if(Convert.ToInt32(await command.ExecuteScalarAsync())==0)return "schema:not-present";
                 // Nest FOR JSON so SqlClient receives one nvarchar(max) value,
                 // not just the first fragment of a potentially multi-row JSON result.
-                command.CommandText=$"SELECT (SELECT * FROM {table} ORDER BY [Id] FOR JSON PATH, INCLUDE_NULL_VALUES)";
-                return "schema:present:"+(string?)(await command.ExecuteScalarAsync());
+                // SQL Server may return SQL NULL for an empty nested JSON
+                // result. Keep empty-present distinct from absent schema.
+                command.CommandText=$"SELECT COALESCE((SELECT * FROM {table} ORDER BY [Id] FOR JSON PATH, INCLUDE_NULL_VALUES), N'[]')";
+                if(await command.ExecuteScalarAsync() is not string json)
+                    throw new InvalidOperationException("Protected-draft SQL snapshot did not return JSON text.");
+                return "schema:present:"+json;
             } finally { await db.Database.CloseConnectionAsync(); }
         }
         async Task<string> Snapshot(){using var scope=factory.Services.CreateScope();var db=scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();var identity=scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
@@ -63,6 +67,12 @@ internal static partial class SqlHarnessEntryPoint
         async Task Reject(string label,HttpStatusCode expected,string? bearer,Guid tenant,object request){var before=await Snapshot();using var response=await Post(client,bearer,tenant,request);
             RequireFinanceStatus(response,expected,label);if(before!=await Snapshot())throw new InvalidOperationException("Teacher creation denial changed scoped state.");Pass(label);}
         var optional=new CreateTeacherRequest(" Synthetic "," Manual ",null,null,null,null);
+        using(var scope=factory.Services.CreateScope()){
+            var db=scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+            if(await ProtectedDraftState(db)!="schema:present:[]")
+                throw new InvalidOperationException("Fresh migrated protected-draft table must have an explicit empty JSON snapshot.");
+        }
+        Pass("empty mapped draft snapshot is valid JSON and distinct from absent schema");
         await Reject("anonymous cannot create",HttpStatusCode.Unauthorized,null,academy,optional);
         await Reject("Teacher cannot create",HttpStatusCode.Forbidden,teacher,academy,optional);
         await Reject("foreign academy cannot create",HttpStatusCode.Forbidden,token,foreign,optional);
@@ -154,6 +164,8 @@ internal static partial class SqlHarnessEntryPoint
             try {
                 await using var command=new SqlCommand("CREATE TABLE [dbo].[QaTeacherProtectedDraftSnapshotFixture] ([Id] uniqueidentifier NOT NULL PRIMARY KEY,[ProtectedBody] nvarchar(max) NOT NULL)",sql);
                 await command.ExecuteNonQueryAsync();createdTable=true;
+                if(await ProtectedDraftState(db,true)!="schema:present:[]")
+                    throw new InvalidOperationException("Empty fixture snapshot was not an explicit JSON array.");
                 var id=Guid.NewGuid();var body="Synthetic-only:"+new string('x',12000)+":last-fragment";
                 command.CommandText="INSERT INTO [dbo].[QaTeacherProtectedDraftSnapshotFixture] ([Id],[ProtectedBody]) VALUES (@id,@body)";
                 command.Parameters.AddWithValue("@id",id);command.Parameters.AddWithValue("@body",body);await command.ExecuteNonQueryAsync();
