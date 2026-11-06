@@ -1,0 +1,22 @@
+/* Optional FW1-R1 mapping. Apply only on the same explicit penta-ui root.
+   Never import this as a substitute for portal-by-portal adoption and testing. */
+.penta-ui.pui-academy-mapping {
+  --penta-canvas:var(--pui-canvas); --penta-surface:var(--pui-surface);
+  --penta-surface-muted:var(--pui-elevated); --penta-input:var(--pui-control);
+  --penta-text:var(--pui-text); --penta-text-muted:var(--pui-muted);
+  --penta-border:var(--pui-border); --penta-accent:var(--pui-accent);
+  --penta-accent-soft:var(--pui-selected); --penta-on-accent:var(--pui-on-accent);
+  --penta-success:var(--pui-success); --penta-warning:var(--pui-warning); --penta-danger:var(--pui-danger);
+  --penta-touch-target:var(--pui-target); --penta-radius-control:var(--pui-radius-control);
+  --penta-radius-card:var(--pui-radius-card); --penta-radius-panel:var(--pui-radius-panel);
+  --penta-overlay-layer:var(--pui-layer-overlay);
+  --ad-canvas:var(--pui-canvas); --ad-surface:var(--pui-surface);
+  --ad-surface-subtle:var(--pui-elevated); --ad-surface-strong:var(--pui-elevated);
+  --ad-control-surface:var(--pui-control); --ad-text:var(--pui-text); --ad-text-muted:var(--pui-muted);
+  --ad-text-subtle:var(--pui-muted); --ad-border:var(--pui-border); --ad-border-strong:var(--pui-border);
+  --ad-accent:var(--pui-accent); --ad-accent-strong:var(--pui-accent); --ad-accent-soft:var(--pui-selected);
+  --ad-action:var(--pui-accent); --ad-action-hover:var(--pui-accent); --ad-action-text:var(--pui-on-accent);
+  --ad-success:var(--pui-success); --ad-warning:var(--pui-warning); --ad-danger:var(--pui-danger);
+  --ad-shadow:var(--pui-shadow); --ad-page-title-size:var(--pui-font-title);
+}
+

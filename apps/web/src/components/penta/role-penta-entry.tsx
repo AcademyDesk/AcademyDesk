@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { academyApi, portalAccessToken, type PortalWorkspace } from "@/lib/api";
+import { academyApi, portalAccessToken, portalSessionEpoch, type PortalWorkspace } from "@/lib/api";
 import { validWorkspaceAccount, workspaceHomes } from "@/lib/workspace-entry";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { usePentaManualTheme } from "@/components/penta-manual-theme";
@@ -27,17 +27,19 @@ export default function RolePentaEntry({ workspace }: { workspace: RoleWorkspace
   useEffect(() => {
     const controller = new AbortController();
     const accessToken = portalAccessToken(workspace);
+    const epoch = portalSessionEpoch(workspace);
+    const sameLogin = () => portalSessionEpoch(workspace) === epoch && Boolean(portalAccessToken(workspace)) && (epoch !== null || portalAccessToken(workspace) === accessToken);
     void (async () => {
       try {
         const response = await academyApi("/api/auth/session", { signal: controller.signal, cache: "no-store" });
         if (controller.signal.aborted) return;
-        if (portalAccessToken(workspace) !== accessToken) { setState("unavailable"); return; }
+        if (!sameLogin()) { setState("unavailable"); return; }
         if (response.status === 401) { setState("signin"); return; }
         if (response.status === 403) { setState("denied"); return; }
         if (!response.ok) { setState("unavailable"); return; }
         const account: unknown = await response.json();
         if (controller.signal.aborted) return;
-        if (portalAccessToken(workspace) !== accessToken) { setState("unavailable"); return; }
+        if (!sameLogin()) { setState("unavailable"); return; }
         setState(validWorkspaceAccount(account) && account.workspace === workspace ? "verified" : "denied");
       } catch { if (!controller.signal.aborted) setState("unavailable"); }
     })();
@@ -58,6 +60,11 @@ export default function RolePentaEntry({ workspace }: { workspace: RoleWorkspace
         {state === "signin" || state === "denied" ? <Link className={styles.open} href="/login">Sign in</Link> : <Link className={styles.open} href={workspaceHomes[workspace].manual}>Open Manual workspace</Link>}
         {state === "unavailable" && <button type="button" className={styles.retry} onClick={() => { setState("checking"); setCheck(value => value + 1); }}>Check workspace again</button>}
       </section>
+      {workspace === "AcademyAdmin" && state === "verified" && <section className={styles.panel} aria-labelledby="protected-workflows-title">
+        <h2 id="protected-workflows-title">Protected workflows</h2>
+        <p>Student and teacher workflows check the host before opening a private draft. Availability and approval remain controlled by your academy. A qualified AI model is not connected.</p>
+        <nav aria-label="Protected workflows"><Link className={styles.open} href="/penta/onboarding">Student onboarding</Link>{" "}<Link className={styles.open} href="/penta/teachers/chat">Teacher onboarding</Link></nav>
+      </section>}
       <section className={styles.capabilities} aria-label="PENTA capability information">{capabilities.map(([letter, name, description]) => <details key={letter}><summary><span aria-hidden="true">{letter}</span>{name} ⓘ</summary><p>{description}</p><small>Planned for this role. Not available yet.</small></details>)}</section>
     </section>
   </main>;

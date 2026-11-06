@@ -187,7 +187,7 @@ test('actual Teacher sign-out clears only Teacher credentials; scoped draft stay
   const store = storage(); const job = await lib.prepareUpload(new File(['A'], 'owner-a.bin'), scope, 'Private A', '', store);
   const module = {exports:{}}; let httpCalls = 0;
   new Function('module','exports','window','fetch','process',source)(module,module.exports,
-    {localStorage:store,location:{pathname:'/teacher'}}, () => { httpCalls++; throw Error('Sign-out is local, no HTTP expected'); }, {env:{NEXT_PUBLIC_API_URL:apiUrl}});
+    {localStorage:store,location:{pathname:'/teacher'},dispatchEvent:()=>true}, () => { httpCalls++; throw Error('Sign-out is local, no HTTP expected'); }, {env:{NEXT_PUBLIC_API_URL:apiUrl}});
   module.exports.savePortalTokens('Teacher', 'synthetic-A', 'synthetic-A-refresh');
   module.exports.savePortalTokens('Portal', 'synthetic-family', 'synthetic-family-refresh');
   module.exports.clearPortalTokens();
@@ -245,7 +245,7 @@ test('authenticated HEAD verifies size and decodes a Unicode attachment filename
 test('actual shared transport sends current workspace bearer and refreshes a retryable Blob body', async () => {
   const source = ts.transpileModule(fs.readFileSync(path.join(root,'api.ts'),'utf8'), {compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
   const store=storage(); store.setItem('academydesk.accessToken.Teacher','synthetic-old'); store.setItem('academydesk.refreshToken.Teacher','synthetic-refresh');
-  const calls=[]; const module={exports:{}}; const fakeWindow={localStorage:store,location:{pathname:'/teacher'}};
+  const calls=[]; const module={exports:{}}; const fakeWindow={localStorage:store,location:{pathname:'/teacher'},dispatchEvent:()=>true};
   const fetch=async (url,init)=>{ calls.push({url,init}); if(url.endsWith('/api/auth/refresh')) return json({accessToken:'synthetic-new'}); return calls.length===1?new Response(null,{status:401}):json({message:'saved'}); };
   new Function('module','exports','window','fetch','process',source)(module,module.exports,fakeWindow,fetch,{env:{NEXT_PUBLIC_API_URL:apiUrl}});
   const body=new Blob(['abc']); await module.exports.academyApi('/api/teacher/media-uploads/'+id+'/chunks/0',{method:'PUT',body,headers:{'Content-Type':'application/octet-stream'},redirect:'error'});
