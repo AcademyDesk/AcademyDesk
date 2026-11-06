@@ -10,7 +10,7 @@
 - Build/postbuild87segments, TypeScript/lint0errors, API Release publish and
   Chromium24groups PASS. Frontend1891PASS/3unchanged missing-SQL-receipt FAIL,
   no skips. Fourteen static-format/escape regressions pass.
--104resolved NuGet package versions compared locally to official fresh public
+- 104resolved NuGet package versions compared locally to official fresh public
   advisory feed:0matches; no private dependency graph sent. Installed npm371
   versions match lock. Remote npm audit was rejected by automatic review for
   dependency metadata disclosure; explicit owner approval remains required.
