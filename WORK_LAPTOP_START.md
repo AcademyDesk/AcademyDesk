@@ -1,5 +1,23 @@
 # Academy Desk — continue from the work laptop or another profile
 
+## Current built UI / real Identity and SQL session journey — 6 November 2026
+
+- [x] Eleven real browser checks and 51 native API responses PASS, no HTTP 429 or
+  uncaught page errors; no response mocks or injected tokens. AI-first entry and
+  Manual return paths accepted; no AI tool/model activation claim.
+- [x] Deactivate/readback/revoked Admin access and password error/success/new-login
+  behavior accepted. SQL confirms Identity state, one audit, stamp revocation and
+  user/role preservation; foreign-tenant GET/POST denied. Migrations 85 / 7.
+- [x] Bound 658 artifacts/current source; exact disposable SQL cleanup, full Docker
+  inventory, both original services/images/API200 and lease restoration PASS.
+- [ ] Remaining roles/domain/device/security/current images/CI/privacy/restore/
+  model/release gates stay OPEN. Prior setup failure and recovery are retained.
+
+Read QA/REPORTS/LOCAL_CURRENT_SESSION_BROWSER_2026-11-06.md. Next integrate only
+the three disjoint Cloud C7 compensation QA paths; preserve the historical driver,
+C6 live acceptance and candidate model stop. Sol High for live security/SQL;
+Medium for settled browser QA and docs. No main/Azure change.
+
 ## Cloud C6 Manual fixes integrated and validated — 6 November 2026
 
 - [x] Finance Cancel sends no mutation; Teacher publication/date/fractional-score
