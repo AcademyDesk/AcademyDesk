@@ -1,5 +1,24 @@
 # Academy Desk shared integration tracker
 
+## Cloud C6 Manual fixes integrated and validated — 6 November 2026
+
+- [x] Finance Cancel sends no mutation; Teacher publication/date/fractional-score
+  payload and save recovery fixes integrated from cloud 1ec22e7. No backend change.
+- [x] Actual TSX contracts 36 PASS; exact-version build, postbuild, types and lint
+  PASS (zero errors / 63 warnings). Manual browser 15 and PENTA browser 24 PASS;
+  API responses intercepted, zero runtime errors. No live SQL/model claim.
+- [x] Full frontend 1,920 PASS / one Windows file-symlink EPERM / zero skips.
+  Missing supporting test inputs restored unchanged; first failures retained.
+- [x] Both original PENTA service identities/images, API 200, inventory and lease
+  restoration PASS. Source-bound details and limitations in the report below.
+- [ ] Both Manual issues remain OPEN. Actual protected browser/Identity/SQL,
+  remaining role/workflow/security/device/build/CI/model and release gates remain.
+
+Read QA/REPORTS/LOCAL_C6_MANUAL_CONTROLS_2026-11-06.md. Next local packet is the
+current built UI plus disposable Identity/SQL session browser acceptance. No audit
+restart, original dirty-tree overwrite, candidate model loading or main/Azure work.
+Use Sol High for that integration; Medium for settled docs/visual implementation.
+
 ## Isolated pinned frontend now validated — 6 November 2026
 
 - [x] D: candidate uses exact locked Next16.4.3/Zod4.6.7;358installed versions match.

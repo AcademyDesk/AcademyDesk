@@ -3,8 +3,8 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | STATIC-FINDING |
-| Final verification | NOT RUN |
+| Confirmation status | CONFIRMED in actual handlers and controlled Chromium; live acceptance pending |
+| Final verification | PARTIAL — controlled frontend PASS; original live closure gates OPEN |
 | Severity | Major unintended financial action |
 | Priority | P1 |
 | Category | FUNC |
@@ -30,9 +30,9 @@
 | API response | Not captured for this issue; use synthetic request/response in isolated reproduction |
 | Database before/after | Not executed; fixture and fresh-context assertions defined below |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | Not implemented (Phase 1) |
-| Retest result | NOT RUN |
-| Regression result | NOT RUN |
+| Fix commit | 1ec22e733696fa84e4dbf947da463fbe4a2d123a (bounded frontend source) |
+| Retest result | Controlled handler/browser/contract PASS; see 6 November return below |
+| Regression result | Current cloud frontend1918PASS/3genuine evidence-prerequisite FAIL; no skips |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
 ## Exact reproduction
@@ -69,3 +69,33 @@ Accidental financial approval, invoice adjustment and ledger state; browser repr
 FINANCE-APPROVAL-001: Browser dialog cancel/Escape/accept-empty/accept-note for approve; cancel/empty/nonempty for reject; assert network absence and DB unchanged on cancel, one mutation on deliberate confirmation.
 
 Also run all endpoint/form cases pointing to this issue in QA/03_TEST_MATRIX.md and the critical regression suite before closure.
+
+## Cloud C6 bounded return — 6 November 2026
+
+Source1ec22e7 distinguishes the native prompt's null dismissal from an explicit
+empty optional note. Cancel/Escape's shared null return exits before saving state,
+mutation or list reload; rejection still requires a nonblank reason. Accepted
+empty/named approval and nonblank rejection retain the existing exact request.
+
+Actual TSX regression:16/16PASS, including the seven added decision controls.
+Pre-fix handler14PASS/2FAIL and preserved pre-fix Chromium receipt demonstrate
+approval cancellation dispatched PATCH; rejecting cancellation also incorrectly
+showed validation feedback. The real browser uses native Page.prompt, not a mock
+window.prompt. Final native-browser cases cover approve/reject dismissal, explicit
+empty/named approval, empty/whitespace rejection, deliberate rejection and denied
+response. No live financial write or SQL evidence is claimed; all API responses
+were intercepted. Hardware Escape behavior and actual database before/after/
+critical acceptance remain open under the original closure requirements.
+
+Original static/source history above is retained. Status remains OPEN: no synthetic
+transport or DTO check is substituted for required current live HTTP/SQL/role/
+critical/device evidence. Source, baseline/final receipts and Desktop next checks:
+[Cloud C6 handoff](../HANDOFF/C6_MANUAL_CONTROLS_2026-11-06.md).
+
+## Local C6 integration — 6 November 2026
+
+The current integrated pinned build passes 36 TSX contracts, 15 actual Manual
+browser groups and 24 PENTA groups. Browser APIs are intercepted synthetic
+responses. Full frontend: 1,920 PASS / one Windows symlink EPERM / zero skips.
+Status remains OPEN; live HTTP/SQL/role/device closure is still required. See
+[local C6 report](../REPORTS/LOCAL_C6_MANUAL_CONTROLS_2026-11-06.md).

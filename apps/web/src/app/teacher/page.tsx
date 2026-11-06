@@ -552,19 +552,36 @@ function TeacherTasks({
       return;
     }
     if ("maxScore" in body) body.maxScore = Number(body.maxScore);
-    if ("scheduledAtUtc" in body && body.scheduledAtUtc)
-      body.scheduledAtUtc = new Date(String(body.scheduledAtUtc)).toISOString();
-    const r = await academyApi(path, {
-      method: "POST",
-      headers: apiHeaders(true),
-      body: JSON.stringify(body),
-    });
-    setM(
-      r.ok
-        ? "Saved for your assigned batch."
-        : "The teaching record could not be saved.",
-    );
-    if (r.ok) submittedForm.reset();
+    if ("isPublished" in body) {
+      if (body.isPublished !== "true" && body.isPublished !== "false") {
+        setM("The publication choice could not be read. Reload this page.");
+        return;
+      }
+      body.isPublished = body.isPublished === "true";
+    }
+    if ("scheduledAtUtc" in body) {
+      const scheduled = body.scheduledAtUtc ? new Date(String(body.scheduledAtUtc)) : null;
+      if (scheduled && !Number.isFinite(scheduled.getTime())) {
+        setM("Choose a valid assessment date.");
+        return;
+      }
+      body.scheduledAtUtc = scheduled ? scheduled.toISOString() : null;
+    }
+    try {
+      const r = await academyApi(path, {
+        method: "POST",
+        headers: apiHeaders(true),
+        body: JSON.stringify(body),
+      });
+      setM(
+        r.ok
+          ? "Saved for your assigned batch."
+          : "The teaching record could not be saved.",
+      );
+      if (r.ok) submittedForm.reset();
+    } catch {
+      setM("The save could not be confirmed. Check your teaching records before trying again.");
+    }
   }
   const batch = <TeacherBatchDropdown batches={batches} />;
   async function reviewPractice(log: PracticeLog) {
@@ -624,6 +641,7 @@ function TeacherTasks({
             name="maxScore"
             type="number"
             min="1"
+            step="any"
             placeholder="Maximum score"
           />
           <input name="type" defaultValue="Performance" />
