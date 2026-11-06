@@ -8,6 +8,9 @@ Exact owned paths:
 - `apps/web/Dockerfile`
 - `apps/web/nginx.static.conf`
 - `QA/tools/static-web-container.test.cjs`
+- `QA/tools/static-segment-export.test.cjs`
+- `apps/web/scripts/prepare-static-segments.mjs`
+- `apps/web/package.json` (postbuild script only; locked dependencies unchanged)
 - `QA/tools/check-web-container.sh`
 - `QA/HANDOFF/C4_CONTAINER_READINESS_2026-11-06.md`
 - `AI_HANDOFF.md` (additive task pointer only; integrator reconciles)
