@@ -1,0 +1,74 @@
+/* Academy host bridge. Vendor FW1-R1 stays immutable; no demo shell/state. */
+.manual {
+  --penta-font: var(--font-geist-sans), system-ui, sans-serif;
+  --manual-card-radius: var(--pui-radius-card);
+  --manual-control-radius: var(--pui-radius-control);
+  min-width: 0;
+}
+.manual :global(.enterprise-sidebar) {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--manual-aura) 6%, var(--pui-surface)), var(--pui-canvas));
+  border-right: 1px solid var(--pui-border);
+}
+.manual :global(.enterprise-brand > span) {
+  background: linear-gradient(145deg, var(--pui-selected), color-mix(in srgb, var(--manual-aura) 24%, var(--pui-surface)));
+  border: 1px solid var(--pui-border);
+  color: var(--pui-accent);
+  border-radius: 13px;
+}
+.manual :is(:global(.enterprise-nav-section), :global(.teacher-portal-nav)) :is(a, button) {
+  min-height: var(--pui-target);
+  border-radius: var(--pui-radius-control);
+}
+.manual :is(:global(.enterprise-nav-section), :global(.teacher-portal-nav)) :is(a, button)[data-active="true"] {
+  background: var(--pui-selected);
+  color: var(--pui-text);
+  box-shadow: inset 3px 0 var(--pui-accent);
+}
+.manual :is(:global(.platform-topbar), :global(.enterprise-topbar)) {
+  background: var(--pui-surface);
+  border-bottom-color: var(--pui-border);
+}
+.manual :is(:global(.enterprise-dashboard), :global(.enterprise-settings), :global(.platform-content), :global(.teacher-portal-content)) {
+  background: radial-gradient(ellipse at top right, color-mix(in srgb, var(--manual-aura) 7%, transparent), transparent 55%), var(--pui-canvas);
+}
+.manual :is(:global(.enterprise-data-panel), :global(.platform-panel), :global(.teacher-action-panel), :global(.surface-panel), :global(.learner-card)) {
+  border-radius: var(--pui-radius-card);
+  border-color: var(--pui-border);
+}
+/* Existing native dialogs/selects/handlers stay intact. Change visuals, not semantics. */
+.manual :is(input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]), select, textarea) {
+  min-height: var(--pui-target);
+  border-radius: var(--pui-radius-control);
+  border-color: var(--pui-border);
+  background-color: var(--pui-control);
+  color: var(--pui-text);
+}
+.manual :is(input, textarea)::placeholder { color: var(--pui-muted); opacity: 1; }
+.manual :is(button, a, summary, input, select, textarea):focus-visible { outline-color: var(--pui-focus); }
+.manual :is(:global(.enterprise-action-button):not(:global(.enterprise-action-button-secondary)):not(:global(.enterprise-action-button-danger)), :global(.enterprise-primary-action)) {
+  background-color: var(--pui-accent);
+  color: var(--pui-on-accent);
+}
+.manual :global(.learner-kpis) article { border-radius: var(--pui-radius-card); }
+.manual :global(.enterprise-workspace) { min-width: 0; }
+.manual :global(.theme-toggle) button { font-size: .73rem; }
+.manual :global(.learner-cycle-card), .manual :global(.learner-class-card) { overflow-wrap: anywhere; min-width: 0; }
+.manual :is(:global(.learner-history-row), :global(.learner-row), :global(.learner-cycle-row), :global(.learner-assignment)) { min-width: 0; overflow-wrap: anywhere; }
+.manual :global(.learner-history-summary) > div { min-width: 0; flex: 1; }
+.manual :is(:global(.learner-download-row), :global(.learner-assignment), :global(.learner-form)) > button { color: var(--pui-on-accent); }
+.manual :global(.learner-history-summary) { flex-wrap: wrap; }
+.manual :global(.learner-history-summary) button { min-height: 44px; max-width: 100%; white-space: normal; }
+.manual :global(.enterprise-settings) h1 { font-size: var(--ad-page-title-size); line-height: 1.2; }
+.manual :global(.enterprise-settings) :is(button, .enterprise-action-button) { min-height: 44px; border-radius: var(--pui-radius-control); }
+.manual :global(.enterprise-settings) :is(form, label, [class$="-fields"], [class$="-panel"], [class$="-layout"]) { min-width: 0; }
+.manual :global(.enterprise-settings) :is([class$="-panel"], .surface-panel, .enterprise-data-panel) { border-color: var(--pui-border); border-radius: var(--pui-radius-card); }
+.manual :global(.enterprise-settings) :is([class$="-panel-header"], .enterprise-panel-header) { background: var(--pui-surface); border-color: var(--pui-border); }
+.manual :global(.enterprise-settings) :is([class$="-table-wrap"], .enterprise-table-wrap) { max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; }
+.manual.manual:global(.learner-portal-shell) :global(.teacher-portal-context strong) { max-width: none; overflow: visible; text-overflow: clip; white-space: normal; overflow-wrap: anywhere; }
+@media (max-width: 900px) {
+  .manual :is(input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]), select, textarea) { font-size: 16px; }
+}
+@media (max-width: 640px) {
+  .manual :global(.enterprise-settings) h1 { font-size: 28px; }
+  .manual :global(.learner-history-summary) { flex-direction: column; }
+}

@@ -2,7 +2,9 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { PortalWorkspace, savePortalTokens } from "@/lib/api";
+import { savePortalTokens } from "@/lib/api";
+
+import { validWorkspaceAccount, workspaceLanding } from "@/lib/workspace-entry";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5092";
 
@@ -30,31 +32,16 @@ export default function LoginPage() {
       );
       if (!response.ok) throw new Error();
       const tokens = await response.json();
+      if (typeof tokens?.accessToken !== "string" || !tokens.accessToken.trim() ||
+        typeof tokens?.refreshToken !== "string" || !tokens.refreshToken.trim()) throw new Error();
       const profile = await fetch(`${apiUrl}/api/auth/session`, {
-        headers: { Authorization: `Bearer ${tokens.accessToken}` },
+        headers: { Authorization: `Bearer ${tokens.accessToken}` }, cache: "no-store",
       });
-      const session = profile.ok ? await profile.json() : null;
-      const workspace: PortalWorkspace = session?.workspace === "Platform"
-        ? "Platform"
-        : session?.workspace === "Teacher"
-          ? "Teacher"
-          : session?.workspace === "Portal"
-            ? "Portal"
-            : "AcademyAdmin";
-      savePortalTokens(workspace, tokens.accessToken, tokens.refreshToken);
-      const requestedReturn = searchParams.get("returnTo");
-      const safeReturn = requestedReturn?.startsWith("/") && !requestedReturn.startsWith("//") ? requestedReturn : null;
-      router.push(
-        safeReturn && session?.workspace === "Platform"
-          ? safeReturn
-          : session?.workspace === "Platform"
-          ? "/platform"
-          : session?.workspace === "Teacher"
-            ? "/teacher"
-            : session?.workspace === "Portal"
-              ? "/portal"
-              : "/dashboard",
-      );
+      if (!profile.ok) throw new Error();
+      const session: unknown = await profile.json();
+      if (!validWorkspaceAccount(session)) throw new Error();
+      savePortalTokens(session.workspace, tokens.accessToken, tokens.refreshToken);
+      router.push(workspaceLanding(session, searchParams.get("returnTo")));
     } catch {
       setMessage(
         "Login failed. Check the user name and password, then try again.",
