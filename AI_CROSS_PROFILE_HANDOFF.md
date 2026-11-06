@@ -1,5 +1,19 @@
 # Academy Desk — shared continuation across profiles
 
+## Reviewed cloud C3.1 integrated — 6 November 2026
+
+- [x] Fifteen cloud role-entry source files integrated byte-exact from d0d7967;
+  cloud reportcc5c8de preserved. Current backend/API1,984PASS source unchanged.
+- [x] Local routing/login93PASS and separate session group93PASS; controlled VM
+  transports, not real browser/Identity/model acceptance. No dependency change.
+- [ ] Cached Next16.4.1 differs from locked16.4.3: local exact-lock build/typecheck
+  and real role/session/device tests remain OPEN. Do not substitute old packages.
+- [ ] Conversations remain explicitly unavailable; Cloud C3.2 owns protected chat/
+  context/session integration. No90%AI/full Manual styling claim or model action.
+
+Read QA/REPORTS/LOCAL_C3_ROLE_ENTRY_INTEGRATION_2026-11-06.md. C1 two Linux
+provenance cases, C4 builds/audits/CI and established release gates remain OPEN.
+
 ## Default-host composition completed — 6 November 2026
 
 - [x] Real default host now shares one private context lease singleton; no
