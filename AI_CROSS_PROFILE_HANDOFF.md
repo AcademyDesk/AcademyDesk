@@ -1,5 +1,21 @@
 # Academy Desk — shared continuation across profiles
 
+## Current local/cloud return — 6 November 2026
+
+- [x] Mini local return published e55e5b9; genuine originals unchanged and frozen
+  checkout bytes preserved. Linux1,738pass/two strict provenance failures/one
+  inherited skip; Windows39metadata,24native and six kernel checks pass separately.
+- [x] C2 static359routes/81controllers source hashes match local host. C3.1 role
+  entry branchcc5c8de reviewed; cloud frontend results remain source-scoped.
+- [ ] C5 portable original-parent binding; do not rewrite records or weaken guards.
+- [ ] Local next: claimed actual-host lease DI/composition packet; no model or
+  interpreter activation. Cloud retains C3.2; do not overlap frontend edits.
+- [ ] Model qualification, remaining all-role workflows/UI, current full builds/
+  CI/device/privacy/DB/restore/P0/staging/release gates remain OPEN. Not prod-ready.
+
+Read QA/REPORTS/LOCAL_C1_EVIDENCE_RETURN_2026-11-06.md for exact pins, results,
+limits and next paths. Existing enterprise testing continues. No main/Azure action.
+
 ## Additional local runtime result — 5 November 2026
 
 Fetch latest codex/penta-host-integration-20261030; L1 code/results are f19de88.
