@@ -1,5 +1,24 @@
 # Academy Desk handoff
 
+## Cloud C3.2 protected workflow/session return — 6 November 2026
+
+- Implementation `34f3b46352e65a9f6624a07e1a7e56bc1ea2e9fa` on
+  `codex/cloud-c3-conversation-20261106`, based on shared `9dc2ccd`.
+- Three preserved protected student/teacher routes and their authenticated
+  draft/approval/execute/receipt adapters restored selectively; host/model gates
+  unchanged. Explicit-login epochs fence stale UI/requests; native Web Locks
+  serialize same-workspace renewal. No backend/SQL/migration or package edit.
+- Locked Next16.4.3 build89pages, TypeScript and lint0errors PASS. Full frontend
+  1877PASS/3existing missing-SQL-evidence FAIL, no skips. Chromium24groups PASS,
+  including native two-tab refresh and synthetic unknown-write recovery; no live
+  host/SQL/model/physical-device qualification.
+- Desktop retains L2 live role/session/protected workflow acceptance. Cloud C4
+  Docker/audit/CI and C5 two strict Linux provenance cases remain OPEN. Actual
+  GitHub Actions query Forbidden; current CI status UNKNOWN.
+- Read QA/HANDOFF/C3_CONVERSATION_2026-11-06.md for bounded source, exact evidence
+  and prioritized blockers. Do not reimport preservation branches wholesale.
+  Main/Azure/model stop unchanged; Mini/Plus/Pro unqualified, Ultra deferred.
+
 ## Reviewed cloud C3.1 integrated — 6 November 2026
 
 - [x] Fifteen cloud role-entry source files integrated byte-exact from d0d7967;
