@@ -1,5 +1,27 @@
 # Academy Desk handoff
 
+## Cloud C4 static-container repair / available checks — 6 November 2026
+
+- Implementation `3cf250e3f0769c71d6910ce0ebd2b508ec6511e0` on
+  `codex/cloud-c4-container-readiness-20261106`, based on C3.2 a4ce05b.
+- Restore static-export Dockerfile/config; adapt old segment preparation to
+  current Next16.4.3 flat payloads so valid navigation is not rewritten away.
+  No backend/SQL/DI/migration/app-UI or dependency-version/lockfile change.
+- Build/postbuild87segments, TypeScript/lint0errors, API Release publish and
+  Chromium24groups PASS. Frontend1891PASS/3unchanged missing-SQL-receipt FAIL,
+  no skips. Fourteen static-format/escape regressions pass.
+-104resolved NuGet package versions compared locally to official fresh public
+  advisory feed:0matches; no private dependency graph sent. Installed npm371
+  versions match lock. Remote npm audit was rejected by automatic review for
+  dependency metadata disclosure; explicit owner approval remains required.
+- Actual image builds/runtime remain NOT RUN: required bases absent and new
+  downloads not authorized. Historical base tags require supported-version/digest
+  and security review. Returned guarded static smoke is syntax/preflight checked,
+  not a real Nginx/image pass. Current CI query Forbidden/status UNKNOWN.
+- Read QA/HANDOFF/C4_CONTAINER_READINESS_2026-11-06.md for source, evidence and
+  remaining prerequisites. Desktop L2/C5/release gates and all model stops remain.
+  No main/Azure/environment changes; not production-qualified.
+
 ## Cloud C3.2 protected workflow/session return — 6 November 2026
 
 - Implementation `34f3b46352e65a9f6624a07e1a7e56bc1ea2e9fa` on
