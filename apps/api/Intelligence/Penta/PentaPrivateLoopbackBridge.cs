@@ -8,7 +8,7 @@ using System.Text.Json;
 namespace AcademyDesk.Api.Intelligence.Penta;
 
 // Explicit, inactive local integration candidate. No config/env secret loader,
-// production DI registration, remote DNS/TLS exception or fallback.
+// production interpreter DI registration, remote DNS/TLS exception or fallback.
 public sealed class PentaPrivateContextLeases(TimeProvider? time=null)
 {
     public const string Version="penta-private-loopback-1";

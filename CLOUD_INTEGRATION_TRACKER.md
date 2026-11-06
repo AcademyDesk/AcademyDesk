@@ -1,5 +1,20 @@
 # Academy Desk shared integration tracker
 
+## Default-host composition completed — 6 November 2026
+
+- [x] Real default host now shares one private context lease singleton; no
+  interpreter/model registration or activation. Testing/all gates/exact lease
+  remain mandatory; Production/Staging stay404.
+- [x] Eight new real-composition HTTP controls; full fresh API **1,984 PASS**,
+  zero failed/skipped. Earlier expected baseline and runner-temp failures retained.
+- [x] Exact original services/images restored, API200, full inventory and lease
+  cleanup PASS. No new download/customer DB/main/Azure action.
+- [ ] Mini C1 two Linux provenance failures/model qualification and established
+  UI/workflow/security/device/build/CI/DB/staging/release gates remain OPEN.
+
+Report: QA/REPORTS/PENTA_HOST_COMPOSITION_2026-11-06.md. Next local reviewed C3.1
+integration; Cloud retains C3.2. Existing SQL results remain source-scoped.
+
 ## Current local/cloud return — 6 November 2026
 
 - [x] Mini local return published e55e5b9; genuine originals unchanged and frozen

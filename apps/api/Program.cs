@@ -44,6 +44,9 @@ builder.Services.AddScoped<AcademyDeskConnector>();
 builder.Services.AddScoped<PentaMiniOrchestrator>();
 builder.Services.AddScoped<PentaOnboardingDraftService>();
 builder.Services.AddScoped<PentaTeacherCreationWorkflow>();
+// Shared lease infrastructure only. Interpreters remain unregistered; the
+// private endpoint still requires Testing, every gate and an exact live lease.
+builder.Services.AddSingleton<PentaPrivateContextLeases>();
 builder.Services.AddHttpClient<IPentaProvider, PentaMiniProvider>(client => client.Timeout = TimeSpan.FromSeconds(130))
     .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false, UseProxy = false });
 builder.Services.AddSingleton(TimeProvider.System);
