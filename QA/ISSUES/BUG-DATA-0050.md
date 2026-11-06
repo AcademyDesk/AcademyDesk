@@ -3,8 +3,8 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | CONTROLLED-TSX-REPRODUCED / partial local repair |
-| Final verification | Partial controlled checks PASS; SQL/browser/critical acceptance pending |
+| Confirmation status | CONTROLLED-TSX-REPRODUCED / partial repair; current controlled Chromium roundtrip PASS |
+| Final verification | Controlled TSX and Chromium checks PASS; live HTTP/SQL, device and critical acceptance pending |
 | Severity | Major compensation round-trip integrity |
 | Priority | P1 |
 | Category | DATA |
@@ -13,26 +13,26 @@
 | Screen / route | /teacher-payments |
 | API | GET/PUT /api/academies/{academyId}/teachers/{teacherId}/compensation |
 | Environment | Source review of local working tree; runtime production state not inferred |
-| Device/viewport | NOT RUN; use QA/06_DEVICE_VIEWPORT_MATRIX.md where UI applies |
+| Device/viewport | Controlled Chromium 320/1440 CSS-pixel light/dark checks PASS; physical devices NOT RUN |
 | Baseline | 20bb6047f9edf733ac8e2a226621cc582ec54b3c + pre-existing student UI diff |
 | Discovery test / review ID | TEACHER-COMPENSATION-ZERO-001 |
-| Evidence classification | Static trace; runtime reproduction pending |
+| Evidence classification | Historical static/TSX reproduction; current real Chromium with synthetic APIs PASS; live persistence pending |
 | Preconditions | Isolated synthetic fixture from QA/10_TEST_DATA_STRATEGY.md; never customer data |
 | Reproduction frequency | Not measured; reproduction instructions are proposed |
 | Source | apps/web/src/app/teacher-payments/page.tsx:29 |
 | Class/function | loadCompensation / set / save |
 | Related source | INVENTORY/API_ENDPOINTS.md, CONTRACTS.md, FORMS_AND_FIELDS.md and ASYNC_FORM_RISKS.md |
 | Root-cause confidence | HIGH |
-| Evidence location | Source excerpt below; source fingerprint in INVENTORY/SOURCE_MANIFEST.md |
-| Screenshot | Not captured on pinned baseline |
-| Console logs | Not captured; required in retest |
+| Evidence location | Historical source excerpt below; current bounded C7 report linked below |
+| Screenshot | Historical baseline not captured; two current controlled screenshots retained locally with C7 manifest |
+| Console logs | Current controlled Chromium: zero application console errors/runtime exceptions; live retest pending |
 | API request | In isolated fixtures save Monthly salary 0 or Hourly standard rate 0, reload and save without editing that field. Separately use positive standard rate with optional beginner/intermediate/advanced rates 0, reload and resave. Compare freshly typed string zero and untouched numeric zero. |
 | API response | Not captured for this issue; use synthetic request/response in isolated reproduction |
 | Database before/after | Not executed; fixture and fresh-context assertions defined below |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
 | Fix commit | Development-branch repair; see latest dated checkpoint/report |
-| Retest result | Bounded controlled checks PASS; see latest dated checkpoint |
-| Regression result | Current frontend1,095/1,098 PASS; three historical SQL-evidence failures |
+| Retest result | C7: 44 native Chromium groups PASS; existing 51 value-preservation and 47 editor-isolation checks PASS |
+| Regression result | C7 relevant checks PASS; no full-suite rerun. Historical frontend counts below remain source-bound |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
 ## Exact reproduction
@@ -84,3 +84,29 @@ financial action changed. Full frontend1,095/1,098 PASS with three unchanged
 missing historical SQL-evidence failures. TypeScript/lint/build PASS. Remain OPEN
 for actual HTTP/SQL/browser/device, concurrent server writes, downstream payroll
 and critical regression. See [value-preservation report](../REPORTS/CLOUD_VALUE_PRESERVATION_2026-10-28.md).
+
+## Cloud controlled browser acceptance — 2026-11-06
+
+Implementation `cab563444ec9a8effe74e339725abbe13f930d2c` adds only a native
+Chromium QA runner. The existing compensation page and shared record editor
+needed no changes. On the C6 exact-lock static export, all **44 browser groups
+PASS**: ten zero/null/positive/negative/required scenarios at 320 and 1440 CSS
+pixels in light and dark themes, plus four pending/reversed/failed teacher-read
+and late-save response controls. Valid cases reload and resave; exact outgoing
+numeric/null JSON is checked. There are 49 intercepted synthetic PUT requests
+and no live financial requests. Invalid required/negative inputs send no PUT.
+
+All existing 51 value-preservation checks (including the 37 compensation checks)
+and 47 record-editor-isolation checks PASS, zero failures/skips. Chromium used
+its normal sandbox, with no application console errors/runtime exceptions and
+verified owned-profile cleanup. Screenshots and source/export hashes remain in
+excluded local artifacts. These are controlled browser results with synthetic
+API state, not fresh SQL/Identity or payroll acceptance. The original static
+source snapshot and historical results above are preserved.
+
+Remain **OPEN** for real authorized GET/PUT and freshly reloaded CompensationJson,
+server-side concurrent writes, downstream payroll, physical-device and required
+critical-regression acceptance. A valid zero compensation rate does not permit a
+new zero-net payroll payout; that rejection policy remains unchanged. See the
+[C7 handoff](../HANDOFF/C7_COMPENSATION_BROWSER_2026-11-06.md) for exact source,
+commands, observed results and Desktop tasks.

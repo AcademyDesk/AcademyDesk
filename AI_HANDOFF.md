@@ -1,5 +1,19 @@
 # Academy Desk handoff
 
+## Returned C7 compensation browser packet accepted locally — 6 November 2026
+
+- [x] Three disjoint cloud QA files integrated byte-exact; no app/API/editor change.
+- [x] 44 real Edge groups PASS: 40 zero/null/value/theme/viewport cases and four
+  late/failed selection controls; 49 intercepted synthetic PUTs, zero runtime errors.
+- [x] Existing 51 value-preservation + 47 editor-isolation tests PASS. All 658 built
+  artifacts unchanged; exact original services/API200/inventory/lease restored.
+- [ ] BUG-DATA-0050 remains OPEN: live compensation SQL/audit/payroll/device and
+  server-contention acceptance are separate, alongside remaining release gates.
+
+Read QA/REPORTS/LOCAL_C7_COMPENSATION_BROWSER_2026-11-06.md. Continue live domain
+acceptance rather than rerunning the accepted browser matrix. Sol High for those
+security/SQL boundaries; Medium for settled visuals/docs. No main/Azure/model work.
+
 ## Current built UI / real Identity and SQL session journey — 6 November 2026
 
 - [x] Eleven real browser checks and 51 native API responses PASS, no HTTP 429 or
