@@ -5,13 +5,17 @@ const root = path.resolve(__dirname, '../..'), out = path.join(root, 'apps/web/o
 const evidence = path.join(root, '.build-check/penta-entry-browser');
 const executable = process.env.QA_BROWSER_EXECUTABLE;
 if (!executable || !fs.existsSync(path.join(out, 'penta.html'))) throw Error('Select Chromium and build the local static app first.');
+const apiOrigin = process.env.QA_PENTA_BROWSER_API_ORIGIN || 'http://127.0.0.1:49142';
+const apiAddress = new URL(apiOrigin);
+a.equal(apiAddress.protocol, 'http:'); a.equal(apiAddress.hostname, '127.0.0.1');
+a.ok(Number(apiAddress.port) >= 1024); a.equal(apiAddress.origin, apiOrigin);
 fs.mkdirSync(evidence, { recursive: true });
 const resultFile=path.join(evidence,'result.json');
 if(fs.existsSync(resultFile)) fs.renameSync(resultFile,path.join(evidence,'result-previous-'+Date.now()+'.json'));
 fs.writeFileSync(resultFile,JSON.stringify({status:'RUNNING'}));
 const types = { '.html': 'text/html', '.js': 'application/javascript', '.css': 'text/css', '.txt': 'text/plain', '.json': 'application/json', '.woff2': 'font/woff2', '.ico': 'image/x-icon', '.svg': 'image/svg+xml' };
 const ts = require('../../apps/web/node_modules/typescript');
-const sessionModule = "const process={env:{NEXT_PUBLIC_API_URL:'http://127.0.0.1:49142'}};\n" + ts.transpileModule(fs.readFileSync(path.join(root,'apps/web/src/lib/api.ts'),'utf8'),{compilerOptions:{module:ts.ModuleKind.ES2022,target:ts.ScriptTarget.ES2022}}).outputText;
+const sessionModule = 'const process={env:' + JSON.stringify({NEXT_PUBLIC_API_URL:apiOrigin}) + '};\n' + ts.transpileModule(fs.readFileSync(path.join(root,'apps/web/src/lib/api.ts'),'utf8'),{compilerOptions:{module:ts.ModuleKind.ES2022,target:ts.ScriptTarget.ES2022}}).outputText;
 const server = http.createServer((req, res) => {
   try {
     if (req.method !== 'GET') { res.writeHead(405); return res.end(); }
@@ -33,7 +37,7 @@ class CDP {
 async function main() {
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   const origin = 'http://127.0.0.1:' + server.address().port, profile = fs.mkdtempSync(path.join(os.tmpdir(), 'c3-chromium-'));
-  const child = spawn(executable, ['--headless', '--no-sandbox', '--disable-background-networking', '--no-first-run', '--remote-debugging-port=0', '--user-data-dir=' + profile, 'about:blank'], { stdio: ['ignore', 'ignore', 'pipe'] });
+  const child = spawn(executable, ['--headless', '--disable-background-networking', '--no-first-run', '--remote-debugging-port=0', '--user-data-dir=' + profile, 'about:blank'], { windowsHide:true, stdio: ['ignore', 'ignore', 'pipe'] });
   let log = '', socket, cdp, runtimeErrors = [], results = [], writes = [], requests = [], success=false, failure=null;
   try {
     const endpoint = await new Promise((resolve, reject) => { const timer = setTimeout(() => reject(Error('Chromium startup timeout')), 15000); child.once('error', reject); child.stderr.on('data', data => { log += data; const match = log.match(/DevTools listening on (ws:\/\/[^\s]+)/); if (match) { clearTimeout(timer); resolve(match[1]); } }); });
@@ -54,7 +58,7 @@ async function main() {
         try {
           const url = new URL(request.url);
           if (url.origin === origin) return await cdp.send('Fetch.continueRequest', { requestId }, sid);
-          if (url.origin !== 'http://127.0.0.1:49142') return await cdp.send('Fetch.failRequest', { requestId, errorReason: 'BlockedByClient' }, sid);
+          if (url.origin !== apiOrigin) return await cdp.send('Fetch.failRequest', { requestId, errorReason: 'BlockedByClient' }, sid);
           requests.push({ method: request.method, path: url.pathname });
           if (request.method === 'OPTIONS') return await fulfill(204, {});
           const authPath = url.pathname === '/api/auth/login' || url.pathname === '/api/auth/refresh';
@@ -249,7 +253,10 @@ async function main() {
     if (cdp) await cdp.send('Browser.close').catch(() => {}); socket?.close(); child.kill('SIGTERM');
     if(child.exitCode===null) await Promise.race([new Promise(resolve=>child.once('exit',resolve)),sleep(2000)]);
     server.closeAllConnections(); await new Promise(resolve => server.close(resolve));
-    fs.rmSync(profile, { recursive: true, force: true });
+    const ownedProfile=path.resolve(profile);
+    a.equal(path.dirname(ownedProfile),path.resolve(os.tmpdir()));
+    a.ok(path.basename(ownedProfile).startsWith('c3-chromium-'));
+    fs.rmSync(ownedProfile, { recursive: true, force: true });
     fs.writeFileSync(resultFile,JSON.stringify({status:success?'PASS':'FAIL',failure,results,requests,interceptedSyntheticWrites:writes,runtimeErrors,limitation:'All API responses intercepted synthetic fixtures, including six teacher workflow mutations; no live Identity/SQL/model/provider/physical-device qualification.'},null,2));
   }
 }

@@ -1,5 +1,20 @@
 # AcademyDesk QA control centre — Phase 1
 
+## Isolated pinned frontend now validated — 6 November 2026
+
+- [x] D: candidate uses exact locked Next16.4.3/Zod4.6.7;358installed versions match.
+  Six public tarballs80,940,650bytes/SHA512verified; original cache unchanged.
+- [x] Webpack/static export,TypeScript,ESLint PASS (0errors/63warnings);Windows
+  postbuild87segments/86aliases PASS. Cache-derived setup, not fresh npm ci/audit.
+- [x] Real browser24groups PASS/zero runtime exceptions; fixtures intercept all
+  API responses, including six synthetic mutations. No live SQL/model acceptance.
+- [x] Exact original services/images/API200/full inventory/lease restoration PASS.
+- [ ] Production-configured artifact/images/CI/audits, real host/browser coupling,
+  remaining roles/workflows/privacy/P0/device/restore/release and model stay OPEN.
+
+Read QA/REPORTS/LOCAL_PINNED_WEB_VALIDATION_2026-11-06.md. Only browser QA runner
+config/cleanup changed; application and dependency lock are untouched. No Azure.
+
 ## Current-client native session SQL completed — 6 November 2026
 
 - [x] Existing native clients now exercise explicit-login epochs/events while
