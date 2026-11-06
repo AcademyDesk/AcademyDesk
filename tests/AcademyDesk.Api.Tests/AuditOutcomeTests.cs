@@ -69,6 +69,8 @@ public sealed class AuditOutcomeTests
     [InlineData(typeof(StudentOnboardingController), "Create", true)]
     [InlineData(typeof(StudentsController), "Update", true)]
     [InlineData(typeof(TeachersController), "Update", true)]
+    [InlineData(typeof(TeacherCompensationController), "Save", true)]
+    [InlineData(typeof(TeacherCompensationController), "Get", false)]
     [InlineData(typeof(ClassMediaUploadsController), "Complete", false)]
     [InlineData(typeof(InvoicesController), "Create", true)]
     [InlineData(typeof(HolidaysController), "Delete", true)]

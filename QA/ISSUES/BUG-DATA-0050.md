@@ -110,3 +110,14 @@ critical-regression acceptance. A valid zero compensation rate does not permit a
 new zero-net payroll payout; that rejection policy remains unchanged. See the
 [C7 handoff](../HANDOFF/C7_COMPENSATION_BROWSER_2026-11-06.md) for exact source,
 commands, observed results and Desktop tasks.
+
+## Local real Identity/HTTP/SQL follow-up — 6 November 2026
+
+Five distinct bodies from the actual passing C7 browser receipt now roundtrip
+through the real controller and fresh SQL on first save, GET and unchanged resave.
+All 28 scoped value/authority/audit controls PASS; full API 1,986 PASS. Zero/null
+rates preserve their values without changing other teachers, Identity or money.
+A separately reproduced required-audit atomicity defect was repaired and tracked
+as BUG-DATA-COMPENSATION-AUDIT-001. Both records stay OPEN for remaining critical/
+concurrent/payroll/device/release acceptance. No accounting/zero-net policy change.
+See [local SQL report](../REPORTS/LOCAL_COMPENSATION_SQL_2026-11-06.md).

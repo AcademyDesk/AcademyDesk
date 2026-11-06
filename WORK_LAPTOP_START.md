@@ -1,5 +1,27 @@
 # Academy Desk — continue from the work laptop or another profile
 
+## Compensation live SQL and required-audit repair — 6 November 2026
+
+- [x] Genuine C7 browser bodies now pass 28 real Identity/HTTP/fresh-SQL checks:
+  zero/null/decimal/date resaves, invalid/Teacher/foreign denials, exact audits,
+  unrelated teachers/Identity/money preservation and both actor audit rollbacks.
+- [x] Confirmed baseline defect retained: Admin saved despite audit500; Platform
+  Owner bypassed audit. Save now uses the existing atomic boundary including
+  Platform Owner; no permission, payroll/zero-net, payload or schema change.
+- [x] Fresh harness build zero warnings/errors; full API 1,986 PASS, zero failed/
+  skipped. Exact owned SQL cleanup, services/images/API200/inventory/lease and
+  original main status preservation PASS. No frontend rebuild was needed.
+- [ ] Both compensation issues stay OPEN for remaining closure gates. C6 live
+  finance approval/Teacher forms, other roles/workflows/P0/privacy/device/restore,
+  current images/CI/audits/staging, model qualification and release remain OPEN.
+
+Read QA/REPORTS/LOCAL_COMPENSATION_SQL_2026-11-06.md. Next local packet is C6 live
+finance approval and Teacher assigned-batch HTTP/SQL acceptance; Cloud should
+choose disjoint claims after this checkpoint. Do not restart accepted audits or
+repeat C7 browser coverage. Sol High for financial/security SQL; Medium for settled
+visuals/docs. Keep raw evidence local and candidate model loading/training/activation
+stopped. No main merge/push, production DB or Azure deployment is authorized here.
+
 ## Returned C7 compensation browser packet accepted locally — 6 November 2026
 
 - [x] Three disjoint cloud QA files integrated byte-exact; no app/API/editor change.

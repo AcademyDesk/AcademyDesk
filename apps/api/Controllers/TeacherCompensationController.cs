@@ -1,5 +1,6 @@
 using System.Text.Json;
 using AcademyDesk.Api.Data;
+using AcademyDesk.Api.Security;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,6 +18,7 @@ public sealed class TeacherCompensationController(AcademyDeskDbContext dbContext
     }
 
     [HttpPut]
+    [AtomicAcademyMutation(IncludePlatformOwner = true)]
     public async Task<ActionResult<TeacherCompensationSummary>> Save(Guid academyId, Guid teacherId, UpdateTeacherCompensationRequest request, CancellationToken token)
     {
         var teacher = await dbContext.Teachers.SingleOrDefaultAsync(x => x.AcademyId == academyId && x.Id == teacherId, token);
