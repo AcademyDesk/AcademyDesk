@@ -41,7 +41,8 @@ export default function FinanceGovernancePage() {
 
   async function decide(id: string, approve: boolean) {
     if (!academy) return;
-    const notes = window.prompt(approve ? "Approval note (optional)" : "Rejection reason") ?? "";
+    const notes = window.prompt(approve ? "Approval note (optional)" : "Rejection reason");
+    if (notes === null) return;
     if (!approve && !notes.trim()) return setNotice("A rejection reason is required.");
     setSaving(true);
     try { const response = await academyApi(`/api/academies/${academy.id}/finance-adjustments/${id}/approval`, { method: "PATCH", headers: apiHeaders(true), body: JSON.stringify({ approve, notes }) }); if (!response.ok) throw new Error(); await load(undefined, `Adjustment ${approve ? "approved" : "rejected"} and recorded in the control register.`); } catch { setNotice("The decision could not be saved. Refresh the page and try again."); } finally { setSaving(false); }

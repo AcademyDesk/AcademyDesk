@@ -20,7 +20,7 @@ function text(node) {
   if (node == null || typeof node === 'boolean') return '';
   return typeof node === 'object' ? text(node.props?.children) : String(node);
 }
-function page({ ready = false, deniedRead = false, deniedWrite = false, failRefresh = false, allowGeneric = false } = {}) {
+function page({ ready = false, deniedRead = false, deniedWrite = false, failRefresh = false, allowGeneric = false, promptAnswer = '' } = {}) {
   const states = ready ? [{ id: 'a' }, [adjustment], [invoice], [item], settings, '', undefined, false, 'Invoice', false] : [];
   const writes = new Map(), effects = [], calls = []; let index = 0, mutated = false;
   const react = { useState: initial => { const key = index++; return [writes.has(key) ? writes.get(key) : ready ? states[key] : initial,
@@ -40,7 +40,7 @@ function page({ ready = false, deniedRead = false, deniedWrite = false, failRefr
         : url.endsWith('/finance-adjustments') ? [adjustment] : url.endsWith('/settings') ? settings : {} };
     } };
     throw Error('Unexpected import ' + name);
-  }, module, module.exports, class { constructor(fields) { this.fields = fields; } get(key) { return this.fields[key] ?? null; } }, { prompt: () => '' });
+  }, module, module.exports, class { constructor(fields) { this.fields = fields; } get(key) { return this.fields[key] ?? null; } }, { prompt: () => promptAnswer });
   function render() { index = 0; return module.exports.default(); }
   render();
   return { render, writes, calls, async initialise() { effects[0](); await flush(); }, async submit(form, fields) {
@@ -83,4 +83,28 @@ for (const kind of ['follow-up', 'approval']) for (const failRefresh of [false, 
   assert.match(p.writes.get(5), kind === 'follow-up' ? /Collections follow-up created/ : /Adjustment approved/);
   if (failRefresh) assert.match(p.writes.get(5), /could not be refreshed/);
   assert.equal(p.writes.get(7), false);
+});
+
+// Actual decision handler: null is Cancel/Escape; empty string is deliberate OK.
+for (const label of ['Approve','Reject']) test(label+' prompt cancellation sends no mutation or refresh',async()=>{
+  const p=page({ready:true,promptAnswer:null});
+  nodes(p.render(),n=>n.type==='button'&&text(n)===label)[0].props.onClick();await flush();
+  assert.equal(p.calls.length,0);assert.equal(p.writes.has(7),false);assert.equal(p.writes.has(5),false);
+});
+for (const note of ['', 'Approved exact synthetic discount']) test('explicit approval accepts optional note '+JSON.stringify(note),async()=>{
+  const p=page({ready:true,promptAnswer:note});
+  nodes(p.render(),n=>n.type==='button'&&text(n)==='Approve')[0].props.onClick();await flush();
+  const writes=p.calls.filter(c=>c.method==='PATCH');assert.equal(writes.length,1);
+  assert.deepEqual(JSON.parse(writes[0].body),{approve:true,notes:note});
+});
+for (const note of ['', '   ']) test('rejection requires a nonblank reason '+JSON.stringify(note),async()=>{
+  const p=page({ready:true,promptAnswer:note});
+  nodes(p.render(),n=>n.type==='button'&&text(n)==='Reject')[0].props.onClick();await flush();
+  assert.equal(p.calls.length,0);assert.equal(p.writes.has(7),false);assert.match(p.writes.get(5),/rejection reason is required/);
+});
+test('explicit rejection preserves the exact supplied reason',async()=>{
+  const p=page({ready:true,promptAnswer:'Synthetic reason'});
+  nodes(p.render(),n=>n.type==='button'&&text(n)==='Reject')[0].props.onClick();await flush();
+  const writes=p.calls.filter(c=>c.method==='PATCH');assert.equal(writes.length,1);
+  assert.deepEqual(JSON.parse(writes[0].body),{approve:false,notes:'Synthetic reason'});
 });
