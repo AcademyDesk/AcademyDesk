@@ -40,3 +40,14 @@ Exact public tarball plan (already-declared versions; lock unchanged):
 This setup is normal isolated development prerequisite work under the owner's
 continued app-completion direction; it is not a model experiment or an npm audit.
 Source and final outcomes remain separately reviewable before any production use.
+
+
+## Additional browser-runner claim before edits
+
+Add QA/tools/penta-entry-browser.cjs to the owned paths. The current runner
+hard-codes49142while this isolated build is explicitly compiled for54999. Add an
+explicit validated loopback-only API-origin option, retaining the old default
+and rejecting every other external request. Preserve all24browser assertions and
+synthetic-only transport boundaries. Remove the unnecessary no-sandbox launch
+flag and validate the exact owned temporary profile path before recursive cleanup.
+No application source, fixture privilege, backend or dependency-version changes.
