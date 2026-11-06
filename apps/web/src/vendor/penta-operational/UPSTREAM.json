@@ -1,0 +1,80 @@
+{
+  "version": "operational-ui-0.3.0-candidate.1",
+  "purpose": "Passive authenticated onboarding review; not runtime/model/action qualification",
+  "sourceRepository": "D:/PENTA AI Models",
+  "sourceHead": "2f8806967709a1a7ec29e5176e7c31968adbf6aa",
+  "sourceDirty": true,
+  "manifest": "operations/release-manifest.json",
+  "manifestSha256": "6698838aa6b8d0f8dbfd97446f2c52e757dae9cbfc6b23bcd22ddda5dc195e15",
+  "files": [
+    {
+      "normalizedSha256": "6f8d0c39b78a75b8c4f98e90277bc9fd7745982ab0a45b1861893aca3c58cac1",
+      "path": "frontend/operational-ui/src/index.ts",
+      "upstreamSha256": "6f8d0c39b78a75b8c4f98e90277bc9fd7745982ab0a45b1861893aca3c58cac1"
+    },
+    {
+      "normalizedSha256": "23146977dcaffd2c9856d783cda3878fd7f1e8339aa975c6650deb3e44b00e7d",
+      "path": "frontend/operational-ui/src/projection.schema.json",
+      "upstreamSha256": "cefaaf6acef200579f49d408d3616058c85134cc6bd5bf90ddda68b11777f23a"
+    },
+    {
+      "normalizedSha256": "62b9e7b865dce43850a82fab63952fada2293f8087d48da1c793d201c989342a",
+      "path": "frontend/operational-ui/src/types.ts",
+      "upstreamSha256": "62b9e7b865dce43850a82fab63952fada2293f8087d48da1c793d201c989342a"
+    },
+    {
+      "normalizedSha256": "690636d0ac5528552deb3a5acc18b6219b7fe7d7de8e9535c89ae7977c10b56c",
+      "path": "frontend/operational-ui/src/validate.ts",
+      "upstreamSha256": "690636d0ac5528552deb3a5acc18b6219b7fe7d7de8e9535c89ae7977c10b56c"
+    },
+    {
+      "normalizedSha256": "55576dadcb1309a657cc6a739594633e4ef553bcccc1ef077ea384e3a0793812",
+      "path": "frontend/operational-ui/src/workspace.css",
+      "upstreamSha256": "55576dadcb1309a657cc6a739594633e4ef553bcccc1ef077ea384e3a0793812"
+    },
+    {
+      "normalizedSha256": "9ec1009a45e3be87f310b7288009c2f48a01c82a07289c1dae64f5f4327b4275",
+      "path": "frontend/operational-ui/src/Workspace.tsx",
+      "upstreamSha256": "9ec1009a45e3be87f310b7288009c2f48a01c82a07289c1dae64f5f4327b4275"
+    },
+    {
+      "normalizedSha256": "2da663dc44d9d5c2ab5e4d5224b64912ba65e6147bdb2b00cfe27d12e84afebe",
+      "path": "frontend/shared-foundation/src/academy-mapping.css",
+      "upstreamSha256": "2da663dc44d9d5c2ab5e4d5224b64912ba65e6147bdb2b00cfe27d12e84afebe"
+    },
+    {
+      "normalizedSha256": "5cee91c30518ab59368ed82c6ff0ab20cf4dbc0ed099b9a2ffc2c331a84745f1",
+      "path": "frontend/shared-foundation/src/contracts.ts",
+      "upstreamSha256": "5cee91c30518ab59368ed82c6ff0ab20cf4dbc0ed099b9a2ffc2c331a84745f1"
+    },
+    {
+      "normalizedSha256": "ff2bcd25ae943789b7565531f757e4dece495e0d222224a67ae0e35896a148bc",
+      "path": "frontend/shared-foundation/src/foundation.css",
+      "upstreamSha256": "ff2bcd25ae943789b7565531f757e4dece495e0d222224a67ae0e35896a148bc"
+    },
+    {
+      "normalizedSha256": "e1ebfa4266bda339e51e478fa3bea9b3e3e5aa52c6f63b2362dd43038b6c8f20",
+      "path": "frontend/shared-foundation/src/index.ts",
+      "upstreamSha256": "e1ebfa4266bda339e51e478fa3bea9b3e3e5aa52c6f63b2362dd43038b6c8f20"
+    },
+    {
+      "normalizedSha256": "0f13f239ab8a7de7a64baa09e6941635642ef54be443a43b824ea3993cd18963",
+      "path": "frontend/shared-foundation/src/primitives.tsx",
+      "upstreamSha256": "0f13f239ab8a7de7a64baa09e6941635642ef54be443a43b824ea3993cd18963"
+    },
+    {
+      "normalizedSha256": "e8dd2b6d4bb66b77f86419e4276d95299e62e4924b950a5a93891167c7169588",
+      "path": "frontend/shared-foundation/src/tokens.ts",
+      "upstreamSha256": "e8dd2b6d4bb66b77f86419e4276d95299e62e4924b950a5a93891167c7169588"
+    }
+  ],
+  "exclusions": [
+    "gallery",
+    "dist",
+    "validation fixtures",
+    "synthetic bootstrap",
+    "model choices",
+    "credentials"
+  ],
+  "activation": false
+}

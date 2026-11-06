@@ -1,5 +1,22 @@
 # Academy Desk handoff
 
+## Cloud conversation/container source integrated — 6 November 2026
+
+- [x] C3.2+C4 returned66implementation paths copied byte-exact;12vendor pins pass.
+  Protected student/teacher UI adapters and login-epoch/session controls restored.
+- [x] Fresh48case Identity/HTTP/SQL communication roundtrip PASS. All three missing
+  receipt cases now pass locally; existing communication-drafts48/48PASS.
+- [x] Full current frontend1,893PASS/one Windows symlink EPERMfailure/zero skips;
+  no assertion weakened. Nginx synthetic component10HTTP checks plus query PASS.
+- [x] Owned SQL/web resources removed; original services/images healthy/API200,
+  complete inventories and lease release PASS. Backend/API1,984source unchanged.
+- [ ] Exact-lock full image/current CI/audits, actual protected host/browser/device,
+  remaining all-role/workflow/security/release and Mini qualification stay OPEN.
+
+Read QA/REPORTS/LOCAL_L2_CONVERSATION_CONTAINER_2026-11-06.md for exact sources,
+run/failure/receipt boundaries. Cloud lacks local raw receipts; do not claim its
+three evidence cases passed or publish QA/EVIDENCE. No main/Azure/model activation.
+
 ## Reviewed cloud C3.1 integrated — 6 November 2026
 
 - [x] Fifteen cloud role-entry source files integrated byte-exact from d0d7967;

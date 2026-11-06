@@ -2,7 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { savePortalTokens } from "@/lib/api";
+import { beginPortalSession } from "@/lib/api";
 
 import { validWorkspaceAccount, workspaceLanding } from "@/lib/workspace-entry";
 
@@ -40,7 +40,7 @@ export default function LoginPage() {
       if (!profile.ok) throw new Error();
       const session: unknown = await profile.json();
       if (!validWorkspaceAccount(session)) throw new Error();
-      savePortalTokens(session.workspace, tokens.accessToken, tokens.refreshToken);
+      beginPortalSession(session.workspace, tokens.accessToken, tokens.refreshToken);
       router.push(workspaceLanding(session, searchParams.get("returnTo")));
     } catch {
       setMessage(
