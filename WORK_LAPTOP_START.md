@@ -1,5 +1,19 @@
 # Academy Desk — continue from the work laptop or another profile
 
+## Version1 genuine original verification returned — 6 November 2026
+
+- [x] Mini returna789f1a published/verified; genuine Windows/Linux62-record outputs
+  match. Linux109controlsPASS; Windows105PASS/four missing symlink privileges.
+- [x] Original11input hashes/33frozen bytes preserved; no source authority or
+  model promotion. Historical two Linux cases are retained unchanged.
+- [x] Exact original services/images healthy/API200/inventory preserved.
+- [ ] Real protected browser, remaining role/workflow/security/CI/build/model/
+  release gates remain OPEN. Candidate loading/training/activation stop remains.
+
+Read QA/REPORTS/LOCAL_C5_ORIGINAL_BINDING_2026-11-06.md. Next local claim is
+QA/REPORTS/LOCAL_NATIVE_SESSION_INTEGRATION_2026-11-06.md for current C3.2 native
+refresh/concurrency SQL integration; no app/harness rewrite or audit restart.
+
 ## Cloud conversation/container source integrated — 6 November 2026
 
 - [x] C3.2+C4 returned66implementation paths copied byte-exact;12vendor pins pass.
