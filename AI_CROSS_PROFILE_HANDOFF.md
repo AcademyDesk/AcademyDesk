@@ -1,5 +1,20 @@
 # Academy Desk — shared continuation across profiles
 
+## Current-client native session SQL completed — 6 November 2026
+
+- [x] Existing native clients now exercise explicit-login epochs/events while
+  retaining every status/count/no-replay/one-write/SQL audit check.
+- [x] SessionRefresh11helper HTTP requests and RefreshConcurrency25/four overlaps
+  PASS against real owned Identity/SQL; one saved typed Student per fixture.
+- [x] Initial second-module RAM refusal retained; successor reran only pending
+  concurrency with matching source hashes. Both service/inventory restores PASS.
+- [ ] Real browser/UI/cross-tab Web Locks/lifetime/device and remaining model/
+  exact-lock build/CI/privacy/P0/restore/staging/release acceptance remain OPEN.
+
+Read QA/REPORTS/LOCAL_NATIVE_SESSION_INTEGRATION_2026-11-06.md. Only QA native
+clients changed; application/SQL harness and previous source-bound tests unchanged.
+No new package/model/main/Azure action. Keep raw QA/EVIDENCE local.
+
 ## Version1 genuine original verification returned — 6 November 2026
 
 - [x] Mini returna789f1a published/verified; genuine Windows/Linux62-record outputs
