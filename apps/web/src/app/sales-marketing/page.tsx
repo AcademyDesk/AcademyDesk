@@ -150,7 +150,7 @@ function SalesMarketingContent() {
         {view === "overview" && (
           <>
             <section className="sales-tile-grid">
-              {leadTiles.map(([name, value, href, detail]) => (
+              {leadTiles.map(([name, value, , detail]) => (
                 <StandardInteractiveTile
                   key={String(name)}
                   label={name}
@@ -296,7 +296,7 @@ function SalesMarketingContent() {
             )}
             <div className="sales-tile-modal-actions">
               <Link
-                href={tileDetail === "Leads" || tileDetail === "Total leads" ? "/leads" : tileDetail === "Trial bookings" ? "/trial-bookings" : "/sales-marketing?view=conversion"}
+                href={leadTiles.find(([name]) => name === tileDetail)?.[2] ?? (tileDetail === "Total leads" ? "/leads" : "/sales-marketing?view=conversion")}
                 className="enterprise-action-button enterprise-action-button-secondary"
                 onClick={() => setTileDetail(null)}
               >

@@ -1,5 +1,18 @@
 # Academy Desk handoff
 
+## C11 cloud status and navigation return integrated — 7 November 2026
+
+- [x] Imported the ten C11 paths at `fe0b673`. The frontend matches Cloud's
+  tested source for grant expiry display, Platform status recovery and Sales
+  Follow-ups navigation.
+- [x] Reused Cloud's 28 controlled checks and 49 Chromium cases. Its full
+  frontend result remains 2,008 passes and three missing communication
+  receipt failures. The prior local communication proof is recorded separately.
+- [ ] C11 still requires live role/tenant and mutation evidence and device
+  acceptance. The P0 release queue takes priority over lower-risk follow-ups.
+
+[Local C11 integration report](QA/REPORTS/LOCAL_C11_SOURCE_INTEGRATION_2026-11-07.md)
+
 ## C10 cloud academic return integrated — 7 November 2026
 
 - [x] Imported the 14 verified C10 files at `6e09af3`. The integrated frontend

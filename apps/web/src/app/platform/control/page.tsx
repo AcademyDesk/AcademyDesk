@@ -148,7 +148,7 @@ const platformControlTabs = [
 async function readPlatformControls() {
   const [a, ad, c, i, s, au, h, owner, announcements] = await Promise.all([
     academyApi("/api/platform/academies"), academyApi("/api/platform/admins"),
-    academyApi("/api/platform/support-cases"), academyApi("/api/platform/billing-invoices"),
+    academyApi("/api/platform/support-cases", { cache: "no-store" }), academyApi("/api/platform/billing-invoices", { cache: "no-store" }),
     academyApi("/api/platform/settings"), academyApi("/api/platform/audit"),
     academyApi("/api/platform/health"), academyApi("/api/auth/session"), academyApi("/api/platform/announcements"),
   ]);
@@ -205,10 +205,8 @@ export default function PlatformControlPage() {
   const [invoicePeriodStart, setInvoicePeriodStart] = useState("");
   const [invoicePeriodEnd, setInvoicePeriodEnd] = useState("");
   const [invoiceDueDate, setInvoiceDueDate] = useState("");
-  const [invoiceStatuses, setInvoiceStatuses] = useState<Record<string, string>>({});
   const [supportAcademyId, setSupportAcademyId] = useState("");
   const [supportPriority, setSupportPriority] = useState("Normal");
-  const [caseStatuses, setCaseStatuses] = useState<Record<string, string>>({});
   const [announcementAcademyId, setAnnouncementAcademyId] = useState("");
   const [announcementHours, setAnnouncementHours] = useState("24");
   const [settingsCurrency, setSettingsCurrency] = useState("");
@@ -218,15 +216,25 @@ export default function PlatformControlPage() {
   const [message, setMessage] = useState("Loading platform controls…");
   const [busy, setBusy] = useState(false);
   const profileImageInput = useRef<HTMLInputElement>(null);
+  const [statusBusy, setStatusBusy] = useState(false);
+  const [statusReview, setStatusReview] = useState(false);
+  const statusPending = useRef(false);
+  const statusNeedsReview = useRef(false);
+  const statusMounted = useRef(true);
+  const statusEpoch = useRef(0);
+  const statusRows = useRef<{ invoices: Invoice[]; cases: Case[] }>({ invoices: [], cases: [] });
+
 
   async function load() {
+    const epoch = statusEpoch.current;
     const data = await readPlatformControls();
+    if (!statusMounted.current) return;
     if (!data) { router.replace("/login?returnTo=/platform/control"); return; }
     setAcademies(data.academies);
     setSelectedAcademy(current => current || data.academies[0]?.id || "");
     if (data.admins) setAdmins(data.admins);
-    if (data.cases) setCases(data.cases);
-    if (data.invoices) setInvoices(data.invoices);
+    if (data.cases && epoch === statusEpoch.current) { statusRows.current.cases = data.cases; setCases(data.cases); }
+    if (data.invoices && epoch === statusEpoch.current) { statusRows.current.invoices = data.invoices; setInvoices(data.invoices); }
     if (data.settings) setSettings(data.settings);
     if (data.audit) setAudit(data.audit);
     if (data.health) setHealth(data.health);
@@ -236,14 +244,16 @@ export default function PlatformControlPage() {
   }
   useEffect(() => {
     let active = true;
+    statusMounted.current = true;
+    const epoch = statusEpoch.current;
     void readPlatformControls().then((data) => {
       if (!active) return;
       if (!data) { router.replace("/login?returnTo=/platform/control"); return; }
     setAcademies(data.academies);
     setSelectedAcademy(current => current || data.academies[0]?.id || "");
     if (data.admins) setAdmins(data.admins);
-    if (data.cases) setCases(data.cases);
-    if (data.invoices) setInvoices(data.invoices);
+    if (data.cases && epoch === statusEpoch.current) { statusRows.current.cases = data.cases; setCases(data.cases); }
+    if (data.invoices && epoch === statusEpoch.current) { statusRows.current.invoices = data.invoices; setInvoices(data.invoices); }
     if (data.settings) setSettings(data.settings);
     if (data.audit) setAudit(data.audit);
     if (data.health) setHealth(data.health);
@@ -251,7 +261,7 @@ export default function PlatformControlPage() {
     if (data.announcements) setAnnouncements(data.announcements);
     setMessage("");
     }).catch(error => { if (active) setMessage(error.message); });
-    return () => { active = false; };
+    return () => { active = false; statusMounted.current = false; statusEpoch.current += 1; };
   }, [router]);
   async function loadActivityLogs() {
     setActivityLogs(await readPlatformActivity(activityScope, activityFrom, activityTo));
@@ -485,6 +495,7 @@ export default function PlatformControlPage() {
     success: string,
   ): Promise<boolean> {
     // A confirmed write remains successful even if its separate readback fails.
+    if (statusPending.current || statusNeedsReview.current) return false;
     setBusy(true);
     setMessage("");
     try {
@@ -532,21 +543,64 @@ export default function PlatformControlPage() {
         "Administrator password reset.",
       );
   }
-  async function updateCase(item: Case, status: string) {
-    await request(
-      `/api/platform/support-cases/${item.id}`,
-      "PATCH",
-      { status, priority: item.priority },
-      "Support case updated.",
-    );
+  async function readStatusRows(kind: "invoice" | "case") {
+    const response = await academyApi(kind === "invoice" ? "/api/platform/billing-invoices" : "/api/platform/support-cases", { cache: "no-store" });
+    if (!response.ok) throw Error();
+    const rows: unknown = await response.json();
+    if (!Array.isArray(rows) || !rows.every(row => row && typeof row === "object" && typeof row.id === "string" && typeof row.status === "string")) throw Error();
+    return rows;
   }
-  async function updateInvoice(item: Invoice, status: string) {
-    await request(
-      `/api/platform/billing-invoices/${item.id}/status`,
-      "PATCH",
-      { status },
-      "Invoice status updated.",
-    );
+  function acceptStatusRows(kind: "invoice" | "case", rows: unknown[]) {
+    if (kind === "invoice") { statusRows.current.invoices = rows as Invoice[]; setInvoices(rows as Invoice[]); }
+    else { statusRows.current.cases = rows as Case[]; setCases(rows as Case[]); }
+  }
+  async function changeStatus(kind: "invoice" | "case", id: string, body: object, success: string) {
+    if (!statusMounted.current || busy || statusPending.current || statusNeedsReview.current) return;
+    statusPending.current = true; setStatusBusy(true); setBusy(true); setMessage("");
+    const epoch = ++statusEpoch.current; let confirmed = false;
+    try {
+      const path = kind === "invoice" ? `/api/platform/billing-invoices/${id}/status` : `/api/platform/support-cases/${id}`;
+      const response = await academyApi(path, { method: "PATCH", headers: apiHeaders(true), body: JSON.stringify(body) });
+      if (!statusMounted.current || epoch !== statusEpoch.current) return;
+      if (!response.ok) {
+        if (response.status >= 500) throw Error();
+        const payload = await response.json().catch(() => null);
+        if (!statusMounted.current || epoch !== statusEpoch.current) return;
+        setMessage(typeof payload?.message === "string" ? payload.message : "The status could not be changed.");
+        statusEpoch.current += 1; return;
+      }
+      confirmed = true;
+      const rows = await readStatusRows(kind);
+      if (!statusMounted.current || epoch !== statusEpoch.current) return;
+      statusEpoch.current += 1; acceptStatusRows(kind, rows); setMessage(success);
+    } catch {
+      if (statusMounted.current) {
+        statusEpoch.current += 1; statusNeedsReview.current = true; setStatusReview(true);
+        setMessage(confirmed ? `${success} The saved status could not be refreshed. Refresh platform status lists before submitting again.`
+          : "The status change could not be confirmed. Refresh platform status lists before retrying.");
+      }
+    } finally { statusPending.current = false; if (statusMounted.current) { setStatusBusy(false); setBusy(false); } }
+  }
+  async function refreshStatusLists() {
+    if (!statusMounted.current || statusPending.current) return;
+    statusPending.current = true; setStatusBusy(true); setBusy(true); const epoch = ++statusEpoch.current;
+    try {
+      const [invoiceRows, caseRows] = await Promise.all([readStatusRows("invoice"), readStatusRows("case")]);
+      if (!statusMounted.current || epoch !== statusEpoch.current) return;
+      statusEpoch.current += 1; acceptStatusRows("invoice", invoiceRows); acceptStatusRows("case", caseRows);
+      statusNeedsReview.current = false; setStatusReview(false); setMessage("Platform status lists refreshed. Review their current values.");
+    } catch {
+      if (statusMounted.current) { statusEpoch.current += 1; statusNeedsReview.current = true; setStatusReview(true); setMessage("Platform status lists could not be refreshed. Try again before changing a status."); }
+    } finally { statusPending.current = false; if (statusMounted.current) { setStatusBusy(false); setBusy(false); } }
+  }
+  async function updateCase(id: string, status: string) {
+    const item = statusRows.current.cases.find(row => row.id === id);
+    if (!item || !["Open", "In progress", "Resolved", "Closed"].includes(status)) return;
+    await changeStatus("case", id, { status, priority: item.priority }, "Support case updated.");
+  }
+  async function updateInvoice(id: string, status: string) {
+    if (!statusRows.current.invoices.some(row => row.id === id) || !["Draft", "Issued", "Payment submitted", "Overdue", "Paid", "Void"].includes(status)) return;
+    await changeStatus("invoice", id, { status }, "Invoice status updated.");
   }
   async function saveOwnerProfile(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -709,6 +763,7 @@ export default function PlatformControlPage() {
               {message}
             </p>
           )}
+          {statusReview && <p role="status">Statuses show the last loaded records. <button type="button" className="enterprise-action-button" disabled={statusBusy} onClick={() => void refreshStatusLists()}>Refresh platform status lists</button></p>}
           {tab === "Tenant onboarding" && <section className="tenant-intake-layout">
             {startingTenant || !academies.length ? <form onSubmit={createTenantFromOnboarding} className="tenant-intake-panel"><div className="tenant-intake-fields">
               <header className="tenant-intake-wide"><p>Tenant Onboarding</p><h2>Create the academy, first Academy Admin, and tenant record</h2></header>
@@ -844,7 +899,7 @@ export default function PlatformControlPage() {
                 </form>
                 <section className="platform-billing-panel platform-invoice-register">
                   <header className="platform-control-panel-header"><div><p>Invoice register</p><h2>Platform invoices</h2></div></header>
-                  {invoices.length ? <ul>{invoices.map((item) => <li key={item.id}><div className="platform-invoice-copy"><b>{item.invoiceNumber}</b><small>{item.academyName} · Due {new Intl.DateTimeFormat("en-IN", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(`${item.dueDate}T12:00:00`))}{item.paymentReference ? ` · Payment ref: ${item.paymentReference}` : ""}</small></div><strong>{item.currency} {item.amount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong><div className="platform-invoice-status"><span data-status={item.status.toLowerCase()}>{item.status}</span><StandardSelectField name={`invoice-status-${item.id}`} value={invoiceStatuses[item.id] ?? item.status} onChange={(value) => { setInvoiceStatuses((current) => ({ ...current, [item.id]: value })); void updateInvoice(item, value); }} placeholder="Update status" options={["Draft", "Issued", "Payment submitted", "Overdue", "Paid", "Void"].map((value) => ({ value, label: value }))} disabled={busy} /></div></li>)}</ul> : <p className="platform-billing-empty">No platform invoices have been created yet.</p>}
+                  {invoices.length ? <ul>{invoices.map((item) => <li key={item.id}><div className="platform-invoice-copy"><b>{item.invoiceNumber}</b><small>{item.academyName} · Due {new Intl.DateTimeFormat("en-IN", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(`${item.dueDate}T12:00:00`))}{item.paymentReference ? ` · Payment ref: ${item.paymentReference}` : ""}</small></div><strong>{item.currency} {item.amount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong><div className="platform-invoice-status"><span data-status={item.status.toLowerCase()}>{item.status}</span><StandardSelectField name={`invoice-status-${item.id}`} value={item.status} onChange={(value) => void updateInvoice(item.id, value)} placeholder="Update status" options={["Draft", "Issued", "Payment submitted", "Overdue", "Paid", "Void"].map((value) => ({ value, label: value }))} disabled={busy || statusBusy || statusReview} /></div></li>)}</ul> : <p className="platform-billing-empty">No platform invoices have been created yet.</p>}
                 </section>
               </section>
               {invoiceModal && <div className="platform-modal-backdrop" role="presentation"><article className="platform-modal platform-invoice-modal" role="dialog" aria-modal="true" aria-labelledby="invoice-modal-title"><header><div><p>Platform billing</p><h3 id="invoice-modal-title">{invoiceModalTitle}</h3></div><button type="button" aria-label="Close invoice details" onClick={() => setInvoiceModal(null)}>×</button></header>{invoiceModalRecords.length ? <ul>{invoiceModalRecords.map((item) => <li key={item.id}><span>₹</span><div><b>{item.invoiceNumber}</b><small>{item.academyName} · Due {new Intl.DateTimeFormat("en-IN", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(`${item.dueDate}T12:00:00`))}</small></div><strong>{item.currency} {item.amount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong><em data-status={item.status.toLowerCase()}>{item.status}</em></li>)}</ul> : <p className="platform-billing-empty">No invoices match this view.</p>}</article></div>}
@@ -871,7 +926,7 @@ export default function PlatformControlPage() {
                 </form>
                 <section className="platform-support-panel platform-case-register">
                   <header className="platform-control-panel-header"><div><p>Case register</p><h2>Support cases</h2></div></header>
-                  {cases.length ? <ul>{cases.map((item) => <li key={item.id}><div className="platform-case-copy"><b>{item.subject}</b><small>{item.academyName} · {item.description || "No additional details"}{item.academyResponse ? ` · Academy reply: ${item.academyResponse}` : ""}</small></div><div className="platform-case-meta"><span data-priority={item.priority.toLowerCase()}>{item.priority}</span><StandardSelectField name={`case-status-${item.id}`} value={caseStatuses[item.id] ?? item.status} onChange={(value) => { setCaseStatuses((current) => ({ ...current, [item.id]: value })); void updateCase(item, value); }} placeholder="Update status" options={["Open", "In progress", "Resolved", "Closed"].map((value) => ({ value, label: value }))} disabled={busy} /></div></li>)}</ul> : <p className="platform-support-empty">No support cases have been created yet.</p>}
+                  {cases.length ? <ul>{cases.map((item) => <li key={item.id}><div className="platform-case-copy"><b>{item.subject}</b><small>{item.academyName} · {item.description || "No additional details"}{item.academyResponse ? ` · Academy reply: ${item.academyResponse}` : ""}</small></div><div className="platform-case-meta"><span data-priority={item.priority.toLowerCase()}>{item.priority}</span><StandardSelectField name={`case-status-${item.id}`} value={item.status} onChange={(value) => void updateCase(item.id, value)} placeholder="Update status" options={["Open", "In progress", "Resolved", "Closed"].map((value) => ({ value, label: value }))} disabled={busy || statusBusy || statusReview} /></div></li>)}</ul> : <p className="platform-support-empty">No support cases have been created yet.</p>}
                 </section>
               </section>
               {caseModal && <div className="platform-modal-backdrop" role="presentation"><article className="platform-modal platform-case-modal" role="dialog" aria-modal="true" aria-labelledby="case-modal-title"><header><div><p>Platform support</p><h3 id="case-modal-title">{caseModalTitle}</h3></div><button type="button" aria-label="Close support case details" onClick={() => setCaseModal(null)}>×</button></header>{caseModalRecords.length ? <ul>{caseModalRecords.map((item) => <li key={item.id}><span>?</span><div><b>{item.subject}</b><small>{item.academyName} · {item.priority} priority</small></div><em data-status={item.status.toLowerCase().replaceAll(" ", "-")}>{item.status}</em></li>)}</ul> : <p className="platform-support-empty">No support cases match this view.</p>}</article></div>}

@@ -3,8 +3,8 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | STATIC-FINDING |
-| Final verification | NOT RUN |
+| Confirmation status | Controlled TSX/Chromium RUNTIME-REPRODUCED; C11 partial repair PASS |
+| Final verification | C11 controlled checks PASS; original real-role/host/critical/device closure pending |
 | Severity | Moderate misleading mutation state |
 | Priority | P2 |
 | Category | UI |
@@ -69,3 +69,20 @@ Platform invoice and support status controls, potentially confusing owners about
 PLATFORM-STATUS-001: Browser controlled failed/successful PATCH and fresh GET tests, independent records, repeated edits, network loss with uncertain outcome, concurrent updates and tab revisit; assert displayed and stored state separately.
 
 Also run all endpoint/form cases pointing to this issue in QA/03_TEST_MATRIX.md and the critical regression suite before closure.
+
+
+## C11 status/navigation batch — 7 November 2026
+
+Invoice/support selectors render only their latest accepted records, without persistent optimistic overrides. Known rejection preserves the last loaded value. Network/5xx uncertainty and confirmed-save/failed-read keep selectors locked and explicitly label the last loaded state. Refresh platform status lists performs GETs only; accepted fresh rows outrank requested values. Pending/stale callbacks and removed rows cannot issue duplicate or wrong-record status writes. The support request preserves the latest loaded priority. Other platform mutations and actual server/audit/tenant behavior remain separate acceptance work.
+
+Implementation `88a49a989d8957c5d299acecae2aaaf710eb5986` on
+`codex/cloud-c11-status-navigation-20261107`. Combined batch **28 targeted tests
+PASS**, **49 native Chromium groups PASS**, zero runtime/console/interceptor
+errors; 24 intercepted synthetic status PATCH requests and no live writes.
+Unchanged-source baseline: five PASS/23FAIL in the initial controlled tests and
+ten PASS/39FAIL in49native groups. Full final frontend **2,008PASS / three
+missing-genuine-SQL-receipt FAIL / zero skips**, build/types/lint PASS (zero lint
+errors/62warnings). Counts are shared across the batch, not added per issue.
+
+Remain **OPEN** for all original issue-specific module/critical/real-role/device
+and release requirements. See [C11 source and acceptance handoff](../HANDOFF/C11_STATUS_NAVIGATION_2026-11-07.md).
