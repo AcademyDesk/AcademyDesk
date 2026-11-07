@@ -7,8 +7,16 @@
 - [x] Reused Cloud's 58 targeted controls and 30 controlled Chromium cases for
   calendar, dates, curriculum and subject fees. Cloud's full suite recorded
   1,980 passes and three missing genuine communication SQL receipt failures.
-- [ ] The five records still require their linked live API/SQL and critical/device
-  checks. Refresh Cloud claims before picking the next local packet.
+- [x] Local C10 passed 19 real academic API/SQL checks and repaired the
+  curriculum create guard. The candidate passed all 1,991 API tests.
+- [x] The three evidence-dependent communication checks passed locally.
+  The Windows full frontend run was 1,982/1,983 with one file-symlink
+  capability failure. Cloud passed that unchanged case on Linux.
+- [ ] Five open P0 records still block production. Broader critical/device
+  checks, current verification workflow and image proof, and staged
+  rollback/restore are pending. Refresh Cloud ownership before claiming a P0.
+
+[Local academic and release validation](QA/REPORTS/LOCAL_C10_ACADEMIC_ACCEPTANCE_2026-11-07.md)
 
 [Local C10 integration report](QA/REPORTS/LOCAL_C10_SOURCE_INTEGRATION_2026-11-07.md)
 

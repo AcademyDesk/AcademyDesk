@@ -1,5 +1,14 @@
 # BUG-FUNC-0014 — Blank curriculum sequence saves zero despite minimum one
 
+## Native API and SQL retest — 7 November 2026
+
+The unpatched endpoint returned 200 and persisted sequences 0 and -1.
+The create action now rejects values below one. A fresh run returned 400
+without writes for zero, negative, missing and fractional sequences. A valid
+sequence of two remained intact through publication, and the Teacher write
+control returned 403. Critical and device acceptance remain open.
+[Local C10 report](../REPORTS/LOCAL_C10_ACADEMIC_ACCEPTANCE_2026-11-07.md)
+
 | Field | Value |
 | --- | --- |
 | Status | OPEN |

@@ -2,6 +2,15 @@
 
 These gates govern release acceptance. Current production readiness is **NOT ESTABLISHED**. Passing builds and unit tests do not satisfy the SQL, security, browser and operational gates below.
 
+Local C10 retest on 7 November 2026 passed 19 academic HTTP/SQL checks and
+1,991 API tests. The Windows frontend run passed 1,982 of 1,983, including the
+three communication checks using the unchanged local SQL receipt. The sole
+Windows symlink capability failure has a separate Cloud Linux pass on matching
+test/export source. The production guard still reports five open P0 records.
+Current release-commit CI and images, critical/device coverage, and staging
+restore/rollback remain required.
+[C10 candidate evidence](REPORTS/LOCAL_C10_ACADEMIC_ACCEPTANCE_2026-11-07.md)
+
 | Gate | Mandatory evidence |
 | --- | --- |
 | Developer | Type check, lint, existing tests; changed business-rule and form regressions; SQL integration for changed persistence; no secret/test-data leakage; pinned source and fixture manifest |
