@@ -89,3 +89,14 @@ All audited mutations; retries can duplicate work.
 API-RELIABILITY-001: Audit write fault + rejected action tests through full MVC pipeline, compare actual HTTP status and DB changes.
 
 Also run all endpoint/form cases pointing to this issue in QA/03_TEST_MATRIX.md and the critical regression suite before closure.
+
+## Teacher profile transaction — 8 November 2026
+
+The C15 SQL baseline reproduced Academy Admin and Academy Owner receiving 500
+after the profile write committed on audit failure. Platform Owner received 200
+and did not reach the injected audit fault. The scoped teacher-profile update
+now rolls back for all three roles, with one correctly attributed audit for each
+successful write. The module passed 13/13 real HTTP and SQL checks, and all
+2,087 API tests passed. Other action boundaries and linked critical and device
+cases remain open.
+[Local SQL verification](../REPORTS/LOCAL_C15_TEACHER_AVAILABILITY_SQL_2026-11-08.md)

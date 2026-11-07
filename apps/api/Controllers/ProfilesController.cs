@@ -1,4 +1,5 @@
 using AcademyDesk.Api.Data;
+using AcademyDesk.Api.Security;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
@@ -132,6 +133,7 @@ public sealed class ProfilesController(AcademyDeskDbContext dbContext) : Control
     }
 
     [HttpPut("teachers/{teacherId:guid}/profile")]
+    [AtomicAcademyMutation(IncludePlatformOwner = true)]
     public async Task<ActionResult<TeacherProfileSummary>> UpdateTeacherProfile(Guid academyId, Guid teacherId, UpdateTeacherAdminProfileRequest request, CancellationToken token)
     {
         var teacher = await dbContext.Teachers.SingleOrDefaultAsync(x => x.AcademyId == academyId && x.Id == teacherId, token);

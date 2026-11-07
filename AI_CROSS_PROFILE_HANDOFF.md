@@ -1,13 +1,29 @@
 # Academy Desk — shared continuation across profiles
 
+## C15 local SQL and C16 Cloud integration — 8 November 2026
+
+- [x] C15 teacher availability passed 13 real HTTP and SQL checks. The
+  teacher-profile update and its actor audit now commit together for Academy
+  Admin, Academy Owner and Platform Owner. The full API suite passed 2,087.
+- [x] C16 support triage imported all five paths at `8ed2a57`. The 54
+  targeted frontend checks passed locally. Cloud passed eight controlled
+  Chromium checks. The Cloud frontend suite still reports three missing
+  communication SQL receipts.
+- [ ] C16 real support intake and owner triage, C15 browser/device checks and
+  the five P0 release records remain open. Cloud owns C17 currency summaries
+  on `codex/cloud-c17-finance-currencies-20261107`. Keep Desktop work outside that scope.
+
+[Local C15 SQL verification](QA/REPORTS/LOCAL_C15_TEACHER_AVAILABILITY_SQL_2026-11-08.md)
+[Cloud C16 handoff](QA/HANDOFF/C16_SUPPORT_TRIAGE_2026-11-07.md)
+
 ## C15 teacher availability return integrated — 7 November 2026
 
 - [x] Imported the four verified paths at `cfa5832`. Teacher profiles stay
   readable when stored availability includes null entries.
 - [x] Reused Cloud's 70 targeted and 2,084 full API passes on matching
   application and API test trees. The C14 frontend source is unchanged.
-- [ ] Live SQL persistence and audit, critical workflows and device
-  acceptance remain pending.
+- [x] Local SQL persistence and audit are recorded in the update above.
+- [ ] Linked critical workflows and device acceptance remain pending.
 
 [Cloud C15 verification](QA/HANDOFF/C15_TEACHER_AVAILABILITY_2026-11-07.md)
 

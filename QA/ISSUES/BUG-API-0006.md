@@ -83,3 +83,13 @@ filter with explicit synthetic InMemory persistence. No new SQL or device
 acceptance is claimed. This does not change write, scheduling or audit policy,
 or close the separate profile audit-failure work. Issue remains OPEN.
 [Exact evidence, regression and Desktop handoff](../HANDOFF/C15_TEACHER_AVAILABILITY_2026-11-07.md).
+
+## Local C15 SQL verification — 8 November 2026
+
+The legacy null entry projects to an empty list. Mixed slots retain the valid
+day and optional times on PUT and fresh GET. SQL preserved the exact supplied
+metadata and unrelated rows. The role, tenant and duplicate-code denials
+produced no captured writes. The scoped audit-failure repair is also recorded
+under BUG-API-0002. The 13/13 checks do not close the wider SQL matrix,
+critical workflow or physical-device evidence required by this issue.
+[Local SQL verification](../REPORTS/LOCAL_C15_TEACHER_AVAILABILITY_SQL_2026-11-08.md)
