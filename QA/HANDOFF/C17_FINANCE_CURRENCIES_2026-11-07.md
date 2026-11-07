@@ -17,6 +17,8 @@ Exact paths:
 - `QA/tools/finance-currency-summary.test.cjs`
 - `QA/tools/finance-currency-summary-browser.cjs`
 - `QA/tools/frontend-page-runtime.cjs` — resolver for this shared module only
+- `QA/tools/collections-balance.test.cjs` — load the real new shared module;
+  retain existing amount/unit/net-balance assertions
 - `QA/ISSUES/BUG-DATA-0016.md`
 - `QA/HANDOFF/C17_FINANCE_CURRENCIES_2026-11-07.md`
 
@@ -53,3 +55,10 @@ so Pending/Failed/foreign-currency payments cannot make the summary disagree
 with collection eligibility. Preserve all assignment, priority, ownership,
 status, audit and write payload logic. Add direct contract consistency tests;
 real SQL/concurrency/required-audit acceptance remains Desktop-owned.
+
+Regression refinement: four existing collections tests use a separate TSX
+loader and reject the new summary import. Claim that adapter only; no assertion
+or collection fixture is removed. Preserve existing per-invoice queue formatting
+while summary cards use explicit currency codes. The first full run (2,053
+PASS /7 FAIL) remains retained: four loader errors plus the three genuine SQL
+receipt failures. The final run must resolve the loader errors, not skip them.
