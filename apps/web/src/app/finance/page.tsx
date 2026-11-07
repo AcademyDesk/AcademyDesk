@@ -4,16 +4,9 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { academyApi } from "@/lib/api";
 import { EnterprisePageState } from "@/components/enterprise-page-state";
+import { type FinanceSummary, financeMoney, formatFinanceMoney as money } from "@/lib/finance-summary";
 
 type Academy = { id: string };
-type FinanceSummary = {
-  grossBilled: number;
-  approvedAdjustments: number;
-  collected: number;
-  outstanding: number;
-  reconciled: number;
-  overdueInvoices: number;
-};
 type Collection = {
   id: string;
   invoiceNumber: string;
@@ -25,11 +18,6 @@ type Collection = {
   daysOverdue: number;
 };
 
-const money = (amount: number, currency = "INR") =>
-  new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency,
-  }).format(amount);
 const modules = [
   [
     "Create & generate invoices",
@@ -151,10 +139,10 @@ export default function FinancePage() {
 
   const cards = summary
     ? [
-        ["Gross billed", money(summary.grossBilled)],
-        ["Collected", money(summary.collected)],
-        ["Outstanding", money(summary.outstanding)],
-        ["Reconciled", money(summary.reconciled)],
+        ["Gross billed", financeMoney(summary, "grossBilled")],
+        ["Collected", financeMoney(summary, "collected")],
+        ["Outstanding", financeMoney(summary, "outstanding")],
+        ["Reconciled", financeMoney(summary, "reconciled")],
       ]
     : [];
 

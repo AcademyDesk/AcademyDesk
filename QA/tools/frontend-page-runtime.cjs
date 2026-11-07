@@ -55,6 +55,8 @@ function mount(file, api, props = {}, exportName = 'default') {
       if (name === 'next/link') return { default: 'a' };
       if (name === 'next/navigation') return { usePathname: () => '/batches', useSearchParams: () => query, useRouter: () => router };
       if (name === '@/lib/api') return { academyApi: api, apiHeaders: () => ({}) };
+      if (name === '@/lib/finance-summary') return execute('apps/web/src/lib/finance-summary.ts');
+      if (name === '@/components/enterprise-page-state') return { EnterprisePageState: 'enterprise-page-state' };
       if (name === '@/lib/course-update') return execute('apps/web/src/lib/course-update.ts');
       if (name === '@/lib/batch-update') return execute('apps/web/src/lib/batch-update.ts');
       if (name === '@/lib/teacher-workspace') return execute('apps/web/src/lib/teacher-workspace.ts');
