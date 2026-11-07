@@ -2,6 +2,13 @@
 
 These gates govern release acceptance. Current production readiness is **NOT ESTABLISHED**. Passing builds and unit tests do not satisfy the SQL, security, browser and operational gates below.
 
+The current P0 finance window passed 12 integrity checks, 23 payroll
+reconciliation checks and all 14 guard tests. The guard still requires
+completion of the five open P0 records. The guarded deployment workflow is
+present on the candidate branch. `main` at `f7af512` still carries the older
+workflow without the guard.
+[Current finance and release evidence](REPORTS/LOCAL_P0_FINANCE_CONCURRENCY_2026-11-07.md)
+
 The local P0 retest on 7 November passed the original private-file case,
 29 legacy media cases, 75 private Blob assertions and the payment status
 module with 12 restoration cases. Six local SQL backup/restore checks passed

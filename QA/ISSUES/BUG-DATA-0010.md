@@ -12,7 +12,7 @@ remaining concurrency, browser, device and critical acceptance.
 | --- | --- |
 | Status | OPEN / FIX-IN-PROGRESS |
 | Confirmation status | RUNTIME-REPRODUCED; local void/evidence repair retested |
-| Final verification | Approved restoration policy controlled checks PASS; current SQL/HTTP/concurrency/browser/critical gates pending |
+| Final verification | Current void, evidence, restoration and contention SQL PASS; live reconciliation recovery PASS; broader critical and device acceptance pending. [Current finance evidence](../REPORTS/LOCAL_P0_FINANCE_CONCURRENCY_2026-11-07.md) |
 | Severity | Critical financial ledger consistency |
 | Priority | P0 |
 | Category | DATA |

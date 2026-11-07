@@ -1,5 +1,18 @@
 # AcademyDesk QA control centre — Phase 1
 
+## Local P0 finance concurrency — 7 November 2026
+
+- [x] FinanceIntegrity passed 12 cases, including six real SQL races and three
+  audit rollbacks. Payroll passed 23 reconciliation checks, including five
+  deterministic races, two audit rollbacks and migration controls.
+- [x] All 14 production guard tests passed. The guard still blocks the five
+  P0 records pending their remaining acceptance.
+- [ ] Release-commit CI and images, critical browser and physical-device
+  coverage, and staging restore and rollback are pending. The guarded deploy
+  workflow is in the candidate branch. The older `main` workflow lacks it.
+
+[Local finance and release evidence](REPORTS/LOCAL_P0_FINANCE_CONCURRENCY_2026-11-07.md)
+
 ## C12 cloud compensation return integrated — 7 November 2026
 
 - [x] Imported the four verified C12 files at `b7c9f84`. Compensation reads

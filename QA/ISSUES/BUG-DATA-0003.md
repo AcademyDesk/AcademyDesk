@@ -18,7 +18,7 @@ Report: ../REPORTS/CLOUD_LOCAL_PAYROLL_RECONCILIATION_2026-10-29.md.
 | --- | --- |
 | Status | OPEN / FIX-IN-PROGRESS (local negative-net guard) |
 | Confirmation status | RUNTIME-REPRODUCED |
-| Final verification | Approved positive-net policy unit checks PASS; current SQL/browser/concurrency/critical gates pending |
+| Final verification | Positive-net SQL, five payroll races, audit rollback and live payout recovery PASS; broader critical and device acceptance pending. [Current finance evidence](../REPORTS/LOCAL_P0_FINANCE_CONCURRENCY_2026-11-07.md) |
 | Severity | Critical financial integrity |
 | Priority | P0 |
 | Category | DATA |

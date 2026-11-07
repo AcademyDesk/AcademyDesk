@@ -24,7 +24,7 @@ Report: ../REPORTS/CLOUD_FINANCE_RECONCILIATION_2026-10-29.md.
 | --- | --- |
 | Status | OPEN / FIX-IN-PROGRESS (local repair) |
 | Confirmation status | RUNTIME-REPRODUCED |
-| Final verification | LOCAL original-case/module PASS twice; full critical/browser/concurrency gates pending |
+| Final verification | Current collection race and audit rollback PASS; live payment recovery PASS; broader critical and physical-device acceptance pending. [Current finance evidence](../REPORTS/LOCAL_P0_FINANCE_CONCURRENCY_2026-11-07.md) |
 | Severity | Critical financial integrity |
 | Priority | P0 |
 | Category | DATA |
