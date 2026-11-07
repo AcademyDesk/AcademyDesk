@@ -129,22 +129,7 @@ internal static partial class SqlHarnessEntryPoint
                 context.Response.StatusCode = 405;
                 return;
             }
-            using var request = new HttpRequestMessage(new HttpMethod(method), context.Request.Path + context.Request.QueryString);
-            if (context.Request.ContentLength > 0) request.Content = new StreamContent(context.Request.Body);
-            foreach (var header in context.Request.Headers)
-            {
-                if (header.Key is "Host" or "Connection" or "Transfer-Encoding") continue;
-                if (!request.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray()))
-                    request.Content?.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray());
-            }
-            using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, context.RequestAborted);
-            context.Response.StatusCode = (int)response.StatusCode;
-            foreach (var header in response.Headers.Concat(response.Content.Headers))
-            {
-                if (header.Key is "Transfer-Encoding" or "Connection") continue;
-                context.Response.Headers[header.Key] = header.Value.ToArray();
-            }
-            await response.Content.CopyToAsync(context.Response.Body, context.RequestAborted);
+            await ForwardFinanceBrowserRequestAsync(context, client);
         });
 
         await bridge.StartAsync();
@@ -157,5 +142,25 @@ internal static partial class SqlHarnessEntryPoint
             throw new InvalidOperationException($"Incomplete payment recovery verification: {completed}/4.");
         ManualSame(state, await ManualStateAsync(factory), "final payment recovery SQL state");
         Console.WriteLine("C9PAYMENT FINAL 4 verified UI/SQL phases.");
+    }
+
+    private static async Task ForwardFinanceBrowserRequestAsync(HttpContext context, HttpClient client)
+    {
+        using var request = new HttpRequestMessage(new HttpMethod(context.Request.Method), context.Request.Path + context.Request.QueryString);
+        if (context.Request.ContentLength > 0) request.Content = new StreamContent(context.Request.Body);
+        foreach (var header in context.Request.Headers)
+        {
+            if (header.Key is "Host" or "Connection" or "Transfer-Encoding") continue;
+            if (!request.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray()))
+                request.Content?.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray());
+        }
+        using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, context.RequestAborted);
+        context.Response.StatusCode = (int)response.StatusCode;
+        foreach (var header in response.Headers.Concat(response.Content.Headers))
+        {
+            if (header.Key is "Transfer-Encoding" or "Connection") continue;
+            context.Response.Headers[header.Key] = header.Value.ToArray();
+        }
+        await response.Content.CopyToAsync(context.Response.Body, context.RequestAborted);
     }
 }

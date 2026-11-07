@@ -23,9 +23,14 @@
 - [x] C9 Payments passed four live Chromium, Identity and SQL recovery checks.
   A lost 201 left exactly two rows, 1,000 collected and one attributed audit.
   Neither a second form submit nor reload replayed the payment.
-- [ ] Live invoice, payroll profile, payout and reconciliation recovery, device
-  and critical acceptance, current images, CI and release gates remain open.
-  Check Cloud ownership before claiming any of these. Sol High for live SQL.
+- [x] Invoice, payroll profile, payout and reconciliation passed eight live
+  Chromium, Identity and SQL checks. Each committed once, produced one attributed
+  audit and reloaded the saved state without replaying the financial write.
+- [ ] Broader critical and device acceptance, current images, CI and release
+  gates remain open. Next local packet is C10 linked API/SQL. Cloud C11 owns
+  access display, platform status and sales navigation. Refresh its claim first.
+
+[Live invoice, payroll and reconciliation verification](REPORTS/LOCAL_C9_FINANCE_RECOVERY_SQL_2026-11-07.md)
 
 [Live Payments verification](REPORTS/LOCAL_C9_PAYMENT_RECOVERY_SQL_2026-11-07.md)
 

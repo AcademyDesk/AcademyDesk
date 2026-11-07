@@ -11,3 +11,9 @@ Scope is the local finance recovery browser driver and SQL harness, plus the
 shared QA handoff. Finance application changes require a reproduced defect.
 Cloud can continue its independent source work. Critical, device and production
 gates remain open.
+
+All four actions passed eight live Chromium, Identity and SQL checks. Three
+received HTTP 201 and reconciliation received HTTP 200 before their responses
+were withheld. Each persisted once with a single audit. Reloads read the
+saved records and made no additional financial writes. C11 claim `28ad7b9`
+remains with Cloud. [Local result](../REPORTS/LOCAL_C9_FINANCE_RECOVERY_SQL_2026-11-07.md)
