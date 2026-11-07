@@ -68,6 +68,31 @@ public sealed class FinanceWorkflowTests
         Assert.Equal("Evidence not supplied", storedAdjustment.ApprovalNotes);
     }
 
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task Rejecting_without_a_reason_preserves_the_pending_proposal(string? notes)
+    {
+        await using var db = CreateDb();
+        var academyId = Guid.NewGuid();
+        var invoice = new Invoice { AcademyId = academyId, InvoiceNumber = "INV-NOTES", StudentId = Guid.NewGuid(), TotalAmount = 1000m };
+        var proposal = new FinanceAdjustment { AcademyId = academyId, InvoiceId = invoice.Id, Amount = 100m, Type = "Discount", Reason = "Synthetic proposal" };
+        db.AddRange(invoice, proposal);
+        await db.SaveChangesAsync();
+
+        var decision = await new FinanceAdjustmentsController(db).Decide(academyId, proposal.Id, new FinanceAdjustmentDecisionRequest(false, notes), CancellationToken.None);
+
+        Assert.IsType<BadRequestObjectResult>(decision.Result);
+        db.ChangeTracker.Clear();
+        var saved = await db.FinanceAdjustments.SingleAsync();
+        Assert.Equal("PendingApproval", saved.Status);
+        Assert.Null(saved.ApprovalNotes);
+        Assert.Null(saved.ApprovedAtUtc);
+        Assert.Null(saved.AppliedAtUtc);
+        Assert.Equal(0m, (await db.Invoices.SingleAsync()).AdjustedAmount);
+    }
+
     private static AcademyDeskDbContext CreateDb()
     {
         var options = new DbContextOptionsBuilder<AcademyDeskDbContext>()

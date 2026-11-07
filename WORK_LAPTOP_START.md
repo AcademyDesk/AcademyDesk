@@ -1,5 +1,21 @@
 # Academy Desk — continue from the work laptop or another profile
 
+## C6 live finance decisions and Teacher forms — 7 November 2026
+
+- [x] Finance rejections require a reason at the API. Platform Owner decisions
+  use the existing atomic save and audit boundary. Both actors passed rollback.
+- [x] 41 native HTTP and SQL controls passed, covering reconciled balances,
+  attributed audits, Teacher form values, and role and batch denials.
+- [x] 13 live browser and SQL phases passed. Prompt cancellation, one-row saves,
+  form reset and retention, and one committed lost-response case verified.
+- [x] Full API regression passed all 1,989 tests. Owned SQL cleanup, Docker
+  inventory, PENTA services, API health 200 and lease release verified.
+- [ ] Critical and device closure, current images and CI, remaining release
+  workflows and model qualification are pending. Sol High for runtime work.
+
+[Live C6 acceptance report](QA/REPORTS/LOCAL_C6_LIVE_CONTROLS_2026-11-06.md)
+
+
 ## Compensation live SQL and required-audit repair — 6 November 2026
 
 - [x] Genuine C7 browser bodies now pass 28 real Identity/HTTP/fresh-SQL checks:

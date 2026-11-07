@@ -1,6 +1,7 @@
 using AcademyDesk.Api.Data;
 using AcademyDesk.Api.Domain.Entities;
 using AcademyDesk.Api.Infrastructure;
+using AcademyDesk.Api.Security;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -29,6 +30,7 @@ public sealed class FinanceAdjustmentsController(AcademyDeskDbContext db) : Cont
         db.FinanceAdjustments.Add(adjustment); await db.SaveChangesAsync(token); return Ok(ToSummary(adjustment));
     }
     [HttpPatch("{adjustmentId:guid}/approval")]
+    [AtomicAcademyMutation(IncludePlatformOwner = true)]
     public async Task<ActionResult<FinanceAdjustmentSummary>> Decide(Guid academyId, Guid adjustmentId, FinanceAdjustmentDecisionRequest request, CancellationToken token)
     {
         var target = await db.FinanceAdjustments.AsNoTracking().Where(x => x.AcademyId == academyId && x.Id == adjustmentId).Select(x => new { x.InvoiceId }).SingleOrDefaultAsync(token);
@@ -47,6 +49,8 @@ public sealed class FinanceAdjustmentsController(AcademyDeskDbContext db) : Cont
         }
         if (item.Status != "PendingApproval") return Conflict(new { message = "This adjustment has already been decided." });
         if (IsLegacyDocumentType(item.Type)) return Conflict(new { message = "Legacy refund/credit-note requests require reviewed disposition; no decision has been applied." });
+        if (!request.Approve && string.IsNullOrWhiteSpace(request.Notes))
+            return BadRequest(new { message = "A rejection reason is required." });
         if (request.Approve && write.Invoice is null) return NotFound();
         var decidedAtUtc = DateTime.UtcNow;
         if (request.Approve)

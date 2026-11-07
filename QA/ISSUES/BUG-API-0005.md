@@ -3,8 +3,8 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | CONFIRMED in actual handlers and controlled Chromium; live acceptance pending |
-| Final verification | PARTIAL — controlled frontend PASS; original live closure gates OPEN |
+| Confirmation status | Confirmed in actual handlers and Chromium. Scoped live browser and SQL acceptance passed. |
+| Final verification | Scoped live acceptance passed. Critical and physical-device closure gates remain open. |
 | Severity | Major teaching form contract mismatch |
 | Priority | P1 |
 | Category | API |
@@ -106,3 +106,9 @@ browser groups and 24 PENTA groups. Browser APIs are intercepted synthetic
 responses. Full frontend: 1,920 PASS / one Windows symlink EPERM / zero skips.
 Status remains OPEN; live HTTP/SQL/role/device closure is still required. See
 [local C6 report](../REPORTS/LOCAL_C6_MANUAL_CONTROLS_2026-11-06.md).
+
+## Live verification on 7 November 2026
+
+Real HTTP and fresh SQL verified publication booleans, nullable dates, fractional scores, lesson values and assigned-batch scope. Live forms reset after success, retained values on denial and showed an unconfirmed outcome after one committed response was dropped.
+
+[Live C6 acceptance report](../REPORTS/LOCAL_C6_LIVE_CONTROLS_2026-11-06.md)
