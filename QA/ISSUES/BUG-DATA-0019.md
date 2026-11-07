@@ -4,7 +4,7 @@
 | --- | --- |
 | Status | OPEN |
 | Confirmation status | RUNTIME-CONFIRMED / BOUNDED REPAIR |
-| Final verification | NOT RUN |
+| Final verification | Current HTTP/SQL bulk and targeted eligibility, actor audit and rollback PASS. Linked browser, device and critical acceptance pending. [Local verification](../REPORTS/LOCAL_C13_C14_SQL_ACCEPTANCE_2026-11-07.md) |
 | Severity | Major erroneous collection notification |
 | Priority | P1 |
 | Category | DATA |

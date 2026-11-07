@@ -1,5 +1,14 @@
 # BUG-API-0004 — Valid non-object JSON metadata can crash object-only readers
 
+## Local SQL readback — 7 November 2026
+
+Actual Student, Teacher, Admin and foreign Admin reads returned only the
+expected announcements, including denial of malformed visibility metadata.
+Compensation returned the empty summary for a non-object root and preserved
+the legacy zero and date. Fresh SQL confirmed the metadata and audits were
+unchanged. Linked critical and device acceptance remains open.
+[Local SQL verification](../REPORTS/LOCAL_C13_C14_SQL_ACCEPTANCE_2026-11-07.md)
+
 | Field | Value |
 | --- | --- |
 | Status | OPEN |

@@ -1,5 +1,16 @@
 # Academy Desk — continue from the work laptop or another profile
 
+## C13 portal metadata and C14 reminders integrated — 7 November 2026
+
+- [x] Imported both verified Cloud returns. Reused 2,058 API passes on
+  matching source and the six C14 controlled Chromium cases.
+- [x] One disposable SQL run passed 16 real HTTP checks for reminder balances,
+  denial and audit rollback, and portal and compensation metadata readback.
+- [ ] The linked device and critical checks, exact-release CI and images,
+  and staging restore and rollback remain pending. Cloud owns C15.
+
+[Local verification](QA/REPORTS/LOCAL_C13_C14_SQL_ACCEPTANCE_2026-11-07.md)
+
 ## Local P0 finance concurrency — 7 November 2026
 
 - [x] FinanceIntegrity passed 12 cases, including six real SQL races and three
