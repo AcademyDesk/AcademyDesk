@@ -1,15 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { StandardDateField, StandardSelectField } from "@/components/design-system/controls";
 import { academyApi, apiHeaders } from "@/lib/api";
 
 type Academy = { id: string };
 type Invoice = { id: string; invoiceNumber: string };
 type Payment = { id: string; invoiceId: string; amount: number; currency: string; method: string; status: string; reference?: string | null; paidAtUtc: string; reconciliationReference?: string | null; reconciledAtUtc?: string | null };
-const money = (amount: number, currency = "INR") => new Intl.NumberFormat("en-IN", { style: "currency", currency, maximumFractionDigits: 0 }).format(amount);
+const money = (amount: number, currency = "INR") => new Intl.NumberFormat("en-IN", { style: "currency", currency, minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
 const localDate = (value: string) => new Date(value).toLocaleDateString("en-CA");
+
+const currencyTotal = (rows: { amount: number; currency: string }[]) => {
+  const totals = new Map<string, number>();
+  for (const row of rows) { const code = row.currency || "INR"; totals.set(code, (totals.get(code) ?? 0) + row.amount); }
+  if (!totals.size) return money(0);
+  return [...totals].sort(([a], [b]) => a.localeCompare(b)).map(([code, amount]) => `${totals.size > 1 || code !== "INR" ? code + " " : ""}${money(amount, code)}`).join(" · ");
+};
 
 export default function ReconciliationPage() {
   const [academy, setAcademy] = useState<Academy>();
@@ -20,16 +27,36 @@ export default function ReconciliationPage() {
   const [recordedOn, setRecordedOn] = useState("");
   const [selectedId, setSelectedId] = useState<string>();
   const [reference, setReference] = useState("");
-  const [saving, setSaving] = useState(false);
 
-  async function load(academyId?: string) {
+  const [busy, setBusy] = useState(false);
+  const [review, setReview] = useState(false);
+  const pending = useRef(false);
+  const reviewRequired = useRef(false);
+  const alive = useRef(true);
+  async function saveFinancial(action: () => Promise<Response>, reset: () => void, success: string, failure: string) {
+    if (!alive.current || pending.current || reviewRequired.current) return;
+    pending.current = true; setBusy(true);
+    let confirmed = false;
     try {
-      const id = academyId ?? academy?.id;
-      if (!id) return;
-      const [invoiceResponse, paymentResponse] = await Promise.all([academyApi(`/api/academies/${id}/invoices`, { cache: "no-store" }), academyApi(`/api/academies/${id}/payments`, { cache: "no-store" })]);
-      if (!invoiceResponse.ok || !paymentResponse.ok) throw new Error();
-      setInvoices(await invoiceResponse.json()); setPayments(await paymentResponse.json()); setNotice("");
-    } catch { setNotice("The payment ledger could not be loaded. Confirm that the API is running and that you have finance access."); }
+      const response = await action();
+      if (!alive.current) return;
+      if (!response.ok) { if (response.status >= 500) throw Error(); setNotice(failure); return; }
+      confirmed = true; reset(); await load();
+      if (alive.current) setNotice(success);
+    } catch {
+      if (alive.current) {
+        reviewRequired.current = true; setReview(true);
+        setNotice(confirmed ? `${success} The list could not be refreshed. Reload financial records before recording again.`
+          : "Save could not be confirmed. Review the latest financial records before submitting again.");
+      }
+    } finally { pending.current = false; if (alive.current) setBusy(false); }
+  }
+  async function load(academyId?: string) {
+    const id = academyId ?? academy?.id; if (!id || !alive.current) return;
+    const [invoiceResponse, paymentResponse] = await Promise.all([academyApi(`/api/academies/${id}/invoices`, { cache: "no-store" }), academyApi(`/api/academies/${id}/payments`, { cache: "no-store" })]);
+    if (!invoiceResponse.ok || !paymentResponse.ok) throw Error();
+    const [invoiceRows, paymentRows] = await Promise.all([invoiceResponse.json(), paymentResponse.json()]);
+    if (!alive.current) return; setInvoices(invoiceRows); setPayments(paymentRows); setNotice("");
   }
 
   useEffect(() => { void (async () => {
@@ -37,20 +64,20 @@ export default function ReconciliationPage() {
       const response = await academyApi("/api/academies", { cache: "no-store" });
       if (!response.ok) throw new Error();
       const academies: Academy[] = await response.json();
+      if (!alive.current) return;
       if (!academies[0]) return setNotice("Create an academy before reconciling payments.");
       setAcademy(academies[0]); await load(academies[0].id);
-    } catch { setNotice("The payment ledger could not be loaded. Please sign in and restart the API if needed."); }
+    } catch { if (alive.current) setNotice("The payment ledger could not be loaded. Please sign in and try again."); }
   })(); }, []);
 
+  useEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
+
   async function reconcile(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!academy || !selectedId || !reference.trim()) return;
-    setSaving(true);
-    try {
-      const response = await academyApi(`/api/academies/${academy.id}/payments/${selectedId}/reconcile`, { method: "PATCH", headers: apiHeaders(true), body: JSON.stringify({ reference: reference.trim() }) });
-      if (!response.ok) throw new Error();
-      setSelectedId(undefined); setReference(""); setNotice("Payment reconciled. Bank or cash evidence is now recorded in the ledger."); await load();
-    } catch { setNotice("Reconciliation could not be saved. A bank or cash evidence reference is required."); } finally { setSaving(false); }
+    event.preventDefault(); if (!academy || !selectedId || !reference.trim()) return;
+    const payment = payments.find(item => item.id === selectedId);
+    if (!payment || payment.status === "Voided" || payment.status === "Reconciled") return;
+    await saveFinancial(() => academyApi(`/api/academies/${academy.id}/payments/${selectedId}/reconcile`, { method: "PATCH", headers: apiHeaders(true), body: JSON.stringify({ reference: reference.trim() }) }),
+      () => { setSelectedId(undefined); setReference(""); }, "Payment reconciled. Bank or cash evidence is now recorded in the ledger.", "Reconciliation could not be saved. A bank or cash evidence reference is required.");
   }
 
   const unreconciled = payments.filter(item => item.status !== "Reconciled" && item.status !== "Voided");
@@ -61,13 +88,14 @@ export default function ReconciliationPage() {
   }), [payments, filter, recordedOn]);
   const selected = payments.find(item => item.id === selectedId);
   const invoiceNumber = (id: string) => invoices.find(invoice => invoice.id === id)?.invoiceNumber ?? "Invoice unavailable";
-  const outstandingValue = unreconciled.reduce((total, payment) => total + payment.amount, 0);
+  const outstandingValue = currencyTotal(unreconciled.map(payment => ({ amount: payment.amount, currency: payment.currency })));
 
   return <main className="enterprise-settings finance-module reconciliation-standard">
     <header className="reconciliation-heading"><span className="reconciliation-title-icon" aria-hidden="true">✓</span><div><p>Billing &amp; collections</p><h1>Payment reconciliation</h1></div><Link href="/finance" className="enterprise-action-button enterprise-action-button-secondary">Finance overview</Link></header>
     {notice && <p className="reconciliation-notice" role="status">{notice}</p>}
-    <section className="reconciliation-kpis" aria-label="Payment reconciliation summary"><article><span>Awaiting evidence</span><b>{unreconciled.length}</b><small>Recorded payments not yet matched.</small></article><article><span>Value awaiting match</span><b>{money(outstandingValue)}</b><small>Collection value requiring evidence.</small></article><article><span>Reconciled</span><b>{reconciled.length}</b><small>Payments with captured evidence.</small></article><article><span>Control rule</span><b>Required</b><small>Every confirmed match needs a reference.</small></article></section>
-    {selected && <form onSubmit={reconcile} className="reconciliation-panel reconciliation-form"><header className="reconciliation-panel-header"><div><p>Evidence capture</p><h2>Reconcile {invoiceNumber(selected.invoiceId)}</h2><small>{money(selected.amount, selected.currency)} via {selected.method} · recorded reference: {selected.reference || "none"}</small></div><button type="button" onClick={() => { setSelectedId(undefined); setReference(""); }} className="enterprise-action-button enterprise-action-button-secondary">Cancel</button></header><div className="reconciliation-fields"><label><span>Bank, gateway, UPI, cash-book or cheque reference</span><input autoFocus required value={reference} onChange={event => setReference(event.target.value)} className="field" placeholder="e.g. HDFC-20260918-001 or UPI/UTR reference" /></label><button disabled={saving} className="enterprise-action-button reconciliation-submit">{saving ? "Saving evidence…" : "Confirm reconciliation"}</button></div></form>}
+    {review && <button type="button" className="enterprise-action-button" onClick={() => window.location.reload()}>Reload financial records</button>}
+    <section className="reconciliation-kpis" aria-label="Payment reconciliation summary"><article><span>Awaiting evidence</span><b>{unreconciled.length}</b><small>Recorded payments not yet matched.</small></article><article><span>Value awaiting match</span><b>{outstandingValue}</b><small>Collection value requiring evidence.</small></article><article><span>Reconciled</span><b>{reconciled.length}</b><small>Payments with captured evidence.</small></article><article><span>Control rule</span><b>Required</b><small>Every confirmed match needs a reference.</small></article></section>
+    {selected && <form onSubmit={reconcile} className="reconciliation-panel reconciliation-form"><fieldset disabled={busy || review} className="contents"><header className="reconciliation-panel-header"><div><p>Evidence capture</p><h2>Reconcile {invoiceNumber(selected.invoiceId)}</h2><small>{money(selected.amount, selected.currency)} via {selected.method} · recorded reference: {selected.reference || "none"}</small></div><button type="button" onClick={() => { setSelectedId(undefined); setReference(""); }} className="enterprise-action-button enterprise-action-button-secondary">Cancel</button></header><div className="reconciliation-fields"><label><span>Bank, gateway, UPI, cash-book or cheque reference</span><input autoFocus required value={reference} onChange={event => setReference(event.target.value)} className="field" placeholder="e.g. HDFC-20260918-001 or UPI/UTR reference" /></label><button disabled={busy} className="enterprise-action-button reconciliation-submit">{busy ? "Saving evidence…" : "Confirm reconciliation"}</button></div></fieldset></form>}
     <section className="reconciliation-panel reconciliation-ledger"><header className="reconciliation-panel-header"><div><p>Control ledger</p><h2>Payment ledger</h2><small>Filter recorded collections, then capture evidence for eligible payments.</small></div><div className="reconciliation-filters"><StandardSelectField name="reconciliationStatus" value={filter} onChange={setFilter} placeholder="Filter status" options={[{ value: "Unreconciled", label: `Unreconciled (${unreconciled.length})` }, { value: "Reconciled", label: `Reconciled (${reconciled.length})` }, { value: "All", label: "All payments" }]} /><StandardDateField name="reconciliationRecordedOn" value={recordedOn} onChange={setRecordedOn} label="Recorded on" /></div></header>{visible.length === 0 ? <p className="reconciliation-empty">No payments match this view.</p> : <div className="reconciliation-table-wrap"><table><thead><tr><th>Invoice / amount</th><th>Method / recorded reference</th><th>Status</th><th>Evidence / action</th></tr></thead><tbody>{visible.map(item => <tr key={item.id}><td><b>{invoiceNumber(item.invoiceId)}</b><small>{money(item.amount, item.currency)} · {new Date(item.paidAtUtc).toLocaleDateString("en-IN")}</small></td><td><span>{item.method}</span><small>{item.reference || "No recorded reference"}</small></td><td><b className={`reconciliation-status reconciliation-status-${item.status.toLowerCase()}`}>{item.status}</b></td><td>{item.status === "Reconciled" ? <span className="reconciliation-evidence">{item.reconciliationReference || "Evidence captured"}<small>{item.reconciledAtUtc ? new Date(item.reconciledAtUtc).toLocaleString("en-IN") : ""}</small></span> : item.status === "Voided" ? <span className="reconciliation-muted">Voided</span> : <button type="button" onClick={() => { setSelectedId(item.id); setReference(""); }} className="reconciliation-link">Reconcile <span aria-hidden="true">→</span></button>}</td></tr>)}</tbody></table></div>}</section>
   </main>;
 }

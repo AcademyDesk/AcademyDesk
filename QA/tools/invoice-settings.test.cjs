@@ -13,7 +13,7 @@ function nodes(n, predicate) { if (Array.isArray(n)) return n.flatMap(x => nodes
 function text(n) { if (Array.isArray(n)) return n.map(text).join(''); if (n == null || typeof n === 'boolean') return ''; return typeof n === 'object' ? text(n.props?.children) : String(n); }
 async function page({ documentStatus = 200, documentThrows = false, data = settings, legacyDenied = true } = {}) {
   const states = new Map(), effects = [], calls = []; let index = 0;
-  const react = { useState: initial => { const key = index++; return [states.has(key) ? states.get(key) : initial, value => states.set(key, value)]; }, useEffect: f => effects.push(f), useMemo: f => f() };
+  const react = { useRef: value => ({ current: value }), useState: initial => { const key = index++; return [states.has(key) ? states.get(key) : initial, value => states.set(key, value)]; }, useEffect: f => effects.push(f), useMemo: f => f() };
   const module = { exports: {} };
   new Function('require', 'module', 'exports', compiled)(name => {
     if (name === 'react') return react; if (name === 'react/jsx-runtime') return jsx;

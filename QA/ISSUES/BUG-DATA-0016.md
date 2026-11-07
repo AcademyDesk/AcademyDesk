@@ -69,3 +69,19 @@ Gross billed, collected, outstanding and reconciled finance cards for multi-curr
 FINANCE-CURRENCY-001: Real SQL/HTTP plus browser assertions for INR-only, USD-only and mixed currencies; verify exact decimal totals and displayed units without inventing exchange rates.
 
 Also run all endpoint/form cases pointing to this issue in QA/03_TEST_MATRIX.md and the critical regression suite before closure.
+
+
+## C9 financial batch — 7 November 2026
+
+Additional Payments, Invoices, Payroll and Reconciliation summary cards reproduced mixed-currency display failures and now group exact returned values by currency without inventing an exchange rate. Reconciliation also preserves displayed cents. This is a partial consumer repair: the original Finance/Platform summary APIs and cards still require their own currency-aware contract/SQL/browser acceptance.
+
+Implementation `4fa371a35be426b9342eb79985ede7d1262c0281`; final browser runner
+`aa7a42bc41e6e4b5c5da7b3f44ecf3adccea6e17`. Combined batch: **49 native Chromium
+groups PASS**, 31 new TSX checks PASS, and 57 retained financial checks PASS. Full
+frontend **1,961 PASS / three missing-genuine-SQL-receipt FAIL / zero skips**.
+All browser API state is synthetic: 27 intercepted mutations, zero live financial
+writes. Exact-lock build/types/lint PASS (zero errors / existing 63 warnings).
+
+Remain **OPEN**. These shared batch counts are not added per issue and do not
+replace original module/critical, real Identity/HTTP/SQL, other-client, device or
+release closure requirements. See [C9 source-bound report and Desktop tasks](../HANDOFF/C9_FINANCE_BATCH_2026-11-07.md).

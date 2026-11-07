@@ -1,5 +1,19 @@
 # Academy Desk shared integration tracker
 
+## C9 cloud finance return integrated — 7 November 2026
+
+- [x] Imported the verified 17-path C9 return at `ff662d0`. The integrated
+  frontend matches Cloud's tested source. All 118 queue records were preserved.
+- [x] Reused Cloud's 49 controlled browser cases, handler checks and build
+  evidence. Its three missing SQL receipt failures remain recorded.
+- [x] Current backend retains the C8 acceptance of 25 SQL controls and 1,991
+  API tests. C9 introduces frontend and QA source only.
+- [ ] Next local claim covers uncovered live financial recovery and SQL
+  acceptance. Read the latest Cloud claims before starting. Sol High for this
+  work. Current images, CI and release gates are pending.
+
+[Local C9 integration report](QA/REPORTS/LOCAL_C9_SOURCE_INTEGRATION_2026-11-07.md)
+
 ## C8 cloud frontend and local music progress SQL — 7 November 2026
 
 - [x] Integrated the five C8 return paths and matched Cloud's tested frontend.

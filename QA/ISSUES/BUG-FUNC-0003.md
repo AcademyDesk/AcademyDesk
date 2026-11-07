@@ -96,3 +96,19 @@ The original 37 initial-load/form checks are retained. Full frontend: 963/966
 passed, three failed for absent SQL evidence. Browser/SQL, broader notice behavior,
 idempotency and critical gates remain OPEN. See
 [form recovery report](../REPORTS/CLOUD_FORM_RECOVERY_2026-10-28.md).
+
+
+## C9 financial batch — 7 November 2026
+
+The Payments and Reconciliation variants now retain durable confirmed-save notices after successful refresh. All five financial writes distinguish saved/refresh-failed from an unconfirmed mutation, preserve failed/unconfirmed drafts, and guard pending duplicates/unmount. The many other original form variants remain separate acceptance work.
+
+Implementation `4fa371a35be426b9342eb79985ede7d1262c0281`; final browser runner
+`aa7a42bc41e6e4b5c5da7b3f44ecf3adccea6e17`. Combined batch: **49 native Chromium
+groups PASS**, 31 new TSX checks PASS, and 57 retained financial checks PASS. Full
+frontend **1,961 PASS / three missing-genuine-SQL-receipt FAIL / zero skips**.
+All browser API state is synthetic: 27 intercepted mutations, zero live financial
+writes. Exact-lock build/types/lint PASS (zero errors / existing 63 warnings).
+
+Remain **OPEN**. These shared batch counts are not added per issue and do not
+replace original module/critical, real Identity/HTTP/SQL, other-client, device or
+release closure requirements. See [C9 source-bound report and Desktop tasks](../HANDOFF/C9_FINANCE_BATCH_2026-11-07.md).

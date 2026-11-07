@@ -14,7 +14,7 @@ async function loadPage(page, lookupStatus = 200) {
     module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX,
   } }).outputText;
   const effects = [], calls = [], writes = new Map(); let index = 0;
-  const react = { useState: initial => { const key = index++; return [writes.has(key) ? writes.get(key) : initial, value => writes.set(key, value)]; },
+  const react = { useRef: value => ({ current: value }), useState: initial => { const key = index++; return [writes.has(key) ? writes.get(key) : initial, value => writes.set(key, value)]; },
     useEffect: fn => effects.push(fn), useMemo: fn => fn() };
   const module = { exports: {} };
   new Function('require', 'module', 'exports', compiled)(name => {

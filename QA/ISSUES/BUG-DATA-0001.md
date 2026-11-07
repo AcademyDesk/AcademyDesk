@@ -88,3 +88,19 @@ Collections, family balances, reminders and invoice status; financial release bl
 FINANCE-RULE-001: SQL sequence create→reconcile→read both portals→excess-pay rejection; include void and adjustment variants.
 
 Also run all endpoint/form cases pointing to this issue in QA/03_TEST_MATRIX.md and the critical regression suite before closure.
+
+
+## C9 financial batch — 7 November 2026
+
+Native Payments consumer checks preserve canonical API balance, count Completed/Reconciled collections and exclude Voided rows. This is current controlled browser acceptance, not a new SQL arithmetic or overcollection-race run.
+
+Implementation `4fa371a35be426b9342eb79985ede7d1262c0281`; final browser runner
+`aa7a42bc41e6e4b5c5da7b3f44ecf3adccea6e17`. Combined batch: **49 native Chromium
+groups PASS**, 31 new TSX checks PASS, and 57 retained financial checks PASS. Full
+frontend **1,961 PASS / three missing-genuine-SQL-receipt FAIL / zero skips**.
+All browser API state is synthetic: 27 intercepted mutations, zero live financial
+writes. Exact-lock build/types/lint PASS (zero errors / existing 63 warnings).
+
+Remain **OPEN**. These shared batch counts are not added per issue and do not
+replace original module/critical, real Identity/HTTP/SQL, other-client, device or
+release closure requirements. See [C9 source-bound report and Desktop tasks](../HANDOFF/C9_FINANCE_BATCH_2026-11-07.md).

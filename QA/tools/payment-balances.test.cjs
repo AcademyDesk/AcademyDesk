@@ -19,7 +19,7 @@ function render(invoices = [invoice], rows = payments, selected = 'i') {
   const states = [{ id: 'a' }, [{ id: 's', firstName: 'Synthetic', lastName: 'Student' }],
     invoices, rows, selected, '', 'UPI', '', ''];
   const writes = new Map(); let index = 0;
-  const react = { useState: () => { const key = index++; return [states[key], value => writes.set(key, value)]; },
+  const react = { useRef: value => ({ current: value }), useState: () => { const key = index++; return [states[key], value => writes.set(key, value)]; },
     useEffect: () => {}, useMemo: fn => fn() };
   const module = { exports: {} };
   new Function('require', 'module', 'exports', compiled)(name => {
