@@ -3,8 +3,8 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | STATIC-FINDING |
-| Final verification | NOT RUN |
+| Confirmation status | RUNTIME-CONFIRMED / PARTIAL REPAIR |
+| Final verification | NOT RUN (full issue) |
 | Severity | Moderate malformed-data reliability |
 | Priority | P2 |
 | Category | API |
@@ -16,9 +16,9 @@
 | Device/viewport | NOT RUN; use QA/06_DEVICE_VIEWPORT_MATRIX.md where UI applies |
 | Baseline | 20bb6047f9edf733ac8e2a226621cc582ec54b3c + pre-existing student UI diff |
 | Discovery test / review ID | API-JSON-001 |
-| Evidence classification | Static trace; runtime reproduction pending |
+| Evidence classification | Historical static trace retained; C12 compensation controller and authenticated HTTP reproduction |
 | Preconditions | Isolated synthetic fixture from QA/10_TEST_DATA_STRATEGY.md; never customer data |
-| Reproduction frequency | Not measured; reproduction instructions are proposed |
+| Reproduction frequency | C12 baseline: 14/36 target failures (nine direct non-object cases and five HTTP500 cases); portal not run |
 | Source | apps/api/Controllers/TeacherCompensationController.cs:54 |
 | Class/function | Read / Property; portal announcement readers |
 | Related source | INVENTORY/API_ENDPOINTS.md, CONTRACTS.md, FORMS_AND_FIELDS.md and ASYNC_FORM_RISKS.md |
@@ -27,12 +27,12 @@
 | Screenshot | Not captured on pinned baseline |
 | Console logs | Not captured; required in retest |
 | API request | In disposable SQL seed CompensationJson as literal null, [], or a scalar. Read compensation. Repeat VariablesJson on announcement consumers. |
-| API response | Not captured for this issue; use synthetic request/response in isolated reproduction |
-| Database before/after | Not executed; fixture and fresh-context assertions defined below |
+| API response | C12 five original authenticated HTTP500 cases become HTTP200; canonical zero/malformed-text cases and 401/403/404 controls pass |
+| Database before/after | C12 unique InMemory metadata bytes unchanged, no audits; real SQL before/after pending |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | Not implemented (Phase 1) |
-| Retest result | NOT RUN |
-| Regression result | NOT RUN |
+| Fix commit | Compensation reader: 375418c22be01315a93e48355482657c8a1ae27a; portal reader pending |
+| Retest result | C12 compensation 36/36 PASS; portal and linked acceptance pending |
+| Regression result | C12 full API 2,027/2,027 PASS, zero skips; linked SQL/critical/device acceptance pending |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
 ## Exact reproduction
@@ -69,3 +69,26 @@ JSON metadata readers and legacy/partial records.
 API-JSON-001: Table-driven missing/blank/null/object/array/scalar/malformed metadata through serializer and HTTP.
 
 Also run all endpoint/form cases pointing to this issue in QA/03_TEST_MATRIX.md and the critical regression suite before closure.
+
+## C12 compensation partial return — 7 November 2026
+
+Cloud started from `3ffaa9edb409fee3984cd0e3525ee6a18390a3cd` and
+published the exact path claim before edits. The unchanged controller failed
+14 of 36 new tests: nine direct GETs threw on non-object JSON and five
+authenticated HTTP GETs returned 500. The other 22 tests passed. Original
+failure logs and TRX remain outside Git under the run-owned cloud artifacts.
+
+The property reader now checks that the JSON root is an object before
+enumeration. Non-object records use the existing empty compensation response;
+no stored metadata is rewritten. Final compensation tests pass 36/36, including
+seven actual MVC/authentication/filter/serialization cases with synthetic
+InMemory persistence. Missing/foreign teacher and cross-academy denials,
+zero/decimal/null preservation, legacy aliases and case-insensitive keys pass.
+These tests do not establish real SQL durability or production qualification.
+
+Portal announcement readers remain unmodified because Desktop owns current
+private-media/portal retesting. In particular, root `TryGetProperty` and field
+`GetString` calls still need type guards and endpoint tests. This issue stays
+OPEN for that reader and the existing linked SQL, browser, critical and device
+closure requirements. See the [C12 handoff](../HANDOFF/C12_COMPENSATION_METADATA_2026-11-07.md)
+for exact commands, source hashes, regression results and the local change request.

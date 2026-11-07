@@ -1,5 +1,16 @@
 # Academy Desk shared integration tracker
 
+## C12 cloud compensation return integrated — 7 November 2026
+
+- [x] Imported the four verified C12 files at `b7c9f84`. Compensation reads
+  now handle non-object metadata without changing stored values.
+- [x] Reused Cloud's 36 targeted and 2,027 full API passes on the matching
+  application and API test trees.
+- [ ] Portal announcement metadata, disposable-SQL readback and linked
+  acceptance remain open. Local P0 finance concurrency and payroll take priority.
+
+[Cloud C12 verification](QA/HANDOFF/C12_COMPENSATION_METADATA_2026-11-07.md)
+
 ## Local P0 release retest — 7 November 2026
 
 - [x] Current private-media backend passed the original leak check, 29 legacy

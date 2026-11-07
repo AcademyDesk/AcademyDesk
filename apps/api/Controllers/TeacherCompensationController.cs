@@ -53,6 +53,8 @@ public sealed class TeacherCompensationController(AcademyDeskDbContext dbContext
 
     private static JsonElement? Property(JsonElement root, params string[] names)
     {
+        // Legacy metadata may be valid JSON without being a compensation object.
+        if (root.ValueKind != JsonValueKind.Object) return null;
         foreach (var property in root.EnumerateObject())
             if (names.Any(name => string.Equals(property.Name, name, StringComparison.OrdinalIgnoreCase))) return property.Value;
         return null;
