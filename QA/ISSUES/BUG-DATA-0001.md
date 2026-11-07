@@ -1,5 +1,14 @@
 # BUG-DATA-0001 — Reconciled payments disappear from some balance calculations
 
+## Live payment recovery retest — 7 November 2026
+
+Real Admin Identity, Chromium and disposable SQL passed four live phases.
+A lost response after HTTP 201 left exactly two rows and 1,000 collected, with
+one attributed audit. Reload read balance zero and sent no second POST. The
+unsent control retained one Reconciled row and balance 400 with no replay.
+This issue remains OPEN for critical and physical-device acceptance.
+[Live C9 payment recovery report](../REPORTS/LOCAL_C9_PAYMENT_RECOVERY_SQL_2026-11-07.md)
+
 ## Cloud/local backend retest — 29 October 2026
 
 Remain OPEN. Current finance slice from00d0d00 passes the original reconciled

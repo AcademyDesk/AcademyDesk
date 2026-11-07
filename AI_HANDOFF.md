@@ -8,9 +8,14 @@
   evidence. Its three missing SQL receipt failures remain recorded.
 - [x] Current backend retains the C8 acceptance of 25 SQL controls and 1,991
   API tests. C9 introduces frontend and QA source only.
-- [ ] Next local claim covers uncovered live financial recovery and SQL
-  acceptance. Read the latest Cloud claims before starting. Sol High for this
-  work. Current images, CI and release gates are pending.
+- [x] C9 Payments passed four live Chromium, Identity and SQL recovery checks.
+  A lost 201 left exactly two rows, 1,000 collected and one attributed audit.
+  Neither a second form submit nor reload replayed the payment.
+- [ ] Live invoice, payroll profile, payout and reconciliation recovery, device
+  and critical acceptance, current images, CI and release gates remain open.
+  Check Cloud ownership before claiming any of these. Sol High for live SQL.
+
+[Live Payments verification](QA/REPORTS/LOCAL_C9_PAYMENT_RECOVERY_SQL_2026-11-07.md)
 
 [Local C9 integration report](QA/REPORTS/LOCAL_C9_SOURCE_INTEGRATION_2026-11-07.md)
 
