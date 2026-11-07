@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { WorkspaceNav } from "@/components/workspace-nav";
 import {
   StandardDateField,
@@ -52,9 +52,20 @@ export default function MusicPage() {
   const [pieceId, setPieceId] = useState("");
   const [targetDate, setTargetDate] = useState("");
   const [message, setMessage] = useState("Loading music workspace…");
+  const [progressReady, setProgressReady] = useState(false);
+  const [progressBusy, setProgressBusy] = useState(false);
+  const [progressRecovery, setProgressRecovery] = useState(false);
+  const mounted = useRef(false);
+  const loadVersion = useRef(0);
+  const currentProgress = useRef<Progress[]>([]);
+  const ready = useRef(false);
+  const pendingProgress = useRef(false);
   async function load(id?: string) {
     const academyId = id ?? academy?.id;
-    if (!academyId) return;
+    if (!academyId || !mounted.current) return;
+    const version = ++loadVersion.current;
+    ready.current = false;
+    setProgressReady(false);
     const [studentResponse, pieceResponse, progressResponse] =
       await Promise.all([
         academyApi(`/api/academies/${academyId}/students`),
@@ -63,30 +74,48 @@ export default function MusicPage() {
       ]);
     if (!studentResponse.ok || !pieceResponse.ok || !progressResponse.ok)
       throw new Error();
-    const studentRows: Student[] = await studentResponse.json();
-    const pieceRows: Piece[] = await pieceResponse.json();
+    const [studentRows, pieceRows, progressRows]: [Student[], Piece[], Progress[]] =
+      await Promise.all([
+        studentResponse.json(), pieceResponse.json(), progressResponse.json(),
+      ]);
+    if (!mounted.current || version !== loadVersion.current) return;
+    currentProgress.current = progressRows;
+    ready.current = true;
+    setProgressReady(true);
+    setProgressRecovery(false);
     setStudents(studentRows);
     setPieces(pieceRows);
-    setProgress(await progressResponse.json());
+    setProgress(progressRows);
     if (!studentId && studentRows.length) setStudentId(studentRows[0].id);
     if (!pieceId && pieceRows.length) setPieceId(pieceRows[0].id);
     setMessage("");
   }
   useEffect(() => {
+    mounted.current = true;
+    let current = true;
     void (async () => {
       try {
         const response = await academyApi("/api/academies");
         if (!response.ok) throw new Error();
         const academies: Academy[] = await response.json();
+        if (!current || !mounted.current) return;
         if (!academies[0]) return setMessage("Create your academy first.");
         setAcademy(academies[0]);
         await load(academies[0].id);
       } catch {
+        if (!current || !mounted.current) return;
+        setProgressRecovery(true);
         setMessage(
           "Music workspace could not be loaded. Apply the music migration and restart the API.",
         );
       }
     })();
+    return () => {
+      current = false;
+      mounted.current = false;
+      ready.current = false;
+      loadVersion.current += 1;
+    };
   }, []);
   async function addPiece(event: FormEvent) {
     event.preventDefault();
@@ -133,23 +162,72 @@ export default function MusicPage() {
     setTargetDate("");
     await load();
   }
-  async function updateProgress(item: Progress, status: string) {
-    if (!academy) return;
-    const response = await academyApi(
-      `/api/academies/${academy.id}/music-progress/${item.id}`,
-      {
-        method: "PATCH",
-        headers: apiHeaders(true),
-        body: JSON.stringify({
-          status,
-          targetDate: item.targetDate || null,
-          score: item.score ?? null,
-          notes: item.notes || null,
-        }),
-      },
-    );
-    if (!response.ok) return setMessage("Progress could not be updated.");
-    await load();
+  async function retryProgress() {
+    if (!mounted.current || !academy || pendingProgress.current) return;
+    pendingProgress.current = true;
+    setProgressBusy(true);
+    try {
+      await load();
+    } catch {
+      if (mounted.current) {
+        setProgressRecovery(true);
+        setMessage("Progress could not be loaded. Retry loading progress.");
+      }
+    } finally {
+      pendingProgress.current = false;
+      if (mounted.current) setProgressBusy(false);
+    }
+  }
+  async function updateProgress(id: string, status: string) {
+    if (!academy || !mounted.current || !ready.current ||
+        pendingProgress.current || !progressStates.includes(status)) return;
+    const item = currentProgress.current.find((row) => row.id === id);
+    if (!item) return;
+    pendingProgress.current = true;
+    ready.current = false;
+    loadVersion.current++;
+    setProgressBusy(true);
+    setProgressReady(false);
+    let saved = false;
+    try {
+      const response = await academyApi(
+        `/api/academies/${academy.id}/music-progress/${item.id}`,
+        {
+          method: "PATCH",
+          headers: apiHeaders(true),
+          body: JSON.stringify({
+            status,
+            targetDate: item.targetDate || null,
+            score: item.score ?? null,
+            notes: item.notes || null,
+          }),
+        },
+      );
+      if (!mounted.current) return;
+      if (!response.ok) {
+        loadVersion.current++;
+        ready.current = false;
+        setProgressReady(false);
+        setProgressRecovery(true);
+        setMessage("Progress could not be updated. Reload progress before trying again.");
+        return;
+      }
+      saved = true;
+      await load();
+    } catch {
+      if (mounted.current) {
+        loadVersion.current++;
+        ready.current = false;
+        setProgressReady(false);
+        setProgressRecovery(true);
+        setMessage(saved
+          ? "Progress was saved, but the latest progress could not be reloaded. Retry loading progress."
+          : "Progress update could not be confirmed. Reload progress before trying again.");
+      }
+    } finally {
+      pendingProgress.current = false;
+      if (mounted.current) setProgressBusy(false);
+    }
   }
   const name = (id: string) => {
     const student = students.find((item) => item.id === id);
@@ -176,6 +254,12 @@ export default function MusicPage() {
         </header>
         {message && (
           <p className="enterprise-page-state music-message">{message}</p>
+        )}
+        {progressRecovery && academy && (
+          <button type="button" className="enterprise-action-button music-action"
+            disabled={progressBusy} onClick={() => void retryProgress()}>
+            Retry loading progress
+          </button>
         )}
         <section className="music-form-grid">
           <form onSubmit={addPiece} className="music-panel">
@@ -295,7 +379,8 @@ export default function MusicPage() {
                   <StandardSelectField
                     name={`progress-${item.id}`}
                     value={item.status}
-                    onChange={(status) => void updateProgress(item, status)}
+                    onChange={(status) => void updateProgress(item.id, status)}
+                    disabled={!progressReady || progressBusy}
                     placeholder="Progress"
                     options={progressStates.map((value) => ({
                       value,
