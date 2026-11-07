@@ -164,5 +164,16 @@ unqualified, Ultra deferred; no candidate model loading/training/inference/
 activation, new acquisition, environment/public-access/VPN/TCP/privacy change,
 main merge, customer DB or Azure action.
 
+Latest Desktop evidence read at publication: its C6 return at `f5cad5c` reports
+41 real HTTP/SQL controls,13live browser/SQL phases and1,989API tests PASS on its
+recorded source. It reproduced and repaired three missing rejection-note guards
+and a Platform Owner decision-audit bypass. The newly added P1 record
+`BUG-FINANCE-DECISION-GUARDS-001` remains OPEN for critical/release closure. Thus
+the original C9 queue is a118-record snapshot; the latest Desktop register adds
+one and currently contains119unclosed records. Do not hide a newly discovered
+issue or count its bounded repair as release qualification. No Desktop code or
+raw SQL evidence was copied by this packet; C8 music live acceptance is its next
+published claim.
+
 Next: Sol High for actual domain/security/SQL acceptance; Medium for settled QA.
 Check current exact-path claims before continuing another independent batch.
