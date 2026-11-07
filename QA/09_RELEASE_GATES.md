@@ -2,6 +2,13 @@
 
 These gates govern release acceptance. Current production readiness is **NOT ESTABLISHED**. Passing builds and unit tests do not satisfy the SQL, security, browser and operational gates below.
 
+The local P0 retest on 7 November passed the original private-file case,
+29 legacy media cases, 75 private Blob assertions and the payment status
+module with 12 restoration cases. Six local SQL backup/restore checks passed
+on 82 tables. The five original P0 records remain open, and staging
+recovery and exact-release CI, image, browser and device requirements still apply.
+[Current native P0 evidence](REPORTS/LOCAL_P0_RELEASE_ACCEPTANCE_2026-11-07.md)
+
 Local C10 retest on 7 November 2026 passed 19 academic HTTP/SQL checks and
 1,991 API tests. The Windows frontend run passed 1,982 of 1,983, including the
 three communication checks using the unchanged local SQL receipt. The sole

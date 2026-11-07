@@ -1,5 +1,13 @@
 # BUG-SEC-0001 — Class material URLs are served outside authorization
 
+## Current native retest — 7 November 2026
+
+The original leak retest and all 29 legacy HTTP cases passed. The private Blob
+run passed 75 assertions using real Identity, disposable SQL and Azurite.
+The storage-disabled check returned 503 without creating a session or falling
+back to disk. Actual device, wider browser, staging and full critical
+acceptance remain open. [Local release retest](../REPORTS/LOCAL_P0_RELEASE_ACCEPTANCE_2026-11-07.md)
+
 | Field | Value |
 | --- | --- |
 | Status | OPEN |

@@ -1,5 +1,17 @@
 # Academy Desk — continue from the work laptop or another profile
 
+## Local P0 release retest — 7 November 2026
+
+- [x] Current private-media backend passed the original leak check, 29 legacy
+  HTTP cases and 75 private Blob assertions.
+- [x] Payment status passed void, evidence and 12 restoration controls.
+  Disposable SQL backup and restore passed all six checks on 82 tables.
+- [ ] The five P0 issue records, device/critical checks, release-commit CI and
+  images, and staging restore/rollback remain open. Sol High for the next
+  runtime and authorization work. Refresh Cloud ownership first.
+
+[Local P0 release retest](QA/REPORTS/LOCAL_P0_RELEASE_ACCEPTANCE_2026-11-07.md)
+
 ## C11 cloud status and navigation return integrated — 7 November 2026
 
 - [x] Imported the ten C11 paths at `fe0b673`. The frontend matches Cloud's

@@ -1,5 +1,13 @@
 # BUG-DATA-0010 — Payment status transitions leave invoice state and reconciliation evidence inconsistent
 
+## Current native retest — 7 November 2026
+
+Real Identity, HTTP and fresh SQL passed full, partial and adjusted voids,
+mixed collections, evidence requirements and all 12 restoration cases.
+Rejected restorations preserved SQL. The P0 record remains OPEN for the
+remaining concurrency, browser, device and critical acceptance.
+[Local release retest](../REPORTS/LOCAL_P0_RELEASE_ACCEPTANCE_2026-11-07.md)
+
 | Field | Value |
 | --- | --- |
 | Status | OPEN / FIX-IN-PROGRESS |
