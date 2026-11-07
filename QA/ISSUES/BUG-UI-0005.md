@@ -3,8 +3,8 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | STATIC-FINDING |
-| Final verification | NOT RUN |
+| Confirmation status | Controlled TSX/Chromium RUNTIME-REPRODUCED; C11 partial repair PASS |
+| Final verification | C11 controlled checks PASS; original real-role/host/critical/device closure pending |
 | Severity | Moderate navigation mismatch |
 | Priority | P2 |
 | Category | UI |
@@ -69,3 +69,20 @@ Sales follow-up navigation on mobile and desktop; modal list itself uses the cor
 SALES-NAV-001: Browser tile-to-modal-to-route table for Leads/Total leads/Follow-ups due/Trial bookings/Converted/Conversion rate, back navigation, keyboard and direct query views.
 
 Also run all endpoint/form cases pointing to this issue in QA/03_TEST_MATRIX.md and the critical regression suite before closure.
+
+
+## C11 status/navigation batch — 7 November 2026
+
+Open details now uses the same existing tile route metadata as the overview; Follow-ups due opens /sales-marketing?view=follow-ups. Leads/Total leads, Trial bookings, Converted and Conversion rate retain their targets. Actual keyboard Enter activation reaches the Follow-ups heading and browser back returns to overview with the modal closed in the two tested viewport/theme pairs. Shared modal focus/accessibility and full-role/device acceptance remain separate.
+
+Implementation `88a49a989d8957c5d299acecae2aaaf710eb5986` on
+`codex/cloud-c11-status-navigation-20261107`. Combined batch **28 targeted tests
+PASS**, **49 native Chromium groups PASS**, zero runtime/console/interceptor
+errors; 24 intercepted synthetic status PATCH requests and no live writes.
+Unchanged-source baseline: five PASS/23FAIL in the initial controlled tests and
+ten PASS/39FAIL in49native groups. Full final frontend **2,008PASS / three
+missing-genuine-SQL-receipt FAIL / zero skips**, build/types/lint PASS (zero lint
+errors/62warnings). Counts are shared across the batch, not added per issue.
+
+Remain **OPEN** for all original issue-specific module/critical/real-role/device
+and release requirements. See [C11 source and acceptance handoff](../HANDOFF/C11_STATUS_NAVIGATION_2026-11-07.md).
