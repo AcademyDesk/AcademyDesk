@@ -56,6 +56,7 @@ export default function Curriculum() {
     event.preventDefault();
     if (!academy || !courseId)
       return setMessage("Select a course and module title.");
+    if (!sequence.trim() || !Number.isInteger(Number(sequence)) || Number(sequence) < 1) return setMessage("Enter a whole-number sequence of at least 1.");
     const response = await academyApi(
       `/api/academies/${academy.id}/course-modules`,
       {
@@ -150,6 +151,8 @@ export default function Curriculum() {
                   value={sequence}
                   onChange={(event) => setSequence(event.target.value)}
                   min="1"
+                  step="1"
+                  required
                 />
               </label>
               <button className="enterprise-action-button curriculum-action">

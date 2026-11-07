@@ -157,8 +157,8 @@ export default function HolidaysPage() {
                       <small>
                         {new Intl.DateTimeFormat("en-IN", {
                           dateStyle: "medium",
-                          timeZone: "Asia/Kolkata",
-                        }).format(new Date(`${holiday.holidayDate}T12:00:00`))}
+                          timeZone: "UTC",
+                        }).format(new Date(`${holiday.holidayDate}T12:00:00Z`))}
                       </small>
                     </div>
                     <button

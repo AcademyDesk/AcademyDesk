@@ -132,8 +132,8 @@ export default function AcademicPeriods() {
   const formatDate = (value: string) =>
     new Intl.DateTimeFormat("en-IN", {
       dateStyle: "medium",
-      timeZone: "Asia/Kolkata",
-    }).format(new Date(`${value}T12:00:00`));
+      timeZone: "UTC",
+    }).format(new Date(`${value}T12:00:00Z`));
   return (
     <main className="enterprise-settings periods-standard min-h-screen">
       <WorkspaceNav />
