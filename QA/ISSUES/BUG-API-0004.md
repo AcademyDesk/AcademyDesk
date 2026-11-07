@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | RUNTIME-CONFIRMED / PARTIAL REPAIR |
+| Confirmation status | RUNTIME-CONFIRMED / CLOUD RETEST PASS |
 | Final verification | NOT RUN (full issue) |
 | Severity | Moderate malformed-data reliability |
 | Priority | P2 |
@@ -30,9 +30,9 @@
 | API response | C12 five original authenticated HTTP500 cases become HTTP200; canonical zero/malformed-text cases and 401/403/404 controls pass |
 | Database before/after | C12 unique InMemory metadata bytes unchanged, no audits; real SQL before/after pending |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | Compensation reader: 375418c22be01315a93e48355482657c8a1ae27a; portal reader pending |
-| Retest result | C12 compensation 36/36 PASS; portal and linked acceptance pending |
-| Regression result | C12 full API 2,027/2,027 PASS, zero skips; linked SQL/critical/device acceptance pending |
+| Fix commit | Compensation reader: 375418c22be01315a93e48355482657c8a1ae27a; portal reader: 9edbf60a749c798560a1b1c0405a60af26b6d51a |
+| Retest result | C12/C13 combined 55/55 PASS; real SQL and linked acceptance pending |
+| Regression result | C13 full API 2,046/2,046 PASS, zero skips; linked SQL/critical/device acceptance pending |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
 ## Exact reproduction
@@ -92,3 +92,19 @@ private-media/portal retesting. In particular, root `TryGetProperty` and field
 OPEN for that reader and the existing linked SQL, browser, critical and device
 closure requirements. See the [C12 handoff](../HANDOFF/C12_COMPENSATION_METADATA_2026-11-07.md)
 for exact commands, source hashes, regression results and the local change request.
+
+## C13 portal return — 7 November 2026
+
+After Desktop completed its private-media/payment/restore packet, Cloud claimed
+the announcement helpers separately. Original Portal baseline: nine test groups
+passed and ten failed on malformed root/field reads or invalid start-date
+visibility. The repair validates object/string shapes and hides malformed
+records without rewriting them; canonical writer and legacy valid metadata pass.
+Final combined target55/55 and full API2,046/2,046 pass, zero skips.
+
+The19 portal groups cover160 authenticated HTTP scenarios, including Student,
+Teacher, Admin, Owner and Guardian audience behavior, wrong-kind fields, future/
+expired windows, real writer compatibility, tenant/status/recipient exclusions,
+401/403, and unchanged notification/audit/read-receipt snapshots. Persistence
+is explicitly synthetic InMemory; SQL/browser/device acceptance remains OPEN.
+See [C13 commands and local handoff](../HANDOFF/C13_PORTAL_METADATA_2026-11-07.md).
