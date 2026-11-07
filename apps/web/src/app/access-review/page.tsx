@@ -52,8 +52,12 @@ async function readAccessControls() {
   if (!staffResponse.ok || !grantsResponse.ok) throw Error();
   const staff: Staff[] = await staffResponse.json();
   const grants: Grant[] = await grantsResponse.json();
-  return { academy: academies[0], staff, grants };
+  return { academy: academies[0], staff, grants, readAt: Date.now() };
 }
+
+const grantExpiry = (grant: Grant) => Date.parse(grant.expiresAtUtc ?? "");
+const grantActive = (grant: Grant, now: number) => !grant.revokedAtUtc && (grant.isPermanent || grantExpiry(grant) > now);
+const grantStatus = (grant: Grant, now: number) => grant.revokedAtUtc ? "Revoked" : grantActive(grant, now) ? "Active" : Number.isFinite(grantExpiry(grant)) ? "Expired" : "Invalid expiry";
 
 export default function AccessReview() {
   const [academy, setAcademy] = useState<Academy>();
@@ -63,13 +67,29 @@ export default function AccessReview() {
   const [permanent, setPermanent] = useState(false);
   const [expiryDate, setExpiryDate] = useState("");
   const [userId, setUserId] = useState("");
+  const [currentTime, setCurrentTime] = useState(0);
+  useEffect(() => {
+    const expiries = grants.filter(grant => !grant.revokedAtUtc && !grant.isPermanent).map(grantExpiry).filter(Number.isFinite);
+    if (!expiries.length) return;
+    let active = true;
+    let timer: number;
+    const updateClock = () => {
+      if (!active) return;
+      const now = Date.now(); setCurrentTime(now);
+      const next = Math.min(...expiries.filter(expiry => expiry > now));
+      if (Number.isFinite(next)) timer = window.setTimeout(updateClock, Math.max(1, Math.min(60_000, next - now)));
+    };
+    // Refresh the read timestamp once, then wake at the next expiry without polling the API.
+    timer = window.setTimeout(updateClock, 1);
+    return () => { active = false; window.clearTimeout(timer); };
+  }, [grants]);
 
   async function load() {
     try {
       const data = await readAccessControls();
       setAcademy(data.academy);
       setStaff(data.staff);
-      setGrants(data.grants);
+      setGrants(data.grants); setCurrentTime(data.readAt);
       setMessage("");
     } catch {
       setMessage("Access controls could not be loaded.");
@@ -81,7 +101,7 @@ export default function AccessReview() {
       if (!active) return;
       setAcademy(data.academy);
       setStaff(data.staff);
-      setGrants(data.grants);
+      setGrants(data.grants); setCurrentTime(data.readAt);
       setMessage("");
     }).catch(() => {
       if (active) setMessage("Access controls could not be loaded.");
@@ -229,7 +249,7 @@ export default function AccessReview() {
                 <h2>Active and previous grants</h2>
               </div>
               <span>
-                {grants.filter((grant) => !grant.revokedAtUtc).length} active
+                {grants.filter(grant => grantActive(grant, currentTime)).length} active
               </span>
             </header>
             {grants.length ? (
@@ -242,13 +262,12 @@ export default function AccessReview() {
                       <small>
                         {grant.isPermanent
                           ? "Permanent access"
-                          : `Expires ${new Intl.DateTimeFormat("en-IN", { dateStyle: "medium", timeZone: "Asia/Kolkata" }).format(new Date(grant.expiresAtUtc!))} IST`}
+                          : Number.isFinite(grantExpiry(grant)) ? `Expires ${new Intl.DateTimeFormat("en-IN", { dateStyle: "medium", timeZone: "Asia/Kolkata" }).format(new Date(grant.expiresAtUtc!))} IST` : "No valid expiry recorded"}
                       </small>
                       {grant.reason && <small>{grant.reason}</small>}
                     </div>
-                    {grant.revokedAtUtc ? (
-                      <span>Revoked</span>
-                    ) : (
+                    <span data-grant-status={grantStatus(grant, currentTime)}>{grantStatus(grant, currentTime)}</span>
+                    {!grant.revokedAtUtc && (
                       <button
                         type="button"
                         onClick={() => void revoke(grant.id)}

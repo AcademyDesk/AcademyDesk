@@ -45,6 +45,7 @@ function mount(file, api, props = {}, exportName = 'default') {
     let source = fs.readFileSync(path.join(root, relative), 'utf8');
     if (relative === 'apps/web/src/app/teacher/page.tsx') source += '\nexport { TeacherAttendanceRoster, TeacherClassroom, TeacherTasks, TeacherSelfService };';
     if (relative === 'apps/web/src/app/portal/page.tsx') source += '\nexport { Action };';
+    if (relative === 'apps/web/src/app/sales-marketing/page.tsx') source += '\nexport { SalesMarketingContent };';
     const code = ts.transpileModule(source, {
       compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX },
     }).outputText;
