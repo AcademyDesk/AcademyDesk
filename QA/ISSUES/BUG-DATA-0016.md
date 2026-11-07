@@ -3,20 +3,20 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | RUNTIME-CONFIRMED / ACADEMY SUMMARY REPAIR |
+| Confirmation status | RUNTIME-CONFIRMED / ACADEMY + PLATFORM BOUNDED REPAIRS |
 | Final verification | NOT RUN |
 | Severity | Major financial reporting integrity |
 | Priority | P1 |
 | Category | DATA |
 | Module | FINANCE |
-| Role | See reproduction; same-tenant Admin unless stated otherwise |
+| Role | AcademyAdmin/FinanceUser for academy summaries; current stored Platform Owner flag for global overview |
 | Screen / route | /finance; /platform |
 | API | GET finance-governance/summary; GET /api/platform/overview |
 | Environment | Source review of local working tree; runtime production state not inferred |
 | Device/viewport | NOT RUN; use QA/06_DEVICE_VIEWPORT_MATRIX.md where UI applies |
 | Baseline | 20bb6047f9edf733ac8e2a226621cc582ec54b3c + pre-existing student UI diff |
 | Discovery test / review ID | FINANCE-CURRENCY-001 |
-| Evidence classification | Static trace; runtime reproduction pending |
+| Evidence classification | C17/C18 controller/HTTP/InMemory and controlled Chromium reproduction/repair; real SQL acceptance separate |
 | Preconditions | Isolated synthetic fixture from QA/10_TEST_DATA_STRATEGY.md; never customer data |
 | Reproduction frequency | Not measured; reproduction instructions are proposed |
 | Source | apps/api/Controllers/FinanceGovernanceController.cs:14 |
@@ -28,11 +28,11 @@
 | Console logs | Not captured; required in retest |
 | API request | In disposable fixtures create same-academy fee plans/invoices of INR 1000 and USD 100, with matching-currency payments. Read summary and finance cards; compare single-currency controls. Repeat with platform billing invoices in INR and USD and compare PlatformControl Overview with platform cards. |
 | API response | Not captured for this issue; use synthetic request/response in isolated reproduction |
-| Database before/after | Not executed; fixture and fresh-context assertions defined below |
+| Database before/after | C17/C18 isolated InMemory snapshots preserved on reads/denials; real SQL acceptance pending |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | a448103e525a83ec1080be2ec2295b63496afe63 + ddd34fd6bf6bafc0da5920df966367cd238ba83b (C17 academy API/screens); original platform/dashboard scope pending |
-| Retest result | C17 API50/50, UI26/26 and controlled native16/16 PASS; real SQL and original platform/device/critical scope pending |
-| Regression result | C17 API2,107/2,107 PASS; frontend2,057 PASS /3 genuine SQL-receipt FAIL, zero skips |
+| Fix commit | C17 a448103 + ddd34fd; C18 a8d20d80abc46042a4d3a7bf31b15ead121ae361; Dashboard/live acceptance pending |
+| Retest result | C18 API target48/48, UI31/31, controlled native10/10 PASS; C17 evidence retained below; real SQL/device/critical closure pending |
+| Regression result | C18 API2,132/2,132 PASS; frontend2,072 PASS /3 genuine SQL-receipt FAIL, zero skips |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
 ## Exact reproduction
@@ -108,3 +108,23 @@ Final C17 controlled native16/16 PASS, zero runtime/interceptor errors or writes
 normal sandbox and owned cleanup,570 export hashes unchanged. This qualifies
 the bounded academy UI rendering scope only; original platform/dashboard and
 real SQL/device/critical/release acceptance remain OPEN.
+
+## C18 platform overview repair — 8 November 2026
+
+Implementation `a8d20d80abc46042a4d3a7bf31b15ead121ae361` returns explicit
+per-currency platform billing groups; mixed flat totals become null, single
+currency and empty numeric contracts remain. The owner tiles and their detail
+dialogs retain units and cents. Draft/Void remains excluded, Paid is collected,
+and unverified Payment submitted remains outstanding. Owner authority is still
+the current stored flag, not a role-name claim. No write/status policy changed.
+
+Original22 API cases11/11 PASS/FAIL and original15 TSX cases4/11 PASS/FAIL
+were retained. Final platform/academy target48/48, provisioning/dashboard31/31
+and controlled native10/10 pass. Full API2,132/2,132 pass at this exact Cloud
+source. Full frontend2,072 PASS /3 genuine missing SQL-receipt FAIL, zero skips.
+Native/API fixtures are explicitly synthetic InMemory or intercepted replies;
+real SQL, device, critical and final release acceptance remains OPEN.
+
+The two original named summary paths now have bounded repairs. The academy
+Dashboard and its fees/payroll composition remain a separate unqualified path.
+[Contract, evidence, compatibility and Desktop SQL return](../HANDOFF/C18_PLATFORM_CURRENCIES_2026-11-08.md).
