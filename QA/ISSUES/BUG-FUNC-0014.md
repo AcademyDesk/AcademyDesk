@@ -3,8 +3,8 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | STATIC-FINDING |
-| Final verification | NOT RUN |
+| Confirmation status | RUNTIME-REPRODUCED in controlled TSX/Chromium; C10 partial repair PASS |
+| Final verification | C10 controlled regression/browser PASS; full original host/device/critical closure pending |
 | Severity | Moderate validation inconsistency |
 | Priority | P2 |
 | Category | FUNC |
@@ -69,3 +69,20 @@ Module ordering can start at0 or negative values through direct API; repeated ze
 CURRICULUM-SEQUENCE-001: Browser clear/0/1/fraction and HTTP null/missing/negative/Int32 boundaries, duplicate and concurrent sequence tests with fresh readback and no success notice on rejection.
 
 Also run all endpoint/form cases pointing to this issue in QA/03_TEST_MATRIX.md and the critical regression suite before closure.
+
+
+## C10 academic batch — 7 November 2026
+
+The sequence field is required, whole-number step one, minimum one. The actual submit handler also refuses blank, zero and fractional sequences before a POST; a valid sequence two is a positive control and retains the next-sequence behavior. API/domain and module publication rules are unchanged.
+
+Implementation `acaab4c10113036502858cbca3e08ca1ee64a98b`; final browser fixture
+`efec7bd2651dbd5009e9be002de2cbef54bc96f7`. Combined **58 targeted checks PASS**
+(39 retained calendar assertions plus19 new cases) and **30 native Chromium
+groups PASS**, zero runtime/console errors. Native corrected baseline12PASS/18FAIL;
+only eight intercepted synthetic POSTs in the final run, no real host/SQL writes.
+Full frontend **1,980PASS / three missing genuine SQL receipts FAIL / zero skips**;
+exact-lock build/types/lint PASS (zero errors / existing63warnings). Counts are
+shared batch evidence, not additional passes per issue.
+
+Remain **OPEN** for the issue-specific original role/host/SQL/critical/device and
+release closure requirements. See [C10 source-bound report](../HANDOFF/C10_ACADEMIC_BATCH_2026-11-07.md).

@@ -52,3 +52,20 @@ for(const deliveryMode of ['Offline','InPerson','Online','Hybrid',' online ',' h
 });
 for(const deliveryMode of ['Offline','Online','Hybrid'])test(`Make-up ${deliveryMode} missing correct location never substitutes opposite field`,async()=>{const p=await page({sessions:[],makeups:[{id:'m',studentId:'s',batchId:'b',startUtc:fixedTime,deliveryMode,venue:deliveryMode==='Offline'?null:'Wrong room',meetingLink:deliveryMode==='Offline'?'Wrong link':null}]});assert.equal(p.item().location,undefined);assert.equal(p.item().detail,'Make-up class');});
 if(process.env.QA_MAKEUP_SQL==='1')test('Captured make-up SQL fixture reaches actual calendar location projections',async()=>{const log=fs.readFileSync('QA/EVIDENCE/logs/phase-2b-makeup-location-sql.log','utf8'),fixture=JSON.parse(log.match(/^MAKEUPLOCATION FIXTURE (.+)$/m)[1]);const p=await page({sessions:[],makeups:fixture.makeups});p.state.set(8,new Date(fixture.makeups[0].startUtc));for(const row of fixture.makeups){const item=p.rows().find(x=>x.props.item.id===row.id)?.props.item;assert.ok(item);assert.equal(item.location,(row.deliveryMode==='Offline'?row.venue:row.meetingLink)||undefined);assert.equal(item.href,'/makeup');}});
+
+for(const status of ['Cancelled',' cancelled ','CANCELLED'])test(`Cancelled class ${JSON.stringify(status)} stays visible without a meeting action`,async()=>{
+ const p=await page({session:{status}});assert.match(p.item().title,/Cancelled/);assert.equal(p.item().href,undefined);
+ assert.equal(p.grid()[0].type,'div');assert.ok(!nodes(p.agenda()).some(n=>n.type==='a'));
+ assert.ok(p.calls.every(c=>!c.method));
+});
+for(const zone of ['UTC','America/New_York','Pacific/Honolulu','Pacific/Kiritimati'])test(`India calendar grid and agenda retain both month boundaries in ${zone}`,async()=>{
+ const previous=process.env.TZ;process.env.TZ=zone;
+ try{
+  const p=await page({sessions:[{...session,id:'begin',startUtc:'2026-10-31T19:00:00Z'},{...session,id:'end',startUtc:'2026-11-30T18:00:00Z'}]});
+  p.state.set(8,new Date('2026-11-01T00:00:00Z'));assert.deepEqual(p.rows().map(n=>n.props.item.id),['begin','end']);
+  for(const [id,day] of [['begin','1'],['end','30']]){
+   const cell=nodes(p.render()).find(n=>n.props?.className?.startsWith('calendar-day ')&&nodes(n).some(c=>c.key==='Class-'+id));
+   assert.ok(cell,id);assert.equal(text(nodes(cell).find(c=>c.props?.className==='calendar-date')),day);
+  }
+ }finally{if(previous===undefined)delete process.env.TZ;else process.env.TZ=previous;}
+});

@@ -1,5 +1,17 @@
 # Academy Desk handoff
 
+## C10 cloud academic return integrated — 7 November 2026
+
+- [x] Imported the 14 verified C10 files at `6e09af3`. The integrated frontend
+  matches the tested Cloud tree.
+- [x] Reused Cloud's 58 targeted controls and 30 controlled Chromium cases for
+  calendar, dates, curriculum and subject fees. Cloud's full suite recorded
+  1,980 passes and three missing genuine communication SQL receipt failures.
+- [ ] The five records still require their linked live API/SQL and critical/device
+  checks. Refresh Cloud claims before picking the next local packet.
+
+[Local C10 integration report](QA/REPORTS/LOCAL_C10_SOURCE_INTEGRATION_2026-11-07.md)
+
 ## C9 cloud finance return integrated — 7 November 2026
 
 - [x] Imported the verified 17-path C9 return at `ff662d0`. The integrated

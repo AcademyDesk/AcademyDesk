@@ -18,6 +18,7 @@ type Session = {
   teacherId?: string | null;
   startUtc: string;
   deliveryMode: string;
+  status?: string | null;
   roomName?: string | null;
 };
 type Event = {
@@ -57,8 +58,15 @@ type CalendarItem = {
   location?: string;
 };
 const names = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+// Grid dates are civil dates at UTC midnight; event instants use the academy's India day.
+const indiaKey = (date: Date) => {
+  const parts = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(date);
+  const value = (type: string) => parts.find(part => part.type === type)?.value;
+  return `${value("year")}-${value("month")}-${value("day")}`;
+};
+const indiaDate = (date: Date) => new Date(`${indiaKey(date)}T00:00:00Z`);
 const monthName = (date: Date) =>
-  new Intl.DateTimeFormat("en-IN", { month: "long", year: "numeric", timeZone: "Asia/Kolkata" }).format(
+  new Intl.DateTimeFormat("en-IN", { month: "long", year: "numeric", timeZone: "UTC" }).format(
     date,
   );
 const time = (date: Date) =>
@@ -150,14 +158,13 @@ export default function CalendarPage() {
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
-  const today = new Date();
-  const [month, setMonth] = useState(
-    () => new Date(today.getFullYear(), today.getMonth(), 1),
-  );
+  const [month, setMonth] = useState(() => new Date("2000-01-01T00:00:00Z"));
   const [filter, setFilter] = useState<"All" | CalendarItem["type"]>("All");
   const [message, setMessage] = useState("Loading calendar…");
   const [agendaExpanded, setAgendaExpanded] = useState(true);
+  const [today, setToday] = useState<Date>();
   useEffect(() => {
+    let active = true;
     void (async () => {
       try {
         const academyResponse = await academyApi("/api/academies");
@@ -173,19 +180,21 @@ export default function CalendarPage() {
         // not hide the whole month if one supporting endpoint is unavailable.
         if (!responses[0].ok || !responses[1].ok) throw new Error();
         const readRows = async <T,>(response: Response): Promise<T[]> => response.ok ? response.json() : [];
-        setBatches(await readRows<Batch>(responses[0]));
-        setSessions(await readRows<Session>(responses[1]));
-        setEvents(await readRows<Event>(responses[2]));
-        setMakeups(await readRows<Makeup>(responses[3]));
-        setStudents(await readRows<Student>(responses[4]));
-        setTeachers(await readRows<Teacher>(responses[5]));
-        setCourses(await readRows<Course>(responses[6]));
-        setEnrollments(await readRows<Enrollment>(responses[7]));
+        const [batchRows, sessionRows, eventRows, makeupRows, studentRows, teacherRows, courseRows, enrollmentRows] = await Promise.all([
+          readRows<Batch>(responses[0]), readRows<Session>(responses[1]), readRows<Event>(responses[2]), readRows<Makeup>(responses[3]),
+          readRows<Student>(responses[4]), readRows<Teacher>(responses[5]), readRows<Course>(responses[6]), readRows<Enrollment>(responses[7]),
+        ]);
+        if (!active) return;
+        const current = indiaDate(new Date());
+        setToday(current); setMonth(new Date(Date.UTC(current.getUTCFullYear(), current.getUTCMonth(), 1)));
+        setBatches(batchRows); setSessions(sessionRows); setEvents(eventRows); setMakeups(makeupRows);
+        setStudents(studentRows); setTeachers(teacherRows); setCourses(courseRows); setEnrollments(enrollmentRows);
         setMessage("");
       } catch {
-        setMessage("Calendar could not be loaded.");
+        if (active) setMessage("Calendar could not be loaded.");
       }
     })();
+    return () => { active = false; };
   }, []);
   const items = useMemo<CalendarItem[]>(() => {
     const batchName = (id: string) =>
@@ -208,18 +217,19 @@ export default function CalendarPage() {
     return [
       ...sessions.map((row) => {
         const assignedBatch = batch(row.batchId);
+        const cancelled = row.status?.trim().toLowerCase() === "cancelled";
         const isVirtualClass = ["online", "hybrid"].includes(row.deliveryMode.trim().toLowerCase());
         // A stored session teacher is authoritative (including null/unassigned).
         // Only an absent session location uses a legacy batch link; never
         // replace a supplied location with a different meeting destination.
         const location = row.roomName?.trim() || (isVirtualClass ? assignedBatch?.meetingLink?.trim() : undefined);
-        const meetingLink = isVirtualClass
+        const meetingLink = isVirtualClass && !cancelled
           ? meetingUrl(location)
           : undefined;
         return ({
         id: row.id,
         type: "Class" as const,
-        title: batchName(row.batchId),
+        title: `${cancelled ? "Cancelled · " : ""}${batchName(row.batchId)}`,
         detail: `${row.deliveryMode}${location ? ` · ${location}` : ""}`,
         start: new Date(row.startUtc),
         href: meetingLink,
@@ -260,24 +270,23 @@ export default function CalendarPage() {
     ].filter((item) => filter === "All" || item.type === filter);
   }, [batches, sessions, events, makeups, students, teachers, courses, enrollments, filter]);
   const days = useMemo(() => {
-    const offset = (month.getDay() + 6) % 7;
+    const offset = (month.getUTCDay() + 6) % 7;
     const start = new Date(month);
-    start.setDate(1 - offset);
+    start.setUTCDate(1 - offset);
     return Array.from({ length: 42 }, (_, index) => {
       const date = new Date(start);
-      date.setDate(start.getDate() + index);
+      date.setUTCDate(start.getUTCDate() + index);
       return date;
     });
   }, [month]);
   const byDay = (date: Date) =>
     items
-      .filter((item) => item.start.toDateString() === date.toDateString())
+      .filter((item) => indiaKey(item.start) === date.toISOString().slice(0, 10))
       .sort((a, b) => +a.start - +b.start);
   const agenda = items
     .filter(
       (item) =>
-        item.start.getFullYear() === month.getFullYear() &&
-        item.start.getMonth() === month.getMonth(),
+        indiaKey(item.start).slice(0, 7) === month.toISOString().slice(0, 7),
     )
     .sort((a, b) => +a.start - +b.start);
   return (
@@ -290,7 +299,7 @@ export default function CalendarPage() {
           <div className="workspace-calendar-month-actions" aria-label="Calendar navigation">
             <button
               onClick={() =>
-                setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))
+                setMonth(new Date(Date.UTC(month.getUTCFullYear(), month.getUTCMonth() - 1, 1)))
               }
               className="calendar-nav"
               aria-label="Previous month"
@@ -299,7 +308,7 @@ export default function CalendarPage() {
             </button>
             <button
               onClick={() =>
-                setMonth(new Date(today.getFullYear(), today.getMonth(), 1))
+                { const current = indiaDate(new Date()); setToday(current); setMonth(new Date(Date.UTC(current.getUTCFullYear(), current.getUTCMonth(), 1))); }
               }
               className="calendar-today"
             >
@@ -307,7 +316,7 @@ export default function CalendarPage() {
             </button>
             <button
               onClick={() =>
-                setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))
+                setMonth(new Date(Date.UTC(month.getUTCFullYear(), month.getUTCMonth() + 1, 1)))
               }
               className="calendar-nav"
               aria-label="Next month"
@@ -318,7 +327,7 @@ export default function CalendarPage() {
         </header>
         <section className="workspace-calendar-panel">
           <header className="workspace-calendar-panel-header">
-            <div><p>Month view</p><h2>{monthName(month)}</h2></div>
+            <div><p>Month view</p><h2>{today ? monthName(month) : "Loading calendar…"}</h2></div>
             <div className="workspace-calendar-filters" aria-label="Filter calendar items">
               {(["All", "Class", "Make-up", "Event"] as const).map((value) => (
                 <button
@@ -333,7 +342,7 @@ export default function CalendarPage() {
             </div>
           </header>
           {message && <p className="enterprise-page-state enterprise-page-state-loading workspace-calendar-message">{message}</p>}
-          <section className="calendar-grid">
+          <section className="calendar-grid" style={today ? undefined : { display: "none" }}>
           {names.map((name) => (
             <div key={name} className="calendar-weekday">
               {name}
@@ -341,14 +350,14 @@ export default function CalendarPage() {
           ))}
           {days.map((date) => {
             const dayItems = byDay(date);
-            const inMonth = date.getMonth() === month.getMonth();
-            const isToday = date.toDateString() === today.toDateString();
+            const inMonth = date.getUTCMonth() === month.getUTCMonth();
+            const isToday = Boolean(today && date.toISOString().slice(0, 10) === today.toISOString().slice(0, 10));
             return (
               <div
                 key={date.toISOString()}
                 className={`calendar-day ${inMonth ? "" : "outside"} ${isToday ? "today" : ""}`}
               >
-                <span className="calendar-date">{date.getDate()}</span>
+                <span className="calendar-date">{date.getUTCDate()}</span>
                 <div className="calendar-events">
                   {dayItems.slice(0, 3).map((item) => (
                     item.href ? <a
