@@ -20,16 +20,27 @@ public sealed class PlatformControlController(AcademyDeskDbContext db, UserManag
         if (!await IsPlatformOwner()) return Forbid();
         var academies = db.Academies.AsNoTracking();
         var invoices = db.PlatformBillingInvoices.AsNoTracking();
+        // Keep global invoice aggregation in the database, not in the API heap.
+        var byCurrency = await invoices.Where(x => x.Status.Trim().ToLower() != "draft" && x.Status.Trim().ToLower() != "void")
+            .GroupBy(x => x.Currency.Trim().ToUpper()).OrderBy(x => x.Key)
+            .Select(group => new PlatformBillingCurrencyTotals(group.Key, group.Sum(x => x.Amount),
+                group.Sum(x => x.Status.Trim().ToLower() == "paid" ? x.Amount : 0m),
+                group.Sum(x => x.Status.Trim().ToLower() == "issued" || x.Status.Trim().ToLower() == "overdue"
+                    || x.Status.Trim().ToLower() == "payment submitted" ? x.Amount : 0m)))
+            .ToArrayAsync(token);
+        var single = byCurrency.Length == 1 ? byCurrency[0] : null;
+        decimal? Flat(Func<PlatformBillingCurrencyTotals, decimal> select) => byCurrency.Length == 0 ? 0m : single is null ? null : select(single);
         return Ok(new
         {
             Academies = await academies.CountAsync(token),
             ActiveAcademies = await academies.CountAsync(x => x.IsActive, token),
             ActiveStudents = await db.Students.CountAsync(x => x.IsActive, token),
             OpenSupportCases = await db.PlatformSupportCases.CountAsync(x => x.Status != "Resolved" && x.Status != "Closed", token),
-            TotalBilled = await invoices.Where(x => x.Status != "Draft" && x.Status != "Void").SumAsync(x => (decimal?)x.Amount, token) ?? 0,
-            CollectedBilling = await invoices.Where(x => x.Status == "Paid").SumAsync(x => (decimal?)x.Amount, token) ?? 0,
-            OutstandingBilling = await invoices.Where(x => x.Status == "Issued" || x.Status == "Overdue" || x.Status == "Payment submitted").SumAsync(x => (decimal?)x.Amount, token) ?? 0,
-            OverdueInvoices = await invoices.CountAsync(x => x.Status == "Overdue", token),
+            TotalBilled = Flat(x => x.TotalBilled),
+            CollectedBilling = Flat(x => x.CollectedBilling),
+            OutstandingBilling = Flat(x => x.OutstandingBilling),
+            Currency = single?.Currency, HasMixedCurrencies = byCurrency.Length > 1, ByCurrency = byCurrency,
+            OverdueInvoices = await invoices.CountAsync(x => x.Status.Trim().ToLower() == "overdue", token),
             Plans = await academies.GroupBy(x => x.SubscriptionPlan).Select(x => new { Plan = x.Key, Count = x.Count() }).ToListAsync(token),
             RecentAudit = await db.PlatformAuditEntries.AsNoTracking().OrderByDescending(x => x.OccurredAtUtc).Take(8).Select(x => new { x.Id, x.Action, x.EntityType, x.ActorName, x.OccurredAtUtc }).ToListAsync(token)
         });
@@ -280,3 +291,4 @@ public sealed record CreatePlatformSupportCaseRequest(Guid AcademyId, string Sub
 public sealed record UpdatePlatformSupportCaseRequest(string Status, string Priority);
 public sealed record CreatePlatformBillingInvoiceRequest(Guid AcademyId, string InvoiceNumber, decimal Amount, string? Currency, DateOnly PeriodStart, DateOnly PeriodEnd, DateOnly DueDate);
 public sealed record UpdatePlatformInvoiceStatusRequest(string Status);
+public sealed record PlatformBillingCurrencyTotals(string Currency, decimal TotalBilled, decimal CollectedBilling, decimal OutstandingBilling);
