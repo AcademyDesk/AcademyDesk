@@ -62,7 +62,7 @@ async function main(){
     if(u.pathname===base+'/enrollments')return await reply(200,[{studentId:student,batchId:batch,status:'Active'}]);
     if(u.pathname===base+'/sessions')return await reply(200,[{id:'begin',batchId:batch,teacherId:teacher,startUtc:'2026-10-31T19:00:00Z',deliveryMode:'Online',roomName:'https://meeting.example.invalid/begin',status:'Scheduled'},{id:'end',batchId:batch,teacherId:teacher,startUtc:'2026-11-30T18:00:00Z',deliveryMode:'Online',roomName:'https://meeting.example.invalid/end',status:'Scheduled'},{id:'cancel',batchId:batch,teacherId:teacher,startUtc:'2026-11-01T06:00:00Z',deliveryMode:'Online',roomName:'https://meeting.example.invalid/cancel',status:'Cancelled'}]);
     if(u.pathname===base+'/events'||u.pathname===base+'/makeup-classes')return await reply(200,[]);
-    if(u.pathname===base+'/academic-governance')return await reply(200,{years:[{id:'year',name:'Synthetic year',startDate:'2026-01-01',endDate:'2026-12-31',isCurrent:true,isClosed:false}],terms:[]});
+    if(u.pathname===base+'/academic-periods')return await reply(200,{years:[{id:'year',name:'Synthetic year',startDate:'2026-01-01',endDate:'2026-12-31',isCurrent:true,isClosed:false}],terms:[]});
     if(u.pathname===base+'/holidays')return await reply(200,[{id:'holiday',name:'Synthetic holiday',holidayDate:'2026-01-01'}]);
     if(u.pathname===base+'/course-modules')return await reply(200,state.modules);
     if(u.pathname===base+'/students/'+student+'/fee-arrangements/admission-fee')return await reply(200,{amount:0,dueDate:null});
