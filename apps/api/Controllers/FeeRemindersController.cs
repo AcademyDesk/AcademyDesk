@@ -12,7 +12,7 @@ public sealed class FeeRemindersController(AcademyDeskDbContext dbContext) : Con
     [HttpPost]
     public async Task<ActionResult<FeeReminderResult>> Queue(Guid academyId, QueueFeeReminderRequest request, CancellationToken token)
     {
-        var invoices = dbContext.Invoices.Where(x => x.AcademyId == academyId);
+        var invoices = dbContext.Invoices.Where(x => x.AcademyId == academyId && x.Status.ToLower() != "cancelled");
         if (request.InvoiceId.HasValue) invoices = invoices.Where(x => x.Id == request.InvoiceId.Value);
         else invoices = invoices.Where(x => x.DueDate <= DateOnly.FromDateTime(DateTime.UtcNow));
         var invoiceList = await invoices.ToListAsync(token);
