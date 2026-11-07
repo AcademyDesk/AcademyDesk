@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { academyApi } from "@/lib/api";
 import { EnterprisePageState } from "@/components/enterprise-page-state";
-import { type FinanceSummary, financeMoney, formatFinanceMoney as money } from "@/lib/finance-summary";
+import { type FinanceSummary, financeMoney } from "@/lib/finance-summary";
 
 type Academy = { id: string };
 type Collection = {
@@ -18,6 +18,8 @@ type Collection = {
   daysOverdue: number;
 };
 
+const money = (amount: number, currency = "INR") =>
+  new Intl.NumberFormat("en-IN", { style: "currency", currency }).format(amount);
 const modules = [
   [
     "Create & generate invoices",

@@ -2,6 +2,9 @@
 const test = require('node:test'), assert = require('node:assert/strict');
 const fs = require('node:fs'), path = require('node:path');
 const ts = require('../../apps/web/node_modules/typescript'), jsx = require('../../apps/web/node_modules/react/jsx-runtime');
+const summaryModule = { exports: {} };
+new Function('module', 'exports', ts.transpileModule(fs.readFileSync(path.resolve(__dirname, '../../apps/web/src/lib/finance-summary.ts'), 'utf8'),
+  { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText)(summaryModule, summaryModule.exports);
 function nodes(n, predicate) { if (Array.isArray(n)) return n.flatMap(x => nodes(x, predicate)); if (!n || typeof n !== 'object') return [];
   return [...(predicate(n) ? [n] : []), ...nodes(n.props?.children, predicate)]; }
 function text(n) { if (Array.isArray(n)) return n.map(text).join(''); if (n == null || typeof n === 'boolean') return '';
@@ -18,6 +21,7 @@ function page(kind, invoice) {
   new Function('require', 'module', 'exports', compiled)(name => {
     if (name === 'react') return react; if (name === 'react/jsx-runtime') return jsx; if (name === 'next/link') return { default: 'a' };
     if (name === '@/components/enterprise-page-state') return { EnterprisePageState: 'aside' };
+    if (name === '@/lib/finance-summary') return summaryModule.exports;
     if (name === '@/lib/api') return { academyApi: async url => { calls.push(url); return { ok: true, status: 200, json: async () => url === '/api/academies' ? [{ id: 'a' }]
       : url.endsWith('/collections') ? [invoice] : url.endsWith('/summary') ? summary : url.endsWith('/settings') ? states[4] : [] }; }, apiHeaders: () => ({}) };
     throw Error('Unexpected import ' + name);
