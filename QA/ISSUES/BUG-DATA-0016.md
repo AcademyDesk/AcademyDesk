@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | STATIC-FINDING |
+| Confirmation status | RUNTIME-CONFIRMED / ACADEMY SUMMARY REPAIR |
 | Final verification | NOT RUN |
 | Severity | Major financial reporting integrity |
 | Priority | P1 |
@@ -30,9 +30,9 @@
 | API response | Not captured for this issue; use synthetic request/response in isolated reproduction |
 | Database before/after | Not executed; fixture and fresh-context assertions defined below |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | Not implemented (Phase 1) |
-| Retest result | NOT RUN |
-| Regression result | NOT RUN |
+| Fix commit | a448103e525a83ec1080be2ec2295b63496afe63 + ddd34fd6bf6bafc0da5920df966367cd238ba83b (C17 academy API/screens); original platform/dashboard scope pending |
+| Retest result | C17 API50/50, UI26/26 and controlled native16/16 PASS; real SQL and original platform/device/critical scope pending |
+| Regression result | C17 API2,107/2,107 PASS; frontend2,057 PASS /3 genuine SQL-receipt FAIL, zero skips |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
 ## Exact reproduction
@@ -85,3 +85,26 @@ writes. Exact-lock build/types/lint PASS (zero errors / existing 63 warnings).
 Remain **OPEN**. These shared batch counts are not added per issue and do not
 replace original module/critical, real Identity/HTTP/SQL, other-client, device or
 release closure requirements. See [C9 source-bound report and Desktop tasks](../HANDOFF/C9_FINANCE_BATCH_2026-11-07.md).
+
+## C17 academy summary repair — 7 November 2026
+
+Original API3/17 and controlled screens0/15 pass. The repaired academy summary
+returns explicit per-currency groups and null mixed-currency flat monetary
+fields; single-currency numbers and empty zero values retain their shape. Both
+known academy screens consume the groups, including rates and reconciliation
+amounts, without inventing FX or an INR unit for missing metadata. The collection
+list/follow-up monetary predicates count only matching-currency Completed/
+Reconciled receipts. No raw ledger row or write/authority policy is changed.
+
+Final API/retained target50/50 and UI/retained target26/26 pass. Full API2,107
+pass on C17's source; full frontend2,057 pass with three unchanged genuine SQL
+receipt failures, zero skips. Six actual Identity/HTTP cases use explicit
+InMemory persistence, not SQL. Original PlatformControl Overview/Dashboard and
+their remaining consumers are not repaired by this packet. Keep OPEN for those
+paths and all real SQL/critical/browser/device closure requirements.
+[Exact contract, evidence and Desktop handoff](../HANDOFF/C17_FINANCE_CURRENCIES_2026-11-07.md).
+
+Final C17 controlled native16/16 PASS, zero runtime/interceptor errors or writes,
+normal sandbox and owned cleanup,570 export hashes unchanged. This qualifies
+the bounded academy UI rendering scope only; original platform/dashboard and
+real SQL/device/critical/release acceptance remain OPEN.
