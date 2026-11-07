@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | STATIC-FINDING |
+| Confirmation status | RUNTIME-CONFIRMED / BOUNDED REPAIR |
 | Final verification | NOT RUN |
 | Severity | Major erroneous collection notification |
 | Priority | P1 |
@@ -30,9 +30,9 @@
 | API response | Not captured for this issue; use synthetic request/response in isolated reproduction |
 | Database before/after | Not executed; fixture and fresh-context assertions defined below |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | Not implemented (Phase 1) |
-| Retest result | NOT RUN |
-| Regression result | NOT RUN |
+| Fix commit | ce9470114cedb7fd5371b7078fbc41883785d373 (C14 API/screen) |
+| Retest result | C14 TSX8/8, API/finance58/58, controlled native browser6/6 PASS; real SQL/HTTP/device closure pending |
+| Regression result | API2,058/2,058 PASS; frontend2,016 PASS /3 genuine SQL-evidence FAIL, zero skips |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
 ## Exact reproduction
@@ -69,3 +69,24 @@ Student in-app collection notices for cancelled invoices; related incorrect net 
 FEES-REMINDER-001: HTTP/SQL and UI cases for Cancelled/Paid/Issued/PartiallyPaid/Overdue, due date, payment and adjustment combinations; assert zero new notices for cancelled invoices and correct positive controls.
 
 Also run all endpoint/form cases pointing to this issue in QA/03_TEST_MATRIX.md and the critical regression suite before closure.
+
+## C14 bounded repair — 7 November 2026
+
+Original controller3/12 pass,9 fail: targeted/bulk cancelled invoices queued
+notices, including lower/mixed case. Original screen1/8 pass,7 fail and all six
+original native browser scenarios fail. The API now excludes cancellation
+case-insensitively; the screen excludes cancelled/nonpositive/invalid balances
+and uses the existing API's authoritative net balance. It also separates
+currencies instead of labeling a mixed total INR. Linked BUG-DATA-0001/0002
+consumer fixes remain subject to their full P0 acceptance.
+
+Targeted TSX8/8 and API plus retained finance58/58 pass. Full API2,058 pass;
+full frontend2,016 pass with three unchanged genuine communication SQL receipt
+failures, zero skips. No new SQL or customer/provider send occurred. Keep this
+issue OPEN for its original real SQL/HTTP/browser/device/critical closure.
+[Exact commands, native return and Desktop handoff](../HANDOFF/C14_FEE_REMINDERS_2026-11-07.md).
+
+Final configured Chromium6/6 pass, zero runtime/interceptor errors, two clearly
+synthetic POSTs, sandbox enabled and owned cleanup. The570 export hashes remain
+unchanged. Preliminary default-API browser failure is retained; no interception
+guard was relaxed. Source-bound build, types and lint pass (zero errors/62warnings).
