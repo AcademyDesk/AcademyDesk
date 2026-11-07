@@ -8,7 +8,8 @@ academy finance-screen claim in the current handoffs. Preserve Desktop SQL work.
 
 Exact paths:
 
-- `apps/api/Controllers/FinanceGovernanceController.cs` — summary only
+- `apps/api/Controllers/FinanceGovernanceController.cs` — summary and monetary
+  eligibility predicates shared by collection list/follow-up
 - `apps/web/src/lib/finance-summary.ts`
 - `apps/web/src/app/finance/page.tsx`
 - `apps/web/src/app/finance-summary/page.tsx`
@@ -45,3 +46,10 @@ final source. Existing installed packages only; no customer/configured SQL,
 external sends, image/model loading, main/Azure/environment/public-network change.
 Use this bounded report rather than overwrite shared integration handoffs.
 Sol High for monetary contract/authority/SQL; Medium for settled import/docs.
+
+Pre-edit scope refinement: the collection list and follow-up debt check also
+count every non-Voided state. Claim their monetary predicates in the same file
+so Pending/Failed/foreign-currency payments cannot make the summary disagree
+with collection eligibility. Preserve all assignment, priority, ownership,
+status, audit and write payload logic. Add direct contract consistency tests;
+real SQL/concurrency/required-audit acceptance remains Desktop-owned.
