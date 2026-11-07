@@ -1,5 +1,6 @@
 using AcademyDesk.Api.Data;
 using AcademyDesk.Api.Domain.Entities;
+using AcademyDesk.Api.Security;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -26,6 +27,7 @@ public sealed class MusicProgressController(AcademyDeskDbContext dbContext) : Co
         dbContext.StudentMusicProgress.Add(progress); await dbContext.SaveChangesAsync(token); return Ok(new MusicProgressSummary(progress.Id, progress.StudentId, progress.MusicPieceId, progress.Status, progress.TargetDate, progress.Score, progress.Notes));
     }
     [HttpPatch("{progressId:guid}")]
+    [AtomicAcademyMutation(IncludePlatformOwner = true)]
     public async Task<ActionResult<MusicProgressSummary>> Update(Guid academyId, Guid progressId, UpdateMusicProgressRequest request, CancellationToken token)
     {
         if (!Statuses.Contains(request.Status, StringComparer.OrdinalIgnoreCase)) return BadRequest(new { message = "Invalid progress status." });

@@ -6,6 +6,7 @@ Bounded runtime follow-up [DRAFT-ISOLATION-UX-001](../REPORTS/PHASE_2B_TEACHER_S
 
 | Issue ID | Title | Priority | Severity | Evidence type | Regression test |
 | --- | --- | --- | --- | --- | --- |
+| [BUG-DATA-MUSIC-AUDIT-001](BUG-DATA-MUSIC-AUDIT-001.md) | Music status save survives audit failure | P1 | Learner-progress audit integrity | Real SQL reproduction. Repaired 25 SQL controls and 1,991 API tests passed. Closure OPEN. | MUSIC-PROGRESS-AUDIT-001 |
 | [BUG-FINANCE-DECISION-GUARDS-001](BUG-FINANCE-DECISION-GUARDS-001.md) | Blank rejection notes and Platform Owner audit bypass | P1 | Financial decision integrity | Reproduced in SQL. Repair passed 41 native controls and 13 live browser phases. Closure OPEN. | FINANCE-APPROVAL-001 |
 | [BUG-DATA-COMPENSATION-AUDIT-001](BUG-DATA-COMPENSATION-AUDIT-001.md) | Compensation save survives audit failure; Platform Owner bypasses required audit | P1 | Financial compensation/audit integrity | Actual SQL reproduced; scoped repair / 28 SQL and 1,986 API PASS; closure OPEN | COMPENSATION-AUDIT-ATOMIC-001 |
 | [BUG-DATA-0056](BUG-DATA-0056.md) | Editing a payroll profile rewrites the worker name shown on historical payouts | P1 | Major payroll history attribution integrity | PARTIAL controlled repair / SQL-browser pending | PAYROLL-HISTORY-IDENTITY-001 |

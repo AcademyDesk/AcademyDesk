@@ -1,5 +1,18 @@
 # Academy Desk shared integration tracker
 
+## C8 cloud frontend and local music progress SQL — 7 November 2026
+
+- [x] Integrated the five C8 return paths and matched Cloud's tested frontend.
+  Reused its controlled browser, handler and build evidence.
+- [x] Local SQL reproduced and repaired the music status audit gap. All 25
+  native controls passed, including both actor rollbacks and exact score readback.
+- [x] Full API regression passed 1,991 tests. Owned SQL cleanup, original PENTA
+  services, inventory and lease release verified.
+- [ ] Live browser recovery, independent-client behavior and critical and device
+  closure remain open. Cloud published C9 source at `ff662d0` for separate import.
+
+[Local C8 acceptance report](QA/REPORTS/LOCAL_C8_MUSIC_PROGRESS_SQL_2026-11-07.md)
+
 ## C6 live finance decisions and Teacher forms — 7 November 2026
 
 - [x] Finance rejections require a reason at the API. Platform Owner decisions
