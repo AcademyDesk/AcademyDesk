@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { academyApi, apiHeaders } from "@/lib/api";
 
 type Academy = { id: string };
@@ -10,6 +10,13 @@ type Payment = { id: string; invoiceId: string; amount: number; currency: string
 const money = (amount: number, currency = "INR") => new Intl.NumberFormat("en-IN", { style: "currency", currency }).format(amount);
 // The invoice API owns applied-adjustment and collected-payment arithmetic.
 const balance = (invoice: Invoice) => invoice.balance;
+
+const currencyTotal = (rows: { amount: number; currency: string }[]) => {
+  const totals = new Map<string, number>();
+  for (const row of rows) { const code = row.currency || "INR"; totals.set(code, (totals.get(code) ?? 0) + row.amount); }
+  if (!totals.size) return money(0);
+  return [...totals].sort(([a], [b]) => a.localeCompare(b)).map(([code, amount]) => `${totals.size > 1 || code !== "INR" ? code + " " : ""}${money(amount, code)}`).join(" · ");
+};
 
 export default function PaymentsPage() {
   const [academy, setAcademy] = useState<Academy>();
@@ -22,21 +29,46 @@ export default function PaymentsPage() {
   const [reference, setReference] = useState("");
   const [message, setMessage] = useState("Loading payments…");
 
+  const [busy, setBusy] = useState(false);
+  const [review, setReview] = useState(false);
+  const pending = useRef(false);
+  const reviewRequired = useRef(false);
+  const alive = useRef(true);
+  async function saveFinancial(action: () => Promise<Response>, reset: () => void, success: string, failure: string) {
+    if (!alive.current || pending.current || reviewRequired.current) return;
+    pending.current = true; setBusy(true);
+    let confirmed = false;
+    try {
+      const response = await action();
+      if (!alive.current) return;
+      if (!response.ok) { if (response.status >= 500) throw Error(); setMessage(failure); return; }
+      confirmed = true; reset(); await load();
+      if (alive.current) setMessage(success);
+    } catch {
+      if (alive.current) {
+        reviewRequired.current = true; setReview(true);
+        setMessage(confirmed ? `${success} The list could not be refreshed. Reload financial records before recording again.`
+          : "Save could not be confirmed. Review the latest financial records before submitting again.");
+      }
+    } finally { pending.current = false; if (alive.current) setBusy(false); }
+  }
   async function load(academyId?: string) {
     const id = academyId ?? academy?.id;
-    if (!id) return;
+    if (!id || !alive.current) return;
     const [studentResponse, invoiceResponse, paymentResponse] = await Promise.all([
       academyApi(`/api/academies/${id}/invoices/student-options`, { cache: "no-store" }), academyApi(`/api/academies/${id}/invoices`, { cache: "no-store" }), academyApi(`/api/academies/${id}/payments`, { cache: "no-store" }),
     ]);
     if (![studentResponse, invoiceResponse, paymentResponse].every((response) => response.ok)) throw new Error();
-    setStudents(await studentResponse.json()); setInvoices(await invoiceResponse.json()); setPayments(await paymentResponse.json()); setMessage("");
+    const [studentRows, invoiceRows, paymentRows] = await Promise.all([studentResponse.json(), invoiceResponse.json(), paymentResponse.json()]);
+    if (!alive.current) return;
+    setStudents(studentRows); setInvoices(invoiceRows); setPayments(paymentRows); setMessage("");
   }
 
-  useEffect(() => { async function initialise() { try { const response = await academyApi("/api/academies", { cache: "no-store" }); if (response.status === 401) return setMessage("Please sign in before recording payments."); if (!response.ok) throw new Error(); const academies: Academy[] = await response.json(); if (!academies[0]) return setMessage("Create your academy first."); setAcademy(academies[0]); await load(academies[0].id); } catch { setMessage("Payments could not be loaded. Confirm the API is running on port 5092."); } } void initialise(); }, []);
+  useEffect(() => { async function initialise() { try { const response = await academyApi("/api/academies", { cache: "no-store" }); if (response.status === 401) return setMessage("Please sign in before recording payments."); if (!response.ok) throw new Error(); const academies: Academy[] = await response.json(); if (!alive.current) return; if (!academies[0]) return setMessage("Create your academy first."); setAcademy(academies[0]); await load(academies[0].id); } catch { if (alive.current) setMessage("Payments could not be loaded. Please try again."); } } void initialise(); }, []);
 
   const selectedInvoice = invoices.find((invoice) => invoice.id === invoiceId);
   const selectedBalance = selectedInvoice ? balance(selectedInvoice) : 0;
-  const paymentTotals = useMemo(() => ({ collected: payments.filter((payment) => payment.status === "Completed" || payment.status === "Reconciled").reduce((total, payment) => total + payment.amount, 0), open: invoices.filter((invoice) => balance(invoice) > 0).length, outstanding: invoices.reduce((total, invoice) => total + Math.max(0, balance(invoice)), 0) }), [invoices, payments]);
+  const paymentTotals = useMemo(() => ({ collected: currencyTotal(payments.filter((payment) => payment.status === "Completed" || payment.status === "Reconciled").map(payment => ({ amount: payment.amount, currency: payment.currency || invoices.find(invoice => invoice.id === payment.invoiceId)?.currency || "INR" }))), open: invoices.filter((invoice) => balance(invoice) > 0).length, outstanding: currencyTotal(invoices.map(invoice => ({ amount: Math.max(0, balance(invoice)), currency: invoice.currency }))) }), [invoices, payments]);
 
   function selectInvoice(id: string) {
     setInvoiceId(id);
@@ -44,12 +76,14 @@ export default function PaymentsPage() {
     if (invoice) setAmount(balance(invoice).toString());
   }
 
+  useEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
+
   async function recordPayment(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!academy || !invoiceId) return;
-    const response = await academyApi(`/api/academies/${academy.id}/payments`, { method: "POST", headers: apiHeaders(true), body: JSON.stringify({ invoiceId, amount: Number(amount), method, reference: reference || null }) });
-    if (!response.ok) return setMessage("The payment could not be saved. The amount must not exceed the remaining balance.");
-    setInvoiceId(""); setAmount(""); setReference(""); setMessage(""); await load();
+    if (!academy || !invoiceId || pending.current || reviewRequired.current) return;
+    if (!selectedInvoice || !Number.isFinite(Number(amount)) || Number(amount) <= 0 || Number(amount) > selectedBalance) return setMessage("The payment must be positive and must not exceed the remaining balance.");
+    await saveFinancial(() => academyApi(`/api/academies/${academy.id}/payments`, { method: "POST", headers: apiHeaders(true), body: JSON.stringify({ invoiceId, amount: Number(amount), method, reference: reference || null }) }),
+      () => { setInvoiceId(""); setAmount(""); setReference(""); }, "Payment recorded.", "The payment could not be saved. The amount must not exceed the remaining balance.");
   }
 
   const studentName = (id: string) => { const student = students.find((item) => item.id === id); return student ? `${student.firstName} ${student.lastName}` : "Unknown student"; };
@@ -57,14 +91,15 @@ export default function PaymentsPage() {
   return <main className="enterprise-settings finance-module payments-standard">
     <header className="enterprise-page-header"><p>Finance / payments</p><h2>Payments and balances</h2><span>Record payments against invoices while keeping balances and invoice status up to date.</span></header>
     {message && <p className="enterprise-settings-empty mt-5">{message}</p>}
-    <section className="payments-kpis"><article><span>Payments recorded</span><strong>{payments.length}</strong></article><article><span>Collected</span><strong>{money(paymentTotals.collected)}</strong></article><article><span>Open balances</span><strong>{paymentTotals.open}</strong></article><article><span>Outstanding</span><strong>{money(paymentTotals.outstanding)}</strong></article></section>
-    <section className="payments-layout"><form onSubmit={recordPayment} className="surface-panel payments-create"><header><p>Record</p><h3>Payment received</h3></header><div className="payments-fields">
+    {review && <button type="button" className="enterprise-action-button" onClick={() => window.location.reload()}>Reload financial records</button>}
+    <section className="payments-kpis"><article><span>Payments recorded</span><strong>{payments.length}</strong></article><article><span>Collected</span><strong>{paymentTotals.collected}</strong></article><article><span>Open balances</span><strong>{paymentTotals.open}</strong></article><article><span>Outstanding</span><strong>{paymentTotals.outstanding}</strong></article></section>
+    <section className="payments-layout"><form onSubmit={recordPayment} className="surface-panel payments-create"><fieldset disabled={busy || review} className="contents"><header><p>Record</p><h3>Payment received</h3></header><div className="payments-fields">
       <select value={invoiceId} onChange={(event) => selectInvoice(event.target.value)} className="field" required><option value="">Select invoice</option>{invoices.filter((invoice) => balance(invoice) > 0).map((invoice) => <option key={invoice.id} value={invoice.id}>{invoice.invoiceNumber} · {studentName(invoice.studentId)} · Balance {money(balance(invoice), invoice.currency)}</option>)}</select>
       {selectedInvoice && <article className="payments-selected"><span>Selected invoice</span><b>{selectedInvoice.invoiceNumber}</b><small>{studentName(selectedInvoice.studentId)} · Balance {money(selectedBalance, selectedInvoice.currency)}</small></article>}
       <input type="number" min="0.01" max={selectedBalance || undefined} step="0.01" value={amount} onChange={(event) => setAmount(event.target.value)} placeholder="Payment amount" className="field" required />
       <select value={method} onChange={(event) => setMethod(event.target.value)} className="field"><option>UPI</option><option>Cash</option><option>BankTransfer</option><option>Card</option><option>Cheque</option><option>Offline</option></select>
       <input value={reference} onChange={(event) => setReference(event.target.value)} placeholder="UPI, cheque, or receipt reference (optional)" className="field" />
-    </div><button disabled={!academy || !invoiceId || !amount} className="enterprise-action-button">Record payment</button></form>
+    </div><button disabled={!academy || !invoiceId || !amount} className="enterprise-action-button">Record payment</button></fieldset></form>
     <section className="surface-panel payments-directory"><header><p>Balances</p><h3>Invoice balances</h3></header>{invoices.length === 0 ? <p className="enterprise-settings-empty mt-4">No invoices yet. Issue an invoice before recording a payment.</p> : <ul>{invoices.map((invoice) => <li key={invoice.id}><div className="flex flex-wrap items-start justify-between gap-3"><div><b>{studentName(invoice.studentId)}</b><p className="mt-1 text-sm text-slate-400">{invoice.invoiceNumber} · Due {invoice.dueDate}</p></div><div className="text-right"><b className="text-cyan-200">Balance {money(balance(invoice), invoice.currency)}</b><p className="mt-1 text-sm text-slate-400">of {money(invoice.totalAmount, invoice.currency)} · {invoice.status}</p></div></div></li>)}</ul>}</section></section>
   </main>;
 }
