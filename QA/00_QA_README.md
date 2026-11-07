@@ -1,5 +1,16 @@
 # AcademyDesk QA control centre — Phase 1
 
+## C15 teacher availability return integrated — 7 November 2026
+
+- [x] Imported the four verified paths at `cfa5832`. Teacher profiles stay
+  readable when stored availability includes null entries.
+- [x] Reused Cloud's 70 targeted and 2,084 full API passes on matching
+  application and API test trees. The C14 frontend source is unchanged.
+- [ ] Live SQL persistence and audit, critical workflows and device
+  acceptance remain pending.
+
+[Cloud C15 verification](HANDOFF/C15_TEACHER_AVAILABILITY_2026-11-07.md)
+
 ## C13 portal metadata and C14 reminders integrated — 7 November 2026
 
 - [x] Imported both verified Cloud returns. Reused 2,058 API passes on
@@ -7,7 +18,7 @@
 - [x] One disposable SQL run passed 16 real HTTP checks for reminder balances,
   denial and audit rollback, and portal and compensation metadata readback.
 - [ ] The linked device and critical checks, exact-release CI and images,
-  and staging restore and rollback remain pending. Cloud owns C15.
+  and staging restore and rollback remain pending.
 
 [Local verification](REPORTS/LOCAL_C13_C14_SQL_ACCEPTANCE_2026-11-07.md)
 
