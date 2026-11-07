@@ -290,7 +290,7 @@ export default function PlatformControlPage() {
   const invoiceModalTitle = invoiceModal === "open" ? "Open platform invoices" : invoiceModal === "overdue" ? "Overdue platform invoices" : invoiceModal === "paid" ? "Paid platform invoices" : "All platform invoices";
   const invoiceModalRecords = invoiceModal === "open" ? openInvoices : invoiceModal === "overdue" ? overdueInvoices : invoiceModal === "paid" ? paidInvoices : invoices;
   const openCases = cases.filter((item) => !["Resolved", "Closed"].includes(item.status));
-  const urgentCases = cases.filter((item) => ["High", "Urgent"].includes(item.priority) && !["Resolved", "Closed"].includes(item.status));
+  const urgentCases = cases.filter((item) => ["high", "urgent", "critical"].includes(item.priority.trim().toLowerCase()) && !["Resolved", "Closed"].includes(item.status));
   const resolvedCases = cases.filter((item) => ["Resolved", "Closed"].includes(item.status));
   const caseModalTitle = caseModal === "open" ? "Open support cases" : caseModal === "urgent" ? "High-priority support cases" : caseModal === "resolved" ? "Resolved support cases" : "All support cases";
   const caseModalRecords = caseModal === "open" ? openCases : caseModal === "urgent" ? urgentCases : caseModal === "resolved" ? resolvedCases : cases;
