@@ -56,6 +56,8 @@ function mount(file, api, props = {}, exportName = 'default') {
       if (name === 'next/navigation') return { usePathname: () => '/batches', useSearchParams: () => query, useRouter: () => router };
       if (name === '@/lib/api') return { academyApi: api, apiHeaders: () => ({}) };
       if (name === '@/lib/finance-summary') return execute('apps/web/src/lib/finance-summary.ts');
+      if (name === '@/lib/reports-finance') return execute('apps/web/src/lib/reports-finance.ts');
+      if (name === '@/lib/csv') return execute('apps/web/src/lib/csv.ts');
       if (name === '@/lib/platform-finance') return execute('apps/web/src/lib/platform-finance.ts');
       if (name === '@/components/enterprise-page-state') return { EnterprisePageState: 'enterprise-page-state' };
       if (name === '@/lib/course-update') return execute('apps/web/src/lib/course-update.ts');

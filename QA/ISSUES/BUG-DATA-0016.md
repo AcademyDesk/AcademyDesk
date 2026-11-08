@@ -3,20 +3,20 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | RUNTIME-CONFIRMED / ACADEMY + PLATFORM + DASHBOARD BOUNDED REPAIRS |
+| Confirmation status | RUNTIME-CONFIRMED / ACADEMY + PLATFORM + DASHBOARD + REPORTS BOUNDED REPAIRS |
 | Final verification | NOT RUN |
 | Severity | Major financial reporting integrity |
 | Priority | P1 |
 | Category | DATA |
 | Module | FINANCE |
 | Role | AcademyAdmin/FinanceUser for academy summaries; current stored Platform Owner flag for global overview |
-| Screen / route | /finance; /finance-summary; /dashboard; /platform |
-| API | GET finance-governance/summary; GET academy/dashboard; GET /api/platform/overview |
+| Screen / route | /finance; /finance-summary; /dashboard; /reports; /platform |
+| API | GET finance-governance/summary; GET academy/dashboard; GET invoices; GET /api/platform/overview |
 | Environment | Source review of local working tree; runtime production state not inferred |
 | Device/viewport | NOT RUN; use QA/06_DEVICE_VIEWPORT_MATRIX.md where UI applies |
 | Baseline | 20bb6047f9edf733ac8e2a226621cc582ec54b3c + pre-existing student UI diff |
 | Discovery test / review ID | FINANCE-CURRENCY-001 |
-| Evidence classification | C17/C18/C19 controller/HTTP/InMemory and controlled Chromium reproduction/repair; real SQL acceptance separate |
+| Evidence classification | C17/C18/C19/C20 controller/HTTP/InMemory and controlled Chromium reproduction/repair; real SQL acceptance separate |
 | Preconditions | Isolated synthetic fixture from QA/10_TEST_DATA_STRATEGY.md; never customer data |
 | Reproduction frequency | Not measured; reproduction instructions are proposed |
 | Source | apps/api/Controllers/FinanceGovernanceController.cs:14 |
@@ -28,11 +28,11 @@
 | Console logs | Not captured; required in retest |
 | API request | In disposable fixtures create same-academy fee plans/invoices of INR 1000 and USD 100, with matching-currency payments. Read summary and finance cards; compare single-currency controls. Repeat with platform billing invoices in INR and USD and compare PlatformControl Overview with platform cards. |
 | API response | Not captured for this issue; use synthetic request/response in isolated reproduction |
-| Database before/after | C17/C18/C19 isolated InMemory snapshots preserved on reads/denials; real SQL acceptance pending |
+| Database before/after | C17-C19 scoped local SQL snapshots verified; C20 InMemory snapshots unchanged on reads/denials, C20 SQL pending |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | C17 a448103 + ddd34fd; C18 a8d20d80abc46042a4d3a7bf31b15ead121ae361; C19 e9d256221fa49fa467b9a6de38d07f9e3aa3600a; live acceptance pending |
-| Retest result | C19 API target46/46, UI42/42, controlled native14/14 PASS; prior source-bound evidence retained below; real SQL/device/critical closure pending |
-| Regression result | C19 API2,155/2,155 PASS; frontend2,086 PASS /3 genuine SQL-receipt FAIL, zero skips |
+| Fix commit | C17 a448103 + ddd34fd; C18 a8d20d80abc46042a4d3a7bf31b15ead121ae361; C19 e9d256221fa49fa467b9a6de38d07f9e3aa3600a; C20 enclosing implementation commit; wider live acceptance pending |
+| Retest result | C20 API target101/101, UI32/32, native14/14 with36 CSV downloads PASS; prior source-bound evidence retained below; real SQL/device/critical closure pending |
+| Regression result | C20 API2,177/2,177 PASS; frontend2,118 PASS /3 genuine SQL-receipt FAIL, zero skips |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
 ## Exact reproduction
@@ -153,3 +153,53 @@ Invoice List's legacy mismatched-payment-currency projection and Reports-page
 independent money/payroll calculations remain separate unqualified consumers;
 no claim that all financial screens or release gates are qualified.
 [Exact source, contract, evidence and Desktop acceptance tasks](../HANDOFF/C19_DASHBOARD_BALANCES_2026-11-08.md).
+
+## C17/C18 Desktop SQL return preserved — 8 November 2026
+
+The latest Desktop source has real SQL acceptance for the bounded C17/C18
+summary/collections scope and original Platform billing regression. Its combined
+currency/support run passed28 checks, original billing51, and combined API2,138.
+These source-bound results do not establish C19/C20 SQL/browser/device closure.
+Keep its raw evidence and newer support/profile atomic-audit fixes during import.
+[Exact local SQL scope and source](https://github.com/AcademyDesk/AcademyDesk/blob/fe3167b12cbd318369d159bf59a06dacfa2066ae/QA/REPORTS/LOCAL_C16_C18_SQL_ACCEPTANCE_2026-11-08.md).
+
+## C20 invoice readback and Reports repair — 8 November 2026
+
+Original invoice HTTP22-case baseline16 PASS /6 FAIL; final32-case Reports
+baseline1 PASS /31 FAIL. Invoice GET now excludes receipts in another currency,
+retaining raw metadata/ordering and all other actions/DTO bytes. Reports groups
+receipts/expenses/issued totals by currency, includes Reconciled receipts and
+uses per-invoice adjusted balances without offsetting another student's debt
+or adding payable payroll. The existing payroll modal remains separate. Missing
+metadata is unavailable; no INR/FX guess. Collected less recorded expenses
+replaces the misleading Net cash label; existing expense scope is retained.
+Both invoice CSVs and expense CSV add explicit currency while retaining real
+spreadsheet/formula escaping. Required-feed failure/denial/loading no longer
+publishes ready zero totals or empty downloads; manual recovery is read-only.
+
+Final targeted API101/101 and Reports TSX32/32 PASS. Native14/14 scenarios,
+36 dialogs and36 real CSV downloads PASS at320/light and1440/dark; zero runtime/
+interceptor errors or API writes, sandbox enabled, owned cleanup and570 export
+hashes unchanged. Full API2,177/2,177 PASS; frontend2,118 PASS /3 missing genuine
+SQL-receipt FAIL, zero skips/cancellations. InMemory/intercepted fixtures do not
+replace actual SQL/device/critical acceptance.
+
+Remain OPEN. C19/C20 require combined-tree integration and real SQL/HTTP/browser
+acceptance. Legacy wrong-currency records also need separate protected write-
+path review (manual invoice status, payment collection/void/restore, adjustment
+approval); those independent queries are not changed or qualified by C20's GET
+repair. Preserve all transaction/audit/concurrency controls and claim edits first.
+[Exact evidence, compatibility and prioritized Desktop tasks](../HANDOFF/C20_REPORTING_CURRENCIES_2026-11-08.md).
+
+## Final C19 Desktop SQL return — 8 November 2026
+
+Desktop `fe3167b12cbd318369d159bf59a06dacfa2066ae` integrated C19. Its34/34 real HTTP/SQL controls
+include six new Dashboard checks for exact currency balances, legacy wrong-
+currency receipts, payroll separation, local-day boundaries, denials and
+unchanged captured rows; API2,161 and targeted frontend27 PASS. Eight separate
+live Payments browser/SQL phases passed, including standard/adjusted one-cent
+overage prevention and exact settlement with attributed audits. These are
+source-bound local returns; C20 SQL/Reports browser, critical/physical-device
+and all five P0 release closure requirements remain OPEN. Preserve newer local
+issue history and raw evidence while importing only the C20 paths.
+[Dashboard SQL evidence](https://github.com/AcademyDesk/AcademyDesk/blob/fe3167b12cbd318369d159bf59a06dacfa2066ae/QA/REPORTS/LOCAL_C19_DASHBOARD_SQL_ACCEPTANCE_2026-11-08.md).
