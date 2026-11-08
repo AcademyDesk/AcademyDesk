@@ -2,16 +2,8 @@
 import { useEffect, useState } from "react";
 import { WorkspaceNav } from "@/components/workspace-nav";
 import { academyApi } from "@/lib/api";
+import { type FinanceSummary as Summary, financeMoney, financeDerived } from "@/lib/finance-summary";
 type Academy = { id: string };
-type Summary = {
-  grossBilled: number;
-  approvedAdjustments: number;
-  collected: number;
-  outstanding: number;
-  reconciled: number;
-  overdueInvoices: number;
-};
-const money = (amount: number) => `₹${amount.toLocaleString("en-IN")}`;
 export default function FinanceSummary() {
   const [summary, setSummary] = useState<Summary>();
   const [message, setMessage] = useState("Loading finance summary…");
@@ -32,31 +24,22 @@ export default function FinanceSummary() {
       }
     })();
   }, []);
-  const netBillable = summary
-    ? Math.max(0, summary.grossBilled - summary.approvedAdjustments)
-    : 0;
-  const collectionRate = netBillable
-    ? Math.min(100, Math.round((summary!.collected / netBillable) * 100))
-    : 0;
-  const awaitingReconciliation = summary
-    ? Math.max(0, summary.collected - summary.reconciled)
-    : 0;
   const cards = summary
     ? [
-        { label: "Gross billed", value: money(summary.grossBilled) },
+        { label: "Gross billed", value: financeMoney(summary, "grossBilled") },
         {
           label: "Approved adjustments",
-          value: money(summary.approvedAdjustments),
+          value: financeMoney(summary, "approvedAdjustments"),
         },
-        { label: "Collected", value: money(summary.collected) },
-        { label: "Outstanding", value: money(summary.outstanding) },
-        { label: "Reconciled", value: money(summary.reconciled) },
+        { label: "Collected", value: financeMoney(summary, "collected") },
+        { label: "Outstanding", value: financeMoney(summary, "outstanding") },
+        { label: "Reconciled", value: financeMoney(summary, "reconciled") },
         { label: "Overdue invoices", value: String(summary.overdueInvoices) },
-        { label: "Net billable", value: money(netBillable) },
-        { label: "Collection rate", value: `${collectionRate}%` },
+        { label: "Net billable", value: financeDerived(summary, "netBillable") },
+        { label: "Collection rate", value: financeDerived(summary, "collectionRate") },
         {
           label: "Awaiting reconciliation",
-          value: money(awaitingReconciliation),
+          value: financeDerived(summary, "awaitingReconciliation"),
         },
       ]
     : [];

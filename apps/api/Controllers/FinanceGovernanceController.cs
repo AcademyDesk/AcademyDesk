@@ -46,10 +46,12 @@ public sealed class FinanceGovernanceController(AcademyDeskDbContext db, Identit
      // Match the existing invoice balance contract; reconciled money is still paid.
      // Project through SQL first, then evaluate the computed DTO balance once per row.
      var rows = await db.Invoices.AsNoTracking()
-         .Where(x => x.AcademyId == academyId && x.Status != "Paid" && x.Status != "Cancelled" && x.DueDate < today)
+         .Where(x => x.AcademyId == academyId && x.Status.ToLower() != "paid" && x.Status.ToLower() != "cancelled" && x.DueDate < today)
          .OrderBy(x => x.DueDate).ThenBy(x => x.Id)
          .Select(x => new CollectionInvoiceSummary(x.Id, x.InvoiceNumber, x.StudentId, x.TotalAmount, x.AdjustedAmount,
-             db.Payments.Where(p => p.AcademyId == academyId && p.InvoiceId == x.Id && p.Status != "Voided")
+             db.Payments.Where(p => p.AcademyId == academyId && p.InvoiceId == x.Id
+                 && (p.Status == "Completed" || p.Status == "Reconciled")
+                 && p.Currency.Trim().ToUpper() == x.Currency.Trim().ToUpper())
                  .Sum(p => (decimal?)p.Amount) ?? 0, x.Currency, x.DueDate, x.Status, today.DayNumber - x.DueDate.DayNumber))
          .ToListAsync(token);
      return rows.Where(x => x.Balance > 0).ToList();
@@ -57,15 +59,50 @@ public sealed class FinanceGovernanceController(AcademyDeskDbContext db, Identit
  [HttpGet("collections")]
  public async Task<ActionResult<IReadOnlyList<CollectionInvoiceSummary>>> Collections(Guid academyId, CancellationToken token) =>
      Ok(await OverdueCollections(academyId, DateOnly.FromDateTime(DateTime.UtcNow), token));
- [HttpGet("summary")] public async Task<ActionResult> Summary(Guid academyId,CancellationToken t){var invoices=await db.Invoices.Where(x=>x.AcademyId==academyId).ToListAsync(t);var payments=await db.Payments.Where(x=>x.AcademyId==academyId&&x.Status!="Voided").ToListAsync(t);return Ok(new{GrossBilled=invoices.Sum(x=>x.TotalAmount),ApprovedAdjustments=invoices.Sum(x=>x.AdjustedAmount),Collected=payments.Sum(x=>x.Amount),Outstanding=Math.Max(0,invoices.Sum(x=>x.TotalAmount-x.AdjustedAmount)-payments.Sum(x=>x.Amount)),Reconciled=payments.Where(x=>x.Status=="Reconciled").Sum(x=>x.Amount),OverdueInvoices=(await OverdueCollections(academyId, DateOnly.FromDateTime(DateTime.UtcNow), t)).Count});}
+ [HttpGet("summary")]
+ public async Task<ActionResult> Summary(Guid academyId, CancellationToken t)
+ {
+     var invoices = await db.Invoices.AsNoTracking().Where(x => x.AcademyId == academyId).ToListAsync(t);
+     var payments = await db.Payments.AsNoTracking().Where(x => x.AcademyId == academyId
+         && (x.Status == "Completed" || x.Status == "Reconciled")).ToListAsync(t);
+     var paid = payments.GroupBy(x => (x.InvoiceId, Currency: CurrencyKey(x.Currency)))
+         .ToDictionary(x => x.Key, x => x.Sum(p => p.Amount));
+     var byCurrency = invoices.Select(x => CurrencyKey(x.Currency)).Concat(payments.Select(x => CurrencyKey(x.Currency)))
+         .Distinct(StringComparer.Ordinal).OrderBy(x => x, StringComparer.Ordinal).Select(currency =>
+         {
+             var bills = invoices.Where(x => CurrencyKey(x.Currency) == currency).ToArray();
+             var receipts = payments.Where(x => CurrencyKey(x.Currency) == currency).ToArray();
+             return new FinanceCurrencyTotals(currency, bills.Sum(x => x.TotalAmount), bills.Sum(x => x.AdjustedAmount),
+                 receipts.Sum(x => x.Amount),
+                 bills.Where(x => !string.Equals(x.Status, "Cancelled", StringComparison.OrdinalIgnoreCase))
+                     .Sum(x => Math.Max(0m, x.TotalAmount - x.AdjustedAmount - paid.GetValueOrDefault((x.Id, currency)))),
+                 receipts.Where(x => x.Status == "Reconciled").Sum(x => x.Amount));
+         }).ToArray();
+     var single = byCurrency.Length == 1 ? byCurrency[0] : null;
+     // Flat values remain useful only when there is one unit (or no activity).
+     // A null mixed-currency scalar cannot be mistaken for a converted amount.
+     decimal? Flat(Func<FinanceCurrencyTotals, decimal> select) => byCurrency.Length == 0 ? 0m : single is null ? null : select(single);
+     return Ok(new
+     {
+         GrossBilled = Flat(x => x.GrossBilled), ApprovedAdjustments = Flat(x => x.ApprovedAdjustments),
+         Collected = Flat(x => x.Collected), Outstanding = Flat(x => x.Outstanding), Reconciled = Flat(x => x.Reconciled),
+         Currency = single?.Currency, HasMixedCurrencies = byCurrency.Length > 1, ByCurrency = byCurrency,
+         OverdueInvoices = (await OverdueCollections(academyId, DateOnly.FromDateTime(DateTime.UtcNow), t)).Count
+     });
+ }
+ private static string CurrencyKey(string currency) => currency.Trim().ToUpperInvariant();
  [HttpPost("collections/{invoiceId:guid}/follow-up")]
  public async Task<ActionResult> CreateFollowUp(Guid academyId, Guid invoiceId, CollectionFollowUpRequest r, CancellationToken t)
  {
      var invoice = await db.Invoices.AsNoTracking().SingleOrDefaultAsync(x => x.Id == invoiceId && x.AcademyId == academyId, t);
      if (invoice is null) return NotFound();
-     var paid = await db.Payments.Where(p => p.AcademyId == academyId && p.InvoiceId == invoiceId && p.Status != "Voided")
+     var paid = await db.Payments.Where(p => p.AcademyId == academyId && p.InvoiceId == invoiceId
+         && (p.Status == "Completed" || p.Status == "Reconciled")
+         && p.Currency.Trim().ToUpper() == invoice.Currency.Trim().ToUpper())
          .SumAsync(p => (decimal?)p.Amount, t) ?? 0;
-     if (invoice.Status is "Paid" or "Cancelled" || invoice.TotalAmount - invoice.AdjustedAmount - paid <= 0)
+     if (string.Equals(invoice.Status, "Paid", StringComparison.OrdinalIgnoreCase)
+         || string.Equals(invoice.Status, "Cancelled", StringComparison.OrdinalIgnoreCase)
+         || invoice.TotalAmount - invoice.AdjustedAmount - paid <= 0)
          return Conflict(new { message = "This invoice no longer requires collections follow-up." });
      var priority = string.IsNullOrWhiteSpace(r.Priority) ? "High" : r.Priority.Trim();
      if (!WorkItemValidation.ValidPriority(priority)) return BadRequest(new { message = "Invalid priority." });
@@ -79,4 +116,6 @@ public sealed class FinanceGovernanceController(AcademyDeskDbContext db, Identit
      db.AdminWorkItems.Add(item); await db.SaveChangesAsync(t); return Ok(item);
  }
 }
+public sealed record FinanceCurrencyTotals(string Currency, decimal GrossBilled, decimal ApprovedAdjustments,
+    decimal Collected, decimal Outstanding, decimal Reconciled);
 public sealed record FinanceSettingsRequest(string? TaxRegistrationNumber,string? TaxLabel,decimal TaxRatePercent,int DefaultPaymentTermsDays,bool TaxInclusivePricing,string? InvoiceLogoUrl,string? InvoiceAuthorityName,string? InvoiceAuthorityTitle,string? InvoiceSignatureUrl,string? InvoiceTemplateKey,string? PayslipTemplateKey); public sealed record FinanceSettingsSummary(string TaxRegistrationNumber,string TaxLabel,decimal TaxRatePercent,int DefaultPaymentTermsDays,bool TaxInclusivePricing,string? InvoiceLogoUrl,string? InvoiceAuthorityName,string? InvoiceAuthorityTitle,string? InvoiceSignatureUrl,string InvoiceTemplateKey,string PayslipTemplateKey); public sealed record CollectionFollowUpRequest(string? Note,string? Priority,Guid? AssignedUserId,DateTime? DueAtUtc);

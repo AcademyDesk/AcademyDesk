@@ -1,6 +1,10 @@
 // Actual page handlers with controlled hooks/transport. These are not browser or SQL tests.
 const fs=require('node:fs'),assert=require('node:assert/strict'),{test}=require('node:test');
 const ts=require('../../apps/web/node_modules/typescript'),jsx=require('../../apps/web/node_modules/react/jsx-runtime');
+const financeModule={exports:{}},platformModule={exports:{}};
+const compileHelper=file=>ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
+new Function('module','exports',compileHelper('apps/web/src/lib/finance-summary.ts'))(financeModule,financeModule.exports);
+new Function('require','module','exports',compileHelper('apps/web/src/lib/platform-finance.ts'))(name=>{if(name==='@/lib/finance-summary')return financeModule.exports;throw Error(name);},platformModule,platformModule.exports);
 const nodes=x=>!x||typeof x!=='object'?[]:Array.isArray(x)?x.flatMap(nodes):[x,...nodes(x.props?.children)];
 const text=x=>x==null?'':Array.isArray(x)?x.map(text).join(''):typeof x==='object'?text(x.props?.children):String(x);
 async function page(kind='portal',config={}) {
@@ -19,7 +23,7 @@ async function page(kind='portal',config={}) {
  const controls={StandardSelectField(){}};
  const file=kind==='portal'?'portal-accounts':'platform';
  const code=ts.transpileModule(fs.readFileSync(`apps/web/src/app/${file}/page.tsx`,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2022}}).outputText;
- new Function('require','module','exports',code)(name=>name==='react/jsx-runtime'?jsx:name==='react'?react:name==='@/lib/api'?{academyApi:api,apiHeaders:()=>({}),clearPortalTokens(){}}:name==='next/navigation'?{useRouter:()=>({replace(){},push(){}})}:name==='next/link'?()=>null:name==='@/components/theme-toggle'?{ThemeToggle(){}}:name==='@/components/workspace-nav'?{WorkspaceNav(){}}:name==='@/components/design-system/controls'?controls:(()=>{throw Error(name);})(),mod,mod.exports);
+ new Function('require','module','exports',code)(name=>name==='@/lib/platform-finance'?platformModule.exports:name==='react/jsx-runtime'?jsx:name==='react'?react:name==='@/lib/api'?{academyApi:api,apiHeaders:()=>({}),clearPortalTokens(){}}:name==='next/navigation'?{useRouter:()=>({replace(){},push(){}})}:name==='next/link'?()=>null:name==='@/components/theme-toggle'?{ThemeToggle(){}}:name==='@/components/workspace-nav'?{WorkspaceNav(){}}:name==='@/components/design-system/controls'?controls:(()=>{throw Error(name);})(),mod,mod.exports);
  const render=()=>{index=refIndex=0;return mod.exports.default();};
  render();effects.splice(0).forEach(fn=>fn());await new Promise(r=>setImmediate(r));
  const find=p=>nodes(render()).find(p);
