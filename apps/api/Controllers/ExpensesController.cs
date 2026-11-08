@@ -12,6 +12,14 @@ public sealed class ExpensesController(AcademyDeskDbContext dbContext) : Control
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<ExpenseSummary>>> List(Guid academyId, CancellationToken cancellationToken) => Ok(await dbContext.Expenses.AsNoTracking().Where(x => x.AcademyId == academyId).OrderByDescending(x => x.ExpenseDate).Select(x => new ExpenseSummary(x.Id, x.Description, x.Amount, x.Currency, x.Category, x.BranchId, x.ExpenseDate, x.Status)).ToListAsync(cancellationToken));
 
+    // Expense entry needs branch labels, not branch-management privileges or addresses.
+    // Inherit this controller's existing Finance permission/module and academy gate.
+    [HttpGet("branch-options")]
+    public async Task<ActionResult<IReadOnlyList<ExpenseBranchOption>>> BranchOptions(Guid academyId, CancellationToken token) =>
+        Ok(await dbContext.Branches.AsNoTracking().Where(x => x.AcademyId == academyId)
+            .OrderBy(x => x.Name).ThenBy(x => x.Id)
+            .Select(x => new ExpenseBranchOption(x.Id, x.Name)).ToListAsync(token));
+
     [HttpPost]
     public async Task<ActionResult<ExpenseSummary>> Create(Guid academyId, CreateExpenseRequest request, CancellationToken cancellationToken)
     {
@@ -45,3 +53,5 @@ public sealed class ExpensesController(AcademyDeskDbContext dbContext) : Control
 public sealed record CreateExpenseRequest(string Description, decimal Amount, string? Currency, string? Category, Guid? BranchId, DateOnly? ExpenseDate);
 public sealed record ExpenseSummary(Guid Id, string Description, decimal Amount, string Currency, string Category, Guid? BranchId, DateOnly ExpenseDate, string Status);
 public sealed record UpdateExpenseRequest(string Description, decimal Amount, string? Category, Guid? BranchId, DateOnly ExpenseDate, string? Status);
+
+public sealed record ExpenseBranchOption(Guid Id, string Name);
