@@ -1,5 +1,19 @@
 # AcademyDesk QA control centre — Phase 1
 
+## P0 live payroll and private recording — 8 November 2026
+
+- [x] Payroll passed four live browser/SQL phases. The form explains duplicate
+  worker-period payouts, retains the draft and shows the saved payslip.
+  Zero net was refused and a one-cent net payout saved exactly once.
+- [x] The private recording test passed denied and granted synthetic microphone
+  cases, pause/resume, one private upload, matching student/guardian downloads
+  and anonymous/unassigned Teacher denial.
+- [ ] Five P0s, linked critical and physical-device cases, release CI/images
+  and staging recovery remain open.
+
+[Payroll browser verification](REPORTS/LOCAL_P0_PAYROLL_BROWSER_ACCEPTANCE_2026-11-08.md)
+[Private recording verification](REPORTS/LOCAL_P0_PRIVATE_RECORDING_ACCEPTANCE_2026-11-08.md)
+
 ## Legacy currency write repair and C21 — 8 November 2026
 
 - [x] Invoice status, collection, voiding, restoration and adjustment

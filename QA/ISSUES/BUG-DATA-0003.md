@@ -115,3 +115,13 @@ writes. Exact-lock build/types/lint PASS (zero errors / existing 63 warnings).
 Remain **OPEN**. These shared batch counts are not added per issue and do not
 replace original module/critical, real Identity/HTTP/SQL, other-client, device or
 release closure requirements. See [C9 source-bound report and Desktop tasks](../HANDOFF/C9_FINANCE_BATCH_2026-11-07.md).
+
+## Local live payroll boundary acceptance — 8 November 2026
+
+The real form rejected zero net and persisted one INR 0.01 payout with an actor
+audit and a saved worker identity. A second active profile for the same worker
+and normalized pay period returned 409. The browser now shows the duplicate
+explanation and retains its draft. The saved print document matched fresh
+SQL-backed readback at the print-call boundary. Physical-device, native PDF
+and linked critical acceptance remain open.
+[Local browser verification](../REPORTS/LOCAL_P0_PAYROLL_BROWSER_ACCEPTANCE_2026-11-08.md)

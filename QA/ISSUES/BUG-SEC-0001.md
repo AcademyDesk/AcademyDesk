@@ -105,3 +105,13 @@ Third slice: [Teacher media client integration](../REPORTS/PHASE_2B_MEDIA_CLIENT
 Second slice: [authenticated Blob sessions](../REPORTS/PHASE_2B_BLOB_UPLOAD_SESSIONS.md) creates durable immutable ownership-bound sessions, resumable bounded chunks, idempotent completion/recovery and authenticated content/ranges. 47 real HTTP/SQL/Azurite assertions passed on two fresh runs; prior concurrency failures are retained. Legacy read gate passed again. Production storage remains disabled and browser clients still use the legacy upload route. Only owned disposable SQL received the new migration; development/Azure untouched. Remain OPEN / FIX-IN-PROGRESS. The paragraph below describes the first-slice checkpoint historically.
 
 [Legacy access-gate report](../REPORTS/PHASE_2B_CLASS_MEDIA_ACCESS_GATE.md): public static access is excluded for teacher and learning-material folders, and existing GET/HEAD URLs now require current tenant/role/recipient checks before any ordinary or Range bytes. Authorized teacher/student/guardian controls and revocation cases passed locally. Staff retain authorized draft management; unpublishing revokes family access. No live file was migrated or deleted. Disk-backed upload writers, authenticated Blob sessions and bearer-aware browser viewers still need integration; this is not a complete media-delivery release or issue closure. The initial combined run hit HTTP 429 later in finance and is retained as failed evidence. Remain OPEN / FIX-IN-PROGRESS until the required closure chain is satisfied.
+
+## Local private microphone and download acceptance — 8 November 2026
+
+A real browser microphone denial retained a staged synthetic file and title.
+A separate Teacher context recorded, paused, resumed and privately uploaded
+a synthetic recording. SQL observed one completed session. The student
+decoded the recording and the student and guardian saved exact matching bytes.
+Anonymous and unassigned Teacher content requests were denied. Physical
+devices, larger transfers and linked critical/release acceptance remain open.
+[Local recording verification](../REPORTS/LOCAL_P0_PRIVATE_RECORDING_ACCEPTANCE_2026-11-08.md)
