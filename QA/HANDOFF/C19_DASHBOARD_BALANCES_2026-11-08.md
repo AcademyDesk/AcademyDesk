@@ -2,6 +2,7 @@
 
 Cloud owner. Status IMPLEMENTED / CLOUD VALIDATED; local acceptance pending.
 Branch `codex/cloud-c19-dashboard-balances-20261108`.
+Implementation `e9d256221fa49fa467b9a6de38d07f9e3aa3600a`; claim `ab4c43ac29cb3d381da7dbe068ba52d6f0512394`.
 Clean base `cb0656a78f94fd10f398c5d67860a3406f3ec0a1` verified after workspace
 startup recovery. Latest Desktop inspected `88fd8e1`; no competing Dashboard
 claim found. C17/C18 remain separate required returns. Preserve all Desktop
