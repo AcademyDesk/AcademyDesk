@@ -113,3 +113,12 @@ writes. Exact-lock build/types/lint PASS (zero errors / existing 63 warnings).
 Remain **OPEN**. These shared batch counts are not added per issue and do not
 replace original module/critical, real Identity/HTTP/SQL, other-client, device or
 release closure requirements. See [C9 source-bound report and Desktop tasks](../HANDOFF/C9_FINANCE_BATCH_2026-11-07.md).
+
+## Local live Payments balance — 8 November 2026
+
+At 1440px the real page showed INR 400 after the INR 600 reconciled payment.
+It blocked INR 400.01 with no POST and no captured SQL change. INR 400
+settled with one correctly attributed audit, two payment rows and zero balance.
+The existing lost-response recovery checks passed. Keep OPEN for the linked
+critical and physical-device acceptance.
+[Real browser and SQL verification](../REPORTS/LOCAL_P0_PAYMENT_BROWSER_BALANCES_2026-11-08.md)

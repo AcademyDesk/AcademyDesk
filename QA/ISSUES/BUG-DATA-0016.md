@@ -161,3 +161,12 @@ cent precision, finance eligibility, collections agreement and read-side
 authority. The original INR platform billing regression passed. Dashboard C19,
 live browser/device and the wider critical closure remain open.
 [Local SQL verification](../REPORTS/LOCAL_C16_C18_SQL_ACCEPTANCE_2026-11-08.md)
+
+## Local C19 Dashboard SQL acceptance — 8 November 2026
+
+Dashboard and Finance agree on currency groups and flat values against real SQL.
+A separate payroll payout did not change fee receivables. Role and tenant
+denials, academy-local scheduling and unchanged captured records passed.
+The combined run passed 34 HTTP/SQL checks and 2,161 API tests. Real browser
+modal/device and broader closure requirements remain open, alongside C20.
+[Local SQL verification](../REPORTS/LOCAL_C19_DASHBOARD_SQL_ACCEPTANCE_2026-11-08.md)

@@ -34,10 +34,10 @@ internal static partial class SqlHarnessEntryPoint
             var student = await db.Students.Where(x => x.AcademyId == academy && x.FirstName == "Isolated-A").Select(x => x.Id).SingleAsync();
             admin = await scope.ServiceProvider.GetRequiredService<IdentityDbContext>().Users
                 .Where(x => x.Email == "qa-admin-a@example.invalid").Select(x => x.Id).SingleAsync();
-            foreach (var number in new[] { "C9-COMMITTED", "C9-UNSENT" })
+            foreach (var (number, adjustment) in new[] { ("C9-COMMITTED", 0m), ("C9-UNSENT", 0m), ("P0-ADJUSTED", 200m) })
             {
                 var invoice = new Invoice { AcademyId = academy, StudentId = student, InvoiceNumber = number, TotalAmount = 1000m,
-                    Status = "PartiallyPaid", DueDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(7)) };
+                    AdjustedAmount = adjustment, Status = "PartiallyPaid", DueDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(7)) };
                 invoices.Add(invoice);
                 db.AddRange(invoice, new Payment { AcademyId = academy, InvoiceId = invoice.Id, Amount = 600m, Status = "Reconciled",
                     ReconciledAtUtc = DateTime.UtcNow, ReconciliationReference = "C9 opening reconciliation" });
@@ -78,21 +78,23 @@ internal static partial class SqlHarnessEntryPoint
                 try
                 {
                     var input = await context.Request.ReadFromJsonAsync<JsonObject>(context.RequestAborted);
-                    if (input?["run"]?.GetValue<string>() != run || failed || completed >= 4 || input["phase"]?.GetValue<int>() != completed + 1)
+                    if (input?["run"]?.GetValue<string>() != run || failed || completed >= 8 || input["phase"]?.GetValue<int>() != completed + 1)
                         throw new InvalidOperationException("Unexpected payment recovery phase.");
                     var actual = await ManualStateAsync(factory);
-                    if (completed == 0)
+                    if (completed is 0 or 5 or 7)
                     {
+                        var target = invoices[completed == 0 ? 0 : completed == 5 ? 1 : 2];
+                        var balance = target.TotalAmount - target.AdjustedAmount - 600m;
                         var normalized = actual.DeepClone().AsObject();
                         var payment = ManualAdded(state, normalized, "payments", 1).Single();
                         if (!Guid.TryParse(input["paymentId"]?.GetValue<string>(), out var paymentId) ||
-                            payment["Id"]!.GetValue<Guid>() != paymentId || payment["InvoiceId"]!.GetValue<Guid>() != invoices[0].Id ||
-                            payment["AcademyId"]!.GetValue<Guid>() != academy || payment["Amount"]!.GetValue<decimal>() != 400m ||
+                            payment["Id"]!.GetValue<Guid>() != paymentId || payment["InvoiceId"]!.GetValue<Guid>() != target.Id ||
+                            payment["AcademyId"]!.GetValue<Guid>() != academy || payment["Amount"]!.GetValue<decimal>() != balance ||
                             payment["Status"]!.GetValue<string>() != "Completed" || payment["Currency"]!.GetValue<string>() != "INR" ||
                             payment["Method"]!.GetValue<string>() != "UPI" || payment["Reference"]?.GetValue<string>() != reference)
-                            throw new InvalidOperationException("Committed payment differs from the lost 201 response or submitted form.");
-                        var invoice = ManualRow(normalized, "invoices", invoices[0].Id);
-                        if (invoice["Status"]!.GetValue<string>() != "Paid") throw new InvalidOperationException("Invoice must be paid at exactly 1000.");
+                            throw new InvalidOperationException("Committed payment differs from the accepted form response.");
+                        var invoice = ManualRow(normalized, "invoices", target.Id);
+                        if (invoice["Status"]!.GetValue<string>() != "Paid") throw new InvalidOperationException("Invoice must be paid at its exact net amount.");
                         invoice["Status"] = "PartiallyPaid";
                         var audit = ManualAdded(state, normalized, "audits", 1).Single();
                         if (audit["ActorUserId"]!.GetValue<Guid>() != admin || audit["AcademyId"]!.GetValue<Guid>() != academy ||
@@ -138,10 +140,10 @@ internal static partial class SqlHarnessEntryPoint
         var deadline = DateTime.UtcNow.AddMinutes(5);
         while (!File.Exists(stop) && DateTime.UtcNow < deadline) await Task.Delay(500);
         await bridge.StopAsync();
-        if (failed || completed != 4 || !File.Exists(stop))
-            throw new InvalidOperationException($"Incomplete payment recovery verification: {completed}/4.");
+        if (failed || completed != 8 || !File.Exists(stop))
+            throw new InvalidOperationException($"Incomplete payment browser verification: {completed}/8.");
         ManualSame(state, await ManualStateAsync(factory), "final payment recovery SQL state");
-        Console.WriteLine("C9PAYMENT FINAL 4 verified UI/SQL phases.");
+        Console.WriteLine("C9PAYMENT FINAL 8 verified UI/SQL phases.");
     }
 
     private static async Task ForwardFinanceBrowserRequestAsync(HttpContext context, HttpClient client)

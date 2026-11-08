@@ -51,6 +51,7 @@ internal static partial class SqlHarnessEntryPoint
 
         var root = $"/api/academies/{academy}";
         var finance = root + "/finance-governance";
+        var dashboard = root + "/dashboard";
         var intake = root + "/platform-services/support-cases";
         const string overview = "/api/platform/overview";
         const string triage = "/api/platform/support-cases";
@@ -97,11 +98,24 @@ internal static partial class SqlHarnessEntryPoint
         {
             foreach (var field in fields) Check(row.GetProperty(field).ValueKind == JsonValueKind.Null, "Mixed scalar must be null: " + field);
         }
+        async Task<JsonElement> CheckDashboard(string label, JsonElement summary)
+        {
+            var result = await Read(label, adminToken, dashboard);
+            foreach (var field in new[] { "byCurrency", "hasMixedCurrencies", "currency" })
+                Check(JsonNode.DeepEquals(JsonNode.Parse(result.GetProperty(field).GetRawText()),
+                    JsonNode.Parse(summary.GetProperty(field).GetRawText())), "Dashboard and Finance disagree: " + field);
+            foreach (var (card, total) in new[] { ("totalInvoiced", "grossBilled"), ("totalPaid", "collected"), ("outstandingBalance", "outstanding") })
+                Check(result.GetProperty(card).GetRawText() == summary.GetProperty(total).GetRawText(), "Dashboard scalar differs: " + card);
+            Pass(label);
+            return result;
+        }
 
         var academyEmpty = await Read("academy-empty", adminToken, finance + "/summary");
         Groups(academyEmpty);
         Money(academyEmpty, ("grossBilled", 0), ("outstanding", 0), ("overdueInvoices", 0));
         Pass("academy-empty");
+        var initialDashboard = await CheckDashboard("dashboard-empty-finance-parity", academyEmpty);
+        Money(initialDashboard, ("activeStudents", 1), ("activeTeachers", 1), ("activeCourses", 1), ("activeBatches", 1));
         var platformEmpty = await Read("platform-empty", ownerToken, overview);
         Groups(platformEmpty);
         Money(platformEmpty, ("totalBilled", 0), ("outstandingBilling", 0), ("overdueInvoices", 0));
@@ -132,6 +146,7 @@ internal static partial class SqlHarnessEntryPoint
         Money(academySingle, ("grossBilled", 100.55m), ("approvedAdjustments", .05m), ("collected", 30.35m),
             ("outstanding", 70.15m), ("reconciled", 20.10m), ("overdueInvoices", 1));
         Pass("academy-single-usd");
+        await CheckDashboard("dashboard-single-usd-finance-parity", academySingle);
         var platformSingle = await Read("platform-single-gbp", ownerToken, overview);
         Groups(platformSingle, "GBP");
         Money(platformSingle, ("totalBilled", 25.34m), ("collectedBilling", 25.34m), ("outstandingBilling", 0), ("overdueInvoices", 0));
@@ -157,6 +172,31 @@ internal static partial class SqlHarnessEntryPoint
         Money(academyGroups["INR"], ("grossBilled", 210), ("approvedAdjustments", 0), ("collected", 158), ("outstanding", 80), ("reconciled", 8));
         Money(academyGroups["USD"], ("grossBilled", 100.55m), ("approvedAdjustments", .05m), ("collected", 30.35m), ("outstanding", 70.15m), ("reconciled", 20.10m));
         Pass("academy-mixed-exact-decimals-and-isolation");
+        var payroll = new PayrollProfile { AcademyId = academy, WorkerType = "Teacher", WorkerName = "Synthetic Dashboard Worker", MonthlyAmount = 900m };
+        await Seed(payroll, new PayrollPayout { AcademyId = academy, PayrollProfileId = payroll.Id, PayslipNumber = "C19-SYNTHETIC",
+            PeriodLabel = "2026-11", GrossAmount = 900m, Deductions = 40m, NetAmount = 860m });
+        Guid todaySession;
+        using (var scope = factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+            var row = await db.Academies.SingleAsync(x => x.Id == academy);
+            row.TimeZone = "Asia/Kolkata";
+            var zone = TimeZoneInfo.FindSystemTimeZoneById(row.TimeZone);
+            var localToday = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, zone).Date;
+            var start = TimeZoneInfo.ConvertTimeToUtc(localToday, zone);
+            var batch = await db.Batches.Where(x => x.AcademyId == academy).Select(x => x.Id).SingleAsync();
+            ClassSession Session(DateTime at, string status) => new() { AcademyId = academy, BatchId = batch,
+                StartUtc = at, EndUtc = at.AddMinutes(30), Status = status };
+            var scheduled = Session(start, "Scheduled");
+            todaySession = scheduled.Id;
+            db.AddRange(scheduled, Session(start.AddHours(1), "Cancelled"), Session(start.AddDays(1), "Scheduled"));
+            await db.SaveChangesAsync();
+        }
+        var mixedDashboard = await CheckDashboard("dashboard-mixed-finance-parity-with-payroll", mixed);
+        Money(mixedDashboard, ("classesToday", 1));
+        Check(mixedDashboard.GetProperty("todaySchedule").EnumerateArray().Single().GetProperty("id").GetGuid() == todaySession,
+            "Dashboard changed academy-local schedule boundaries.");
+        Pass("dashboard-today-timezone-and-cancellation");
         var queue = await Read("collection-queue", adminToken, finance + "/collections");
         var due = queue.EnumerateArray().ToDictionary(x => x.GetProperty("id").GetGuid(), x => x.GetProperty("balance").GetDecimal());
         Check(due.Count == mixed.GetProperty("overdueInvoices").GetInt32() && due.Count == 2 && due[unpaid.Id] == 80m && due[dollars.Id] == 70.15m, "Collections and summary differ.");
@@ -191,6 +231,8 @@ internal static partial class SqlHarnessEntryPoint
             ("academy-foreign-denied", foreignAdmin, finance + "/summary", HttpStatusCode.Forbidden),
             ("academy-teacher-denied", teacher, finance + "/summary", HttpStatusCode.Forbidden),
             ("academy-module-denied", foreignAdmin, $"/api/academies/{foreign}/finance-governance/summary", HttpStatusCode.Forbidden),
+            ("dashboard-foreign-denied", foreignAdmin, dashboard, HttpStatusCode.Forbidden),
+            ("dashboard-teacher-denied", teacher, dashboard, HttpStatusCode.Forbidden),
             ("platform-role-only-denied", roleOnly, overview, HttpStatusCode.Forbidden),
             ("platform-anonymous-denied", null, overview, HttpStatusCode.Unauthorized)
         })
@@ -289,6 +331,7 @@ internal static partial class SqlHarnessEntryPoint
         state["supportCases"] = JsonSerializer.SerializeToNode(await db.PlatformSupportCases.AsNoTracking().OrderBy(x => x.Id).ToArrayAsync());
         state["platformInvoices"] = JsonSerializer.SerializeToNode(await db.PlatformBillingInvoices.AsNoTracking().OrderBy(x => x.Id).ToArrayAsync());
         state["platformAudits"] = JsonSerializer.SerializeToNode(await db.PlatformAuditEntries.AsNoTracking().OrderBy(x => x.Id).ToArrayAsync());
+        state["classSessions"] = JsonSerializer.SerializeToNode(await db.ClassSessions.AsNoTracking().OrderBy(x => x.Id).ToArrayAsync());
         return state;
     }
 

@@ -1,5 +1,29 @@
 # Academy Desk shared integration tracker
 
+## P0 live Payments acceptance — 8 November 2026
+
+- [x] The exact-lock export passed eight real browser/SQL phases. Standard
+  and adjusted invoices blocked a one-cent overage without sending a POST.
+  Exact payments settled with one audit each, two payment rows and zero
+  balance. Retained recovery scenarios passed.
+- [ ] Both issues stay open for linked critical and physical-device cases.
+  Five P0s still block production. Continue the remaining P0 runtime checks
+  while Cloud handles C20.
+
+[Local payment browser verification](QA/REPORTS/LOCAL_P0_PAYMENT_BROWSER_BALANCES_2026-11-08.md)
+
+## C19 Dashboard SQL acceptance — 8 November 2026
+
+- [x] Integrated Cloud C19. Dashboard and Finance match on real SQL for empty,
+  single and mixed currency histories. The six new checks cover payroll
+  separation, academy-local scheduling and role/tenant denials.
+- [x] Passed 34 combined HTTP/SQL checks, 2,161 API tests and 27 targeted frontend
+  checks. The exact-lock Next.js browser export and static postbuild passed.
+- [ ] Cloud owns C20 invoice-list and Reports currency work. The real Dashboard
+  browser modal, critical/device and exact-release CI/staging gates stay open.
+
+[Local C19 verification](QA/REPORTS/LOCAL_C19_DASHBOARD_SQL_ACCEPTANCE_2026-11-08.md)
+
 ## C16 support and C17–C18 currencies — 8 November 2026
 
 - [x] Imported 19 Cloud paths for academy finance and Platform Owner currency
@@ -9,8 +33,8 @@
   support intake and triage, role/tenant denial and audit rollback. The
   original INR platform billing regression passed 51 cases. The
   combined API suite passed 2,138 tests.
-- [ ] Cloud owns C19 academy Dashboard balances. The live browser and device
-  returns, five P0 records, release CI/images and staging recovery are open.
+- [ ] The remaining live browser/device returns, five P0 records, release
+  CI/images and staging recovery are open.
 
 [Local C16–C18 verification](QA/REPORTS/LOCAL_C16_C18_SQL_ACCEPTANCE_2026-11-08.md)
 

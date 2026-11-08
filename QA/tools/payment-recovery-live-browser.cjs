@@ -15,7 +15,7 @@ const fixture = JSON.parse(fs.readFileSync(path.join(root, 'payment-recovery-fix
 assert.equal(fixture.run, run);
 assert.equal(fixture.origin, web);
 assert.equal(fixture.api, api);
-assert.equal(fixture.invoices.length, 2);
+assert.equal(fixture.invoices.length, 3);
 
 const proof = JSON.parse(fs.readFileSync(process.env.QA_PAYMENT_PROOF, 'utf8'));
 assert.equal(proof.run, run);
@@ -152,11 +152,89 @@ async function exercise(browser, invoice, commit, firstPhase) {
   }
 }
 
+async function settle(browser, invoice, limit, width, firstPhase) {
+  const context = await browser.newContext({ viewport: { width, height: 900 }, timezoneId: 'Asia/Kolkata' });
+  const posts = [];
+  try {
+    await context.route('**/*', route => {
+      const url = new URL(route.request().url());
+      return url.origin === web || url.origin === api || url.protocol === 'data:' ? route.continue() : route.abort('blockedbyclient');
+    });
+    const page = await context.newPage();
+    page.setDefaultTimeout(15000);
+    page.on('pageerror', error => errors.push(error.message));
+    page.on('response', response => {
+      const url = new URL(response.url());
+      if (url.origin === api) responses.push({ path: url.pathname, method: response.request().method(), status: response.status() });
+    });
+    page.on('request', request => {
+      if (request.method() === 'POST' && request.url() === api + paymentsPath) posts.push(request.postDataJSON());
+    });
+
+    await page.goto(web + '/login?returnTo=%2Fpayments');
+    await page.getByLabel('User name', { exact: true }).fill('qa-admin-a@example.invalid');
+    await page.getByLabel('Password', { exact: true }).fill('Synthetic!39Ab');
+    const [login] = await Promise.all([
+      page.waitForResponse(matches('POST', '/api/auth/login')),
+      page.getByRole('button', { name: 'Sign in', exact: true }).click(),
+    ]);
+    assert.equal(login.status(), 200);
+    await page.waitForURL(url => url.pathname === '/payments');
+    const form = page.locator('form.payments-create');
+    const row = page.locator('.payments-directory li').filter({ hasText: invoice.number });
+    await row.getByText(`Balance ₹${limit}.00`, { exact: true }).waitFor();
+    await form.locator('select').first().selectOption(invoice.id);
+    const amount = form.locator('input[type="number"]');
+    const save = form.getByRole('button', { name: 'Record payment', exact: true });
+    assert.equal(await amount.inputValue(), String(limit));
+    assert.equal(await amount.getAttribute('max'), String(limit));
+    await form.getByPlaceholder('UPI, cheque, or receipt reference (optional)').fill(fixture.reference);
+    await amount.fill((limit + .01).toFixed(2));
+    assert.equal(await amount.evaluate(field => field.validity.rangeOverflow), true);
+    await save.click();
+    // Exercise the React guard as well, independently of native number validation.
+    await form.evaluate(element => element.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })));
+    await page.getByText('The payment must be positive and must not exceed the remaining balance.', { exact: true }).waitFor();
+    await check(firstPhase);
+    assert.deepEqual(posts, []);
+
+    await amount.fill(String(limit));
+    const [write, invoices, payments] = await Promise.all([
+      page.waitForResponse(matches('POST', paymentsPath)),
+      page.waitForResponse(matches('GET', invoicesPath)),
+      page.waitForResponse(matches('GET', paymentsPath)),
+      save.click(),
+    ]);
+    assert.equal(write.status(), 201);
+    assert.equal(invoices.status(), 200);
+    assert.equal(payments.status(), 200);
+    const saved = await write.json();
+    assert.equal(saved.amount, limit);
+    assert.equal(saved.invoiceId, invoice.id);
+    const current = (await invoices.json()).find(item => item.id === invoice.id);
+    assert.equal(current.balance, 0);
+    assert.equal(current.status, 'Paid');
+    const collected = (await payments.json()).filter(item => item.invoiceId === invoice.id);
+    assert.deepEqual(collected.map(item => [item.amount, item.status]).sort(), [[limit, 'Completed'], [600, 'Reconciled']]);
+    await row.getByText('Balance ₹0.00', { exact: true }).waitFor();
+    await page.getByText('Payment recorded.', { exact: true }).waitFor();
+    assert.equal(await form.locator('option').filter({ hasText: invoice.number }).count(), 0);
+    await check(firstPhase + 1, saved.id);
+    assert.deepEqual(posts, [{ invoiceId: invoice.id, amount: limit, method: 'UPI', reference: fixture.reference }]);
+    scenarios.push({ invoice: invoice.number, width, rejectedOverage: .01, settlement: limit, balance: current.balance, rows: collected.length });
+  } finally {
+    await context.close();
+  }
+}
+
 async function main() {
   const browser = await chromium.launch({ executablePath: process.env.QA_BROWSER_EXECUTABLE, headless: true, chromiumSandbox: true });
   try {
     await exercise(browser, fixture.invoices[0], true, 1);
     await exercise(browser, fixture.invoices[1], false, 3);
+    await settle(browser, fixture.invoices[1], 400, 1440, 5);
+    await settle(browser, fixture.invoices[2], 200, 320, 7);
+    assert.deepEqual(errors, []);
     assert.ok(responses.every(response => response.status < 400));
     fs.writeFileSync(path.join(output, 'result.json'), JSON.stringify({ run, passed: true, checks, scenarios, responses, errors }, null, 2), { flag: 'wx' });
   } finally {
