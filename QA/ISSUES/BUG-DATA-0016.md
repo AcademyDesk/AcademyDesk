@@ -206,6 +206,8 @@ issue history and raw evidence while importing only the C20 paths.
 
 ## C21 Dashboard detail availability — 8 November 2026
 
+Implementation `903a9e502eb9cb4b87af7a82638c756fcdff683a`.
+
 A failed optional invoice/payroll read previously became an empty-success list,
 so the valid currency-aware overview could be followed by false no-fees/no-payroll
 claims. C21 distinguishes loading, ready and unavailable without changing any

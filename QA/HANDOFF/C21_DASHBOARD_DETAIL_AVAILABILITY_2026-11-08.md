@@ -2,6 +2,7 @@
 
 Cloud owner. IMPLEMENTED / CLOUD VALIDATED; local real-host acceptance pending.
 Branch `codex/cloud-c21-dashboard-detail-availability-20261108`.
+Implementation `903a9e502eb9cb4b87af7a82638c756fcdff683a`; claim `29479080a1c01eacfe40a7d3c810a6c3e2014dd9`.
 Clean base `d22ca1aa2a89e488351102adce99712923114499` (published C20).
 Latest Desktop `fe3167b12cbd318369d159bf59a06dacfa2066ae`: C19 is integrated,
 34 HTTP/SQL,2,161 API and eight live Payments browser/SQL phases passed in their
