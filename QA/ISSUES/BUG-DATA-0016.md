@@ -240,3 +240,30 @@ unchanged. Desktop explicitly owns that protected-write repair, and Cloud owns
 C21 detail availability. Preserve all local evidence during C21 integration.
 This does not close BUG-DATA-0016, any P0 or the critical/device/release gates.
 [Exact local source and acceptance](https://github.com/AcademyDesk/AcademyDesk/blob/88a3a45218ced1e4995d83fdcc1d4574cffb29c0/QA/REPORTS/LOCAL_C20_REPORTS_PAYMENT_TRANSITIONS_2026-11-08.md).
+
+## C22 Expenses currency and save recovery — 8 November 2026
+
+Expense summary and TeacherPayout totals now group actual units and preserve
+cents; missing/nonfinite metadata is unavailable, invalid currency is labelled,
+and true empty data is unitless0.00. Initial read failure cannot publish zero
+ready totals or editable intake. Synchronous/stale-submit guards prevent repeat
+intent, definitive rejection preserves drafts, known saved/readback failure
+stays saved, and unknown transport/5xx outcome requires fresh read plus explicit
+new-entry reset. Existing INR/category/nullable branch/date creation policy and
+all backend write/DTO bytes remain unchanged.
+
+A minimal GET expenses/branch-options returns only owned branch id/name under
+the existing Finance permission/module. Actual Identity/HTTP tests confirm
+FinanceUser/Owner/Admin work without MultiBranch, no management privilege or
+address exposure, and unchanged tenant/role/module/current-owner/audit gates.
+Only a read action and minimal record were added; protected writer repair stays
+Desktop-owned and must be preserved on import.
+
+Final target API41/41 and UI78/78 PASS; full API2,190/2,190 PASS; full frontend
+2,197 PASS /3 missing genuine SQL-receipt FAIL, zero skips/cancellations. Native
+24/24 PASS with12 intercepted attempts/eight synthetic commits, zero live writes,
+normal sandbox/owned cleanup and570 unchanged export hashes. None of this is
+new real SQL/audit/device acceptance. Latest Desktop separately repaired legacy
+currency writers (11/11 SQL plus forty retained checks); do not overwrite that
+newer backend with this Cloud base. Keep OPEN for combined real-host/critical/
+device and release acceptance. [Exact scope, evidence and prioritized tasks](../HANDOFF/C22_EXPENSES_RECOVERY_2026-11-08.md).
