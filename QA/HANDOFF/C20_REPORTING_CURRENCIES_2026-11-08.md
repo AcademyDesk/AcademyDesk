@@ -2,6 +2,7 @@
 
 Cloud owner. IMPLEMENTED / CLOUD VALIDATED; local acceptance pending.
 Branch `codex/cloud-c20-reporting-currencies-20261108`.
+Implementation `9fc338121ca147d7cc3934a3329247c8d3c48c22`; claim `5fa49b45d2fc2e4ea905938a4e6f9e33c4be5a56`.
 Clean base `33e47b2b2a6f760436fb0fbe865b8395d3dd0bce` (C19 return).
 At claim Desktop `b7dc134` had C17/C18 integrated,28 HTTP/SQL,51 Platform
 billing and2,138 combined API PASS. Final refresh `fe3167b12cbd318369d159bf59a06dacfa2066ae`

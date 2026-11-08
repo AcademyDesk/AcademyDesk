@@ -30,7 +30,7 @@
 | API response | Not captured for this issue; use synthetic request/response in isolated reproduction |
 | Database before/after | C17-C19 scoped local SQL snapshots verified; C20 InMemory snapshots unchanged on reads/denials, C20 SQL pending |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | C17 a448103 + ddd34fd; C18 a8d20d80abc46042a4d3a7bf31b15ead121ae361; C19 e9d256221fa49fa467b9a6de38d07f9e3aa3600a; C20 enclosing implementation commit; wider live acceptance pending |
+| Fix commit | C17 a448103 + ddd34fd; C18 a8d20d80abc46042a4d3a7bf31b15ead121ae361; C19 e9d256221fa49fa467b9a6de38d07f9e3aa3600a; C20 9fc338121ca147d7cc3934a3329247c8d3c48c22; wider live acceptance pending |
 | Retest result | C20 API target101/101, UI32/32, native14/14 with36 CSV downloads PASS; prior source-bound evidence retained below; real SQL/device/critical closure pending |
 | Regression result | C20 API2,177/2,177 PASS; frontend2,118 PASS /3 genuine SQL-receipt FAIL, zero skips |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
