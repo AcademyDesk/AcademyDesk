@@ -131,7 +131,24 @@ internal static partial class SqlHarnessEntryPoint
                     if (input?["run"]?.GetValue<string>() != run || failed || completed >= 5 || input["phase"]?.GetValue<int>() != completed + 1)
                         throw new InvalidOperationException("Unexpected reporting browser phase.");
                     var actual = await Snapshot();
-                    if (completed is 2 or 4)
+                    if (completed == 1)
+                    {
+                        var normalized = actual.DeepClone().AsObject();
+                        var invoice = ManualRow(normalized, "invoices", usd.Id);
+                        FinanceRecoveryFields(invoice, new { Status = "Paid", AdjustedAmount = .05m });
+                        invoice["Status"] = ManualRow(state, "invoices", usd.Id)["Status"]!.DeepClone();
+                        var payment = ManualAdded(state, normalized, "payments", 1).Single();
+                        if (!Guid.TryParse(input["paymentId"]?.GetValue<string>(), out var paymentId))
+                            throw new InvalidOperationException("Confirmed browser payment ID missing.");
+                        FinanceRecoveryFields(payment, new { Id = paymentId, AcademyId = academy, InvoiceId = usd.Id,
+                            Amount = 70.15m, Currency = "usd", Status = "Completed", Method = "UPI" });
+                        var audit = ManualAdded(state, normalized, "audits", 1).Single();
+                        FinanceRecoveryFields(audit, new { ActorUserId = admin, AcademyId = academy, Action = "POST Payments" });
+                        if (!audit["MetadataJson"]!.GetValue<string>().Contains(paymentsPath, StringComparison.Ordinal))
+                            throw new InvalidOperationException("Collection audit route differs.");
+                        ManualSame(state, normalized, "legacy receipt and unrelated collection state");
+                    }
+                    else if (completed is 2 or 4)
                     {
                         var voiding = completed == 2;
                         var normalized = actual.DeepClone().AsObject();

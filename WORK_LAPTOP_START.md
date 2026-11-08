@@ -1,5 +1,23 @@
 # Academy Desk — continue from the work laptop or another profile
 
+## Legacy currency write repair and C21 — 8 November 2026
+
+- [x] Invoice status, collection, voiding, restoration and adjustment
+  approval now calculate balances in the invoice currency under the
+  existing lock. Legacy SQL moved from 3/11 to 11/11. Forty retained
+  finance SQL checks and 2,183 API tests passed.
+- [x] The real Payments form accepted USD 70.15 after the API rejected
+  USD 70.16. SQL confirmed zero balance, one new payment and one audit.
+  The old different-currency receipt stayed unchanged.
+- [x] Integrated Cloud C21 Dashboard detail availability. Sixty targeted
+  frontend checks passed locally. Its real-host optional-feed scenarios
+  remain open.
+- [ ] Cloud owns C22 expense recovery. Five P0 records, linked critical
+  and physical-device cases, CI/images and staging recovery stay open.
+
+[Local legacy currency verification](QA/REPORTS/LOCAL_LEGACY_CURRENCY_WRITES_2026-11-08.md)
+[Cloud C21 verification](QA/HANDOFF/C21_DASHBOARD_DETAIL_AVAILABILITY_2026-11-08.md)
+
 ## C20 Reports and P0 payment transitions — 8 November 2026
 
 - [x] Integrated C20. Exact-lock export, 32 targeted Reports checks and 2,183
@@ -7,10 +25,7 @@
   authority checks, including Reports retry, three dialogs and three CSVs.
 - [x] API-driven void and evidence-based restore persisted exact adjusted
   balances with one audit each. The live reconciliation page showed each state.
-- [ ] Legacy currency write gap reproduced. The USD invoice displays 70.15 due,
-  but collection rejects it because the writer still counts an INR receipt.
-  Desktop owns the protected-write repair. Cloud owns C21 Dashboard detail
-  availability. Five P0s and device/CI/staging gates remain open.
+- [x] The legacy currency write gap reproduced here is repaired in the update above.
 
 [Local Reports and transition verification](QA/REPORTS/LOCAL_C20_REPORTS_PAYMENT_TRANSITIONS_2026-11-08.md)
 

@@ -22,7 +22,7 @@ assert.equal(proof.api, api);
 assert.equal(proof.responsesMocked, false);
 assert.match(proof.sourceSha, /^[a-f0-9]{40}$/);
 const hash = file => crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
-for (const file of ['src/app/reports/page.tsx', 'src/app/finance-reconciliation/page.tsx', 'src/lib/reports-finance.ts', 'src/app/login/page.tsx', 'src/lib/api.ts']) {
+for (const file of ['src/app/reports/page.tsx', 'src/app/finance-reconciliation/page.tsx', 'src/app/payments/page.tsx', 'src/lib/reports-finance.ts', 'src/app/login/page.tsx', 'src/lib/api.ts']) {
   assert.equal(hash(path.join(proof.webSource, file)), proof.sourceHashes[file], file);
 }
 const artifactRoot = fs.realpathSync(proof.artifactRoot);
@@ -42,9 +42,9 @@ const checks = [];
 const downloads = [];
 let currentStep = 'setup';
 
-async function verifySql(phase) {
+async function verifySql(phase, paymentId) {
   const response = await fetch(api + '/__qa/reporting', {
-    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ run, phase }),
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ run, phase, paymentId }),
     signal: AbortSignal.timeout(15000),
   });
   assert.equal(response.status, 200, 'Fresh reporting SQL phase ' + phase);
@@ -189,9 +189,24 @@ async function main() {
     assert.equal(summary.value.byCurrency.find(group => group.currency === 'USD').outstanding, 70.15);
     await verifySql(1);
 
-    const legacy = await request(page, '/payments', 'POST', { invoiceId: fixture.usdInvoice, amount: 70.15, method: 'UPI' });
-    assert.deepEqual(legacy, { status: 400, value: { message: 'Payment exceeds the invoice balance.' } });
-    await verifySql(2);
+    const excess = await request(page, '/payments', 'POST', { invoiceId: fixture.usdInvoice, amount: 70.16, method: 'UPI' });
+    assert.deepEqual(excess, { status: 400, value: { message: 'Payment exceeds the invoice balance.' } });
+    await page.goto(web + '/payments');
+    const paymentForm = page.locator('form.payments-create');
+    await paymentForm.locator('select').first().selectOption(fixture.usdInvoice);
+    const amount = paymentForm.locator('input[type="number"]');
+    assert.equal(await amount.inputValue(), '70.15');
+    assert.equal(await amount.getAttribute('max'), '70.15');
+    const [collection] = await Promise.all([
+      page.waitForResponse(response => response.url() === api + base + '/payments' && response.request().method() === 'POST'),
+      paymentForm.getByRole('button', { name: 'Record payment', exact: true }).click(),
+    ]);
+    assert.equal(collection.status(), 201);
+    const saved = await collection.json();
+    assert.deepEqual([saved.invoiceId, saved.amount, saved.currency], [fixture.usdInvoice, 70.15, 'usd']);
+    await page.getByText('Payment recorded.', { exact: true }).waitFor();
+    await readInvoice(fixture.usdInvoice, 'Paid', 0, 100.50);
+    await verifySql(2, saved.id);
 
     currentStep = 'payment void, rejected restore and valid restore';
     await page.setViewportSize({ width: 1440, height: 900 });

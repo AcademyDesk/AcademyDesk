@@ -38,4 +38,16 @@ internal sealed class InvoiceWriteScope(Invoice? invoice, IDbContextTransaction?
 
     public Task CommitAsync(CancellationToken token) => owned?.CommitAsync(token) ?? Task.CompletedTask;
     public ValueTask DisposeAsync() => owned?.DisposeAsync() ?? ValueTask.CompletedTask;
+
+    // Read under the existing invoice lock and match the Invoice List currency rule.
+    internal static async Task<decimal> ReadCollectedAsync(AcademyDeskDbContext db, Invoice invoice,
+        CancellationToken token, Guid? excludingPayment = null)
+    {
+        var currency = invoice.Currency.Trim().ToUpperInvariant();
+        return await db.Payments.Where(payment => payment.AcademyId == invoice.AcademyId && payment.InvoiceId == invoice.Id &&
+                (payment.Status == "Completed" || payment.Status == "Reconciled") &&
+                payment.Currency.Trim().ToUpper() == currency &&
+                (excludingPayment == null || payment.Id != excludingPayment))
+            .SumAsync(payment => (decimal?)payment.Amount, token) ?? 0m;
+    }
 }

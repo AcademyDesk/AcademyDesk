@@ -126,3 +126,11 @@ actual ledger showed both states. Each successful mutation had one actor
 audit. The screen presents these states read-only. Keep OPEN for the legacy
 currency write matrix, linked critical and physical-device acceptance.
 [Local verification](../REPORTS/LOCAL_C20_REPORTS_PAYMENT_TRANSITIONS_2026-11-08.md)
+
+## Local legacy currency transition guard — 8 November 2026
+
+Voiding reopened the adjusted same-currency balance. Both permitted restore
+paths settled it, while restoring a different-currency target stayed denied.
+Existing transaction, audit and concurrency checks passed. Keep OPEN for
+remaining linked critical and physical-device acceptance.
+[Local verification](../REPORTS/LOCAL_LEGACY_CURRENCY_WRITES_2026-11-08.md)

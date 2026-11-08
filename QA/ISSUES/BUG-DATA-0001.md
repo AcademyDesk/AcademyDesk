@@ -122,3 +122,12 @@ settled with one correctly attributed audit, two payment rows and zero balance.
 The existing lost-response recovery checks passed. Keep OPEN for the linked
 critical and physical-device acceptance.
 [Real browser and SQL verification](../REPORTS/LOCAL_P0_PAYMENT_BROWSER_BALANCES_2026-11-08.md)
+
+## Local legacy currency collection — 8 November 2026
+
+Same-currency collection now matches invoice readback even with a legacy
+receipt in a different currency. USD 70.16 was rejected and USD 70.15 settled
+in the actual Payments form with one payment and one audit. Existing finance
+concurrency and audit rollback cases passed. Keep OPEN for remaining linked
+critical and physical-device acceptance.
+[Local verification](../REPORTS/LOCAL_LEGACY_CURRENCY_WRITES_2026-11-08.md)

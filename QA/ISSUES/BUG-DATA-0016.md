@@ -267,3 +267,13 @@ INR receipt remains in its write-side sum. The rejected request left captured
 SQL unchanged. Keep OPEN for the protected-write matrix and repair, and the
 remaining critical and device gates.
 [Local verification](../REPORTS/LOCAL_C20_REPORTS_PAYMENT_TRANSITIONS_2026-11-08.md)
+
+## Local legacy currency write repair — 8 November 2026
+
+The five guarded SQL sums now match invoice currency. The 11-case matrix
+passed after the repair. The real browser accepted the USD 70.15 originally
+rejected and retained the different-currency receipt. Invoice status, void,
+both restoration paths, adjustment limits and required audit rollback passed
+without altering unrelated ledger rows. Other fee readers and the remaining
+critical, physical-device and release acceptance stay open.
+[Local verification](../REPORTS/LOCAL_LEGACY_CURRENCY_WRITES_2026-11-08.md)

@@ -58,7 +58,7 @@ public sealed class FinanceAdjustmentsController(AcademyDeskDbContext db) : Cont
             var invoice = write.Invoice!;
             if (!AllowedTypes.Contains(item.Type) || !ValidAmount(item.Amount) || !string.Equals(item.Currency, invoice.Currency, StringComparison.OrdinalIgnoreCase))
                 return BadRequest(new { message = "The stored adjustment type, amount, and currency must be valid for this invoice." });
-            var paid = await db.Payments.Where(x => x.AcademyId == academyId && x.InvoiceId == invoice.Id && (x.Status == "Completed" || x.Status == "Reconciled")).SumAsync(x => (decimal?)x.Amount, token) ?? 0;
+            var paid = await InvoiceWriteScope.ReadCollectedAsync(db, invoice, token);
             var balance = invoice.TotalAmount - invoice.AdjustedAmount - paid - item.Amount;
             if (balance < 0m) return BadRequest(new { message = "Adjustment exceeds the remaining invoice balance." });
             invoice.AdjustedAmount += item.Amount;

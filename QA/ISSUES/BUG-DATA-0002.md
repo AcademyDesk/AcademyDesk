@@ -116,3 +116,11 @@ It blocked INR 200.01 with no POST and no captured SQL change. INR 200
 settled with one audit, two payment rows and zero balance. Keep OPEN for the
 linked critical and physical-device acceptance.
 [Real browser and SQL verification](../REPORTS/LOCAL_P0_PAYMENT_BROWSER_BALANCES_2026-11-08.md)
+
+## Local legacy currency adjustment — 8 November 2026
+
+A wrong-currency receipt no longer reduces the amount available for an
+invoice adjustment. The exact approved reduction settled the matching balance
+and the one-cent excess was rejected. Existing approval races and audit
+rollback passed. Keep OPEN for remaining linked critical and device cases.
+[Local verification](../REPORTS/LOCAL_LEGACY_CURRENCY_WRITES_2026-11-08.md)

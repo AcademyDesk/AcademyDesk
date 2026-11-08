@@ -59,8 +59,7 @@ public sealed class InvoicesController(AcademyDeskDbContext dbContext) : Control
         if (requested is null) return BadRequest();
         if (requested != "Cancelled")
         {
-            var paid = await dbContext.Payments.Where(x => x.AcademyId == academyId && x.InvoiceId == invoiceId && (x.Status == "Completed" || x.Status == "Reconciled"))
-                .SumAsync(x => (decimal?)x.Amount, token) ?? 0m;
+            var paid = await InvoiceWriteScope.ReadCollectedAsync(dbContext, invoice, token);
             var balance = invoice.TotalAmount - invoice.AdjustedAmount - paid;
             var expected = balance <= 0 ? "Paid" : paid > 0 ? "PartiallyPaid" : invoice.DueDate < DateOnly.FromDateTime(DateTime.UtcNow) ? "Overdue" : "Issued";
             if (requested != expected) return BadRequest(new { message = $"Invoice status must agree with its payment and adjustment balance. Expected {expected}." });
