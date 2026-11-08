@@ -2,6 +2,7 @@
 
 Cloud owner. IMPLEMENTED / CLOUD VALIDATED; combined real-host acceptance pending.
 Branch `codex/cloud-c22-expenses-recovery-20261108`.
+Implementation `a9eb6a76bcf07169259d32378860a2e8f31c7725`; initial claim `0f64e38f9b0497d275977a614a5805c973d9d7be`; lookup expansion `7a698a2a7e5863e7e298e5b9cc1a5cb3c98e0e35`.
 Clean base `5f4eccba0fee010862289993e5ad5d824d268e18` (published C21).
 Latest Desktop `88a3a45218ced1e4995d83fdcc1d4574cffb29c0`: C20 integrated;
 2,183 combined API passes and real Reports/payment-transition evidence. Desktop

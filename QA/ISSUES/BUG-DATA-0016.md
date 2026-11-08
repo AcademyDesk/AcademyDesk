@@ -243,6 +243,8 @@ This does not close BUG-DATA-0016, any P0 or the critical/device/release gates.
 
 ## C22 Expenses currency and save recovery — 8 November 2026
 
+Implementation `a9eb6a76bcf07169259d32378860a2e8f31c7725`.
+
 Expense summary and TeacherPayout totals now group actual units and preserve
 cents; missing/nonfinite metadata is unavailable, invalid currency is labelled,
 and true empty data is unitless0.00. Initial read failure cannot publish zero
