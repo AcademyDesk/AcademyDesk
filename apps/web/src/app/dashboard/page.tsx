@@ -46,7 +46,11 @@ type Student = { id: string; firstName: string; lastName: string; isActive: bool
 type Invoice = { id: string; studentId: string; invoiceNumber: string; balance: number; currency?: string; dueDate: string; status: string };
 type PayrollPayout = { id: string; workerName: string; periodLabel: string; netAmount: number; currency?: string; status: string };
 type Attendance = { studentId: string; status: string };
-type DetailData = { students: Student[]; invoices: Invoice[]; payroll: PayrollPayout[]; attendance: Attendance[] };
+type DetailReadState = "loading" | "ready" | "unavailable";
+type DetailData = {
+  students: Student[]; invoices: Invoice[]; payroll: PayrollPayout[]; attendance: Attendance[];
+  studentsState: DetailReadState; invoicesState: DetailReadState; payrollState: DetailReadState; attendanceState: DetailReadState;
+};
 
 const emptyDashboard: DashboardData = {
   students: 0,
@@ -60,7 +64,8 @@ const emptyDashboard: DashboardData = {
   todaySchedule: [],
   recentActivity: [],
 };
-const emptyDetails: DetailData = { students: [], invoices: [], payroll: [], attendance: [] };
+const emptyDetails: DetailData = { students: [], invoices: [], payroll: [], attendance: [],
+  studentsState: "loading", invoicesState: "loading", payrollState: "loading", attendanceState: "loading" };
 
 function greeting() {
   const hour = new Date().getHours();
@@ -120,6 +125,14 @@ export default function DashboardPage() {
       }
       return true;
     }
+    async function readDetails<T>(path: string): Promise<{ rows: T[]; state: DetailReadState }> {
+      try {
+        const response = await academyApi(path, { cache: "no-store" });
+        if (!response.ok) return { rows: [], state: "unavailable" };
+        const rows: unknown = await response.json();
+        return Array.isArray(rows) ? { rows: rows as T[], state: "ready" } : { rows: [], state: "unavailable" };
+      } catch { return { rows: [], state: "unavailable" }; }
+    }
     async function loadDashboard() {
       setLoadState("loading");
       setMessage("Loading your workspace…");
@@ -145,8 +158,8 @@ export default function DashboardPage() {
           academyApi("/api/auth/session", { cache: "no-store" }),
         ]);
         if (cancelled || rejectResponse(dashboardResponse) || rejectResponse(sessionResponse)) return;
-        if (!dashboardResponse.ok) throw new Error();
-        const summary = await dashboardResponse.json();
+        if (!dashboardResponse.ok || !sessionResponse.ok) throw new Error();
+        const [summary, currentSession] = await Promise.all([dashboardResponse.json(), sessionResponse.json()]);
         if (cancelled) return;
         setData({
           academy,
@@ -162,23 +175,25 @@ export default function DashboardPage() {
           todaySchedule: summary.todaySchedule ?? [],
           recentActivity: summary.recentActivity ?? [],
         });
-        const [studentResponse, invoiceResponse, payrollResponse, allSessionsResponse] = await Promise.all([
-          academyApi(`/api/academies/${academy.id}/students`),
-          academyApi(`/api/academies/${academy.id}/invoices`),
-          academyApi(`/api/academies/${academy.id}/payroll/payouts`),
-          academyApi(`/api/academies/${academy.id}/sessions`),
-        ]);
-        const allSessions: { id: string }[] = allSessionsResponse.ok ? await allSessionsResponse.json() : [];
-        const attendanceRows = await Promise.all(allSessions.map(async (item) => {
-          const response = await academyApi(`/api/academies/${academy.id}/sessions/${item.id}/attendance`);
-          return response.ok ? await response.json() as Attendance[] : [];
-        }));
-        if (cancelled) return;
-        setDetails({ students: studentResponse.ok ? await studentResponse.json() : [], invoices: invoiceResponse.ok ? await invoiceResponse.json() : [], payroll: payrollResponse.ok ? await payrollResponse.json() : [], attendance: attendanceRows.flat() });
-        if (sessionResponse.ok) setSession(await sessionResponse.json());
-        if (cancelled) return;
+        setSession(currentSession);
         setLoadState("ready");
         setMessage("");
+        const [studentRead, invoiceRead, payrollRead, sessionRead] = await Promise.all([
+          readDetails<Student>(`/api/academies/${academy.id}/students`),
+          readDetails<Invoice>(`/api/academies/${academy.id}/invoices`),
+          readDetails<PayrollPayout>(`/api/academies/${academy.id}/payroll/payouts`),
+          readDetails<{ id: string }>(`/api/academies/${academy.id}/sessions`),
+        ]);
+        if (cancelled) return;
+        const attendanceReads = await Promise.all(sessionRead.rows.map(item =>
+          readDetails<Attendance>(`/api/academies/${academy.id}/sessions/${item.id}/attendance`)));
+        if (cancelled) return;
+        const attendanceState = sessionRead.state === "ready" && attendanceReads.every(read => read.state === "ready") ? "ready" : "unavailable";
+        setDetails({ students: studentRead.rows, invoices: invoiceRead.rows, payroll: payrollRead.rows,
+          attendance: attendanceReads.flatMap(read => read.rows), studentsState: studentRead.state,
+          invoicesState: invoiceRead.state, payrollState: payrollRead.state, attendanceState });
+        if ([studentRead.state, invoiceRead.state, payrollRead.state, attendanceState].includes("unavailable"))
+          setMessage("Some dashboard details could not be loaded. Reload details to try again.");
       } catch {
         if (cancelled) return;
         setLoadState("retry");
@@ -210,6 +225,7 @@ export default function DashboardPage() {
         (data.presentAttendanceLast30Days / data.attendanceLast30Days) * 100,
       )
     : 0;
+  const detailsNeedReload = [details.studentsState, details.invoicesState, details.payrollState, details.attendanceState].some(state => state !== "ready");
   const activeStudents = details.students.filter((student) => student.isActive);
   const outstandingInvoices = details.invoices.filter((invoice) => invoice.status.toLowerCase() !== "cancelled" && Number.isFinite(invoice.balance) && invoice.balance > 0);
   const outstandingPayroll = details.payroll.filter((payout) => payout.status !== "Paid");
@@ -230,6 +246,7 @@ export default function DashboardPage() {
           {message}
         </p>
       )}
+      {detailsNeedReload && <button type="button" className="enterprise-primary-action" onClick={() => setReload(value => value + 1)}>Reload details</button>}
       <section
         className="enterprise-kpi-grid"
         aria-label="Academy operating indicators"
@@ -340,13 +357,18 @@ export default function DashboardPage() {
           </div>
         </section>
       </section>
-      {detail === "students" && <StandardDetailModal eyebrow="Workspace overview" title="Active students" onClose={() => setDetail(null)}><DetailList rows={activeStudents.map((student) => [fullName(student), "Active student"])} empty="No active students." /></StandardDetailModal>}
+      {detail === "students" && <StandardDetailModal eyebrow="Workspace overview" title="Active students" onClose={() => setDetail(null)}><DetailList availability={details.studentsState} unavailable="Student details could not be loaded. Reload details to try again." rows={activeStudents.map((student) => [fullName(student), "Active student"])} empty="No active students." /></StandardDetailModal>}
       {detail === "classes" && <StandardDetailModal eyebrow="Workspace overview" title="Classes today" onClose={() => setDetail(null)}><DetailList rows={data.todaySchedule.map((item) => [item.batchName, `${formatTime(item.startUtc)} · ${item.teacherName || "Unassigned"} · ${item.status}`])} empty="No classes are scheduled today." /></StandardDetailModal>}
-      {detail === "attendance" && <StandardDetailModal eyebrow="Workspace overview" title="Attendance by student" onClose={() => setDetail(null)}><DetailList rows={activeStudents.map((student) => { const records = details.attendance.filter((record) => record.studentId === student.id); const present = records.filter((record) => ["Present", "Late", "Online"].includes(record.status)).length; return [fullName(student), records.length ? `${Math.round(present * 100 / records.length)}% · ${present} of ${records.length} classes` : "No attendance recorded"]; })} empty="No active students." /></StandardDetailModal>}
-      {detail === "outstanding" && <StandardDetailModal eyebrow="Workspace overview" title="Student fees and payroll records" onClose={() => setDetail(null)}><div className="standard-detail-group"><h3>Student fee payments</h3><DetailList rows={outstandingInvoices.map((invoice) => [fullName(details.students.find((student) => student.id === invoice.studentId)), `${invoice.invoiceNumber} · ${detailMoney(invoice.balance, invoice.currency)} due`])} empty="No student fees are outstanding." /><h3>Payroll records not marked Paid</h3><DetailList rows={outstandingPayroll.map((payout) => [payout.workerName, `${payout.periodLabel} · ${detailMoney(payout.netAmount, payout.currency)} · ${payout.status}`])} empty="No payroll records are listed." /></div></StandardDetailModal>}
+      {detail === "attendance" && <StandardDetailModal eyebrow="Workspace overview" title="Attendance by student" onClose={() => setDetail(null)}><DetailList availability={details.studentsState !== "ready" ? details.studentsState : details.attendanceState} unavailable="Attendance details could not be loaded. Reload details to try again." rows={activeStudents.map((student) => { const records = details.attendance.filter((record) => record.studentId === student.id); const present = records.filter((record) => ["Present", "Late", "Online"].includes(record.status)).length; return [fullName(student), records.length ? `${Math.round(present * 100 / records.length)}% · ${present} of ${records.length} classes` : "No attendance recorded"]; })} empty="No active students." /></StandardDetailModal>}
+      {detail === "outstanding" && <StandardDetailModal eyebrow="Workspace overview" title="Student fees and payroll records" onClose={() => setDetail(null)}><div className="standard-detail-group"><h3>Student fee payments</h3>{details.studentsState === "unavailable" && <p role="alert">Student names could not be loaded. Invoice identifiers and amounts are shown below.</p>}<DetailList availability={details.invoicesState} unavailable="Student fee details could not be loaded. Reload details to try again." rows={outstandingInvoices.map((invoice) => [fullName(details.students.find((student) => student.id === invoice.studentId)), `${invoice.invoiceNumber} · ${detailMoney(invoice.balance, invoice.currency)} due`])} empty="No student fees are outstanding." /><h3>Payroll records not marked Paid</h3><DetailList availability={details.payrollState} unavailable="Payroll details could not be loaded. Reload details to try again." rows={outstandingPayroll.map((payout) => [payout.workerName, `${payout.periodLabel} · ${detailMoney(payout.netAmount, payout.currency)} · ${payout.status}`])} empty="No payroll records are listed." /></div></StandardDetailModal>}
     </main>
   );
 }
-function DetailList({ rows, empty }: { rows: [string, string][]; empty: string }) { return rows.length ? <div className="standard-detail-list">{rows.map(([title, detail], index) => <article key={`${title}-${index}`}><b>{title}</b><small>{detail}</small></article>)}</div> : <p className="standard-detail-empty">{empty}</p>; }
+function DetailList({ rows, empty, availability = "ready", unavailable = "Details could not be loaded. Reload details to try again." }: {
+  rows: [string, string][]; empty: string; availability?: DetailReadState; unavailable?: string;
+}) {
+  if (availability !== "ready") return <p className="standard-detail-empty" role={availability === "loading" ? "status" : "alert"}>{availability === "loading" ? "Loading details…" : unavailable}</p>;
+  return rows.length ? <div className="standard-detail-list">{rows.map(([title, detail], index) => <article key={`${title}-${index}`}><b>{title}</b><small>{detail}</small></article>)}</div> : <p className="standard-detail-empty">{empty}</p>;
+}
 function fullName(student?: Student) { return student ? `${student.firstName} ${student.lastName}` : "Unknown student"; }
 function formatTime(value: string) { return new Intl.DateTimeFormat("en-IN", { hour: "numeric", minute: "2-digit", timeZone: "Asia/Kolkata" }).format(new Date(value)); }
