@@ -1,4 +1,5 @@
 using AcademyDesk.Api.Data;
+using AcademyDesk.Api.ReadModels;
 using AcademyDesk.Api.Domain.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -21,9 +22,9 @@ public sealed class DashboardController(AcademyDeskDbContext db, UserManager<App
         var academy = await db.Academies.AsNoTracking().SingleOrDefaultAsync(x => x.Id == academyId, token);
         if (academy is null) return NotFound();
         var since = DateTime.UtcNow.AddDays(-30);
-        var totalInvoiced = await db.Invoices.Where(x => x.AcademyId == academyId).SumAsync(x => (decimal?)x.TotalAmount, token) ?? 0;
-        var totalAdjusted = await db.Invoices.Where(x => x.AcademyId == academyId).SumAsync(x => (decimal?)x.AdjustedAmount, token) ?? 0;
-        var totalPaid = await db.Payments.Where(x => x.AcademyId == academyId && (x.Status == "Completed" || x.Status == "Reconciled")).SumAsync(x => (decimal?)x.Amount, token) ?? 0;
+        var byCurrency = await AcademyFinanceReadModel.LoadAsync(db, academyId, token);
+        var single = byCurrency.Length == 1 ? byCurrency[0] : null;
+        decimal? Flat(Func<FinanceCurrencyTotals, decimal> select) => byCurrency.Length == 0 ? 0m : single is null ? null : select(single);
         var attendance = await db.AttendanceRecords.Where(x => x.AcademyId == academyId && x.MarkedAtUtc >= since).Select(x => x.Status).ToListAsync(token);
 
         TimeZoneInfo timeZone;
@@ -60,15 +61,18 @@ public sealed class DashboardController(AcademyDeskDbContext db, UserManager<App
             await db.Leads.CountAsync(x => x.AcademyId == academyId && x.Stage != "Converted" && x.Stage != "Lost", token),
             attendance.Count,
             attendance.Count(x => x is "Present" or "Online"),
-            totalInvoiced,
-            totalPaid,
-            totalInvoiced - totalAdjusted - totalPaid,
+            Flat(x => x.GrossBilled),
+            Flat(x => x.Collected),
+            Flat(x => x.Outstanding),
             todaySchedule.Count,
             todaySchedule,
-            activity));
+            activity,
+            byCurrency,
+            single?.Currency,
+            byCurrency.Length > 1));
     }
 }
 
-public sealed record DashboardSummary(int ActiveStudents, int ActiveTeachers, int ActiveCourses, int ActiveBatches, int OpenLeads, int AttendanceRecordsLast30Days, int PresentAttendanceLast30Days, decimal TotalInvoiced, decimal TotalPaid, decimal OutstandingBalance, int ClassesToday, IReadOnlyList<DashboardScheduleItem> TodaySchedule, IReadOnlyList<DashboardActivityItem> RecentActivity);
+public sealed record DashboardSummary(int ActiveStudents, int ActiveTeachers, int ActiveCourses, int ActiveBatches, int OpenLeads, int AttendanceRecordsLast30Days, int PresentAttendanceLast30Days, decimal? TotalInvoiced, decimal? TotalPaid, decimal? OutstandingBalance, int ClassesToday, IReadOnlyList<DashboardScheduleItem> TodaySchedule, IReadOnlyList<DashboardActivityItem> RecentActivity, IReadOnlyList<FinanceCurrencyTotals> ByCurrency, string? Currency, bool HasMixedCurrencies);
 public sealed record DashboardScheduleItem(Guid Id, string BatchName, string? TeacherName, DateTime StartUtc, DateTime EndUtc, string Status, string? RoomName, string DeliveryMode);
 public sealed record DashboardActivityItem(Guid Id, string Action, string EntityType, DateTime OccurredAtUtc);

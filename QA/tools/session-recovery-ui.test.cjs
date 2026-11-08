@@ -3,6 +3,8 @@ const fs=require('node:fs'),a=require('node:assert/strict'),{test}=require('node
 const ts=require('../../apps/web/node_modules/typescript'),jsx=require('../../apps/web/node_modules/react/jsx-runtime');
 const source=process.env.QA_DASHBOARD_SOURCE||'apps/web/src/app/dashboard/page.tsx';
 const output=ts.transpileModule(fs.readFileSync(source,'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX}}).outputText;
+const financeModule={exports:{}};
+new Function('module','exports',ts.transpileModule(fs.readFileSync('apps/web/src/lib/finance-summary.ts','utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText)(financeModule,financeModule.exports);
 async function run(config={}){
   const values=[],calls=[],clears=[];let index=0,effect,cleanup,release;
   const response=(status,body)=>new Response(JSON.stringify(body),{status,headers:{'Content-Type':'application/json'}});
@@ -19,7 +21,7 @@ async function run(config={}){
   new Function('require','module','exports',output)(name=>name==='react/jsx-runtime'?jsx:name==='react'?{
     useState:init=>{const key=index++;if(!(key in values))values[key]=init;return [values[key],v=>{values[key]=typeof v==='function'?v(values[key]):v;}];},
     useEffect:fn=>{effect=fn;}
-  }:name==='@/lib/api'?{academyApi:api,clearPortalTokens:w=>clears.push(w)}:name==='next/link'?{default:'a'}:{StandardInteractiveTile:'tile',StandardDetailModal:'modal'},mod,mod.exports);
+  }:name==='@/lib/api'?{academyApi:api,clearPortalTokens:w=>clears.push(w)}:name==='@/lib/finance-summary'?financeModule.exports:name==='next/link'?{default:'a'}:{StandardInteractiveTile:'tile',StandardDetailModal:'modal'},mod,mod.exports);
   index=0;const initial=mod.exports.default();cleanup=effect();
   if(config.pause){if(typeof cleanup==='function')cleanup();release();}
   for(let i=0;i<20;i++)await new Promise(r=>setImmediate(r));
