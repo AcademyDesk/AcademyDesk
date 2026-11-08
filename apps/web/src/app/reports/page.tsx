@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { academyApi } from "@/lib/api";
 import { spreadsheetCsv } from "@/lib/csv";
+import { reportAmount, reportCurrency, reportDifference, reportMoney } from "@/lib/reports-finance";
 import { StandardDetailModal, StandardInteractiveTile } from "@/components/design-system/controls";
 
 type Academy = { id: string };
@@ -17,16 +18,14 @@ type Invoice = {
   studentId: string;
   invoiceNumber: string;
   totalAmount: number;
-  paidAmount: number;
+  balance: number;
+  currency?: string;
+  status: string;
   dueDate: string;
 };
-type Payment = { invoiceId: string; amount: number; status: string };
-type Expense = { description: string; amount: number; category: string; expenseDate: string };
-type PayrollPayout = { workerName: string; periodLabel: string; netAmount: number; status: string };
-const money = (amount: number) =>
-  new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(
-    amount,
-  );
+type Payment = { invoiceId: string; amount: number; currency?: string; status: string };
+type Expense = { description: string; amount: number; currency?: string; category: string; expenseDate: string };
+type PayrollPayout = { workerName: string; periodLabel: string; netAmount: number; currency?: string; status: string };
 function downloadCsv(filename: string, rows: string[][]) {
   const content = spreadsheetCsv(rows);
   const anchor = document.createElement("a");
@@ -50,98 +49,75 @@ export default function ReportsPage() {
   const [payroll, setPayroll] = useState<PayrollPayout[]>([]);
   const [detail, setDetail] = useState<"students" | "teachers" | "classes" | "attendance" | "collected" | "outstanding" | "expenses" | null>(null);
   const [message, setMessage] = useState("Loading operational reports…");
+  const [loadState, setLoadState] = useState<"loading" | "ready" | "signin" | "denied" | "retry" | "empty">("loading");
+  const [reload, setReload] = useState(0);
   useEffect(() => {
+    let cancelled = false;
+    function rejectResponse(response: Response) {
+      if (![401, 403, 429].includes(response.status)) return false;
+      if (response.status === 401) {
+        setLoadState("signin"); setMessage("Your session has ended. Please sign in again to open reports.");
+      } else if (response.status === 403) {
+        setLoadState("denied"); setMessage("You do not have access to the data required for these reports. Contact your academy administrator.");
+      } else {
+        setLoadState("retry"); setMessage("Too many requests. Please wait a moment, then try again.");
+      }
+      return true;
+    }
     async function load() {
+      setLoadState("loading"); setMessage("Loading operational reports…");
+      setDetail(null);
       try {
-        const academyResponse = await academyApi("/api/academies", {
-          cache: "no-store",
-        });
-        if (academyResponse.status === 401)
-          return setMessage("Please sign in before opening reports.");
+        const academyResponse = await academyApi("/api/academies", { cache: "no-store" });
+        if (cancelled || rejectResponse(academyResponse)) return;
         if (!academyResponse.ok) throw new Error();
         const academies: Academy[] = await academyResponse.json();
-        if (!academies[0]) return setMessage("Create your academy first.");
+        if (cancelled) return;
+        if (!academies[0]) { setLoadState("empty"); setMessage("Create your academy first."); return; }
         const id = academies[0].id;
-        const [
-          studentResponse,
-          teacherResponse,
-          batchResponse,
-          enrollmentResponse,
-          sessionResponse,
-          invoiceResponse,
-          paymentResponse,
-          expenseResponse,
-          payrollResponse,
-        ] = await Promise.all([
-          academyApi(`/api/academies/${id}/students`),
-          academyApi(`/api/academies/${id}/teachers`),
-          academyApi(`/api/academies/${id}/batches`),
-          academyApi(`/api/academies/${id}/enrollments`),
-          academyApi(`/api/academies/${id}/sessions`),
-          academyApi(`/api/academies/${id}/invoices`),
-          academyApi(`/api/academies/${id}/payments`),
-          academyApi(`/api/academies/${id}/expenses`),
-          academyApi(`/api/academies/${id}/payroll/payouts`),
-        ]);
-        if (
-          ![
-            studentResponse,
-            teacherResponse,
-            batchResponse,
-            enrollmentResponse,
-            sessionResponse,
-            invoiceResponse,
-            paymentResponse,
-            expenseResponse,
-            payrollResponse,
-          ].every((response) => response.ok)
-        )
-          throw new Error();
-        const sessionData: Session[] = await sessionResponse.json();
-        setStudents(await studentResponse.json());
-        setTeachers(await teacherResponse.json());
-        setBatches(await batchResponse.json());
-        setEnrolments(await enrollmentResponse.json());
-        setSessions(sessionData);
-        setInvoices(await invoiceResponse.json());
-        setPayments(await paymentResponse.json());
-        setExpenses(await expenseResponse.json());
-        setPayroll(await payrollResponse.json());
-        const attendanceLists = await Promise.all(
-          sessionData.map(async (session) => {
-            const response = await academyApi(
-              `/api/academies/${id}/sessions/${session.id}/attendance`,
-            );
-            return response.ok ? ((await response.json()) as Attendance[]) : [];
-          }),
-        );
-        setAttendance(attendanceLists.flat());
-        setMessage("");
+        const responses = await Promise.all([
+          "students", "teachers", "batches", "enrollments", "sessions", "invoices", "payments", "expenses", "payroll/payouts",
+        ].map(path => academyApi(`/api/academies/${id}/${path}`, { cache: "no-store" })));
+        if (cancelled) return;
+        for (const response of responses) {
+          if (rejectResponse(response)) return;
+          if (!response.ok) throw new Error();
+        }
+        const [studentData, teacherData, batchData, enrollmentData, sessionData, invoiceData, paymentData, expenseData, payrollData] = await Promise.all(responses.map(response => response.json()));
+        if (cancelled) return;
+        const attendanceResponses = await Promise.all((sessionData as Session[]).map(session =>
+          academyApi(`/api/academies/${id}/sessions/${session.id}/attendance`, { cache: "no-store" })));
+        if (cancelled) return;
+        for (const response of attendanceResponses) {
+          if (rejectResponse(response)) return;
+          if (!response.ok) throw new Error();
+        }
+        const attendanceLists: Attendance[][] = await Promise.all(attendanceResponses.map(response => response.json()));
+        if (cancelled) return;
+        setStudents(studentData); setTeachers(teacherData); setBatches(batchData); setEnrolments(enrollmentData);
+        setSessions(sessionData); setInvoices(invoiceData); setPayments(paymentData); setExpenses(expenseData);
+        setPayroll(payrollData); setAttendance(attendanceLists.flat()); setMessage(""); setLoadState("ready");
       } catch {
-        setMessage(
-          "Reports could not be loaded. Confirm the API is running on port 5092.",
-        );
+        if (cancelled) return;
+        setLoadState("retry"); setMessage("Reports could not be loaded. Check your connection and try again.");
       }
     }
     void load();
-  }, []);
+    return () => { cancelled = true; };
+  }, [reload]);
   const activeEnrolments = enrolments.filter(
     (item) => item.status === "Active",
   );
   const activeStudents = students.filter((student) => student.isActive);
   const activeTeachers = teachers.filter((teacher) => teacher.isActive);
   const scheduledClasses = sessions.filter((session) => session.status !== "Cancelled");
-  const collected = payments
-    .filter((payment) => payment.status === "Completed")
-    .reduce((sum, payment) => sum + payment.amount, 0);
-  const invoiced = invoices.reduce(
-    (sum, invoice) => sum + invoice.totalAmount,
-    0,
-  );
-  const spent = expenses.reduce((sum, expense) => sum + expense.amount, 0);
-  const outstandingInvoices = invoices.filter((invoice) => invoice.totalAmount - invoice.paidAmount > 0);
-  const outstandingPayroll = payroll.filter((payout) => payout.status !== "Paid");
-  const payrollDue = outstandingPayroll.reduce((sum, payout) => sum + payout.netAmount, 0);
+  const collectedPayments = payments.filter(payment => payment.status === "Completed" || payment.status === "Reconciled");
+  const collectedRows = collectedPayments.map(payment => ({ amount: payment.amount, currency: payment.currency }));
+  const invoicedRows = invoices.map(invoice => ({ amount: invoice.totalAmount, currency: invoice.currency }));
+  const expenseRows = expenses.map(expense => ({ amount: expense.amount, currency: expense.currency }));
+  const outstandingRows = invoices.map(invoice => ({ amount: invoice.status.toLowerCase() === "cancelled" ? 0 : invoice.balance, currency: invoice.currency }));
+  const outstandingInvoices = invoices.filter(invoice => invoice.status.toLowerCase() !== "cancelled" && Number.isFinite(invoice.balance) && invoice.balance > 0);
+  const outstandingPayroll = payroll.filter(payout => payout.status !== "Paid");
   const attendanceRate = attendance.length
     ? Math.round(
         (attendance.filter((record) =>
@@ -162,14 +138,25 @@ export default function ReportsPage() {
       ]),
     [batches, activeEnrolments],
   );
+  if (loadState !== "ready") return <main className="enterprise-settings workspace-reports">
+    <h1>Reports</h1><p role={loadState === "loading" || loadState === "empty" ? "status" : "alert"}>{message}</p>
+    {loadState === "retry" && <button type="button" onClick={() => setReload(value => value + 1)}>Try again</button>}
+    {loadState === "signin" && <a href="/login?returnTo=/reports">Sign in again</a>}
+    {loadState === "denied" && <a href="/login">Use another account</a>}
+  </main>;
+  const invoiceCsvRows = (): string[][] => [
+    ["Invoice", "Student", "Amount", "Currency", "Due date"],
+    ...invoices.map(invoice => [invoice.invoiceNumber, studentName(students.find(student => student.id === invoice.studentId)),
+      String(invoice.totalAmount), reportCurrency(invoice.currency), invoice.dueDate]),
+  ];
   const metrics = [
     ["Active students", activeStudents.length, "students"] as const,
     ["Teachers", activeTeachers.length, "teachers"] as const,
     ["Scheduled classes", scheduledClasses.length, "classes"] as const,
     ["Attendance rate", `${attendanceRate}%`, "attendance"] as const,
-    ["Collected", money(collected), "collected"] as const,
-    ["Outstanding", money(Math.max(0, invoiced - collected) + payrollDue), "outstanding"] as const,
-    ["Expenses", money(spent), "expenses"] as const,
+    ["Collected", reportMoney(collectedRows), "collected"] as const,
+    ["Outstanding", reportMoney(outstandingRows), "outstanding"] as const,
+    ["Expenses", reportMoney(expenseRows), "expenses"] as const,
   ];
   return (
     <main className="enterprise-settings workspace-reports">
@@ -186,15 +173,15 @@ export default function ReportsPage() {
         )}
         <section className="workspace-reports-kpis" aria-label="Operational metrics">
           {metrics.map(([label, value, key]) => <StandardInteractiveTile key={label} label={label} value={value} detail="View details" onClick={() => setDetail(key)} className="workspace-reports-kpi" />)}
-          <article className="workspace-reports-kpi"><span>Net cash</span><strong>{money(collected - spent)}</strong></article>
+          <article className="workspace-reports-kpi"><span>Collected less recorded expenses</span><strong>{reportDifference(collectedRows, expenseRows)}</strong></article>
         </section>
         {detail === "students" && <StandardDetailModal eyebrow="Workspace reports" title="Active students" onClose={() => setDetail(null)}><ReportDetailList rows={activeStudents.map((student) => [studentName(student), "Active student"])} empty="No active students." /></StandardDetailModal>}
         {detail === "teachers" && <StandardDetailModal eyebrow="Workspace reports" title="Teachers" onClose={() => setDetail(null)}><ReportDetailList rows={activeTeachers.map((teacher) => [teacherName(teacher), "Active teacher"])} empty="No active teachers." /></StandardDetailModal>}
         {detail === "classes" && <StandardDetailModal eyebrow="Workspace reports" title="Scheduled classes" onClose={() => setDetail(null)}><ReportDetailList rows={scheduledClasses.map((session) => [batches.find((batch) => batch.id === session.batchId)?.name ?? "Class", `${reportDate(session.startUtc)} · ${session.status}`])} empty="No scheduled classes." /></StandardDetailModal>}
         {detail === "attendance" && <StandardDetailModal eyebrow="Workspace reports" title="Attendance by student" onClose={() => setDetail(null)}><ReportDetailList rows={activeStudents.map((student) => { const records = attendance.filter((record) => record.studentId === student.id); const present = records.filter((record) => ["Present", "Late", "Online"].includes(record.status)).length; return [studentName(student), records.length ? `${Math.round(present * 100 / records.length)}% · ${present} of ${records.length} classes` : "No attendance recorded"]; })} empty="No active students." /></StandardDetailModal>}
-        {detail === "collected" && <StandardDetailModal eyebrow="Workspace reports" title="Collected fee payments" onClose={() => setDetail(null)}><ReportDetailList rows={payments.filter((payment) => payment.status === "Completed").map((payment) => { const invoice = invoices.find((item) => item.id === payment.invoiceId); return [studentName(students.find((student) => student.id === invoice?.studentId)), `${money(payment.amount)} paid · ${invoice?.invoiceNumber ?? "Invoice"}`]; })} empty="No completed fee payments." /></StandardDetailModal>}
-        {detail === "outstanding" && <StandardDetailModal eyebrow="Workspace reports" title="Outstanding fees and salary" onClose={() => setDetail(null)}><div className="standard-detail-group"><h3>Student fee payments</h3><ReportDetailList rows={outstandingInvoices.map((invoice) => [studentName(students.find((student) => student.id === invoice.studentId)), `${invoice.invoiceNumber} · ${money(invoice.totalAmount - invoice.paidAmount)} due`])} empty="No student fees are outstanding." /><h3>Teacher salary payments</h3><ReportDetailList rows={outstandingPayroll.map((payout) => [payout.workerName, `${payout.periodLabel} · ${money(payout.netAmount)} · ${payout.status}`])} empty="No teacher salary payments are outstanding." /></div></StandardDetailModal>}
-        {detail === "expenses" && <StandardDetailModal eyebrow="Workspace reports" title="Expenses" onClose={() => setDetail(null)}><ReportDetailList rows={expenses.map((expense) => [expense.description, `${expense.category} · ${money(expense.amount)} · ${expense.expenseDate}`])} empty="No expenses recorded." /></StandardDetailModal>}
+        {detail === "collected" && <StandardDetailModal eyebrow="Workspace reports" title="Collected fee payments" onClose={() => setDetail(null)}><ReportDetailList rows={collectedPayments.map((payment) => { const invoice = invoices.find((item) => item.id === payment.invoiceId); return [studentName(students.find((student) => student.id === invoice?.studentId)), `${reportAmount(payment.amount, payment.currency)} paid · ${invoice?.invoiceNumber ?? "Invoice"}`]; })} empty="No completed or reconciled fee payments." /></StandardDetailModal>}
+        {detail === "outstanding" && <StandardDetailModal eyebrow="Workspace reports" title="Student fees and payroll records" onClose={() => setDetail(null)}><div className="standard-detail-group"><h3>Student fee payments</h3><ReportDetailList rows={outstandingInvoices.map((invoice) => [studentName(students.find((student) => student.id === invoice.studentId)), `${invoice.invoiceNumber} · ${reportAmount(invoice.balance, invoice.currency)} due`])} empty="No student fees are outstanding." /><h3>Payroll records not marked Paid</h3><ReportDetailList rows={outstandingPayroll.map((payout) => [payout.workerName, `${payout.periodLabel} · ${reportAmount(payout.netAmount, payout.currency)} · ${payout.status}`])} empty="No payroll records are listed." /></div></StandardDetailModal>}
+        {detail === "expenses" && <StandardDetailModal eyebrow="Workspace reports" title="Expenses" onClose={() => setDetail(null)}><ReportDetailList rows={expenses.map((expense) => [expense.description, `${expense.category} · ${reportAmount(expense.amount, expense.currency)} · ${expense.expenseDate}`])} empty="No expenses recorded." /></StandardDetailModal>}
         <section className="workspace-reports-grid">
           <section className="workspace-reports-panel">
             <header className="workspace-reports-panel-header">
@@ -238,22 +225,7 @@ export default function ReportsPage() {
               <div><p>Finance</p><h2>Finance export</h2></div>
               <button
                 onClick={() =>
-                  downloadCsv("academydesk-invoices.csv", [
-                    ["Invoice", "Student", "Amount", "Due date"],
-                    ...invoices.map((invoice) => {
-                      const student = students.find(
-                        (item) => item.id === invoice.studentId,
-                      );
-                      return [
-                        invoice.invoiceNumber,
-                        student
-                          ? `${student.firstName} ${student.lastName}`
-                          : "Unknown",
-                        String(invoice.totalAmount),
-                        invoice.dueDate,
-                      ];
-                    }),
-                  ])
+                  downloadCsv("academydesk-invoices.csv", invoiceCsvRows())
                 }
                 className="workspace-reports-secondary-action"
               >
@@ -261,8 +233,8 @@ export default function ReportsPage() {
               </button>
             </header>
             <div className="workspace-reports-finance-summary">
-              {invoices.length} invoices · {money(invoiced)} issued ·{" "}
-              {money(collected)} collected
+              {invoices.length} invoices · {reportMoney(invoicedRows)} issued ·{" "}
+              {reportMoney(collectedRows)} collected
             </div>
           </section>
         </section>
@@ -301,22 +273,7 @@ export default function ReportsPage() {
               title="Invoices"
               detail="Issued fees and due dates"
               onClick={() =>
-                downloadCsv("academydesk-invoices.csv", [
-                  ["Invoice", "Student", "Amount", "Due date"],
-                  ...invoices.map((invoice) => {
-                    const student = students.find(
-                      (item) => item.id === invoice.studentId,
-                    );
-                    return [
-                      invoice.invoiceNumber,
-                      student
-                        ? `${student.firstName} ${student.lastName}`
-                        : "Unknown",
-                      String(invoice.totalAmount),
-                      invoice.dueDate,
-                    ];
-                  }),
-                ])
+                downloadCsv("academydesk-invoices.csv", invoiceCsvRows())
               }
             />
             <ExportCard
@@ -324,8 +281,8 @@ export default function ReportsPage() {
               detail="Expense ledger totals"
               onClick={() =>
                 downloadCsv("academydesk-expenses.csv", [
-                  ["Expense amount"],
-                  ...expenses.map((expense) => [String(expense.amount)]),
+                  ["Expense amount", "Currency"],
+                  ...expenses.map((expense) => [String(expense.amount), reportCurrency(expense.currency)]),
                 ])
               }
             />
