@@ -203,3 +203,38 @@ source-bound local returns; C20 SQL/Reports browser, critical/physical-device
 and all five P0 release closure requirements remain OPEN. Preserve newer local
 issue history and raw evidence while importing only the C20 paths.
 [Dashboard SQL evidence](https://github.com/AcademyDesk/AcademyDesk/blob/fe3167b12cbd318369d159bf59a06dacfa2066ae/QA/REPORTS/LOCAL_C19_DASHBOARD_SQL_ACCEPTANCE_2026-11-08.md).
+
+## C21 Dashboard detail availability — 8 November 2026
+
+A failed optional invoice/payroll read previously became an empty-success list,
+so the valid currency-aware overview could be followed by false no-fees/no-payroll
+claims. C21 distinguishes loading, ready and unavailable without changing any
+backend, money rule, permission or contract. The overview waits for the required
+auth session and Dashboard response, then stays usable during optional detail
+reads. Failed sections show independent alerts, successful rows remain, missing
+names are labelled and incomplete attendance cannot become an invented percent.
+A read-only reload recovers data; genuine empty responses retain empty messages.
+
+Original TSX33 cases3 PASS /30 FAIL; final target60/60 PASS, unchanged C19 native
+14/14 plus new native26/26 PASS (100 dialog checks), zero runtime/interceptor
+errors or API mutations. Full frontend2,151 PASS /3 missing genuine SQL-receipt
+FAIL, zero skips/cancellations. Build/types/lint PASS; zero errors /62 warnings;
+570 export hashes unchanged. Backend2,177 passes are REUSED, not rerun:534 source
+paths and two assemblies remain byte-identical to the recorded C20 result.
+
+Keep OPEN for combined real-host/SQL/browser/critical/device acceptance and the
+separate protected legacy-currency write review. Do not replace the source-bound
+Desktop SQL/payment-browser evidence above or infer all-role/AI qualification.
+[Exact evidence, source scope and prioritized handoff](../HANDOFF/C21_DASHBOARD_DETAIL_AVAILABILITY_2026-11-08.md).
+
+## C20 local verification and protected-write ownership refresh
+
+Desktop `88a3a45218ced1e4995d83fdcc1d4574cffb29c0` integrated C20 and passed32 Reports checks,2,183
+combined API tests, and five real browser/SQL phases plus three authority
+checks. Reports retry, multi-currency amounts, three dialogs and currency CSV
+exports passed. The same USD70.15 read balance was rejected by collection due
+to a retained INR70.15 receipt in the independent writer; captured SQL remained
+unchanged. Desktop explicitly owns that protected-write repair, and Cloud owns
+C21 detail availability. Preserve all local evidence during C21 integration.
+This does not close BUG-DATA-0016, any P0 or the critical/device/release gates.
+[Exact local source and acceptance](https://github.com/AcademyDesk/AcademyDesk/blob/88a3a45218ced1e4995d83fdcc1d4574cffb29c0/QA/REPORTS/LOCAL_C20_REPORTS_PAYMENT_TRANSITIONS_2026-11-08.md).
