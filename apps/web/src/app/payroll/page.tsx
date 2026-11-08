@@ -76,14 +76,14 @@ export default function PayrollPage() {
   const pending = useRef(false);
   const reviewRequired = useRef(false);
   const alive = mounted;
-  async function saveFinancial(action: () => Promise<Response>, reset: () => void, success: string, failure: string) {
+  async function saveFinancial(action: () => Promise<Response>, reset: () => void, success: string, failure: string, conflict = failure) {
     if (!alive.current || pending.current || reviewRequired.current) return;
     pending.current = true; setBusy(true);
     let confirmed = false;
     try {
       const response = await action();
       if (!alive.current) return;
-      if (!response.ok) { if (response.status >= 500) throw Error(); setMessage(failure); return; }
+      if (!response.ok) { if (response.status >= 500) throw Error(); setMessage(response.status === 409 ? conflict : failure); return; }
       confirmed = true; reset(); await load();
       if (alive.current) setMessage(success);
     } catch {
@@ -114,7 +114,8 @@ export default function PayrollPage() {
     const gross = currentProfile.paymentModel === "SessionBlock" ? Number(form.get("grossAmount")) : Number(currentProfile.monthlyAmount);
     if (!Number.isFinite(gross) || gross <= 0 || !Number.isFinite(deductions) || deductions < 0 || deductions >= gross) return setMessage("Deductions must be non-negative and less than gross pay.");
     await saveFinancial(() => academyApi(`/api/academies/${academy.id}/payroll/payouts`, { method: "POST", headers: apiHeaders(true), body: JSON.stringify({ payrollProfileId: payoutProfileId, periodLabel: form.get("periodLabel"), sessionsCovered: currentProfile?.paymentModel === "SessionBlock" ? Number(form.get("sessionsCovered")) : null, grossAmount: currentProfile?.paymentModel === "SessionBlock" ? Number(form.get("grossAmount")) : null, deductions, paymentMethod, reference: form.get("reference"), paidAtUtc: null }) }),
-      () => { submittedForm.reset(); setPayoutProfileId(""); setPaymentMethod("BankTransfer"); }, "Payout recorded and payslip generated.", "Payout could not be recorded. Complete the required pay-cycle details.");
+      () => { submittedForm.reset(); setPayoutProfileId(""); setPaymentMethod("BankTransfer"); }, "Payout recorded and payslip generated.", "Payout could not be recorded. Complete the required pay-cycle details.",
+      "A regular payroll statement already exists for this worker and pay period. Additional amounts require a separately approved payroll adjustment.");
   }
 
   const teacherProfiles = activeProfiles.filter(profile => profile.workerType === "Teacher").length; const paidThisCycle = currencyTotal(payouts.map(payout => ({ amount: payout.netAmount, currency: payout.currency })));
