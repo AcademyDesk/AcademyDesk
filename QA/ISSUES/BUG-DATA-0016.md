@@ -306,3 +306,12 @@ both restoration paths, adjustment limits and required audit rollback passed
 without altering unrelated ledger rows. Other fee readers and the remaining
 critical, physical-device and release acceptance stay open.
 [Local verification](../REPORTS/LOCAL_LEGACY_CURRENCY_WRITES_2026-11-08.md)
+
+## Local C22 expense acceptance — 8 November 2026
+
+Finance-only branch options passed real Identity/SQL, including exact id/name
+scope and missing/foreign branch checks. Expense create/edit and required-audit
+rollback passed. The live browser recovered an unsent draft, a committed
+response loss and an acknowledged save with failed refresh without repeating
+a write. Broader fee readers, critical/device and release acceptance remain open.
+[Local verification](../REPORTS/LOCAL_C22_EXPENSE_ACCEPTANCE_2026-11-08.md)

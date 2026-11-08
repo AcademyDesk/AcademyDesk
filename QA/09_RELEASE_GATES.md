@@ -2,6 +2,13 @@
 
 These gates govern release acceptance. Current production readiness is **NOT ESTABLISHED**. Passing builds and unit tests do not satisfy the SQL, security, browser and operational gates below.
 
+The 8 November local browser runs cover standard and adjusted collection,
+payment transition readback, the payroll one-cent and duplicate boundary,
+and private audio recording and download. Physical devices and the linked
+critical suite are still required for the five open P0 records. The latest
+combined API run passed 2,196 tests.
+[Latest shared acceptance](../CLOUD_INTEGRATION_TRACKER.md)
+
 The current P0 finance window passed 12 integrity checks, 23 payroll
 reconciliation checks and all 14 guard tests. The guard still requires
 completion of the five open P0 records. The guarded deployment workflow is

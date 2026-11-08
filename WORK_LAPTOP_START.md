@@ -1,5 +1,18 @@
 # Academy Desk — continue from the work laptop or another profile
 
+## C22 expense lookup and recovery — 8 November 2026
+
+- [x] Integrated C22 and passed 46 targeted frontend and 2,196 combined API
+  tests. Seventeen real HTTP/SQL checks covered Finance-only branch options,
+  tenant and role refusals, exact create/edit and required-audit rollback.
+- [x] Six real browser/SQL phases verified before-commit interruption,
+  lost response after commit, and acknowledged save with failed readback.
+  Read-only recovery confirmed two writes total and no replay.
+- [ ] Remaining critical workflows, physical devices, release CI/images
+  and staging recovery stay open. The production guard still has five P0s.
+
+[Local C22 verification](QA/REPORTS/LOCAL_C22_EXPENSE_ACCEPTANCE_2026-11-08.md)
+
 ## P0 live payroll and private recording — 8 November 2026
 
 - [x] Payroll passed four live browser/SQL phases. The form explains duplicate
@@ -26,8 +39,7 @@
 - [x] Integrated Cloud C21 Dashboard detail availability. Sixty targeted
   frontend checks passed locally. Its real-host optional-feed scenarios
   remain open.
-- [ ] Cloud owns C22 expense recovery. Five P0 records, linked critical
-  and physical-device cases, CI/images and staging recovery stay open.
+- [x] C22 expense recovery is integrated and verified in the update above.
 
 [Local legacy currency verification](QA/REPORTS/LOCAL_LEGACY_CURRENCY_WRITES_2026-11-08.md)
 [Cloud C21 verification](QA/HANDOFF/C21_DASHBOARD_DETAIL_AVAILABILITY_2026-11-08.md)
