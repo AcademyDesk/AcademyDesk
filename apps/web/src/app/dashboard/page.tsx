@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { academyApi, clearPortalTokens } from "@/lib/api";
+import { financeMoney, formatFinanceMoney, type FinanceCurrencyTotals } from "@/lib/finance-summary";
 import { StandardDetailModal, StandardInteractiveTile } from "@/components/design-system/controls";
 
 type Academy = { id: string; name: string };
@@ -31,7 +32,7 @@ type DashboardData = {
   openLeads: number;
   attendanceLast30Days: number;
   presentAttendanceLast30Days: number;
-  outstandingBalance: number;
+  byCurrency?: FinanceCurrencyTotals[];
   classesToday: number;
   todaySchedule: ScheduleItem[];
   recentActivity: ActivityItem[];
@@ -42,8 +43,8 @@ type Session = {
   academyId?: string | null;
 };
 type Student = { id: string; firstName: string; lastName: string; isActive: boolean };
-type Invoice = { id: string; studentId: string; invoiceNumber: string; totalAmount: number; paidAmount: number; dueDate: string; status: string };
-type PayrollPayout = { id: string; workerName: string; periodLabel: string; netAmount: number; status: string };
+type Invoice = { id: string; studentId: string; invoiceNumber: string; balance: number; currency?: string; dueDate: string; status: string };
+type PayrollPayout = { id: string; workerName: string; periodLabel: string; netAmount: number; currency?: string; status: string };
 type Attendance = { studentId: string; status: string };
 type DetailData = { students: Student[]; invoices: Invoice[]; payroll: PayrollPayout[]; attendance: Attendance[] };
 
@@ -55,7 +56,6 @@ const emptyDashboard: DashboardData = {
   openLeads: 0,
   attendanceLast30Days: 0,
   presentAttendanceLast30Days: 0,
-  outstandingBalance: 0,
   classesToday: 0,
   todaySchedule: [],
   recentActivity: [],
@@ -70,10 +70,9 @@ function greeting() {
       ? "Good afternoon"
       : "Good evening";
 }
-function formatRupees(amount: number) {
-  return Math.abs(amount) >= 100000
-    ? `₹${(amount / 100000).toFixed(2)}L`
-    : `₹${amount.toLocaleString("en-IN")}`;
+function detailMoney(amount: number, currency?: string) {
+  return typeof amount === "number" && Number.isFinite(amount) && typeof currency === "string"
+    ? formatFinanceMoney(amount, currency) : "Currency details unavailable";
 }
 function formatAction(action: string) {
   return action
@@ -158,7 +157,7 @@ export default function DashboardPage() {
           openLeads: summary.openLeads,
           attendanceLast30Days: summary.attendanceRecordsLast30Days,
           presentAttendanceLast30Days: summary.presentAttendanceLast30Days,
-          outstandingBalance: summary.outstandingBalance,
+          byCurrency: summary.byCurrency,
           classesToday: summary.classesToday ?? 0,
           todaySchedule: summary.todaySchedule ?? [],
           recentActivity: summary.recentActivity ?? [],
@@ -212,9 +211,8 @@ export default function DashboardPage() {
       )
     : 0;
   const activeStudents = details.students.filter((student) => student.isActive);
-  const outstandingInvoices = details.invoices.filter((invoice) => invoice.totalAmount - invoice.paidAmount > 0);
+  const outstandingInvoices = details.invoices.filter((invoice) => invoice.status.toLowerCase() !== "cancelled" && Number.isFinite(invoice.balance) && invoice.balance > 0);
   const outstandingPayroll = details.payroll.filter((payout) => payout.status !== "Paid");
-  const payrollDue = outstandingPayroll.reduce((sum, payout) => sum + payout.netAmount, 0);
   return (
     <main className="enterprise-dashboard">
       <section className="enterprise-dashboard-heading">
@@ -239,7 +237,7 @@ export default function DashboardPage() {
         <StandardInteractiveTile label="Active students" value={data.students} detail="View active student names" onClick={() => setDetail("students")} className="enterprise-kpi" />
         <StandardInteractiveTile label="Classes today" value={data.classesToday} detail="View scheduled classes" onClick={() => setDetail("classes")} className="enterprise-kpi" />
         <StandardInteractiveTile label="Attendance rate" value={`${attendanceRate}%`} detail="View attendance by student" onClick={() => setDetail("attendance")} className="enterprise-kpi" />
-        <StandardInteractiveTile label="Outstanding fees" value={formatRupees(data.outstandingBalance + payrollDue)} detail="View student fees and teacher salary due" onClick={() => setDetail("outstanding")} className="enterprise-kpi" />
+        <StandardInteractiveTile label="Outstanding fees" value={financeMoney(data, "outstanding")} detail="Student fee balances and separate payroll records" onClick={() => setDetail("outstanding")} className="enterprise-kpi" />
       </section>
       <section className="enterprise-dashboard-panels">
         <section className="enterprise-data-panel">
@@ -345,7 +343,7 @@ export default function DashboardPage() {
       {detail === "students" && <StandardDetailModal eyebrow="Workspace overview" title="Active students" onClose={() => setDetail(null)}><DetailList rows={activeStudents.map((student) => [fullName(student), "Active student"])} empty="No active students." /></StandardDetailModal>}
       {detail === "classes" && <StandardDetailModal eyebrow="Workspace overview" title="Classes today" onClose={() => setDetail(null)}><DetailList rows={data.todaySchedule.map((item) => [item.batchName, `${formatTime(item.startUtc)} · ${item.teacherName || "Unassigned"} · ${item.status}`])} empty="No classes are scheduled today." /></StandardDetailModal>}
       {detail === "attendance" && <StandardDetailModal eyebrow="Workspace overview" title="Attendance by student" onClose={() => setDetail(null)}><DetailList rows={activeStudents.map((student) => { const records = details.attendance.filter((record) => record.studentId === student.id); const present = records.filter((record) => ["Present", "Late", "Online"].includes(record.status)).length; return [fullName(student), records.length ? `${Math.round(present * 100 / records.length)}% · ${present} of ${records.length} classes` : "No attendance recorded"]; })} empty="No active students." /></StandardDetailModal>}
-      {detail === "outstanding" && <StandardDetailModal eyebrow="Workspace overview" title="Outstanding fees and salary" onClose={() => setDetail(null)}><div className="standard-detail-group"><h3>Student fee payments</h3><DetailList rows={outstandingInvoices.map((invoice) => [fullName(details.students.find((student) => student.id === invoice.studentId)), `${invoice.invoiceNumber} · ${formatRupees(invoice.totalAmount - invoice.paidAmount)} due`])} empty="No student fees are outstanding." /><h3>Teacher salary payments</h3><DetailList rows={outstandingPayroll.map((payout) => [payout.workerName, `${payout.periodLabel} · ${formatRupees(payout.netAmount)} · ${payout.status}`])} empty="No teacher salary payments are outstanding." /></div></StandardDetailModal>}
+      {detail === "outstanding" && <StandardDetailModal eyebrow="Workspace overview" title="Student fees and payroll records" onClose={() => setDetail(null)}><div className="standard-detail-group"><h3>Student fee payments</h3><DetailList rows={outstandingInvoices.map((invoice) => [fullName(details.students.find((student) => student.id === invoice.studentId)), `${invoice.invoiceNumber} · ${detailMoney(invoice.balance, invoice.currency)} due`])} empty="No student fees are outstanding." /><h3>Payroll records not marked Paid</h3><DetailList rows={outstandingPayroll.map((payout) => [payout.workerName, `${payout.periodLabel} · ${detailMoney(payout.netAmount, payout.currency)} · ${payout.status}`])} empty="No payroll records are listed." /></div></StandardDetailModal>}
     </main>
   );
 }

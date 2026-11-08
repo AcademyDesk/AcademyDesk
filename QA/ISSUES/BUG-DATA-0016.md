@@ -3,24 +3,24 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | RUNTIME-CONFIRMED / ACADEMY + PLATFORM BOUNDED REPAIRS |
+| Confirmation status | RUNTIME-CONFIRMED / ACADEMY + PLATFORM + DASHBOARD BOUNDED REPAIRS |
 | Final verification | NOT RUN |
 | Severity | Major financial reporting integrity |
 | Priority | P1 |
 | Category | DATA |
 | Module | FINANCE |
 | Role | AcademyAdmin/FinanceUser for academy summaries; current stored Platform Owner flag for global overview |
-| Screen / route | /finance; /platform |
-| API | GET finance-governance/summary; GET /api/platform/overview |
+| Screen / route | /finance; /finance-summary; /dashboard; /platform |
+| API | GET finance-governance/summary; GET academy/dashboard; GET /api/platform/overview |
 | Environment | Source review of local working tree; runtime production state not inferred |
 | Device/viewport | NOT RUN; use QA/06_DEVICE_VIEWPORT_MATRIX.md where UI applies |
 | Baseline | 20bb6047f9edf733ac8e2a226621cc582ec54b3c + pre-existing student UI diff |
 | Discovery test / review ID | FINANCE-CURRENCY-001 |
-| Evidence classification | C17/C18 controller/HTTP/InMemory and controlled Chromium reproduction/repair; real SQL acceptance separate |
+| Evidence classification | C17/C18/C19 controller/HTTP/InMemory and controlled Chromium reproduction/repair; real SQL acceptance separate |
 | Preconditions | Isolated synthetic fixture from QA/10_TEST_DATA_STRATEGY.md; never customer data |
 | Reproduction frequency | Not measured; reproduction instructions are proposed |
 | Source | apps/api/Controllers/FinanceGovernanceController.cs:14 |
-| Class/function | FinanceGovernance.Summary; PlatformControl.Overview; finance/platform cards |
+| Class/function | FinanceGovernance.Summary; Dashboard.Summary; PlatformControl.Overview; finance/dashboard/platform cards |
 | Related source | INVENTORY/API_ENDPOINTS.md, CONTRACTS.md, FORMS_AND_FIELDS.md and ASYNC_FORM_RISKS.md |
 | Root-cause confidence | HIGH |
 | Evidence location | Source excerpt below; source fingerprint in INVENTORY/SOURCE_MANIFEST.md |
@@ -28,11 +28,11 @@
 | Console logs | Not captured; required in retest |
 | API request | In disposable fixtures create same-academy fee plans/invoices of INR 1000 and USD 100, with matching-currency payments. Read summary and finance cards; compare single-currency controls. Repeat with platform billing invoices in INR and USD and compare PlatformControl Overview with platform cards. |
 | API response | Not captured for this issue; use synthetic request/response in isolated reproduction |
-| Database before/after | C17/C18 isolated InMemory snapshots preserved on reads/denials; real SQL acceptance pending |
+| Database before/after | C17/C18/C19 isolated InMemory snapshots preserved on reads/denials; real SQL acceptance pending |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | C17 a448103 + ddd34fd; C18 a8d20d80abc46042a4d3a7bf31b15ead121ae361; Dashboard/live acceptance pending |
-| Retest result | C18 API target48/48, UI31/31, controlled native10/10 PASS; C17 evidence retained below; real SQL/device/critical closure pending |
-| Regression result | C18 API2,132/2,132 PASS; frontend2,072 PASS /3 genuine SQL-receipt FAIL, zero skips |
+| Fix commit | C17 a448103 + ddd34fd; C18 a8d20d80abc46042a4d3a7bf31b15ead121ae361; C19 e9d256221fa49fa467b9a6de38d07f9e3aa3600a; live acceptance pending |
+| Retest result | C19 API target46/46, UI42/42, controlled native14/14 PASS; prior source-bound evidence retained below; real SQL/device/critical closure pending |
+| Regression result | C19 API2,155/2,155 PASS; frontend2,086 PASS /3 genuine SQL-receipt FAIL, zero skips |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
 ## Exact reproduction
@@ -128,6 +128,31 @@ real SQL, device, critical and final release acceptance remains OPEN.
 The two original named summary paths now have bounded repairs. The academy
 Dashboard and its fees/payroll composition remain a separate unqualified path.
 [Contract, evidence, compatibility and Desktop SQL return](../HANDOFF/C18_PLATFORM_CURRENCIES_2026-11-08.md).
+
+## C19 academy dashboard readback repair — 8 November 2026
+
+Original dashboard23 HTTP/Identity/InMemory cases5 PASS /18 FAIL;14 controlled
+TSX cases all failed. The dashboard now shares the existing C17 academy finance
+read model, returns explicit groups/null mixed scalars, and uses per-invoice
+nonnegative balances rather than netting an overpayment against other students.
+Cancelled bills contribute gross history but no receivable; only accepted,
+matching-currency receipts reduce that invoice's debt. The tile shows student
+fees with explicit units/cents; the modal keeps payroll records separate and
+uses invoice API balance metadata with adjustments. No write/accounting status,
+permission/tenant or audit policy changes.
+
+Final targeted API46/46 and UI42/42 PASS; native14/14 PASS at320/light and
+1440/dark, zero runtime/interceptor errors or API mutations, normal sandbox,
+owned cleanup and570 export hashes unchanged. Full API2,155/2,155 PASS; frontend
+2,086 PASS /3 missing genuine SQL-receipt FAIL, zero skips/cancellations. These
+are controlled fixtures and do not establish real SQL/device/critical closure.
+
+Remain OPEN. Desktop must integrate C17-C19 without replacing its newer profile
+audit fixes and execute combined SQL/HTTP/browser/critical/device acceptance.
+Invoice List's legacy mismatched-payment-currency projection and Reports-page
+independent money/payroll calculations remain separate unqualified consumers;
+no claim that all financial screens or release gates are qualified.
+[Exact source, contract, evidence and Desktop acceptance tasks](../HANDOFF/C19_DASHBOARD_BALANCES_2026-11-08.md).
 
 ## Local currency acceptance — 8 November 2026
 

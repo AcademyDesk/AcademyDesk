@@ -1,4 +1,5 @@
 using AcademyDesk.Api.Data;
+using AcademyDesk.Api.ReadModels;
 using AcademyDesk.Api.Domain.Entities;
 using AcademyDesk.Api.Security;
 using Microsoft.AspNetCore.Mvc;
@@ -62,22 +63,7 @@ public sealed class FinanceGovernanceController(AcademyDeskDbContext db, Identit
  [HttpGet("summary")]
  public async Task<ActionResult> Summary(Guid academyId, CancellationToken t)
  {
-     var invoices = await db.Invoices.AsNoTracking().Where(x => x.AcademyId == academyId).ToListAsync(t);
-     var payments = await db.Payments.AsNoTracking().Where(x => x.AcademyId == academyId
-         && (x.Status == "Completed" || x.Status == "Reconciled")).ToListAsync(t);
-     var paid = payments.GroupBy(x => (x.InvoiceId, Currency: CurrencyKey(x.Currency)))
-         .ToDictionary(x => x.Key, x => x.Sum(p => p.Amount));
-     var byCurrency = invoices.Select(x => CurrencyKey(x.Currency)).Concat(payments.Select(x => CurrencyKey(x.Currency)))
-         .Distinct(StringComparer.Ordinal).OrderBy(x => x, StringComparer.Ordinal).Select(currency =>
-         {
-             var bills = invoices.Where(x => CurrencyKey(x.Currency) == currency).ToArray();
-             var receipts = payments.Where(x => CurrencyKey(x.Currency) == currency).ToArray();
-             return new FinanceCurrencyTotals(currency, bills.Sum(x => x.TotalAmount), bills.Sum(x => x.AdjustedAmount),
-                 receipts.Sum(x => x.Amount),
-                 bills.Where(x => !string.Equals(x.Status, "Cancelled", StringComparison.OrdinalIgnoreCase))
-                     .Sum(x => Math.Max(0m, x.TotalAmount - x.AdjustedAmount - paid.GetValueOrDefault((x.Id, currency)))),
-                 receipts.Where(x => x.Status == "Reconciled").Sum(x => x.Amount));
-         }).ToArray();
+     var byCurrency = await AcademyFinanceReadModel.LoadAsync(db, academyId, t);
      var single = byCurrency.Length == 1 ? byCurrency[0] : null;
      // Flat values remain useful only when there is one unit (or no activity).
      // A null mixed-currency scalar cannot be mistaken for a converted amount.
@@ -90,7 +76,6 @@ public sealed class FinanceGovernanceController(AcademyDeskDbContext db, Identit
          OverdueInvoices = (await OverdueCollections(academyId, DateOnly.FromDateTime(DateTime.UtcNow), t)).Count
      });
  }
- private static string CurrencyKey(string currency) => currency.Trim().ToUpperInvariant();
  [HttpPost("collections/{invoiceId:guid}/follow-up")]
  public async Task<ActionResult> CreateFollowUp(Guid academyId, Guid invoiceId, CollectionFollowUpRequest r, CancellationToken t)
  {
@@ -116,6 +101,4 @@ public sealed class FinanceGovernanceController(AcademyDeskDbContext db, Identit
      db.AdminWorkItems.Add(item); await db.SaveChangesAsync(t); return Ok(item);
  }
 }
-public sealed record FinanceCurrencyTotals(string Currency, decimal GrossBilled, decimal ApprovedAdjustments,
-    decimal Collected, decimal Outstanding, decimal Reconciled);
 public sealed record FinanceSettingsRequest(string? TaxRegistrationNumber,string? TaxLabel,decimal TaxRatePercent,int DefaultPaymentTermsDays,bool TaxInclusivePricing,string? InvoiceLogoUrl,string? InvoiceAuthorityName,string? InvoiceAuthorityTitle,string? InvoiceSignatureUrl,string? InvoiceTemplateKey,string? PayslipTemplateKey); public sealed record FinanceSettingsSummary(string TaxRegistrationNumber,string TaxLabel,decimal TaxRatePercent,int DefaultPaymentTermsDays,bool TaxInclusivePricing,string? InvoiceLogoUrl,string? InvoiceAuthorityName,string? InvoiceAuthorityTitle,string? InvoiceSignatureUrl,string InvoiceTemplateKey,string PayslipTemplateKey); public sealed record CollectionFollowUpRequest(string? Note,string? Priority,Guid? AssignedUserId,DateTime? DueAtUtc);

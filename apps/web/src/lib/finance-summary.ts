@@ -9,7 +9,7 @@ export type FinanceSummary = {
 
 const keys: FinanceMoneyKey[] = ["grossBilled", "approvedAdjustments", "collected", "outstanding", "reconciled"];
 const unavailable = "Currency details unavailable";
-function rows(summary: FinanceSummary): FinanceCurrencyTotals[] | null {
+function rows(summary: Pick<FinanceSummary, "byCurrency">): FinanceCurrencyTotals[] | null {
   const values = summary.byCurrency;
   if (!Array.isArray(values) || !values.every(row => row && typeof row.currency === "string"
     && keys.every(key => typeof row[key] === "number" && Number.isFinite(row[key])))) return null;
@@ -25,7 +25,7 @@ export function formatFinanceMoney(amount: number, currency?: string): string {
   catch { return `${code || "Unspecified currency"} ${number}`; }
 }
 
-export function financeMoney(summary: FinanceSummary, key: FinanceMoneyKey): string {
+export function financeMoney(summary: Pick<FinanceSummary, "byCurrency">, key: FinanceMoneyKey): string {
   const values = rows(summary);
   if (!values) return unavailable;
   return values.map(row => formatFinanceMoney(row[key], row.currency)).join(" · ") || formatFinanceMoney(0);
