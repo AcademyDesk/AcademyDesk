@@ -91,3 +91,13 @@ sandbox and owned cleanup pass. Full frontend2,042 PASS /3 missing genuine SQL
 receipt FAIL, zero skips; build/types/lint pass (zero errors/62 warnings). Two
 intermediate timing failures remain retained; the final driver checks the same
 views in focused viewport sessions without loosening assertions/timeouts.
+
+## Local support acceptance — 8 November 2026
+
+Real Academy Admin intake stored Critical and one attributed audit. Platform
+Owner read the case and resolved and closed it with one audit per transition.
+Foreign-academy reads and writes respected tenant boundaries. The audit-fault
+baseline showed a saved ticket after a 500. The scoped create transaction now
+rolls back both Academy Admin and Platform Owner writes when the audit fails.
+The browser against real API data, physical device and critical cases stay open.
+[Local SQL verification](../REPORTS/LOCAL_C16_C18_SQL_ACCEPTANCE_2026-11-08.md)

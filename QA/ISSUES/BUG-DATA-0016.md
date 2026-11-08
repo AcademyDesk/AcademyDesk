@@ -128,3 +128,11 @@ real SQL, device, critical and final release acceptance remains OPEN.
 The two original named summary paths now have bounded repairs. The academy
 Dashboard and its fees/payroll composition remain a separate unqualified path.
 [Contract, evidence, compatibility and Desktop SQL return](../HANDOFF/C18_PLATFORM_CURRENCIES_2026-11-08.md).
+
+## Local currency acceptance — 8 November 2026
+
+C17 and C18 passed real SQL for empty, single and mixed currency reads,
+cent precision, finance eligibility, collections agreement and read-side
+authority. The original INR platform billing regression passed. Dashboard C19,
+live browser/device and the wider critical closure remain open.
+[Local SQL verification](../REPORTS/LOCAL_C16_C18_SQL_ACCEPTANCE_2026-11-08.md)

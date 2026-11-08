@@ -71,6 +71,8 @@ public sealed class AuditOutcomeTests
     [InlineData(typeof(TeachersController), "Update", true)]
     [InlineData(typeof(ProfilesController), nameof(ProfilesController.UpdateTeacherProfile), true)]
     [InlineData(typeof(ProfilesController), nameof(ProfilesController.Teacher), false)]
+    [InlineData(typeof(AcademyPlatformServicesController), nameof(AcademyPlatformServicesController.CreateSupportCase), true)]
+    [InlineData(typeof(AcademyPlatformServicesController), nameof(AcademyPlatformServicesController.SupportCases), false)]
     [InlineData(typeof(TeacherCompensationController), "Save", true)]
     [InlineData(typeof(TeacherCompensationController), "Get", false)]
     [InlineData(typeof(MusicProgressController), "Update", true)]
@@ -124,6 +126,7 @@ public sealed class AuditOutcomeTests
     [InlineData(typeof(StudentOnboardingController), "Create", true)]
     [InlineData(typeof(TeachersController), "Update", false)]
     [InlineData(typeof(ProfilesController), nameof(ProfilesController.UpdateTeacherProfile), true)]
+    [InlineData(typeof(AcademyPlatformServicesController), nameof(AcademyPlatformServicesController.CreateSupportCase), true)]
     [InlineData(typeof(StudentsController), "Create", false)]
     [InlineData(typeof(EnrollmentsController), "Create", false)]
     public void Platform_owner_audit_transaction_remains_explicitly_action_scoped(Type controller, string method, bool expected) =>

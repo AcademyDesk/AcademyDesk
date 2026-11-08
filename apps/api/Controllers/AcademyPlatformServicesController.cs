@@ -1,5 +1,6 @@
 using AcademyDesk.Api.Data;
 using AcademyDesk.Api.Domain.Entities;
+using AcademyDesk.Api.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -40,6 +41,7 @@ public sealed class AcademyPlatformServicesController(AcademyDeskDbContext db) :
         .ToListAsync(token));
 
     [HttpPost("support-cases")]
+    [AtomicAcademyMutation(IncludePlatformOwner = true)]
     public async Task<ActionResult> CreateSupportCase(Guid academyId, CreateAcademySupportCaseRequest request, CancellationToken token)
     {
         if (string.IsNullOrWhiteSpace(request.Subject) || string.IsNullOrWhiteSpace(request.Description)) return BadRequest(new { message = "A subject and message are required." });

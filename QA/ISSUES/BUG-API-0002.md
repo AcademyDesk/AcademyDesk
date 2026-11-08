@@ -100,3 +100,12 @@ successful write. The module passed 13/13 real HTTP and SQL checks, and all
 2,087 API tests passed. Other action boundaries and linked critical and device
 cases remain open.
 [Local SQL verification](../REPORTS/LOCAL_C15_TEACHER_AVAILABILITY_SQL_2026-11-08.md)
+
+## Academy support intake transaction — 8 November 2026
+
+The real SQL baseline returned 500 after creating a support ticket when the
+actor audit failed. Academy support creation now uses the existing action-level
+transaction. The same fault left the captured SQL state unchanged for both
+Academy Admin and Platform Owner. The separate owner triage audit fault also
+rolled back. Other action boundaries and broader acceptance stay open.
+[Local SQL verification](../REPORTS/LOCAL_C16_C18_SQL_ACCEPTANCE_2026-11-08.md)

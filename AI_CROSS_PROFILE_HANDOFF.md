@@ -1,5 +1,19 @@
 # Academy Desk — shared continuation across profiles
 
+## C16 support and C17–C18 currencies — 8 November 2026
+
+- [x] Imported 19 Cloud paths for academy finance and Platform Owner currency
+  summaries. All 57 targeted frontend checks passed locally. The web source
+  matches the Cloud-tested C18 tree.
+- [x] Passed 28 real HTTP/SQL checks for currency balances, collections,
+  support intake and triage, role/tenant denial and audit rollback. The
+  original INR platform billing regression passed 51 cases. The
+  combined API suite passed 2,138 tests.
+- [ ] Cloud owns C19 academy Dashboard balances. The live browser and device
+  returns, five P0 records, release CI/images and staging recovery are open.
+
+[Local C16–C18 verification](QA/REPORTS/LOCAL_C16_C18_SQL_ACCEPTANCE_2026-11-08.md)
+
 ## C15 local SQL and C16 Cloud integration — 8 November 2026
 
 - [x] C15 teacher availability passed 13 real HTTP and SQL checks. The
@@ -9,9 +23,8 @@
   targeted frontend checks passed locally. Cloud passed eight controlled
   Chromium checks. The Cloud frontend suite still reports three missing
   communication SQL receipts.
-- [ ] C16 real support intake and owner triage, C15 browser/device checks and
-  the five P0 release records remain open. Cloud owns C17 currency summaries
-  on `codex/cloud-c17-finance-currencies-20261107`. Keep Desktop work outside that scope.
+- [x] C16 support intake and triage SQL evidence is recorded above.
+- [ ] C15 and C16 real browser, device and critical workflow checks remain.
 
 [Local C15 SQL verification](QA/REPORTS/LOCAL_C15_TEACHER_AVAILABILITY_SQL_2026-11-08.md)
 [Cloud C16 handoff](QA/HANDOFF/C16_SUPPORT_TRIAGE_2026-11-07.md)
