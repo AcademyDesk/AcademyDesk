@@ -114,3 +114,15 @@ writes. Exact-lock build/types/lint PASS (zero errors / existing 63 warnings).
 Remain **OPEN**. These shared batch counts are not added per issue and do not
 replace original module/critical, real Identity/HTTP/SQL, other-client, device or
 release closure requirements. See [C9 source-bound report and Desktop tasks](../HANDOFF/C9_FINANCE_BATCH_2026-11-07.md).
+
+## Local live transition and ledger readback — 8 November 2026
+
+The signed-in browser used the existing API to void an INR 200 payment on an
+adjusted invoice. SQL retained the original evidence and the invoice showed
+INR 200 due. Generic reconciliation and blank evidence were refused with no
+captured writes. Dedicated reconciliation restored the original payment,
+recorded new evidence and returned the invoice to Paid with zero balance. The
+actual ledger showed both states. Each successful mutation had one actor
+audit. The screen presents these states read-only. Keep OPEN for the legacy
+currency write matrix, linked critical and physical-device acceptance.
+[Local verification](../REPORTS/LOCAL_C20_REPORTS_PAYMENT_TRANSITIONS_2026-11-08.md)

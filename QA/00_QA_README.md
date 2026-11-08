@@ -1,5 +1,19 @@
 # AcademyDesk QA control centre — Phase 1
 
+## C20 Reports and P0 payment transitions — 8 November 2026
+
+- [x] Integrated C20. Exact-lock export, 32 targeted Reports checks and 2,183
+  combined API tests passed. Real browser/SQL passed five phases and three
+  authority checks, including Reports retry, three dialogs and three CSVs.
+- [x] API-driven void and evidence-based restore persisted exact adjusted
+  balances with one audit each. The live reconciliation page showed each state.
+- [ ] Legacy currency write gap reproduced. The USD invoice displays 70.15 due,
+  but collection rejects it because the writer still counts an INR receipt.
+  Desktop owns the protected-write repair. Cloud owns C21 Dashboard detail
+  availability. Five P0s and device/CI/staging gates remain open.
+
+[Local Reports and transition verification](REPORTS/LOCAL_C20_REPORTS_PAYMENT_TRANSITIONS_2026-11-08.md)
+
 ## P0 live Payments acceptance — 8 November 2026
 
 - [x] The exact-lock export passed eight real browser/SQL phases. Standard
@@ -19,8 +33,8 @@
   separation, academy-local scheduling and role/tenant denials.
 - [x] Passed 34 combined HTTP/SQL checks, 2,161 API tests and 27 targeted frontend
   checks. The exact-lock Next.js browser export and static postbuild passed.
-- [ ] Cloud owns C20 invoice-list and Reports currency work. The real Dashboard
-  browser modal, critical/device and exact-release CI/staging gates stay open.
+- [ ] The real Dashboard browser modal, critical/device and exact-release
+  CI/staging gates stay open.
 
 [Local C19 verification](REPORTS/LOCAL_C19_DASHBOARD_SQL_ACCEPTANCE_2026-11-08.md)
 

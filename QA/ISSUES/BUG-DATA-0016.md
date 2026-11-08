@@ -220,3 +220,13 @@ denials, academy-local scheduling and unchanged captured records passed.
 The combined run passed 34 HTTP/SQL checks and 2,161 API tests. Real browser
 modal/device and broader closure requirements remain open, alongside C20.
 [Local SQL verification](../REPORTS/LOCAL_C19_DASHBOARD_SQL_ACCEPTANCE_2026-11-08.md)
+
+## Local C20 Reports and legacy write reproduction — 8 November 2026
+
+Real invoice, Dashboard and Finance readback agreed on USD 70.15 due. Reports
+displayed exact currency groups and exported the scoped data with spreadsheet
+escaping. The collection API rejected that same USD 70.15 because the legacy
+INR receipt remains in its write-side sum. The rejected request left captured
+SQL unchanged. Keep OPEN for the protected-write matrix and repair, and the
+remaining critical and device gates.
+[Local verification](../REPORTS/LOCAL_C20_REPORTS_PAYMENT_TRANSITIONS_2026-11-08.md)
