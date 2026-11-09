@@ -196,11 +196,11 @@ public sealed partial class PentaOnboardingController(PentaOnboardingDraftServic
             return ToResult(outcome.HttpStatus, outcome.Receipt, outcome.Error);
         });
 
-    private async Task<ActionResult> Safely(Func<Task<ActionResult>> operation, string subject = "onboarding")
+    private async Task<ActionResult> Safely(Func<Task<ActionResult>> operation, string subject = "onboarding", bool? available = null)
     {
         // Gate before adapter/store work. Authorization and the academy filter still
         // run independently; a flag never grants an actor or model permissions.
-        if (!Available) return NotFound();
+        if (!(available ?? Available)) return NotFound();
         HttpContext.Response.Headers.CacheControl = "no-store";
         HttpContext.Response.Headers.Pragma = "no-cache";
         try { return await operation(); }

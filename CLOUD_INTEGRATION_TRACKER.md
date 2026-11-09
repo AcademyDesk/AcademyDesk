@@ -1,5 +1,15 @@
 # Academy Desk shared integration tracker
 
+## PENTA enrollment creation — 9 November 2026
+
+- [x] Desktop verified Testing-only draft, approval, execution and receipt
+  recovery with 23 new native checks. The 13 preview and 57 shared enrollment
+  checks passed in the same window.
+- [ ] Desktop owns status and transfer follow-up. C24, C25 and C26 remain
+  separate Cloud returns for Desktop integration and live acceptance.
+
+[Enrollment creation evidence](QA/REPORTS/PENTA_ENROLLMENT_CREATION_2026-11-09.md)
+
 ## AI backend integration — 9 November 2026
 
 - [x] Desktop's Testing-only enrollment preview passed 13 native checks

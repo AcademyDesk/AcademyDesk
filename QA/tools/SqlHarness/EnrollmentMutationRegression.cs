@@ -197,6 +197,8 @@ internal static partial class SqlHarnessEntryPoint
             await DenyPreview("preview audit failure", faultyPreview, ready, HttpStatusCode.InternalServerError);
         if (previewAuditFault.Hits != 1) throw new InvalidOperationException("Preview audit fault was not reached.");
 
+        await VerifyEnrollmentCreationWorkflowAsync(factory, manifest, academy, foreign, actor, email, () => Seed());
+
         var revocation=await Seed();using(var scope=factory.Services.CreateScope()){
             var identity=scope.ServiceProvider.GetRequiredService<IdentityDbContext>();var roleIds=await identity.Roles.Where(x=>x.Name=="AcademyAdmin").Select(x=>x.Id).ToArrayAsync();
             await identity.UserRoles.Where(x=>x.UserId==actor&&roleIds.Contains(x.RoleId)).ExecuteDeleteAsync();}

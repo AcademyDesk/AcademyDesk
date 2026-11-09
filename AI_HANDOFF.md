@@ -1,5 +1,18 @@
 # Academy Desk handoff
 
+## PENTA enrollment creation — 9 November 2026
+
+- [x] Testing-only enrollment creation now has protected prepare, explicit
+  approval, shared domain execution and durable receipt recovery. The 23
+  new native checks passed, including duplicate execution and audit rollback.
+- [x] The 13 preview and 57 shared enrollment checks still pass, including
+  the 15 mixed Manual/service admission races.
+- [ ] Add protected enrollment status and transfer workflows next. Use Sol
+  High for their authority, admission concurrency and receipt checks. Mini
+  qualification and the production release gates stay open.
+
+[Enrollment creation evidence](QA/REPORTS/PENTA_ENROLLMENT_CREATION_2026-11-09.md)
+
 ## AI backend integration — 9 November 2026
 
 - [x] The guarded enrollment create preview calls shared Manual admission
