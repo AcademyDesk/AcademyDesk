@@ -1,5 +1,15 @@
 # Academy Desk handoff
 
+## Live cross-tab session acceptance — 9 November 2026
+
+- [x] 15 live Edge and SQL checks passed. Manual sign-out locked an open
+  PENTA tab, peer sign-in kept it locked, explicit login recovered it,
+  and Platform password change signed out the other Platform tab.
+- [ ] The broader session gate remains open for remaining role, device and
+  critical cases. Sol High for further live authentication and SQL work.
+
+[Live session evidence](QA/REPORTS/LOCAL_CROSS_TAB_SESSION_ACCEPTANCE_2026-11-09.md)
+
 ## Production readiness — 9 November 2026
 
 - [x] Built the API Release image offline and passed 24 Production-mode

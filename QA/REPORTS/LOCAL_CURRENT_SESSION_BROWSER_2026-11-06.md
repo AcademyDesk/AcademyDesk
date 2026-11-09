@@ -1,5 +1,10 @@
 # Current built UI and disposable Identity/SQL session browser acceptance
 
+The 9 November successor adds four live cross-tab cases to this runner and
+extends the proof to the workspace frame, PENTA entry and enterprise shell.
+The original result below remains scoped to its 11 checks.
+[Successor evidence](LOCAL_CROSS_TAB_SESSION_ACCEPTANCE_2026-11-09.md)
+
 Status: PASS for the bounded current-source session journey; claimed before implementation, 6 November 2026. Continue from C6 source
 checkpoint `2e8c13ababfa4852ddb1c05c09d4ce2800a7e092`; do not restart the audit.
 

@@ -1,5 +1,13 @@
 # Academy Desk shared integration tracker
 
+## Live cross-tab session acceptance — 9 November 2026
+
+- [x] 15 live Edge and SQL checks passed, including four new cross-tab
+  sign-out, replacement, explicit recovery and password-change cases.
+- [ ] Broader session, role and physical-device acceptance remain open.
+
+[Live session evidence](QA/REPORTS/LOCAL_CROSS_TAB_SESSION_ACCEPTANCE_2026-11-09.md)
+
 ## Production readiness — 9 November 2026
 
 - [x] Built the API Release image offline and passed 24 Production-mode
