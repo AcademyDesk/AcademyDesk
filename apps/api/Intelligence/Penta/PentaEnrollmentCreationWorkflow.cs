@@ -15,17 +15,23 @@ using Microsoft.EntityFrameworkCore;
 namespace AcademyDesk.Api.Intelligence.Penta;
 
 public sealed record PentaEnrollmentReceipt(Guid ReceiptId, Guid AuditId, EnrollmentSummary Enrollment, DateTime CompletedAtUtc);
+public sealed record PentaEnrollmentChangePreview(string Tool, Guid EnrollmentId, Guid StudentId, Guid SourceBatchId,
+    string CurrentStatus, string Status, DateOnly? EndDate, string? LifecycleReason, Guid? TargetBatchId, DateOnly? TransferDate);
 public sealed record PentaEnrollmentDraftView(Guid RequestId, long Revision, long ContextVersion, string Status,
-    DateTime ExpiresAtUtc, EnrollmentCreatePreview Admission, string PayloadHash, Guid? ApprovalId, PentaEnrollmentReceipt? Receipt);
+    DateTime ExpiresAtUtc, EnrollmentCreatePreview? Admission, string PayloadHash, Guid? ApprovalId, PentaEnrollmentReceipt? Receipt,
+    [property: System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    PentaEnrollmentChangePreview? Change = null);
 internal sealed record PentaEnrollmentDraftOutcome(int HttpStatus, PentaEnrollmentDraftView? Draft = null, string? Error = null);
 internal sealed record PentaEnrollmentBinding(long Revision, string PayloadHash, Guid ApprovalId = default);
 
-/// <summary>Testing-only enrollment creation. The host owns authorization, confirmation and the committed receipt.</summary>
-public sealed class PentaEnrollmentCreationWorkflow(AcademyDeskDbContext db, IdentityDbContext identity,
+/// <summary>Testing-only enrollment changes. The host owns authorization, confirmation and the committed receipt.</summary>
+public sealed partial class PentaEnrollmentCreationWorkflow(AcademyDeskDbContext db, IdentityDbContext identity,
     EnrollmentMutationService enrollments, PentaPilotPolicy policy, UserManager<ApplicationUser> users,
     IDataProtectionProvider protection, IConfiguration configuration, IHostEnvironment environment, TimeProvider clock)
 {
     public const string ApprovalIntent = "ApproveEnrollmentCreate";
+    internal const string UpdateIntent = "ApproveEnrollmentUpdate";
+    internal const string TransferIntent = "ApproveEnrollmentTransfer";
     private const string Purpose = "academy.enrollment-create.v1";
     private const string ExecutedAction = "PentaEnrollmentExecuted";
     private const string EntityType = "PentaEnrollmentDraft";
@@ -34,11 +40,12 @@ public sealed class PentaEnrollmentCreationWorkflow(AcademyDeskDbContext db, Ide
     private const string Succeeded = "Succeeded";
     private enum Action { Prepare, Read, Approve, Execute }
 
-    private sealed record Body(string RequestHash, string SecurityStamp, EnrollmentCreatePreview Admission,
-        Guid? ApprovalId = null, PentaEnrollmentReceipt? Receipt = null);
+    private sealed record Body(string RequestHash, string SecurityStamp, EnrollmentCreatePreview? Admission,
+        Guid? ApprovalId = null, PentaEnrollmentReceipt? Receipt = null, PentaEnrollmentChangePreview? Change = null, string? SourceHash = null);
 
     public bool Enabled => environment.IsEnvironment("Testing") && policy.IsAvailable &&
         configuration.GetValue<bool>("Penta:EnrollmentCreationEnabled");
+    private bool LifecycleEnabled => configuration.GetValue<bool>("Penta:EnrollmentLifecycleEnabled");
     private DateTime Now => clock.GetUtcNow().UtcDateTime;
 
     internal Task<PentaEnrollmentDraftOutcome> PrepareAsync(ClaimsPrincipal user, Guid academy, Guid session, Guid request,
@@ -49,15 +56,16 @@ public sealed class PentaEnrollmentCreationWorkflow(AcademyDeskDbContext db, Ide
         RunAsync(Action.Read, user, academy, session, request, null, null, null, token);
 
     internal Task<PentaEnrollmentDraftOutcome> ApproveAsync(ClaimsPrincipal user, Guid academy, Guid session, Guid request,
-        PentaEnrollmentBinding binding, CancellationToken token) =>
-        RunAsync(Action.Approve, user, academy, session, request, binding, null, null, token);
+        PentaEnrollmentBinding binding, string intent, CancellationToken token) =>
+        RunAsync(Action.Approve, user, academy, session, request, binding, null, null, token, intent);
 
     internal Task<PentaEnrollmentDraftOutcome> ExecuteAsync(ClaimsPrincipal user, Guid academy, Guid session, Guid request,
         PentaEnrollmentBinding binding, CancellationToken token) =>
         RunAsync(Action.Execute, user, academy, session, request, binding, null, null, token);
 
     private async Task<PentaEnrollmentDraftOutcome> RunAsync(Action action, ClaimsPrincipal principal, Guid academy,
-        Guid session, Guid request, PentaEnrollmentBinding? binding, long? contextVersion, string? payload, CancellationToken token)
+        Guid session, Guid request, PentaEnrollmentBinding? binding, long? contextVersion, string? payload, CancellationToken token,
+        string? intent = null)
     {
         if (!Enabled) return new(404);
         if (session == Guid.Empty || request == Guid.Empty) return new(400);
@@ -88,9 +96,10 @@ public sealed class PentaEnrollmentCreationWorkflow(AcademyDeskDbContext db, Ide
 
         var body = Open(row);
         if (body is null || body.SecurityStamp != stamp) return Changed();
-        if (action == Action.Prepare && (!PentaEnrollmentFields.TryCreate(payload, out _) ||
-            body.RequestHash != PentaOperationalPayload.Digest(payload!) || contextVersion != row.ContextVersion)) return Changed();
-        if (binding is not null && (binding.Revision != row.Revision || binding.PayloadHash != Digest(body.Admission) ||
+        if (body.Change is not null && !LifecycleEnabled) return new(404);
+        if (action == Action.Prepare && (!PentaOperationalPayload.MatchesDigest(payload!, body.RequestHash) || contextVersion != row.ContextVersion)) return Changed();
+        if (action == Action.Approve && intent != Intent(body.Change)) return Changed();
+        if (binding is not null && (binding.Revision != row.Revision || binding.PayloadHash != Digest(body) ||
             action == Action.Execute && binding.ApprovalId != body.ApprovalId)) return Changed();
         if (row.Status == Succeeded)
             return await ReceiptExistsAsync(row, body.Receipt!, token) ? View(200, request, row, body) : Changed();
@@ -109,12 +118,11 @@ public sealed class PentaEnrollmentCreationWorkflow(AcademyDeskDbContext db, Ide
         else
         {
             if (row.Status != Authorized) return new(409, Error: "Explicit approval is required before enrollment.");
-            var admission = body.Admission;
-            var created = await enrollments.CreateAsync(principal, academy,
-                new CreateEnrollmentRequest(admission.StudentId, admission.BatchId, admission.StartDate, admission.Status), token);
-            if (created.HttpStatus != 201 || created.Result is null) return new(created.HttpStatus, Error: created.Error);
+            var saved = await ExecutePlanAsync(principal, academy, body, token);
+            if (saved.HttpStatus != (body.Change is null ? 201 : 200) || saved.Result is null)
+                return new(saved.HttpStatus, Error: saved.Error);
             row.Status = Succeeded;
-            body = body with { Receipt = new(Guid.NewGuid(), Guid.NewGuid(), created.Result, Now) };
+            body = body with { Receipt = new(Guid.NewGuid(), Guid.NewGuid(), saved.Result, Now) };
             outcome = await SaveAsync(201, request, row, body, ExecutedAction, token);
         }
         if (row.ExpiresAtUtc <= Now || conversation.ExpiresAtUtc <= Now) return new(410, Error: "The enrollment approval expired before commit.");
@@ -125,20 +133,19 @@ public sealed class PentaEnrollmentCreationWorkflow(AcademyDeskDbContext db, Ide
     private async Task<PentaEnrollmentDraftOutcome> PrepareNewAsync(ClaimsPrincipal principal, PentaMiniSession session,
         Guid id, Guid request, string stamp, string payload, CancellationToken token)
     {
-        if (!PentaEnrollmentFields.TryCreate(payload, out var input)) return new(400, Error: "Enter valid typed enrollment fields.");
         var today = Now.Date;
         var recent = db.PentaOnboardingDrafts.AsNoTracking().Where(x => x.AcademyId == session.AcademyId && x.CreatedAtUtc >= today);
         if (await recent.CountAsync(token) >= 100 || await recent.CountAsync(x => x.ActorUserId == session.ActorUserId, token) >= 20)
             return new(429, Error: "The daily PENTA draft limit was reached.");
-        var assessed = await enrollments.PreviewCreateAsync(principal, session.AcademyId, input!, stamp, token);
-        if (assessed.Preview is not { } admission) return new(assessed.HttpStatus, Error: assessed.Error);
+        var plan = await PreparePlanAsync(principal, session.AcademyId, stamp, payload, token);
+        if (plan.Body is not { } body) return new(plan.HttpStatus, Error: plan.Error);
         var now = Now;
         if (session.ExpiresAtUtc <= now) return new(410, Error: "The conversation expired.");
         var row = new PentaOnboardingDraft { Id = id, AcademyId = session.AcademyId, ActorUserId = session.ActorUserId,
             SessionId = session.Id, ContextVersion = session.Version, Revision = 1, Status = Prepared, CreatedAtUtc = now,
             ExpiresAtUtc = session.ExpiresAtUtc < now.AddMinutes(10) ? session.ExpiresAtUtc : now.AddMinutes(10), ProtectedBody = "" };
         db.PentaOnboardingDrafts.Add(row);
-        return await SaveAsync(201, request, row, new(PentaOperationalPayload.Digest(payload), stamp, admission), "PentaEnrollmentPrepared", token);
+        return await SaveAsync(201, request, row, body, "PentaEnrollmentPrepared", token);
     }
 
     private async Task<PentaEnrollmentDraftOutcome> SaveAsync(int status, Guid request, PentaOnboardingDraft row, Body body,
@@ -147,7 +154,8 @@ public sealed class PentaEnrollmentCreationWorkflow(AcademyDeskDbContext db, Ide
         row.ProtectedBody = Protector(row).Protect(JsonSerializer.Serialize(body));
         row.UpdatedAtUtc = Now;
         db.AuditLogs.Add(new AuditLog { Id = body.Receipt?.AuditId ?? Guid.NewGuid(), AcademyId = row.AcademyId,
-            ActorUserId = row.ActorUserId, EntityType = EntityType, EntityId = row.Id, Action = action, OccurredAtUtc = Now });
+            ActorUserId = row.ActorUserId, EntityType = EntityType, EntityId = row.Id, Action = action, OccurredAtUtc = Now,
+            MetadataJson = JsonSerializer.Serialize(new { tool = body.Change?.Tool ?? PentaEnrollmentFields.CreateTool }) });
         await db.SaveChangesAsync(token);
         return View(status, request, row, body);
     }
@@ -161,6 +169,9 @@ public sealed class PentaEnrollmentCreationWorkflow(AcademyDeskDbContext db, Ide
         try
         {
             var body = JsonSerializer.Deserialize<Body>(Protector(row).Unprotect(row.ProtectedBody));
+            if (body is null || (body.Admission is null) == (body.Change is null) ||
+                body.Change is not null && (body.SourceHash is not { Length: 64 } ||
+                    body.Change.Tool is not (PentaEnrollmentFields.UpdateTool or PentaEnrollmentFields.TransferTool))) return null;
             return row.Status switch
             {
                 Prepared when body is { ApprovalId: null, Receipt: null } => body,
@@ -178,12 +189,16 @@ public sealed class PentaEnrollmentCreationWorkflow(AcademyDeskDbContext db, Ide
         await db.AuditLogs.AsNoTracking().AnyAsync(x => x.Id == receipt.AuditId && x.AcademyId == row.AcademyId &&
             x.ActorUserId == row.ActorUserId && x.EntityType == EntityType && x.EntityId == row.Id && x.Action == ExecutedAction, token);
 
-    private static string Digest(EnrollmentCreatePreview admission) => Convert.ToHexStringLower(SHA256.HashData(
-        JsonSerializer.SerializeToUtf8Bytes(new { Tool = PentaEnrollmentFields.CreateTool, Revision = 1, Admission = admission })));
+    // Only reviewed fields contribute to the public digest. The source fingerprint stays protected.
+    private static string Digest(Body body) => body.Change is { } change
+        ? Hash(new { change.Tool, Revision = 1, Change = change })
+        : Hash(new { Tool = PentaEnrollmentFields.CreateTool, Revision = 1, body.Admission });
+
+    private static string Hash<T>(T value) => Convert.ToHexStringLower(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(value)));
 
     private static PentaEnrollmentDraftOutcome View(int status, Guid request, PentaOnboardingDraft row, Body body) =>
         new(status, new(request, row.Revision, row.ContextVersion, row.Status, row.ExpiresAtUtc, body.Admission,
-            Digest(body.Admission), body.ApprovalId, body.Receipt));
+            Digest(body), body.ApprovalId, body.Receipt, body.Change));
 
     private static PentaEnrollmentDraftOutcome Changed() => new(409, Error: "The enrollment request could not be verified. Read the same draft before retrying.");
 }

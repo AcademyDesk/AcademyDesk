@@ -1,5 +1,15 @@
 # Academy Desk shared integration tracker
 
+## PENTA enrollment status and transfers — 9 November 2026
+
+- [x] Desktop verified 16 native status and transfer checks, including
+  stale source, approval isolation, rollback and replay. Retained enrollment
+  checks passed. This checkpoint is Testing-only.
+- [ ] Desktop's next PENTA backend packet is make-up scheduling. Cloud C27
+  owns Sales trial permissions and lead conversion. C24–C26 remain separate.
+
+[Enrollment lifecycle evidence](QA/REPORTS/PENTA_ENROLLMENT_LIFECYCLE_2026-11-09.md)
+
 ## PENTA enrollment creation — 9 November 2026
 
 - [x] Desktop verified Testing-only draft, approval, execution and receipt

@@ -1,5 +1,18 @@
 # Academy Desk handoff
 
+## PENTA enrollment status and transfers — 9 November 2026
+
+- [x] Protected status and transfer operations passed 16 native checks.
+  Approval binds the exact operation and reviewed fields. A later Manual
+  edit invalidates a stale approval. Transfer replay and audit rollback passed.
+- [x] The 23 creation, 13 preview and 57 shared checks still pass, including
+  all 15 mixed admission races.
+- [ ] Start make-up scheduling next. Preserve Offline venue and Online or
+  Hybrid meeting links, and cover the queued InApp notifications in approval.
+  Use Sol High for the domain transaction and approval boundary.
+
+[Enrollment lifecycle evidence](QA/REPORTS/PENTA_ENROLLMENT_LIFECYCLE_2026-11-09.md)
+
 ## PENTA enrollment creation — 9 November 2026
 
 - [x] Testing-only enrollment creation now has protected prepare, explicit

@@ -8,6 +8,7 @@ namespace AcademyDesk.Api.Infrastructure;
 public sealed record EnrollmentMutationOutcome(int HttpStatus, EnrollmentSummary? Result = null, string? Error = null);
 public sealed record EnrollmentCreatePreview(Guid StudentId, Guid BatchId, DateOnly StartDate, string Status);
 internal sealed record EnrollmentCreatePreviewOutcome(int HttpStatus, EnrollmentCreatePreview? Preview = null, string? Error = null);
+internal sealed record EnrollmentChangeAssessment(int HttpStatus, Enrollment? Source = null, string? Status = null, string? Error = null);
 
 /// <summary>Existing deterministic Manual admission operations, shared with the
 /// guarded PENTA service. This internal class grants no authority. The caller
@@ -50,6 +51,19 @@ internal sealed class EnrollmentMutationOperations(AcademyDeskDbContext dbContex
         await using var ownedTransaction = await EnrollmentAdmissionBoundary.BeginOwnedAsync(dbContext, token);
         if (!await EnrollmentAdmissionBoundary.TryLockAsync(dbContext, academyId, token))
             return new(503, Error: EnrollmentAdmissionBoundary.BusyMessage);
+        var assessment = await AssessUpdateAsync(academyId, enrollmentId, request, token);
+        if (assessment.Source is not { } enrollment) return new(assessment.HttpStatus, Error: assessment.Error);
+        enrollment.Status = assessment.Status!;
+        enrollment.EndDate = request.EndDate;
+        enrollment.LifecycleReason = string.IsNullOrWhiteSpace(request.LifecycleReason) ? null : request.LifecycleReason.Trim();
+        await dbContext.SaveChangesAsync(token);
+        if (ownedTransaction is not null) await ownedTransaction.CommitAsync(token);
+        return new(200, new EnrollmentSummary(enrollment.Id, enrollment.StudentId, enrollment.BatchId, enrollment.StartDate, enrollment.EndDate, enrollment.Status));
+    }
+
+    // The caller holds the admission lock through the assessment and any later write.
+    internal async Task<EnrollmentChangeAssessment> AssessUpdateAsync(Guid academyId, Guid enrollmentId, UpdateEnrollmentRequest request, CancellationToken token)
+    {
         var enrollment = await dbContext.Enrollments.SingleOrDefaultAsync(x => x.Id == enrollmentId && x.AcademyId == academyId, token);
         if (enrollment is null) return new(404);
         var requested = string.IsNullOrWhiteSpace(request.Status) ? enrollment.Status : request.Status.Trim();
@@ -70,10 +84,7 @@ internal sealed class EnrollmentMutationOperations(AcademyDeskDbContext dbContex
             if (!await EnrollmentAdmissionRules.HasCompletedPrerequisitesAsync(dbContext, academyId, enrollment.StudentId, batch.CourseId, token))
                 return new(409, Error: EnrollmentAdmissionRules.PrerequisiteMessage);
         }
-        enrollment.Status = status; enrollment.EndDate = request.EndDate; enrollment.LifecycleReason = string.IsNullOrWhiteSpace(request.LifecycleReason) ? null : request.LifecycleReason.Trim();
-        await dbContext.SaveChangesAsync(token);
-        if (ownedTransaction is not null) await ownedTransaction.CommitAsync(token);
-        return new(200, new EnrollmentSummary(enrollment.Id, enrollment.StudentId, enrollment.BatchId, enrollment.StartDate, enrollment.EndDate, enrollment.Status));
+        return new(200, enrollment, status);
     }
 
     internal async Task<EnrollmentMutationOutcome> TransferAsync(Guid academyId, Guid enrollmentId, TransferEnrollmentRequest request, CancellationToken token)
@@ -81,6 +92,17 @@ internal sealed class EnrollmentMutationOperations(AcademyDeskDbContext dbContex
         await using var ownedTransaction = await EnrollmentAdmissionBoundary.BeginOwnedAsync(dbContext, token);
         if (!await EnrollmentAdmissionBoundary.TryLockAsync(dbContext, academyId, token))
             return new(503, Error: EnrollmentAdmissionBoundary.BusyMessage);
+        var assessment = await AssessTransferAsync(academyId, enrollmentId, request, token);
+        if (assessment.Source is not { } source) return new(assessment.HttpStatus, Error: assessment.Error);
+        source.Status = "Transferred"; source.EndDate = request.TransferDate ?? DateOnly.FromDateTime(DateTime.UtcNow);
+        var replacement = new Enrollment { AcademyId = academyId, StudentId = source.StudentId, BatchId = request.TargetBatchId, StartDate = source.EndDate.Value, Status = "Active" };
+        dbContext.Enrollments.Add(replacement); await dbContext.SaveChangesAsync(token);
+        if (ownedTransaction is not null) await ownedTransaction.CommitAsync(token);
+        return new(200, new EnrollmentSummary(replacement.Id, replacement.StudentId, replacement.BatchId, replacement.StartDate, replacement.EndDate, replacement.Status));
+    }
+
+    internal async Task<EnrollmentChangeAssessment> AssessTransferAsync(Guid academyId, Guid enrollmentId, TransferEnrollmentRequest request, CancellationToken token)
+    {
         var source = await dbContext.Enrollments.SingleOrDefaultAsync(x => x.Id == enrollmentId && x.AcademyId == academyId, token);
         var target = await dbContext.Batches.SingleOrDefaultAsync(x => x.Id == request.TargetBatchId && x.AcademyId == academyId, token);
         if (source is null || target is null) return new(404);
@@ -90,10 +112,6 @@ internal sealed class EnrollmentMutationOperations(AcademyDeskDbContext dbContex
             return new(409, Error: EnrollmentAdmissionRules.DuplicateMessage);
         if (!await EnrollmentAdmissionRules.HasCompletedPrerequisitesAsync(dbContext, academyId, source.StudentId, target.CourseId, token))
             return new(409, Error: EnrollmentAdmissionRules.PrerequisiteMessage);
-        source.Status = "Transferred"; source.EndDate = request.TransferDate ?? DateOnly.FromDateTime(DateTime.UtcNow);
-        var replacement = new Enrollment { AcademyId = academyId, StudentId = source.StudentId, BatchId = target.Id, StartDate = source.EndDate.Value, Status = "Active" };
-        dbContext.Enrollments.Add(replacement); await dbContext.SaveChangesAsync(token);
-        if (ownedTransaction is not null) await ownedTransaction.CommitAsync(token);
-        return new(200, new EnrollmentSummary(replacement.Id, replacement.StudentId, replacement.BatchId, replacement.StartDate, replacement.EndDate, replacement.Status));
+        return new(200, source, "Active");
     }
 }
