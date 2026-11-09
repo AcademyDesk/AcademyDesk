@@ -1,5 +1,14 @@
 # Academy Desk shared integration tracker
 
+## AI backend integration — 9 November 2026
+
+- [x] Desktop's Testing-only enrollment preview passed 13 native checks
+  alongside the retained 57 enrollment checks and 15 mixed races.
+- [ ] Desktop owns enrollment approval, execution and receipt follow-up.
+  Cloud owns C26 provider work. C24/C25 still need live Desktop acceptance.
+
+[Enrollment preview evidence](QA/REPORTS/PENTA_ENROLLMENT_PREVIEW_2026-11-09.md)
+
 ## C23 family finance and session acceptance — 9 November 2026
 
 - [x] Integrated Cloud C23's 15 paths and verified the 120-record inventory.

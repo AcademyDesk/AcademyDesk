@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore;
 namespace AcademyDesk.Api.Infrastructure;
 
 public sealed record EnrollmentMutationOutcome(int HttpStatus, EnrollmentSummary? Result = null, string? Error = null);
+public sealed record EnrollmentCreatePreview(Guid StudentId, Guid BatchId, DateOnly StartDate, string Status);
+internal sealed record EnrollmentCreatePreviewOutcome(int HttpStatus, EnrollmentCreatePreview? Preview = null, string? Error = null);
 
 /// <summary>Existing deterministic Manual admission operations, shared with the
 /// guarded PENTA service. This internal class grants no authority. The caller
@@ -17,8 +19,19 @@ internal sealed class EnrollmentMutationOperations(AcademyDeskDbContext dbContex
         await using var ownedTransaction = await EnrollmentAdmissionBoundary.BeginOwnedAsync(dbContext, cancellationToken);
         if (!await EnrollmentAdmissionBoundary.TryLockAsync(dbContext, academyId, cancellationToken))
             return new(503, Error: EnrollmentAdmissionBoundary.BusyMessage);
+        var plan = await PreviewCreateAsync(academyId, request, cancellationToken);
+        if (plan.Preview is not { } preview) return new(plan.HttpStatus, Error: plan.Error);
+        var enrollment = new Enrollment { AcademyId = academyId, StudentId = preview.StudentId, BatchId = preview.BatchId, StartDate = preview.StartDate, Status = preview.Status };
+        dbContext.Enrollments.Add(enrollment); await dbContext.SaveChangesAsync(cancellationToken);
+        if (ownedTransaction is not null) await ownedTransaction.CommitAsync(cancellationToken);
+        return new(201, new EnrollmentSummary(enrollment.Id, enrollment.StudentId, enrollment.BatchId, enrollment.StartDate, enrollment.EndDate, enrollment.Status));
+    }
+
+    // The caller holds the admission lock. This assessment does not reserve a place.
+    internal async Task<EnrollmentCreatePreviewOutcome> PreviewCreateAsync(Guid academyId, CreateEnrollmentRequest request, CancellationToken cancellationToken)
+    {
         if (!await dbContext.Students.AnyAsync(x => x.Id == request.StudentId && x.AcademyId == academyId, cancellationToken)) return new(400, Error: "The selected student does not belong to this academy.");
-        var batch = await dbContext.Batches.SingleOrDefaultAsync(x => x.Id == request.BatchId && x.AcademyId == academyId, cancellationToken);
+        var batch = await dbContext.Batches.AsNoTracking().SingleOrDefaultAsync(x => x.Id == request.BatchId && x.AcademyId == academyId, cancellationToken);
         if (batch is null) return new(400, Error: "The selected batch does not belong to this academy.");
         if (!await EnrollmentAdmissionRules.HasCompletedPrerequisitesAsync(dbContext, academyId, request.StudentId, batch.CourseId, cancellationToken))
             return new(409, Error: EnrollmentAdmissionRules.PrerequisiteMessage);
@@ -30,10 +43,7 @@ internal sealed class EnrollmentMutationOperations(AcademyDeskDbContext dbContex
         if (requestedStatus == "Waitlisted" && (batch.WaitlistCapacity <= 0 || waitlistCount >= batch.WaitlistCapacity)) return new(409, Error: "This batch waitlist is full or not enabled.");
         if (await EnrollmentAdmissionRules.HasOtherAdmissionAsync(dbContext, academyId, request.StudentId, batch.Id, null, cancellationToken))
             return new(409, Error: EnrollmentAdmissionRules.DuplicateMessage);
-        var enrollment = new Enrollment { AcademyId = academyId, StudentId = request.StudentId, BatchId = request.BatchId, StartDate = request.StartDate ?? DateOnly.FromDateTime(DateTime.UtcNow), Status = requestedStatus };
-        dbContext.Enrollments.Add(enrollment); await dbContext.SaveChangesAsync(cancellationToken);
-        if (ownedTransaction is not null) await ownedTransaction.CommitAsync(cancellationToken);
-        return new(201, new EnrollmentSummary(enrollment.Id, enrollment.StudentId, enrollment.BatchId, enrollment.StartDate, enrollment.EndDate, enrollment.Status));
+        return new(200, new(request.StudentId, request.BatchId, request.StartDate ?? DateOnly.FromDateTime(DateTime.UtcNow), requestedStatus));
     }
     internal async Task<EnrollmentMutationOutcome> UpdateAsync(Guid academyId, Guid enrollmentId, UpdateEnrollmentRequest request, CancellationToken token)
     {

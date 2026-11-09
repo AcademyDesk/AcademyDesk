@@ -1,5 +1,19 @@
 # Academy Desk handoff
 
+## AI backend integration — 9 November 2026
+
+- [x] The guarded enrollment create preview calls shared Manual admission
+  checks. It passed 13 live Identity/HTTP/SQL checks. All 57 retained shared
+  enrollment checks passed, including the 15 mixed Manual/service races.
+- [ ] Add the exact conversation approval, authorized create and durable
+  receipt. Then connect enrollment status/transfer and the remaining backend
+  domains in the documented sequence. Sol High for this authority and SQL work.
+- [ ] Model loading and activation, the remaining Manual acceptance and
+  production release gates stay open. Cloud C24/C25 and C26 remain separate.
+
+[Preview evidence](QA/REPORTS/PENTA_ENROLLMENT_PREVIEW_2026-11-09.md)
+[Backend integration sequence](PENTA_HOST_IMPLEMENTATION_STATUS.md)
+
 ## C23 family finance and session acceptance — 9 November 2026
 
 - [x] Integrated Cloud C23's 15 paths and verified the 120-record inventory.

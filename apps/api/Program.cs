@@ -26,6 +26,7 @@ if (!builder.Environment.IsEnvironment("Testing")) Directory.CreateDirectory(web
 
 builder.Services.AddScoped<AcademyAccessFilter>();
 builder.Services.AddScoped<EnrollmentMutationService>();
+builder.Services.AddScoped<PentaEnrollmentPreviewService>();
 builder.Services.AddScoped<TeacherCreationService>();
 builder.Services.AddScoped<StudentOnboardingService>();
 builder.Services.AddScoped<PentaPilotPolicy>();
