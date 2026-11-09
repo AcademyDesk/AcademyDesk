@@ -10,7 +10,7 @@ const fixture=p.resolve(required('QA_SESSION_BROWSER_FIXTURE_ROOT')),proof=JSON.
 const hash=file=>crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
 a.equal(proof.run,run);a.equal(proof.origin,origin);a.equal(proof.api,api);a.equal(proof.responsesMocked,false);
 a.match(proof.sourceSha,/^[a-f0-9]{40}$/);a.equal(proof.sourceSha,require('node:child_process').execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim());
-const expected=['src/app/platform/control/page.tsx','src/app/login/page.tsx','src/lib/api.ts'];
+const expected=['src/app/platform/control/page.tsx','src/app/login/page.tsx','src/lib/api.ts','src/components/workspace-frame.tsx','src/components/penta/role-penta-entry.tsx','src/components/enterprise-shell.tsx'];
 for(const rel of expected){a.equal(hash(p.join(root,'apps/web',rel)),proof.sourceHashes[rel]);a.equal(hash(p.join(proof.webSource,rel)),proof.sourceHashes[rel]);}
 a.ok(proof.artifacts.length>100);for(const artifact of proof.artifacts){const file=p.resolve(proof.artifactRoot,artifact.path);a.ok(file.startsWith(p.resolve(proof.artifactRoot)+p.sep));a.equal(hash(file),artifact.sha256);}
 a.equal(fs.readFileSync(p.join(fixture,'.qa-owner'),'utf8').split(/\r?\n/)[0],run,'Exact fixture ownership required');
@@ -56,6 +56,41 @@ async function login(page,email,password,pathname){
     await login(admin,'qa-admin-a@example.invalid','Synthetic!39Ab','/penta');
     a.deepEqual((await storage(admin)).AcademyAdmin,{access:true,refresh:true});
     pass('active-admin-real-login','native200 and PENTA-first route; only synthetic credentials');
+    const protectedWorkflows=admin.getByRole('navigation',{name:'Protected workflows'});
+    await protectedWorkflows.waitFor();
+    await admin.evaluate(()=>{
+      window.addEventListener('storage',event=>{
+        if(!event.isTrusted||event.storageArea!==window.localStorage)return;
+        if(event.key==='academydesk.accessToken.AcademyAdmin'&&event.newValue===null)
+          document.documentElement.dataset.qaAdminSignedOut='true';
+        if(event.key==='academydesk.sessionEpoch.AcademyAdmin'&&event.newValue!==null)
+          document.documentElement.dataset.qaAdminNewLogin='true';
+      });
+    });
+    const manual=await adminContext.newPage();
+    await manual.goto(origin+'/dashboard');
+    await manual.getByRole('button',{name:'Open account menu'}).click();
+    await manual.getByRole('button',{name:'Sign out',exact:true}).click();
+    await manual.waitForURL(u=>u.pathname==='/login');
+    await admin.waitForFunction(()=>document.documentElement.dataset.qaAdminSignedOut==='true');
+    a.deepEqual((await storage(admin)).AcademyAdmin,{access:false,refresh:false});
+    await protectedWorkflows.waitFor({state:'hidden',timeout:5000});
+    const ended=admin.getByRole('heading',{name:'Session ended',exact:true});
+    await ended.waitFor({timeout:5000});
+    a.equal(new URL(admin.url()).pathname,'/penta');
+    pass('cross-tab-manual-sign-out','trusted storage event removed the Admin pair and PENTA verified actions without reloading');
+    await login(manual,'qa-admin-a@example.invalid','Synthetic!39Ab','/penta');
+    await manual.getByRole('navigation',{name:'Protected workflows'}).waitFor();
+    await admin.waitForFunction(()=>document.documentElement.dataset.qaAdminNewLogin==='true');
+    a.ok(await ended.isVisible());
+    a.equal(await protectedWorkflows.count(),0);
+    pass('cross-tab-replacement-stays-locked','peer login has a new epoch and usable PENTA entry while the old tab stays signed out');
+    await admin.getByRole('link',{name:'Sign in again',exact:true}).click();
+    await admin.waitForURL(u=>u.pathname==='/login');
+    await login(admin,'qa-admin-a@example.invalid','Synthetic!39Ab','/penta');
+    await protectedWorkflows.waitFor();
+    pass('cross-tab-explicit-sign-in','the signed-out tab opens login and restores protected controls after native sign-in');
+    await manual.close();
     await login(owner,'qa-session-owner@example.invalid','Synthetic!39Ab','/platform/ai');
     a.deepEqual((await storage(owner)).Platform,{access:true,refresh:true});
     await owner.goto(origin+'/platform/control?tab=Admins');
@@ -94,6 +129,9 @@ async function login(page,email,password,pathname){
     pass('disabled-login-visible-error','native401 and stable login error; not routed into portal');
 
     await owner.goto(origin+'/platform/control?tab=Settings');
+    const ownerPeer=await ownerContext.newPage();
+    await ownerPeer.goto(origin+'/platform/ai');
+    await ownerPeer.getByText('Your workspace is verified. Open Manual to continue with your permitted work.',{exact:true}).waitFor();
     const form=owner.locator('form').filter({has:owner.getByRole('heading',{name:'Change password',exact:true})});
     await form.getByLabel('Current password',{exact:true}).fill('Synthetic!39Ab');
     await form.getByLabel('New password',{exact:true}).fill('Synthetic!Changed48Cd');
@@ -127,6 +165,11 @@ async function login(page,email,password,pathname){
     await textSnapshot(owner,'password-success-login');
     await owner.screenshot({path:p.join(out,'session-browser-password-success-login.png'),fullPage:true});
     pass('password-success-recovery','native200; login replacement with accessible notice; Platform pair removed; password input empty');
+    await ownerPeer.getByRole('heading',{name:'Session ended',exact:true}).waitFor({timeout:5000});
+    a.deepEqual((await storage(ownerPeer)).Platform,{access:false,refresh:false});
+    a.equal(new URL(ownerPeer.url()).pathname,'/platform/ai');
+    pass('cross-tab-password-change','native password change signs out the other Platform tab without a reload');
+    await ownerPeer.close();
     // Use the visible returnTo URL without injected browser session/auth storage.
     await owner.getByRole('button',{name:'Show password'}).click();
     await owner.getByRole('button',{name:'Hide password'}).click();
