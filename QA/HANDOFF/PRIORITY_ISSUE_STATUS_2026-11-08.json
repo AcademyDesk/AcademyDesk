@@ -1534,7 +1534,7 @@
       "module": "SALES",
       "route": "/leads; /sales-marketing?view=conversion",
       "recordedSource": "apps/api/Controllers/LeadsController.cs:41",
-      "recordedFix": "SOURCE_PIN_PENDING (C27 feature return; no deployment)",
+      "recordedFix": "`f377bb17906542d7dfccae144e84ea2d345c1290` (C27 feature return; no deployment)",
       "recordedRegression": "Final combined API2,325/2,325 PASS;frontend2,314 PASS/3 genuine missing-SQL-receipt failures;SQL/device/critical acceptance pending",
       "recordedClosureNotes": "Remain OPEN; follow closure requirements in QA README",
       "latestSection": "C27 source repair and scoped verification — 9 November 2026",
@@ -1553,7 +1553,7 @@
         }
       ],
       "historicalMetadataNeedsReview": false,
-      "issueSha256": "598d606383b05293f23529312323849ae194dc77047ab5dfb3b513d63de5d99a"
+      "issueSha256": "b909dcd44c5dd1ff60286181d938f16523f5fd58338fc7e719985e2a991ea956"
     },
     {
       "id": "BUG-DATA-0027",
@@ -1568,7 +1568,7 @@
       "module": "SALES",
       "route": "/trial-bookings; /leads; /sales-marketing",
       "recordedSource": "apps/api/Controllers/SalesMarketingController.cs:53",
-      "recordedFix": "SOURCE_PIN_PENDING (C27 feature return; no deployment)",
+      "recordedFix": "`f377bb17906542d7dfccae144e84ea2d345c1290` (C27 feature return; no deployment)",
       "recordedRegression": "Final combined API2,325/2,325 PASS;frontend2,314 PASS/3 genuine missing-SQL-receipt failures;SQL/device/critical acceptance pending",
       "recordedClosureNotes": "Remain OPEN; follow closure requirements in QA README",
       "latestSection": "C27 source repair and scoped verification — 9 November 2026",
@@ -1587,7 +1587,7 @@
         }
       ],
       "historicalMetadataNeedsReview": false,
-      "issueSha256": "95beae8e124c8969049a04da2ac646438b9c00d2c386473db36964569636783f"
+      "issueSha256": "8676cf544aee2a3037674987bf55254127e1114768f993729737f6728624e9e7"
     },
     {
       "id": "BUG-DATA-0028",
@@ -3078,7 +3078,7 @@
       "module": "SALES",
       "route": "/trial-bookings",
       "recordedSource": "apps/web/src/app/trial-bookings/page.tsx:47",
-      "recordedFix": "SOURCE_PIN_PENDING (C27 feature return; no deployment)",
+      "recordedFix": "`f377bb17906542d7dfccae144e84ea2d345c1290` (C27 feature return; no deployment)",
       "recordedRegression": "Final combined API2,325/2,325 PASS;frontend2,314 PASS/3 genuine missing-SQL-receipt failures;SQL/device/critical acceptance pending",
       "recordedClosureNotes": "Remain OPEN; follow closure requirements in QA README",
       "latestSection": "C27 source repair and scoped verification — 9 November 2026",
@@ -3097,7 +3097,7 @@
         }
       ],
       "historicalMetadataNeedsReview": false,
-      "issueSha256": "f6424681c9873b4bf0847ae3d4c422e5e01ce2109a7d5624ed0bfab234fa8466"
+      "issueSha256": "054d498cc859558363e625a9d24785dc48f6665bf7d25cfacee76d46322f2164"
     },
     {
       "id": "BUG-FUNC-0015",

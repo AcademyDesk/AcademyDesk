@@ -1,6 +1,6 @@
 # C27 Sales trial access and lead lifecycle integrity — 9 November 2026
 
-Cloud owner. SOURCE FIXED / source pin pending; SQL/device/release acceptance remains open.
+Cloud owner. SOURCE FIXED / Cloud verification complete; SQL/device/release acceptance remains open.
 Branch `codex/cloud-c27-sales-trial-integrity-20261109`.
 Clean base `abb57f0063398dc71715a116f569b1656d88b563` (complete C26).
 Desktop e460dbc86d5e02c4cdf7ede6c330ab74f089c65d is inherited exactly.
@@ -64,7 +64,7 @@ training/activation. No main/Azure/environment/public-access changes.
 
 ## Result and source boundary
 
-C27 implementation: SOURCE_PIN_PENDING. Branch above is the review/integration
+C27 implementation: `f377bb17906542d7dfccae144e84ea2d345c1290`. Branch above is the review/integration
 return; no main merge, Azure deploy or environment publication. Path claim
 0446f9585db9a1cc1c113af72fd5ca34f67263f5 was pushed before implementation.
 The existing cloud environment was observed current with no reported failure
