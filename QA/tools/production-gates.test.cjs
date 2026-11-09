@@ -10,6 +10,7 @@ function fixture() {
   const write = (id, status = 'CLOSED', result = 'PASS') =>
     fs.writeFileSync(path.join(issues, `${id}.md`), `# Synthetic issue\n| Status | ${status} |\n| Final verification | ${result} |\n`);
   knownCritical.forEach(id => write(id));
+  write('BUG-AUTH-REVOCATION-001');
   const register = value => fs.writeFileSync(path.join(issues, 'INDEX.md'), value);
   register(knownCritical.map(id => `| [${id}](${id}.md) | Synthetic | P0 | Critical |`).join('\n'));
   return { root, issues, write, register, cleanup: () => fs.rmSync(root, { recursive: true, force: true }) };
@@ -28,6 +29,15 @@ test('removing an open known P0 from the register cannot bypass it', () => {
 });
 test('new P0 records are automatically required', () => {
   const f = fixture(); try { f.register('| [BUG-SEC-9999](BUG-SEC-9999.md) | New | P0 | Critical |'); f.write('BUG-SEC-9999', 'OPEN'); assert.equal(checkProductionGates(f.root).ok, false); } finally { f.cleanup(); }
+});
+test('the session release gate requires its own final verification even with all P0 issues accepted', () => {
+  const f = fixture();
+  try {
+    f.write('BUG-AUTH-REVOCATION-001', 'CLOSED', 'PASS / role and browser checks pending');
+    assert.deepEqual(checkProductionGates(f.root).failures, [
+      'BUG-AUTH-REVOCATION-001: final verification must PASS with no pending critical evidence.',
+    ]);
+  } finally { f.cleanup(); }
 });
 test('malformed links cannot escape the issue directory', () => {
   const f = fixture(); try { f.register('| [BUG-SEC-9999](../../secret.md) | New | P0 | Critical |'); assert.equal(checkProductionGates(f.root).ok, false); } finally { f.cleanup(); }

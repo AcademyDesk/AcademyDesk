@@ -3,6 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Status | FIXED LOCALLY / BOUNDED RETEST PASS — broader session acceptance OPEN |
+| Final verification | OPEN — broader SECURITY-SESSION-001 acceptance pending |
 | Confirmation | Original failures reproduced twice; four gaps now rejected in a fresh strict 36-case native SQL run |
 | Priority | P1 — broad session security scenario remains a P0 release gate |
 | Scenario | SECURITY-SESSION-001; related AUTH-001 |
