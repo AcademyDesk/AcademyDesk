@@ -1,4 +1,5 @@
 using AcademyDesk.Api.Data;
+using AcademyDesk.Api.ReadModels;
 using AcademyDesk.Api.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -18,11 +19,11 @@ public sealed class FeeRemindersController(AcademyDeskDbContext dbContext) : Con
         var invoiceList = await invoices.ToListAsync(token);
         if (invoiceList.Count == 0) return Ok(new FeeReminderResult(0, "No matching invoices need a reminder."));
         var ids = invoiceList.Select(x => x.Id).ToArray();
-        var paid = await dbContext.Payments.Where(x => ids.Contains(x.InvoiceId) && (x.Status == "Completed" || x.Status == "Reconciled")).GroupBy(x => x.InvoiceId).Select(x => new { InvoiceId = x.Key, Total = x.Sum(p => p.Amount) }).ToDictionaryAsync(x => x.InvoiceId, x => x.Total, token);
+        var paid = await InvoiceReceiptReadModel.PaidAsync(dbContext, academyId, ids, token);
         var queued = 0;
         foreach (var invoice in invoiceList)
         {
-            var balance = invoice.TotalAmount - invoice.AdjustedAmount - paid.GetValueOrDefault(invoice.Id);
+            var balance = invoice.TotalAmount - invoice.AdjustedAmount - paid.GetValueOrDefault((invoice.Id, InvoiceReceiptReadModel.CurrencyKey(invoice.Currency)));
             if (balance <= 0) continue;
             dbContext.Notifications.Add(new Notification { AcademyId = academyId, RecipientId = invoice.StudentId, RecipientType = "Student", Title = "Fee payment reminder", Message = $"Your outstanding balance is {invoice.Currency} {balance:0.00}. Invoice: {invoice.InvoiceNumber}. Due date: {invoice.DueDate:yyyy-MM-dd}.", Channel = request.Channel ?? "InApp" });
             queued++;

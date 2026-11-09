@@ -1,4 +1,5 @@
 using AcademyDesk.Api.Data;
+using AcademyDesk.Api.ReadModels;
 using AcademyDesk.Api.Domain.Entities;
 using AcademyDesk.Api.Domain.Identity;
 using AcademyDesk.Api.Infrastructure;
@@ -202,9 +203,9 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
         var lessonPlans = await db.LessonPlans.AsNoTracking().Where(x => x.AcademyId == user.AcademyId && batchIds.Contains(x.BatchId)).OrderByDescending(x => x.CreatedAtUtc).Take(50).Select(x => new PortalLessonPlan(x.BatchId, x.Title, x.Objectives, x.Status)).ToListAsync(token);
         var modules = await db.CourseModules.AsNoTracking().Where(x => x.AcademyId == user.AcademyId && courseIds.Contains(x.CourseId) && x.IsPublished).OrderBy(x => x.Sequence).Select(x => new PortalCourseModule(x.CourseId, x.Title, x.Description, x.Sequence)).ToListAsync(token);
         var certificates = await db.Certificates.AsNoTracking().Where(x => x.AcademyId == user.AcademyId && x.StudentId == studentId && x.Status == "Issued").OrderByDescending(x => x.IssuedDate).Select(x => new PortalCertificate(x.CertificateNumber, x.Title, x.IssuedDate, x.Notes)).ToListAsync(token);
-        var invoices = await db.Invoices.AsNoTracking().Where(x => x.AcademyId == user.AcademyId && x.StudentId == studentId).OrderByDescending(x => x.IssuedDate).ToListAsync(token);
+        var invoices = canViewFinance ? await db.Invoices.AsNoTracking().Where(x => x.AcademyId == user.AcademyId && x.StudentId == studentId).OrderByDescending(x => x.IssuedDate).ToListAsync(token) : new List<Invoice>();
         var invoiceIds = invoices.Select(x => x.Id).ToArray();
-        var paid = await db.Payments.AsNoTracking().Where(x => invoiceIds.Contains(x.InvoiceId) && (x.Status == "Completed" || x.Status == "Reconciled")).GroupBy(x => x.InvoiceId).Select(x => new { x.Key, Total = x.Sum(p => p.Amount) }).ToDictionaryAsync(x => x.Key, x => x.Total, token);
+        var paid = await InvoiceReceiptReadModel.PaidAsync(db, user.AcademyId.Value, invoiceIds, token);
         var results = await db.AssessmentResults.AsNoTracking()
             .Where(x => x.AcademyId == user.AcademyId && x.StudentId == studentId && x.IsPublished)
             .Join(db.Assessments.AsNoTracking().Where(x => batchIds.Contains(x.BatchId)), x => x.AssessmentId, a => a.Id,
@@ -243,7 +244,7 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
         return Ok(new PortalStudentDetails($"{student.FirstName} {student.LastName}", student.Email, student.Phone, student.FirstName, student.LastName, student.PreferredName, student.Gender, student.DateOfBirth, student.AddressLine1, student.City, student.State, student.PostalCode, student.EmergencyContactName, student.EmergencyContactPhone,
             canViewAcademicProgress ? batches : [], canViewAcademicProgress ? schedule : [], canViewAcademicProgress ? assignments : [], canViewAcademicProgress ? attendance : [], canViewAcademicProgress ? attendanceSummary : new PortalAttendanceSummary(0, 0, 0, 0, 0),
             canViewAcademicProgress ? music : [], canViewDocuments ? resources : [], canViewAcademicProgress ? practice : [], canViewAcademicProgress ? practiceSummary : new PortalPracticeSummary(0, 0), canViewAcademicProgress ? lessonPlans : [], canViewAcademicProgress ? modules : [], canViewDocuments ? certificates : [],
-            canViewFinance ? invoices.Select(x => new PortalInvoice(x.Id, x.InvoiceNumber, x.TotalAmount, Math.Max(0m, x.TotalAmount - x.AdjustedAmount - paid.GetValueOrDefault(x.Id)), x.Currency, x.DueDate, x.Status)).ToList() : [], canViewAcademicProgress ? results : [], canViewAcademicProgress ? classHistory : [], canViewAcademicProgress ? cycleProgress : []));
+            canViewFinance ? invoices.Select(x => new PortalInvoice(x.Id, x.InvoiceNumber, x.TotalAmount, Math.Max(0m, x.TotalAmount - x.AdjustedAmount - paid.GetValueOrDefault((x.Id, InvoiceReceiptReadModel.CurrencyKey(x.Currency)))), x.Currency, x.DueDate, x.Status)).ToList() : [], canViewAcademicProgress ? results : [], canViewAcademicProgress ? classHistory : [], canViewAcademicProgress ? cycleProgress : [], canViewFinance));
     }
 
     [HttpPost("students/{studentId:guid}/assignments/{assignmentId:guid}/submit")]
@@ -290,9 +291,14 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
             || (user.GuardianId.HasValue && (await ParentAccess(user, studentId, token))?.CanViewFinance != true)) return Forbid();
         var invoice = await db.Invoices.AsNoTracking().SingleOrDefaultAsync(x => x.Id == invoiceId && x.AcademyId == user.AcademyId && x.StudentId == studentId, token);
         if (invoice is null) return NotFound();
-        var paid = await db.Payments.AsNoTracking().Where(x => x.InvoiceId == invoice.Id && (x.Status == "Completed" || x.Status == "Reconciled")).SumAsync(x => (decimal?)x.Amount, token) ?? 0m;
+        var receipts = await InvoiceReceiptReadModel.PaidAsync(db, user.AcademyId.Value, new[] { invoice.Id }, token);
+        var paid = receipts.GetValueOrDefault((invoice.Id, InvoiceReceiptReadModel.CurrencyKey(invoice.Currency)));
         var balance = Math.Max(0m, invoice.TotalAmount - invoice.AdjustedAmount - paid);
-        var document = $"<html><body style='font-family:Arial;padding:48px'><h1>AcademyDesk invoice</h1><h2>{WebUtility.HtmlEncode(invoice.InvoiceNumber)}</h2><p>Issued: {invoice.IssuedDate:dd MMM yyyy}</p><p>Due: {invoice.DueDate:dd MMM yyyy}</p><hr/><p>Total: {invoice.Currency} {invoice.TotalAmount:N2}</p><p>Adjustments: {invoice.Currency} {invoice.AdjustedAmount:N2}</p><p>Paid: {invoice.Currency} {paid:N2}</p><p>Balance: {invoice.Currency} {balance:N2}</p><p>Status: {WebUtility.HtmlEncode(invoice.Status)}</p></body></html>";
+        var cancelled = string.Equals(invoice.Status, "Cancelled", StringComparison.OrdinalIgnoreCase);
+        var balanceLabel = cancelled ? "Balance before cancellation" : "Balance";
+        var due = cancelled ? 0m : balance;
+        var currency = WebUtility.HtmlEncode(invoice.Currency);
+        var document = $"<html><body style='font-family:Arial;padding:48px'><h1>AcademyDesk invoice</h1><h2>{WebUtility.HtmlEncode(invoice.InvoiceNumber)}</h2><p>Issued: {invoice.IssuedDate:dd MMM yyyy}</p><p>Due: {invoice.DueDate:dd MMM yyyy}</p><hr/><p>Total: {currency} {invoice.TotalAmount:N2}</p><p>Adjustments: {currency} {invoice.AdjustedAmount:N2}</p><p>Paid: {currency} {paid:N2}</p><p>{balanceLabel}: {currency} {balance:N2}</p><p>Amount due: {currency} {due:N2}</p><p>Status: {WebUtility.HtmlEncode(invoice.Status)}</p></body></html>";
         return File(Encoding.UTF8.GetBytes(document), "text/html", $"{invoice.InvoiceNumber}.html");
     }
 
@@ -448,7 +454,7 @@ public sealed class PortalController(UserManager<ApplicationUser> users, Academy
     }
 }
 
-public sealed record PortalStudentDetails(string Name, string? Email, string? Phone, string FirstName, string LastName, string? PreferredName, string? Gender, DateOnly? DateOfBirth, string? AddressLine1, string? City, string? State, string? PostalCode, string? EmergencyContactName, string? EmergencyContactPhone, IReadOnlyList<PortalBatch> Batches, IReadOnlyList<PortalSession> Schedule, IReadOnlyList<PortalAssignment> Assignments, IReadOnlyList<PortalAttendance> Attendance, PortalAttendanceSummary AttendanceSummary, IReadOnlyList<PortalMusicProgress> Music, IReadOnlyList<PortalResource> Resources, IReadOnlyList<PortalPracticeLog> PracticeLogs, PortalPracticeSummary PracticeSummary, IReadOnlyList<PortalLessonPlan> LessonPlans, IReadOnlyList<PortalCourseModule> Modules, IReadOnlyList<PortalCertificate> Certificates, IReadOnlyList<PortalInvoice> Invoices, IReadOnlyList<PortalAssessmentResult> AssessmentResults, IReadOnlyList<PortalClassHistory> ClassHistory, IReadOnlyList<PortalCycleProgress> CycleProgress);
+public sealed record PortalStudentDetails(string Name, string? Email, string? Phone, string FirstName, string LastName, string? PreferredName, string? Gender, DateOnly? DateOfBirth, string? AddressLine1, string? City, string? State, string? PostalCode, string? EmergencyContactName, string? EmergencyContactPhone, IReadOnlyList<PortalBatch> Batches, IReadOnlyList<PortalSession> Schedule, IReadOnlyList<PortalAssignment> Assignments, IReadOnlyList<PortalAttendance> Attendance, PortalAttendanceSummary AttendanceSummary, IReadOnlyList<PortalMusicProgress> Music, IReadOnlyList<PortalResource> Resources, IReadOnlyList<PortalPracticeLog> PracticeLogs, PortalPracticeSummary PracticeSummary, IReadOnlyList<PortalLessonPlan> LessonPlans, IReadOnlyList<PortalCourseModule> Modules, IReadOnlyList<PortalCertificate> Certificates, IReadOnlyList<PortalInvoice> Invoices, IReadOnlyList<PortalAssessmentResult> AssessmentResults, IReadOnlyList<PortalClassHistory> ClassHistory, IReadOnlyList<PortalCycleProgress> CycleProgress, bool CanViewFinance);
 public sealed record PortalBatch(Guid Id, string Name);
 public sealed record PortalSession(Guid Id, string BatchName, DateTime StartUtc, DateTime EndUtc, string DeliveryMode, string? RoomName, string? MeetingLink, string Status);
 public sealed record PortalAssignment(Guid Id, string Title, string? Description, string Type, DateTime? DueAtUtc);

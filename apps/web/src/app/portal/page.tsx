@@ -2,6 +2,7 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { academyApi, apiHeaders, apiUrl, clearPortalTokens } from "@/lib/api";
+import { reportAmount, reportMoney } from "@/lib/reports-finance";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { PrivateMaterialActions } from "@/components/private-material-actions";
 type Me = {
@@ -21,6 +22,7 @@ type Me = {
   }[];
 };
 type D = {
+  canViewFinance?: boolean;
   name: string;
   email?: string;
   phone?: string;
@@ -118,12 +120,8 @@ const dt = (x: string) =>
     timeStyle: "short",
     timeZone: "Asia/Kolkata",
   }).format(new Date(x));
-const cash = (x: number, c = "INR") =>
-  new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: c,
-    maximumFractionDigits: 0,
-  }).format(x);
+const cash = reportAmount;
+const cancelledInvoice = (invoice: { status: string }) => invoice.status.toLowerCase() === "cancelled";
 const indiaDateKey = (value: string | Date) => {
   const parts = new Intl.DateTimeFormat("en-IN", { timeZone: "Asia/Kolkata", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date(value));
   const part = (type: string) => parts.find(item => item.type === type)?.value ?? "";
@@ -341,7 +339,13 @@ function View({
           d.attendanceSummary.total,
       )
     : 0;
-  const balance = d.invoices.reduce((s, x) => s + x.balance, 0);
+  const financeAllowed = d.canViewFinance ?? parentAccess?.canViewFinance ?? true;
+  const receivables = d.invoices.filter(invoice => !cancelledInvoice(invoice));
+  const balance = financeAllowed ? reportMoney(receivables.map(invoice => ({
+    amount: Number.isFinite(invoice.balance) ? Math.max(0, invoice.balance) : NaN, currency: invoice.currency,
+  }))) : "Finance access unavailable";
+  const balanceHint = !financeAllowed ? "Contact your academy" : balance === "Currency details unavailable" ? "Fee details unavailable"
+    : receivables.some(invoice => Number.isFinite(invoice.balance) && invoice.balance > 0) ? "Review fees" : "No outstanding balance";
   return (
     <>
       <header className="learner-heading">
@@ -381,8 +385,8 @@ function View({
             />
             <K
               a="Fee balance"
-              b={cash(balance)}
-              c={balance ? "Review fees" : "No outstanding balance"}
+              b={balance}
+              c={balanceHint}
             />
           </section>
           <P title="Today’s classes">
@@ -462,7 +466,7 @@ function View({
       {tab === "more" && (
         <section className="learner-tab-grid">
           <P title="Fees and payments">
-            <InvoicePaymentFilter studentId={id} invoices={d.invoices} />
+            {financeAllowed ? <InvoicePaymentFilter studentId={id} invoices={d.invoices} /> : <p className="learner-empty">Finance details are not available for this profile.</p>}
           </P>
           {parentAccess ? (
             <ParentProfile
@@ -561,8 +565,8 @@ function DownloadRow({ a, b, label, path, filename }: { a: string; b: string; la
 }
 function InvoicePaymentFilter({ studentId, invoices }: { studentId: string; invoices: D["invoices"] }) {
   const [cycle, setCycle] = useState(""); const [status, setStatus] = useState("All");
-  const filtered = invoices.filter(invoice => (!cycle || invoice.dueDate.slice(0, 7) === cycle) && (status === "All" || (status === "Paid" ? invoice.balance <= 0 : invoice.balance > 0)));
-  return <><div className="learner-filter-bar"><input aria-label="Payment cycle" type="month" value={cycle} onChange={event => setCycle(event.target.value)} /><select aria-label="Payment status" value={status} onChange={event => setStatus(event.target.value)}><option>All</option><option>Paid</option><option>Outstanding</option></select><button type="button" onClick={() => { setCycle(""); setStatus("All"); }}>Clear</button></div>{filtered.length ? filtered.map(invoice => <DownloadRow key={invoice.invoiceNumber} a={invoice.invoiceNumber + " · " + cash(invoice.balance, invoice.currency)} b={`Due ${invoice.dueDate} · ${invoice.status}`} label="View / download invoice" path={`/api/portal/students/${studentId}/invoices/${invoice.id}/download`} filename={`${invoice.invoiceNumber}.html`} />) : <p className="learner-empty">No invoices match this filter.</p>}</>;
+  const filtered = invoices.filter(invoice => (!cycle || invoice.dueDate.slice(0, 7) === cycle) && (status === "All" || (!cancelledInvoice(invoice) && Number.isFinite(invoice.balance) && (status === "Paid" ? invoice.balance <= 0 : invoice.balance > 0))));
+  return <><div className="learner-filter-bar"><input aria-label="Payment cycle" type="month" value={cycle} onChange={event => setCycle(event.target.value)} /><select aria-label="Payment status" value={status} onChange={event => setStatus(event.target.value)}><option>All</option><option>Paid</option><option>Outstanding</option></select><button type="button" onClick={() => { setCycle(""); setStatus("All"); }}>Clear</button></div>{filtered.length ? filtered.map(invoice => <DownloadRow key={invoice.invoiceNumber} a={invoice.invoiceNumber + " · " + (cancelledInvoice(invoice) ? "Cancelled" : cash(invoice.balance, invoice.currency))} b={`Due ${invoice.dueDate} · ${invoice.status}`} label="View / download invoice" path={`/api/portal/students/${studentId}/invoices/${invoice.id}/download`} filename={`${invoice.invoiceNumber}.html`} />) : <p className="learner-empty">No invoices match this filter.</p>}</>;
 }
 function Assignment({
   id,
