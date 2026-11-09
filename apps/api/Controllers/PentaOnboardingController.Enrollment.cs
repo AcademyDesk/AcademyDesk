@@ -36,8 +36,10 @@ public sealed partial class PentaOnboardingController
         {
             if (!Binding(input, true, out var revision, out var hash) ||
                 input.GetProperty("intent").ValueKind != JsonValueKind.String ||
-                input.GetProperty("intent").GetString() != PentaEnrollmentCreationWorkflow.ApprovalIntent) return EnrollmentBadInput();
-            var outcome = await workflow.ApproveAsync(User, academyId, conversationId, requestId, new(revision, hash), token);
+                input.GetProperty("intent").GetString() is not (PentaEnrollmentCreationWorkflow.ApprovalIntent or
+                    PentaEnrollmentCreationWorkflow.UpdateIntent or PentaEnrollmentCreationWorkflow.TransferIntent)) return EnrollmentBadInput();
+            var outcome = await workflow.ApproveAsync(User, academyId, conversationId, requestId, new(revision, hash),
+                input.GetProperty("intent").GetString()!, token);
             return ToResult(outcome.HttpStatus, outcome.Draft, outcome.Error);
         });
 

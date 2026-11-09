@@ -104,7 +104,7 @@ internal static partial class SqlHarnessEntryPoint
         await Refuse(() => Prepare(admin, route, fixture, 1), HttpStatusCode.Conflict, "stale context prepare");
         var draft = await ReadDraft(Prepare(admin, route, fixture), HttpStatusCode.Created, "prepare enrollment");
         if (draft.RequestId != request || draft.Status != "Prepared" || draft.ApprovalId is not null || draft.Receipt is not null ||
-            draft.Admission.StudentId != fixture.Student || draft.Admission.BatchId != fixture.Target || draft.Admission.StartDate != new DateOnly(2026, 11, 1))
+            draft.Admission is not { } admission || admission.StudentId != fixture.Student || admission.BatchId != fixture.Target || admission.StartDate != new DateOnly(2026, 11, 1))
             throw new InvalidOperationException("Prepared enrollment view did not match the checked fields.");
         var state = await State();
         var repeated = await ReadDraft(Prepare(admin, route, fixture), HttpStatusCode.OK, "prepare retry");
@@ -176,5 +176,79 @@ internal static partial class SqlHarnessEntryPoint
         clock.Value = clock.Value.AddMinutes(11);
         await Refuse(() => Execute(admin, changedRoute, confirmed), HttpStatusCode.Gone, "approval expired");
         Console.WriteLine($"PASS: PENTA ENROLLMENT CREATION {cases} native HTTP/SQL checks; exactly one enrollment and receipt across concurrent execute.");
+
+        var createCases = cases;
+        var lifecycleFlags = new Dictionary<string, string?>(flags) { ["Penta:EnrollmentLifecycleEnabled"] = "true" };
+        using var lifecycleHost = new QaApiFactory(manifest, lifecycleFlags, isolatedClock: clock);
+        using var lifecycleAdmin = await SignIn(lifecycleHost, email);
+        Task<HttpResponseMessage> Change(HttpClient client, string path, string tool, object fields) =>
+            client.PutAsJsonAsync(path, new { contextVersion = 0, payload = new { tool_key = tool, tool_revision = 1, fields } }, exactFieldNames);
+        static object Reference(Guid id) => new { kind = "reference", value = id.ToString("D") };
+        static object Text(string text) => new { kind = "text", value = text };
+        static object Date(string date) => new { kind = "date", value = date };
+        const string updateIntent = "ApproveEnrollmentUpdate";
+        const string transferIntent = "ApproveEnrollmentTransfer";
+        var lifecycleSession = await Session();
+
+        var update = await seed();
+        var updateRoute = Route(lifecycleSession.Id, Guid.NewGuid());
+        var updateFields = new { EnrollmentId = Reference(update.Enrollment), Status = Text("Paused"),
+            EndDate = Date("2026-11-03"), LifecycleReason = Text(" Synthetic reason ") };
+        await Refuse(() => Change(admin, updateRoute, PentaEnrollmentFields.UpdateTool, updateFields), HttpStatusCode.NotFound, "lifecycle separately disabled");
+        var updateDraft = await ReadDraft(Change(lifecycleAdmin, updateRoute, PentaEnrollmentFields.UpdateTool, updateFields), HttpStatusCode.Created, "prepare status change");
+        if (updateDraft.Admission is not null || updateDraft.Change is not { } updatePlan || updatePlan.Tool != PentaEnrollmentFields.UpdateTool ||
+            updatePlan.EnrollmentId != update.Enrollment || updatePlan.StudentId != update.Student || updatePlan.CurrentStatus != "Active" ||
+            updatePlan.Status != "Paused" || updatePlan.LifecycleReason != "Synthetic reason" || updatePlan.EndDate != new DateOnly(2026, 11, 3))
+            throw new InvalidOperationException("Status-change draft differs from the reviewed plan.");
+        await Refuse(() => Approve(lifecycleAdmin, updateRoute, updateDraft), HttpStatusCode.Conflict, "create intent cannot approve update");
+        var transferFields = new { EnrollmentId = Reference(update.Enrollment), TargetBatchId = Reference(update.Target), TransferDate = Date("2026-11-04") };
+        await Refuse(() => Change(lifecycleAdmin, updateRoute, PentaEnrollmentFields.TransferTool, transferFields), HttpStatusCode.Conflict, "draft retry key cannot change operation");
+        var updateApproved = await ReadDraft(Approve(lifecycleAdmin, updateRoute, updateDraft, updateIntent), HttpStatusCode.OK, "approve status change");
+        var updateReceipt = await ReadDraft(Execute(lifecycleAdmin, updateRoute, updateApproved), HttpStatusCode.Created, "execute status change");
+        using (var scope = factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+            var row = await db.Enrollments.AsNoTracking().SingleAsync(x => x.Id == update.Enrollment);
+            if (updateReceipt.Receipt?.Enrollment.Id != row.Id || row.Status != "Paused" || row.LifecycleReason != "Synthetic reason" ||
+                row.EndDate != new DateOnly(2026, 11, 3)) throw new InvalidOperationException("Status change did not persist the exact approved fields.");
+        }
+
+        var transfer = await seed();
+        var transferRoute = Route(lifecycleSession.Id, Guid.NewGuid());
+        var moveFields = new { EnrollmentId = Reference(transfer.Enrollment), TargetBatchId = Reference(transfer.Target), TransferDate = Date("2026-11-04") };
+        var transferDraft = await ReadDraft(Change(lifecycleAdmin, transferRoute, PentaEnrollmentFields.TransferTool, moveFields), HttpStatusCode.Created, "prepare transfer");
+        if (transferDraft.Change?.TargetBatchId != transfer.Target || transferDraft.Change?.SourceBatchId != transfer.Source ||
+            transferDraft.Change?.TransferDate != new DateOnly(2026, 11, 4)) throw new InvalidOperationException("Transfer preview differs from the reviewed target.");
+        await Refuse(() => Approve(lifecycleAdmin, transferRoute, transferDraft, updateIntent), HttpStatusCode.Conflict, "update intent cannot approve transfer");
+        var transferApproved = await ReadDraft(Approve(lifecycleAdmin, transferRoute, transferDraft, transferIntent), HttpStatusCode.OK, "approve transfer");
+        await Refuse(() => Execute(lifecycleAdmin, transferRoute, transferApproved, updateApproved.ApprovalId), HttpStatusCode.Conflict, "update approval cannot execute transfer");
+        var transferAuditFault = new EnrollmentSharedAuditFault(executeAudit);
+        using (var faultyHost = new QaApiFactory(manifest, lifecycleFlags, isolatedDomainInterceptor: transferAuditFault, isolatedClock: clock))
+        using (var faulty = await SignIn(faultyHost, email))
+            await Refuse(() => Execute(faulty, transferRoute, transferApproved), HttpStatusCode.ServiceUnavailable, "transfer audit rollback preserves both rows");
+        if (transferAuditFault.Hits != 1) throw new InvalidOperationException("Transfer audit fault was not reached.");
+        var moved = await ReadDraft(Execute(lifecycleAdmin, transferRoute, transferApproved), HttpStatusCode.Created, "execute transfer");
+        state = await State();
+        if (await ReadDraft(Execute(lifecycleAdmin, transferRoute, transferApproved), HttpStatusCode.OK, "replay transfer receipt") != moved || state != await State())
+            throw new InvalidOperationException("Transfer replay changed the domain or its audit.");
+        using (var scope = factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+            var source = await db.Enrollments.AsNoTracking().SingleAsync(x => x.Id == transfer.Enrollment);
+            var target = await db.Enrollments.AsNoTracking().SingleAsync(x => x.StudentId == transfer.Student && x.BatchId == transfer.Target);
+            if (moved.Receipt?.Enrollment.Id != target.Id || source.Status != "Transferred" || source.EndDate != new DateOnly(2026, 11, 4) ||
+                target.Status != "Active" || target.StartDate != source.EndDate) throw new InvalidOperationException("Transfer rows do not match the receipt.");
+        }
+
+        var stale = await seed();
+        var staleRoute = Route(lifecycleSession.Id, Guid.NewGuid());
+        var staleDraft = await ReadDraft(Change(lifecycleAdmin, staleRoute, PentaEnrollmentFields.TransferTool,
+            new { EnrollmentId = Reference(stale.Enrollment), TargetBatchId = Reference(stale.Target) }), HttpStatusCode.Created, "prepare stale-source control");
+        var staleApproved = await ReadDraft(Approve(lifecycleAdmin, staleRoute, staleDraft, transferIntent), HttpStatusCode.OK, "approve stale-source control");
+        using (var manual = await disabled.PutAsJsonAsync($"/api/academies/{academy}/enrollments/{stale.Enrollment}",
+            new UpdateEnrollmentRequest("Active", null, "Manual intervened")))
+            RequireFinanceStatus(manual, HttpStatusCode.OK, "Manual changes source after approval");
+        await Refuse(() => Execute(lifecycleAdmin, staleRoute, staleApproved), HttpStatusCode.Conflict, "Manual source change invalidates old approval");
+        Console.WriteLine($"PASS: PENTA ENROLLMENT LIFECYCLE {cases - createCases} native HTTP/SQL checks; approval scope, transfer rollback and Manual stale-source guard.");
     }
 }
