@@ -30,7 +30,7 @@
 | API response | Not captured for this issue; use synthetic request/response in isolated reproduction |
 | Database before/after | Not executed; fixture and fresh-context assertions defined below |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | C26 truthful provider/meeting boundary; immutable source pin in the linked report; external integration remains unfinished |
+| Fix commit | a89b42b1d6de0bbd894f6fe86b6ed09d5aff9aca (C26 truthful unavailable boundary; external integration remains unfinished) |
 | Retest result | Original actual TSX0/21; final21/21 and32 native Chromium cases PASS, including stored true flags and blocked direct submission |
 | Regression result | Full frontend2,285 PASS/3 missing genuine SQL-receipt FAIL; build/types PASS and0 lint errors; not provider qualification |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |

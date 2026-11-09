@@ -3374,7 +3374,7 @@
       "module": "SCHEDULE",
       "route": "/meeting-links",
       "recordedSource": "apps/web/src/app/meeting-links/page.tsx:166",
-      "recordedFix": "C26 truthful provider/meeting boundary; immutable source pin in the linked report; external integration remains unfinished",
+      "recordedFix": "a89b42b1d6de0bbd894f6fe86b6ed09d5aff9aca (C26 truthful unavailable boundary; external integration remains unfinished)",
       "recordedRegression": "Full frontend2,285 PASS/3 missing genuine SQL-receipt FAIL; build/types PASS and0 lint errors; not provider qualification",
       "recordedClosureNotes": "Remain OPEN; follow closure requirements in QA README",
       "latestSection": "C26 explicit capability boundary — 9 November 2026",
@@ -3393,7 +3393,7 @@
         }
       ],
       "historicalMetadataNeedsReview": false,
-      "issueSha256": "bf9e5ea72daf0432e6c32cbbc73730a2dde12807799000b45333f1bcd82af29c"
+      "issueSha256": "391695bdc18cfa10771468221e97aa42a71d1ed4dc6924bc98b068b068a885b8"
     },
     {
       "id": "BUG-FUNC-0025",
@@ -3408,7 +3408,7 @@
       "module": "COMMUNICATION",
       "route": "/communication-settings; /meeting-links",
       "recordedSource": "apps/api/Controllers/CommunicationSettingsController.cs:69",
-      "recordedFix": "C26 truthful provider/meeting boundary; immutable source pin in the linked report; external integration remains unfinished",
+      "recordedFix": "a89b42b1d6de0bbd894f6fe86b6ed09d5aff9aca (C26 truthful unavailable boundary; external integration remains unfinished)",
       "recordedRegression": "Full frontend2,285 PASS/3 missing genuine SQL-receipt FAIL; build/types PASS and0 lint errors; not provider qualification",
       "recordedClosureNotes": "Remain OPEN; follow closure requirements in QA README",
       "latestSection": "C26 explicit capability boundary — 9 November 2026",
@@ -3427,7 +3427,7 @@
         }
       ],
       "historicalMetadataNeedsReview": false,
-      "issueSha256": "8c6daf5c0ca5e00af238a1a7b17d3df9a3f397673e38986fc5fbbb446c69d80b"
+      "issueSha256": "c3b671272bb671b696a58ec7037541ea7c866c6359c800f5c935e8b3260e7171"
     },
     {
       "id": "BUG-FUNC-0026",

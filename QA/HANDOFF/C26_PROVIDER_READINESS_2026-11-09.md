@@ -164,3 +164,15 @@ Raw original/final source/TAP/TRX, aborted/failed/final browser receipts,
 screenshots and source/export/assembly hashes remain outside Git at
 `/workspace/c26-provider-readiness-20261109`. No QA/EVIDENCE is published.
 Sol High for live provider/security/host acceptance; Medium for settled docs.
+
+## Immutable source pin
+
+Validated implementation/tests/report:
+`a89b42b1d6de0bbd894f6fe86b6ed09d5aff9aca`.
+Initial claimda551f9; exact Desktop e460 backend inheritance5043798. This branch
+retains complete C24/C25 and that nonoverlapping Desktop host return. The next
+documentation-only commit pins both issue fix references and regenerates their
+inventory hashes; it changes no tested product, test runner, API assembly or
+570-file static export. Formal issue/provider/model/release acceptance stays open.
+Retained raw source/result/publication manifest:
+`/workspace/c26-provider-readiness-20261109/manifest.json`.
