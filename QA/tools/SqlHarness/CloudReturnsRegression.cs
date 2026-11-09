@@ -195,6 +195,91 @@ internal static partial class SqlHarnessEntryPoint
         ManualSame(snapshot, await ManualStateAsync(factory), "metadata reads leave notifications, ledgers and audits unchanged");
         Pass("compensation-malformed-and-legacy-sql-bytes");
         Console.WriteLine($"CLOUDRETURN SUMMARY {count} native HTTP/SQL checks PASS");
+
+        const string guardianEmail = "qa-c23-guardian@example.invalid";
+        var receiptStatuses = new[] { "Completed", "Reconciled", "Pending", "Processing", "Failed", "Voided" };
+        var familyInvoices = new List<Invoice>();
+        Guid guardianId;
+        using (var scope = factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+            var guardian = new Guardian { AcademyId = academy, FirstName = "Synthetic", LastName = "C23 guardian" };
+            guardianId = guardian.Id;
+            db.Add(guardian);
+            db.Add(new StudentGuardian { AcademyId = academy, StudentId = student, GuardianId = guardianId, CanAccessPortal = true, CanViewFinance = true });
+            foreach (var status in receiptStatuses)
+            {
+                var invoice = new Invoice { AcademyId = academy, StudentId = student, InvoiceNumber = $"C23-{status}",
+                    TotalAmount = 100.55m, AdjustedAmount = 0.05m, Currency = "USD", Status = "Issued", DueDate = today.AddDays(-2) };
+                familyInvoices.Add(invoice);
+                db.Invoices.Add(invoice);
+                db.Payments.AddRange(
+                    new Payment { AcademyId = academy, InvoiceId = invoice.Id, Currency = "usd", Amount = 20.10m, Status = status },
+                    new Payment { AcademyId = academy, InvoiceId = invoice.Id, Currency = "INR", Amount = 70.15m, Status = "Completed" },
+                    new Payment { AcademyId = foreign, InvoiceId = invoice.Id, Currency = "USD", Amount = 500m, Status = "Completed" });
+            }
+            await db.SaveChangesAsync();
+            var roles = scope.ServiceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
+            if (!await roles.RoleExistsAsync("Guardian") && !(await roles.CreateAsync(new ApplicationRole { Name = "Guardian", IsSystemRole = true })).Succeeded)
+                throw new InvalidOperationException("C23 Guardian role setup failed.");
+            var users = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+            var user = new ApplicationUser { AcademyId = academy, GuardianId = guardianId, UserName = guardianEmail,
+                Email = guardianEmail, EmailConfirmed = true, IsActive = true, DisplayName = "Synthetic C23 guardian" };
+            if (!(await users.CreateAsync(user, fixturePassword)).Succeeded || !(await users.AddToRoleAsync(user, "Guardian")).Succeeded)
+                throw new InvalidOperationException("C23 Guardian identity setup failed.");
+        }
+        var guardianToken = await LoginAsync(client, guardianEmail, fixturePassword);
+        var detailPath = $"/api/portal/students/{student}";
+        string DocumentPath(Invoice invoice) => $"{detailPath}/invoices/{invoice.Id}/download";
+        var familyBefore = await ManualStateAsync(factory);
+        foreach (var (role, auth) in new[] { ("Student", studentToken), ("Guardian", guardianToken) })
+        {
+            var details = await Read(detailPath, auth);
+            if (!details.GetProperty("canViewFinance").GetBoolean()) throw new InvalidOperationException("C23 family finance capability missing.");
+            foreach (var (invoice, index) in familyInvoices.Select((invoice, index) => (invoice, index)))
+            {
+                var accepted = receiptStatuses[index] is "Completed" or "Reconciled";
+                var row = details.GetProperty("invoices").EnumerateArray().Single(x => x.GetProperty("id").GetGuid() == invoice.Id);
+                if (row.GetProperty("currency").GetString() != "USD" || row.GetProperty("balance").GetDecimal() != (accepted ? 80.40m : 100.50m))
+                    throw new InvalidOperationException($"C23 {role} {receiptStatuses[index]} balance differs.");
+                using var document = await ManualSendAsync(client, auth, "GET", DocumentPath(invoice));
+                RequireFinanceStatus(document, HttpStatusCode.OK, "C23 family invoice document");
+                var html = await document.Content.ReadAsStringAsync();
+                if (!html.Contains(accepted ? "Paid: USD 20.10" : "Paid: USD 0.00") ||
+                    !html.Contains(accepted ? "Amount due: USD 80.40" : "Amount due: USD 100.50"))
+                    throw new InvalidOperationException($"C23 {role} {receiptStatuses[index]} document differs.");
+                Console.WriteLine($"CLOUDRETURN C23 CASE {role} {receiptStatuses[index]} JSON and HTML PASS");
+            }
+        }
+        ManualSame(familyBefore, await ManualStateAsync(factory), "C23 family reads leave ledger, notifications and audit unchanged");
+        for (var i = 0; i < receiptStatuses.Length; i++)
+            await CheckQueue($"C23-{receiptStatuses[i]}-reminder", token, familyInvoices[i].Id, HttpStatusCode.OK,
+                (familyInvoices[i], receiptStatuses[i] is "Completed" or "Reconciled" ? "USD 80.40" : "USD 100.50"));
+
+        async Task SetGuardianFinance(bool enabled)
+        {
+            using var scope = factory.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+            var link = await db.StudentGuardians.SingleAsync(x => x.StudentId == student && x.GuardianId == guardianId);
+            link.CanViewFinance = enabled;
+            await db.SaveChangesAsync();
+        }
+        await SetGuardianFinance(false);
+        var deniedBefore = await ManualStateAsync(factory);
+        var denied = await Read(detailPath, guardianToken);
+        if (denied.GetProperty("canViewFinance").GetBoolean() || denied.GetProperty("invoices").GetArrayLength() != 0)
+            throw new InvalidOperationException("C23 Guardian retained finance after permission removal.");
+        using (var document = await ManualSendAsync(client, guardianToken, "GET", DocumentPath(familyInvoices[0])))
+            RequireFinanceStatus(document, HttpStatusCode.Forbidden, "C23 Guardian finance denied");
+        ManualSame(deniedBefore, await ManualStateAsync(factory), "C23 denied finance reads leave state unchanged");
+        await SetGuardianFinance(true);
+        var restored = await Read(detailPath, guardianToken);
+        if (!restored.GetProperty("canViewFinance").GetBoolean() ||
+            !restored.GetProperty("invoices").EnumerateArray().Any(x => x.GetProperty("id").GetGuid() == familyInvoices[0].Id))
+            throw new InvalidOperationException("C23 Guardian finance grant not reflected with existing session.");
+        using (var document = await ManualSendAsync(client, guardianToken, "GET", DocumentPath(familyInvoices[0])))
+            RequireFinanceStatus(document, HttpStatusCode.OK, "C23 Guardian finance restored");
+        Console.WriteLine("CLOUDRETURN C23 SUMMARY 12 family JSON/HTML cases, 6 reminder cases, 2 permission cases PASS");
     }
 
     private static Notification Announcement(Guid academy, string title, string metadata) =>
