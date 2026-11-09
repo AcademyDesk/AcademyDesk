@@ -62,6 +62,7 @@ function mount(file, api, props = {}, exportName = 'default') {
       if (name === '@/components/enterprise-page-state') return { EnterprisePageState: 'enterprise-page-state' };
       if (name === '@/lib/course-update') return execute('apps/web/src/lib/course-update.ts');
       if (name === '@/lib/batch-update') return execute('apps/web/src/lib/batch-update.ts');
+      if (name === '@/lib/trial-booking-clock') return execute('apps/web/src/lib/trial-booking-clock.ts');
       if (name === '@/lib/teacher-workspace') return execute('apps/web/src/lib/teacher-workspace.ts');
       if (name === '@/lib/use-record-editor') return execute('apps/web/src/lib/use-record-editor.ts');
       if (name === '@/lib/use-clock') return { useClock: () => Date.parse('2026-10-28T12:00:00Z') };

@@ -31,7 +31,6 @@ const stages = [
   "FollowUp",
   "Won",
   "Lost",
-  "Converted",
 ];
 const sources = [
   "WalkIn",
@@ -128,7 +127,8 @@ export default function LeadsPage() {
     await load();
   }
   async function setStage(lead: Lead, stage: string) {
-    if (!academy || lead.convertedStudentId) return;
+    if (!academy || lead.convertedStudentId || lead.stage.trim().toLowerCase() === "converted") return;
+    if (stage.trim().toLowerCase() === "converted") return setMessage("Use Convert to student to create a linked student record.");
     setSavingId(lead.id);
     try {
       const response = await academyApi(
@@ -323,7 +323,7 @@ export default function LeadsPage() {
                           label: display(value),
                         }))}
                         disabled={
-                          Boolean(lead.convertedStudentId) ||
+                          Boolean(lead.convertedStudentId) || lead.stage.trim().toLowerCase() === "converted" ||
                           savingId === lead.id
                         }
                       />

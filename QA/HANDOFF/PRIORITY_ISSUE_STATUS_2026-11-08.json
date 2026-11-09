@@ -1528,26 +1528,32 @@
       "rawPriority": "P1",
       "additionalReleaseGate": null,
       "status": "OPEN",
-      "finalVerification": "NOT RUN",
+      "finalVerification": "C27 scoped Cloud HTTP/UI/browser PASS; real SQL/races/audit/device and full critical acceptance pending",
       "recordedClosedAndPass": false,
-      "confirmation": "STATIC-FINDING",
+      "confirmation": "RUNTIME-REPRODUCED / Cloud source repair verified",
       "module": "SALES",
       "route": "/leads; /sales-marketing?view=conversion",
       "recordedSource": "apps/api/Controllers/LeadsController.cs:41",
-      "recordedFix": "Not implemented (Phase 1)",
-      "recordedRegression": "NOT RUN",
+      "recordedFix": "SOURCE_PIN_PENDING (C27 feature return; no deployment)",
+      "recordedRegression": "Final combined API2,325/2,325 PASS;frontend2,314 PASS/3 genuine missing-SQL-receipt failures;SQL/device/critical acceptance pending",
       "recordedClosureNotes": "Remain OPEN; follow closure requirements in QA README",
-      "latestSection": "Related / required regression",
+      "latestSection": "C27 source repair and scoped verification — 9 November 2026",
       "recordedPendingExcerpts": [
-        "| Evidence classification | Static trace; runtime reproduction pending |",
-        "| Retest result | NOT RUN |",
-        "| Regression result | NOT RUN |",
+        "| Regression result | Final combined API2,325/2,325 PASS;frontend2,314 PASS/3 genuine missing-SQL-receipt failures;SQL/device/critical acceptance pending |",
         "| Closure notes | Remain OPEN; follow closure requirements in QA README |",
-        "Converted is an accepted stage and is saved without creating a student or setting ConvertedStudentId. Dashboard counts either a linked student OR Converted stage as conversion. Runtime NOT RUN."
+        "Converted is an accepted stage and is saved without creating a student or setting ConvertedStudentId. Dashboard counts either a linked student OR Converted stage as conversion. Runtime NOT RUN.",
+        "Remain OPEN. Legacy Converted-without-link can use actual Convert to create a",
+        "legacy dashboard and all linked critical/documented acceptance remain pending."
       ],
-      "evidenceReferences": [],
+      "evidenceReferences": [
+        {
+          "href": "C27_SALES_TRIAL_INTEGRITY_2026-11-09.md",
+          "localExists": true,
+          "observation": "Reference presence only, not evidence acceptance"
+        }
+      ],
       "historicalMetadataNeedsReview": false,
-      "issueSha256": "da713f251e6b621134260c9cd42e2584b9252c381b12caf323a4ab5cf7bd2dd6"
+      "issueSha256": "598d606383b05293f23529312323849ae194dc77047ab5dfb3b513d63de5d99a"
     },
     {
       "id": "BUG-DATA-0027",
@@ -1556,26 +1562,32 @@
       "rawPriority": "P1",
       "additionalReleaseGate": null,
       "status": "OPEN",
-      "finalVerification": "NOT RUN",
+      "finalVerification": "C27 scoped Cloud HTTP/UI/browser PASS; real SQL/races/audit/device and full critical acceptance pending",
       "recordedClosedAndPass": false,
-      "confirmation": "STATIC-FINDING",
+      "confirmation": "RUNTIME-REPRODUCED / Cloud source repair verified",
       "module": "SALES",
       "route": "/trial-bookings; /leads; /sales-marketing",
       "recordedSource": "apps/api/Controllers/SalesMarketingController.cs:53",
-      "recordedFix": "Not implemented (Phase 1)",
-      "recordedRegression": "NOT RUN",
+      "recordedFix": "SOURCE_PIN_PENDING (C27 feature return; no deployment)",
+      "recordedRegression": "Final combined API2,325/2,325 PASS;frontend2,314 PASS/3 genuine missing-SQL-receipt failures;SQL/device/critical acceptance pending",
       "recordedClosureNotes": "Remain OPEN; follow closure requirements in QA README",
-      "latestSection": "Related / required regression",
+      "latestSection": "C27 source repair and scoped verification — 9 November 2026",
       "recordedPendingExcerpts": [
-        "| Evidence classification | Static trace; runtime reproduction pending |",
-        "| Retest result | NOT RUN |",
-        "| Regression result | NOT RUN |",
+        "| Regression result | Final combined API2,325/2,325 PASS;frontend2,314 PASS/3 genuine missing-SQL-receipt failures;SQL/device/critical acceptance pending |",
         "| Closure notes | Remain OPEN; follow closure requirements in QA README |",
-        "Trial picker includes all leads and CreateTrial only validates lead existence/academy. It unconditionally sets Stage to TrialBooked, retaining ConvertedStudentId. Ordinary UpdateStage explicitly forbids changes after conversion. Runtime NOT RUN."
+        "Trial picker includes all leads and CreateTrial only validates lead existence/academy. It unconditionally sets Stage to TrialBooked, retaining ConvertedStudentId. Ordinary UpdateStage explicitly forbids changes after conversion. Runtime NOT RUN.",
+        "Remain OPEN. Legacy Converted-without-link can use actual Convert to create a",
+        "legacy dashboard and all linked critical/documented acceptance remain pending."
       ],
-      "evidenceReferences": [],
+      "evidenceReferences": [
+        {
+          "href": "C27_SALES_TRIAL_INTEGRITY_2026-11-09.md",
+          "localExists": true,
+          "observation": "Reference presence only, not evidence acceptance"
+        }
+      ],
       "historicalMetadataNeedsReview": false,
-      "issueSha256": "0a032d77bf1958977cc382f6e8f68a6c1df1b5ee6c65925e307f8a9b093b5b30"
+      "issueSha256": "95beae8e124c8969049a04da2ac646438b9c00d2c386473db36964569636783f"
     },
     {
       "id": "BUG-DATA-0028",
@@ -3060,26 +3072,32 @@
       "rawPriority": "P1",
       "additionalReleaseGate": null,
       "status": "OPEN",
-      "finalVerification": "NOT RUN",
+      "finalVerification": "C27 scoped Cloud HTTP/UI/browser PASS; real SQL/races/audit/device and full critical acceptance pending",
       "recordedClosedAndPass": false,
-      "confirmation": "STATIC-FINDING",
+      "confirmation": "RUNTIME-REPRODUCED / Cloud source repair verified",
       "module": "SALES",
       "route": "/trial-bookings",
       "recordedSource": "apps/web/src/app/trial-bookings/page.tsx:47",
-      "recordedFix": "Not implemented (Phase 1)",
-      "recordedRegression": "NOT RUN",
+      "recordedFix": "SOURCE_PIN_PENDING (C27 feature return; no deployment)",
+      "recordedRegression": "Final combined API2,325/2,325 PASS;frontend2,314 PASS/3 genuine missing-SQL-receipt failures;SQL/device/critical acceptance pending",
       "recordedClosureNotes": "Remain OPEN; follow closure requirements in QA README",
-      "latestSection": "Related / required regression",
+      "latestSection": "C27 source repair and scoped verification — 9 November 2026",
       "recordedPendingExcerpts": [
-        "| Evidence classification | Static trace; runtime reproduction pending |",
-        "| Retest result | NOT RUN |",
-        "| Regression result | NOT RUN |",
+        "| Regression result | Final combined API2,325/2,325 PASS;frontend2,314 PASS/3 genuine missing-SQL-receipt failures;SQL/device/critical acceptance pending |",
         "| Closure notes | Remain OPEN; follow closure requirements in QA README |",
-        "sales.manage authorizes leads/trials, but TeachersController lacks a PermissionCatalog mapping and is denied for nonadministrators. Page requires all three responses to succeed before populating any list. Runtime NOT RUN."
+        "sales.manage authorizes leads/trials, but TeachersController lacks a PermissionCatalog mapping and is denied for nonadministrators. Page requires all three responses to succeed before populating any list. Runtime NOT RUN.",
+        "Remain OPEN. Legacy Converted-without-link can use actual Convert to create a",
+        "legacy dashboard and all linked critical/documented acceptance remain pending."
       ],
-      "evidenceReferences": [],
+      "evidenceReferences": [
+        {
+          "href": "C27_SALES_TRIAL_INTEGRITY_2026-11-09.md",
+          "localExists": true,
+          "observation": "Reference presence only, not evidence acceptance"
+        }
+      ],
       "historicalMetadataNeedsReview": false,
-      "issueSha256": "9ee3771173366fdc13124cb65bb46cb6d6d0f5622264c299a2a6af3a3906b213"
+      "issueSha256": "f6424681c9873b4bf0847ae3d4c422e5e01ce2109a7d5624ed0bfab234fa8466"
     },
     {
       "id": "BUG-FUNC-0015",

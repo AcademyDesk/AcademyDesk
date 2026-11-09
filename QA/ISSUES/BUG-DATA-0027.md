@@ -3,8 +3,8 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | STATIC-FINDING |
-| Final verification | NOT RUN |
+| Confirmation status | RUNTIME-REPRODUCED / Cloud source repair verified |
+| Final verification | C27 scoped Cloud HTTP/UI/browser PASS; real SQL/races/audit/device and full critical acceptance pending |
 | Severity | Major lifecycle inconsistency |
 | Priority | P1 |
 | Category | DATA |
@@ -30,9 +30,9 @@
 | API response | Not captured for this issue; use synthetic request/response in isolated reproduction |
 | Database before/after | Not executed; fixture and fresh-context assertions defined below |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | Not implemented (Phase 1) |
-| Retest result | NOT RUN |
-| Regression result | NOT RUN |
+| Fix commit | SOURCE_PIN_PENDING (C27 feature return; no deployment) |
+| Retest result | C27 same36 API cases PASS; expanded53 HTTP/InMemory and29 TSX/helper checks PASS;40 native synthetic cases PASS |
+| Regression result | Final combined API2,325/2,325 PASS;frontend2,314 PASS/3 genuine missing-SQL-receipt failures;SQL/device/critical acceptance pending |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
 ## Exact reproduction
@@ -69,3 +69,22 @@ Converted leads can be counted as both converted and trial-booked, with contradi
 SALES-TRIAL-001: Full HTTP/UI unconverted/converted/Lost/Won lead matrix, completed/cancelled/repeated trials, concurrent conversion/booking and no-write assertions on rejected terminal transitions.
 
 Also run all endpoint/form cases pointing to this issue in QA/03_TEST_MATRIX.md and the critical regression suite before closure.
+
+## C27 source repair and scoped verification — 9 November 2026
+
+The original source finding above is retained as historical evidence. C27
+reproduced the HTTP defects (36-case original:19 PASS/17 FAIL), fixed the
+stage/conversion/trial boundary and least-privilege teacher lookup, and verified
+53 current HTTP/Identity/InMemory controls,29 actual TSX/helper controls and40
+native Chromium scenarios. Original page controls were8 clock PASS/21 page
+FAIL. Browser faults and persistence are synthetic, not SQL acceptance.
+
+[Exact C27 source/result boundary and ordered Desktop SQL/race/audit/device
+handoff](../HANDOFF/C27_SALES_TRIAL_INTEGRITY_2026-11-09.md).
+
+Remain OPEN. Legacy Converted-without-link can use actual Convert to create a
+real student; no historical rows were silently repaired. Ordinary unconverted
+Won/Lost and optional-teacher trials are retained. SQL serialization, required
+actor-audit rollback including Platform Owner, actual role/browser/device,
+legacy dashboard and all linked critical/documented acceptance remain pending.
+No model loading/activation, main merge, Azure deploy or production qualification.

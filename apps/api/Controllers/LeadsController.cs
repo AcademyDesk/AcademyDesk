@@ -1,5 +1,7 @@
 using AcademyDesk.Api.Data;
 using AcademyDesk.Api.Domain.Entities;
+using AcademyDesk.Api.Infrastructure;
+using AcademyDesk.Api.Security;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -32,12 +34,14 @@ public sealed class LeadsController(AcademyDeskDbContext dbContext) : Controller
     }
 
     [HttpPatch("{leadId:guid}/stage")]
+    [AtomicAcademyMutation(IncludePlatformOwner = true)]
     public async Task<ActionResult<LeadSummary>> UpdateStage(Guid academyId, Guid leadId, UpdateLeadStageRequest request, CancellationToken cancellationToken)
     {
         if (!Stages.Contains(request.Stage, StringComparer.OrdinalIgnoreCase)) return BadRequest(new { message = "Invalid lead stage." });
-        var lead = await dbContext.Leads.SingleOrDefaultAsync(x => x.Id == leadId && x.AcademyId == academyId, cancellationToken);
+        if (string.Equals(request.Stage, "Converted", StringComparison.OrdinalIgnoreCase)) return BadRequest(new { message = "Use Convert to student to create a linked student record." });
+        var lead = await LeadMutationBoundary.ReadAsync(dbContext, academyId, leadId, cancellationToken);
         if (lead is null) return NotFound();
-        if (lead.ConvertedStudentId.HasValue) return Conflict(new { message = "A converted lead cannot be moved back through the pipeline." });
+        if (LeadMutationBoundary.IsConverted(lead)) return Conflict(new { message = "A converted lead cannot be moved back through the pipeline." });
         lead.Stage = Stages.Single(x => x.Equals(request.Stage, StringComparison.OrdinalIgnoreCase));
         lead.FollowUpAtUtc = request.FollowUpAtUtc;
         await dbContext.SaveChangesAsync(cancellationToken);
@@ -48,9 +52,10 @@ public sealed class LeadsController(AcademyDeskDbContext dbContext) : Controller
     { var lead=await dbContext.Leads.SingleOrDefaultAsync(x=>x.Id==leadId&&x.AcademyId==academyId,token); if(lead is null)return NotFound(); lead.Notes=string.IsNullOrWhiteSpace(request.Notes)?null:request.Notes.Trim(); await dbContext.SaveChangesAsync(token); return Ok(ToSummary(lead)); }
 
     [HttpPost("{leadId:guid}/convert")]
+    [AtomicAcademyMutation(IncludePlatformOwner = true)]
     public async Task<ActionResult<LeadConversionSummary>> Convert(Guid academyId, Guid leadId, ConvertLeadRequest request, CancellationToken cancellationToken)
     {
-        var lead = await dbContext.Leads.SingleOrDefaultAsync(x => x.Id == leadId && x.AcademyId == academyId, cancellationToken);
+        var lead = await LeadMutationBoundary.ReadAsync(dbContext, academyId, leadId, cancellationToken);
         if (lead is null) return NotFound();
         if (lead.ConvertedStudentId.HasValue) return Conflict(new { message = "This lead has already been converted." });
         var parts = lead.FullName.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);

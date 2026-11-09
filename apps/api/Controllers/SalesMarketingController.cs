@@ -1,5 +1,7 @@
 using AcademyDesk.Api.Data;
 using AcademyDesk.Api.Domain.Entities;
+using AcademyDesk.Api.Infrastructure;
+using AcademyDesk.Api.Security;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,6 +13,12 @@ public sealed class SalesMarketingController(AcademyDeskDbContext db) : Controll
 {
     private static readonly string[] CampaignStatuses = ["Draft", "Active", "Paused", "Completed"];
     private static readonly string[] TrialStatuses = ["Booked", "Completed", "Cancelled", "NoShow"];
+
+    [HttpGet("teacher-options")]
+    public async Task<ActionResult> TeacherOptions(Guid academyId, CancellationToken t) =>
+        Ok(await db.Teachers.AsNoTracking().Where(x => x.AcademyId == academyId)
+            .OrderBy(x => x.FirstName).ThenBy(x => x.LastName)
+            .Select(x => new { x.Id, x.FirstName, x.LastName }).ToListAsync(t));
 
     [HttpGet("campaigns")]
     public async Task<ActionResult> Campaigns(Guid academyId, CancellationToken t) =>
@@ -43,19 +51,24 @@ public sealed class SalesMarketingController(AcademyDeskDbContext db) : Controll
         Ok(await db.TrialClassBookings.AsNoTracking().Where(x => x.AcademyId == academyId).OrderBy(x => x.ScheduledAtUtc).ToListAsync(t));
 
     [HttpPost("trials")]
+    [AtomicAcademyMutation(IncludePlatformOwner = true)]
     public async Task<ActionResult> CreateTrial(Guid academyId, TrialRequest r, CancellationToken t)
     {
-        if (r.ScheduledAtUtc == default || !await db.Leads.AnyAsync(x => x.Id == r.LeadId && x.AcademyId == academyId, t)) return BadRequest(new { message = "Select a valid lead and scheduled time." });
+        if (r.ScheduledAtUtc == default) return BadRequest(new { message = "Select a valid lead and scheduled time." });
+        var lead = await LeadMutationBoundary.ReadAsync(db, academyId, r.LeadId, t);
+        if (lead is null) return BadRequest(new { message = "Select a valid lead and scheduled time." });
+        if (LeadMutationBoundary.IsConverted(lead)) return Conflict(new { message = "A converted lead cannot be booked into the trial pipeline." });
         if (r.BatchId.HasValue && !await db.Batches.AnyAsync(x => x.Id == r.BatchId && x.AcademyId == academyId, t)) return BadRequest(new { message = "Select a valid class or batch." });
         if (r.TeacherId.HasValue && !await db.Teachers.AnyAsync(x => x.Id == r.TeacherId && x.AcademyId == academyId, t)) return BadRequest(new { message = "Select a valid teacher." });
         var trial = new TrialClassBooking { AcademyId = academyId, LeadId = r.LeadId, BatchId = r.BatchId, TeacherId = r.TeacherId, ScheduledAtUtc = r.ScheduledAtUtc.ToUniversalTime(), Notes = r.Notes?.Trim() };
         db.TrialClassBookings.Add(trial);
-        var lead = await db.Leads.FindAsync([r.LeadId], t); if (lead is not null) lead.Stage = "TrialBooked";
+        lead.Stage = "TrialBooked";
         await db.SaveChangesAsync(t);
         return Ok(trial);
     }
 
     [HttpPatch("trials/{id:guid}/status")]
+    [AtomicAcademyMutation(IncludePlatformOwner = true)]
     public async Task<ActionResult> UpdateTrialStatus(Guid academyId, Guid id, TrialStatusRequest r, CancellationToken t)
     {
         if (!TrialStatuses.Contains(r.Status)) return BadRequest(new { message = "Invalid trial status." });
