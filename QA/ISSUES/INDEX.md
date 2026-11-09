@@ -6,6 +6,8 @@ Bounded runtime follow-up [DRAFT-ISOLATION-UX-001](../REPORTS/PHASE_2B_TEACHER_S
 
 | Issue ID | Title | Priority | Severity | Evidence type | Regression test |
 | --- | --- | --- | --- | --- | --- |
+| [BUG-AUTH-REFRESH-001](BUG-AUTH-REFRESH-001.md) | Renewed bearer overwritten by stale request headers | P1 | Major session reliability | Bounded helper/native Identity/HTTP/SQL repair; broader cross-tab/device/critical acceptance OPEN | AUTH-002; SECURITY-SESSION-001 |
+| [BUG-AUTH-REVOCATION-001](BUG-AUTH-REVOCATION-001.md) | Inactive credential issuance and incomplete token revocation | P1 | Major session security | Bounded repair/native SQL/browser evidence; full session scenario remains a required P0 release gate | SECURITY-SESSION-001; AUTH-001 |
 | [BUG-DATA-MUSIC-AUDIT-001](BUG-DATA-MUSIC-AUDIT-001.md) | Music status save survives audit failure | P1 | Learner-progress audit integrity | Real SQL reproduction. Repaired 25 SQL controls and 1,991 API tests passed. Closure OPEN. | MUSIC-PROGRESS-AUDIT-001 |
 | [BUG-FINANCE-DECISION-GUARDS-001](BUG-FINANCE-DECISION-GUARDS-001.md) | Blank rejection notes and Platform Owner audit bypass | P1 | Financial decision integrity | Reproduced in SQL. Repair passed 41 native controls and 13 live browser phases. Closure OPEN. | FINANCE-APPROVAL-001 |
 | [BUG-DATA-COMPENSATION-AUDIT-001](BUG-DATA-COMPENSATION-AUDIT-001.md) | Compensation save survives audit failure; Platform Owner bypasses required audit | P1 | Financial compensation/audit integrity | Actual SQL reproduced; scoped repair / 28 SQL and 1,986 API PASS; closure OPEN | COMPENSATION-AUDIT-ATOMIC-001 |

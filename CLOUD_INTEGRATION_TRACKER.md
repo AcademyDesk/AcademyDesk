@@ -1,5 +1,19 @@
 # Academy Desk shared integration tracker
 
+## C23 family finance and session acceptance — 9 November 2026
+
+- [x] Integrated Cloud C23's 15 paths and verified the 120-record inventory.
+  All 18 targeted family UI checks passed locally.
+- [x] Twenty new family, invoice download, reminder and Guardian permission
+  checks passed on disposable SQL, alongside the 16 retained checks.
+- [x] Admin and Platform cross-tab session controls passed on live Edge,
+  Identity and disposable SQL. The broader session gate remains open.
+- [ ] Continue with live family browser/download and physical-device
+  acceptance, remaining P0 workflows and exact-release CI/staging gates.
+  Use Sol High for SQL, finance and release security.
+
+[C23 integration evidence](QA/REPORTS/LOCAL_C23_FAMILY_FINANCE_ACCEPTANCE_2026-11-09.md)
+
 ## Live cross-tab session acceptance — 9 November 2026
 
 - [x] 15 live Edge and SQL checks passed, including four new cross-tab
