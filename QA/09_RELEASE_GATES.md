@@ -2,6 +2,17 @@
 
 These gates govern release acceptance. Current production readiness is **NOT ESTABLISHED**. Passing builds and unit tests do not satisfy the SQL, security, browser and operational gates below.
 
+The production guard now also enforces the documented `SECURITY-SESSION-001`
+acceptance gate through `BUG-AUTH-REVOCATION-001`. This adds the broader P0
+session scenario without reclassifying the targeted P1 defect. All 15 guard
+tests passed. The live guard blocks on the five open P0 records and this
+separate session gate.
+
+The local offline API image also passed 24 Production-mode runtime checks
+with disposable SQL, including migrations, two-tenant access, encrypted key
+ring reuse and SQL outage recovery. Exact hosted CI, fresh audits and staging
+restore remain open. [Container and guard evidence](REPORTS/LOCAL_RELEASE_CONTAINER_ACCEPTANCE_2026-11-09.md)
+
 The 8 November local browser runs cover standard and adjusted collection,
 payment transition readback, the payroll one-cent and duplicate boundary,
 and private audio recording and download. Physical devices and the linked
@@ -44,7 +55,7 @@ Current blockers include the five open P0 issues `BUG-DATA-0001/0002/0003/0010` 
 
 Cloud follow-up (2026-10-28): `.github/workflows/verify.yml` now prepares API regressions/audits, guarded finance/tenant/private-file/Blob SQL checks, genuine communication SQL evidence, full frontend tests, TypeScript/lint, webpack build and API image/startup-failure checks. It runs on the development branch/main pushes and main pull requests and is reusable by deployment. Its remote result is not yet observable from the current blocked GitHub API; wiring a workflow is not an executed pass.
 
-Deployment now requires verification success and `refs/heads/main`. Before Azure login or mutation, `QA/tools/check-production-gates.cjs` requires each known/new P0 record to have exact `Status: CLOSED` and `Final verification: PASS` table values. Set those only after the actual existing closure requirements pass; link the scoped release evidence in the issue. Missing/malformed records fail closed. The current five open issues correctly block deployment. This automated guard covers P0 issue records, not every staging/P1/browser/operational requirement; all remain mandatory.
+Deployment requires verification success and `refs/heads/main`. Before Azure login or mutation, `QA/tools/check-production-gates.cjs` requires each known or new P0 record and the separate session acceptance record to have exact `Status: CLOSED` and `Final verification: PASS` table values. Set those only after the existing closure requirements pass and link the scoped release evidence in the issue. Missing or malformed records fail closed. The remaining staging, critical P1, browser and operational requirements are also mandatory.
 
 These workflow changes are on `codex/release-export-security`; the default-main workflow is unchanged until a reviewed merge. Ordinary GitHub metadata now confirms verification40728363572 SUCCESS for exact52495e2. Newer changes require their own successful result; a prior green run is not approval of a later release.
 

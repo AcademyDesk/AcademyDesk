@@ -40,6 +40,8 @@ jobs:
         run: |
           mkdir -p .build-check/ci QA/EVIDENCE/logs
           git rev-parse HEAD > .build-check/ci/source-commit.txt
+      - name: Test production acceptance guard
+        run: node --test QA/tools/production-gates.test.cjs
       - name: Restore and audit all API dependencies
         run: >-
           dotnet restore AcademyDesk.slnx

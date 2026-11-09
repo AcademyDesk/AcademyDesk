@@ -1,5 +1,18 @@
 # Academy Desk handoff
 
+## Production readiness — 9 November 2026
+
+- [x] Built the API Release image offline and passed 24 Production-mode
+  runtime checks with disposable SQL, tenant isolation and recovery.
+- [x] The release guard now also covers the full session-security scenario.
+  All 15 guard tests passed. Candidate CI includes these tests.
+- [ ] Five P0 issue records, broader session and physical-device acceptance,
+  hosted CI and fresh audits, and staging restore and rollback remain open.
+- Cloud owns C23 family and reminder balances. Desktop owns the release
+  container and local runtime gates. Continue from the published checkpoint.
+
+[Local container and guard evidence](QA/REPORTS/LOCAL_RELEASE_CONTAINER_ACCEPTANCE_2026-11-09.md)
+
 ## C22 expense lookup and recovery — 8 November 2026
 
 - [x] Integrated C22 and passed 46 targeted frontend and 2,196 combined API

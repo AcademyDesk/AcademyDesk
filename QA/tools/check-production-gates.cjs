@@ -5,8 +5,10 @@ const path = require('node:path');
 // Existing release policy: no open or unverified P0 may reach production.
 // Keep known critical issues checked even if removed from the open register.
 const knownCritical = ['BUG-DATA-0001', 'BUG-DATA-0002', 'BUG-DATA-0003', 'BUG-DATA-0010', 'BUG-SEC-0001'];
+// The targeted revocation bug is P1, while its full session scenario is a P0 release gate.
+const sessionAcceptance = 'BUG-AUTH-REVOCATION-001';
 function checkProductionGates(root = path.resolve(__dirname, '../..')) {
-  const failures = [], ids = new Set(knownCritical);
+  const failures = [], ids = new Set([...knownCritical, sessionAcceptance]);
   const index = fs.readFileSync(path.join(root, 'QA/ISSUES/INDEX.md'), 'utf8');
   const listed = new Set();
   for (const line of index.split('\n')) {
@@ -38,7 +40,7 @@ if (require.main === module) {
     if (!result.ok) {
       console.error('Production BLOCKED by existing critical release policy:\n' + result.failures.map(x => `- ${x}`).join('\n'));
       process.exitCode = 1;
-    } else console.log(`Critical issue acceptance PASS: ${result.checked.length} P0 records closed/verified. CI, staging and operational gates also remain required.`);
+    } else console.log(`Critical issue acceptance PASS: ${result.checked.length} required records closed/verified. CI, staging and operational gates also remain required.`);
   } catch {
     console.error('Production BLOCKED: critical issue records could not be validated.');
     process.exitCode = 1;
