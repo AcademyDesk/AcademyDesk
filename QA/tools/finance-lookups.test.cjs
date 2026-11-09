@@ -25,7 +25,7 @@ async function loadPage(page, lookupStatus = 200) {
       const lookup = url.endsWith('/invoices/student-options');
       const status = url.endsWith('/students') ? 403 : lookup ? lookupStatus : 200;
       return { ok: status === 200, status, json: async () => url === '/api/academies'
-        ? [{ id: 'a', name: 'Synthetic academy' }] : lookup ? [student] : url.endsWith('/invoices') ? [invoice] : url.endsWith('/settings') ? {} : [] };
+        ? [{ id: 'a', name: 'Synthetic academy' }] : lookup ? [student] : url.endsWith('/invoices') ? [invoice] : url.endsWith('/settings') || url.endsWith('/invoices/document-settings') ? {} : [] };
     } };
     throw Error('Unexpected import ' + name);
   }, module, module.exports);

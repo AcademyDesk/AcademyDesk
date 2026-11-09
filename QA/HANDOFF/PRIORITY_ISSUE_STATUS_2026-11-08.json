@@ -33,13 +33,13 @@
       "recordedFix": "Local uncommitted controller repair, 2026-10-01; no deployment",
       "recordedRegression": "Latest API 140/140 and controlled Payments page 7/7; adjusted/collected consumer HTTP/SQL six stages PASS twice; earlier original-case evidence retained; full critical NOT RUN",
       "recordedClosureNotes": "Remain OPEN; follow closure requirements in QA README",
-      "latestSection": "C23 family and reminder currency readers — 9 November 2026",
+      "latestSection": "C24 administrator invoice document consumer — 9 November 2026",
       "recordedPendingExcerpts": [
-        "| Closure notes | Remain OPEN; follow closure requirements in QA README |",
         "[Consumer repair/evidence](../REPORTS/PHASE_2B_FINANCE_CONSUMER_REPAIR.md): Payments page Collected now includes Reconciled and Completed, excludes Voided; options/directory/detail/amount prefill/max/open/outstanding use canonical invoice API balance. Actual page with controlled hook state passes 7/7 after before-fix 1 PASS/6 FAIL; typecheck PASS, lint 0 err",
         "[Repair and evidence](../REPORTS/PHASE_2B_RECONCILED_PAYMENT_REPAIR.md): Completed/Reconciled collections now counted by payment guard/status, family balances/document, dashboard and reminders. Two fresh runs retain paid 600/balance 400 and reject excess 500 without SQL change; mixed/Voided, exact settlement, one-cent rejection and reminder controls pass. Or",
         "Collections, family balances, reminders and invoice status; financial release blocker reproduced, locally repaired, broader acceptance pending.",
-        "Remain OPEN. These shared batch counts are not added per issue and do not"
+        "Remain OPEN. These shared batch counts are not added per issue and do not",
+        "only, and existing pending/uncertain-save/review controls remain. Server financial"
       ],
       "evidenceReferences": [
         {
@@ -81,10 +81,15 @@
           "href": "C23_PRIORITY_FINANCE_READERS_2026-11-08.md",
           "localExists": true,
           "observation": "Reference presence only, not evidence acceptance"
+        },
+        {
+          "href": "C24_INVOICE_DOCUMENT_READBACK_2026-11-09.md",
+          "localExists": true,
+          "observation": "Reference presence only, not evidence acceptance"
         }
       ],
       "historicalMetadataNeedsReview": false,
-      "issueSha256": "8af3f61ab6b21fed98480c939b34959752c555bcd63311d7b1bb8be15698178b"
+      "issueSha256": "010409050a47d7c3e79698dd540d910d0f237ba901313e4d681bcb508434523c"
     },
     {
       "id": "BUG-DATA-0002",
@@ -102,13 +107,13 @@
       "recordedFix": "Local uncommitted guard and balance-consumer repair, 2026-10-01; no deployment",
       "recordedRegression": "Latest API 140/140, controlled page 7/7 and consumer HTTP/SQL six stages PASS twice; earlier guard module evidence retained; full critical NOT RUN",
       "recordedClosureNotes": "Remain OPEN; follow closure requirements in QA README",
-      "latestSection": "Local legacy currency adjustment — 8 November 2026",
+      "latestSection": "C24 administrator invoice document consumer — 9 November 2026",
       "recordedPendingExcerpts": [
-        "| Closure notes | Remain OPEN; follow closure requirements in QA README |",
         "[Consumer repair/evidence](../REPORTS/PHASE_2B_FINANCE_CONSUMER_REPAIR.md): Student invoice/download, dashboard and reminder balances now subtract applied adjustment. Payments page uses canonical API balance and counts Completed/Reconciled collections. New before-fix reminder 1 PASS/5 FAIL and page 1 PASS/6 FAIL; final API 140/140, page 7/7/typecheck PASS, t",
         "[Repair and evidence](../REPORTS/PHASE_2B_ADJUSTED_PAYMENT_REPAIR.md): collection guard and settlement status now compare collected payments against TotalAmount minus applied AdjustedAmount. Original excess 300/full-adjustment 1 rejected without financial SQL change; exact 200 Paid/zero admin balance. Two fresh SQL runs plus 102 API tests PASS. Remain OPEN: ",
         "Two counted isolated HTTP/SQL runs confirmed all three variants: balance 200 still permits payment 300 and persists ledger 900 plus discount 200; exact adjusted settlement collects 800 with balance 0 but remains PartiallyPaid; full adjustment 1000 starts Paid, then accepts payment 1 and becomes PartiallyPaid. Pending, zero-amount and repeated-approval contro",
-        "Remain OPEN. These shared batch counts are not added per issue and do not"
+        "Remain OPEN. These shared batch counts are not added per issue and do not",
+        "only, and existing pending/uncertain-save/review controls remain. Server financial"
       ],
       "evidenceReferences": [
         {
@@ -140,10 +145,15 @@
           "href": "../REPORTS/LOCAL_LEGACY_CURRENCY_WRITES_2026-11-08.md",
           "localExists": true,
           "observation": "Reference presence only, not evidence acceptance"
+        },
+        {
+          "href": "C24_INVOICE_DOCUMENT_READBACK_2026-11-09.md",
+          "localExists": true,
+          "observation": "Reference presence only, not evidence acceptance"
         }
       ],
       "historicalMetadataNeedsReview": false,
-      "issueSha256": "ff9df7fb34d8fab40f3ecd6d709181666e918f311746a76eecb351da6d398abf"
+      "issueSha256": "08d25e102a55b7fca99c6bab40f4b2f8686a6f93717ace894bb7c420e8d0c6f8"
     },
     {
       "id": "BUG-DATA-0003",
@@ -1088,13 +1098,13 @@
       "recordedFix": "C17 a448103 + ddd34fd; C18 a8d20d80abc46042a4d3a7bf31b15ead121ae361; C19 e9d256221fa49fa467b9a6de38d07f9e3aa3600a; C20 9fc338121ca147d7cc3934a3329247c8d3c48c22; wider live acceptance pending",
       "recordedRegression": "C20 API2,177/2,177 PASS; frontend2,118 PASS /3 genuine SQL-receipt FAIL, zero skips",
       "recordedClosureNotes": "Remain OPEN; follow closure requirements in QA README",
-      "latestSection": "C23 family and reminder currency readers — 9 November 2026",
+      "latestSection": "C24 administrator invoice document consumer — 9 November 2026",
       "recordedPendingExcerpts": [
-        "Remain OPEN. C19/C20 require combined-tree integration and real SQL/HTTP/browser",
         "and all five P0 release closure requirements remain OPEN. Preserve newer local",
         "live browser/device and the wider critical closure remain open.",
         "modal/device and broader closure requirements remain open, alongside C20.",
-        "a write. Broader fee readers, critical/device and release acceptance remain open."
+        "a write. Broader fee readers, critical/device and release acceptance remain open.",
+        "only, and existing pending/uncertain-save/review controls remain. Server financial"
       ],
       "evidenceReferences": [
         {
@@ -1176,10 +1186,15 @@
           "href": "C23_PRIORITY_FINANCE_READERS_2026-11-08.md",
           "localExists": true,
           "observation": "Reference presence only, not evidence acceptance"
+        },
+        {
+          "href": "C24_INVOICE_DOCUMENT_READBACK_2026-11-09.md",
+          "localExists": true,
+          "observation": "Reference presence only, not evidence acceptance"
         }
       ],
       "historicalMetadataNeedsReview": false,
-      "issueSha256": "99a24fa75588907393dc4d9bf79fe82460ecf164a83f7a42b5f63dc05f5031b2"
+      "issueSha256": "180b94b5bf536623b5cfa41da7c635d460eb8125efa84c4a6e69ebbcaefa6ec1"
     },
     {
       "id": "BUG-DATA-0017",

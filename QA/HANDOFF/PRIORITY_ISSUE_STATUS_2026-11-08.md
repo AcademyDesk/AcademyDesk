@@ -14,8 +14,8 @@ This is not a list of untouched bugs or an acceptance verdict. Existing fixes an
 
 | Issue | Priority | Recorded status | Latest evidence section | Recorded pending / closure pointer |
 | --- | --- | --- | --- | --- |
-| [BUG-DATA-0001](../ISSUES/BUG-DATA-0001.md) | P0 | OPEN / FIX-IN-PROGRESS (local repair) | C23 family and reminder currency readers — 9 November 2026 | Remain OPEN. These shared batch counts are not added per issue and do not |
-| [BUG-DATA-0002](../ISSUES/BUG-DATA-0002.md) | P0 | OPEN / FIX-IN-PROGRESS (local guard/status and consumer repair) | Local legacy currency adjustment — 8 November 2026 | Remain OPEN. These shared batch counts are not added per issue and do not |
+| [BUG-DATA-0001](../ISSUES/BUG-DATA-0001.md) | P0 | OPEN / FIX-IN-PROGRESS (local repair) | C24 administrator invoice document consumer — 9 November 2026 | only, and existing pending/uncertain-save/review controls remain. Server financial |
+| [BUG-DATA-0002](../ISSUES/BUG-DATA-0002.md) | P0 | OPEN / FIX-IN-PROGRESS (local guard/status and consumer repair) | C24 administrator invoice document consumer — 9 November 2026 | only, and existing pending/uncertain-save/review controls remain. Server financial |
 | [BUG-DATA-0003](../ISSUES/BUG-DATA-0003.md) | P0 | OPEN / FIX-IN-PROGRESS (local negative-net guard) | Local live payroll boundary acceptance — 8 November 2026 | and linked critical acceptance remain open. |
 | [BUG-DATA-0010](../ISSUES/BUG-DATA-0010.md) | P0 | OPEN / FIX-IN-PROGRESS | Local legacy currency transition guard — 8 November 2026 | Remain OPEN. These shared batch counts are not added per issue and do not |
 | [BUG-SEC-0001](../ISSUES/BUG-SEC-0001.md) | P0 | OPEN | Local private microphone and download acceptance — 8 November 2026 | devices, larger transfers and linked critical/release acceptance remain open. |
@@ -38,7 +38,7 @@ This is not a list of untouched bugs or an acceptance verdict. Existing fixes an
 | [BUG-DATA-0012](../ISSUES/BUG-DATA-0012.md) | P1 | OPEN | Related / required regression | \| Closure notes \| Remain OPEN; follow closure requirements in QA README \| |
 | [BUG-DATA-0014](../ISSUES/BUG-DATA-0014.md) | P1 | OPEN | Local successor — 2026-10-02 | \| Closure notes \| Remain OPEN; follow closure requirements in QA README \| |
 | [BUG-DATA-0015](../ISSUES/BUG-DATA-0015.md) | P1 | OPEN | Related / required regression | \| Closure notes \| Remain OPEN; follow closure requirements in QA README \| |
-| [BUG-DATA-0016](../ISSUES/BUG-DATA-0016.md) | P1 | OPEN | C23 family and reminder currency readers — 9 November 2026 | a write. Broader fee readers, critical/device and release acceptance remain open. |
+| [BUG-DATA-0016](../ISSUES/BUG-DATA-0016.md) | P1 | OPEN | C24 administrator invoice document consumer — 9 November 2026 | only, and existing pending/uncertain-save/review controls remain. Server financial |
 | [BUG-DATA-0017](../ISSUES/BUG-DATA-0017.md) | P1 | OPEN | Related / required regression | \| Closure notes \| Remain OPEN; follow closure requirements in QA README \| |
 | [BUG-DATA-0018](../ISSUES/BUG-DATA-0018.md) | P1 | OPEN | Attendance and assessment-browser slice — 29 October 2026 IST | Ten attendance failures reproduced; final34cases PASS with24 original note payload/error controls retained. Cached-session revisit now waits for a fresh matching read; failed/malformed rows lock with retry. Generation-scoped callbacks/save/readback handle A→B→A/unmount without erasing newer notes. Separately8 grouped actual Chrome checks pass at desktop/phon |
 | [BUG-DATA-0019](../ISSUES/BUG-DATA-0019.md) | P1 | OPEN | C14 bounded repair — 7 November 2026 | \| Closure notes \| Remain OPEN; follow closure requirements in QA README \| |

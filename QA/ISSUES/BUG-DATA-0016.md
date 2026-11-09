@@ -337,3 +337,23 @@ are shared packet counts, not separate totals per linked issue or new real SQL.
 Keep OPEN for real-host family/reminder agreement, linked critical/device and
 release acceptance. All five P0s and the additional broad-session gate remain.
 [Exact scope, browser outcome and prioritized Desktop acceptance tasks](../HANDOFF/C23_PRIORITY_FINANCE_READERS_2026-11-08.md).
+
+
+## C24 administrator invoice document consumer — 9 November 2026
+
+The administrator invoice preview/print now uses the canonical server balance
+for Amount due, retains billed/approved-adjustment/accepted-collection history
+and labels cancelled history separately from zero collectible amount. Missing
+or invalid balance/currency metadata is unavailable. Required-read failures no
+longer publish ready zero KPIs or enable invoice intake; explicit retry is read-
+only, and existing pending/uncertain-save/review controls remain. Server financial
+writers, permission/module/tenant rules, schema and newer Desktop SQL/race/audit
+evidence are preserved. Scoped print pagination and narrow-screen document layout
+are verified separately in the linked packet; no shared CSS or vendor edit.
+
+Original actual-TSX25 cases had1 PASS/24 FAIL; final new/retained target72/72 PASS.
+C23's2,235 API passes are reused only against540 identical backend/test/assembly
+hashes, not represented as a new SQL/API run. Keep OPEN for combined real-host
+invoice/family/reminder agreement, linked critical and actual-device acceptance,
+all five P0s, broad-session and release gates. Shared packet counts must not be
+added once per issue. [Exact results, source pin and prioritized Desktop return](../HANDOFF/C24_INVOICE_DOCUMENT_READBACK_2026-11-09.md).
