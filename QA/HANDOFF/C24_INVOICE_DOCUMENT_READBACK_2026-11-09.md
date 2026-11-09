@@ -208,3 +208,22 @@ five-path Desktop inheritance. Desktop should retain its latest evidence and
 import C23 first, then the bounded C24 return. Three issue appends preserve its
 older SQL history; do not overwrite whole newer local issue files on import.
 C24's full source-bound raw hashes and publication manifest remain outside Git.
+
+## Immutable source pin
+
+Validated implementation/test/report commit:
+`a41307389c2dbba929867db7bc3a3a9bdf77575a`.
+The following handoff-only commit records this pin; it changes no tested product,
+fixture, browser runner, API source/binary, or570-file static export identity.
+Initial claim `be2de7d`; exact Desktop069 inheritance `fc3ec32`. The branch is
+`codex/cloud-c24-invoice-document-readback-20261109`, based on complete C23 plus
+the nonoverlapping Desktop session return. The retained raw source/assembly/
+export/receipt/publication SHA256 manifest is
+`/workspace/c24-invoice-document-readback-20261109/manifest.json`.
+
+Desktop import scope: first retain/integrate C23's15-path return, then this
+packet's ten paths; the five069 paths are already identical on Desktop. Preserve
+any newer local issue/evidence appends when applying these scoped additions.
+Formal issue closure, current hosted CI and combined real-host/device acceptance
+remain pending. There is no main merge, deployment, environment change or model
+activation in this packet.
