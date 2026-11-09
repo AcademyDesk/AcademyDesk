@@ -30,7 +30,7 @@
 | API response | Not captured for this issue; use synthetic request/response in isolated reproduction |
 | Database before/after | Not executed; fixture and fresh-context assertions defined below |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | C25 bounded InApp guard and minimal history; immutable source pin in the linked C25 report |
+| Fix commit | 3622cdf647ca631e6506d6243588caf1d7ddbd88 (C25 bounded InApp guard and minimal history; no deployment) |
 | Retest result | Original channel cases9 PASS/22 FAIL; final37 new channel/history cases PASS; six history cases originally FAIL before endpoint addition |
 | Regression result | Targeted133/133 and full2,272/2,272 API PASS; actual TSX31/31 PASS; final frontend2,264 PASS/3 missing genuine SQL-receipt FAIL |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |

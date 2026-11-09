@@ -3918,7 +3918,7 @@
       "module": "FEES",
       "route": "Direct fee reminder API; UI uses InApp",
       "recordedSource": "apps/api/Controllers/FeeRemindersController.cs:27",
-      "recordedFix": "C25 bounded InApp guard and minimal history; immutable source pin in the linked C25 report",
+      "recordedFix": "3622cdf647ca631e6506d6243588caf1d7ddbd88 (C25 bounded InApp guard and minimal history; no deployment)",
       "recordedRegression": "Targeted133/133 and full2,272/2,272 API PASS; actual TSX31/31 PASS; final frontend2,264 PASS/3 missing genuine SQL-receipt FAIL",
       "recordedClosureNotes": "Remain OPEN; follow closure requirements in QA README",
       "latestSection": "C25 reminder channel, Finance lookup and recovery — 9 November 2026",
@@ -3935,7 +3935,7 @@
         }
       ],
       "historicalMetadataNeedsReview": false,
-      "issueSha256": "49835cdc111d7b9be258b91b818fe9c7699a6d19674b2125124cddd9e2ce24a2"
+      "issueSha256": "0cf90e4476656e503b1a1e4141514e7c29702983a35eef98cec13804b75e8733"
     },
     {
       "id": "BUG-SEC-0009",

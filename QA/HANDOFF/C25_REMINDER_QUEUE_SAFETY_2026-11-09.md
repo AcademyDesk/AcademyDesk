@@ -184,3 +184,19 @@ Current exact hosted CI remains UNKNOWN; feature push alone does not run the
 inherited verify workflow. No main merge/Azure/environment or public-access
 change. Desktop retains protected-host/SQL/device ownership;Sol High for the
 combined notification/finance/privacy acceptance and next consequential repairs.
+
+## Immutable source pin
+
+Validated implementation/test/checklist/report commit:
+`3622cdf647ca631e6506d6243588caf1d7ddbd88`.
+Initial claim63bfa88; inherited Desktop integration8479833 preserves6f77a94's
+exact five-path SQL/handoff return. Complete C24 source at2114c8c remains present.
+The following documentation commit pins SEC-0008's exact fix, regenerates its
+inventory hash and records this source. No tested product/test/browser/export
+or API assembly changes follow the validation above. All formal acceptance
+states remain open. Retained raw hashes and publication record:
+`/workspace/c25-reminder-queue-safety-20261109/manifest.json`.
+
+Owner notification: non-AI work is still pending; do not start model execution.
+The AI entry checklist names the current baseline gaps and the information that
+must accompany a concrete qualification packet when it becomes next.
