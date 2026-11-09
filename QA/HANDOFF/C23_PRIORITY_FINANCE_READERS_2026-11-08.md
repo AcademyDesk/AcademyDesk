@@ -215,3 +215,19 @@ path changed. Mini and the old C5 worktree remain clean. The full120-record
 inventory regenerates byte-identically; all referenced local report files exist,
 which establishes reference presence only. Raw original/final TRX/TAP, full suites,
 browser screenshots/downloads/failure receipts and hashes stay outside Git.
+
+## Publication source pin
+
+Validated implementation/test/inventory commit:
+`82ee63cb77baa0774c2a508906a6ebdc84bf45e1`. This includes the first production
+checkpoint8767c3a, final39-case API class, native runner and all verification and
+acceptance notes. The following handoff-only commit pins that immutable source;
+its documentation change does not alter the tested application/test/export.
+Native final receipt contains148 strictly intercepted GETs, four downloads and
+zero API mutations. The retained raw SHA256/source/assembly/result manifest is
+`/workspace/c23-priority-finance-readers-20261108/manifest.json`.
+
+Desktop may import this bounded return by inspecting the fifteen C23 paths
+relative to9c965813. The nine inherited9c files are already byte-identical; no
+need to reapply older protected writers or replace whole files from an old Cloud
+base. Keep SQL/device ownership and source-bind any subsequent acceptance.
