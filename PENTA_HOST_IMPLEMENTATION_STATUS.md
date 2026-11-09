@@ -12,7 +12,7 @@ then requires both AI-inclusive acceptance and the existing ERP release gates.
 | Order | Backend packet | Current boundary |
 | --- | --- | --- |
 | 1 | Student and batch lookup, academy context, student and teacher intake | Bounded read pilots and protected credential-free intake paths exist. Verify the intended end-to-end operations against the approved host/model contract before enabling them. |
-| 2 | Enrollment | Create, status change and transfer share Manual domain operations. The audited, Testing-only create preview passed 13 live HTTP/SQL checks. Add explicit approval, execution and receipt recovery next. Revalidate capacity, duplicates and prerequisites at execution. |
+| 2 | Enrollment | Create, status change and transfer share Manual domain operations. The Testing-only creation workflow passed 23 live HTTP/SQL checks across draft, approval, execution and receipt recovery. The 13 preview checks also passed. Bind status changes and transfers next. |
 | 3 | Scheduling, make-up classes and attendance | Bind typed tools to current scheduling and attendance rules. Preserve assigned Teacher scope and delivery-mode room/link requirements. |
 | 4 | Billing, collection, reconciliation, expenses and payroll | Connect deterministic reads first. Each permitted write needs current finance authority, scoped approval, concurrency and audit rollback evidence, and a recoverable receipt. |
 | 5 | Leads, communications, resources, private media and remaining role journeys | Bind current CRM and portal permissions, provider readiness, consent and private storage rules. Distinguish a queued message from confirmed delivery. |
@@ -28,7 +28,7 @@ Cloud C24 and C25 are separate Manual finance returns, pinned at `2114c8c`
 and `a40c487`. Desktop still needs to integrate and verify their live invoice,
 family and reminder paths. Preserve the source-bound C23 and session evidence.
 Cloud C26 owns provider settings and meeting availability. Desktop owns the
-enrollment host packet. [Enrollment preview evidence](QA/REPORTS/PENTA_ENROLLMENT_PREVIEW_2026-11-09.md)
+enrollment host packet. [Enrollment creation evidence](QA/REPORTS/PENTA_ENROLLMENT_CREATION_2026-11-09.md)
 
 ## Cloud conversation/container source integrated — 6 November 2026
 

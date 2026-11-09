@@ -33,13 +33,15 @@ public sealed class EnrollmentMutationService(AcademyDeskDbContext db, IdentityD
     internal async Task<EnrollmentCreatePreviewOutcome> PreviewCreateAsync(ClaimsPrincipal principal, Guid academy,
         CreateEnrollmentRequest request, string? securityStamp, CancellationToken token)
     {
-        if (string.IsNullOrEmpty(securityStamp)) return new(403);
-        if (await RefusalAsync(principal, academy, token, securityStamp) is { } refusal)
+        if (await CurrentHostRefusalAsync(principal, academy, securityStamp, token) is { } refusal)
             return new(refusal, Error: refusal == 503 ? AtomicHostRequired : null);
         if (!await EnrollmentAdmissionBoundary.TryLockAsync(db, academy, token))
             return new(503, Error: EnrollmentAdmissionBoundary.BusyMessage);
         return await new EnrollmentMutationOperations(db).PreviewCreateAsync(academy, request, token);
     }
+
+    internal Task<int?> CurrentHostRefusalAsync(ClaimsPrincipal principal, Guid academy, string? securityStamp, CancellationToken token) =>
+        string.IsNullOrEmpty(securityStamp) ? Task.FromResult<int?>(403) : RefusalAsync(principal, academy, token, securityStamp);
 
     private async Task<int?> RefusalAsync(ClaimsPrincipal principal, Guid academy, CancellationToken token, string? securityStamp = null)
     {
