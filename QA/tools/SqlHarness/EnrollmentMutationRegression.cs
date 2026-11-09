@@ -34,8 +34,8 @@ internal static partial class SqlHarnessEntryPoint
             var sourceCourse=new ProgramCourse{AcademyId=academy,Name="Synthetic source "+Guid.NewGuid().ToString("N")};var target=new Batch{AcademyId=academy,Name="Synthetic target "+Guid.NewGuid().ToString("N"),CourseId=course.Id,Capacity=capacity,WaitlistCapacity=waitlist};
             var source=new Batch{AcademyId=academy,Name="Synthetic source "+Guid.NewGuid().ToString("N"),CourseId=sourceCourse.Id,Capacity=8};var enrollment=new Enrollment{AcademyId=academy,StudentId=student.Id,BatchId=source.Id,StartDate=new(2026,10,1),Status="Active"};
             db.AddRange(student,course,sourceCourse,target,source,enrollment);await db.SaveChangesAsync();return new(student.Id,target.Id,source.Id,enrollment.Id,course.Id);}
-        async Task<string> Snapshot(){using var scope=factory.Services.CreateScope();var db=scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();var identity=scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
-            return JsonSerializer.Serialize(new{enrollments=await db.Enrollments.AsNoTracking().OrderBy(x=>x.Id).ToArrayAsync(),audits=await db.AuditLogs.AsNoTracking().OrderBy(x=>x.Id).ToArrayAsync(),
+        async Task<string> Snapshot(bool includeAudits=true){using var scope=factory.Services.CreateScope();var db=scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();var identity=scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
+            return JsonSerializer.Serialize(new{enrollments=await db.Enrollments.AsNoTracking().OrderBy(x=>x.Id).ToArrayAsync(),audits=includeAudits?await db.AuditLogs.AsNoTracking().OrderBy(x=>x.Id).ToArrayAsync():null,
                 students=await db.Students.AsNoTracking().OrderBy(x=>x.Id).ToArrayAsync(),batches=await db.Batches.AsNoTracking().OrderBy(x=>x.Id).ToArrayAsync(),teachers=await db.Teachers.AsNoTracking().OrderBy(x=>x.Id).ToArrayAsync(),
                 payments=await db.Payments.AsNoTracking().OrderBy(x=>x.Id).ToArrayAsync(),invoices=await db.Invoices.AsNoTracking().OrderBy(x=>x.Id).ToArrayAsync(),
                 users=await identity.Users.AsNoTracking().Select(x=>new{x.Id,x.AcademyId,x.IsActive,x.IsPlatformOwner,x.TeacherId}).OrderBy(x=>x.Id).ToArrayAsync(),roles=await identity.UserRoles.AsNoTracking().OrderBy(x=>x.UserId).ThenBy(x=>x.RoleId).ToArrayAsync()});}
@@ -129,10 +129,80 @@ internal static partial class SqlHarnessEntryPoint
                 var db=scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();if(await db.Enrollments.CountAsync(x=>x.BatchId==f.Target&&x.Status=="Active")!=1)throw new InvalidOperationException("Transfer race over capacity.");var source=await db.Enrollments.AsNoTracking().SingleAsync(x=>x.Id==f.Enrollment);
                 if(source.Status!=(direct.Result.HttpStatus==200?"Transferred":"Active"))throw new InvalidOperationException("Losing transfer changed source history.");}Pass("mixed transfer/create last-seat race "+attempt+" all-or-nothing source");
         }
+        var previewChecks = 0;
+        var previewFlags = new Dictionary<string, string?> { ["Penta:Enabled"] = "true", ["Penta:EnrollmentPreviewEnabled"] = "true" };
+        using var previewHost = new QaApiFactory(manifest, previewFlags);
+        using var previewAdmin = await Client(email, previewHost);
+        using var previewTeacher = await Client("qa-teacher-a@example.invalid", previewHost);
+        using var previewAnonymous = previewHost.CreateClient();
+        var previewRoute = $"/api/academies/{academy}/penta/enrollments/preview";
+        var typedJson = new JsonSerializerOptions();
+        Task<HttpResponseMessage> Preview(HttpClient client, EnrollmentFixture fixture, string status = "Active", string? route = null) =>
+            client.PostAsJsonAsync(route ?? previewRoute, new { tool_key = PentaEnrollmentFields.CreateTool, tool_revision = 1,
+                fields = new { StudentId = new { kind = "reference", value = fixture.Student.ToString("D") },
+                    BatchId = new { kind = "reference", value = fixture.Target.ToString("D") },
+                    StartDate = new { kind = "date", value = "2026-11-01" }, Status = new { kind = "text", value = status } } }, typedJson);
+        async Task DenyPreview(string name, HttpClient client, EnrollmentFixture fixture, HttpStatusCode expected, string status = "Active", string? route = null)
+        {
+            var before = await Snapshot();
+            using var response = await Preview(client, fixture, status, route);
+            RequireFinanceStatus(response, expected, name);
+            if (before != await Snapshot()) throw new InvalidOperationException(name + " changed SQL state.");
+            previewChecks++;
+        }
+        var ready = await Seed();
+        await DenyPreview("preview default flag", admin, ready, HttpStatusCode.NotFound);
+        await DenyPreview("preview anonymous", previewAnonymous, ready, HttpStatusCode.Unauthorized);
+        await DenyPreview("preview Teacher", previewTeacher, ready, HttpStatusCode.Forbidden);
+        await DenyPreview("preview foreign academy", previewAdmin, ready, HttpStatusCode.Forbidden,
+            route: $"/api/academies/{foreign}/penta/enrollments/preview");
+        await DenyPreview("preview invalid status", previewAdmin, ready, HttpStatusCode.BadRequest, "Completed");
+        await DenyPreview("preview missing or foreign learner", previewAdmin, ready with { Student = Guid.NewGuid() }, HttpStatusCode.BadRequest);
+        await DenyPreview("preview active capacity", previewAdmin, await Seed(0), HttpStatusCode.Conflict);
+        await DenyPreview("preview waitlist capacity", previewAdmin, await Seed(waitlist: 0), HttpStatusCode.Conflict, "Waitlisted");
+        await DenyPreview("preview existing enrollment", previewAdmin, ready with { Target = ready.Source }, HttpStatusCode.Conflict);
+        var missingPrerequisite = await Seed();
+        using (var scope = factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+            var required = new ProgramCourse { AcademyId = academy, Name = "Synthetic preview prerequisite" };
+            db.AddRange(required, new CoursePrerequisite { AcademyId = academy, CourseId = missingPrerequisite.Course,
+                RequiredCourseId = required.Id, MustBeCompleted = true });
+            await db.SaveChangesAsync();
+        }
+        await DenyPreview("preview incomplete prerequisite", previewAdmin, missingPrerequisite, HttpStatusCode.Conflict);
+        var beforePreview = await Snapshot(includeAudits: false);
+        using (var response = await Preview(previewAdmin, ready, "Waitlisted"))
+        {
+            RequireFinanceStatus(response, HttpStatusCode.OK, "valid enrollment preview");
+            var value = await response.Content.ReadFromJsonAsync<JsonElement>();
+            var admission = value.GetProperty("admission");
+            if (value.GetProperty("status").GetString() != "PreviewOnly" || !value.GetProperty("requiresApproval").GetBoolean() ||
+                admission.GetProperty("studentId").GetGuid() != ready.Student || admission.GetProperty("batchId").GetGuid() != ready.Target ||
+                admission.GetProperty("status").GetString() != "Waitlisted" || admission.GetProperty("startDate").GetString() != "2026-11-01")
+                throw new InvalidOperationException("Enrollment preview did not return the checked selection.");
+        }
+        if (beforePreview != await Snapshot(includeAudits: false)) throw new InvalidOperationException("Enrollment preview changed domain or Identity records.");
+        using (var scope = factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+            var audit = await db.AuditLogs.AsNoTracking().SingleAsync(x => x.Action == "PentaEnrollmentPreviewed");
+            if (audit.ActorUserId != actor || audit.AcademyId != academy || audit.EntityId != academy)
+                throw new InvalidOperationException("Enrollment preview audit scope differs.");
+        }
+        previewChecks++;
+        var previewAuditFault = new EnrollmentSharedAuditFault("PentaEnrollmentPreviewed");
+        using (var faultyPreviewHost = new QaApiFactory(manifest, previewFlags, isolatedDomainInterceptor: previewAuditFault))
+        using (var faultyPreview = await Client(email, faultyPreviewHost))
+            await DenyPreview("preview audit failure", faultyPreview, ready, HttpStatusCode.InternalServerError);
+        if (previewAuditFault.Hits != 1) throw new InvalidOperationException("Preview audit fault was not reached.");
+
         var revocation=await Seed();using(var scope=factory.Services.CreateScope()){
             var identity=scope.ServiceProvider.GetRequiredService<IdentityDbContext>();var roleIds=await identity.Roles.Where(x=>x.Name=="AcademyAdmin").Select(x=>x.Id).ToArrayAsync();
             await identity.UserRoles.Where(x=>x.UserId==actor&&roleIds.Contains(x.RoleId)).ExecuteDeleteAsync();}
         foreach(var action in new[]{"create","update","transfer"})await DenyDirect(action+" revoked database membership defeats stale Owner claims",403,revocation,action);
+        await DenyPreview("preview revoked role", previewAdmin, ready, HttpStatusCode.Forbidden);
+        Console.WriteLine($"PASS: PENTA ENROLLMENT PREVIEW {previewChecks} native HTTP/SQL checks");
         var dir=Path.GetFullPath(Path.Combine("QA","EVIDENCE","enrollment-shared-sql-"+manifest.RunId.ToString("N")));Directory.CreateDirectory(dir);
         await File.WriteAllTextAsync(Path.Combine(dir,"result.json"),JsonSerializer.Serialize(new{run=manifest.RunId.ToString("N"),passed=true,checks=count,capacityRaces=5,duplicateRaces=5,transferRaces=5,raceStatuses,sqlBacked=true,modelInference=false,toolRegistered=false,productionApproved=false},new JsonSerializerOptions{WriteIndented=true}));
         Console.WriteLine($"PASS: ENROLLMENTSHARED all {count} real SQL/HTTP/service cases;15 guarded mixed admission races, no model dispatch.");

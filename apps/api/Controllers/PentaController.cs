@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using AcademyDesk.Api.Domain.Identity;
+using System.Text.Json;
 
 namespace AcademyDesk.Api.Controllers;
 
@@ -14,6 +15,21 @@ public sealed class PentaController(PentaPilotPolicy policy, PentaExecutionServi
     PentaStudentSearchService studentSearch, PentaBatchSearchService batchSearch,
     UserManager<ApplicationUser> users) : ControllerBase
 {
+    [HttpPost("enrollments/preview")]
+    [RequestSizeLimit(8 * 1024)]
+    public async Task<ActionResult<PentaEnrollmentPreview>> PreviewEnrollment(Guid academyId, [FromBody] JsonElement request,
+        [FromServices] PentaEnrollmentPreviewService preview, CancellationToken token)
+    {
+        var outcome = await preview.PreviewAsync(User, academyId, request.GetRawText(), token);
+        return outcome.HttpStatus switch
+        {
+            200 => Ok(outcome.Preview),
+            403 => Forbid(),
+            404 => NotFound(),
+            _ => StatusCode(outcome.HttpStatus, new { message = outcome.Error })
+        };
+    }
+
     [HttpGet("batch-search")]
     public async Task<ActionResult<PentaBatchSearchResult>> BatchSearch(Guid academyId,
         [FromQuery] string? q, CancellationToken token)

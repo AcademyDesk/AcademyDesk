@@ -15,6 +15,7 @@ namespace AcademyDesk.Api.Infrastructure;
 /// </summary>
 public sealed class EnrollmentMutationService(AcademyDeskDbContext db, IdentityDbContext identity)
 {
+    private const string AtomicHostRequired = "Enrollment changes require an atomic host transaction.";
     public Task<EnrollmentMutationOutcome> CreateAsync(ClaimsPrincipal user,Guid academy,CreateEnrollmentRequest input,CancellationToken token)=>
         RunAsync(user,academy,()=>new EnrollmentMutationOperations(db).CreateAsync(academy,input,token),token);
     public Task<EnrollmentMutationOutcome> UpdateAsync(ClaimsPrincipal user,Guid academy,Guid enrollment,UpdateEnrollmentRequest input,CancellationToken token)=>
@@ -24,26 +25,45 @@ public sealed class EnrollmentMutationService(AcademyDeskDbContext db, IdentityD
 
     private async Task<EnrollmentMutationOutcome> RunAsync(ClaimsPrincipal principal,Guid academy,Func<Task<EnrollmentMutationOutcome>> operation,CancellationToken token)
     {
+        if (await RefusalAsync(principal, academy, token) is { } refusal)
+            return new(refusal, Error: refusal == 503 ? AtomicHostRequired : null);
+        return await operation();
+    }
+
+    internal async Task<EnrollmentCreatePreviewOutcome> PreviewCreateAsync(ClaimsPrincipal principal, Guid academy,
+        CreateEnrollmentRequest request, string? securityStamp, CancellationToken token)
+    {
+        if (string.IsNullOrEmpty(securityStamp)) return new(403);
+        if (await RefusalAsync(principal, academy, token, securityStamp) is { } refusal)
+            return new(refusal, Error: refusal == 503 ? AtomicHostRequired : null);
+        if (!await EnrollmentAdmissionBoundary.TryLockAsync(db, academy, token))
+            return new(503, Error: EnrollmentAdmissionBoundary.BusyMessage);
+        return await new EnrollmentMutationOperations(db).PreviewCreateAsync(academy, request, token);
+    }
+
+    private async Task<int?> RefusalAsync(ClaimsPrincipal principal, Guid academy, CancellationToken token, string? securityStamp = null)
+    {
         if((db.Database.IsRelational()||identity.Database.IsRelational())&&
             (!db.Database.IsSqlServer()||!identity.Database.IsSqlServer()||db.Database.CurrentTransaction is not{} domain||
             identity.Database.CurrentTransaction is not{} auth||!ReferenceEquals(domain.GetDbTransaction(),auth.GetDbTransaction())))
-            return new(503,Error:"Enrollment changes require an atomic host transaction.");
-        if(principal.Identity?.IsAuthenticated!=true||academy==Guid.Empty||!Guid.TryParse(principal.FindFirstValue(ClaimTypes.NameIdentifier),out var actor))return new(403);
+            return 503;
+        if(principal.Identity?.IsAuthenticated!=true||academy==Guid.Empty||!Guid.TryParse(principal.FindFirstValue(ClaimTypes.NameIdentifier),out var actor))return 403;
         // Hold the academy and current identity/membership until the caller's commit.
         // Lock order is academy -> identity -> existing admission applock, matching
         // the authoritative host transaction before any domain admission changes.
         if(db.Database.IsSqlServer())await db.Database.ExecuteSqlInterpolatedAsync($"SELECT [Id] FROM [Academies] WITH (UPDLOCK,HOLDLOCK) WHERE [Id]={academy}",token);
         var user=db.Database.IsSqlServer()?await identity.Users.FromSqlInterpolated($"SELECT * FROM [AspNetUsers] WITH (UPDLOCK,HOLDLOCK) WHERE [Id]={actor}").AsNoTracking().SingleOrDefaultAsync(token):
             await identity.Users.AsNoTracking().SingleOrDefaultAsync(x=>x.Id==actor,token);
-        if(user is null||!user.IsActive||user.IsPlatformOwner||user.AcademyId!=academy)return new(403);
+        if(user is null||!user.IsActive||user.IsPlatformOwner||user.AcademyId!=academy||
+            securityStamp is not null && user.SecurityStamp != securityStamp)return 403;
         var memberships=db.Database.IsSqlServer()?await identity.UserRoles.FromSqlInterpolated($"SELECT * FROM [AspNetUserRoles] WITH (UPDLOCK,HOLDLOCK) WHERE [UserId]={actor}").AsNoTracking().ToArrayAsync(token):
             await identity.UserRoles.AsNoTracking().Where(x=>x.UserId==actor).ToArrayAsync(token);
         var ids=memberships.Select(x=>x.RoleId).ToArray();
         var roles=db.Database.IsSqlServer()?identity.Roles.FromSqlInterpolated($"SELECT * FROM [AspNetRoles] WITH (UPDLOCK,HOLDLOCK) WHERE [Id] IN (SELECT [RoleId] FROM [AspNetUserRoles] WHERE [UserId]={actor})"):
             identity.Roles.Where(x=>ids.Contains(x.Id));
-        if(!await roles.AsNoTracking().AnyAsync(x=>x.Name=="Owner"||x.Name=="AcademyAdmin",token))return new(403);
+        if(!await roles.AsNoTracking().AnyAsync(x=>x.Name=="Owner"||x.Name=="AcademyAdmin",token))return 403;
         var tenant=await db.Academies.AsNoTracking().SingleOrDefaultAsync(x=>x.Id==academy,token);
-        if(tenant is null||!tenant.IsActive||!SubscriptionPlanCatalog.Allows(tenant.EnabledModulesJson,SubscriptionPlanCatalog.ModuleForController(nameof(EnrollmentsController))))return new(403);
-        return await operation();
+        if(tenant is null||!tenant.IsActive||!SubscriptionPlanCatalog.Allows(tenant.EnabledModulesJson,SubscriptionPlanCatalog.ModuleForController(nameof(EnrollmentsController))))return 403;
+        return null;
     }
 }
