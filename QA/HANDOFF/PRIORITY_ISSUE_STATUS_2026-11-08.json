@@ -1,5 +1,6 @@
 {
   "sourceBase": "b6793d45788b74d8cd5ab82e246c483da8df4aec",
+  "inheritedDesktopCommit": "9c9658132446124b70c53467e940d9769cf97d44",
   "scope": "All issue files reconciled with INDEX. Metadata and reference inventory only; no inferred repair, execution, closure or production acceptance.",
   "closureRule": "Original reproduction → cause → fix commit → original/regression retest → module suite → critical regression → documented acceptance; device/release gates where required.",
   "totalRecords": 120,
@@ -14,7 +15,7 @@
   "historicalMetadataNeedingReview": 26,
   "inputErrors": [],
   "indexSha256": "bd1ba8889047c82cc22945c0cc58221cd22cd468aad27cb8fa39586ef2ca91bc",
-  "generatorSha256": "eacf1d29c4a723b45d6609e0ed51e507dbb12f740b6cbeeb788cdcf065c9b749",
+  "generatorSha256": "422620f113290d06e0a33898ccf77f4bfacdbae38b85f79ba189929bbe588141",
   "records": [
     {
       "id": "BUG-DATA-0001",
@@ -32,7 +33,7 @@
       "recordedFix": "Local uncommitted controller repair, 2026-10-01; no deployment",
       "recordedRegression": "Latest API 140/140 and controlled Payments page 7/7; adjusted/collected consumer HTTP/SQL six stages PASS twice; earlier original-case evidence retained; full critical NOT RUN",
       "recordedClosureNotes": "Remain OPEN; follow closure requirements in QA README",
-      "latestSection": "Local legacy currency collection — 8 November 2026",
+      "latestSection": "C23 family and reminder currency readers — 9 November 2026",
       "recordedPendingExcerpts": [
         "| Closure notes | Remain OPEN; follow closure requirements in QA README |",
         "[Consumer repair/evidence](../REPORTS/PHASE_2B_FINANCE_CONSUMER_REPAIR.md): Payments page Collected now includes Reconciled and Completed, excludes Voided; options/directory/detail/amount prefill/max/open/outstanding use canonical invoice API balance. Actual page with controlled hook state passes 7/7 after before-fix 1 PASS/6 FAIL; typecheck PASS, lint 0 err",
@@ -75,10 +76,15 @@
           "href": "../REPORTS/LOCAL_LEGACY_CURRENCY_WRITES_2026-11-08.md",
           "localExists": true,
           "observation": "Reference presence only, not evidence acceptance"
+        },
+        {
+          "href": "C23_PRIORITY_FINANCE_READERS_2026-11-08.md",
+          "localExists": true,
+          "observation": "Reference presence only, not evidence acceptance"
         }
       ],
       "historicalMetadataNeedsReview": false,
-      "issueSha256": "61a50933dc0a944b88bbc5e9a723e88d1cd5f4099f1ea0c2eb0bc0e539e6b4c0"
+      "issueSha256": "8af3f61ab6b21fed98480c939b34959752c555bcd63311d7b1bb8be15698178b"
     },
     {
       "id": "BUG-DATA-0002",
@@ -1082,7 +1088,7 @@
       "recordedFix": "C17 a448103 + ddd34fd; C18 a8d20d80abc46042a4d3a7bf31b15ead121ae361; C19 e9d256221fa49fa467b9a6de38d07f9e3aa3600a; C20 9fc338121ca147d7cc3934a3329247c8d3c48c22; wider live acceptance pending",
       "recordedRegression": "C20 API2,177/2,177 PASS; frontend2,118 PASS /3 genuine SQL-receipt FAIL, zero skips",
       "recordedClosureNotes": "Remain OPEN; follow closure requirements in QA README",
-      "latestSection": "Local C22 expense acceptance — 8 November 2026",
+      "latestSection": "C23 family and reminder currency readers — 9 November 2026",
       "recordedPendingExcerpts": [
         "Remain OPEN. C19/C20 require combined-tree integration and real SQL/HTTP/browser",
         "and all five P0 release closure requirements remain OPEN. Preserve newer local",
@@ -1165,10 +1171,15 @@
           "href": "../REPORTS/LOCAL_C22_EXPENSE_ACCEPTANCE_2026-11-08.md",
           "localExists": true,
           "observation": "Reference presence only, not evidence acceptance"
+        },
+        {
+          "href": "C23_PRIORITY_FINANCE_READERS_2026-11-08.md",
+          "localExists": true,
+          "observation": "Reference presence only, not evidence acceptance"
         }
       ],
       "historicalMetadataNeedsReview": false,
-      "issueSha256": "709e2451767bcfc7460f5228acf2e90c0fe1dede0680053108e85383cfa8cbbb"
+      "issueSha256": "99a24fa75588907393dc4d9bf79fe82460ecf164a83f7a42b5f63dc05f5031b2"
     },
     {
       "id": "BUG-DATA-0017",

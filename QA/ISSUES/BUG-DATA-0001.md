@@ -131,3 +131,25 @@ in the actual Payments form with one payment and one audit. Existing finance
 concurrency and audit rollback cases passed. Keep OPEN for remaining linked
 critical and physical-device acceptance.
 [Local verification](../REPORTS/LOCAL_LEGACY_CURRENCY_WRITES_2026-11-08.md)
+
+
+## C23 family and reminder currency readers — 9 November 2026
+
+Scoped repair checkpoint `8767c3a5354708db7a2c423c36048bb6dccc34ed` preserves the
+newer Desktop protected-writer, finance concurrency, expense and SQL evidence.
+Family details, invoice HTML and reminder eligibility now count only accepted
+same-academy receipts in each invoice's normalized currency. Foreign units or
+tenants cannot erase the due amount. Adjustments, per-invoice clamp, raw history
+and existing notification/audit/authorization rules remain. HTML encodes legacy
+currency; cancellation history has a separate zero Amount due. The family page
+retains currency/cents, excludes cancelled receivables, labels cancelled history
+and obeys the fresh server-derived finance capability over an old parent snapshot.
+
+Original actual HTTP/Identity/InMemory cases were13 PASS/25 FAIL; repaired final
+API target96/96 PASS (39 new plus57 retained), full API2,235/2,235 PASS. Original
+actual TSX cases were1 PASS/17 FAIL; repaired18/18 PASS. Full frontend2,216 PASS/
+3 missing genuine communication-SQL-receipt FAIL, no skips/cancellations. These
+are shared packet counts, not separate totals per linked issue or new real SQL.
+Keep OPEN for real-host family/reminder agreement, linked critical/device and
+release acceptance. All five P0s and the additional broad-session gate remain.
+[Exact scope, browser outcome and prioritized Desktop acceptance tasks](../HANDOFF/C23_PRIORITY_FINANCE_READERS_2026-11-08.md).

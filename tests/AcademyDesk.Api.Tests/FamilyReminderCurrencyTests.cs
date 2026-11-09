@@ -87,6 +87,13 @@ public sealed class FamilyReminderCurrencyTests
     { using var f = new Fixture(); await f.Seed(); await f.Login(); var before = await f.Snapshot(); Assert.Empty((await f.Details()).GetProperty("invoices").EnumerateArray()); Assert.Equal(before, await f.Snapshot()); }
     [Fact] public async Task Overpayment_never_offsets_another_invoice_balance()
     { using var f = new Fixture(); await f.Seed(); await f.Change(db => { Pay(db, f.Bill(db, "USD", 100m), 150m, "Completed", "USD"); f.Bill(db, "USD", 80.15m); }); await f.Login(); var rows = (await f.Details()).GetProperty("invoices").EnumerateArray().ToArray(); Assert.Equal(80.15m, rows.Sum(x => x.GetProperty("balance").GetDecimal())); }
+    [Fact] public async Task Current_finance_capability_expresses_denial_and_new_grant_without_stale_parent_snapshot()
+    {
+        using var f = new Fixture(); await f.Seed("Guardian", finance: false); await f.Change(db => f.Bill(db, "USD", 100m)); await f.Login();
+        var denied = await f.Details(); Assert.False(denied.GetProperty("canViewFinance").GetBoolean()); Assert.Empty(denied.GetProperty("invoices").EnumerateArray());
+        await f.Change(db => db.StudentGuardians.Single().CanViewFinance = true); var before = await f.Snapshot();
+        var granted = await f.Details(); Assert.True(granted.GetProperty("canViewFinance").GetBoolean()); Assert.Single(granted.GetProperty("invoices").EnumerateArray()); Assert.Equal(before, await f.Snapshot());
+    }
     private static void Pay(AcademyDeskDbContext db, Invoice i, decimal amount, string status, string currency, Guid? academy = null) => db.Add(new Payment { AcademyId = academy ?? i.AcademyId, InvoiceId = i.Id, Amount = amount, Status = status, Currency = currency });
     private sealed class Fixture : IDisposable
     {
