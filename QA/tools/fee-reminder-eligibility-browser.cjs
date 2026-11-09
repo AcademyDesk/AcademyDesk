@@ -53,13 +53,13 @@ async function main(){
     cdp.on(sid,'Runtime.exceptionThrown',e=>errors.push(e.exceptionDetails.exception?.description||e.exceptionDetails.text));cdp.on(sid,'Runtime.consoleAPICalled',e=>{if(e.type==='error')errors.push(e.args.map(v=>v.value??v.description??'').join(' '));});
     cdp.on(sid,'Fetch.requestPaused',async({requestId,request})=>{try{
      const url=new URL(request.url);if(url.origin===origin)return await cdp.send('Fetch.continueRequest',{requestId},sid);a.equal(url.origin,apiOrigin);if(request.method==='OPTIONS')return reply(204,{});requests.push({method:request.method,path:url.pathname});
-     if(request.method==='POST'){a.equal(url.pathname,base+'/fee-reminders');writes.push(JSON.parse(request.postData));return reply(200,{message:'Synthetic queued'});}
+     if(request.method==='POST'){a.equal(url.pathname,base+'/fee-reminders');writes.push(JSON.parse(request.postData));return reply(200,{queuedCount:1,message:'Synthetic queued'});}
      a.equal(request.method,'GET');let data;
      if(url.pathname==='/api/auth/session')data={workspace:'AcademyAdmin',academyId:academy,roles:['AcademyAdmin'],displayName:'Synthetic admin',isPlatformOwner:false};
      else if(url.pathname==='/api/academies')data=[{id:academy,name:'Synthetic academy',enabledModulesJson:'["Core","Finance"]'}];
-     else if(url.pathname==='/api/portal/announcements'||url.pathname===base+'/notifications')data=[];
+     else if(url.pathname==='/api/portal/announcements'||url.pathname===base+'/fee-reminders/history')data=[];
      else if(url.pathname===base+'/invoices')data=invoices;
-     else if(url.pathname===base+'/students')data=invoices.map(x=>({id:x.studentId,firstName:x.id,lastName:'Learner'}));
+     else if(url.pathname===base+'/invoices/student-options')data=invoices.map(x=>({id:x.studentId,firstName:x.id,lastName:'Learner'}));
      else if(url.pathname===base+'/payments')data=[{invoiceId:'partial',amount:600,status:'Reconciled'}];
      else throw Error('Unexpected API path '+url.pathname);
      return reply(200,data);

@@ -3,8 +3,8 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | STATIC-FINDING |
-| Final verification | NOT RUN |
+| Confirmation status | RUNTIME-REPRODUCED / C25 BOUNDED REPAIR |
+| Final verification | C25 authenticated HTTP/InMemory channel and scoped-history controls PASS; real SQL/provider/device/critical acceptance pending. [C25 result](../HANDOFF/C25_REMINDER_QUEUE_SAFETY_2026-11-09.md) |
 | Severity | Major notification policy inconsistency |
 | Priority | P1 |
 | Category | SEC |
@@ -16,7 +16,7 @@
 | Device/viewport | NOT RUN; use QA/06_DEVICE_VIEWPORT_MATRIX.md where UI applies |
 | Baseline | 20bb6047f9edf733ac8e2a226621cc582ec54b3c + pre-existing student UI diff |
 | Discovery test / review ID | SECURITY-NOTIFICATION-001 |
-| Evidence classification | Static trace; runtime reproduction pending |
+| Evidence classification | Original static trace plus actual authenticated test-host HTTP/Identity/InMemory reproduction; not SQL/provider qualification |
 | Preconditions | Isolated synthetic fixture from QA/10_TEST_DATA_STRATEGY.md; never customer data |
 | Reproduction frequency | Not measured; reproduction instructions are proposed |
 | Source | apps/api/Controllers/FeeRemindersController.cs:27 |
@@ -30,9 +30,9 @@
 | API response | Not captured for this issue; use synthetic request/response in isolated reproduction |
 | Database before/after | Not executed; fixture and fresh-context assertions defined below |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | Not implemented (Phase 1) |
-| Retest result | NOT RUN |
-| Regression result | NOT RUN |
+| Fix commit | C25 bounded InApp guard and minimal history; immutable source pin in the linked C25 report |
+| Retest result | Original channel cases9 PASS/22 FAIL; final37 new channel/history cases PASS; six history cases originally FAIL before endpoint addition |
+| Regression result | Targeted133/133 and full2,272/2,272 API PASS; actual TSX31/31 PASS; final frontend2,264 PASS/3 missing genuine SQL-receipt FAIL |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
 ## Exact reproduction
@@ -69,3 +69,30 @@ Persisted external-channel queue records through authorized finance API; no evid
 SECURITY-NOTIFICATION-001: Real HTTP/SQL queue-status and no-send assertions with fake outbound adapters, channel allowlist and consent/connection matrix; never use real recipients. Test downstream delivery-time revalidation separately when a dispatcher is identified.
 
 Also run all endpoint/form cases pointing to this issue in QA/03_TEST_MATRIX.md and the critical regression suite before closure.
+
+
+## C25 reminder channel, Finance lookup and recovery — 9 November 2026
+
+New fee-reminder requests explicitly support canonical InApp only: null keeps its
+InApp default, trimmed/case-insensitive InApp is normalized, and external/blank/
+unknown channels return400 before notification or audit mutation. Generic
+communication/provider policy and existing records are unchanged. Finance-only
+users now read student-options plus minimal own-academy reminder history instead
+of student management and generic Communications. History exposes only five
+metadata fields, with unchanged role/tenant/module gates and no message/recipient/
+variables or unrelated notices. This is no new Communication privilege.
+
+Required reads and unverified balance/unit metadata cannot become successful zero
+indicators or enabled queue controls. Queue callbacks are synchronously versioned;
+confirmed queue/readback failure stays confirmed, unknown transport/408/5xx or
+malformed success stays unconfirmed and locked. Reload sends reads only; after
+an unknown result, successful review and explicit new intent are required before
+another queue. No provider was contacted, and cross-client/server idempotency is
+not established by a client-side replay guard. Cancellation/net-balance/targeted/
+bulk payload and existing audit/transaction semantics are retained.
+
+Final new/retained target133/133 and full2,272/2,272 API PASS; actual TSX31/31
+PASS. Full frontend2,264 PASS/3 missing genuine SQL-receipt FAIL, no skips. Shared
+counts are not added once per issue. Keep OPEN for combined real SQL/audit/live
+browser/device/critical and release acceptance. [Exact source, native results,
+AI-entry checklist and prioritized Desktop return](../HANDOFF/C25_REMINDER_QUEUE_SAFETY_2026-11-09.md).

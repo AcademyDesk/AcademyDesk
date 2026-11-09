@@ -10,9 +10,20 @@ namespace AcademyDesk.Api.Controllers;
 [Route("api/academies/{academyId:guid}/fee-reminders")]
 public sealed class FeeRemindersController(AcademyDeskDbContext dbContext) : ControllerBase
 {
+    [HttpGet("history")]
+    public async Task<ActionResult<IReadOnlyList<FeeReminderHistory>>> History(Guid academyId, CancellationToken token) =>
+        Ok(await dbContext.Notifications.AsNoTracking()
+            .Where(x => x.AcademyId == academyId && x.Title == "Fee payment reminder")
+            .OrderByDescending(x => x.CreatedAtUtc)
+            .Select(x => new FeeReminderHistory(x.Id, x.Title, x.Channel, x.Status, x.SentAtUtc))
+            .ToListAsync(token));
+
     [HttpPost]
     public async Task<ActionResult<FeeReminderResult>> Queue(Guid academyId, QueueFeeReminderRequest request, CancellationToken token)
     {
+        // This queue has no external-provider consent/connection workflow.
+        if (request.Channel is not null && !string.Equals(request.Channel.Trim(), "InApp", StringComparison.OrdinalIgnoreCase))
+            return BadRequest(new { message = "Fee reminders support in-app notifications only." });
         var invoices = dbContext.Invoices.Where(x => x.AcademyId == academyId && x.Status.ToLower() != "cancelled");
         if (request.InvoiceId.HasValue) invoices = invoices.Where(x => x.Id == request.InvoiceId.Value);
         else invoices = invoices.Where(x => x.DueDate <= DateOnly.FromDateTime(DateTime.UtcNow));
@@ -25,7 +36,7 @@ public sealed class FeeRemindersController(AcademyDeskDbContext dbContext) : Con
         {
             var balance = invoice.TotalAmount - invoice.AdjustedAmount - paid.GetValueOrDefault((invoice.Id, InvoiceReceiptReadModel.CurrencyKey(invoice.Currency)));
             if (balance <= 0) continue;
-            dbContext.Notifications.Add(new Notification { AcademyId = academyId, RecipientId = invoice.StudentId, RecipientType = "Student", Title = "Fee payment reminder", Message = $"Your outstanding balance is {invoice.Currency} {balance:0.00}. Invoice: {invoice.InvoiceNumber}. Due date: {invoice.DueDate:yyyy-MM-dd}.", Channel = request.Channel ?? "InApp" });
+            dbContext.Notifications.Add(new Notification { AcademyId = academyId, RecipientId = invoice.StudentId, RecipientType = "Student", Title = "Fee payment reminder", Message = $"Your outstanding balance is {invoice.Currency} {balance:0.00}. Invoice: {invoice.InvoiceNumber}. Due date: {invoice.DueDate:yyyy-MM-dd}.", Channel = "InApp" });
             queued++;
         }
         dbContext.AuditLogs.Add(new AuditLog { AcademyId = academyId, Action = "FeeRemindersQueued", EntityType = "Invoice", MetadataJson = $"{{\"count\":{queued}}}" });
@@ -35,3 +46,4 @@ public sealed class FeeRemindersController(AcademyDeskDbContext dbContext) : Con
 }
 public sealed record QueueFeeReminderRequest(Guid? InvoiceId, string? Channel);
 public sealed record FeeReminderResult(int QueuedCount, string Message);
+public sealed record FeeReminderHistory(Guid Id, string Title, string Channel, string Status, DateTime? SentAtUtc);

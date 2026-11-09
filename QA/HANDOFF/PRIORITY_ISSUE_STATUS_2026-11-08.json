@@ -1098,7 +1098,7 @@
       "recordedFix": "C17 a448103 + ddd34fd; C18 a8d20d80abc46042a4d3a7bf31b15ead121ae361; C19 e9d256221fa49fa467b9a6de38d07f9e3aa3600a; C20 9fc338121ca147d7cc3934a3329247c8d3c48c22; wider live acceptance pending",
       "recordedRegression": "C20 API2,177/2,177 PASS; frontend2,118 PASS /3 genuine SQL-receipt FAIL, zero skips",
       "recordedClosureNotes": "Remain OPEN; follow closure requirements in QA README",
-      "latestSection": "C24 administrator invoice document consumer — 9 November 2026",
+      "latestSection": "C25 reminder channel, Finance lookup and recovery — 9 November 2026",
       "recordedPendingExcerpts": [
         "and all five P0 release closure requirements remain OPEN. Preserve newer local",
         "live browser/device and the wider critical closure remain open.",
@@ -1191,10 +1191,15 @@
           "href": "C24_INVOICE_DOCUMENT_READBACK_2026-11-09.md",
           "localExists": true,
           "observation": "Reference presence only, not evidence acceptance"
+        },
+        {
+          "href": "C25_REMINDER_QUEUE_SAFETY_2026-11-09.md",
+          "localExists": true,
+          "observation": "Reference presence only, not evidence acceptance"
         }
       ],
       "historicalMetadataNeedsReview": false,
-      "issueSha256": "180b94b5bf536623b5cfa41da7c635d460eb8125efa84c4a6e69ebbcaefa6ec1"
+      "issueSha256": "71041c03d8498dc5ce27d277faa056d09328b3693198b9483647fa781700e5e6"
     },
     {
       "id": "BUG-DATA-0017",
@@ -1300,7 +1305,7 @@
       "recordedFix": "ce9470114cedb7fd5371b7078fbc41883785d373 (C14 API/screen)",
       "recordedRegression": "API2,058/2,058 PASS; frontend2,016 PASS /3 genuine SQL-evidence FAIL, zero skips",
       "recordedClosureNotes": "Remain OPEN; follow closure requirements in QA README",
-      "latestSection": "C14 bounded repair — 7 November 2026",
+      "latestSection": "C25 reminder channel, Finance lookup and recovery — 9 November 2026",
       "recordedPendingExcerpts": [
         "| Final verification | Current HTTP/SQL bulk and targeted eligibility, actor audit and rollback PASS. Linked browser, device and critical acceptance pending. [Local verification](../REPORTS/LOCAL_C13_C14_SQL_ACCEPTANCE_2026-11-07.md) |",
         "| Device/viewport | NOT RUN; use QA/06_DEVICE_VIEWPORT_MATRIX.md where UI applies |",
@@ -1318,10 +1323,15 @@
           "href": "C14_FEE_REMINDERS_2026-11-07.md",
           "localExists": true,
           "observation": "Reference presence only, not evidence acceptance"
+        },
+        {
+          "href": "C25_REMINDER_QUEUE_SAFETY_2026-11-09.md",
+          "localExists": true,
+          "observation": "Reference presence only, not evidence acceptance"
         }
       ],
       "historicalMetadataNeedsReview": false,
-      "issueSha256": "df0894dc9b51ad73e82178da226940fab2613850ded6df6320b9c2df6ce1b998"
+      "issueSha256": "4450f82b7439d47285ad771d35300e25e4eb1486499155dcd4e38d4751de76ee"
     },
     {
       "id": "BUG-DATA-0020",
@@ -2732,7 +2742,7 @@
       "recordedFix": "Local Governance/Branches/Batch/Course feedback variants; uncommitted/not deployed; other original forms pending",
       "recordedRegression": "209 current combined controlled frontend PASS; no new backend/SQL run; Course lint FAIL (1 error/1 warning after improvement), not all-form/critical acceptance",
       "recordedClosureNotes": "Remain OPEN; follow closure requirements in QA README",
-      "latestSection": "C9 financial batch — 7 November 2026",
+      "latestSection": "C25 reminder channel, Finance lookup and recovery — 9 November 2026",
       "recordedPendingExcerpts": [
         "[Batch feedback repair](../REPORTS/PHASE_2B_BATCH_FEEDBACK_REPAIR.md):44 new actual-handler controls, combined160/160 PASS and TypeScript PASS. Create/edit/deactivate/reactivate notices survive successful or failed readback; confirmed create resets all per-batch inputs, failed/unconfirmed writes keep details, pending guards block duplicate/opposing requests ",
         "[Branches feedback repair](../REPORTS/PHASE_2B_BRANCH_FEEDBACK_REPAIR.md) fixes durable create/edit/deactivate/reactivate confirmations, confirmed-save-but-refresh-failed guidance, failed-write detail retention and pending duplicate/opposing request guards. Network/5xx saves are labelled unconfirmed; no automatic retry. Controlled create fields clear only af",
@@ -2770,10 +2780,15 @@
           "href": "C9_FINANCE_BATCH_2026-11-07.md",
           "localExists": true,
           "observation": "Reference presence only, not evidence acceptance"
+        },
+        {
+          "href": "C25_REMINDER_QUEUE_SAFETY_2026-11-09.md",
+          "localExists": true,
+          "observation": "Reference presence only, not evidence acceptance"
         }
       ],
       "historicalMetadataNeedsReview": false,
-      "issueSha256": "26712e3d7d4deb4827c885ea66bacbae907c737bb7cc4792422dfd5ed31eb5a6"
+      "issueSha256": "4b15e48c729fb0e9149b7008e0ed7a06107f336e0999db8641c23be4b1756dab"
     },
     {
       "id": "BUG-FUNC-0004",
@@ -2879,7 +2894,7 @@
       "recordedFix": "Local working-tree student/Governance/invoice-settings dependency repairs; not committed or deployed",
       "recordedRegression": "222 API /43 controlled frontend PASS; two fresh runs ×34 invoice-settings HTTP/SQL checks PASS; earlier lookup/Governance evidence historical, not full critical suite",
       "recordedClosureNotes": "Remain OPEN; follow closure requirements in QA README",
-      "latestSection": "Related / required regression",
+      "latestSection": "C25 reminder channel, Finance lookup and recovery — 9 November 2026",
       "recordedPendingExcerpts": [
         "| Closure notes | Remain OPEN; follow closure requirements in QA README |",
         "[Invoice document-settings repair](../REPORTS/PHASE_2B_INVOICE_SETTINGS_REPAIR.md) gives the Invoice page its seven preview fields through a read-only Finance-scoped route. Finance-only prerequisites no longer depend on FinanceControls settings management. Existing Governance/module/write restrictions, generic student/task restrictions, nullable branding and",
@@ -2907,10 +2922,15 @@
           "href": "../REPORTS/PHASE_2B_FINANCE_ACCESS_REGRESSION.md",
           "localExists": true,
           "observation": "Reference presence only, not evidence acceptance"
+        },
+        {
+          "href": "C25_REMINDER_QUEUE_SAFETY_2026-11-09.md",
+          "localExists": true,
+          "observation": "Reference presence only, not evidence acceptance"
         }
       ],
       "historicalMetadataNeedsReview": false,
-      "issueSha256": "092d49ef4da6f4c7ff3452f7bf553f2a1e5acc913fed3eb838e4c2e8e0178ca7"
+      "issueSha256": "df462918fbda58a685b3de793484fefc5f033a0222ff7735e722ffef4734e5e9"
     },
     {
       "id": "BUG-FUNC-0007",
@@ -3892,26 +3912,30 @@
       "rawPriority": "P1",
       "additionalReleaseGate": null,
       "status": "OPEN",
-      "finalVerification": "NOT RUN",
+      "finalVerification": "C25 authenticated HTTP/InMemory channel and scoped-history controls PASS; real SQL/provider/device/critical acceptance pending. [C25 result](../HANDOFF/C25_REMINDER_QUEUE_SAFETY_2026-11-09.md)",
       "recordedClosedAndPass": false,
-      "confirmation": "STATIC-FINDING",
+      "confirmation": "RUNTIME-REPRODUCED / C25 BOUNDED REPAIR",
       "module": "FEES",
       "route": "Direct fee reminder API; UI uses InApp",
       "recordedSource": "apps/api/Controllers/FeeRemindersController.cs:27",
-      "recordedFix": "Not implemented (Phase 1)",
-      "recordedRegression": "NOT RUN",
+      "recordedFix": "C25 bounded InApp guard and minimal history; immutable source pin in the linked C25 report",
+      "recordedRegression": "Targeted133/133 and full2,272/2,272 API PASS; actual TSX31/31 PASS; final frontend2,264 PASS/3 missing genuine SQL-receipt FAIL",
       "recordedClosureNotes": "Remain OPEN; follow closure requirements in QA README",
-      "latestSection": "Related / required regression",
+      "latestSection": "C25 reminder channel, Finance lookup and recovery — 9 November 2026",
       "recordedPendingExcerpts": [
+        "| Final verification | C25 authenticated HTTP/InMemory channel and scoped-history controls PASS; real SQL/provider/device/critical acceptance pending. [C25 result](../HANDOFF/C25_REMINDER_QUEUE_SAFETY_2026-11-09.md) |",
         "| Device/viewport | NOT RUN; use QA/06_DEVICE_VIEWPORT_MATRIX.md where UI applies |",
-        "| Evidence classification | Static trace; runtime reproduction pending |",
-        "| Retest result | NOT RUN |",
-        "| Regression result | NOT RUN |",
         "| Closure notes | Remain OPEN; follow closure requirements in QA README |"
       ],
-      "evidenceReferences": [],
+      "evidenceReferences": [
+        {
+          "href": "C25_REMINDER_QUEUE_SAFETY_2026-11-09.md",
+          "localExists": true,
+          "observation": "Reference presence only, not evidence acceptance"
+        }
+      ],
       "historicalMetadataNeedsReview": false,
-      "issueSha256": "1f0084c3107129385fe22818ee4cbe7a0e7a1deb72a040762b1222243ea61fd4"
+      "issueSha256": "49835cdc111d7b9be258b91b818fe9c7699a6d19674b2125124cddd9e2ce24a2"
     },
     {
       "id": "BUG-SEC-0009",

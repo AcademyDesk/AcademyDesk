@@ -3,8 +3,8 @@ const {test}=require('node:test'),a=require('node:assert/strict');
 const {mount,nodes,text,response}=require('./frontend-page-runtime.cjs');
 const row=(id,changes={})=>({id,invoiceNumber:id,studentId:id,totalAmount:1000,adjustedAmount:0,balance:1000,currency:'INR',dueDate:'2020-01-01',status:'Issued',...changes});
 async function page(invoices,payments=[]){const writes=[],reads=[];const h=mount('apps/web/src/app/fee-reminders/page.tsx',async(url,init={})=>{
- if(init.method){writes.push(JSON.parse(init.body));return response({message:'Synthetic queued'});}
- reads.push(url);return response(url==='/api/academies'?[{id:'a'}]:url.endsWith('/invoices')?invoices:url.endsWith('/payments')?payments:url.endsWith('/students')?invoices.map(x=>({id:x.studentId,firstName:x.id,lastName:'Learner'})):[]);
+ if(init.method){writes.push(JSON.parse(init.body));return response({queuedCount:1,message:'Synthetic queued'});}
+ reads.push(url);return response(url==='/api/academies'?[{id:'a'}]:url.endsWith('/invoices')?invoices:url.endsWith('/payments')?payments:url.endsWith('/invoices/student-options')?invoices.map(x=>({id:x.studentId,firstName:x.id,lastName:'Learner'})):[]);
 });await h.flush();return {h,writes,reads};}
 const list=h=>nodes(h.render()).filter(n=>n.type==='li');
 const kpi=(h,label)=>text(nodes(h.render()).find(n=>n.type==='article'&&text(n).includes(label)));
@@ -13,6 +13,6 @@ test('reminder amount and KPI use authoritative net balance rather than gross or
 test('settled and overpaid invoices do not appear',async()=>{const p=await page([row('settled',{balance:0,status:'Paid'}),row('overpaid',{balance:-50})]);try{a.equal(list(p.h).length,0);a.equal(nodes(p.h.render()).find(n=>n.type==='button'&&text(n)==='Queue all reminders').props.disabled,true);}finally{p.h.unmount();}});
 test('missing and nonfinite server balances cannot become reminder actions',async()=>{const p=await page([row('missing',{balance:undefined}),row('invalid',{balance:NaN}),row('infinite',{balance:Infinity})]);try{a.equal(list(p.h).length,0);}finally{p.h.unmount();}});
 test('different currencies remain separate in rows and outstanding summary',async()=>{const p=await page([row('inr',{balance:200}),row('usd',{balance:50,currency:'USD'})]);try{a.match(kpi(p.h,'Outstanding'),/200\.00/);a.match(kpi(p.h,'Outstanding'),/50\.00/);a.match(kpi(p.h,'Outstanding'),/US\$|USD/);a.doesNotMatch(kpi(p.h,'Outstanding'),/250\.00/);a.match(text(list(p.h)[1]),/US\$|USD/);}finally{p.h.unmount();}});
-test('invalid legacy currency does not crash the balance display',async()=>{const p=await page([row('legacy',{currency:'bad currency',balance:25})]);try{a.match(text(p.h.render()),/bad currency 25\.00/);}finally{p.h.unmount();}});
+test('invalid legacy currency does not crash the balance display',async()=>{const p=await page([row('legacy',{currency:'bad currency',balance:25})]);try{a.match(text(p.h.render()),/BAD CURRENCY 25\.00/);}finally{p.h.unmount();}});
 test('targeted queue sends the visible active invoice id and keeps InApp channel',async()=>{const p=await page([row('cancelled',{status:'Cancelled'}),row('active',{balance:200})]);try{await nodes(p.h.render()).find(n=>n.type==='button'&&text(n)==='Send reminder').props.onClick();await p.h.flush();a.deepEqual(p.writes,[{invoiceId:'active',channel:'InApp'}]);}finally{p.h.unmount();}});
 test('bulk queue retains its null-id contract',async()=>{const p=await page([row('active',{balance:200})]);try{await nodes(p.h.render()).find(n=>n.type==='button'&&text(n)==='Queue all reminders').props.onClick();await p.h.flush();a.deepEqual(p.writes,[{invoiceId:null,channel:'InApp'}]);}finally{p.h.unmount();}});

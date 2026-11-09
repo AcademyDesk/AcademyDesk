@@ -112,3 +112,30 @@ writes. Exact-lock build/types/lint PASS (zero errors / existing 63 warnings).
 Remain **OPEN**. These shared batch counts are not added per issue and do not
 replace original module/critical, real Identity/HTTP/SQL, other-client, device or
 release closure requirements. See [C9 source-bound report and Desktop tasks](../HANDOFF/C9_FINANCE_BATCH_2026-11-07.md).
+
+
+## C25 reminder channel, Finance lookup and recovery — 9 November 2026
+
+New fee-reminder requests explicitly support canonical InApp only: null keeps its
+InApp default, trimmed/case-insensitive InApp is normalized, and external/blank/
+unknown channels return400 before notification or audit mutation. Generic
+communication/provider policy and existing records are unchanged. Finance-only
+users now read student-options plus minimal own-academy reminder history instead
+of student management and generic Communications. History exposes only five
+metadata fields, with unchanged role/tenant/module gates and no message/recipient/
+variables or unrelated notices. This is no new Communication privilege.
+
+Required reads and unverified balance/unit metadata cannot become successful zero
+indicators or enabled queue controls. Queue callbacks are synchronously versioned;
+confirmed queue/readback failure stays confirmed, unknown transport/408/5xx or
+malformed success stays unconfirmed and locked. Reload sends reads only; after
+an unknown result, successful review and explicit new intent are required before
+another queue. No provider was contacted, and cross-client/server idempotency is
+not established by a client-side replay guard. Cancellation/net-balance/targeted/
+bulk payload and existing audit/transaction semantics are retained.
+
+Final new/retained target133/133 and full2,272/2,272 API PASS; actual TSX31/31
+PASS. Full frontend2,264 PASS/3 missing genuine SQL-receipt FAIL, no skips. Shared
+counts are not added once per issue. Keep OPEN for combined real SQL/audit/live
+browser/device/critical and release acceptance. [Exact source, native results,
+AI-entry checklist and prioritized Desktop return](../HANDOFF/C25_REMINDER_QUEUE_SAFETY_2026-11-09.md).
