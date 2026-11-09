@@ -1,6 +1,6 @@
 # C23 priority reconciliation and remaining financial readers — 8 November 2026
 
-Cloud owner. CLAIMED; implementation and verification pending.
+Cloud owner. IMPLEMENTED / TARGETED CHECKPOINT; full verification pending.
 Branch `codex/cloud-c23-priority-finance-readers-20261108`.
 Fresh combined base `b6793d45788b74d8cd5ab82e246c483da8df4aec`, clean before
 changes. The old Cloud C22 branch and a pre-switch Git bundle are preserved.
@@ -28,6 +28,7 @@ Exact paths:
 - `QA/tools/priority-issue-status.cjs`
 - `QA/HANDOFF/PRIORITY_ISSUE_STATUS_2026-11-08.json`
 - `QA/HANDOFF/PRIORITY_ISSUE_STATUS_2026-11-08.md`
+- `QA/ISSUES/INDEX.md` — restore two existing omitted authentication entries; no priority/status changes
 - `QA/ISSUES/BUG-DATA-0001.md` — append this source-bound scope, retain local evidence
 - `QA/ISSUES/BUG-DATA-0016.md` — append, do not replace newer local records
 - `QA/HANDOFF/C23_PRIORITY_FINANCE_READERS_2026-11-08.md`
@@ -40,7 +41,9 @@ reminder target/due/cancellation/channel/audit/transaction rules. No provider
 send, financial writer, role/tenant/parent/finance/document authority change.
 Portal fee summary must retain units/cents, exclude cancelled receivables and
 not call cancelled invoices Paid; missing metadata is unavailable, no FX/INR
-guess. Respect the existing parent finance permission. Downloaded HTML must
+guess. Respect the existing parent finance permission; expose its current server-derived
+canViewFinance capability as an additive response flag so a fresh denial cannot
+be mistaken for a zero balance after an older parent-profile snapshot. Downloaded HTML must
 encode raw currency and label cancellation history versus collectible amount.
 
 Add a deterministic read-only inventory of every issue's actual recorded status,
@@ -57,3 +60,21 @@ Stop before model loading/training/inference/activation; Mini/Plus/Pro unqualifi
 Ultra deferred. No main/Azure/environment/private/public-access changes, customer
 writes, raw evidence publication, new dependencies/images or external audit.
 Sol High for money/privacy/authority; Medium for settled inventory/docs.
+
+## Recovery checkpoint — 9 November 2026
+
+Recovered the same workspace after executor startup/capability failures. Before
+interruption, original38 API cases had13 PASS/25 FAIL; final target95/95 and
+18 actual-TSX checks passed. These receipts and all working files survived.
+Native browser, complete suites and final publication were still pending.
+
+Latest Desktop9c9658132446124b70c53467e940d9769cf97d44 adds production runtime
+evidence and a stricter broad-session release gate. It was imported exactly
+with cherry-pick provenance, preserving all nine files without new edits. This
+retains the five P0 records plus required session acceptance; it does not close
+them. C23 still owns only the explicit scoped changes listed above.
+
+Inventory found existing BUG-AUTH-REFRESH-001 and BUG-AUTH-REVOCATION-001 files
+missing from INDEX. Before editing INDEX, its claim is added here. Restore their
+visibility with recorded bounded evidence and preserve the revocation record's
+P1 priority plus its separate P0 session gate. No issue acceptance is inferred.
