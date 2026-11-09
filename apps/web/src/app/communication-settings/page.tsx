@@ -31,19 +31,21 @@ export default function CommunicationSettingsPage() {
   const [loaded, setLoaded] = useState(false);
   const [notices, setNotices] = useState<Partial<Record<ChannelName, string>>>({});
   const [pending, setPending] = useState<Record<ChannelName, boolean>>({ Email: false, WhatsApp: false, Meeting: false });
+  const alive = useRef(true);
   const pendingChannels = useRef(new Set<ChannelName>());
   const revisions = useRef<Record<ChannelName, number>>({ Email: 0, WhatsApp: 0, Meeting: 0 });
-  const notice = (channel: ChannelName, value: string) => setNotices((current) => ({ ...current, [channel]: value }));
+  const notice = (channel: ChannelName, value: string) => { if (alive.current) setNotices((current) => ({ ...current, [channel]: value })); };
   const editSender = (channel: "Email" | "WhatsApp", value: Draft) => { revisions.current[channel]++; if (channel === "Email") setEmail(value); else setWhatsApp(value); };
   const editMeeting = (value: MeetingProviderDraft) => { revisions.current.Meeting++; setMeeting(value); };
   async function load(id?: string) {
-    const academyId = id ?? academy?.id; if (!academyId) return;
+    const academyId = id ?? academy?.id; if (!academyId || !alive.current) return;
     setLoaded(false);
     const response = await academyApi(`/api/academies/${academyId}/communication-settings`, { cache: "no-store" });
     if (!response.ok) throw new Error("Channel settings could not be loaded.");
     const rows: unknown = await response.json();
     if (!Array.isArray(rows) || !rows.every(isChannel) || new Set(rows.map((row) => row.channel)).size !== rows.length)
       throw new Error("Channel settings response is incomplete. Reload before saving.");
+    if (!alive.current) return;
     setItems(rows);
     setEmail(toDraft(rows.find((row) => row.channel === "Email"), "GoogleWorkspace"));
     setWhatsApp(toDraft(rows.find((row) => row.channel === "WhatsApp"), "MetaCloudApi"));
@@ -51,8 +53,10 @@ export default function CommunicationSettingsPage() {
     setMeeting(row ? toMeetingDraft(row) : meetingBlank);
     setLoaded(true); setMessage("");
   }
-  useEffect(() => { void (async () => { try { const response = await academyApi("/api/academies", { cache: "no-store" }); const academies: Academy[] = await response.json(); if (!response.ok || !academies[0]) throw new Error(); setAcademy(academies[0]); await load(academies[0].id); } catch { setMessage("Settings could not be loaded. Confirm the API is running on port 5092."); } })(); }, []);
+  useEffect(() => { void (async () => { try { const response = await academyApi("/api/academies", { cache: "no-store" }); const academies: Academy[] = await response.json(); if (!response.ok || !Array.isArray(academies) || !academies[0]) throw new Error(); if (!alive.current) return; setAcademy(academies[0]); await load(academies[0].id); } catch { if (alive.current) setMessage("Settings could not be loaded. Check account access and reload to try again."); } })(); }, []);
+  useEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
   async function persist(channel: ChannelName, payload: ChannelPayload, applySaved: (row: Channel) => void) {
+    if (!alive.current) return;
     if (!academy || !loaded) return notice(channel, "Load complete channel settings before saving. Your entries are kept.");
     if (pendingChannels.current.has(channel)) return;
     pendingChannels.current.add(channel);
@@ -62,6 +66,7 @@ export default function CommunicationSettingsPage() {
     try {
       const response = await academyApi(`/api/academies/${academy.id}/communication-settings/${channel}`, { method: "PUT", headers: apiHeaders(true), body: JSON.stringify(payload) });
       const result: unknown = await response.json().catch(() => null);
+      if (!alive.current) return;
       if (!response.ok) {
         const detail = result && typeof result === "object" && "message" in result && typeof result.message === "string" ? result.message : "Check the details and try again.";
         return notice(channel, response.status >= 500 ? `${channel} save could not be confirmed. Your entries are kept; check saved settings before retrying.` : `${channel} settings could not be saved. ${detail} Your entries are kept.`);
@@ -77,7 +82,7 @@ export default function CommunicationSettingsPage() {
       notice(channel, `${channel} save could not be confirmed. Your entries are kept; check saved settings before retrying.`);
     } finally {
       pendingChannels.current.delete(channel);
-      setPending((current) => ({ ...current, [channel]: false }));
+      if (alive.current) setPending((current) => ({ ...current, [channel]: false }));
     }
   }
   async function save(channel: "Email" | "WhatsApp", submitted: Draft) {
@@ -95,5 +100,5 @@ export default function CommunicationSettingsPage() {
   }
   const fields = "w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2";
   const senderForm = (channel: "Email" | "WhatsApp", draft: Draft) => <form onSubmit={(event: FormEvent) => { event.preventDefault(); void save(channel, draft); }} className="rounded-2xl border border-slate-800 bg-slate-900 p-6"><h2 className="text-xl font-semibold">{channel === "Email" ? "Email sender" : "WhatsApp sender"}</h2><div className="mt-5 grid gap-3"><select value={draft.provider} onChange={(event) => editSender(channel, { ...draft, provider: event.target.value })} className={fields}>{channel === "Email" ? <><option value="GoogleWorkspace">Google Workspace</option><option value="Microsoft365">Microsoft 365</option><option value="SMTP">Custom SMTP</option></> : <><option value="MetaCloudApi">Meta WhatsApp Cloud API</option><option value="BSP">Business solution provider</option></>}</select><input value={draft.senderName} onChange={(event) => editSender(channel, { ...draft, senderName: event.target.value })} placeholder="Display name" className={fields} />{channel === "Email" ? <input type="email" value={draft.senderAddress} onChange={(event) => editSender(channel, { ...draft, senderAddress: event.target.value })} placeholder="Sender email" className={fields} /> : <input value={draft.phoneNumber} onChange={(event) => editSender(channel, { ...draft, phoneNumber: event.target.value })} placeholder="Dedicated WhatsApp number" className={fields} />}</div><button disabled={!academy || !loaded || pending[channel]} className="mt-5 w-full rounded-lg bg-cyan-400 px-4 py-2.5 font-semibold text-slate-950 disabled:opacity-60">{pending[channel] ? "Saving…" : `Save ${channel.toLowerCase()} settings`}</button>{notices[channel] && <p role="status" aria-live="polite" data-channel-notice={channel} className="mt-3 text-sm">{notices[channel]}</p>}</form>;
-  return <main className="enterprise-settings enterprise-legacy-standard min-h-screen bg-slate-950 text-slate-100"><WorkspaceNav /><div className="mx-auto max-w-6xl px-6 py-10"><p className="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-300">Engagement</p><h1 className="mt-3 text-4xl font-semibold tracking-tight">Channel settings</h1><p className="mt-3 max-w-3xl text-slate-300">Configure academy communication channels and the provider that creates online class meetings.</p>{message && <p className="mt-6 rounded-lg border border-amber-700/50 bg-amber-950/40 p-4 text-sm text-amber-100">{message}</p>}<div className="mt-8 grid gap-6 lg:grid-cols-2">{senderForm("Email", email)}{senderForm("WhatsApp", whatsApp)}<div className="lg:col-span-2"><MeetingProviderSettings value={meeting} onChange={editMeeting} onSave={() => void saveMeeting()} disabled={!academy || !loaded || pending.Meeting} />{notices.Meeting && <p role="status" aria-live="polite" data-channel-notice="Meeting" className="mt-3 text-sm">{notices.Meeting}</p>}</div></div><section className="mt-6 rounded-2xl border border-slate-800 bg-slate-900 p-6"><h2 className="text-xl font-semibold">Secure connection</h2><p className="mt-2 text-sm text-slate-300">{items.some((item) => item.hasSecureConnection) ? "A secure provider connection is recorded." : "Save the provider information first. OAuth client secrets and access tokens are connected securely in the next step."}</p></section></div></main>;
+  return <main className="enterprise-settings enterprise-legacy-standard min-h-screen bg-slate-950 text-slate-100"><WorkspaceNav /><div className="mx-auto max-w-6xl px-6 py-10"><p className="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-300">Engagement</p><h1 className="mt-3 text-4xl font-semibold tracking-tight">Channel settings</h1><p className="mt-3 max-w-3xl text-slate-300">Save academy communication and meeting provider details.</p><div role="status" data-provider-availability className="enterprise-page-state mt-4">Secure provider setup and live verification are unavailable in this version. Saving details below does not connect a provider.</div>{message && <p className="mt-6 rounded-lg border border-amber-700/50 bg-amber-950/40 p-4 text-sm text-amber-100">{message}</p>}<div className="mt-8 grid gap-6 lg:grid-cols-2">{senderForm("Email", email)}{senderForm("WhatsApp", whatsApp)}<div className="lg:col-span-2"><MeetingProviderSettings value={meeting} onChange={editMeeting} onSave={() => void saveMeeting()} disabled={!academy || !loaded || pending.Meeting} />{notices.Meeting && <p role="status" aria-live="polite" data-channel-notice="Meeting" className="mt-3 text-sm">{notices.Meeting}</p>}</div></div><section aria-label="Provider connection records" className="mt-6 rounded-2xl border border-slate-800 bg-slate-900 p-6"><h2 className="text-xl font-semibold">Provider connection records</h2><p className="mt-2 text-sm text-slate-300">Secure provider setup and live verification are unavailable in this version. Saved details do not connect a provider.</p>{loaded ? <div className="mt-4 grid gap-3 md:grid-cols-3">{(["Email", "WhatsApp", "Meeting"] as ChannelName[]).map(channel => { const row = items.find(item => item.channel === channel); return <article key={channel} data-channel-state={channel}><h3>{channel}</h3><p>{row?.provider ?? "No saved provider details."}</p><p>{!row ? "No saved provider details." : row.status === "Disabled" ? "Disabled." : row.status !== "Configured" ? "Details not configured." : row.hasSecureConnection ? "Connection recorded; live verification unavailable." : "Details saved; secure setup unavailable."}</p></article>; })}</div> : <p role="status" className="mt-4">Connection records are unavailable until channel settings load.</p>}</section></div></main>;
 }

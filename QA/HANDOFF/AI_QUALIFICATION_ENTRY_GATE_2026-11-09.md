@@ -58,3 +58,26 @@ needed after any AI implementation; do not create a circular claim that the
 future AI release was already accepted before evaluation.
 
 [Current C25 source/results and Desktop queue](C25_REMINDER_QUEUE_SAFETY_2026-11-09.md)
+
+## C26 provider and Desktop host update
+
+Real provider connection, meeting creation/history and invite execution are
+unfinished non-AI integration work. Metadata saving and a stored connection
+flag do not establish those capabilities. C26 makes the boundary explicit; it
+does not implement OAuth, provider transport or delivered invitations. Keep
+credentials out of chat and do not count synthetic metadata saves as delivery.
+
+Desktop e460dbc86d5e02c4cdf7ede6c330ab74f089c65d advances deterministic PENTA
+host integration in parallel with Manual acceptance. Its Testing-only enrollment
+preview passed13 live Identity/HTTP/SQL checks and57 retained admission cases,
+including15 mixed Manual/service races. It creates no enrollment, reserves no
+seat and grants no execution authority. Exact approval, execution and receipt
+recovery still follow. The intended host/backend sequence lives in
+[PENTA_HOST_IMPLEMENTATION_STATUS.md](../../PENTA_HOST_IMPLEMENTATION_STATUS.md).
+
+This checklist concerns the pending move to real model qualification; it does
+not imply deterministic AI host code must stop while Manual gates remain open.
+Cloud C26 preserves that Desktop return without enabling its flags or editing
+its protected-host logic. Candidate model loading/training/inference/activation
+still requires a separately authorized concrete evaluation packet. Remaining
+Manual, provider/device, security/CI and release acceptance are not complete.

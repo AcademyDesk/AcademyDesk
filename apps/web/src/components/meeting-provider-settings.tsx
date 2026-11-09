@@ -14,17 +14,17 @@ const details: Record<string, { reference: string; description: string }> = {
   GoogleWorkspace: {
     reference: "Google OAuth client ID or Calendar ID",
     description:
-      "Google Calendar creates the event and Google Meet creates the class link.",
+      "Provider details for Google Calendar and Google Meet.",
   },
   Zoom: {
     reference: "Zoom OAuth client ID or account ID",
     description:
-      "Zoom OAuth or server-to-server OAuth creates scheduled and recurring class meetings.",
+      "Provider details for Zoom meeting integration.",
   },
   Microsoft365: {
     reference: "Microsoft Entra tenant ID or application client ID",
     description:
-      "Microsoft Graph creates Outlook events and Microsoft Teams meeting links.",
+      "Provider details for Microsoft Outlook and Teams integration.",
   },
 };
 
@@ -59,15 +59,15 @@ export function MeetingProviderSettings({
           />
         </label>
         <label>
-          Connection status
+          Configuration status
           <StandardSelectField
             name="meeting-status"
             value={value.status}
             onChange={(status) => onChange({ ...value, status })}
-            placeholder="Connection status"
+            placeholder="Configuration status"
             options={[
               { value: "NotConfigured", label: "Not configured" },
-              { value: "Configured", label: "Ready to connect" },
+              { value: "Configured", label: "Details configured" },
               { value: "Disabled", label: "Disabled" },
             ]}
           />
@@ -93,7 +93,7 @@ export function MeetingProviderSettings({
           />
         </label>
         <label className="md:col-span-2">
-          Connection reference
+          Provider reference
           <input
             value={value.reference}
             onChange={(event) =>
@@ -104,7 +104,7 @@ export function MeetingProviderSettings({
           />
         </label>
       </div>
-      <p className="mt-4 text-sm text-slate-400">{current.description}</p>
+      <p className="mt-4 text-sm text-slate-400">{current.description} Saving these details does not connect a provider. Secure connection setup and meeting creation are unavailable in this version.</p>
       <button
         type="button"
         disabled={disabled}

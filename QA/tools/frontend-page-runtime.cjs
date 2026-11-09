@@ -69,6 +69,7 @@ function mount(file, api, props = {}, exportName = 'default') {
       if (name === '@/components/teacher-material-uploader') return { TeacherMaterialUploader: 'uploader' };
       if (name === '@/components/private-material-actions') return { PrivateMaterialActions: 'material-actions' };
       if (name === '@/components/workspace-nav') return { WorkspaceNav: 'nav' };
+      if (name === '@/components/meeting-provider-settings') return execute('apps/web/src/components/meeting-provider-settings.tsx');
       if (name === '@/components/student-fee-arrangements') return { StudentFeeArrangements: 'fee-arrangements' };
       if (name === '@/components/student-admin-profile') return { StudentAdminProfile: 'student-profile-editor' };
       if (name === '@/components/standard-date-field') return { StandardDateField: 'date-control' };

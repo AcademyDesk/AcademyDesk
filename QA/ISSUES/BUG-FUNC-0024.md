@@ -3,8 +3,8 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | STATIC-FINDING |
-| Final verification | NOT RUN |
+| Confirmation status | RUNTIME-REPRODUCED / C26 TRUTHFUL UNAVAILABLE |
+| Final verification | Actual TSX21/21 and native32/32 PASS for truthful metadata/unavailable boundaries; OAuth, real provider execution, SQL/device/critical/release acceptance remain open. [C26 result](../HANDOFF/C26_PROVIDER_READINESS_2026-11-09.md) |
 | Severity | Major meeting workflow unavailable |
 | Priority | P1 |
 | Category | FUNC |
@@ -30,9 +30,9 @@
 | API response | Not captured for this issue; use synthetic request/response in isolated reproduction |
 | Database before/after | Not executed; fixture and fresh-context assertions defined below |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | Not implemented (Phase 1) |
-| Retest result | NOT RUN |
-| Regression result | NOT RUN |
+| Fix commit | C26 truthful provider/meeting boundary; immutable source pin in the linked report; external integration remains unfinished |
+| Retest result | Original actual TSX0/21; final21/21 and32 native Chromium cases PASS, including stored true flags and blocked direct submission |
+| Regression result | Full frontend2,285 PASS/3 missing genuine SQL-receipt FAIL; build/types PASS and0 lint errors; not provider qualification |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
 ## Exact reproduction
@@ -69,3 +69,27 @@ Meeting creation, recurring rules, access/chat/recording promises and advertised
 SCHEDULE-MEETING-CREATE-001: Isolated component/full HTTP tests with stubbed provider transport only; verify actual payload, authorized stored meeting, provider result and durable history. Until implemented assert truthful unavailable state. Never create real provider meetings or send invites during QA.
 
 Also run all endpoint/form cases pointing to this issue in QA/03_TEST_MATRIX.md and the critical regression suite before closure.
+
+
+## C26 explicit capability boundary — 9 November 2026
+
+Saving metadata no longer promises a nonexistent secure-connection next step.
+Per-channel records distinguish unconfigured, disabled, metadata-only and recorded
+flags; live provider verification is unavailable. A true stored flag cannot
+enable meeting creation or produce a claim that invitations will be sent. The
+planned form remains visibly disabled, programmatic submission is guarded, and
+history explicitly says unavailable instead of asserting an empty saved ledger
+or offering fake edits. Validated complete reads precede meeting metrics; failure
+has read-only retry and no developer host/port instructions. Late read/save
+responses cannot mutate an unmounted workspace. Existing metadata payloads,
+hidden fields, per-channel save/pending/revision behavior and all API permissions
+are preserved.
+
+This repairs misleading UI claims under the issue's unavailable-feature branch.
+It does not implement OAuth, secure credential lifecycle, provider meeting/history
+operations or delivered invitations. Those remain real non-AI integration work.
+Original21 actual-TSX checks failed; final21 passed. Native32/32 passed at320/light
+and1440/dark, with twelve synthetic metadata PUTs and zero meeting/OAuth/invite calls.
+Counts are shared packet totals, not additive per issue; no live provider or SQL
+acceptance is inferred. Keep OPEN for implementation/role/device/critical and
+release acceptance. [Source, limits and prioritized return](../HANDOFF/C26_PROVIDER_READINESS_2026-11-09.md).

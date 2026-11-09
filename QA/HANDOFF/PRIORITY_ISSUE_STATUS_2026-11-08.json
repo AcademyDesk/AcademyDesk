@@ -12,7 +12,7 @@
     "UNKNOWN": 0
   },
   "recordedClosedAndPass": 0,
-  "historicalMetadataNeedingReview": 26,
+  "historicalMetadataNeedingReview": 24,
   "inputErrors": [],
   "indexSha256": "bd1ba8889047c82cc22945c0cc58221cd22cd468aad27cb8fa39586ef2ca91bc",
   "generatorSha256": "422620f113290d06e0a33898ccf77f4bfacdbae38b85f79ba189929bbe588141",
@@ -3368,26 +3368,32 @@
       "rawPriority": "P1",
       "additionalReleaseGate": null,
       "status": "OPEN",
-      "finalVerification": "NOT RUN",
+      "finalVerification": "Actual TSX21/21 and native32/32 PASS for truthful metadata/unavailable boundaries; OAuth, real provider execution, SQL/device/critical/release acceptance remain open. [C26 result](../HANDOFF/C26_PROVIDER_READINESS_2026-11-09.md)",
       "recordedClosedAndPass": false,
-      "confirmation": "STATIC-FINDING",
+      "confirmation": "RUNTIME-REPRODUCED / C26 TRUTHFUL UNAVAILABLE",
       "module": "SCHEDULE",
       "route": "/meeting-links",
       "recordedSource": "apps/web/src/app/meeting-links/page.tsx:166",
-      "recordedFix": "Not implemented (Phase 1)",
-      "recordedRegression": "NOT RUN",
+      "recordedFix": "C26 truthful provider/meeting boundary; immutable source pin in the linked report; external integration remains unfinished",
+      "recordedRegression": "Full frontend2,285 PASS/3 missing genuine SQL-receipt FAIL; build/types PASS and0 lint errors; not provider qualification",
       "recordedClosureNotes": "Remain OPEN; follow closure requirements in QA README",
-      "latestSection": "Related / required regression",
+      "latestSection": "C26 explicit capability boundary — 9 November 2026",
       "recordedPendingExcerpts": [
+        "| Device/viewport | NOT RUN; use QA/06_DEVICE_VIEWPORT_MATRIX.md where UI applies |",
         "| Evidence classification | Static trace; runtime reproduction pending |",
-        "| Retest result | NOT RUN |",
-        "| Regression result | NOT RUN |",
         "| Closure notes | Remain OPEN; follow closure requirements in QA README |",
-        "Connected submit only calls setMessage. meetings is initialized to [] without a setter or fetch; history is permanently empty. Edit has no record ID or persistence path. Recurrence rule input is not captured. Runtime NOT RUN; fixture bypasses connection availability only to isolate this independent missing workflow."
+        "Connected submit only calls setMessage. meetings is initialized to [] without a setter or fetch; history is permanently empty. Edit has no record ID or persistence path. Recurrence rule input is not captured. Runtime NOT RUN; fixture bypasses connection availability only to isolate this independent missing workflow.",
+        "hidden fields, per-channel save/pending/revision behavior and all API permissions"
       ],
-      "evidenceReferences": [],
-      "historicalMetadataNeedsReview": true,
-      "issueSha256": "83ec9d113bf1d228d2560308831eb0b7e852aab6d27b63fbd0740b0320658d17"
+      "evidenceReferences": [
+        {
+          "href": "C26_PROVIDER_READINESS_2026-11-09.md",
+          "localExists": true,
+          "observation": "Reference presence only, not evidence acceptance"
+        }
+      ],
+      "historicalMetadataNeedsReview": false,
+      "issueSha256": "bf9e5ea72daf0432e6c32cbbc73730a2dde12807799000b45333f1bcd82af29c"
     },
     {
       "id": "BUG-FUNC-0025",
@@ -3396,26 +3402,32 @@
       "rawPriority": "P1",
       "additionalReleaseGate": null,
       "status": "OPEN",
-      "finalVerification": "NOT RUN",
+      "finalVerification": "Actual TSX21/21 and native32/32 PASS for truthful metadata/unavailable boundaries; OAuth, real provider execution, SQL/device/critical/release acceptance remain open. [C26 result](../HANDOFF/C26_PROVIDER_READINESS_2026-11-09.md)",
       "recordedClosedAndPass": false,
-      "confirmation": "STATIC-FINDING",
+      "confirmation": "RUNTIME-REPRODUCED / C26 TRUTHFUL UNAVAILABLE",
       "module": "COMMUNICATION",
       "route": "/communication-settings; /meeting-links",
       "recordedSource": "apps/api/Controllers/CommunicationSettingsController.cs:69",
-      "recordedFix": "Not implemented (Phase 1)",
-      "recordedRegression": "NOT RUN",
+      "recordedFix": "C26 truthful provider/meeting boundary; immutable source pin in the linked report; external integration remains unfinished",
+      "recordedRegression": "Full frontend2,285 PASS/3 missing genuine SQL-receipt FAIL; build/types PASS and0 lint errors; not provider qualification",
       "recordedClosureNotes": "Remain OPEN; follow closure requirements in QA README",
-      "latestSection": "Related / required regression",
+      "latestSection": "C26 explicit capability boundary — 9 November 2026",
       "recordedPendingExcerpts": [
+        "| Device/viewport | NOT RUN; use QA/06_DEVICE_VIEWPORT_MATRIX.md where UI applies |",
         "| Evidence classification | Static trace; runtime reproduction pending |",
-        "| Retest result | NOT RUN |",
-        "| Regression result | NOT RUN |",
         "| Closure notes | Remain OPEN; follow closure requirements in QA README |",
-        "Save persists metadata but never sets HasSecureConnection; entity defaults false. Source-wide inspection found only flag readers/declaration, no provider connect/callback/test/disconnect workflow. UI promises a next step but renders no such control, and meeting Create remains disabled on normally created rows. Runtime NOT RUN; this describes audited applicat"
+        "Save persists metadata but never sets HasSecureConnection; entity defaults false. Source-wide inspection found only flag readers/declaration, no provider connect/callback/test/disconnect workflow. UI promises a next step but renders no such control, and meeting Create remains disabled on normally created rows. Runtime NOT RUN; this describes audited applicat",
+        "hidden fields, per-channel save/pending/revision behavior and all API permissions"
       ],
-      "evidenceReferences": [],
-      "historicalMetadataNeedsReview": true,
-      "issueSha256": "6816c2d9307db336d15142fba04c0a81cac46db4dfffb4460f164e9d544e51a0"
+      "evidenceReferences": [
+        {
+          "href": "C26_PROVIDER_READINESS_2026-11-09.md",
+          "localExists": true,
+          "observation": "Reference presence only, not evidence acceptance"
+        }
+      ],
+      "historicalMetadataNeedsReview": false,
+      "issueSha256": "8c6daf5c0ca5e00af238a1a7b17d3df9a3f397673e38986fc5fbbb446c69d80b"
     },
     {
       "id": "BUG-FUNC-0026",
