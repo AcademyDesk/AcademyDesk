@@ -1,5 +1,19 @@
 # Academy Desk handoff
 
+## PENTA make-up scheduling — 10 November 2026
+
+- [x] The Testing-only host prepares, authorizes, schedules and recovers
+  Offline, Online and Hybrid make-ups using shared Manual scheduling rules.
+  Approval covers the resolved time, location and queued InApp recipients.
+- [x] All 50 retained Manual cases and 31 new authenticated HTTP and SQL
+  checks passed. These cover concurrent replay, cross-tenant and role
+  denial, stale source and recipient refusal, and audit rollback.
+- [ ] Continue with regular scheduling and assigned-Teacher attendance.
+  Use Sol High for authority, concurrency and required audits. Conversation
+  UI, Mini qualification and production gates remain open.
+
+[Make-up scheduling evidence](QA/REPORTS/PENTA_MAKEUP_SCHEDULING_2026-11-10.md)
+
 ## PENTA enrollment status and transfers — 9 November 2026
 
 - [x] Protected status and transfer operations passed 16 native checks.
@@ -7,9 +21,7 @@
   edit invalidates a stale approval. Transfer replay and audit rollback passed.
 - [x] The 23 creation, 13 preview and 57 shared checks still pass, including
   all 15 mixed admission races.
-- [ ] Start make-up scheduling next. Preserve Offline venue and Online or
-  Hybrid meeting links, and cover the queued InApp notifications in approval.
-  Use Sol High for the domain transaction and approval boundary.
+- [x] The make-up scheduling follow-up passed in the 10 November checkpoint.
 
 [Enrollment lifecycle evidence](QA/REPORTS/PENTA_ENROLLMENT_LIFECYCLE_2026-11-09.md)
 

@@ -1,12 +1,22 @@
 # Academy Desk shared integration tracker
 
+## PENTA make-up scheduling — 10 November 2026
+
+- [x] Desktop verified 50 retained Manual cases and 31 new authenticated
+  HTTP and SQL checks on disposable SQL. All three delivery modes passed
+  exact approval, concurrent replay and recovery. Audit rollback passed.
+- [ ] Desktop owns the regular scheduling and assigned-Teacher attendance
+  packet. Cloud C27 covers Sales trial permissions and lead conversion.
+  The C24–C27 integration and release evidence are separate.
+
+[Make-up scheduling evidence](QA/REPORTS/PENTA_MAKEUP_SCHEDULING_2026-11-10.md)
+
 ## PENTA enrollment status and transfers — 9 November 2026
 
 - [x] Desktop verified 16 native status and transfer checks, including
   stale source, approval isolation, rollback and replay. Retained enrollment
   checks passed. This checkpoint is Testing-only.
-- [ ] Desktop's next PENTA backend packet is make-up scheduling. Cloud C27
-  owns Sales trial permissions and lead conversion. C24–C26 remain separate.
+- [x] Desktop completed the make-up scheduling follow-up on 10 November.
 
 [Enrollment lifecycle evidence](QA/REPORTS/PENTA_ENROLLMENT_LIFECYCLE_2026-11-09.md)
 
