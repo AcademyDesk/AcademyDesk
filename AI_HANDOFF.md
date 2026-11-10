@@ -1,5 +1,18 @@
 # Academy Desk handoff
 
+## PENTA collections and reconciliation reads — 10 November 2026
+
+- [x] Testing-only collections and reconciliation use shared Manual
+  projections. Each preview is capped at 20 rows with a more-records flag.
+  Invoice totals still reflect every eligible payment.
+- [x] Verified 17 new native checks, including the one-cent case, hidden
+  payment references, current authority, audited reads and Manual settlement.
+- [ ] Next with Sol High is protected expense and payroll read detail,
+  including their distinct currency and privacy boundaries. Finance writes,
+  planner/browser wiring, Mini and release gates remain open.
+
+[Collection and reconciliation evidence](QA/REPORTS/PENTA_COLLECTION_RECONCILIATION_READS_2026-11-10.md)
+
 ## PENTA finance reads — 10 November 2026
 
 - [x] Testing-only academy overview and exact invoice reads reuse Manual
@@ -8,9 +21,7 @@
   are verified inside the read transaction. An audit failure withholds data.
 - [x] Passed 21 new native checks, six retained finance-consumer stages,
   11 retained legacy currency checks and focused API tests.
-- [ ] Next with Sol High is protected collection and reconciliation read
-  detail. Finance writes, planner/browser wiring, Mini and release gates
-  remain open.
+- [x] Protected collection and reconciliation detail passed in the next checkpoint.
 
 [PENTA finance read evidence](QA/REPORTS/PENTA_FINANCE_READS_2026-11-10.md)
 

@@ -13,17 +13,24 @@ namespace AcademyDesk.Api.Controllers;
 public sealed class PentaFinanceController(PentaFinanceReadService reads, ILogger<PentaFinanceController> logger) : ControllerBase
 {
     [HttpGet("overview")]
-    public Task<ActionResult> Overview(Guid academyId, CancellationToken token) => Read(academyId, null, token);
+    public Task<ActionResult> Overview(Guid academyId, CancellationToken token) => Read(academyId, PentaFinanceReadKind.Overview, null, token);
 
     [HttpGet("invoices/{invoiceId:guid}")]
-    public Task<ActionResult> Invoice(Guid academyId, Guid invoiceId, CancellationToken token) => Read(academyId, invoiceId, token);
+    public Task<ActionResult> Invoice(Guid academyId, Guid invoiceId, CancellationToken token) => Read(academyId, PentaFinanceReadKind.Invoice, invoiceId, token);
 
-    private async Task<ActionResult> Read(Guid academyId, Guid? invoiceId, CancellationToken token)
+    [HttpGet("collections")]
+    public Task<ActionResult> Collections(Guid academyId, CancellationToken token) => Read(academyId, PentaFinanceReadKind.Collections, null, token);
+
+    [HttpGet("invoices/{invoiceId:guid}/reconciliation")]
+    public Task<ActionResult> Reconciliation(Guid academyId, Guid invoiceId, CancellationToken token) =>
+        Read(academyId, PentaFinanceReadKind.Reconciliation, invoiceId, token);
+
+    private async Task<ActionResult> Read(Guid academyId, PentaFinanceReadKind kind, Guid? invoiceId, CancellationToken token)
     {
         Response.Headers.CacheControl = "no-store";
         try
         {
-            var result = await reads.ReadAsync(User, academyId, invoiceId, token);
+            var result = await reads.ReadAsync(User, academyId, kind, invoiceId, token);
             return result.Status switch
             {
                 200 => Ok(result.Value),

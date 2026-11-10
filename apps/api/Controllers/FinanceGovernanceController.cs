@@ -42,24 +42,9 @@ public sealed class FinanceGovernanceController(AcademyDeskDbContext db, Identit
  }
  [HttpGet("settings")] public async Task<ActionResult<FinanceSettingsSummary>> Get(Guid academyId,CancellationToken t){var x=await db.AcademyFinanceSettings.AsNoTracking().SingleOrDefaultAsync(x=>x.AcademyId==academyId,t);return Ok(x is null?new FinanceSettingsSummary("","GST",0,7,false,null,null,null,null,"Classic","Standard"):new(x.TaxRegistrationNumber,x.TaxLabel,x.TaxRatePercent,x.DefaultPaymentTermsDays,x.TaxInclusivePricing,x.InvoiceLogoUrl,x.InvoiceAuthorityName,x.InvoiceAuthorityTitle,x.InvoiceSignatureUrl,x.InvoiceTemplateKey,x.PayslipTemplateKey));}
  [HttpPut("settings")] public async Task<ActionResult<FinanceSettingsSummary>> Save(Guid academyId,FinanceSettingsRequest r,CancellationToken t){if(r.TaxRatePercent<0||r.TaxRatePercent>100||r.DefaultPaymentTermsDays<0||r.DefaultPaymentTermsDays>365)return BadRequest(new{message="Check tax rate and payment terms."});if(!new[]{"Classic","Modern","Minimal","Formal"}.Contains(r.InvoiceTemplateKey??"Classic")||!new[]{"Standard","Compact","Professional"}.Contains(r.PayslipTemplateKey??"Standard"))return BadRequest(new{message="Choose a supported document theme."});var x=await db.AcademyFinanceSettings.SingleOrDefaultAsync(x=>x.AcademyId==academyId,t);if(x is null){x=new AcademyFinanceSettings{AcademyId=academyId};db.AcademyFinanceSettings.Add(x);}x.TaxRegistrationNumber=r.TaxRegistrationNumber?.Trim()??"";x.TaxLabel=string.IsNullOrWhiteSpace(r.TaxLabel)?"GST":r.TaxLabel.Trim();x.TaxRatePercent=r.TaxRatePercent;x.DefaultPaymentTermsDays=r.DefaultPaymentTermsDays;x.TaxInclusivePricing=r.TaxInclusivePricing;x.InvoiceLogoUrl=Clean(r.InvoiceLogoUrl);x.InvoiceAuthorityName=Clean(r.InvoiceAuthorityName);x.InvoiceAuthorityTitle=Clean(r.InvoiceAuthorityTitle);x.InvoiceSignatureUrl=Clean(r.InvoiceSignatureUrl);x.InvoiceTemplateKey=r.InvoiceTemplateKey??"Classic";x.PayslipTemplateKey=r.PayslipTemplateKey??"Standard";await db.SaveChangesAsync(t);return Ok(new FinanceSettingsSummary(x.TaxRegistrationNumber,x.TaxLabel,x.TaxRatePercent,x.DefaultPaymentTermsDays,x.TaxInclusivePricing,x.InvoiceLogoUrl,x.InvoiceAuthorityName,x.InvoiceAuthorityTitle,x.InvoiceSignatureUrl,x.InvoiceTemplateKey,x.PayslipTemplateKey));}
- private async Task<List<CollectionInvoiceSummary>> OverdueCollections(Guid academyId, DateOnly today, CancellationToken token)
- {
-     // Match the existing invoice balance contract; reconciled money is still paid.
-     // Project through SQL first, then evaluate the computed DTO balance once per row.
-     var rows = await db.Invoices.AsNoTracking()
-         .Where(x => x.AcademyId == academyId && x.Status.ToLower() != "paid" && x.Status.ToLower() != "cancelled" && x.DueDate < today)
-         .OrderBy(x => x.DueDate).ThenBy(x => x.Id)
-         .Select(x => new CollectionInvoiceSummary(x.Id, x.InvoiceNumber, x.StudentId, x.TotalAmount, x.AdjustedAmount,
-             db.Payments.Where(p => p.AcademyId == academyId && p.InvoiceId == x.Id
-                 && (p.Status == "Completed" || p.Status == "Reconciled")
-                 && p.Currency.Trim().ToUpper() == x.Currency.Trim().ToUpper())
-                 .Sum(p => (decimal?)p.Amount) ?? 0, x.Currency, x.DueDate, x.Status, today.DayNumber - x.DueDate.DayNumber))
-         .ToListAsync(token);
-     return rows.Where(x => x.Balance > 0).ToList();
- }
  [HttpGet("collections")]
  public async Task<ActionResult<IReadOnlyList<CollectionInvoiceSummary>>> Collections(Guid academyId, CancellationToken token) =>
-     Ok(await OverdueCollections(academyId, DateOnly.FromDateTime(DateTime.UtcNow), token));
+     Ok(await CollectionsReadModel.LoadAsync(db, academyId, DateOnly.FromDateTime(DateTime.UtcNow), token));
  [HttpGet("summary")]
  public async Task<ActionResult> Summary(Guid academyId, CancellationToken t)
  {
@@ -73,7 +58,7 @@ public sealed class FinanceGovernanceController(AcademyDeskDbContext db, Identit
          GrossBilled = Flat(x => x.GrossBilled), ApprovedAdjustments = Flat(x => x.ApprovedAdjustments),
          Collected = Flat(x => x.Collected), Outstanding = Flat(x => x.Outstanding), Reconciled = Flat(x => x.Reconciled),
          Currency = single?.Currency, HasMixedCurrencies = byCurrency.Length > 1, ByCurrency = byCurrency,
-         OverdueInvoices = (await OverdueCollections(academyId, DateOnly.FromDateTime(DateTime.UtcNow), t)).Count
+         OverdueInvoices = (await CollectionsReadModel.LoadAsync(db, academyId, DateOnly.FromDateTime(DateTime.UtcNow), t)).Count
      });
  }
  [HttpPost("collections/{invoiceId:guid}/follow-up")]
