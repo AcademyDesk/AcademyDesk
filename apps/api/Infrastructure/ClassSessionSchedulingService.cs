@@ -7,7 +7,7 @@ namespace AcademyDesk.Api.Infrastructure;
 
 internal sealed record ClassSessionSnapshot(ClassSessionSummary Summary, DateTime? UpdatedAtUtc);
 internal sealed record ClassSessionPlanOutcome(int Status, ClassSessionSummary? Plan = null, string? Error = null,
-    ClassSessionSnapshot? Source = null);
+    ClassSessionSnapshot? Source = null, bool? FollowsBatchTeacher = null);
 
 public sealed class ClassSessionSchedulingService(AcademyDeskDbContext db)
 {
@@ -38,8 +38,9 @@ public sealed class ClassSessionSchedulingService(AcademyDeskDbContext db)
         if (branch.HasValue && !await db.Branches.AnyAsync(x => x.Id == branch && x.AcademyId == academyId, token))
             return new(400, Error: "The selected branch does not belong to this academy.");
 
-        return await CheckAsync(academyId, new(Guid.Empty, batch.Id, teacher, branch, request.StartUtc,
+        var result = await CheckAsync(academyId, new(Guid.Empty, batch.Id, teacher, branch, request.StartUtc,
             request.EndUtc, mode, room, "Scheduled"), token);
+        return result with { FollowsBatchTeacher = teacher == batch.TeacherId };
     }
 
     internal async Task<ClassSessionPlanOutcome> PlanUpdateAsync(Guid academyId, Guid sessionId, UpdateClassSessionRequest request, CancellationToken token)
@@ -68,11 +69,13 @@ public sealed class ClassSessionSchedulingService(AcademyDeskDbContext db)
         return (await CheckAsync(academyId, plan, token)) with { Source = source };
     }
 
-    internal async Task<ClassSessionSummary> SaveAsync(Guid academyId, ClassSessionSummary plan, CancellationToken token)
+    internal async Task<ClassSessionSummary> SaveAsync(Guid academyId, ClassSessionSummary plan, CancellationToken token,
+        bool? followsBatchTeacher = null)
     {
         var creating = plan.Id == Guid.Empty;
         var row = creating
-            ? new ClassSession { AcademyId = academyId, BatchId = plan.BatchId, TeacherId = plan.TeacherId, BranchId = plan.BranchId }
+            ? new ClassSession { AcademyId = academyId, BatchId = plan.BatchId, TeacherId = plan.TeacherId,
+                BranchId = plan.BranchId, FollowsBatchTeacher = followsBatchTeacher }
             : await db.ClassSessions.SingleAsync(x => x.AcademyId == academyId && x.Id == plan.Id, token);
         row.StartUtc = plan.StartUtc;
         row.EndUtc = plan.EndUtc;
@@ -83,6 +86,43 @@ public sealed class ClassSessionSchedulingService(AcademyDeskDbContext db)
         else row.UpdatedAtUtc = DateTime.UtcNow;
         await db.SaveChangesAsync(token);
         return plan with { Id = row.Id };
+    }
+
+    internal async Task<bool> TryReassignBatchTeacherAsync(Batch batch, Guid? teacher, CancellationToken token)
+    {
+        if (batch.TeacherId == teacher) return true;
+        var now = DateTime.UtcNow;
+        var future = db.ClassSessions.Where(x => x.AcademyId == batch.AcademyId && x.BatchId == batch.Id &&
+            x.Status == "Scheduled" && x.StartUtc >= now);
+        var following = future.Where(x => x.FollowsBatchTeacher == true ||
+            x.FollowsBatchTeacher == null && x.TeacherId == batch.TeacherId);
+        var moving = await following.OrderBy(x => x.StartUtc).ToListAsync(token);
+
+        if (teacher is not null && moving.Count != 0)
+        {
+            var occupied = db.ClassSessions.AsNoTracking().Where(x =>
+                x.AcademyId == batch.AcademyId && x.TeacherId == teacher && x.Status != "Cancelled");
+            if (await following.AnyAsync(slot => occupied.Any(other => other.Id != slot.Id &&
+                other.StartUtc < slot.EndUtc && other.EndUtc > slot.StartUtc), token))
+                return false;
+            for (var index = 1; index < moving.Count; index++)
+            {
+                if (moving[index - 1].EndUtc > moving[index].StartUtc) return false;
+            }
+        }
+
+        // A legacy substitute can become equal to the new default. Mark it
+        // before updating the batch so a later change preserves its assignment.
+        var legacySubstitutes = await future.Where(x => x.FollowsBatchTeacher == null &&
+            x.TeacherId != batch.TeacherId && x.TeacherId == teacher).ToListAsync(token);
+        foreach (var session in legacySubstitutes) session.FollowsBatchTeacher = false;
+        foreach (var session in moving)
+        {
+            session.TeacherId = teacher;
+            session.FollowsBatchTeacher = true;
+            session.UpdatedAtUtc = now;
+        }
+        return true;
     }
 
     private async Task<ClassSessionPlanOutcome> CheckAsync(Guid academyId, ClassSessionSummary plan, CancellationToken token)

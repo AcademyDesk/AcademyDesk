@@ -18,7 +18,8 @@ namespace AcademyDesk.Api.Intelligence.Penta;
 public sealed record PentaClassSessionReceipt(Guid ReceiptId, Guid AuditId, Guid ClassSessionId, DateTime CompletedAtUtc);
 public sealed record PentaClassSessionDraftView(Guid RequestId, long Revision, long ContextVersion, string Status, DateTime ExpiresAtUtc,
     ClassSessionSummary Plan, string PayloadHash, Guid? ApprovalId, PentaClassSessionReceipt? Receipt,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] ClassSessionSummary? Source = null);
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] ClassSessionSummary? Source = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] bool? FollowsBatchTeacher = null);
 internal sealed record PentaClassSessionOutcome(int HttpStatus, PentaClassSessionDraftView? Draft = null, string? Error = null);
 internal sealed record PentaClassSessionBinding(long Revision, string Hash, Guid? ApprovalId = null);
 
@@ -37,7 +38,8 @@ public sealed class PentaClassSessionSchedulingWorkflow(AcademyDeskDbContext db,
     private sealed record Body(string RequestHash, string SecurityStamp, CreateClassSessionRequest? Request,
         ClassSessionSummary Plan, Guid? ApprovalId = null, PentaClassSessionReceipt? Receipt = null,
         [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] PentaClassSessionMove? Move = null,
-        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] ClassSessionSnapshot? Source = null);
+        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] ClassSessionSnapshot? Source = null,
+        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] bool? FollowsBatchTeacher = null);
 
     public bool Enabled => environment.IsEnvironment("Testing") && policy.IsAvailable && configuration.GetValue<bool>("Penta:ClassSessionSchedulingEnabled");
     private bool ReschedulingEnabled => configuration.GetValue<bool>("Penta:ClassSessionReschedulingEnabled");
@@ -104,7 +106,8 @@ public sealed class PentaClassSessionSchedulingWorkflow(AcademyDeskDbContext db,
 
         // Recheck the source and slot under the same lock as Manual scheduling.
         var resolved = await ResolveAsync(academy, new(body.Request, body.Move), token);
-        if (resolved.Plan is not { } plan || plan != body.Plan || resolved.Source != body.Source || plan.StartUtc <= Now) return Changed();
+        if (resolved.Plan is not { } plan || plan != body.Plan || resolved.Source != body.Source || plan.StartUtc <= Now ||
+            body.FollowsBatchTeacher.HasValue && body.FollowsBatchTeacher != resolved.FollowsBatchTeacher) return Changed();
         if (action == Action.Approve)
         {
             row.Status = "Authorized";
@@ -113,7 +116,7 @@ public sealed class PentaClassSessionSchedulingWorkflow(AcademyDeskDbContext db,
         else
         {
             if (row.Status != "Authorized") return Changed();
-            var sessionRow = await scheduler.SaveAsync(academy, plan, token);
+            var sessionRow = await scheduler.SaveAsync(academy, plan, token, resolved.FollowsBatchTeacher);
             row.Status = "Succeeded";
             body = body with { Receipt = new(Guid.NewGuid(), Guid.NewGuid(), sessionRow.Id, Now) };
         }
@@ -143,7 +146,8 @@ public sealed class PentaClassSessionSchedulingWorkflow(AcademyDeskDbContext db,
         var expiry = new[] { session.ExpiresAtUtc, plan.StartUtc, resolved.Source?.Summary.StartUtc ?? plan.StartUtc, now.AddMinutes(10) }.Min();
         var row = new PentaOnboardingDraft { Id = id, AcademyId = session.AcademyId, ActorUserId = session.ActorUserId, SessionId = session.Id,
             ContextVersion = session.Version, Revision = 1, Status = "Prepared", CreatedAtUtc = now, ExpiresAtUtc = expiry, ProtectedBody = "" };
-        var body = new Body(PentaOperationalPayload.Digest(payload), stamp, input.Create, plan, Move: input.Move, Source: resolved.Source);
+        var body = new Body(PentaOperationalPayload.Digest(payload), stamp, input.Create, plan, Move: input.Move,
+            Source: resolved.Source, FollowsBatchTeacher: resolved.FollowsBatchTeacher);
         if (Seal(row, body).Length > 14500) return new(400, Error: "The reviewed scheduling details are too long.");
         db.PentaOnboardingDrafts.Add(row);
         return await SaveAsync(request, row, body, input.Move is null ? "PentaClassSessionPrepared" : "PentaClassSessionReschedulePrepared", 201, token);
@@ -208,13 +212,15 @@ public sealed class PentaClassSessionSchedulingWorkflow(AcademyDeskDbContext db,
     private static string CompletedAudit(Body body) => body.Move is null ? ExecutionAudit : RescheduleAudit;
     private static string Hash(Body body)
     {
-        var bytes = body.Move is null
-            ? JsonSerializer.SerializeToUtf8Bytes(body.Plan)
-            : JsonSerializer.SerializeToUtf8Bytes(new { Operation = PentaClassSessionFields.RescheduleTool, Source = body.Source!.Summary, body.Plan });
+        var bytes = body.Move is not null
+            ? JsonSerializer.SerializeToUtf8Bytes(new { Operation = PentaClassSessionFields.RescheduleTool, Source = body.Source!.Summary, body.Plan })
+            : body.FollowsBatchTeacher.HasValue
+                ? JsonSerializer.SerializeToUtf8Bytes(new { body.Plan, body.FollowsBatchTeacher })
+                : JsonSerializer.SerializeToUtf8Bytes(body.Plan);
         return Convert.ToHexStringLower(SHA256.HashData(bytes));
     }
     private static PentaClassSessionOutcome View(int status, Guid request, PentaOnboardingDraft row, Body body) =>
         new(status, new(request, row.Revision, row.ContextVersion, row.Status, row.ExpiresAtUtc, body.Plan,
-            Hash(body), body.ApprovalId, body.Receipt, body.Source?.Summary));
+            Hash(body), body.ApprovalId, body.Receipt, body.Source?.Summary, body.FollowsBatchTeacher));
     private static PentaClassSessionOutcome Changed() => new(409, Error: "The class scheduling request could not be verified. Read the same draft before retrying.");
 }

@@ -94,6 +94,8 @@ await using (var application = new AcademyDeskDbContext(
         await VerifyInboxReceiptMigrationAsync(application);
     else if (args.Length == 4 && args[3] == "--payroll-net")
         await VerifyPayrollHistoryMigrationAsync(application);
+    else if (args.Length == 4 && args[3] == "--audit-batch-preservation-fixed")
+        await VerifyClassTeacherInheritanceMigrationAsync(application);
     else await application.Database.MigrateAsync();
 }
 await using (var identity = new IdentityDbContext(
@@ -483,7 +485,7 @@ static async Task VerifyRealHttpAsync(QaRunManifest manifest, bool classMediaOnl
             }
             if (auditMode is "--audit-batch-preservation-baseline" or "--audit-batch-preservation-fixed")
             {
-                await VerifyBatchPreservationAsync(factory, client, baseline: auditMode == "--audit-batch-preservation-baseline");
+                await VerifyBatchPreservationAsync(factory, client, manifest, baseline: auditMode == "--audit-batch-preservation-baseline");
                 return; // Accepted Batch replacement-field preservation gap only.
             }
             if (auditMode is "--audit-branch-address-baseline" or "--audit-branch-address-fixed")

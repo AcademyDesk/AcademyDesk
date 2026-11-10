@@ -1,5 +1,19 @@
 # Academy Desk handoff
 
+## Batch teacher reassignment — 10 November 2026
+
+- [x] Batch edits preserve substitutes and only move future Scheduled
+  sessions that follow a changed default. The scheduling lock and required
+  audit cover the batch and every affected session.
+- [x] Verified 13 new reassignment checks, 27 retained batch checks, 87
+  scheduling checks, and the additive migration and downgrade guards.
+  Concurrent clashes commit one winner. Legacy class data survived upgrade.
+- [ ] Next with Sol High is deterministic finance reads for PENTA. Use
+  current tenant and finance authority and preserve currency separation.
+  Scheduling browser/device acceptance, Mini and release gates remain open.
+
+[Batch reassignment evidence](QA/REPORTS/BATCH_TEACHER_REASSIGNMENT_2026-11-10.md)
+
 ## Protected regular rescheduling — 10 November 2026
 
 - [x] The Testing-only reschedule operation previews the original and
@@ -8,9 +22,7 @@
 - [x] Verified 26 new native reschedule checks, 61 retained scheduling
   checks and 50 retained attendance checks. Covered late conflicts, moves
   away and back, two concurrent approvals, durable replay and audit rollback.
-- [ ] Next with Sol High is the open batch teacher reassignment path.
-  Preserve substitute assignments and prevent clashes. Conversation UI,
-  Mini qualification and release gates remain open.
+- [x] Batch teacher reassignment passed in the next checkpoint.
 
 [Protected reschedule evidence](QA/REPORTS/PENTA_CLASS_RESCHEDULE_2026-11-10.md)
 

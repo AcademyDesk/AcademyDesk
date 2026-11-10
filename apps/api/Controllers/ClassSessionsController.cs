@@ -28,7 +28,7 @@ public sealed class ClassSessionsController(AcademyDeskDbContext dbContext) : Co
         await scheduling.LockAsync(academyId, cancellationToken);
         var planned = await scheduling.PlanCreateAsync(academyId, request, cancellationToken);
         if (planned.Plan is null) return StatusCode(planned.Status, new { message = planned.Error });
-        var session = await scheduling.SaveAsync(academyId, planned.Plan, cancellationToken);
+        var session = await scheduling.SaveAsync(academyId, planned.Plan, cancellationToken, planned.FollowsBatchTeacher);
         return Created($"/api/academies/{academyId}/sessions/{session.Id}", session);
     }
 
