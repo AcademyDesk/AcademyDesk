@@ -3112,13 +3112,13 @@
       "module": "ACADEMIC",
       "route": "/academic-governance",
       "recordedSource": "apps/api/Controllers/GradingSchemeLifecycleController.cs:4",
-      "recordedFix": "SOURCE_PIN_PENDING (C28 feature return; no deployment)",
+      "recordedFix": "`db012648e608e1fa5cf7291ce0271af3f4b1407d` (C28 feature return; no deployment)",
       "recordedRegression": "Final combined API2,353/2,353 PASS;frontend2,343 PASS/3 genuine missing SQL receipts",
       "recordedClosureNotes": "Remain OPEN; follow closure requirements in QA README",
       "latestSection": "C28 delegated grading lifecycle — 10 November 2026",
       "recordedPendingExcerpts": [
+        "| Device/viewport | NOT RUN; use QA/06_DEVICE_VIEWPORT_MATRIX.md where UI applies |",
         "| Evidence classification | Static trace; runtime reproduction pending |",
-        "| Fix commit | SOURCE_PIN_PENDING (C28 feature return; no deployment) |",
         "| Closure notes | Remain OPEN; follow closure requirements in QA README |",
         "AcademicGovernanceController maps academics.manage, but GradingSchemeLifecycleController lacks a mapping, so global filter denies the same nonadmin user status changes and active-scheme lookup. Page still renders action. Runtime NOT RUN.",
         "Remain OPEN for real Identity/HTTP/SQL grants/module/tenant/audit rollback,"
@@ -3131,7 +3131,7 @@
         }
       ],
       "historicalMetadataNeedsReview": false,
-      "issueSha256": "60fc43e6df82b2d7d47661785385e1bcfa74d3c4d844c1b6e833cddb786426af"
+      "issueSha256": "a4817eda9c9ebb81804997e1e4160722979209e48ab8b01e6a492761d25c5959"
     },
     {
       "id": "BUG-FUNC-0016",

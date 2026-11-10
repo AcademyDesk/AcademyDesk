@@ -8,7 +8,7 @@ BASE:56072b0bb7025e27fd9f9d2351f0bad0a817353a (clean verified C27).
 DESKTOP:26fb7d2b9e8338fae0ede2ec99c8f0adb9ea752c already included.
 TASK: BUG-FUNC-0015 delegated grading lifecycle consistency; complete reads,
 current write intent, explicit mutation confirmation and recovery in governance UI.
-STATUS: SOURCE FIXED / Cloud verification complete; implementation pin pending; native acceptance open.
+STATUS: SOURCE FIXED / Cloud verification complete; native SQL/audit/device/release acceptance open.
 
 Exact MAY MODIFY paths:
 
@@ -70,7 +70,7 @@ not a skipped test or relaxed business invariant. Raw first full failure retaine
 
 ## Source and behavior result
 
-Implementation: SOURCE_PIN_PENDING. No main merge, Azure deploy, environment
+Implementation: `db012648e608e1fa5cf7291ce0271af3f4b1407d`. No main merge, Azure deploy, environment
 publication or model execution. Original claim09e07d7070dd73c2ed7a3168b2652a4b0dbb3d3d
 was pushed before implementation; the existing audit-test path refinement was
 also committed/pushed before its update. Existing local work and raw QA records

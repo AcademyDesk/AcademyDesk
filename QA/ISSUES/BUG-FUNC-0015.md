@@ -30,7 +30,7 @@
 | API response | Not captured for this issue; use synthetic request/response in isolated reproduction |
 | Database before/after | Not executed; fixture and fresh-context assertions defined below |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | SOURCE_PIN_PENDING (C28 feature return; no deployment) |
+| Fix commit | `db012648e608e1fa5cf7291ce0271af3f4b1407d` (C28 feature return; no deployment) |
 | Retest result | 28 new HTTP controls plus12 retained academic checks PASS;29 TSX and24 native synthetic cases PASS |
 | Regression result | Final combined API2,353/2,353 PASS;frontend2,343 PASS/3 genuine missing SQL receipts |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
