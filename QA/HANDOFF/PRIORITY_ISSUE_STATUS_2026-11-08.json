@@ -786,24 +786,30 @@
       "status": "OPEN",
       "finalVerification": "NOT RUN",
       "recordedClosedAndPass": false,
-      "confirmation": "STATIC-FINDING",
+      "confirmation": "LOCAL SESSION REPAIR. Batches.Update reassignment remains open",
       "module": "SCHEDULE",
       "route": "/schedule; /calendar; /batch-setup",
       "recordedSource": "apps/api/Controllers/ClassSessionsController.cs:35",
-      "recordedFix": "Not implemented (Phase 1)",
-      "recordedRegression": "NOT RUN",
+      "recordedFix": "Session create and reschedule repaired in the checkpoint below. Batch reassignment pending",
+      "recordedRegression": "18 form, 18 retained Manual schedule and 81 retained make-up checks passed locally. Device and linked critical acceptance pending",
       "recordedClosureNotes": "Remain OPEN; follow closure requirements in QA README",
-      "latestSection": "Related / required regression",
+      "latestSection": "Local session checkpoint — 10 November 2026",
       "recordedPendingExcerpts": [
-        "| Device/viewport | NOT RUN; use QA/06_DEVICE_VIEWPORT_MATRIX.md where UI applies |",
         "| Evidence classification | Static trace; runtime reproduction pending |",
-        "| Retest result | NOT RUN |",
-        "| Regression result | NOT RUN |",
-        "| Closure notes | Remain OPEN; follow closure requirements in QA README |"
+        "| Fix commit | Session create and reschedule repaired in the checkpoint below. Batch reassignment pending |",
+        "| Regression result | 18 form, 18 retained Manual schedule and 81 retained make-up checks passed locally. Device and linked critical acceptance pending |",
+        "| Closure notes | Remain OPEN; follow closure requirements in QA README |",
+        "device and linked critical regression acceptance are also pending."
       ],
-      "evidenceReferences": [],
+      "evidenceReferences": [
+        {
+          "href": "../REPORTS/PENTA_CLASS_SCHEDULING_2026-11-10.md",
+          "localExists": true,
+          "observation": "Reference presence only, not evidence acceptance"
+        }
+      ],
       "historicalMetadataNeedsReview": false,
-      "issueSha256": "72706e258bbde79c809be4f66368d2e1463b38c4008b5e3c0870d5342ae42a6b"
+      "issueSha256": "6d26e64d113f48d7667d0288229a83d74edfad837b503597ad61aa94360220d8"
     },
     {
       "id": "BUG-DATA-0006",
@@ -3898,14 +3904,14 @@
       "module": "GUARDIAN",
       "route": "Direct guardian portal-access API",
       "recordedSource": "apps/api/Controllers/StudentGuardiansController.cs:54",
-      "recordedFix": "SOURCE_PIN_PENDING (C29 feature return; no deployment)",
+      "recordedFix": "`61abb67e8d16ad88f45f9155b7045709c533caf6` (C29 feature return; no deployment)",
       "recordedRegression": "Final full API2,389/2,389 PASS;unchanged web evidence reused exactly from C28,not rerun",
       "recordedClosureNotes": "Remain OPEN; follow closure requirements in QA README",
       "latestSection": "C29 guardian privacy source repair — 10 November 2026",
       "recordedPendingExcerpts": [
+        "| Final verification | C29 scoped Cloud HTTP/controller controls PASS; SQL/audit/races/browser/device and full acceptance pending |",
         "| Device/viewport | NOT RUN; use QA/06_DEVICE_VIEWPORT_MATRIX.md where UI applies |",
         "| Evidence classification | Static trace; runtime reproduction pending |",
-        "| Fix commit | SOURCE_PIN_PENDING (C29 feature return; no deployment) |",
         "| Closure notes | Remain OPEN; follow closure requirements in QA README |",
         "Remain OPEN for genuine provisioning SQL success/refusal/rollback, revocation"
       ],
@@ -3917,7 +3923,7 @@
         }
       ],
       "historicalMetadataNeedsReview": false,
-      "issueSha256": "5614c10fda7aaa04302437b4a382de396066cc1315f346c382c70e419fe322c6"
+      "issueSha256": "8f54768b4338ac710907ce8ab716bd0fd320cd3cc2607973fdd209cc37e11e0f"
     },
     {
       "id": "BUG-SEC-0007",
@@ -3932,14 +3938,14 @@
       "module": "AUTH",
       "route": "/portal-accounts; /portal",
       "recordedSource": "apps/api/Controllers/PortalAccountsController.cs:23",
-      "recordedFix": "SOURCE_PIN_PENDING (C29 feature return; no deployment)",
+      "recordedFix": "`61abb67e8d16ad88f45f9155b7045709c533caf6` (C29 feature return; no deployment)",
       "recordedRegression": "Final full API2,389/2,389 PASS;unchanged web evidence reused exactly from C28,not rerun",
       "recordedClosureNotes": "Remain OPEN; follow closure requirements in QA README",
       "latestSection": "C29 guardian privacy source repair — 10 November 2026",
       "recordedPendingExcerpts": [
+        "| Final verification | C29 scoped Cloud HTTP/controller controls PASS; SQL/audit/races/browser/device and full acceptance pending |",
         "| Device/viewport | NOT RUN; use QA/06_DEVICE_VIEWPORT_MATRIX.md where UI applies |",
         "| Evidence classification | Static trace; runtime reproduction pending |",
-        "| Fix commit | SOURCE_PIN_PENDING (C29 feature return; no deployment) |",
         "| Closure notes | Remain OPEN; follow closure requirements in QA README |",
         "Remain OPEN for genuine provisioning SQL success/refusal/rollback, revocation"
       ],
@@ -3951,7 +3957,7 @@
         }
       ],
       "historicalMetadataNeedsReview": false,
-      "issueSha256": "1f35bd548be37fcca18d602db9e96a39373bae4570dd6d2d0c25fbdf99ac1824"
+      "issueSha256": "3f1b771988eb9f4750e719dac3c4a47f584f2d63ea2c0db3e235f99a135e915c"
     },
     {
       "id": "BUG-SEC-0008",

@@ -30,7 +30,7 @@
 | API response | Not captured for this issue; use synthetic request/response in isolated reproduction |
 | Database before/after | Not executed; fixture and fresh-context assertions defined below |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | SOURCE_PIN_PENDING (C29 feature return; no deployment) |
+| Fix commit | `61abb67e8d16ad88f45f9155b7045709c533caf6` (C29 feature return; no deployment) |
 | Retest result | 31 actual HTTP/Identity/InMemory portal/link cases plus5 direct provisioning guard checks PASS;59 retained checks PASS |
 | Regression result | Final full API2,389/2,389 PASS;unchanged web evidence reused exactly from C28,not rerun |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |

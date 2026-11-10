@@ -4,9 +4,10 @@ MODEL: Sol High for privacy/authorization/atomicity; Medium for settled docs.
 TOOL: Cloud Codex. REPOSITORY: AcademyDesk/AcademyDesk.
 BRANCH: codex/cloud-c29-guardian-access-20261110.
 BASE:a713a506853733215111d4fb29fc725f14c521d8 (clean published C28).
-DESKTOP:7d5c013c7312a91a6bb472e86d3a7d8a4d34c891, unchanged on fresh fetch.
+DESKTOP:7d5c013c7312a91a6bb472e86d3a7d8a4d34c891 initially; final concurrent
+29c0a940102e1436304e67c16cd339c1d81204b1 imported with provenance.
 TASK: BUG-SEC-0006/0007 explicit per-link revocation and inactive guardian domain
-checks on provisioning and portal child access. SOURCE FIXED / Cloud verification complete; implementation pin pending;
+checks on provisioning and portal child access. SOURCE FIXED / Cloud verification complete; source pins recorded;
 native SQL/audit/race/device acceptance remains open.
 
 Exact MAY MODIFY paths:
@@ -59,7 +60,7 @@ portal/device acceptance; Cloud next bounded nonoverlapping non-AI task.
 
 ## Source repair and exact behavior
 
-Implementation: SOURCE_PIN_PENDING. Original path claim
+Implementation: `61abb67e8d16ad88f45f9155b7045709c533caf6`. Original path claim
 c20363962e387d03c7a702e92578519bdf8031cb was pushed before implementation.
 No unrelated source, protected host, schema, frontend or environment changes.
 
@@ -102,7 +103,8 @@ remain part of the existing acceptance program.
 | Original new tests |33 total:14 PASS/19 FAIL. HTTP/Identity/InMemory portal/link subset28:11 PASS/17 FAIL. Guard-only provisioning subset5:3 PASS/2 FAIL; inactive guard reaches the missing-real-SQL prerequisite in the original code. That is not an original successful account-creation reproduction. Source snapshots, logs and TRX retained |
 | Initial repaired target |86/86 PASS,33 new and53 retained family/media policy/Identity controls |
 | Expanded target |95/95 PASS,36 new and59 retained;31 HTTP portal/link cases plus5 direct-controller provisioning guard cases. Cross-academy/anonymous controls and preserved initial minor defaults/subpermissions added; no skip or existing assertion weakened |
-| Final full API |2,389/2,389 PASS;zero failures/skips on the combined C29+Desktop7d5c013 source |
+| Full API before final Desktop scheduling import |2,389/2,389 PASS;zero failures/skips on C29+Desktop7d5c013 |
+| Final combined API | 2,389/2,389 PASS with Desktop29c0a94;zero failures/skips |
 | Web/TSX/build/browser/frontend reuse |All164 tracked web source hashes and570 exact export file hashes match C28. Its pinned source db012648e608e1fa5cf7291ce0271af3f4b1407d/publication a713a506853733215111d4fb29fc725f14c521d8 has build/types/lint PASS,29 controlled and24 native synthetic cases PASS;full frontend2,343 PASS/3 missing genuine SQL receipt failures/zero skips. No new frontend/browser/device run is claimed for C29 |
 | Release guard |15/15 guard controls PASS;actual guard exit1 retains five P0 and required broader-session records open |
 | Hosted CI |UNKNOWN; feature pushes do not trigger verify.yml's main/release-export-security filter. No dispatch, main merge, PR or Azure deployment |
@@ -133,8 +135,10 @@ No raw QA/EVIDENCE, credentials, caches, model files or generated export are pus
 
 1. Integrate C29 implementation/result pins or copy exactly its10 claimed paths,
    preserving all newer protected scheduling/attendance, host, SQL and local work.
-   Desktop7d5c013 is preserved in this branch. C24–C28's native acceptance remains
+   Desktop29c0a94 is preserved in this branch. C24–C28's native acceptance remains
    separately queued; don't replace whole newer Desktop files with older files.
+   Regenerate both derived inventory files against the integrated current issue
+   records; preserve newer Desktop issue/status evidence.
 2. On disposable real Identity/HTTP/SQL, run the original SEC0006/0007 scenarios,
    including genuine active Guardian account creation then domain deactivation,
    refused new inactive Guardian account and fresh reactivation control. Verify
@@ -175,3 +179,24 @@ accepted; model loading/download/inference/training/activation remains stopped.
 Mini/Plus/Pro stay unqualified, Ultra deferred and90% eligible conversational
 outcome coverage is unaccepted. No main merge, Azure deploy or public-access/
 environment publication has occurred.
+
+
+## Final concurrent Desktop scheduling return
+
+Desktop29c0a940102e1436304e67c16cd339c1d81204b1 was discovered during final
+publication checks. Its14 changed paths were imported byte-exact with cherry-pick
+provenance, including regular class scheduling service, shared Manual create/
+reschedule conflict checks, Testing-only approved PENTA create, native SQL harness,
+DATA0005 issue/report and shared status/handoffs. No C29 guardian path overlapped.
+A fresh full API run binds this composite source; the earlier2,389-pass result
+remains as its own earlier-source receipt. The manifest records both the guardian
+implementation and this preserved Desktop pin.
+
+Desktop's retained report records18 schedule form checks,18 retained Manual HTTP/
+SQL,43 new scheduling and81 retained make-up cases. Those native SQL results were
+not rerun here. Its next owner task is assigned-Teacher attendance; protected
+regular reschedule and batch reassignment remain separate. No model qualification
+or production gate was closed by this deterministic host return.
+
+Final combined source before documentation pins: `189f0445113ad52476335eb8e35cf7b4a46bfca3`.
+The guardian implementation `61abb67e8d16ad88f45f9155b7045709c533caf6` is unchanged within that composite.
