@@ -1090,6 +1090,9 @@ namespace AcademyDesk.Api.Migrations
                     b.Property<DateTime>("EndUtc")
                         .HasColumnType("datetime2");
 
+                    b.Property<bool?>("FollowsBatchTeacher")
+                        .HasColumnType("bit");
+
                     b.Property<string>("RoomName")
                         .HasMaxLength(120)
                         .HasColumnType("nvarchar(120)");

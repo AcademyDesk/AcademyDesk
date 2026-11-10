@@ -1,5 +1,14 @@
 # Academy Desk shared integration tracker
 
+## Batch teacher reassignment — 10 November 2026
+
+- [x] Desktop verified the batch and class scheduling lock, substitute
+  provenance, atomic audit and forward migration on disposable SQL.
+- [ ] Desktop owns deterministic PENTA finance reads next. The C30
+  maintenance return at `51cd043` remains separate from this checkpoint.
+
+[Batch reassignment evidence](QA/REPORTS/BATCH_TEACHER_REASSIGNMENT_2026-11-10.md)
+
 ## Protected regular rescheduling — 10 November 2026
 
 - [x] Desktop verified protected rescheduling with a distinct approval,

@@ -37,7 +37,7 @@ internal static partial class SqlHarnessEntryPoint
         await using var identity = new IdentityDbContext(new DbContextOptionsBuilder<IdentityDbContext>().UseSqlServer(connection).Options);
         var appIds = db.Database.GetMigrations().ToHashSet(StringComparer.Ordinal);
         var identityIds = identity.Database.GetMigrations().ToHashSet(StringComparer.Ordinal);
-        if (appIds.Count != 85 || identityIds.Count != 7 || appIds.Overlaps(identityIds))
+        if (appIds.Count != 86 || identityIds.Count != 7 || appIds.Overlaps(identityIds))
             throw new InvalidOperationException("Unexpected combined application/Identity migration declarations.");
         async Task<string[]> AppliedApp()
         {
@@ -49,6 +49,11 @@ internal static partial class SqlHarnessEntryPoint
                 throw new InvalidOperationException("PENTA migration changed or encountered unexpected Identity history.");
             return all.Where(appIds.Contains).ToArray();
         }
+        var latest = await AppliedApp();
+        if (latest.Length != 86 || !latest[^1].EndsWith("_TrackClassSessionTeacherInheritance", StringComparison.Ordinal))
+            throw new InvalidOperationException("Unexpected migration after the protected PENTA checkpoint.");
+        var latestFingerprint = await RecoveryFingerprintAsync(connection);
+        await db.GetService<IMigrator>().MigrateAsync(latest[^2]);
         var applied = await AppliedApp();
         if (applied.Length != 85 || !applied[^1].EndsWith("_AddCombinedPentaHostPersistence", StringComparison.Ordinal) || await TableCount() != 12)
             throw new InvalidOperationException("Combined PENTA migration chain/table count is not the expected cloud84plusone.");
@@ -90,6 +95,11 @@ internal static partial class SqlHarnessEntryPoint
             throw new InvalidOperationException("PENTA re-upgrade did not restore exact combined migration history.");
         Same(baseline, await RecoveryFingerprintAsync(connection));
         Console.WriteLine("PASS: PENTAMIGRATION re-upgrade restores12empty PENTA tables and exact full table/schema fingerprints.");
+        await Ownership();
+        await db.GetService<IMigrator>().MigrateAsync(latest[^1]);
+        if (!(await AppliedApp()).SequenceEqual(latest))
+            throw new InvalidOperationException("Current additive migration was not restored.");
+        Same(latestFingerprint, await RecoveryFingerprintAsync(connection));
         Console.WriteLine("PASS: PENTAMIGRATION all4real owned SQL upgrade/downgrade/guard checks; legacy local PENTA history and Azure migration remain unaccepted.");
     }
 }

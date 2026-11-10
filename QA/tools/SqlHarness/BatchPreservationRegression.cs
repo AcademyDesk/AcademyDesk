@@ -18,7 +18,7 @@ internal static partial class SqlHarnessEntryPoint
         ["meetingPattern"] = row.MeetingPattern, ["roomName"] = row.RoomName, ["enrollmentStatus"] = row.EnrollmentStatus,
         ["adminNotes"] = row.AdminNotes, ["startDate"] = row.StartDate, ["endDate"] = row.EndDate, ["isActive"] = row.IsActive };
 
-    private static async Task VerifyBatchPreservationAsync(QaApiFactory factory, HttpClient client, bool baseline)
+    private static async Task VerifyBatchPreservationAsync(QaApiFactory factory, HttpClient client, QaRunManifest manifest, bool baseline)
     {
         Guid academyA, academyB, course, teacher, secondTeacher, branch;
         using (var scope = factory.Services.CreateScope())
@@ -83,7 +83,9 @@ internal static partial class SqlHarnessEntryPoint
             if (saved.ClassType != row.ClassType || saved.SessionMinutes != 45 || saved.SessionsPerWeek != 2 || saved.MeetingDaysJson != row.MeetingDaysJson) throw new InvalidOperationException("Batch seed fields not persisted.");
             using var scope = factory.Services.CreateScope(); var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
             (await db.Batches.SingleAsync(x => x.Id == id)).IsActive = active;
-            var time = DateTime.UtcNow;
+            // Each preservation case owns a different slot, so it tests the
+            // successful replacement contract independently of clash refusal.
+            var time = DateTime.UtcNow.Date.AddHours(seed * 2);
             foreach (var (offset, status) in new[] { (7, "Scheduled"), (-7, "Scheduled"), (8, "Cancelled") })
                 db.ClassSessions.Add(new ClassSession { AcademyId = academyA, BatchId = id, TeacherId = teacher, BranchId = branch,
                     StartUtc = time.AddDays(offset), EndUtc = time.AddDays(offset).AddMinutes(45), DeliveryMode = mode, RoomName = "Session room marker", Status = status });
@@ -91,7 +93,7 @@ internal static partial class SqlHarnessEntryPoint
         }
         async Task CheckUpdate(Guid id, Dictionary<string, object?> body, Batch expected, string label, bool reject = false)
         {
-            var stable = await State(id, false); var full = await State(); var sessions = await Sessions(id); var audits = await AccessAuditCountAsync(factory);
+            var stable = await State(id, false); var full = await State(); var prior = await Row(id); var sessions = await Sessions(id); var audits = await AccessAuditCountAsync(factory);
             using var response = await Send("PUT", root + "/" + id, body); RequireFinanceStatus(response, reject ? HttpStatusCode.BadRequest : HttpStatusCode.OK, label);
             if (reject) { if (full != await State()) throw new InvalidOperationException("Rejected preservation request wrote captured state."); }
             else
@@ -99,8 +101,19 @@ internal static partial class SqlHarnessEntryPoint
                 var actual = await Row(id);
                 if (JsonSerializer.Serialize(expected) != JsonSerializer.Serialize(actual) || stable != await State(id, false) || await AccessAuditCountAsync(factory) != audits + 1)
                     throw new InvalidOperationException("Batch full row/unrelated state/audit mismatch: " + label);
-                foreach (var session in sessions) if (session.Status == "Scheduled" && session.StartUtc > DateTime.UtcNow) session.TeacherId = expected.TeacherId;
-                if (JsonSerializer.Serialize(sessions) != JsonSerializer.Serialize(await Sessions(id))) throw new InvalidOperationException("Existing future teacher synchronization or unrelated session fields changed.");
+                var savedSessions = await Sessions(id);
+                foreach (var session in sessions)
+                {
+                    if (session.Status != "Scheduled" || session.StartUtc <= DateTime.UtcNow || !baseline && prior.TeacherId == expected.TeacherId) continue;
+                    session.TeacherId = expected.TeacherId;
+                    if (!baseline)
+                    {
+                        session.FollowsBatchTeacher = true;
+                        session.UpdatedAtUtc = savedSessions.Single(x => x.Id == session.Id).UpdatedAtUtc;
+                        if (session.UpdatedAtUtc is null) throw new InvalidOperationException("Reassignment must stamp the class revision.");
+                    }
+                }
+                if (JsonSerializer.Serialize(sessions) != JsonSerializer.Serialize(savedSessions)) throw new InvalidOperationException("Future teacher synchronization or unrelated session fields changed.");
                 var projection = await Projection(id);
                 foreach (var pair in body)
                 {
@@ -173,6 +186,7 @@ internal static partial class SqlHarnessEntryPoint
             if (before != await State()) throw new InvalidOperationException("Wrong batch route changed captured data.");
             Passed(route.StartsWith(root, StringComparison.Ordinal) ? "rejected-no-write/missing-batch" : "rejected-no-write/foreign-route");
         }
-        Console.WriteLine($"BATCHPRESERVE REGRESSION PASS: {count} cases; full rows/projections/inherited JSON binding, future-only teacher synchronization, explicit nullable clear and rejected no-write; browser/concurrency/audit-fault rollback not covered.");
+        Console.WriteLine($"BATCHPRESERVE REGRESSION PASS: {count} cases; full rows/projections/inherited JSON binding, future-only teacher synchronization, explicit nullable clear and rejected no-write.");
+        await VerifyBatchTeacherReassignmentAsync(factory, manifest, academyA, academyB, course, teacher, secondTeacher, branch);
     }
 }

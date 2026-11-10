@@ -173,7 +173,7 @@ internal static partial class SqlHarnessEntryPoint
             var location = mode == "Offline" ? "Protected studio" : meeting;
             var before = await Snapshot(includeWorkflow: false);
             var draft = await Read(Prepare(admin, route, slot, mode, location), HttpStatusCode.Created, "prepare " + mode);
-            if (draft.Status != "Prepared" || draft.Plan.Id != Guid.Empty || draft.Plan.BatchId != batch.Id ||
+            if (draft.Status != "Prepared" || draft.FollowsBatchTeacher != true || draft.Plan.Id != Guid.Empty || draft.Plan.BatchId != batch.Id ||
                 draft.Plan.TeacherId != teacherA.Id || draft.Plan.BranchId != branchA.Id || draft.Plan.StartUtc != slot ||
                 draft.Plan.EndUtc != slot.AddHours(1) || draft.Plan.RoomName != location ||
                 draft.Plan.DeliveryMode != (mode == "Offline" ? "InPerson" : mode) || before != await Snapshot(includeWorkflow: false))
@@ -208,7 +208,7 @@ internal static partial class SqlHarnessEntryPoint
                 throw new InvalidOperationException("PENTA returned different receipts.");
             await WithDb(async db => {
                 var row = await db.ClassSessions.AsNoTracking().SingleAsync(x => x.AcademyId == academy && x.StartUtc == slot);
-                if (row.Id != receipt.ClassSessionId || row.BatchId != draft.Plan.BatchId || row.TeacherId != draft.Plan.TeacherId ||
+                if (row.Id != receipt.ClassSessionId || row.FollowsBatchTeacher != true || row.BatchId != draft.Plan.BatchId || row.TeacherId != draft.Plan.TeacherId ||
                     row.BranchId != draft.Plan.BranchId || row.RoomName != draft.Plan.RoomName || row.EndUtc != draft.Plan.EndUtc ||
                     row.DeliveryMode != draft.Plan.DeliveryMode || !await db.AuditLogs.AnyAsync(x => x.Id == receipt.AuditId &&
                         x.ActorUserId == actor && x.AcademyId == academy && x.Action == pentaAudit))

@@ -37,20 +37,17 @@ public sealed class BatchesController(AcademyDeskDbContext dbContext) : Controll
     public async Task<ActionResult<BatchSummary>> Update(Guid academyId, Guid batchId, UpdateBatchRequest request, CancellationToken token)
     {
         await using var ownedTransaction = await EnrollmentAdmissionBoundary.BeginOwnedAsync(dbContext, token);
+        var scheduling = new ClassSessionSchedulingService(dbContext);
+        // Match the protected enrollment lock order: academy, then admission.
+        await scheduling.LockAsync(academyId, token);
         if (!await EnrollmentAdmissionBoundary.TryLockAsync(dbContext, academyId, token))
             return StatusCode(503, new { message = EnrollmentAdmissionBoundary.BusyMessage });
         var batch = await dbContext.Batches.SingleOrDefaultAsync(x => x.AcademyId == academyId && x.Id == batchId, token); if (batch is null) return NotFound();
         var problem = await Validate(academyId, request, token, batchId); if (problem is not null) return BadRequest(new { message = problem });
         var active = await dbContext.Enrollments.CountAsync(x => x.AcademyId == academyId && x.BatchId == batchId && x.Status == "Active", token); if (request.Capacity < active) return BadRequest(new { message = $"Capacity cannot be lower than the {active} active enrolments." });
+        if (!await scheduling.TryReassignBatchTeacherAsync(batch, request.TeacherId, token))
+            return Conflict(new { message = "Teacher clash: this teacher is already scheduled during a class in this batch." });
         Apply(batch, request); batch.IsActive = request.IsActive;
-        // A batch assignment is the source of truth for forthcoming delivery. Keep
-        // future scheduled sessions in sync so the assigned teacher sees the same
-        // timetable, calendar and attendance roster as the administrator. Updating
-        // on every save also repairs sessions created before this connection existed.
-        var futureSessions = await dbContext.ClassSessions
-            .Where(x => x.AcademyId == academyId && x.BatchId == batchId && x.Status == "Scheduled" && x.StartUtc >= DateTime.UtcNow)
-            .ToListAsync(token);
-        foreach (var session in futureSessions) session.TeacherId = batch.TeacherId;
         await dbContext.SaveChangesAsync(token);
         if (ownedTransaction is not null) await ownedTransaction.CommitAsync(token);
         return Ok(Summary(batch, active));

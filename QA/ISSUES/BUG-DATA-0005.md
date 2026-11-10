@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | LOCAL SESSION REPAIR. Batches.Update reassignment remains open |
+| Confirmation status | LOCAL SQL REPAIR. Session writes and batch reassignment verified |
 | Final verification | NOT RUN |
 | Severity | Major scheduling integrity |
 | Priority | P1 |
@@ -16,7 +16,7 @@
 | Device/viewport | NOT RUN; use QA/06_DEVICE_VIEWPORT_MATRIX.md where UI applies |
 | Baseline | 20bb6047f9edf733ac8e2a226621cc582ec54b3c + pre-existing student UI diff |
 | Discovery test / review ID | SCHEDULE-RULE-001 |
-| Evidence classification | Static trace; runtime reproduction pending |
+| Evidence classification | Local authenticated HTTP and SQL. Browser/device acceptance pending |
 | Preconditions | Isolated synthetic fixture from QA/10_TEST_DATA_STRATEGY.md; never customer data |
 | Reproduction frequency | Not measured; reproduction instructions are proposed |
 | Source | apps/api/Controllers/ClassSessionsController.cs:35 |
@@ -30,8 +30,8 @@
 | API response | Not captured for this issue; use synthetic request/response in isolated reproduction |
 | Database before/after | Not executed; fixture and fresh-context assertions defined below |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | Session create and reschedule repaired in the checkpoint below. Batch reassignment pending |
-| Retest result | Local Manual session create and reschedule SQL PASS. See checkpoint below |
+| Fix commit | Session create, reschedule and batch teacher reassignment repaired in the checkpoints below |
+| Retest result | Local session, reassignment, concurrency and audit rollback SQL PASS. See checkpoints below |
 | Regression result | 18 form, 18 retained Manual schedule and 81 retained make-up checks passed locally. Device and linked critical acceptance pending |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
@@ -85,3 +85,16 @@ assignment and needs its own clash and substitute policy checks. Browser,
 device and linked critical regression acceptance are also pending.
 
 [Local SQL and form evidence](../REPORTS/PENTA_CLASS_SCHEDULING_2026-11-10.md)
+
+## Local batch reassignment checkpoint — 10 November 2026
+
+A real change to the batch default only propagates to future Scheduled
+sessions that follow the default. Known substitutes and historical rows
+retain their assignments. The batch and classes share the scheduling
+lock and commit with required actor audit. The native suite checked
+existing clashes, clashes among affected classes, concurrent assignment,
+concurrent Manual class creation and audit rollback.
+
+The issue remains OPEN for browser, device and linked critical acceptance.
+
+[Batch reassignment evidence](../REPORTS/BATCH_TEACHER_REASSIGNMENT_2026-11-10.md)
