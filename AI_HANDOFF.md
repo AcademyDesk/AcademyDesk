@@ -1,5 +1,19 @@
 # Academy Desk handoff
 
+## PENTA finance reads — 10 November 2026
+
+- [x] Testing-only academy overview and exact invoice reads reuse Manual
+  currency calculations. The overview keeps amounts in separate currencies.
+- [x] Current Owner or AcademyAdmin, tenant, finance module and security stamp
+  are verified inside the read transaction. An audit failure withholds data.
+- [x] Passed 21 new native checks, six retained finance-consumer stages,
+  11 retained legacy currency checks and focused API tests.
+- [ ] Next with Sol High is protected collection and reconciliation read
+  detail. Finance writes, planner/browser wiring, Mini and release gates
+  remain open.
+
+[PENTA finance read evidence](QA/REPORTS/PENTA_FINANCE_READS_2026-11-10.md)
+
 ## Batch teacher reassignment — 10 November 2026
 
 - [x] Batch edits preserve substitutes and only move future Scheduled
@@ -8,9 +22,8 @@
 - [x] Verified 13 new reassignment checks, 27 retained batch checks, 87
   scheduling checks, and the additive migration and downgrade guards.
   Concurrent clashes commit one winner. Legacy class data survived upgrade.
-- [ ] Next with Sol High is deterministic finance reads for PENTA. Use
-  current tenant and finance authority and preserve currency separation.
-  Scheduling browser/device acceptance, Mini and release gates remain open.
+- [x] The next checkpoint verified deterministic finance overview and
+  invoice reads. Scheduling browser/device acceptance remains open.
 
 [Batch reassignment evidence](QA/REPORTS/BATCH_TEACHER_REASSIGNMENT_2026-11-10.md)
 

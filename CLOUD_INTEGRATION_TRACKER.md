@@ -1,5 +1,14 @@
 # Academy Desk shared integration tracker
 
+## PENTA finance reads — 10 November 2026
+
+- [x] Desktop verified Testing-only currency-separated academy totals and
+  exact invoice read parity with Manual, with current authority and audit.
+- [ ] Desktop owns collection and reconciliation read detail next. Cloud
+  C31 owns maintenance notice and safe client recovery at `3a33e56`.
+
+[PENTA finance read evidence](QA/REPORTS/PENTA_FINANCE_READS_2026-11-10.md)
+
 ## Batch teacher reassignment — 10 November 2026
 
 - [x] Desktop verified the batch and class scheduling lock, substitute

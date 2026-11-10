@@ -12,7 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 internal static partial class SqlHarnessEntryPoint
 {
-    private static async Task VerifyFinanceConsumersAsync(QaApiFactory factory, HttpClient client)
+    private static async Task VerifyFinanceConsumersAsync(QaApiFactory factory, HttpClient client, QaRunManifest manifest)
     {
         Guid academyId, studentId;
         using (var scope = factory.Services.CreateScope())
@@ -91,6 +91,7 @@ internal static partial class SqlHarnessEntryPoint
         using var foreignDocument = await client.GetAsync($"/api/portal/students/{Guid.NewGuid()}/invoices/{mixedId}/download");
         RequireFinanceStatus(foreignDocument, HttpStatusCode.Forbidden, "foreign student invoice document");
         Console.WriteLine("CONSUMER REGRESSION PASS: six stages agree across fresh SQL/Admin/Student/document/dashboard/reminder; approved versus PendingApproval/Rejected, mixed Completed/Reconciled/Voided, full adjustment, settlement and cent balance; read/reminder financial snapshots unchanged; foreign/student reminder and foreign document denied. No restoration or full critical acceptance.");
+        await VerifyPentaFinanceReadsAsync(factory, manifest, academyId, studentId);
     }
 
     private static async Task VerifyConsumerViewsAsync(QaApiFactory factory, HttpClient client, Guid academyId,
