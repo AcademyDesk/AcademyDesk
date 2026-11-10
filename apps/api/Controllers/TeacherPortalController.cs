@@ -555,52 +555,23 @@ public sealed class TeacherPortalController(
     }
 
     [HttpPost("sessions/{sessionId:guid}/attendance")]
-    public async Task<ActionResult<TeacherAttendanceSummary>> MarkAttendance(
-        Guid sessionId,
-        TeacherMarkAttendanceRequest request,
-        CancellationToken cancellationToken)
+    public async Task<ActionResult<TeacherAttendanceSummary>> MarkAttendance(Guid sessionId, TeacherMarkAttendanceRequest request,
+        [FromServices] TeacherAttendanceService attendance, CancellationToken cancellationToken)
     {
-        var context = await GetTeacherContext(sessionId, cancellationToken);
-        if (context is null) return Forbid();
-        if (!AttendanceStatuses.Contains(request.Status, StringComparer.OrdinalIgnoreCase))
-            return BadRequest(new { message = "Invalid attendance status." });
-
-        var enrolled = await dbContext.Enrollments.AnyAsync(x =>
-            x.AcademyId == context.AcademyId && x.BatchId == context.Session.BatchId &&
-            x.StudentId == request.StudentId && x.Status == "Active", cancellationToken);
-        if (!enrolled) return NotFound();
-
-        var record = await dbContext.AttendanceRecords.SingleOrDefaultAsync(x =>
-            x.AcademyId == context.AcademyId && x.ClassSessionId == sessionId && x.StudentId == request.StudentId, cancellationToken);
-        if (record is null)
-        {
-            record = new AttendanceRecord
-            {
-                AcademyId = context.AcademyId,
-                ClassSessionId = sessionId,
-                StudentId = request.StudentId
-            };
-            dbContext.AttendanceRecords.Add(record);
-        }
-        record.Status = request.Status.Trim();
-        record.Notes = request.Notes?.Trim();
-        record.MarkedAtUtc = DateTime.UtcNow;
-        dbContext.Notifications.Add(new Notification { AcademyId = context.AcademyId, RecipientId = request.StudentId, RecipientType = "Student", Title = "Attendance updated", Message = $"Your attendance for the class has been marked {record.Status}.", Channel = "InApp", Status = "Queued" });
-        await dbContext.SaveChangesAsync(cancellationToken);
-        return Ok(new TeacherAttendanceSummary(record.StudentId, record.Status, record.Notes));
+        var outcome = await attendance.MarkAsync(User, sessionId, [new(request.StudentId, request.Status, request.Notes)], false, cancellationToken);
+        if (outcome.Status == 403) return Forbid();
+        if (outcome.Status == 404) return NotFound();
+        if (outcome.Value is not { Length: 1 } changes) return BadRequest(new { message = outcome.Error });
+        return Ok(new TeacherAttendanceSummary(changes[0].StudentId, changes[0].Status, changes[0].Notes));
     }
 
     [HttpGet("sessions/{sessionId:guid}/attendance")]
-    public async Task<ActionResult<IReadOnlyList<TeacherAttendanceSummary>>> Attendance(Guid sessionId, CancellationToken cancellationToken)
+    public async Task<ActionResult<IReadOnlyList<TeacherAttendanceSummary>>> Attendance(Guid sessionId,
+        [FromServices] TeacherAttendanceService attendance, CancellationToken cancellationToken)
     {
-        var context = await GetTeacherContext(sessionId, cancellationToken);
-        if (context is null) return Forbid();
-
-        var records = await dbContext.AttendanceRecords.AsNoTracking()
-            .Where(x => x.AcademyId == context.AcademyId && x.ClassSessionId == sessionId)
-            .Select(x => new TeacherAttendanceSummary(x.StudentId, x.Status, x.Notes))
-            .ToListAsync(cancellationToken);
-        return Ok(records);
+        var outcome = await attendance.ReadAsync(User, sessionId, cancellationToken);
+        if (outcome.Value is null) return Forbid();
+        return Ok(outcome.Value);
     }
 
     [HttpPatch("sessions/{sessionId:guid}/status")]
@@ -616,29 +587,13 @@ public sealed class TeacherPortalController(
     }
 
     [HttpPost("sessions/{sessionId:guid}/attendance/bulk")]
-    public async Task<ActionResult> MarkAttendanceBulk(Guid sessionId, TeacherBulkAttendanceRequest request, CancellationToken cancellationToken)
+    public async Task<ActionResult> MarkAttendanceBulk(Guid sessionId, TeacherBulkAttendanceRequest request,
+        [FromServices] TeacherAttendanceService attendance, CancellationToken cancellationToken)
     {
-        var context = await GetTeacherContext(sessionId, cancellationToken);
-        if (context is null) return Forbid();
-        if (request.Records.Count == 0) return BadRequest(new { message = "At least one attendance record is required." });
-        if (request.Records.Any(x => !AttendanceStatuses.Contains(x.Status, StringComparer.OrdinalIgnoreCase)))
-            return BadRequest(new { message = "One or more attendance statuses are invalid." });
-        var studentIds = request.Records.Select(x => x.StudentId).Distinct().ToArray();
-        var enrolled = await dbContext.Enrollments.Where(x => x.AcademyId == context.AcademyId && x.BatchId == context.Session.BatchId && x.Status == "Active" && studentIds.Contains(x.StudentId)).Select(x => x.StudentId).ToListAsync(cancellationToken);
-        if (enrolled.Count != studentIds.Length) return BadRequest(new { message = "Every student must be actively enrolled in this batch." });
-        var existing = await dbContext.AttendanceRecords.Where(x => x.AcademyId == context.AcademyId && x.ClassSessionId == sessionId && studentIds.Contains(x.StudentId)).ToDictionaryAsync(x => x.StudentId, cancellationToken);
-        foreach (var item in request.Records)
-        {
-            if (!existing.TryGetValue(item.StudentId, out var record))
-            {
-                record = new AttendanceRecord { AcademyId = context.AcademyId, ClassSessionId = sessionId, StudentId = item.StudentId };
-                dbContext.AttendanceRecords.Add(record);
-            }
-            record.Status = item.Status.Trim(); record.Notes = item.Notes?.Trim(); record.MarkedAtUtc = DateTime.UtcNow;
-            dbContext.Notifications.Add(new Notification { AcademyId = context.AcademyId, RecipientId = item.StudentId, RecipientType = "Student", Title = "Attendance updated", Message = $"Your attendance for the class has been marked {record.Status}.", Channel = "InApp", Status = "Queued" });
-        }
-        await dbContext.SaveChangesAsync(cancellationToken);
-        return Ok(new { updated = request.Records.Count });
+        var outcome = await attendance.MarkAsync(User, sessionId, request.Records, true, cancellationToken);
+        if (outcome.Status == 403) return Forbid();
+        if (outcome.Value is null) return BadRequest(new { message = outcome.Error });
+        return Ok(new { updated = outcome.Value.Length });
     }
 
     [HttpPut("sessions/{sessionId:guid}/teacher-attendance")]

@@ -433,7 +433,7 @@ static async Task VerifyRealHttpAsync(QaRunManifest manifest, bool classMediaOnl
             }
             if (auditMode == "--audit-attendance-notes")
             {
-                await VerifyAttendanceNotesAsync(factory, client);
+                await VerifyAttendanceNotesAsync(factory, client, manifest);
                 return;
             }
             if (auditMode == "--audit-assessment-options")

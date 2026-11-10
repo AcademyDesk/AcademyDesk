@@ -1,5 +1,20 @@
 # Academy Desk handoff
 
+## Assigned-teacher attendance — 10 November 2026
+
+- [x] Teacher Manual attendance reads and writes require the current active,
+  assigned teacher. Writes check active enrollment, reject duplicate bulk
+  rows and commit attendance, student InApp notices and actor audit together.
+- [x] The Testing-only PENTA host reviews one attendance mark and its exact
+  InApp notice. Confirmation rechecks assignment, enrollment and saved
+  attendance. Retries recover the same receipt.
+- [x] Passed 34 new native checks, 16 retained attendance checks, 61
+  regular scheduling checks and 24 controlled attendance form checks.
+- [ ] Next with Sol High is protected regular rescheduling. Batch teacher
+  reassignment, conversation UI, Mini qualification and release gates remain open.
+
+[Assigned-teacher attendance evidence](QA/REPORTS/PENTA_TEACHER_ATTENDANCE_2026-11-10.md)
+
 ## Regular class scheduling — 10 November 2026
 
 - [x] Manual create and reschedule validate overlaps using resolved teacher
@@ -10,8 +25,7 @@
   invalidates execution. Receipt recovery has no extra write.
 - [x] Passed 18 schedule form checks, 18 retained Manual HTTP and SQL checks,
   43 new scheduling checks and 81 retained make-up checks.
-- [ ] Next with Sol High. Share the assigned-Teacher attendance boundary,
-  including live assignment, active enrollment and exact InApp effects.
+- [x] Assigned-teacher attendance passed in the next checkpoint.
   Protected regular reschedule and batch reassignment remain separate.
 
 [Scheduling evidence](QA/REPORTS/PENTA_CLASS_SCHEDULING_2026-11-10.md)

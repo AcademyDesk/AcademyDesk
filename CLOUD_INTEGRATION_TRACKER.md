@@ -1,5 +1,15 @@
 # Academy Desk shared integration tracker
 
+## Assigned-teacher attendance — 10 November 2026
+
+- [x] Desktop verified assigned-teacher Manual and protected attendance,
+  exact student InApp effects, stale context refusal and atomic audit.
+- [ ] Desktop owns protected regular rescheduling. Cloud C29 covers guardian
+  access. Cloud C30 claims maintenance enforcement. Their implementation
+  paths are separate from this attendance checkpoint.
+
+[Assigned-teacher attendance evidence](QA/REPORTS/PENTA_TEACHER_ATTENDANCE_2026-11-10.md)
+
 ## Regular class scheduling — 10 November 2026
 
 - [x] Desktop verified the shared scheduling lock, explicit class approval,

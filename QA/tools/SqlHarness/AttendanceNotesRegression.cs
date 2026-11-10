@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 internal static partial class SqlHarnessEntryPoint
 {
-    private static async Task VerifyAttendanceNotesAsync(QaApiFactory factory, HttpClient client)
+    private static async Task VerifyAttendanceNotesAsync(QaApiFactory factory, HttpClient client, QaRunManifest manifest)
     {
         // Consume payloads emitted by actual TSX handlers, not independently reconstructed UI requests.
         var payloads=File.ReadLines("QA/EVIDENCE/logs/phase-2b-attendance-notes-ui.log")
@@ -90,5 +90,6 @@ internal static partial class SqlHarnessEntryPoint
         count++;Console.WriteLine("ATTENDANCENOTES CASE second-session-independence PASS.");
         if(count!=16)throw new InvalidOperationException("Unexpected attendance case count: "+count);
         Console.WriteLine("ATTENDANCENOTES REGRESSION PASS:16 cases; ten actual TSX payloads to real Identity/HTTP/fresh SQL/GET, optional null/clear/trim/unicode/500 characters, session independence and five no-write denials. Browser/device acceptance pending.");
+        await VerifyAssignedTeacherAttendanceAsync(factory, manifest, academy, foreign, batch, student);
     }
 }

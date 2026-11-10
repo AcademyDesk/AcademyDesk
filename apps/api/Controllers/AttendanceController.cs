@@ -1,5 +1,7 @@
 using AcademyDesk.Api.Data;
 using AcademyDesk.Api.Domain.Entities;
+using AcademyDesk.Api.Infrastructure;
+using AcademyDesk.Api.Security;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,8 +21,10 @@ public sealed class AttendanceController(AcademyDeskDbContext dbContext) : Contr
     }
 
     [HttpPost]
+    [AtomicAcademyMutation(IncludePlatformOwner = true)]
     public async Task<ActionResult<AttendanceSummary>> Mark(Guid academyId, Guid sessionId, MarkAttendanceRequest request, CancellationToken cancellationToken)
     {
+        await new ClassSessionSchedulingService(dbContext).LockAsync(academyId, cancellationToken);
         var session = await dbContext.ClassSessions.AsNoTracking().SingleOrDefaultAsync(x => x.Id == sessionId && x.AcademyId == academyId, cancellationToken);
         if (session is null) return NotFound();
         if (!AllowedStatuses.Contains(request.Status, StringComparer.OrdinalIgnoreCase)) return BadRequest(new { message = "Status must be Present, Absent, Late, Excused, or Online." });
