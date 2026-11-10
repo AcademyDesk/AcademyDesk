@@ -1,5 +1,21 @@
 # Academy Desk handoff
 
+## Regular class scheduling — 10 November 2026
+
+- [x] Manual create and reschedule validate overlaps using resolved teacher
+  and branch. Concurrent Manual and PENTA creates share the SQL lock and
+  required audit boundary. An unassigned batch still rejects duplicate start times.
+- [x] Testing-only PENTA create requires explicit approval of the resolved
+  slot, delivery mode and location. A later default assignment or clash
+  invalidates execution. Receipt recovery has no extra write.
+- [x] Passed 18 schedule form checks, 18 retained Manual HTTP and SQL checks,
+  43 new scheduling checks and 81 retained make-up checks.
+- [ ] Next with Sol High. Share the assigned-Teacher attendance boundary,
+  including live assignment, active enrollment and exact InApp effects.
+  Protected regular reschedule and batch reassignment remain separate.
+
+[Scheduling evidence](QA/REPORTS/PENTA_CLASS_SCHEDULING_2026-11-10.md)
+
 ## PENTA make-up scheduling — 10 November 2026
 
 - [x] The Testing-only host prepares, authorizes, schedules and recovers
@@ -8,9 +24,9 @@
 - [x] All 50 retained Manual cases and 31 new authenticated HTTP and SQL
   checks passed. These cover concurrent replay, cross-tenant and role
   denial, stale source and recipient refusal, and audit rollback.
-- [ ] Continue with regular scheduling and assigned-Teacher attendance.
-  Use Sol High for authority, concurrency and required audits. Conversation
-  UI, Mini qualification and production gates remain open.
+- [x] Regular class creation passed in the next scheduling checkpoint.
+  Assigned-Teacher attendance, conversation UI, Mini qualification and
+  production gates remain open.
 
 [Make-up scheduling evidence](QA/REPORTS/PENTA_MAKEUP_SCHEDULING_2026-11-10.md)
 

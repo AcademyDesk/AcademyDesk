@@ -1,5 +1,15 @@
 # Academy Desk shared integration tracker
 
+## Regular class scheduling — 10 November 2026
+
+- [x] Desktop verified the shared scheduling lock, explicit class approval,
+  inherited assignment checks, concurrent writes and required audits.
+- [ ] Desktop owns assigned-Teacher attendance and protected rescheduling.
+  Cloud C28 at `a713a50` covers delegated grading and has no schedule
+  implementation overlap. Native C24–C28 acceptance remains separate.
+
+[Scheduling evidence](QA/REPORTS/PENTA_CLASS_SCHEDULING_2026-11-10.md)
+
 ## PENTA make-up scheduling — 10 November 2026
 
 - [x] Desktop verified 50 retained Manual cases and 31 new authenticated

@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 internal static partial class SqlHarnessEntryPoint
 {
-    private static async Task VerifyScheduleDefaultsAsync(QaApiFactory factory,HttpClient client)
+    private static async Task VerifyScheduleDefaultsAsync(QaApiFactory factory,HttpClient client,QaRunManifest manifest)
     {
         var fixtures=File.ReadLines("QA/EVIDENCE/logs/phase-2b-schedule-defaults-ui.log").Where(x=>x.StartsWith("SCHEDULEDEFAULTS PAYLOAD ",StringComparison.Ordinal))
             .Select(x=>JsonDocument.Parse(x["SCHEDULEDEFAULTS PAYLOAD ".Length..]).RootElement.Clone()).ToArray();
@@ -75,5 +75,6 @@ internal static partial class SqlHarnessEntryPoint
         }
         if(count!=18)throw new InvalidOperationException("Unexpected schedule case count: "+count);
         Console.WriteLine("SCHEDULEDEFAULTS REGRESSION PASS:18 cases; twelve actual TSX payloads to real Identity/HTTP/fresh SQL/GET, current teacher/branch defaults and deliberate overrides, unchanged null inheritance and batch rows, five no-write person/batch/route/auth denials; browser/device pending.");
+        await VerifyClassSchedulingAsync(factory, manifest, academy, foreign);
     }
 }

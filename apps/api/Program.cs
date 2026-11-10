@@ -30,6 +30,8 @@ builder.Services.AddScoped<PentaEnrollmentPreviewService>();
 builder.Services.AddScoped<PentaEnrollmentCreationWorkflow>();
 builder.Services.AddScoped<MakeupSchedulingService>();
 builder.Services.AddScoped<PentaMakeupSchedulingWorkflow>();
+builder.Services.AddScoped<ClassSessionSchedulingService>();
+builder.Services.AddScoped<PentaClassSessionSchedulingWorkflow>();
 builder.Services.AddScoped<TeacherCreationService>();
 builder.Services.AddScoped<StudentOnboardingService>();
 builder.Services.AddScoped<PentaPilotPolicy>();

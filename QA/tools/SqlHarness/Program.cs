@@ -423,7 +423,7 @@ static async Task VerifyRealHttpAsync(QaRunManifest manifest, bool classMediaOnl
             }
             if (auditMode == "--audit-schedule-defaults")
             {
-                await VerifyScheduleDefaultsAsync(factory, client);
+                await VerifyScheduleDefaultsAsync(factory, client, manifest);
                 return;
             }
             if (auditMode == "--audit-calendar-details")
