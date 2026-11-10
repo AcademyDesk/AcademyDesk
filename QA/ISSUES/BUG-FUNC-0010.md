@@ -94,3 +94,28 @@ linked critical and documented acceptance. Existing Identity minimal endpoints,
 static assets/background jobs and already-started work keep their declared
 behavior; do not treat this as a database-write freeze or backup/restore control.
 Five P0/broader-session/release and model qualification gates remain open.
+
+## C31 maintenance notice and read-only recovery — 10 November 2026
+
+C30 enforcement is retained. The client now distinguishes its structured
+maintenance503 from a generic503, then checks the authenticated no-store
+`GET /api/auth/session/availability`. Only that read can establish recovery.
+The notice renders the saved message as text and reflects current server owner
+restriction; ordinary session/auth200 does not dismiss it. It preserves mounted
+forms, does not clear credentials on503, and never replays a business mutation.
+Checks are bounded, coalesced and scoped to the initiating workspace/login;
+logout, replacement, newer signals and late results cannot borrow another login.
+
+Source `b8dec194391c7ec7b8f5220f2305e3657e7da7b6`. Actual HTTP/Identity/InMemory
+availability16 plus retained enforcement26 checks passed. Controlled client35
+and sandboxed Chromium32 passed, across all four workspaces at320/1440. The actual
+Admin form's input identity and entered draft survive maintenance/recovery.
+Chromium uses synthetic API responses; it is not live SQL/model/device acceptance.
+Owner-state transition is synthetic in the browser; current owner authority is
+also tested through real Identity/HTTP. Owners bypass C30 business503 normally,
+so no initial owner notice is promised without a maintenance signal.
+
+[Exact source, combined results, limits and ordered Desktop acceptance](../HANDOFF/C31_MAINTENANCE_NOTICE_2026-11-10.md).
+Remain OPEN for real maintenance SQL/browser/device, linked critical and release
+acceptance. Three Cloud frontend SQL-receipt failures remain; no receipt or issue
+closure is invented. Model loading remains stopped.

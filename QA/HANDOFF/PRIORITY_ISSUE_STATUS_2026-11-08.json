@@ -786,30 +786,35 @@
       "status": "OPEN",
       "finalVerification": "NOT RUN",
       "recordedClosedAndPass": false,
-      "confirmation": "LOCAL SESSION REPAIR. Batches.Update reassignment remains open",
+      "confirmation": "LOCAL SQL REPAIR. Session writes and batch reassignment verified",
       "module": "SCHEDULE",
       "route": "/schedule; /calendar; /batch-setup",
       "recordedSource": "apps/api/Controllers/ClassSessionsController.cs:35",
-      "recordedFix": "Session create and reschedule repaired in the checkpoint below. Batch reassignment pending",
+      "recordedFix": "Session create, reschedule and batch teacher reassignment repaired in the checkpoints below",
       "recordedRegression": "18 form, 18 retained Manual schedule and 81 retained make-up checks passed locally. Device and linked critical acceptance pending",
       "recordedClosureNotes": "Remain OPEN; follow closure requirements in QA README",
-      "latestSection": "Local session checkpoint — 10 November 2026",
+      "latestSection": "Local batch reassignment checkpoint — 10 November 2026",
       "recordedPendingExcerpts": [
-        "| Evidence classification | Static trace; runtime reproduction pending |",
-        "| Fix commit | Session create and reschedule repaired in the checkpoint below. Batch reassignment pending |",
+        "| Evidence classification | Local authenticated HTTP and SQL. Browser/device acceptance pending |",
         "| Regression result | 18 form, 18 retained Manual schedule and 81 retained make-up checks passed locally. Device and linked critical acceptance pending |",
         "| Closure notes | Remain OPEN; follow closure requirements in QA README |",
-        "device and linked critical regression acceptance are also pending."
+        "device and linked critical regression acceptance are also pending.",
+        "The issue remains OPEN for browser, device and linked critical acceptance."
       ],
       "evidenceReferences": [
         {
           "href": "../REPORTS/PENTA_CLASS_SCHEDULING_2026-11-10.md",
           "localExists": true,
           "observation": "Reference presence only, not evidence acceptance"
+        },
+        {
+          "href": "../REPORTS/BATCH_TEACHER_REASSIGNMENT_2026-11-10.md",
+          "localExists": true,
+          "observation": "Reference presence only, not evidence acceptance"
         }
       ],
       "historicalMetadataNeedsReview": false,
-      "issueSha256": "6d26e64d113f48d7667d0288229a83d74edfad837b503597ad61aa94360220d8"
+      "issueSha256": "242857886253efb86a6ccb20fe0f2fe1c1318e4b9022b719b419099b020cadc1"
     },
     {
       "id": "BUG-DATA-0006",
@@ -3020,23 +3025,28 @@
       "recordedFix": "`acc0c9748edcc262831816056d84e9b0769b85b1` (C30 feature return; no deployment)",
       "recordedRegression": "Final API2,415/2,415 PASS with preserved Desktop5927974;unchanged C28 web evidence retained by exact hashes,not rerun",
       "recordedClosureNotes": "Remain OPEN; follow closure requirements in QA README",
-      "latestSection": "C30 operational maintenance enforcement — 10 November 2026",
+      "latestSection": "C31 maintenance notice and read-only recovery — 10 November 2026",
       "recordedPendingExcerpts": [
-        "| Evidence classification | Static trace; runtime reproduction pending |",
         "| Closure notes | Remain OPEN; follow closure requirements in QA README |",
         "Flag is saved and returned by Health, but source search finds no maintenance-mode gate in application access middleware/controllers or frontend navigation. Existing permissions continue unchanged. Runtime NOT RUN.",
         "Remain OPEN for real SQL/owner-audit/replica/in-flight, actual role/browser/device,",
-        "Five P0/broader-session/release and model qualification gates remain open."
+        "Five P0/broader-session/release and model qualification gates remain open.",
+        "Remain OPEN for real maintenance SQL/browser/device, linked critical and release"
       ],
       "evidenceReferences": [
         {
           "href": "C30_MAINTENANCE_ACCESS_2026-11-10.md",
           "localExists": true,
           "observation": "Reference presence only, not evidence acceptance"
+        },
+        {
+          "href": "C31_MAINTENANCE_NOTICE_2026-11-10.md",
+          "localExists": true,
+          "observation": "Reference presence only, not evidence acceptance"
         }
       ],
       "historicalMetadataNeedsReview": false,
-      "issueSha256": "303d5dbc1894d2abe03a1ef322eed93d27352c24b7f4eb8fcdceeb9c90d8ada6"
+      "issueSha256": "3eef80659cde25573cf2950e2a4733c8fb474aa1302e32151e7d0e40798c4488"
     },
     {
       "id": "BUG-FUNC-0011",
