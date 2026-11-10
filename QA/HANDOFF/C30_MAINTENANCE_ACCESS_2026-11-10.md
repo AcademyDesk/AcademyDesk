@@ -7,7 +7,7 @@ BASE:4b9f48af6926175ecfb26af9355c656bf4068207 (clean published C29).
 DESKTOP:29c0a940102e1436304e67c16cd339c1d81204b1; fresh fetch unchanged.
 TASK: BUG-FUNC-0010 saved maintenance mode enforcement for MVC operational API
 reads/writes under /api, with defined platform-owner and authentication recovery.
-SOURCE FIXED / Cloud verification complete; implementation pin pending;
+SOURCE FIXED / Cloud verification complete; source pin recorded;
 native SQL/replica/browser/device acceptance remains open.
 
 Exact MAY MODIFY paths:
@@ -71,7 +71,7 @@ acceptance; Cloud next bounded nonoverlapping non-AI task.
 
 ## Source result and scope
 
-Implementation: SOURCE_PIN_PENDING. Original claim
+Implementation: `acc0c9748edcc262831816056d84e9b0769b85b1`. Original claim
 ba10ecf8c95ce05e4db9f7bbcf4afd0aee03a4ba was pushed before source edits.
 This is an application maintenance control in isolated fixtures; the Cloud
 execution environment and any real platform settings were not changed.

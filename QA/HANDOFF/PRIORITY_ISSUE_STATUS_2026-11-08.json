@@ -3017,12 +3017,12 @@
       "module": "PLATFORM",
       "route": "/platform/control?tab=Settings",
       "recordedSource": "apps/web/src/app/platform/control/page.tsx:835",
-      "recordedFix": "SOURCE_PIN_PENDING (C30 feature return; no deployment)",
+      "recordedFix": "`acc0c9748edcc262831816056d84e9b0769b85b1` (C30 feature return; no deployment)",
       "recordedRegression": "Final API2,415/2,415 PASS;unchanged C28 web evidence retained by exact hashes,not rerun",
       "recordedClosureNotes": "Remain OPEN; follow closure requirements in QA README",
       "latestSection": "C30 operational maintenance enforcement — 10 November 2026",
       "recordedPendingExcerpts": [
-        "| Fix commit | SOURCE_PIN_PENDING (C30 feature return; no deployment) |",
+        "| Evidence classification | Static trace; runtime reproduction pending |",
         "| Closure notes | Remain OPEN; follow closure requirements in QA README |",
         "Flag is saved and returned by Health, but source search finds no maintenance-mode gate in application access middleware/controllers or frontend navigation. Existing permissions continue unchanged. Runtime NOT RUN.",
         "Remain OPEN for real SQL/owner-audit/replica/in-flight, actual role/browser/device,",
@@ -3036,7 +3036,7 @@
         }
       ],
       "historicalMetadataNeedsReview": false,
-      "issueSha256": "ce33f461234c1fb96737c0bdba95d3a0e6267ecf5e4bc9104042007511657c3a"
+      "issueSha256": "c1071862ff4eb60e0812f34061f9fa9bb95e85c2f9ed562cfa2cdb9a8e4fa901"
     },
     {
       "id": "BUG-FUNC-0011",

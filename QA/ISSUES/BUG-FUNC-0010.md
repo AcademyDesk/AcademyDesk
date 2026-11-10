@@ -30,7 +30,7 @@
 | API response | Not captured for this issue; use synthetic request/response in isolated reproduction |
 | Database before/after | Not executed; fixture and fresh-context assertions defined below |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | SOURCE_PIN_PENDING (C30 feature return; no deployment) |
+| Fix commit | `acc0c9748edcc262831816056d84e9b0769b85b1` (C30 feature return; no deployment) |
 | Retest result | 124/124 targeted PASS:26 new maintenance HTTP cases plus98 retained audit/guardian/host/holiday;no new maintenance browser/SQL claim |
 | Regression result | Final API2,415/2,415 PASS;unchanged C28 web evidence retained by exact hashes,not rerun |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
