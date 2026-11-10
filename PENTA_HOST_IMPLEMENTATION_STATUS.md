@@ -1,6 +1,6 @@
 # PENTA host integration status — 5 November 2026
 
-## Backend integration sequence — 9 November 2026
+## Backend integration sequence — 10 November 2026
 
 The Academy Desk host and Manual release work can advance in parallel. Host
 integration uses deterministic test requests and the same domain services as
@@ -13,7 +13,7 @@ then requires both AI-inclusive acceptance and the existing ERP release gates.
 | --- | --- | --- |
 | 1 | Student and batch lookup, academy context, student and teacher intake | Bounded read pilots and protected credential-free intake paths exist. Verify the intended end-to-end operations against the approved host/model contract before enabling them. |
 | 2 | Enrollment | Testing-only create, status and transfer share Manual rules and have protected approval, execution and recovery. The final run passed 23 create, 16 lifecycle, 13 preview and 57 shared native checks. Model and browser acceptance remain open. |
-| 3 | Scheduling, make-up classes and attendance | Start make-up scheduling with the shared domain rules, Offline venue, Online/Hybrid meeting link and explicit preview of queued InApp notifications. Then bind the remaining scheduling and assigned-Teacher attendance operations. |
+| 3 | Scheduling, make-up classes and attendance | Testing-only make-up scheduling shares Manual rules and binds the resolved time, location and queued InApp recipients to explicit approval. All 50 retained Manual and 31 new authenticated HTTP and SQL checks passed. Next is regular scheduling and assigned-Teacher attendance. |
 | 4 | Billing, collection, reconciliation, expenses and payroll | Connect deterministic reads first. Each permitted write needs current finance authority, scoped approval, concurrency and audit rollback evidence, and a recoverable receipt. |
 | 5 | Leads, communications, resources, private media and remaining role journeys | Bind current CRM and portal permissions, provider readiness, consent and private storage rules. Distinguish a queued message from confirmed delivery. |
 | 6 | Private model qualification and UI acceptance | Use the agreed PENTA frontend and versioned Mini handoff. Verify real dialogue, clarification, corrections, refusal, completion and fallback per role. Keep credential and security administration in secure Manual flows. |
@@ -27,8 +27,10 @@ the user-outcome denominator.
 Cloud C24 and C25 are separate Manual finance returns, pinned at `2114c8c`
 and `a40c487`. Desktop still needs to integrate and verify their live invoice,
 family and reminder paths. Preserve the source-bound C23 and session evidence.
-Cloud C26 owns provider settings and meeting availability. Desktop owns the
-enrollment host packet. [Enrollment lifecycle evidence](QA/REPORTS/PENTA_ENROLLMENT_LIFECYCLE_2026-11-09.md)
+Cloud C26 owns provider settings and meeting availability. C27 covers Sales
+trial permissions and lead conversion. Desktop owns the scheduling and
+attendance host packet.
+[Make-up scheduling evidence](QA/REPORTS/PENTA_MAKEUP_SCHEDULING_2026-11-10.md)
 
 ## Cloud conversation/container source integrated — 6 November 2026
 

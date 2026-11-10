@@ -12,7 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 internal static partial class SqlHarnessEntryPoint
 {
-    private static async Task VerifyMakeupLocationAsync(QaApiFactory factory, HttpClient client)
+    private static async Task VerifyMakeupLocationAsync(QaApiFactory factory, HttpClient client, QaRunManifest manifest)
     {
         Guid academy, foreign, student, teacher, foreignStudent, foreignTeacher, foreignBatch, course, parent, actor;
         const string link = "https://meeting.example.invalid/makeup";
@@ -46,10 +46,10 @@ internal static partial class SqlHarnessEntryPoint
         var delegated = await LoginAsync(client, "qa-makeup-granted@example.invalid", "Synthetic!39Ab");
         var deniedOperations = await LoginAsync(client, "qa-makeup-denied@example.invalid", "Synthetic!39Ab");
         client.DefaultRequestHeaders.Authorization = null;
-        async Task<Guid> Prepare(string sourceMode, string? location, bool nullTeacher = false, bool noNext = false)
+        async Task<Guid> Prepare(string sourceMode, string? location, bool nullTeacher = false, bool noNext = false, string? fixtureName = null)
         {
             using var scope = factory.Services.CreateScope(); var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
-            var batch = new Batch { AcademyId = academy, CourseId = course, Name = "Synthetic makeup " + count, TeacherId = teacher, SessionMinutes = 75 }; db.Add(batch);
+            var batch = new Batch { AcademyId = academy, CourseId = course, Name = fixtureName ?? "Synthetic makeup " + count, TeacherId = teacher, SessionMinutes = 75 }; db.Add(batch);
             db.AddRange(new ClassSession { AcademyId = academy, BatchId = batch.Id, TeacherId = nullTeacher ? null : teacher, StartUtc = start, EndUtc = start.AddMinutes(45), DeliveryMode = sourceMode, RoomName = location, Status = noNext ? "Cancelled" : "Scheduled" },
                 new ClassSession { AcademyId = academy, BatchId = batch.Id, TeacherId = teacher, StartUtc = start.AddDays(1), EndUtc = start.AddDays(1).AddMinutes(45), DeliveryMode = "Online", RoomName = "Wrong later link", Status = noNext ? "Cancelled" : "Scheduled" },
                 new ClassSession { AcademyId = foreign, BatchId = batch.Id, StartUtc = start.AddHours(-1), EndUtc = start, DeliveryMode = "Offline", RoomName = "Wrong foreign room" },
@@ -132,5 +132,8 @@ internal static partial class SqlHarnessEntryPoint
         Console.WriteLine("MAKEUPLOCATION FIXTURE " + JsonSerializer.Serialize(new { makeups = owned }, new JsonSerializerOptions(JsonSerializerDefaults.Web)));
         if (count != 50) throw new InvalidOperationException("Unexpected makeup case count: " + count);
         Console.WriteLine("MAKEUPLOCATION REGRESSION PASS:50 cases; manual/inherited Offline Online Hybrid and InPerson alias, only relevant location, optional physical rooms/required virtual links, teacher fallback and earliest owned future selection, scoped GET/fresh SQL/response/queued student-parent notices/success audit, no rejected writes; no external notification delivery; browser/status/concurrency/audit rollback/release pending.");
+        var pentaBatch = 0;
+        await VerifyPentaMakeupAsync(factory, manifest, academy, foreign, student, foreignStudent, parent, actor, start,
+            (mode, location) => Prepare(mode, location, fixtureName: $"Synthetic PENTA makeup {++pentaBatch}"));
     }
 }

@@ -413,7 +413,7 @@ static async Task VerifyRealHttpAsync(QaRunManifest manifest, bool classMediaOnl
             }
             if (auditMode == "--audit-makeup-location")
             {
-                await VerifyMakeupLocationAsync(factory, client);
+                await VerifyMakeupLocationAsync(factory, client, manifest);
                 return;
             }
             if (auditMode == "--audit-leave-identity")
