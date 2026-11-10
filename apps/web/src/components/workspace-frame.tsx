@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { RoleManualModeBar } from "@/components/penta/role-penta-entry";
 import { EnterpriseShell } from "@/components/enterprise-shell";
+import { ServiceAvailabilityNotice } from "@/components/service-availability-notice";
 import { isPortalSignOutEvent, portalAccessToken, portalSessionEpoch, portalSignOutEvent, portalSessionChangedEvent, portalWorkspaceForPath, type PortalWorkspace } from "@/lib/api";
 
 const publicRoutes = new Set(["/login", "/register", "/portal", "/platform", "/teacher", "/penta", "/teacher/ai", "/portal/ai"]);
@@ -61,5 +62,5 @@ export function WorkspaceFrame({ children }: { children: React.ReactNode }) {
   // Route-keyed boundary discards obsolete UI state when a new workspace is opened.
   const workspace = portalWorkspaceForPath(pathname);
   const aiEntry = pathname === "/penta" || pathname.startsWith("/penta/") || pathname.endsWith("/ai");
-  return <WorkspaceSessionBoundary key={pathname} workspace={workspace}>{!aiEntry && <RoleManualModeBar workspace={workspace} />}{content}</WorkspaceSessionBoundary>;
+  return <WorkspaceSessionBoundary key={pathname} workspace={workspace}>{!aiEntry && <RoleManualModeBar workspace={workspace} />}<ServiceAvailabilityNotice workspace={workspace} />{content}</WorkspaceSessionBoundary>;
 }

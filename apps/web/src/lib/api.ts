@@ -3,6 +3,8 @@ export const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5092"
 export type PortalWorkspace = "AcademyAdmin" | "Teacher" | "Portal" | "Platform";
 export const portalSignOutEvent = "academydesk:portal-sign-out";
 export const portalSessionChangedEvent = "academydesk:portal-session-changed";
+export const portalMaintenanceEvent = "academydesk:portal-maintenance";
+export type PortalMaintenanceSignal = { workspace: PortalWorkspace; epoch: string | null; serial: number };
 
 type Session = { accessToken: string | null; refreshToken: string | null; generation: number; epoch: string | null };
 type RenewedSession = Session & { accessToken: string };
@@ -11,10 +13,68 @@ type RefreshFlight = { session: Session; controller: AbortController; consumers:
 // across tabs with a workspace-scoped Web Lock (not a login/logout transaction).
 const sessionGenerations = new Map<PortalWorkspace, number>();
 const refreshFlights = new Map<PortalWorkspace, RefreshFlight>();
+const maintenanceSignals = new Map<PortalWorkspace, { signal: PortalMaintenanceSignal; session: Session }>();
+let maintenanceSerial = 0;
 const sessionGeneration = (workspace: PortalWorkspace) => sessionGenerations.get(workspace) ?? 0;
 function invalidateSession(workspace: PortalWorkspace) {
   sessionGenerations.set(workspace, sessionGeneration(workspace) + 1);
   refreshFlights.delete(workspace);
+  maintenanceSignals.delete(workspace);
+}
+
+/** A non-authoritative edge; only a fresh authenticated availability GET establishes state. */
+export function readPortalMaintenanceSignal(workspace: PortalWorkspace): PortalMaintenanceSignal | null {
+  const hint = maintenanceSignals.get(workspace);
+  return hint && sessionMatches(workspace, hint.session) ? hint.signal : null;
+}
+
+export function acknowledgePortalMaintenanceSignal(workspace: PortalWorkspace, serial: number) {
+  if (maintenanceSignals.get(workspace)?.signal.serial === serial) maintenanceSignals.delete(workspace);
+}
+
+function observeMaintenance(response: Response, path: string, workspace: PortalWorkspace, session: Session, ownBearer: boolean, signal?: AbortSignal | null) {
+  if (response.status !== 503 || path.split("?")[0] === "/api/auth/session/availability" || !ownBearer || !session.accessToken?.trim() ||
+      typeof window === "undefined" || typeof window.dispatchEvent !== "function" || typeof CustomEvent === "undefined" ||
+      typeof response.clone !== "function" || signal?.aborted || !sessionMatches(workspace, session) || currentWorkspace() !== workspace) return;
+  // Do not await this hint, consume the caller's body, refresh a503 or replay a write.
+  void (async () => {
+    let reader: ReadableStreamDefaultReader<Uint8Array> | undefined;
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+    let onAbort: (() => void) | undefined;
+    try {
+      reader = response.clone().body?.getReader();
+      if (!reader) return;
+      const stopped = new Promise<never>((_, reject) => {
+        onAbort = () => reject(new Error("Maintenance hint cancelled"));
+        timeout = setTimeout(onAbort, 1500);
+        signal?.addEventListener("abort", onAbort, { once: true });
+        if (signal?.aborted) onAbort();
+      });
+      const decoder = new TextDecoder();
+      let bytes = 0, body = "";
+      while (true) {
+        const chunk = await Promise.race([reader.read(), stopped]);
+        if (chunk.done) break;
+        bytes += chunk.value.byteLength;
+        if (bytes > 8192) return;
+        body += decoder.decode(chunk.value, { stream: true });
+      }
+      body += decoder.decode();
+      const value = JSON.parse(body);
+      if (value?.code !== "platform_maintenance" || value?.maintenanceMode !== true || typeof value?.message !== "string" || !value.message.trim() ||
+          signal?.aborted || !sessionMatches(workspace, session) || currentWorkspace() !== workspace) return;
+      const hint = { workspace, epoch: session.epoch, serial: ++maintenanceSerial };
+      maintenanceSignals.set(workspace, { signal: hint, session });
+      window.dispatchEvent(new CustomEvent(portalMaintenanceEvent, { detail: hint }));
+    } catch {
+      // Diagnostics must never change the original transport result.
+    } finally {
+      if (timeout !== undefined) clearTimeout(timeout);
+      if (onAbort) signal?.removeEventListener("abort", onAbort);
+      // Tee cancellation can wait for the caller's branch. Never await it here.
+      void reader?.cancel().catch(() => {});
+    }
+  })();
 }
 
 function currentWorkspace(): PortalWorkspace {
@@ -221,6 +281,8 @@ export async function academyApi(path: string, init: RequestInit = {}) {
     return fetch(`${apiUrl}${path}`, { ...init, headers });
   };
   const response = await request();
+  const ownBearer = Boolean(originalToken) && originalHeaders.get("Authorization") === `Bearer ${originalToken}`;
+  observeMaintenance(response, path, workspace, session, ownBearer, init.signal);
   if (response.status !== 401 || path.startsWith("/api/auth/refresh") || init.signal?.aborted) return response;
 
   // Explicit foreign credentials and replaced/signed-out sessions must not be refreshed on this account's behalf.
@@ -233,5 +295,7 @@ export async function academyApi(path: string, init: RequestInit = {}) {
   } else if (!flight?.result && !sessionMatches(workspace, session)) return response;
   const renewed = await waitForRefresh(workspace, flight!, init.signal);
   if (!renewed || init.signal?.aborted || !sessionMatches(workspace, renewed)) return response;
-  return request(renewed.accessToken);
+  const replay = await request(renewed.accessToken);
+  observeMaintenance(replay, path, workspace, renewed, ownBearer, init.signal);
+  return replay;
 }

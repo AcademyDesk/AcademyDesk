@@ -1,4 +1,6 @@
 using AcademyDesk.Api.Domain.Identity;
+using AcademyDesk.Api.Data;
+using AcademyDesk.Api.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -10,6 +12,18 @@ namespace AcademyDesk.Api.Controllers;
 [Route("api/auth/session")]
 public sealed class AuthSessionController(UserManager<ApplicationUser> users, IWebHostEnvironment environment) : ControllerBase
 {
+    [HttpGet("availability")]
+    public async Task<ActionResult> Availability([FromServices] AcademyDeskDbContext db, CancellationToken token)
+    {
+        var user = await users.GetUserAsync(User);
+        if (user is null) return Unauthorized();
+        var state = await PlatformMaintenancePolicy.ReadAsync(db, token);
+        var enabled = state?.Enabled == true;
+        Response.Headers.CacheControl = "no-store";
+        return Ok(new { maintenanceMode = enabled, restricted = enabled && !user.IsPlatformOwner,
+            message = enabled ? (string.IsNullOrWhiteSpace(state!.Message) ? PlatformMaintenancePolicy.DefaultMessage : state.Message.Trim()) : null });
+    }
+
     [HttpGet]
     public async Task<ActionResult<SessionSummary>> Current(CancellationToken token)
     {

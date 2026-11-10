@@ -16,6 +16,7 @@ internal static class PlatformMaintenancePolicy
         context.ActionDescriptor is ControllerActionDescriptor action &&
         (context.Controller is AuthSessionController &&
             (action.MethodInfo.Name == nameof(AuthSessionController.Current) ||
+             action.MethodInfo.Name == nameof(AuthSessionController.Availability) ||
              action.MethodInfo.Name == nameof(AuthSessionController.ChangePassword)) ||
          context.Controller is PortalController && action.MethodInfo.Name == nameof(PortalController.ChangePassword));
 
