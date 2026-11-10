@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | STATIC-FINDING |
+| Confirmation status | LOCAL SESSION REPAIR. Batches.Update reassignment remains open |
 | Final verification | NOT RUN |
 | Severity | Major scheduling integrity |
 | Priority | P1 |
@@ -30,9 +30,9 @@
 | API response | Not captured for this issue; use synthetic request/response in isolated reproduction |
 | Database before/after | Not executed; fixture and fresh-context assertions defined below |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | Not implemented (Phase 1) |
-| Retest result | NOT RUN |
-| Regression result | NOT RUN |
+| Fix commit | Session create and reschedule repaired in the checkpoint below. Batch reassignment pending |
+| Retest result | Local Manual session create and reschedule SQL PASS. See checkpoint below |
+| Regression result | 18 form, 18 retained Manual schedule and 81 retained make-up checks passed locally. Device and linked critical acceptance pending |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
 ## Exact reproduction
@@ -69,3 +69,19 @@ Teacher double bookings and contradictory calendars.
 SCHEDULE-RULE-001: SQL integration for inherited/explicit teacher and adjacent/overlapping times; explicit/inherited branch and same-room cases; parallel schedule writes; batch teacher/name/status changes with future, past, substitute and non-Scheduled sessions, preserving cross-tenant isolation.
 
 Also run all endpoint/form cases pointing to this issue in QA/03_TEST_MATRIX.md and the critical regression suite before closure.
+
+## Local session checkpoint — 10 November 2026
+
+Manual session create now checks the resolved teacher and branch. A move
+or reopening checks the occupied slot while excluding the session itself.
+Cancellation still releases the slot. Adjacent classes and the same room
+name at a different branch are covered. Manual and Testing-only PENTA
+create share the academy SQL lock, including duplicate starts for batches
+with no assigned teacher or room. The required actor audit commits with
+the write.
+
+The issue stays OPEN. The batch-edit path still propagates future teacher
+assignment and needs its own clash and substitute policy checks. Browser,
+device and linked critical regression acceptance are also pending.
+
+[Local SQL and form evidence](../REPORTS/PENTA_CLASS_SCHEDULING_2026-11-10.md)
