@@ -546,7 +546,7 @@ static async Task VerifyRealHttpAsync(QaRunManifest manifest, bool classMediaOnl
         }
         if (financeConsumersOnly)
         {
-            await VerifyFinanceConsumersAsync(factory, client);
+            await VerifyFinanceConsumersAsync(factory, client, manifest);
             return; // Bounded read-view/reminder gate; not critical suite or restoration policy acceptance.
         }
         if (paymentTransitionOnly)

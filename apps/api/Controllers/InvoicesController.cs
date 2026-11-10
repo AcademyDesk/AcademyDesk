@@ -1,6 +1,7 @@
 using AcademyDesk.Api.Data;
 using AcademyDesk.Api.Domain.Entities;
 using AcademyDesk.Api.Infrastructure;
+using AcademyDesk.Api.ReadModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,7 +12,8 @@ namespace AcademyDesk.Api.Controllers;
 public sealed class InvoicesController(AcademyDeskDbContext dbContext) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<InvoiceSummary>>> List(Guid academyId, CancellationToken cancellationToken) => Ok(await dbContext.Invoices.AsNoTracking().Where(x => x.AcademyId == academyId).OrderByDescending(x => x.IssuedDate).Select(x => new InvoiceSummary(x.Id, x.InvoiceNumber, x.StudentId, x.FeePlanId, x.TotalAmount, x.AdjustedAmount, dbContext.Payments.Where(payment => payment.AcademyId == academyId && payment.InvoiceId == x.Id && (payment.Status == "Completed" || payment.Status == "Reconciled") && payment.Currency.Trim().ToUpper() == x.Currency.Trim().ToUpper()).Sum(payment => (decimal?)payment.Amount) ?? 0, x.Currency, x.IssuedDate, x.DueDate, x.Status)).ToListAsync(cancellationToken));
+    public async Task<ActionResult<IReadOnlyList<InvoiceSummary>>> List(Guid academyId, CancellationToken cancellationToken) =>
+        Ok(await InvoiceReadModel.Query(dbContext, academyId).ToListAsync(cancellationToken));
 
     // Finance screens need billing identities, not student-management/profile access.
     // This action inherits the existing Invoices finance permission and module gate.
