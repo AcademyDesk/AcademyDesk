@@ -1,5 +1,6 @@
 using AcademyDesk.Api.Data;
 using AcademyDesk.Api.Domain.Entities;
+using AcademyDesk.Api.ReadModels;
 using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -44,7 +45,7 @@ public sealed class PayrollController(AcademyDeskDbContext db, IdentityDbContext
 
     [HttpGet("payouts")]
     public async Task<ActionResult<IReadOnlyList<PayrollPayoutSummary>>> Payouts(Guid academyId, CancellationToken token) =>
-        Ok(await db.PayrollPayouts.AsNoTracking().Where(x => x.AcademyId == academyId).OrderByDescending(x => x.PaidAtUtc)
+        Ok(await PayrollReadModel.Query(db, academyId)
             .Select(x => new PayrollPayoutSummary(x.Id, x.PayrollProfileId,
                 x.IdentityRecordedAtUtc != null && x.WorkerNameSnapshot != null && x.WorkerTypeSnapshot != null ? x.WorkerNameSnapshot : "Unavailable worker",
                 x.IdentityRecordedAtUtc != null && x.WorkerNameSnapshot != null && x.WorkerTypeSnapshot != null ? x.WorkerTypeSnapshot : "Unknown",

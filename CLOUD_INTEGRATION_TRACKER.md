@@ -1,11 +1,23 @@
 # Academy Desk shared integration tracker
 
+## PENTA expense and payroll reads — 10 November 2026
+
+- [x] Desktop added protected expense and payroll previews using the same
+  ledger sources as Manual. Each response is limited to 20 rows, uses exact
+  decimal strings, and requires current tenant authority and a saved audit.
+- [ ] Desktop owns protected finance conversation wiring next. Cloud C32
+  at `28be47a` owns the enrollment lifecycle return and C33 at `f365ad2`
+  claims separate enrollment options.
+
+[Expense and payroll evidence](QA/REPORTS/PENTA_EXPENSE_PAYROLL_READS_2026-11-10.md)
+
 ## PENTA collections and reconciliation reads — 10 November 2026
 
 - [x] Desktop verified bounded collection and reconciliation previews,
   Manual parity, exact currency treatment, current role and required audit.
-- [ ] Desktop owns expense and payroll read detail next. Cloud C31 at
-  `cc1bae0` covers separate client maintenance feedback and recovery.
+- [x] Desktop covered expense and payroll read detail in the following
+  checkpoint. Cloud C31 at `cc1bae0` covers separate client maintenance
+  feedback and recovery.
 
 [Collection and reconciliation evidence](QA/REPORTS/PENTA_COLLECTION_RECONCILIATION_READS_2026-11-10.md)
 
