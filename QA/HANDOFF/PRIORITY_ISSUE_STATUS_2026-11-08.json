@@ -3018,7 +3018,7 @@
       "route": "/platform/control?tab=Settings",
       "recordedSource": "apps/web/src/app/platform/control/page.tsx:835",
       "recordedFix": "`acc0c9748edcc262831816056d84e9b0769b85b1` (C30 feature return; no deployment)",
-      "recordedRegression": "Final API2,415/2,415 PASS;unchanged C28 web evidence retained by exact hashes,not rerun",
+      "recordedRegression": "Final API2,415/2,415 PASS with preserved Desktop5927974;unchanged C28 web evidence retained by exact hashes,not rerun",
       "recordedClosureNotes": "Remain OPEN; follow closure requirements in QA README",
       "latestSection": "C30 operational maintenance enforcement — 10 November 2026",
       "recordedPendingExcerpts": [
@@ -3036,7 +3036,7 @@
         }
       ],
       "historicalMetadataNeedsReview": false,
-      "issueSha256": "c1071862ff4eb60e0812f34061f9fa9bb95e85c2f9ed562cfa2cdb9a8e4fa901"
+      "issueSha256": "303d5dbc1894d2abe03a1ef322eed93d27352c24b7f4eb8fcdceeb9c90d8ada6"
     },
     {
       "id": "BUG-FUNC-0011",

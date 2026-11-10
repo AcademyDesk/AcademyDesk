@@ -4,7 +4,8 @@ MODEL: Sol High for operational access and owner recovery; Medium for settled do
 TOOL: Cloud Codex. REPOSITORY: AcademyDesk/AcademyDesk.
 BRANCH: codex/cloud-c30-maintenance-access-20261110.
 BASE:4b9f48af6926175ecfb26af9355c656bf4068207 (clean published C29).
-DESKTOP:29c0a940102e1436304e67c16cd339c1d81204b1; fresh fetch unchanged.
+DESKTOP:29c0a940102e1436304e67c16cd339c1d81204b1 initially; final concurrent
+5927974bd6c2dd0646fa8287a70ccda711ecfdc4 imported with provenance.
 TASK: BUG-FUNC-0010 saved maintenance mode enforcement for MVC operational API
 reads/writes under /api, with defined platform-owner and authentication recovery.
 SOURCE FIXED / Cloud verification complete; source pin recorded;
@@ -114,7 +115,8 @@ complete database-write freeze.
 | Scoped target |119/119 PASS, including8 retained actual default-host composition checks. Internal private lease, environment/flag refusals, two-read bound and absent model services preserved; no replacement database/interpreter supplied by those host fixtures |
 | Initial full API |2,414 PASS/1 FAIL:retained anonymous holiday authorization/no-SQL check caught a maintenance query before authentication. Retained failure; authenticated-only maintenance lookup restores the earlier no-SQL refusal contract |
 | Final corrected target | 124/124 PASS:26 new maintenance and98 retained audit/guardian/default-host/holiday controls;zero skips |
-| Full combined API |2,415/2,415 PASS;zero failures/skips on final C30+Desktop29c0a94 source |
+| Full API before final Desktop attendance import |2,415/2,415 PASS;zero failures/skips on C30+Desktop29c0a94 |
+| Final combined API | 2,415/2,415 PASS with Desktop5927974;zero failures/skips |
 | Web/build/browser reuse |All164 tracked web source hashes and570 export files match pinned C28 implementation db012648e608e1fa5cf7291ce0271af3f4b1407d/publication a713a506853733215111d4fb29fc725f14c521d8. Its build/types/lint,29 controlled and24 native synthetic cases passed;full frontend2,343 PASS/3 genuine missing-SQL-receipt failures. These are retained unchanged-UI results, not a new C30 maintenance browser/device run |
 | Release guard |15/15 controls PASS; actual guard exit1 keeps five P0 records and the required broader-session acceptance record open |
 | Hosted CI |UNKNOWN; this feature push does not trigger verify.yml main/release-export-security filters. No workflow dispatch/PR/main merge/Azure deployment |
@@ -187,3 +189,22 @@ client paths first, and preserve current session renewal and draft safeguards. N
 keep the explicit stop on model loading/download/inference/training/activation.
 Mini/Plus/Pro remain unqualified, Ultra deferred and90% eligible conversational
 outcomes unaccepted. No main/Azure/environment publication/public-access change.
+
+
+## Final concurrent Desktop attendance return
+
+Desktop5927974bd6c2dd0646fa8287a70ccda711ecfdc4 was discovered during the
+publication check. Its13 changed paths were imported byte-exact with cherry-pick
+provenance. No maintenance source path overlapped. A fresh full API run binds
+maintenance to the combined source; the earlier2,415-pass run remains retained
+for its earlier Desktop pin.
+
+The preserved report records34 new native assigned-teacher checks,16 retained
+attendance,61 regular scheduling and24 controlled attendance form checks. Those
+native SQL results were not rerun in Cloud. Protected regular rescheduling is
+Desktop's next packet; batch teacher reassignment, conversation UI, Mini and
+production acceptance remain open. This deterministic host integration neither
+loads models nor closes the release gate.
+
+Combined source before final documentation pin: `b5b73b030bdc22684fd70a8a6406e9ba21619a60`.
+Maintenance implementation `acc0c9748edcc262831816056d84e9b0769b85b1` is unchanged within this composite.
