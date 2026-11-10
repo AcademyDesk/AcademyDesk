@@ -249,6 +249,7 @@ public sealed class PlatformControlController(AcademyDeskDbContext db, UserManag
         // stale copies instead of making the Settings screen unavailable.
         var records = await db.PlatformSettings
             .OrderByDescending(x => x.UpdatedAtUtc ?? x.CreatedAtUtc)
+            .ThenByDescending(x => x.Id)
             .ToListAsync(token);
         if (records.Count > 0)
         {

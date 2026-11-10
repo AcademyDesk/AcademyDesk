@@ -1,6 +1,6 @@
 # All-priority issue acceptance inventory — 8 November 2026
 
-120 issue files: 5 P0, 102 P1, 13 P2, 0 P3. 0 have both literal CLOSED and PASS markers. 24 have old header metadata that needs reconciliation with appended scoped evidence.
+120 issue files: 5 P0, 102 P1, 13 P2, 0 P3. 0 have both literal CLOSED and PASS markers. 23 have old header metadata that needs reconciliation with appended scoped evidence.
 
 This is not a list of untouched bugs or an acceptance verdict. Existing fixes and source-bound SQL/browser results are retained. Quoted pending statements may be historical; use the exact source and linked reports to determine the final retest. No issue/priority/exception is changed by this generator. A P1 record carrying an additional P0 session gate keeps that note.
 
@@ -88,7 +88,7 @@ This is not a list of untouched bugs or an acceptance verdict. Existing fixes an
 | [BUG-FUNC-0005](../ISSUES/BUG-FUNC-0005.md) | P1 | OPEN | Live verification on 7 November 2026 | Status remains OPEN; live HTTP/SQL/role/device closure is still required. See |
 | [BUG-FUNC-0006](../ISSUES/BUG-FUNC-0006.md) | P1 | OPEN | C25 reminder channel, Finance lookup and recovery — 9 November 2026 | [Finance access regression](../REPORTS/PHASE_2B_FINANCE_ACCESS_REGRESSION.md) reuses accepted G03 mappings. In each of two fresh real Identity/HTTP/SQL runs FinanceUser succeeds on the mapped finance actions but Students and AdminWorkItems GET return 403; captured financial/notification state unchanged. The accepted page source requires those prerequisites. |
 | [BUG-FUNC-0007](../ISSUES/BUG-FUNC-0007.md) | P1 | OPEN | Related / required regression | 450: async function addFile(event: React.FormEvent<HTMLFormElement>) { event.preventDefault(); const form = new FormData(event.currentTarget); if (pendingFile) { await upload(pendingFile, String(form.get("title") \|\| pendingFile.name), String(form.get("description") \|\| ""), "Attachment"); stageFile(null); event.currentTarget.reset(); } else setMessage("Choose |
-| [BUG-FUNC-0010](../ISSUES/BUG-FUNC-0010.md) | P1 | OPEN | Related / required regression | Flag is saved and returned by Health, but source search finds no maintenance-mode gate in application access middleware/controllers or frontend navigation. Existing permissions continue unchanged. Runtime NOT RUN. |
+| [BUG-FUNC-0010](../ISSUES/BUG-FUNC-0010.md) | P1 | OPEN | C30 operational maintenance enforcement — 10 November 2026 | Five P0/broader-session/release and model qualification gates remain open. |
 | [BUG-FUNC-0011](../ISSUES/BUG-FUNC-0011.md) | P1 | OPEN | Local support acceptance — 8 November 2026 | Academy offers Critical and API preserves it. Owner urgentCases accepts only High or Urgent, so Critical requests appear in All cases but not High priority. Runtime NOT RUN. |
 | [BUG-FUNC-0013](../ISSUES/BUG-FUNC-0013.md) | P1 | OPEN | C27 source repair and scoped verification — 9 November 2026 | legacy dashboard and all linked critical/documented acceptance remain pending. |
 | [BUG-FUNC-0015](../ISSUES/BUG-FUNC-0015.md) | P1 | OPEN | C28 delegated grading lifecycle — 10 November 2026 | Remain OPEN for real Identity/HTTP/SQL grants/module/tenant/audit rollback, |

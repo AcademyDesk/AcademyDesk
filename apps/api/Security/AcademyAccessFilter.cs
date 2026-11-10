@@ -14,7 +14,8 @@ namespace AcademyDesk.Api.Security;
 
 /// <summary>
 /// Prevents an authenticated user from reading or changing another academy's data.
-/// It applies to every controller action that has an academyId route parameter.
+/// Academy authorization applies to actions with an academyId route parameter.
+/// Current platform maintenance also gates operational actions without that route.
 /// </summary>
 public sealed class AcademyAccessFilter(UserManager<ApplicationUser> userManager, IdentityDbContext identityDb, AcademyDeskDbContext academyDb) : IAsyncActionFilter
 {
@@ -29,6 +30,35 @@ public sealed class AcademyAccessFilter(UserManager<ApplicationUser> userManager
         ActionExecutingContext context,
         ActionExecutionDelegate next)
     {
+        if (context.HttpContext.User.Identity?.IsAuthenticated == true &&
+            context.HttpContext.Request.Path.StartsWithSegments("/api") && !PlatformMaintenancePolicy.IsRecoveryAction(context))
+        {
+            var maintenance = await PlatformMaintenancePolicy.ReadAsync(academyDb, context.HttpContext.RequestAborted);
+            if (maintenance?.Enabled == true)
+            {
+                // Resolve current server authority; role names or old bearer
+                // claims must not create a maintenance recovery bypass.
+                var actor = await userManager.GetUserAsync(context.HttpContext.User);
+                if (actor is null)
+                {
+                    context.Result = new UnauthorizedResult();
+                    return;
+                }
+                if (!actor.IsPlatformOwner)
+                {
+                    context.HttpContext.Response.Headers.CacheControl = "no-store";
+                    context.Result = new ObjectResult(new
+                    {
+                        code = "platform_maintenance",
+                        maintenanceMode = true,
+                        message = string.IsNullOrWhiteSpace(maintenance.Message)
+                            ? PlatformMaintenancePolicy.DefaultMessage : maintenance.Message.Trim()
+                    }) { StatusCode = StatusCodes.Status503ServiceUnavailable };
+                    return;
+                }
+            }
+        }
+
         if (!context.ActionArguments.TryGetValue("academyId", out var routeValue) || routeValue is not Guid academyId)
         {
             await next();

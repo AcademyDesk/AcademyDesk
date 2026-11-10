@@ -3,8 +3,8 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | STATIC-FINDING |
-| Final verification | NOT RUN |
+| Confirmation status | RUNTIME-REPRODUCED / C30 scoped Cloud API repair verified |
+| Final verification | C30 HTTP/Identity/InMemory and retained host controls PASS; native SQL/replica/browser/device/critical acceptance pending |
 | Severity | Major ineffective operational control |
 | Priority | P1 |
 | Category | FUNC |
@@ -30,9 +30,9 @@
 | API response | Not captured for this issue; use synthetic request/response in isolated reproduction |
 | Database before/after | Not executed; fixture and fresh-context assertions defined below |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | Not implemented (Phase 1) |
-| Retest result | NOT RUN |
-| Regression result | NOT RUN |
+| Fix commit | SOURCE_PIN_PENDING (C30 feature return; no deployment) |
+| Retest result | 124/124 targeted PASS:26 new maintenance HTTP cases plus98 retained audit/guardian/host/holiday;no new maintenance browser/SQL claim |
+| Regression result | Final API2,415/2,415 PASS;unchanged C28 web evidence retained by exact hashes,not rerun |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
 ## Exact reproduction
@@ -69,3 +69,28 @@ Operations relying on the maintenance toggle to prevent use during maintenance; 
 PLATFORM-MAINTENANCE-001: Real HTTP and browser checks for enabled/disabled maintenance, permitted recovery actors and approved read/write policy, fresh settings reads and existing sessions; preserve owner recovery and normal authorization.
 
 Also run all endpoint/form cases pointing to this issue in QA/03_TEST_MATRIX.md and the critical regression suite before closure.
+
+## C30 operational maintenance enforcement — 10 November 2026
+
+Historical source evidence above is retained. Saved maintenance now gates
+ordinary MVC business /api reads/writes with503 and saved/default plain message,
+no-store and no action/success-audit execution. Current server platform-owner
+recovery, authentication/health and exact session/password recovery remain.
+Missing/off settings preserve behavior; current setting selection is deterministic
+and the read gate does not create or clean settings. Internal Testing-only leased
+context/model-free host behavior is preserved. No Identity/session rewrite.
+
+Original26 actual HTTP controls4 PASS/22 FAIL; final124/124 targeted PASS including
+26 new and98 retained audit/guardian/default-host/holiday checks. An interim anonymous
+503 regression was retained and corrected to401 with the assertion unchanged.
+A retained full-run anonymous/no-SQL failure was also corrected before final
+regression by checking maintenance only after authentication. The full combined
+API result and exact source pins are in the handoff.
+
+[Exact C30 policy, source/results and ordered native SQL/replica/browser/device tasks](../HANDOFF/C30_MAINTENANCE_ACCESS_2026-11-10.md).
+
+Remain OPEN for real SQL/owner-audit/replica/in-flight, actual role/browser/device,
+linked critical and documented acceptance. Existing Identity minimal endpoints,
+static assets/background jobs and already-started work keep their declared
+behavior; do not treat this as a database-write freeze or backup/restore control.
+Five P0/broader-session/release and model qualification gates remain open.
