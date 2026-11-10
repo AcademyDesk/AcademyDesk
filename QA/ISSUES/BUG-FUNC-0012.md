@@ -69,3 +69,18 @@ Branch/course/batch/enrollment management after network interruption; page reloa
 ACADEMY-RECOVERY-001: Browser mocked transport rejection, HTTP403/500, timeout after possible persistence, refresh failure and success; assert busy cleanup, honest durable notice, preserved values and authoritative readback before retry.
 
 Also run all endpoint/form cases pointing to this issue in QA/03_TEST_MATRIX.md and the critical regression suite before closure.
+
+## C32 enrollment subset — 10 November 2026
+
+Client source `56555fa5946dedc0b28f166d13070ef141cf4407` replaces the enrollment
+status handler's missing exception/finally path with guarded review, useful server
+errors and explicit unknown-save recovery. Creation now shares its pending guard
+and truthful readback handling. Rejected requests release busy state and preserve
+entries; possible persistence requires fresh records and deliberate review/new
+intent. Reload never replays POST/PUT.38 controlled and40 synthetic-API Chromium
+checks passed; full results and native tasks are in the
+[C32 return](../HANDOFF/C32_ENROLLMENT_LIFECYCLE_2026-11-10.md).
+
+Only the enrollment page is changed by C32. Branch/course/batch and broader live
+SQL/browser/device acceptance retain their own existing evidence and open tasks.
+This scoped repair does not close the whole issue or establish production readiness.
