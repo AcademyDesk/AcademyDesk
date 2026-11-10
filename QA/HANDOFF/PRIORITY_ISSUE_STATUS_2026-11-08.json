@@ -3892,26 +3892,32 @@
       "rawPriority": "P1",
       "additionalReleaseGate": null,
       "status": "OPEN",
-      "finalVerification": "NOT RUN",
+      "finalVerification": "C29 scoped Cloud HTTP/controller controls PASS; SQL/audit/races/browser/device and full acceptance pending",
       "recordedClosedAndPass": false,
-      "confirmation": "STATIC-FINDING",
+      "confirmation": "C29 reproduced portal/link defects; guard-only provisioning checks separately labelled",
       "module": "GUARDIAN",
       "route": "Direct guardian portal-access API",
       "recordedSource": "apps/api/Controllers/StudentGuardiansController.cs:54",
-      "recordedFix": "Not implemented (Phase 1)",
-      "recordedRegression": "NOT RUN",
+      "recordedFix": "SOURCE_PIN_PENDING (C29 feature return; no deployment)",
+      "recordedRegression": "Final full API2,389/2,389 PASS;unchanged web evidence reused exactly from C28,not rerun",
       "recordedClosureNotes": "Remain OPEN; follow closure requirements in QA README",
-      "latestSection": "Related / required regression",
+      "latestSection": "C29 guardian privacy source repair — 10 November 2026",
       "recordedPendingExcerpts": [
         "| Device/viewport | NOT RUN; use QA/06_DEVICE_VIEWPORT_MATRIX.md where UI applies |",
         "| Evidence classification | Static trace; runtime reproduction pending |",
-        "| Retest result | NOT RUN |",
-        "| Regression result | NOT RUN |",
-        "| Closure notes | Remain OPEN; follow closure requirements in QA README |"
+        "| Fix commit | SOURCE_PIN_PENDING (C29 feature return; no deployment) |",
+        "| Closure notes | Remain OPEN; follow closure requirements in QA README |",
+        "Remain OPEN for genuine provisioning SQL success/refusal/rollback, revocation"
       ],
-      "evidenceReferences": [],
+      "evidenceReferences": [
+        {
+          "href": "C29_GUARDIAN_ACCESS_2026-11-10.md",
+          "localExists": true,
+          "observation": "Reference presence only, not evidence acceptance"
+        }
+      ],
       "historicalMetadataNeedsReview": false,
-      "issueSha256": "a31ff62b9825bdc83e526b2cf15bb323ee3c5aaa10f777e1dfda5207f9fba452"
+      "issueSha256": "5614c10fda7aaa04302437b4a382de396066cc1315f346c382c70e419fe322c6"
     },
     {
       "id": "BUG-SEC-0007",
@@ -3920,26 +3926,32 @@
       "rawPriority": "P1",
       "additionalReleaseGate": null,
       "status": "OPEN",
-      "finalVerification": "NOT RUN",
+      "finalVerification": "C29 scoped Cloud HTTP/controller controls PASS; SQL/audit/races/browser/device and full acceptance pending",
       "recordedClosedAndPass": false,
-      "confirmation": "STATIC-FINDING",
+      "confirmation": "C29 reproduced portal/link defects; guard-only provisioning checks separately labelled",
       "module": "AUTH",
       "route": "/portal-accounts; /portal",
       "recordedSource": "apps/api/Controllers/PortalAccountsController.cs:23",
-      "recordedFix": "Not implemented (Phase 1)",
-      "recordedRegression": "NOT RUN",
+      "recordedFix": "SOURCE_PIN_PENDING (C29 feature return; no deployment)",
+      "recordedRegression": "Final full API2,389/2,389 PASS;unchanged web evidence reused exactly from C28,not rerun",
       "recordedClosureNotes": "Remain OPEN; follow closure requirements in QA README",
-      "latestSection": "Related / required regression",
+      "latestSection": "C29 guardian privacy source repair — 10 November 2026",
       "recordedPendingExcerpts": [
         "| Device/viewport | NOT RUN; use QA/06_DEVICE_VIEWPORT_MATRIX.md where UI applies |",
         "| Evidence classification | Static trace; runtime reproduction pending |",
-        "| Retest result | NOT RUN |",
-        "| Regression result | NOT RUN |",
-        "| Closure notes | Remain OPEN; follow closure requirements in QA README |"
+        "| Fix commit | SOURCE_PIN_PENDING (C29 feature return; no deployment) |",
+        "| Closure notes | Remain OPEN; follow closure requirements in QA README |",
+        "Remain OPEN for genuine provisioning SQL success/refusal/rollback, revocation"
       ],
-      "evidenceReferences": [],
+      "evidenceReferences": [
+        {
+          "href": "C29_GUARDIAN_ACCESS_2026-11-10.md",
+          "localExists": true,
+          "observation": "Reference presence only, not evidence acceptance"
+        }
+      ],
       "historicalMetadataNeedsReview": false,
-      "issueSha256": "1f45a974a189c74e01c75aec1bda2e9220b54542c512b67f84019db893341eee"
+      "issueSha256": "1f35bd548be37fcca18d602db9e96a39373bae4570dd6d2d0c25fbdf99ac1824"
     },
     {
       "id": "BUG-SEC-0008",

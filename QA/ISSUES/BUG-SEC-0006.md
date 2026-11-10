@@ -3,8 +3,8 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | STATIC-FINDING |
-| Final verification | NOT RUN |
+| Confirmation status | C29 reproduced portal/link defects; guard-only provisioning checks separately labelled |
+| Final verification | C29 scoped Cloud HTTP/controller controls PASS; SQL/audit/races/browser/device and full acceptance pending |
 | Severity | Major access revocation failure |
 | Priority | P1 |
 | Category | SEC |
@@ -30,9 +30,9 @@
 | API response | Not captured for this issue; use synthetic request/response in isolated reproduction |
 | Database before/after | Not executed; fixture and fresh-context assertions defined below |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | Not implemented (Phase 1) |
-| Retest result | NOT RUN |
-| Regression result | NOT RUN |
+| Fix commit | SOURCE_PIN_PENDING (C29 feature return; no deployment) |
+| Retest result | 31 actual HTTP/Identity/InMemory portal/link cases plus5 direct provisioning guard checks PASS;59 retained checks PASS |
+| Regression result | Final full API2,389/2,389 PASS;unchanged web evidence reused exactly from C28,not rerun |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
 ## Exact reproduction
@@ -69,3 +69,22 @@ Minor guardian links using the portal-access endpoint; current guardian page doe
 SECURITY-GUARDIAN-003: Real HTTP/SQL matrix for minor/adult/18th-birthday/unknown DOB, explicit revoke, omitted vs false flags, regrant and unlink; verify both response and new guardian reads deny after revocation.
 
 Also run all endpoint/form cases pointing to this issue in QA/03_TEST_MATRIX.md and the critical regression suite before closure.
+
+## C29 guardian privacy source repair — 10 November 2026
+
+Historical source evidence above is retained. Explicit per-link revocation no
+longer regrants a minor guardian. Missing intent rejects; initial minor bootstrap
+policy is preserved. Current inactive Guardian domain checks block child access
+and inactive account provisioning without changing Identity/session authority.
+
+New original33 controls14 PASS/19 FAIL:28 HTTP portal/link cases11 PASS/17 FAIL;
+5 direct provisioning guards3 PASS/2 missing-SQL-prerequisite failures. Final36
+new controls and59 retained family/media/Identity controls PASS. Provisioning
+checks are guard-only, not a successful real HTTP/SQL account-creation proof.
+No transaction boundary was bypassed to create a synthetic pass.
+
+[Exact source/result boundary and ordered native SQL/audit/race/browser/device tasks](../HANDOFF/C29_GUARDIAN_ACCESS_2026-11-10.md).
+
+Remain OPEN for genuine provisioning SQL success/refusal/rollback, revocation
+atomic audit and concurrency, actual role/browser/device, linked critical and
+documented acceptance. Five P0/broader-session/release and model gates remain.

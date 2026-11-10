@@ -22,7 +22,7 @@ public sealed class PortalAccountsController(UserManager<ApplicationUser> users,
         var role = request.Role is "Student" or "Guardian" or "Teacher" ? request.Role : null;
         if (role is null || string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password)) return BadRequest(new { message = "Student, Parent, or Teacher role, email, and temporary password are required." });
         if (role == "Student" && (!request.StudentId.HasValue || !await db.Students.AnyAsync(x => x.Id == request.StudentId && x.AcademyId == academyId, token))) return BadRequest(new { message = "Select a valid student." });
-        if (role == "Guardian" && (!request.GuardianId.HasValue || !await db.Guardians.AnyAsync(x => x.Id == request.GuardianId && x.AcademyId == academyId, token))) return BadRequest(new { message = "Select a valid guardian." });
+        if (role == "Guardian" && (!request.GuardianId.HasValue || !await db.Guardians.AnyAsync(x => x.Id == request.GuardianId && x.AcademyId == academyId && x.IsActive, token))) return BadRequest(new { message = "Select an active guardian." });
         if (role == "Teacher" && (!request.TeacherId.HasValue || !await db.Teachers.AnyAsync(x => x.Id == request.TeacherId && x.AcademyId == academyId, token))) return BadRequest(new { message = "Select a valid teacher." });
         // Normally the academy filter owns Identity + success-audit atomicity.
         // Its existing platform-owner bypass needs a request-local boundary here.
