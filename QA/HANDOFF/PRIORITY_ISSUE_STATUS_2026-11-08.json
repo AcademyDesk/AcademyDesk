@@ -3224,26 +3224,32 @@
       "rawPriority": "P1",
       "additionalReleaseGate": null,
       "status": "OPEN",
-      "finalVerification": "NOT RUN",
+      "finalVerification": "PARTIAL — C33 enrollment Cloud checks PASS;other workflow/native/device/release acceptance OPEN",
       "recordedClosedAndPass": false,
       "confirmation": "STATIC-FINDING",
       "module": "BATCH",
       "route": "/batches; /batch-setup; /enrollments; /batch-promotions; /schedule; /attendance; /makeup; /events",
       "recordedSource": "apps/web/src/app/batches/page.tsx:94",
-      "recordedFix": "Not implemented (Phase 1)",
-      "recordedRegression": "NOT RUN",
+      "recordedFix": "`9e108672b9c1e43f395ac11684b2e8235cb663ff` enrollment subset only;no deployment",
+      "recordedRegression": "API2,487/2,487 PASS;frontend2,434 PASS/3 inherited missing SQL-receipt failures;other0018 pages not changed",
       "recordedClosureNotes": "Remain OPEN; follow closure requirements in QA README",
-      "latestSection": "Related / required regression",
+      "latestSection": "C33 enrollment subset — 10 November 2026",
       "recordedPendingExcerpts": [
+        "| Device/viewport | NOT RUN; use QA/06_DEVICE_VIEWPORT_MATRIX.md where UI applies |",
         "| Evidence classification | Static trace; runtime reproduction pending |",
-        "| Retest result | NOT RUN |",
-        "| Regression result | NOT RUN |",
         "| Closure notes | Remain OPEN; follow closure requirements in QA README |",
-        "Batch loading needs courses academics.manage, unmapped teachers/branches and MultiBranch module; Operations/Manager have batches.manage but not those permissions. FrontDesk enrollment needs batches.manage lookup absent from that role. Academic-only promotion needs students.manage and batches.manage. Every page gates all data on all lookups succeeding. Runtim"
+        "Batch loading needs courses academics.manage, unmapped teachers/branches and MultiBranch module; Operations/Manager have batches.manage but not those permissions. FrontDesk enrollment needs batches.manage lookup absent from that role. Academic-only promotion needs students.manage and batches.manage. Every page gates all data on all lookups succeeding. Runtim",
+        "Remain OPEN for other0018 batch/setup/scheduling/attendance/promotions/makeup/events"
       ],
-      "evidenceReferences": [],
+      "evidenceReferences": [
+        {
+          "href": "C33_ENROLLMENT_OPTIONS_2026-11-10.md",
+          "localExists": true,
+          "observation": "Reference presence only, not evidence acceptance"
+        }
+      ],
       "historicalMetadataNeedsReview": false,
-      "issueSha256": "7ec2cd4ed210bd95cd312dd64193d3499eb01928f4212937a25c8a0757403816"
+      "issueSha256": "b0634d1aba1b538b23438fb1f95781b6e05f69ac245e6bc5a5cd9ded29f50101"
     },
     {
       "id": "BUG-FUNC-0019",
