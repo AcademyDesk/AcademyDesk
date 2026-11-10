@@ -1,5 +1,14 @@
 # Academy Desk shared integration tracker
 
+## PENTA collections and reconciliation reads — 10 November 2026
+
+- [x] Desktop verified bounded collection and reconciliation previews,
+  Manual parity, exact currency treatment, current role and required audit.
+- [ ] Desktop owns expense and payroll read detail next. Cloud C31 at
+  `cc1bae0` covers separate client maintenance feedback and recovery.
+
+[Collection and reconciliation evidence](QA/REPORTS/PENTA_COLLECTION_RECONCILIATION_READS_2026-11-10.md)
+
 ## PENTA finance reads — 10 November 2026
 
 - [x] Desktop verified Testing-only currency-separated academy totals and
