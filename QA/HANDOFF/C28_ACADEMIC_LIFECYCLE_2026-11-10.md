@@ -17,6 +17,7 @@ Exact MAY MODIFY paths:
 - `apps/api/Controllers/GradingSchemeLifecycleController.cs` — explicit boolean validation and existing atomic actor-audit opt-in
 - `apps/api/Controllers/AcademicGovernanceController.cs` — grading creation atomic audit opt-in only; preserve prerequisite graph implementation
 - `tests/AcademyDesk.Api.Tests/GradingLifecycleAccessTests.cs`
+- `tests/AcademyDesk.Api.Tests/CoursePrerequisiteTests.cs` — replace obsolete creation-no-boundary expectation with explicit domain/actor-audit protection; retain prerequisite boundary assertions
 - `apps/web/src/app/academic-governance/page.tsx`
 - `QA/tools/academic-lifecycle.test.cjs`
 - `QA/tools/academic-lifecycle-browser.cjs`
@@ -55,3 +56,13 @@ STOP WHEN: bounded fixes verified and feature return/handoff published; no forma
 issue or production qualification without remaining acceptance evidence.
 NEXT ROUTE: Desktop Sol High for native SQL/audit/role/device acceptance; Desktop
 retains make-up scheduling. Cloud next nonoverlapping Manual source packet.
+
+
+## Claim refinement after full regression
+
+The initial full API run found CoursePrerequisiteTests' historical assumption
+that only AddPrerequisite opts into atomic audit. C28 intentionally protects
+AddScheme too. Claim that existing test path before changing it; preserve graph
+and read-boundary assertions and positively assert the new grading transaction
+and Platform Owner audit protection. This is an updated contract expectation,
+not a skipped test or relaxed business invariant. Raw first full failure retained.
