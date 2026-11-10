@@ -1,5 +1,19 @@
 # Academy Desk handoff
 
+## Protected regular rescheduling — 10 November 2026
+
+- [x] The Testing-only reschedule operation previews the original and
+  proposed slot and requires its own approval. Only future scheduled
+  sessions can move. The class ID, assignment and linked attendance stay intact.
+- [x] Verified 26 new native reschedule checks, 61 retained scheduling
+  checks and 50 retained attendance checks. Covered late conflicts, moves
+  away and back, two concurrent approvals, durable replay and audit rollback.
+- [ ] Next with Sol High is the open batch teacher reassignment path.
+  Preserve substitute assignments and prevent clashes. Conversation UI,
+  Mini qualification and release gates remain open.
+
+[Protected reschedule evidence](QA/REPORTS/PENTA_CLASS_RESCHEDULE_2026-11-10.md)
+
 ## Assigned-teacher attendance — 10 November 2026
 
 - [x] Teacher Manual attendance reads and writes require the current active,
@@ -10,8 +24,8 @@
   attendance. Retries recover the same receipt.
 - [x] Passed 34 new native checks, 16 retained attendance checks, 61
   regular scheduling checks and 24 controlled attendance form checks.
-- [ ] Next with Sol High is protected regular rescheduling. Batch teacher
-  reassignment, conversation UI, Mini qualification and release gates remain open.
+- [x] Protected regular rescheduling passed in the next checkpoint.
+  Batch teacher reassignment remains open.
 
 [Assigned-teacher attendance evidence](QA/REPORTS/PENTA_TEACHER_ATTENDANCE_2026-11-10.md)
 
