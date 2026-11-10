@@ -93,6 +93,7 @@ internal static partial class SqlHarnessEntryPoint
         Console.WriteLine("CONSUMER REGRESSION PASS: six stages agree across fresh SQL/Admin/Student/document/dashboard/reminder; approved versus PendingApproval/Rejected, mixed Completed/Reconciled/Voided, full adjustment, settlement and cent balance; read/reminder financial snapshots unchanged; foreign/student reminder and foreign document denied. No restoration or full critical acceptance.");
         await VerifyPentaFinanceReadsAsync(factory, manifest, academyId, studentId);
         await VerifyPentaCollectionReadsAsync(factory, manifest, academyId, studentId);
+        await VerifyPentaExpensePayrollReadsAsync(factory, manifest, academyId);
     }
 
     private static async Task VerifyConsumerViewsAsync(QaApiFactory factory, HttpClient client, Guid academyId,

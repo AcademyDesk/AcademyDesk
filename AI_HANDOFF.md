@@ -1,5 +1,17 @@
 # Academy Desk handoff
 
+## PENTA expense and payroll reads — 10 November 2026
+
+- [x] Added Testing-only, actor-audited expense and payroll previews on the
+  shared Manual ledger queries. They retain exact currency amounts and
+  payroll snapshot provenance. Free-form ledger fields, worker identity and
+  payment references stay in Manual.
+- [ ] Next with Sol High is the protected conversation read path. Verify
+  server-authored results, refusal and fallback before exposing any new
+  finance tool to a model. Writes and release acceptance remain open.
+
+[Expense and payroll evidence](QA/REPORTS/PENTA_EXPENSE_PAYROLL_READS_2026-11-10.md)
+
 ## PENTA collections and reconciliation reads — 10 November 2026
 
 - [x] Testing-only collections and reconciliation use shared Manual
@@ -7,9 +19,9 @@
   Invoice totals still reflect every eligible payment.
 - [x] Verified 17 new native checks, including the one-cent case, hidden
   payment references, current authority, audited reads and Manual settlement.
-- [ ] Next with Sol High is protected expense and payroll read detail,
-  including their distinct currency and privacy boundaries. Finance writes,
-  planner/browser wiring, Mini and release gates remain open.
+- [x] Protected expense and payroll read detail is in the following
+  checkpoint. Finance writes, planner/browser wiring, Mini and release
+  gates remain open.
 
 [Collection and reconciliation evidence](QA/REPORTS/PENTA_COLLECTION_RECONCILIATION_READS_2026-11-10.md)
 

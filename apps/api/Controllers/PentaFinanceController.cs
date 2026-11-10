@@ -25,6 +25,12 @@ public sealed class PentaFinanceController(PentaFinanceReadService reads, ILogge
     public Task<ActionResult> Reconciliation(Guid academyId, Guid invoiceId, CancellationToken token) =>
         Read(academyId, PentaFinanceReadKind.Reconciliation, invoiceId, token);
 
+    [HttpGet("expenses")]
+    public Task<ActionResult> Expenses(Guid academyId, CancellationToken token) => Read(academyId, PentaFinanceReadKind.Expenses, null, token);
+
+    [HttpGet("payroll")]
+    public Task<ActionResult> Payroll(Guid academyId, CancellationToken token) => Read(academyId, PentaFinanceReadKind.Payroll, null, token);
+
     private async Task<ActionResult> Read(Guid academyId, PentaFinanceReadKind kind, Guid? invoiceId, CancellationToken token)
     {
         Response.Headers.CacheControl = "no-store";

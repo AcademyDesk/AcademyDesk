@@ -1,4 +1,5 @@
 using System.Data;
+using System.Globalization;
 using System.Security.Claims;
 using AcademyDesk.Api.Controllers;
 using AcademyDesk.Api.Data;
@@ -21,8 +22,21 @@ public sealed record PentaFinanceCollections(CollectionInvoiceSummary[] Invoices
 public sealed record PentaReconciliationPayment(Guid Id, decimal Amount, string Currency, string Status, DateTime PaidAtUtc,
     DateTime? ReconciledAtUtc, bool CountsTowardInvoiceBalance);
 public sealed record PentaFinanceReconciliation(InvoiceSummary Invoice, PentaReconciliationPayment[] Payments, bool HasMore, DateTimeOffset AsOfUtc);
+public sealed record PentaExpense(Guid Id, decimal Amount, string Currency, Guid? BranchId, DateOnly ExpenseDate, string Status)
+{
+    public string AmountExact => Amount.ToString("0.00", CultureInfo.InvariantCulture);
+}
+public sealed record PentaFinanceExpenses(PentaExpense[] Expenses, bool HasMore, DateTimeOffset AsOfUtc);
+public sealed record PentaPayrollPayout(Guid Id, string PayslipNumber, int? SessionsCovered, decimal GrossAmount, decimal Deductions,
+    decimal NetAmount, string Currency, string Status, DateTime? PaidAtUtc, string IdentitySource)
+{
+    public string GrossAmountExact => GrossAmount.ToString("0.00", CultureInfo.InvariantCulture);
+    public string DeductionsExact => Deductions.ToString("0.00", CultureInfo.InvariantCulture);
+    public string NetAmountExact => NetAmount.ToString("0.00", CultureInfo.InvariantCulture);
+}
+public sealed record PentaFinancePayroll(PentaPayrollPayout[] Payouts, bool HasMore, DateTimeOffset AsOfUtc);
 internal sealed record PentaFinanceReadOutcome(int Status, object? Value = null);
-internal enum PentaFinanceReadKind { Overview, Invoice, Collections, Reconciliation }
+internal enum PentaFinanceReadKind { Overview, Invoice, Collections, Reconciliation, Expenses, Payroll }
 
 /// <summary>Testing-only finance reads through the same ledger projections as Manual.</summary>
 public sealed class PentaFinanceReadService(AcademyDeskDbContext db, IdentityDbContext identity, PentaFinancePolicy policy,
@@ -61,6 +75,8 @@ public sealed class PentaFinanceReadService(AcademyDeskDbContext db, IdentityDbC
         {
             PentaFinanceReadKind.Overview => new PentaFinanceOverview(await AcademyFinanceReadModel.LoadAsync(db, academy, token), now),
             PentaFinanceReadKind.Collections => await CollectionsAsync(academy, now, token),
+            PentaFinanceReadKind.Expenses => await ExpensesAsync(academy, now, token),
+            PentaFinanceReadKind.Payroll => await PayrollAsync(academy, now, token),
             PentaFinanceReadKind.Invoice or PentaFinanceReadKind.Reconciliation =>
                 await ReadInvoiceAsync(academy, invoice!.Value, kind, now, token),
             _ => throw new ArgumentOutOfRangeException(nameof(kind))
@@ -78,6 +94,24 @@ public sealed class PentaFinanceReadService(AcademyDeskDbContext db, IdentityDbC
     {
         var rows = await CollectionsReadModel.LoadAsync(db, academy, DateOnly.FromDateTime(now.UtcDateTime), token, PreviewSize + 1);
         return new(rows.Take(PreviewSize).ToArray(), rows.Count > PreviewSize, now);
+    }
+
+    private async Task<PentaFinanceExpenses> ExpensesAsync(Guid academy, DateTimeOffset now, CancellationToken token)
+    {
+        var rows = await ExpenseReadModel.Query(db, academy).Take(PreviewSize + 1)
+            .Select(x => new PentaExpense(x.Id, x.Amount, x.Currency, x.BranchId, x.ExpenseDate, x.Status)).ToArrayAsync(token);
+        return new(rows.Take(PreviewSize).ToArray(), rows.Length > PreviewSize, now);
+    }
+
+    private async Task<PentaFinancePayroll> PayrollAsync(Guid academy, DateTimeOffset now, CancellationToken token)
+    {
+        var rows = await PayrollReadModel.Query(db, academy).Take(PreviewSize + 1)
+            .Select(x => new PentaPayrollPayout(x.Id, x.PayslipNumber, x.SessionsCovered, x.GrossAmount, x.Deductions, x.NetAmount,
+                x.Currency, x.Status, x.PaidAtUtc == null ? null : DateTime.SpecifyKind(x.PaidAtUtc.Value, DateTimeKind.Utc),
+                x.IdentityRecordedAtUtc != null && x.WorkerNameSnapshot != null && x.WorkerTypeSnapshot != null
+                    ? "PayoutSnapshot" : "LegacyUnverified"))
+            .ToArrayAsync(token);
+        return new(rows.Take(PreviewSize).ToArray(), rows.Length > PreviewSize, now);
     }
 
     private async Task<object?> ReadInvoiceAsync(Guid academy, Guid invoiceId, PentaFinanceReadKind kind, DateTimeOffset now, CancellationToken token)
