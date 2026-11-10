@@ -1,5 +1,15 @@
 # Academy Desk shared integration tracker
 
+## Protected regular rescheduling — 10 November 2026
+
+- [x] Desktop verified protected rescheduling with a distinct approval,
+  stale source and slot refusal, audit rollback and receipt recovery.
+- [ ] Desktop owns the batch teacher reassignment follow-up. Cloud C30
+  maintenance enforcement at `796e8c4` has a separate native acceptance
+  queue and did not change the scheduling implementation.
+
+[Protected reschedule evidence](QA/REPORTS/PENTA_CLASS_RESCHEDULE_2026-11-10.md)
+
 ## Assigned-teacher attendance — 10 November 2026
 
 - [x] Desktop verified assigned-teacher Manual and protected attendance,

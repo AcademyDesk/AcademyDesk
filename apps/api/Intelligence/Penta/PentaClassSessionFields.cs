@@ -3,23 +3,34 @@ using AcademyDesk.Api.Controllers;
 
 namespace AcademyDesk.Api.Intelligence.Penta;
 
+internal sealed record PentaClassSessionMove(Guid SessionId, UpdateClassSessionRequest Request);
+internal sealed record PentaClassSessionInput(CreateClassSessionRequest? Create, PentaClassSessionMove? Move);
+
 internal static class PentaClassSessionFields
 {
-    private const string Tool = "AcademyDesk.ClassSession.Create";
+    private const string CreateTool = "AcademyDesk.ClassSession.Create";
+    internal const string RescheduleTool = "AcademyDesk.ClassSession.Reschedule";
 
-    internal static CreateClassSessionRequest? Read(string payload)
+    internal static PentaClassSessionInput? Read(string payload)
     {
         if (payload.Length > 4000) return null;
         try
         {
             using var document = JsonDocument.Parse(PentaOperationalPayload.Canonicalize(payload));
             var root = document.RootElement;
-            if (root.GetProperty("tool_key").GetString() != Tool || root.GetProperty("tool_revision").GetInt64() != 1) return null;
+            var tool = root.GetProperty("tool_key").GetString();
+            if (tool is not (CreateTool or RescheduleTool) || root.GetProperty("tool_revision").GetInt64() != 1) return null;
+            var moving = tool == RescheduleTool;
             var fields = root.GetProperty("fields");
-            if (fields.EnumerateObject().Any(x => x.Name is not ("BatchId" or "TeacherId" or "BranchId" or
-                "StartUtc" or "EndUtc" or "DeliveryMode" or "RoomName" or "MeetingLink"))) return null;
+            if (fields.EnumerateObject().Any(x => x.Name switch
+                {
+                    "StartUtc" or "EndUtc" or "DeliveryMode" or "RoomName" or "MeetingLink" => false,
+                    "SessionId" => !moving,
+                    "BatchId" or "TeacherId" or "BranchId" => moving,
+                    _ => true
+                })) return null;
 
-            var batch = Reference("BatchId");
+            var target = Reference(moving ? "SessionId" : "BatchId");
             var start = Date("StartUtc");
             var end = Date("EndUtc");
             var mode = Field("DeliveryMode", "text")?.GetString() switch
@@ -29,7 +40,7 @@ internal static class PentaClassSessionFields
                 "Hybrid" => "Hybrid",
                 _ => null
             };
-            if (batch is null || start is null || end is null || end <= start || mode is null) return null;
+            if (target is null || start is null || end is null || end <= start || mode is null) return null;
 
             var room = Field("RoomName", "text")?.GetString()?.Trim();
             var link = Field("MeetingLink", "text")?.GetString()?.Trim();
@@ -38,8 +49,10 @@ internal static class PentaClassSessionFields
                     url.Scheme != Uri.UriSchemeHttps || string.IsNullOrEmpty(url.Host) || url.UserInfo.Length != 0)) return null;
             var location = mode == "InPerson" ? room : link;
             if (location is not null && (location.Length > 120 || location.Any(char.IsControl))) return null;
-            return new(batch.Value, Reference("TeacherId"), Reference("BranchId"), start.Value, end.Value, mode,
-                string.IsNullOrEmpty(location) ? null : location);
+            if (string.IsNullOrEmpty(location)) location = null;
+            return moving
+                ? new(null, new(target.Value, new(start.Value, end.Value, mode, location, "Scheduled")))
+                : new(new(target.Value, Reference("TeacherId"), Reference("BranchId"), start.Value, end.Value, mode, location), null);
 
             JsonElement? Field(string name, string kind)
             {

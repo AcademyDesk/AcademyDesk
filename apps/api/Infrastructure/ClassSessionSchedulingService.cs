@@ -5,7 +5,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AcademyDesk.Api.Infrastructure;
 
-internal sealed record ClassSessionPlanOutcome(int Status, ClassSessionSummary? Plan = null, string? Error = null);
+internal sealed record ClassSessionSnapshot(ClassSessionSummary Summary, DateTime? UpdatedAtUtc);
+internal sealed record ClassSessionPlanOutcome(int Status, ClassSessionSummary? Plan = null, string? Error = null,
+    ClassSessionSnapshot? Source = null);
 
 public sealed class ClassSessionSchedulingService(AcademyDeskDbContext db)
 {
@@ -51,16 +53,19 @@ public sealed class ClassSessionSchedulingService(AcademyDeskDbContext db)
         if (request.EndUtc <= request.StartUtc) return new(400, Error: "End time must be after the start time.");
         if (!new[] { "Scheduled", "Completed", "Cancelled", "NoShow" }.Contains(request.Status, StringComparer.OrdinalIgnoreCase))
             return new(400, Error: "Invalid session status.");
-        var plan = new ClassSessionSummary(session.Id, session.BatchId, session.TeacherId, session.BranchId,
-            request.StartUtc, request.EndUtc, mode, room, request.Status.Trim());
+        var source = new ClassSessionSnapshot(new(session.Id, session.BatchId, session.TeacherId, session.BranchId,
+            DateTime.SpecifyKind(session.StartUtc, DateTimeKind.Utc), DateTime.SpecifyKind(session.EndUtc, DateTimeKind.Utc),
+            session.DeliveryMode, session.RoomName, session.Status), session.UpdatedAtUtc);
+        var plan = source.Summary with { StartUtc = request.StartUtc, EndUtc = request.EndUtc, DeliveryMode = mode,
+            RoomName = room, Status = request.Status.Trim() };
 
         // Status-only changes can finish a historical session even if existing
         // data has a clash. Moving or reopening a session must check the slot.
         if (string.Equals(plan.Status, "Cancelled", StringComparison.OrdinalIgnoreCase) ||
             !string.Equals(session.Status, "Cancelled", StringComparison.OrdinalIgnoreCase) &&
             plan.StartUtc == session.StartUtc && plan.EndUtc == session.EndUtc && plan.RoomName == session.RoomName)
-            return new(200, plan);
-        return await CheckAsync(academyId, plan, token);
+            return new(200, plan, Source: source);
+        return (await CheckAsync(academyId, plan, token)) with { Source = source };
     }
 
     internal async Task<ClassSessionSummary> SaveAsync(Guid academyId, ClassSessionSummary plan, CancellationToken token)
@@ -75,6 +80,7 @@ public sealed class ClassSessionSchedulingService(AcademyDeskDbContext db)
         row.RoomName = plan.RoomName;
         row.Status = plan.Status;
         if (creating) db.ClassSessions.Add(row);
+        else row.UpdatedAtUtc = DateTime.UtcNow;
         await db.SaveChangesAsync(token);
         return plan with { Id = row.Id };
     }

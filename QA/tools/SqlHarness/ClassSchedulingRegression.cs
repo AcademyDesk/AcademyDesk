@@ -19,7 +19,7 @@ internal static partial class SqlHarnessEntryPoint
         const string adminEmail = "qa-admin-a@example.invalid";
         const string meeting = "https://meeting.example.invalid/schedule";
         const string pentaAudit = "PentaClassSessionScheduled";
-        var flags = new Dictionary<string, string?> { ["Penta:Enabled"] = "true", ["Penta:ClassSessionSchedulingEnabled"] = "true" };
+        var flags = new Dictionary<string, string?> { ["Penta:Enabled"] = "true", ["Penta:ClassSessionSchedulingEnabled"] = "true", ["Penta:ClassSessionReschedulingEnabled"] = "true" };
         using var host = new QaApiFactory(manifest, flags);
         using var admin = await SignIn(host, adminEmail);
         using var manual = await SignIn(factory, adminEmail);
@@ -248,5 +248,7 @@ internal static partial class SqlHarnessEntryPoint
 
         if (cases != 43) throw new InvalidOperationException("Unexpected shared scheduling check count: " + cases);
         Console.WriteLine($"SCHEDULEDEFAULTS SHARED SUMMARY {cases} native HTTP/SQL checks PASS.");
+        await VerifyClassReschedulingAsync(factory, manifest, academy, foreign, actor, conversation.Id, batch.Id, foreignBatch.Id,
+            teacherB.Id, branchA.Id, start.AddDays(30), admin, manual, teacherClient, anonymous, flags);
     }
 }
