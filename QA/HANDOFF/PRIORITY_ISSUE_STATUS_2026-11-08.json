@@ -3106,26 +3106,32 @@
       "rawPriority": "P1",
       "additionalReleaseGate": null,
       "status": "OPEN",
-      "finalVerification": "NOT RUN",
+      "finalVerification": "C28 scoped HTTP/UI/native synthetic PASS; SQL/audit/device/critical acceptance pending",
       "recordedClosedAndPass": false,
-      "confirmation": "STATIC-FINDING",
+      "confirmation": "RUNTIME-REPRODUCED / C28 Cloud source repair verified",
       "module": "ACADEMIC",
       "route": "/academic-governance",
       "recordedSource": "apps/api/Controllers/GradingSchemeLifecycleController.cs:4",
-      "recordedFix": "Not implemented (Phase 1)",
-      "recordedRegression": "NOT RUN",
+      "recordedFix": "SOURCE_PIN_PENDING (C28 feature return; no deployment)",
+      "recordedRegression": "Final combined API2,353/2,353 PASS;frontend2,343 PASS/3 genuine missing SQL receipts",
       "recordedClosureNotes": "Remain OPEN; follow closure requirements in QA README",
-      "latestSection": "Related / required regression",
+      "latestSection": "C28 delegated grading lifecycle — 10 November 2026",
       "recordedPendingExcerpts": [
         "| Evidence classification | Static trace; runtime reproduction pending |",
-        "| Retest result | NOT RUN |",
-        "| Regression result | NOT RUN |",
+        "| Fix commit | SOURCE_PIN_PENDING (C28 feature return; no deployment) |",
         "| Closure notes | Remain OPEN; follow closure requirements in QA README |",
-        "AcademicGovernanceController maps academics.manage, but GradingSchemeLifecycleController lacks a mapping, so global filter denies the same nonadmin user status changes and active-scheme lookup. Page still renders action. Runtime NOT RUN."
+        "AcademicGovernanceController maps academics.manage, but GradingSchemeLifecycleController lacks a mapping, so global filter denies the same nonadmin user status changes and active-scheme lookup. Page still renders action. Runtime NOT RUN.",
+        "Remain OPEN for real Identity/HTTP/SQL grants/module/tenant/audit rollback,"
       ],
-      "evidenceReferences": [],
+      "evidenceReferences": [
+        {
+          "href": "C28_ACADEMIC_LIFECYCLE_2026-11-10.md",
+          "localExists": true,
+          "observation": "Reference presence only, not evidence acceptance"
+        }
+      ],
       "historicalMetadataNeedsReview": false,
-      "issueSha256": "70d16846372a2111390f8fa058d722052246d79cf93e259ccbfc35978c7e3bed"
+      "issueSha256": "60fc43e6df82b2d7d47661785385e1bcfa74d3c4d844c1b6e833cddb786426af"
     },
     {
       "id": "BUG-FUNC-0016",

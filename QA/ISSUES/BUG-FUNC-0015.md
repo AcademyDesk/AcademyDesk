@@ -3,8 +3,8 @@
 | Field | Value |
 | --- | --- |
 | Status | OPEN |
-| Confirmation status | STATIC-FINDING |
-| Final verification | NOT RUN |
+| Confirmation status | RUNTIME-REPRODUCED / C28 Cloud source repair verified |
+| Final verification | C28 scoped HTTP/UI/native synthetic PASS; SQL/audit/device/critical acceptance pending |
 | Severity | Major permission contract inconsistency |
 | Priority | P1 |
 | Category | FUNC |
@@ -30,9 +30,9 @@
 | API response | Not captured for this issue; use synthetic request/response in isolated reproduction |
 | Database before/after | Not executed; fixture and fresh-context assertions defined below |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | Not implemented (Phase 1) |
-| Retest result | NOT RUN |
-| Regression result | NOT RUN |
+| Fix commit | SOURCE_PIN_PENDING (C28 feature return; no deployment) |
+| Retest result | 28 new HTTP controls plus12 retained academic checks PASS;29 TSX and24 native synthetic cases PASS |
+| Regression result | Final combined API2,353/2,353 PASS;frontend2,343 PASS/3 genuine missing SQL receipts |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
 ## Exact reproduction
@@ -69,3 +69,23 @@ Delegated academic administrators cannot manage scheme lifecycle through the sam
 ACADEMIC-ACCESS-001: Real HTTP all-role/grant/module matrix plus browser create/list/deactivate/reactivate and active lookup; preserve tenant boundaries and explicitly approve module policy.
 
 Also run all endpoint/form cases pointing to this issue in QA/03_TEST_MATRIX.md and the critical regression suite before closure.
+
+## C28 delegated grading lifecycle — 10 November 2026
+
+The historical source excerpt above is retained. Lifecycle now shares the
+existing academics.manage and AcademicGovernance policy with creation/page;
+missing/null state rejects instead of implicitly deactivating. Creation and
+lifecycle explicitly reuse the domain/actor-audit transaction, including Platform
+Owner. No broad role grants, grading rules or prerequisite graph changes.
+
+Original28 HTTP controls20 PASS/8 FAIL; fixed28 plus12 retained checks PASS.
+Actual TSX original3 PASS/26 FAIL becomes29/29 PASS. Native Chromium24/24 PASS
+uses synthetic delegated sessions, persistence and interrupted responses; it is
+not native SQL or physical-device acceptance. Full frontend2,343 PASS/3 genuine
+missing SQL receipt failures. Final combined API is recorded in the handoff.
+
+[Source pins, exact test boundaries and ordered Desktop SQL/audit/device tasks](../HANDOFF/C28_ACADEMIC_LIFECYCLE_2026-11-10.md).
+
+Remain OPEN for real Identity/HTTP/SQL grants/module/tenant/audit rollback,
+actual role/browser/device, assessment integration and linked critical/documented
+acceptance. Five P0/broader-session/release and model qualification gates remain.

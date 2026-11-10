@@ -25,6 +25,7 @@ public static class PermissionCatalog
         ["FeeRemindersController"] = ["finance.manage"], ["AcademyExportsController"] = ["reports.export"],
         ["CoursesController"] = ["academics.manage"], ["CourseModulesController"] = ["academics.manage"],
         ["AcademicGovernanceController"] = ["academics.manage"], ["AcademicPeriodsController"] = ["academics.manage"],
+        ["GradingSchemeLifecycleController"] = ["academics.manage"],
         ["AssessmentsController"] = ["academics.manage"], ["AssessmentResultsController"] = ["academics.manage"], ["BatchPromotionsController"] = ["academics.manage"],
         ["StaffController"] = ["workforce.manage"], ["PortalAccountsController"] = ["workforce.manage"],
         ["CommunicationPreferencesController"] = ["communications.manage"],

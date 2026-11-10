@@ -77,12 +77,18 @@ public sealed class CoursePrerequisiteTests
     }
 
     [Fact]
-    public void Only_prerequisite_write_opts_into_domain_audit_boundary()
+    public void Prerequisite_and_grading_creation_keep_explicit_domain_audit_boundaries()
     {
         var action = new ControllerActionDescriptor { MethodInfo = typeof(AcademicGovernanceController).GetMethod(nameof(AcademicGovernanceController.AddPrerequisite))! };
         Assert.True(AcademyAccessFilter.UsesAtomicBoundary(nameof(AcademicGovernanceController), action));
         Assert.False(AcademyAccessFilter.IncludesIdentity(action));
-        Assert.Null(Attribute.GetCustomAttribute(typeof(AcademicGovernanceController).GetMethod(nameof(AcademicGovernanceController.AddScheme))!, typeof(AtomicAcademyMutationAttribute)));
+        Assert.False(AcademyAccessFilter.IncludesPlatformOwner(action));
+        var grading = new ControllerActionDescriptor { MethodInfo = typeof(AcademicGovernanceController).GetMethod(nameof(AcademicGovernanceController.AddScheme))! };
+        Assert.True(AcademyAccessFilter.UsesAtomicBoundary(nameof(AcademicGovernanceController), grading));
+        Assert.False(AcademyAccessFilter.IncludesIdentity(grading));
+        Assert.True(AcademyAccessFilter.IncludesPlatformOwner(grading));
+        foreach (var read in new[] { nameof(AcademicGovernanceController.Schemes), nameof(AcademicGovernanceController.Prerequisites) })
+            Assert.Null(Attribute.GetCustomAttribute(typeof(AcademicGovernanceController).GetMethod(read)!, typeof(AtomicAcademyMutationAttribute)));
     }
 
     private static int Status(ActionResult result) => result switch

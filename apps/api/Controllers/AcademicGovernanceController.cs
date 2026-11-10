@@ -16,6 +16,7 @@ public sealed class AcademicGovernanceController(AcademyDeskDbContext db) : Cont
         Ok(await db.GradingSchemes.AsNoTracking().Where(x => x.AcademyId == academyId).ToListAsync(t));
 
     [HttpPost("grading-schemes")]
+    [AtomicAcademyMutation(IncludePlatformOwner = true)]
     public async Task<ActionResult> AddScheme(Guid academyId, GradingSchemeRequest r, CancellationToken t)
     {
         if (string.IsNullOrWhiteSpace(r.Name) || r.PassingPercent < 0 || r.PassingPercent > 100) return BadRequest();
