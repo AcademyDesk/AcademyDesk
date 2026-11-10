@@ -69,11 +69,10 @@ async function main(){
       return await reply(200,variant==='bad-receipt'?{...saved,studentId:'foreign'}:saved);
      }
      a.equal(request.method,'GET');
-     if(url.pathname==='/api/auth/session')data={workspace:'AcademyAdmin',academyId:academy,roles:['AcademyAdmin'],displayName:'Synthetic admin',isPlatformOwner:false};
+     if(url.pathname==='/api/auth/session')data={workspace:'AcademyAdmin',academyId:academy,roles:['FrontDesk'],displayName:'Synthetic FrontDesk',isPlatformOwner:false};
      else if(url.pathname==='/api/academies')data=[{id:academy,name:'Synthetic Academy',enabledModulesJson:'["Core"]'}];
      else if(url.pathname==='/api/portal/announcements')data=[];
-     else if(url.pathname===base+'/students'){if(variant==='initial-fail')return await reply(403,{});data=[{id:'student',firstName:'Synthetic',lastName:'Learner'}];}
-     else if(url.pathname===base+'/batches')data=[{id:'batch',name:'Piano batch'}];
+     else if(url.pathname===base+'/enrollments/options'){if(variant==='initial-fail')return await reply(403,{});data={students:[{id:'student',firstName:'Synthetic',lastName:'Learner'}],batches:[{id:'batch',name:'Piano batch'}]};}
      else if(url.pathname===base+'/enrollments'){
       reads++;
       if(variant==='preflight-fail'&&reads===2)return await reply(503,{});

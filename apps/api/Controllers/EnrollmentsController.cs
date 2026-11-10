@@ -11,6 +11,21 @@ namespace AcademyDesk.Api.Controllers;
 [Route("api/academies/{academyId:guid}/enrollments")]
 public sealed class EnrollmentsController(AcademyDeskDbContext dbContext) : ControllerBase
 {
+    // Enrollment entry needs labels, not batch-management privileges or private
+    // student details. Inherit this controller's existing permission/academy gate.
+    [HttpGet("options")]
+    public async Task<ActionResult<EnrollmentOptionsSummary>> Options(Guid academyId, CancellationToken token)
+    {
+        Response.Headers.CacheControl = "no-store";
+        var students = await dbContext.Students.AsNoTracking().Where(x => x.AcademyId == academyId)
+            .OrderBy(x => x.LastName).ThenBy(x => x.FirstName).ThenBy(x => x.Id)
+            .Select(x => new EnrollmentStudentOption(x.Id, x.FirstName, x.LastName)).ToListAsync(token);
+        var batches = await dbContext.Batches.AsNoTracking().Where(x => x.AcademyId == academyId)
+            .OrderBy(x => x.Name).ThenBy(x => x.Id)
+            .Select(x => new EnrollmentBatchOption(x.Id, x.Name)).ToListAsync(token);
+        return Ok(new EnrollmentOptionsSummary(students, batches));
+    }
+
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<EnrollmentSummary>>> List(Guid academyId, CancellationToken cancellationToken)
     {
@@ -45,3 +60,6 @@ public sealed record CreateEnrollmentRequest(Guid StudentId, Guid BatchId, DateO
 public sealed record EnrollmentSummary(Guid Id, Guid StudentId, Guid BatchId, DateOnly StartDate, DateOnly? EndDate, string Status);
 public sealed record UpdateEnrollmentRequest(string Status, DateOnly? EndDate, string? LifecycleReason);
 public sealed record TransferEnrollmentRequest(Guid TargetBatchId, DateOnly? TransferDate);
+public sealed record EnrollmentStudentOption(Guid Id, string FirstName, string LastName);
+public sealed record EnrollmentBatchOption(Guid Id, string Name);
+public sealed record EnrollmentOptionsSummary(IReadOnlyList<EnrollmentStudentOption> Students, IReadOnlyList<EnrollmentBatchOption> Batches);

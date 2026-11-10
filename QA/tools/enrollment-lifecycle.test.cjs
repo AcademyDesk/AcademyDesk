@@ -17,8 +17,7 @@ async function fixture(o={}){
   if(o.readGate)await o.readGate.promise;
   if(fail||(o.readbackFail&&afterWrite))return {...response({},false),status:fail||503};
   if(url==='/api/academies')return response(o.noAcademy?[]:[{id:'academy',name:'Synthetic academy'}]);
-  if(url.endsWith('/students'))return response(o.badStudents?{}:[{id:'student',firstName:'Synthetic',lastName:'Learner'}]);
-  if(url.endsWith('/batches'))return response(o.badBatches?{}:[{id:'batch',name:'Piano batch'}]);
+  if(url.endsWith('/enrollments/options'))return response({students:o.badStudents?{}:[{id:'student',firstName:'Synthetic',lastName:'Learner'}],batches:o.badBatches?{}:[{id:'batch',name:'Piano batch'}]});
   if(url.endsWith('/enrollments')){listReads++;if(listReads===2&&o.preflightFail)throw Error('Synthetic preflight loss');return response(o.badRows?{}:copy(rows));}throw Error(url);
  };
  const h=mount('apps/web/src/app/enrollments/page.tsx',api);await h.flush();

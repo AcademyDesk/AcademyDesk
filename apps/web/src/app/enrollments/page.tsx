@@ -54,10 +54,11 @@ export default function EnrollmentsPage() {
         if (!alive.current || readVersion.current !== version) return false;
         id = list[0].id; setAcademy(list[0]);
       }
-      const responses = await Promise.all([academyApi(`/api/academies/${id}/students`, { cache: "no-store" }), academyApi(`/api/academies/${id}/batches`, { cache: "no-store" }), academyApi(`/api/academies/${id}/enrollments`, { cache: "no-store" })]);
+      const responses = await Promise.all([academyApi(`/api/academies/${id}/enrollments/options`, { cache: "no-store" }), academyApi(`/api/academies/${id}/enrollments`, { cache: "no-store" })]);
       const failure = responses.find(x => !x.ok); if (failure) throw new EnrollmentReadError(failure.status);
-      const [ss, bs, es]: [Student[], Batch[], Enrollment[]] = await Promise.all([responses[0].json(), responses[1].json(), responses[2].json()]);
-      if (!Array.isArray(ss) || !ss.every(x => x && nonempty(x.id) && typeof x.firstName === "string" && typeof x.lastName === "string") || !Array.isArray(bs) || !bs.every(x => x && nonempty(x.id) && typeof x.name === "string") || !enrollmentRows(es)) throw Error("Invalid enrollment records");
+      const [options, es]: [{ students: Student[]; batches: Batch[] }, Enrollment[]] = await Promise.all([responses[0].json(), responses[1].json()]);
+      const ss = options?.students, bs = options?.batches;
+      if (!Array.isArray(ss) || !ss.every(x => x && nonempty(x.id) && typeof x.firstName === "string" && typeof x.lastName === "string") || new Set(ss.map(x => x.id)).size !== ss.length || !Array.isArray(bs) || !bs.every(x => x && nonempty(x.id) && typeof x.name === "string") || new Set(bs.map(x => x.id)).size !== bs.length || !enrollmentRows(es)) throw Error("Invalid enrollment records");
       if (!alive.current || readVersion.current !== version) return false;
       currentStudents.current = ss; currentBatches.current = bs; records.current = es;
       setStudents(ss); setBatches(bs); setEnrollments(es);
