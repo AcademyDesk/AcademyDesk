@@ -23,11 +23,10 @@ public sealed class FinanceAdjustmentsController(AcademyDeskDbContext db) : Cont
     {
         var invoice = await db.Invoices.SingleOrDefaultAsync(x => x.AcademyId == academyId && x.Id == request.InvoiceId, token);
         if (invoice is null) return NotFound();
-        if (request.Amount <= 0 || string.IsNullOrWhiteSpace(request.Reason) || !AllowedTypes.Contains(request.Type ?? "")) return BadRequest(new { message = "Enter a valid type, positive amount, and reason." });
-        if (IsLegacyDocumentType(request.Type)) return BadRequest(new { message = "Refunds and credit notes require dedicated reviewed workflows; submit only invoice reductions here." });
-        if (!ValidAmount(request.Amount)) return BadRequest(new { message = "Enter an amount with at most two decimal places within the supported range." });
-        var adjustment = new FinanceAdjustment { AcademyId = academyId, InvoiceId = invoice.Id, Type = request.Type!, Amount = request.Amount, Currency = invoice.Currency, Reason = request.Reason.Trim() };
-        db.FinanceAdjustments.Add(adjustment); await db.SaveChangesAsync(token); return Ok(ToSummary(adjustment));
+        if (InvoiceAdjustmentProposal.Validate(request) is { } error) return BadRequest(new { message = error });
+        var adjustment = InvoiceAdjustmentProposal.Create(db, academyId, invoice.Id, invoice.Currency, request);
+        await db.SaveChangesAsync(token);
+        return Ok(ToSummary(adjustment));
     }
     [HttpPatch("{adjustmentId:guid}/approval")]
     [AtomicAcademyMutation(IncludePlatformOwner = true)]
@@ -48,7 +47,7 @@ public sealed class FinanceAdjustmentsController(AcademyDeskDbContext db) : Cont
             if (db.Entry(item).State == EntityState.Detached) return NotFound();
         }
         if (item.Status != "PendingApproval") return Conflict(new { message = "This adjustment has already been decided." });
-        if (IsLegacyDocumentType(item.Type)) return Conflict(new { message = "Legacy refund/credit-note requests require reviewed disposition; no decision has been applied." });
+        if (InvoiceAdjustmentProposal.IsLegacyDocumentType(item.Type)) return Conflict(new { message = "Legacy refund/credit-note requests require reviewed disposition; no decision has been applied." });
         if (!request.Approve && string.IsNullOrWhiteSpace(request.Notes))
             return BadRequest(new { message = "A rejection reason is required." });
         if (request.Approve && write.Invoice is null) return NotFound();
@@ -56,7 +55,7 @@ public sealed class FinanceAdjustmentsController(AcademyDeskDbContext db) : Cont
         if (request.Approve)
         {
             var invoice = write.Invoice!;
-            if (!AllowedTypes.Contains(item.Type) || !ValidAmount(item.Amount) || !string.Equals(item.Currency, invoice.Currency, StringComparison.OrdinalIgnoreCase))
+            if (!InvoiceAdjustmentProposal.IsKnownType(item.Type) || !InvoiceAdjustmentProposal.ValidAmount(item.Amount) || !string.Equals(item.Currency, invoice.Currency, StringComparison.OrdinalIgnoreCase))
                 return BadRequest(new { message = "The stored adjustment type, amount, and currency must be valid for this invoice." });
             var paid = await InvoiceWriteScope.ReadCollectedAsync(db, invoice, token);
             var balance = invoice.TotalAmount - invoice.AdjustedAmount - paid - item.Amount;
@@ -69,9 +68,6 @@ public sealed class FinanceAdjustmentsController(AcademyDeskDbContext db) : Cont
         item.Status = request.Approve ? "Approved" : "Rejected"; item.ApprovalNotes = string.IsNullOrWhiteSpace(request.Notes) ? null : request.Notes.Trim(); item.ApprovedAtUtc = decidedAtUtc;
         await db.SaveChangesAsync(token); await write.CommitAsync(token); return Ok(ToSummary(item));
     }
-    private static readonly HashSet<string> AllowedTypes = new(StringComparer.OrdinalIgnoreCase) { "Discount", "Scholarship", "Concession", "Refund", "CreditNote" };
-    private static bool IsLegacyDocumentType(string? type) => string.Equals(type, "Refund", StringComparison.OrdinalIgnoreCase) || string.Equals(type, "CreditNote", StringComparison.OrdinalIgnoreCase);
-    private static bool ValidAmount(decimal amount) => amount > 0m && amount <= 9999999999999999.99m && decimal.Round(amount, 2) == amount;
     private static FinanceAdjustmentSummary ToSummary(FinanceAdjustment x) => new(x.Id, x.InvoiceId, x.Type, x.Amount, x.Currency, x.Reason, x.Status, x.ApprovedAtUtc, x.ApprovalNotes);
 }
 public sealed record CreateFinanceAdjustmentRequest(Guid InvoiceId, string? Type, decimal Amount, string? Reason);
