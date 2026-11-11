@@ -4,7 +4,7 @@
 | --- | --- |
 | Status | OPEN |
 | Confirmation status | STATIC-FINDING |
-| Final verification | PARTIAL — C33 enrollment and C34 batch/setup Cloud checks PASS;other workflow/native/device/release acceptance OPEN |
+| Final verification | PARTIAL — C33 enrollment,C34 batch/setup,C35 attendance Cloud checks PASS;remaining workflow/native/device/release acceptance OPEN |
 | Severity | Major authorized workflow blocked |
 | Priority | P1 |
 | Category | FUNC |
@@ -30,9 +30,9 @@
 | API response | Not captured for this issue; use synthetic request/response in isolated reproduction |
 | Database before/after | Not executed; fixture and fresh-context assertions defined below |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | C33 enrollment `9e108672b9c1e43f395ac11684b2e8235cb663ff`;C34 batch/setup `e93ed8d7cdfa60b3d8a23426dbd852f0a85d8526`;no deployment |
-| Retest result | C34 34 new HTTP/Identity/InMemory;21 new +66 retained batch client controls;32 synthetic Operations/Manager Chromium cases PASS;C33 evidence retained below |
-| Regression result | C34 full frontend2,455 PASS/3 inherited missing SQL-receipt failures;full API2,521 PASS with Desktop fa2e19d payment source preserved;exact source/limits in C34 handoff |
+| Fix commit | C33 enrollment `9e10867`;C34 batch/setup `e93ed8d`;C35 attendance `7485173642d62abf7742acebf9d01c48bb3bb94c`;exact pins in each handoff;no deployment |
+| Retest result | C35 38 actual HTTP/Identity/InMemory cases in full API;19 new +34 retained note/isolation controls;32 synthetic Operations/Manager Chromium cases PASS;earlier scope evidence retained below |
+| Regression result | C35 full frontend2,474 PASS/3 inherited missing SQL-receipt failures;combined API2,559 PASS with Desktop f708879 preserved;exact source/limits in C35 handoff |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
 ## Exact reproduction
@@ -130,3 +130,36 @@ InMemory HTTP are not native SQL/device acceptance.
 [Source pins,latest combined result,fixture evolution and native tasks](../HANDOFF/C34_BATCH_OPTIONS_2026-11-11.md).
 Remain OPEN for scheduling/attendance/promotions/makeup/events lookup scopes and
 real SQL/browser/device/critical/release acceptance. Model loading remains stopped.
+
+## C35 attendance subset — 11 November 2026
+
+`GET attendance/options` now inherits the attendance controller's existing
+attendance.manage and current global academy/tenant/actor/module/maintenance
+policy. It returns only local batch/session labels and active enrollment roster
+references with learner names. Every enrollment relation is scoped to local
+student and batch records;duplicate active pairs collapse. Nonactive enrollments,
+foreign/corrupt references and private details are omitted. Inactive learners
+with an Active enrollment retain the existing Mark contract;no eligibility rule
+changes. Existing attendance List/Mark/DTO bodies are byte-exact.
+
+The page uses this workspace and the selected-session attendance GET,without full
+people/enrollment/batch/scheduling fallback. Workspace readiness and generation
+checks reject malformed/partial/foreign/duplicate records,retire old callbacks,
+and prevent an unavailable workspace from appearing as an empty schedule/roster.
+GET-only reload preserves note drafts and the existing session/record safeguards.
+No write retry/replay or new attendance policy is introduced.
+
+38 HTTP/Identity/InMemory controls in the full API include current role/grant
+authorization,revocation,Core-only access,minimal/deduplicated active roster,
+no-write/foreign/inactive/maintenance/owner boundaries,real read→mark flows for
+Operations/Manager/custom authority,and refusal after enrollment is paused.
+All19 scoped page and34 retained note/isolation assertions pass.32 sandboxed
+Chromium cases cover both roles at320/1440,marks/notes,empty/denied/malformed
+workspace,record retry,retained draft reload,session switching and delayed reads.
+The browser API is synthetic;InMemory does not replace native SQL/race/device
+acceptance. Original HTTP1/34 and page1/19 passes were preserved as baseline
+failures,not interpreted as independent defect counts.
+
+[Exact source,combined result and prioritized native tasks](../HANDOFF/C35_ATTENDANCE_OPTIONS_2026-11-11.md).
+Remain OPEN for scheduling/promotions/makeup/events lookup scopes and broader
+native SQL/browser/device/critical/release acceptance. Model loading stays stopped.

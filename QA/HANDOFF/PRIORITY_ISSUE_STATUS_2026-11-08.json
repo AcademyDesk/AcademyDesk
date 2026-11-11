@@ -3224,22 +3224,22 @@
       "rawPriority": "P1",
       "additionalReleaseGate": null,
       "status": "OPEN",
-      "finalVerification": "PARTIAL — C33 enrollment and C34 batch/setup Cloud checks PASS;other workflow/native/device/release acceptance OPEN",
+      "finalVerification": "PARTIAL — C33 enrollment,C34 batch/setup,C35 attendance Cloud checks PASS;remaining workflow/native/device/release acceptance OPEN",
       "recordedClosedAndPass": false,
       "confirmation": "STATIC-FINDING",
       "module": "BATCH",
       "route": "/batches; /batch-setup; /enrollments; /batch-promotions; /schedule; /attendance; /makeup; /events",
       "recordedSource": "apps/web/src/app/batches/page.tsx:94",
-      "recordedFix": "C33 enrollment `9e108672b9c1e43f395ac11684b2e8235cb663ff`;C34 batch/setup `e93ed8d7cdfa60b3d8a23426dbd852f0a85d8526`;no deployment",
-      "recordedRegression": "C34 full frontend2,455 PASS/3 inherited missing SQL-receipt failures;full API2,521 PASS with Desktop fa2e19d payment source preserved;exact source/limits in C34 handoff",
+      "recordedFix": "C33 enrollment `9e10867`;C34 batch/setup `e93ed8d`;C35 attendance `7485173642d62abf7742acebf9d01c48bb3bb94c`;exact pins in each handoff;no deployment",
+      "recordedRegression": "C35 full frontend2,474 PASS/3 inherited missing SQL-receipt failures;combined API2,559 PASS with Desktop f708879 preserved;exact source/limits in C35 handoff",
       "recordedClosureNotes": "Remain OPEN; follow closure requirements in QA README",
-      "latestSection": "C34 batch and setup subset — 11 November 2026",
+      "latestSection": "C35 attendance subset — 11 November 2026",
       "recordedPendingExcerpts": [
-        "| Evidence classification | Static trace; runtime reproduction pending |",
         "| Closure notes | Remain OPEN; follow closure requirements in QA README |",
         "Batch loading needs courses academics.manage, unmapped teachers/branches and MultiBranch module; Operations/Manager have batches.manage but not those permissions. FrontDesk enrollment needs batches.manage lookup absent from that role. Academic-only promotion needs students.manage and batches.manage. Every page gates all data on all lookups succeeding. Runtim",
         "Remain OPEN for other0018 batch/setup/scheduling/attendance/promotions/makeup/events",
-        "Remain OPEN for scheduling/attendance/promotions/makeup/events lookup scopes and"
+        "Remain OPEN for scheduling/attendance/promotions/makeup/events lookup scopes and",
+        "Remain OPEN for scheduling/promotions/makeup/events lookup scopes and broader"
       ],
       "evidenceReferences": [
         {
@@ -3251,10 +3251,15 @@
           "href": "C34_BATCH_OPTIONS_2026-11-11.md",
           "localExists": true,
           "observation": "Reference presence only, not evidence acceptance"
+        },
+        {
+          "href": "C35_ATTENDANCE_OPTIONS_2026-11-11.md",
+          "localExists": true,
+          "observation": "Reference presence only, not evidence acceptance"
         }
       ],
       "historicalMetadataNeedsReview": false,
-      "issueSha256": "0fa60e0adf0162c995c89e12e1236abb51d2a4ae3c772ef5a6edb353c003f668"
+      "issueSha256": "0ec711b26d268844daf1cdf3f36d2a0f4d4adc7d36ac842465c2594e8ecba702"
     },
     {
       "id": "BUG-FUNC-0019",
