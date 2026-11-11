@@ -4,7 +4,9 @@ import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { apiUrl, isPortalSignOutEvent, portalAccessToken, portalSessionChangedEvent, portalSessionEpoch, portalSignOutEvent } from "@/lib/api";
 import { readPentaJson } from "@/lib/penta-onboarding-channel";
-import type { PaymentChannel } from "@/lib/penta-payment-collection";
+import type { FinanceDraftChannel } from "@/lib/penta-finance-draft";
+import type { InvoiceChannel } from "@/lib/penta-invoice-issuance";
+import InvoiceIssuance from "./invoice-issuance";
 import PaymentCollection from "./payment-collection";
 import styles from "./role-penta-entry.module.css";
 
@@ -37,16 +39,20 @@ function isReply(value: unknown): value is FinanceReply {
     row.values.every(label) && (hasInvoice ? typeof row.invoiceId === "string" && guid.test(row.invoiceId) : row.invoiceId === null));
 }
 
-type Channel = PaymentChannel & {
+type Channel = {
   call(text?: string): Promise<Response>;
+  current(): boolean;
+  signal: AbortSignal;
   financeControls: boolean;
-  paymentCollection: boolean;
+  payment: FinanceDraftChannel | null;
+  issuance: InvoiceChannel | null;
 };
 type Turn = { prompt: string; reply?: FinanceReply; notice?: string };
 
 export default function FinanceChat({ academyId, fallback }: { academyId: string; fallback: ReactNode }) {
   const [available, setAvailable] = useState<Channel | null>(null);
   const [paymentInvoice, setPaymentInvoice] = useState<string | null>(null);
+  const [invoiceOpen, setInvoiceOpen] = useState(false);
   const [prompt, setPrompt] = useState("");
   const [turn, setTurn] = useState<Turn | null>(null);
   const [pending, setPending] = useState(false);
@@ -74,6 +80,7 @@ export default function FinanceChat({ academyId, fallback }: { academyId: string
       controller.abort();
       setAvailable(null);
       setPaymentInvoice(null);
+      setInvoiceOpen(false);
       setTurn(null);
       setPrompt("");
       setPending(false);
@@ -98,9 +105,15 @@ export default function FinanceChat({ academyId, fallback }: { academyId: string
           if (!current() || response.status !== 200) return;
           const value = await readPentaJson(response, controller.signal);
           if (!current() || !object(value) || typeof value.financeControls !== "boolean") return;
-          setAvailable({ call, current, signal: controller.signal, epoch, financeControls: value.financeControls,
-            paymentCollection: value.paymentCollection === true,
-            payment: (path, method, body) => request("/payment-collection/conversations" + path, method, body),
+          const scope = { epoch, current, signal: controller.signal };
+          setAvailable({ call, current, signal: controller.signal, financeControls: value.financeControls,
+            payment: value.paymentCollection === true ? { ...scope,
+              send: (path, method, body) => request("/payment-collection/conversations" + path, method, body),
+            } : null,
+            issuance: value.invoiceIssuance === true ? { ...scope,
+              send: (path, method, body) => request("/invoice-issuance/conversations" + path, method, body),
+              options: (kind, query) => request("/invoice-issuance/options", "POST", { kind, query }),
+            } : null,
           });
         } catch { /* The Manual link remains available. */ }
       })();
@@ -176,7 +189,7 @@ export default function FinanceChat({ academyId, fallback }: { academyId: string
                     onClick={() => void send(`show invoice ${row.invoiceId}`, `Show invoice ${row.values[0]}`)}>Invoice</button>}
                   <button type="button" disabled={pending}
                     onClick={() => void send(`show reconciliation ${row.invoiceId}`, "Show reconciliation")}>Reconciliation</button>
-                  {reply.kind === "invoice" && available.paymentCollection && <button type="button" disabled={pending || paymentInvoice !== null}
+                  {reply.kind === "invoice" && available.payment && <button type="button" disabled={pending || paymentInvoice !== null}
                     onClick={() => setPaymentInvoice(row.invoiceId)}>Record payment</button>}
                 </div></td>}
               </tr>)}</tbody>
@@ -186,8 +199,14 @@ export default function FinanceChat({ academyId, fallback }: { academyId: string
           {reply.hasMore && " More records are available in Manual."}</small></p>
       </section>}
     </div>}
-    {available.paymentCollection && <PaymentCollection academyId={academyId} invoiceId={paymentInvoice}
-      channel={available} onClose={() => setPaymentInvoice(null)} />}
+    {available.payment && <PaymentCollection academyId={academyId} invoiceId={paymentInvoice}
+      channel={available.payment} onClose={() => setPaymentInvoice(null)} />}
+    {available.issuance && <>
+      <div className={styles.financeActions}>
+        <button type="button" disabled={invoiceOpen} onClick={() => setInvoiceOpen(true)}>Prepare an invoice</button>
+      </div>
+      <InvoiceIssuance academyId={academyId} open={invoiceOpen} channel={available.issuance} onClose={() => setInvoiceOpen(false)} />
+    </>}
     <form onSubmit={event => { event.preventDefault(); void send(prompt); }} className={styles.financeComposer}>
       <label htmlFor="finance-chat-prompt">Ask about finance</label>
       <div className={styles.financeActions}>

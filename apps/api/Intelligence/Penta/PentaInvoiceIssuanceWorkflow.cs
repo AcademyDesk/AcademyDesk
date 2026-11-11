@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Security.Claims;
 using AcademyDesk.Api.Controllers;
 using AcademyDesk.Api.Data;
+using AcademyDesk.Api.Domain.Entities;
 using AcademyDesk.Api.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Action = AcademyDesk.Api.Intelligence.Penta.PentaFinanceDraftWorkflow.Action;
@@ -33,6 +34,37 @@ public sealed class PentaInvoiceIssuanceWorkflow(PentaFinanceDraftWorkflow draft
     internal Task<PentaConversationOutcome> ExecuteAsync(ClaimsPrincipal user, Guid academy, Guid session, Guid request,
         PentaFinanceDraftBinding binding, CancellationToken token) =>
         drafts.RunAsync(operation, Action.Execute, user, academy, session, request, null, null, binding, token);
+
+    internal Task<PentaConversationOutcome> OptionsAsync(ClaimsPrincipal user, Guid academy, string kind, string query, CancellationToken token) =>
+        drafts.WithAuthorityAsync(operation.Flag, user, academy, async (actor, _) =>
+        {
+            const int limit = 20;
+            var term = query.Trim().ToLowerInvariant();
+            if (term.Length > 80 || query.Any(char.IsControl) || kind == "student" && term.Length < 2)
+                return new(400, Error: "Enter two to eighty characters to search for a student, or search fee plans by name.");
+            List<InvoiceChoice> options;
+            if (kind == "student")
+            {
+                options = await db.Students.AsNoTracking().Where(x => x.AcademyId == academy && x.IsActive &&
+                        ((x.FirstName + " " + x.LastName).ToLower().Contains(term) ||
+                         x.StudentNumber != null && x.StudentNumber.ToLower().Contains(term)))
+                    .OrderBy(x => x.LastName).ThenBy(x => x.FirstName).ThenBy(x => x.Id).Take(limit + 1)
+                    .Select(x => new InvoiceChoice(x.Id, x.FirstName + " " + x.LastName, x.StudentNumber)).ToListAsync(token);
+            }
+            else
+            {
+                options = await db.FeePlans.AsNoTracking().Where(x => x.AcademyId == academy && x.IsActive &&
+                        x.Name.ToLower().Contains(term))
+                    .OrderBy(x => x.Name).ThenBy(x => x.Id).Take(limit + 1)
+                    .Select(x => new InvoiceChoice(x.Id, x.Name, x.Currency)).ToListAsync(token);
+            }
+            db.AuditLogs.Add(new AuditLog { AcademyId = academy, ActorUserId = actor, EntityId = academy,
+                EntityType = "Academy", Action = "PentaInvoiceOptionsRead" });
+            await db.SaveChangesAsync(token);
+            return new(200, new { kind, options = options.Take(limit).ToArray(), hasMore = options.Count > limit });
+        }, token);
+
+    private sealed record InvoiceChoice(Guid Id, string Label, string? Detail);
 
     private sealed class InvoiceOperation(AcademyDeskDbContext data)
         : PentaFinanceOperation<CreateInvoiceRequest, InvoiceIssuancePlan, PentaInvoiceReceipt>(

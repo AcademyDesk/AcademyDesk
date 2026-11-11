@@ -52,13 +52,23 @@ public sealed class PentaFinanceDraftWorkflow(AcademyDeskDbContext db, IdentityD
 
     internal bool IsEnabled(string flag) => environment.IsEnvironment("Testing") && pilot.IsAvailable && configuration.GetValue<bool>(flag);
 
-    internal async Task<PentaConversationOutcome> RunAsync<TRequest, TPlan, TReceipt>(
+    internal Task<PentaConversationOutcome> RunAsync<TRequest, TPlan, TReceipt>(
         PentaFinanceOperation<TRequest, TPlan, TReceipt> operation, Action action, ClaimsPrincipal user, Guid academy,
         Guid sessionId, Guid request, long? context, string? payload, PentaFinanceDraftBinding? binding, CancellationToken token)
         where TRequest : class where TPlan : class where TReceipt : class, IPentaFinanceReceipt
     {
-        if (!IsEnabled(operation.Flag)) return new(404);
-        if (request == Guid.Empty || action != Action.Start && sessionId == Guid.Empty) return new(400);
+        if (!IsEnabled(operation.Flag)) return Task.FromResult(new PentaConversationOutcome(404));
+        if (request == Guid.Empty || action != Action.Start && sessionId == Guid.Empty)
+            return Task.FromResult(new PentaConversationOutcome(400));
+        return WithAuthorityAsync(operation.Flag, user, academy, (actor, stamp) => action == Action.Start
+            ? StartLockedAsync(operation.Purpose, operation.Started, academy, actor, request, stamp, token)
+            : DraftLockedAsync(operation, action, academy, actor, sessionId, request, stamp, context, payload, binding, token), token);
+    }
+
+    internal async Task<PentaConversationOutcome> WithAuthorityAsync(string flag, ClaimsPrincipal user, Guid academy,
+        Func<Guid, string, Task<PentaConversationOutcome>> run, CancellationToken token)
+    {
+        if (!IsEnabled(flag)) return new(404);
         var stamp = user.FindFirstValue(users.Options.ClaimsIdentity.SecurityStampClaimType);
         if (string.IsNullOrEmpty(stamp) || !Guid.TryParse(user.FindFirstValue(ClaimTypes.NameIdentifier), out var actor) ||
             !await policy.AllowsAsync(user, academy, token)) return new(403);
@@ -71,9 +81,7 @@ public sealed class PentaFinanceDraftWorkflow(AcademyDeskDbContext db, IdentityD
         var current = await identity.Users.AsNoTracking().SingleOrDefaultAsync(x => x.Id == actor, token);
         if (current?.SecurityStamp != stamp || !await policy.AllowsAsync(user, academy, token)) return new(403);
 
-        var outcome = action == Action.Start
-            ? await StartLockedAsync(operation.Purpose, operation.Started, academy, actor, request, stamp, token)
-            : await DraftLockedAsync(operation, action, academy, actor, sessionId, request, stamp, context, payload, binding, token);
+        var outcome = await run(actor, stamp);
         if (outcome.HttpStatus is 200 or 201) await transaction.CommitAsync(token);
         return outcome;
     }
