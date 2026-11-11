@@ -13,6 +13,30 @@ public sealed class AttendanceController(AcademyDeskDbContext dbContext) : Contr
 {
     private static readonly string[] AllowedStatuses = ["Present", "Absent", "Late", "Excused", "Online"];
 
+    // Attendance management needs a roster and session labels, not full student,
+    // batch or scheduling access. Keep this controller's existing academy gate.
+    [HttpGet("/api/academies/{academyId:guid}/attendance/options")]
+    public async Task<ActionResult<AttendanceOptionsSummary>> Options(Guid academyId, CancellationToken token)
+    {
+        Response.Headers.CacheControl = "no-store";
+        var active = dbContext.Enrollments.AsNoTracking().Where(x => x.AcademyId == academyId && x.Status == "Active"
+            && dbContext.Students.Any(s => s.Id == x.StudentId && s.AcademyId == academyId)
+            && dbContext.Batches.Any(b => b.Id == x.BatchId && b.AcademyId == academyId));
+        var students = await dbContext.Students.AsNoTracking().Where(x => x.AcademyId == academyId && active.Any(e => e.StudentId == x.Id))
+            .OrderBy(x => x.LastName).ThenBy(x => x.FirstName).ThenBy(x => x.Id)
+            .Select(x => new AttendanceStudentOption(x.Id, x.FirstName, x.LastName)).ToListAsync(token);
+        var batches = await dbContext.Batches.AsNoTracking().Where(x => x.AcademyId == academyId)
+            .OrderBy(x => x.Name).ThenBy(x => x.Id).Select(x => new AttendanceBatchOption(x.Id, x.Name)).ToListAsync(token);
+        var enrollments = await active.Select(x => new { x.StudentId, x.BatchId, x.Status }).Distinct()
+            .OrderBy(x => x.BatchId).ThenBy(x => x.StudentId)
+            .Select(x => new AttendanceEnrollmentOption(x.StudentId, x.BatchId, x.Status)).ToListAsync(token);
+        var sessions = await dbContext.ClassSessions.AsNoTracking().Where(x => x.AcademyId == academyId
+            && dbContext.Batches.Any(b => b.Id == x.BatchId && b.AcademyId == academyId))
+            .OrderBy(x => x.StartUtc).ThenBy(x => x.Id)
+            .Select(x => new AttendanceSessionOption(x.Id, x.BatchId, x.StartUtc)).ToListAsync(token);
+        return Ok(new AttendanceOptionsSummary(students, batches, enrollments, sessions));
+    }
+
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<AttendanceSummary>>> List(Guid academyId, Guid sessionId, CancellationToken cancellationToken)
     {
@@ -41,3 +65,8 @@ public sealed class AttendanceController(AcademyDeskDbContext dbContext) : Contr
 
 public sealed record MarkAttendanceRequest(Guid StudentId, string Status, string? Notes);
 public sealed record AttendanceSummary(Guid Id, Guid StudentId, string Status, DateTime MarkedAtUtc, string? Notes);
+public sealed record AttendanceStudentOption(Guid Id, string FirstName, string LastName);
+public sealed record AttendanceBatchOption(Guid Id, string Name);
+public sealed record AttendanceEnrollmentOption(Guid StudentId, Guid BatchId, string Status);
+public sealed record AttendanceSessionOption(Guid Id, Guid BatchId, DateTime StartUtc);
+public sealed record AttendanceOptionsSummary(IReadOnlyList<AttendanceStudentOption> Students, IReadOnlyList<AttendanceBatchOption> Batches, IReadOnlyList<AttendanceEnrollmentOption> Enrollments, IReadOnlyList<AttendanceSessionOption> Sessions);

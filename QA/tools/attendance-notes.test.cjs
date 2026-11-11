@@ -26,7 +26,7 @@ async function page(config={}){
    if(config.refreshFailure&&afterSave)return{ok:false,status:500,json:async()=>null};
    return{ok:true,status:200,json:async()=>config.malformed?null:structuredClone(stored[id])};
   }
-  const data=url==='/api/academies'?[{id:'a'}]:url.endsWith('/students')?[{id:'s',firstName:'Synthetic',lastName:'Student'}]:url.endsWith('/batches')?[{id:'b',name:'Synthetic batch'}]:url.endsWith('/enrollments')?[{studentId:'s',batchId:'b',status:'Active'}]:url.endsWith('/sessions')?['one','two'].map(id=>({id,batchId:'b',startUtc:'2026-10-01T10:00:00Z'})):undefined;
+  const data=url==='/api/academies'?[{id:'a'}]:url.endsWith('/attendance/options')?{students:[{id:'s',firstName:'Synthetic',lastName:'Student'}],batches:[{id:'b',name:'Synthetic batch'}],enrollments:[{studentId:'s',batchId:'b',status:'Active'}],sessions:['one','two'].map(id=>({id,batchId:'b',startUtc:'2026-10-01T10:00:00Z'}))}:undefined;
   if(!data)throw Error('Unexpected endpoint '+url);return{ok:true,status:200,json:async()=>data};
  };
  new Function('require','module','exports',code)(n=>n==='react/jsx-runtime'?jsx:n==='react'?react:n==='@/components/design-system/controls'?{StandardSelectField:'select'}:n==='@/components/workspace-nav'?{WorkspaceNav:'nav'}:n==='@/lib/api'?{academyApi:api,apiHeaders:()=>({})}:(()=>{throw Error(n)})(),module,module.exports);

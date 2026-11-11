@@ -7,10 +7,7 @@ async function fixture(options = {}) {
   const rows = id => [{ studentId: 's', status: id === 'one' ? 'Present' : 'Late', notes: id + ' saved note' }];
   const h = mount('apps/web/src/app/attendance/page.tsx', async (url, init = {}) => {
     if (url === '/api/academies') return response([{ id: 'a' }]);
-    if (url.endsWith('/students')) return response([{ id: 's', firstName: 'Shared', lastName: 'Learner' }]);
-    if (url.endsWith('/batches')) return response([{ id: 'b', name: 'Synthetic batch' }]);
-    if (url.endsWith('/enrollments')) return response([{ studentId: 's', batchId: 'b', status: 'Active' }]);
-    if (url.endsWith('/sessions')) return response(['one','two'].map(id => ({ id, batchId: 'b', startUtc: '2026-10-29T10:00:00Z' })));
+    if (url.endsWith('/attendance/options')) return response({students:[{id:'s',firstName:'Shared',lastName:'Learner'}],batches:[{id:'b',name:'Synthetic batch'}],enrollments:[{studentId:'s',batchId:'b',status:'Active'}],sessions:['one','two'].map(id=>({id,batchId:'b',startUtc:'2026-10-29T10:00:00Z'}))});
     const id = url.match(/sessions\/(one|two)\/attendance/)?.[1]; assert.ok(id, url);
     if (init.method) { writes.push({ url, ...init }); return options.write ? options.write(id, init) : response({}); }
     reads.push(id); return options.read ? options.read(id, rows(id), reads.filter(x => x === id).length) : response(rows(id));

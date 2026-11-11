@@ -10,6 +10,7 @@ type Student = { id: string; firstName: string; lastName: string };
 type Batch = { id: string; name: string };
 type Enrollment = { studentId: string; batchId: string; status: string };
 type Session = { id: string; batchId: string; startUtc: string };
+type AttendanceWorkspace = { students: Student[]; batches: Batch[]; enrollments: Enrollment[]; sessions: Session[] };
 type Attendance = { studentId: string; status: string; notes?: string | null };
 const statuses = ["Present", "Absent", "Late", "Excused", "Online"];
 type AttendanceScope = { key: string; generation: object; phase: "loading" | "ready" | "error" };
@@ -49,30 +50,51 @@ export default function AttendancePage() {
   const [recordScope, setRecordScope] = useState(initialScope(selectionKey));
   const currentScope = useRef(recordScope);
   const mounted = useRef(false);
+  const workspaceVersion = useRef(0), readingWorkspace = useRef(false);
+  const [workspacePhase, setWorkspacePhase] = useState<"loading" | "ready" | "error">("loading");
+  const workspaceReady = workspacePhase === "ready";
   if (recordScope.key !== selectionKey) { setRecordScope(initialScope(selectionKey)); setSavingId(""); setMessage(""); }
-  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false; ++workspaceVersion.current; readingWorkspace.current = false; }; }, []);
   useEffect(() => { currentScope.current = recordScope; }, [recordScope]);
   function selectSession(id = sessionId) {
     const next = initialScope(academy?.id && id ? `${academy.id}:${id}` : "");
     currentScope.current = next; setRecordScope(next); setSessionId(id); setSavingId(""); setMessage("");
   }
 
-  async function loadWorkspace(academyId?: string) {
-    const id = academyId ?? academy?.id;
-    if (!id) return;
-    const [studentResponse, batchResponse, enrollmentResponse, sessionResponse] = await Promise.all([
-      academyApi(`/api/academies/${id}/students`, { cache: "no-store" }), academyApi(`/api/academies/${id}/batches`, { cache: "no-store" }), academyApi(`/api/academies/${id}/enrollments`, { cache: "no-store" }), academyApi(`/api/academies/${id}/sessions`, { cache: "no-store" }),
-    ]);
-    if (![studentResponse, batchResponse, enrollmentResponse, sessionResponse].every((response) => response.ok)) throw new Error();
-    const sessionData: Session[] = await sessionResponse.json();
-    setStudents(await studentResponse.json()); setBatches(await batchResponse.json()); setEnrollments(await enrollmentResponse.json()); setSessions(sessionData);
-    if (!sessionId && sessionData.length) setSessionId(sessionData[0].id);
-    setMessage("");
+  async function loadWorkspace() {
+    if (!mounted.current || readingWorkspace.current || pendingSave.current) return;
+    const version = ++workspaceVersion.current; readingWorkspace.current = true; setWorkspacePhase("loading");
+    const next = initialScope(selectionKey); currentScope.current = next; setRecordScope(next);
+    try {
+      const context = await academyApi("/api/academies", { cache: "no-store" });
+      if (!context.ok) throw new Error(context.status === 401 ? "Sign in again before marking attendance." : "Check your academy access and try again.");
+      const academies: Academy[] = await context.json();
+      if (!Array.isArray(academies) || !academies.every(x => x && typeof x.id === "string" && x.id.trim()) || !academies.length) throw new Error("No academy is available to this account.");
+      const id = academy?.id ?? academies[0].id;
+      if (!academies.some(x => x.id === id)) throw new Error("The current academy is unavailable to this account.");
+      const response = await academyApi(`/api/academies/${id}/attendance/options`, { cache: "no-store" });
+      if (!response.ok) throw new Error(response.status === 401 ? "Sign in again, then reload." : response.status === 403 ? "Ask an administrator to check your attendance access." : "Try reloading the workspace.");
+      const value: AttendanceWorkspace = await response.json();
+      const ss = value?.students, bs = value?.batches, es = value?.enrollments, cs = value?.sessions;
+      const uniqueIds = (rows: { id: string }[]) => rows.every(x => typeof x.id === "string" && Boolean(x.id.trim())) && new Set(rows.map(x => x.id)).size === rows.length;
+      if (!Array.isArray(ss) || !ss.every(x => x && typeof x.firstName === "string" && typeof x.lastName === "string") || !uniqueIds(ss)
+        || !Array.isArray(bs) || !bs.every(x => x && typeof x.name === "string") || !uniqueIds(bs)
+        || !Array.isArray(cs) || !cs.every(x => x && typeof x.batchId === "string" && bs.some(b => b.id === x.batchId) && typeof x.startUtc === "string" && Number.isFinite(Date.parse(x.startUtc))) || !uniqueIds(cs)
+        || !Array.isArray(es) || !es.every(x => x && x.status === "Active" && ss.some(s => s.id === x.studentId) && bs.some(b => b.id === x.batchId)) || new Set(es.map(x => JSON.stringify([x.studentId, x.batchId]))).size !== es.length) throw new Error("The attendance workspace returned incomplete records.");
+      if (!mounted.current || workspaceVersion.current !== version) return;
+      setAcademy({ id }); setStudents(ss); setBatches(bs); setEnrollments(es); setSessions(cs);
+      setSessionId(current => cs.some(x => x.id === current) ? current : cs[0]?.id ?? "");
+      setWorkspacePhase("ready"); setMessage("");
+    } catch (error) {
+      if (mounted.current && workspaceVersion.current === version) {
+        setWorkspacePhase("error"); setMessage("Attendance workspace could not be loaded. " + (error instanceof Error ? error.message : "Try reloading the workspace."));
+      }
+    } finally { if (workspaceVersion.current === version) readingWorkspace.current = false; }
   }
-
-  useEffect(() => { async function initialise() { try { const response = await academyApi("/api/academies", { cache: "no-store" }); if (response.status === 401) return setMessage("Please sign in before marking attendance."); if (!response.ok) throw new Error(); const academies: Academy[] = await response.json(); if (!academies[0]) return setMessage("Create an academy, batch, and class session before marking attendance."); setAcademy(academies[0]); await loadWorkspace(academies[0].id); } catch { setMessage("Attendance could not be loaded. Confirm the API is running on port 5092."); } } void initialise(); }, []);
+  const initialWorkspaceLoad = useRef(loadWorkspace);
+  useEffect(() => { void initialWorkspaceLoad.current(); }, []);
   useEffect(() => {
-    if (!academy?.id || !sessionId) return;
+    if (!workspaceReady || !academy?.id || !sessionId) return;
     let active = true;
     const generation = recordScope.generation;
     void readAttendance(academy.id, sessionId).then((data) => {
@@ -87,7 +109,7 @@ export default function AttendancePage() {
       }
     });
     return () => { active = false; };
-  }, [sessionId, academy?.id, recordScope.generation]);
+  }, [sessionId, academy?.id, recordScope.generation, workspaceReady]);
 
   const selectedSession = sessions.find((session) => session.id === sessionId);
   const roster = selectedSession ? enrollments.filter((item) => item.batchId === selectedSession.batchId && item.status === "Active").map((item) => students.find((student) => student.id === item.studentId)).filter((student): student is Student => Boolean(student)) : [];
@@ -98,7 +120,7 @@ export default function AttendancePage() {
   async function mark(studentId: string, status: string) {
     const generation = recordScope.generation;
     const active = () => mounted.current && currentScope.current.generation === generation;
-    if (!academy || !sessionId || !recordsLoaded || !active() || pendingSave.current === generation || !roster.some(student => student.id === studentId)) return;
+    if (!workspaceReady || !academy || !sessionId || !recordsLoaded || !active() || pendingSave.current === generation || !roster.some(student => student.id === studentId)) return;
     const targetSession = sessionId;
     const draftKey = `${targetSession}:${studentId}`;
     pendingSave.current = generation;
@@ -126,8 +148,9 @@ export default function AttendancePage() {
   return <main className="enterprise-settings enterprise-legacy-standard attendance-standard min-h-screen bg-slate-950 text-slate-100"><WorkspaceNav /><div className="attendance-content mx-auto max-w-5xl px-6 py-10">
     <header className="attendance-heading"><div className="attendance-title"><span className="attendance-title-icon" aria-hidden="true">✓</span><div><p>Class records</p><h1>Attendance</h1></div></div></header>
     {message && <p role="status" aria-live="polite" className="mt-6 rounded-lg border border-amber-700/50 bg-amber-950/40 p-4 text-sm text-amber-100">{message}</p>}
-    <section className="attendance-panel"><header className="attendance-panel-header"><div><p>Session</p><h2>Mark attendance</h2></div><span>{roster.length} students</span></header><div className="attendance-session-picker"><StandardSelectField name="session" value={sessionId} disabled={Boolean(savingId)} onChange={selectSession} placeholder="Select a class" options={sessions.map((session) => ({ value: session.id, label: sessionLabel(session, batches) }))} /></div>
-      {!sessionId ? <p className="attendance-empty">Schedule a class first.</p> : roster.length === 0 ? <p className="attendance-empty">No active enrolments exist for this batch yet.</p> : !recordsLoaded ? <div className="attendance-empty" role="status">{recordScope.phase === "error" ? <>Attendance records are unavailable. <button type="button" onClick={() => selectSession()}>Retry records</button></> : "Loading attendance records…"}</div> : <ul className="attendance-roster">{roster.map((student) => { const record = recordFor(student.id); return <li key={student.id}><div><b>{student.firstName} {student.lastName}</b><small>{record ? `Marked: ${record.status}` : "Not marked"}</small></div><StandardSelectField name={`attendance-${student.id}`} value={record?.status ?? ""} disabled={Boolean(savingId)} onChange={(status) => { void mark(student.id, status); }} placeholder="Select status" options={statuses.map((status) => ({ value: status, label: status }))} /><input value={notesFor(student.id)} disabled={Boolean(savingId)} maxLength={500} onChange={(event) => setNotesByStudent((current) => ({ ...current, [`${sessionId}:${student.id}`]: event.target.value }))} placeholder="Notes (optional)" /><button disabled={Boolean(savingId) || !record?.status} onClick={() => { const status = record?.status; if (status) void mark(student.id, status); }} className="attendance-save">{savingId === student.id ? "Saving…" : "Save"}</button></li>; })}</ul>}
+    <button type="button" className="enterprise-action-button mt-4" disabled={workspacePhase === "loading" || Boolean(savingId)} onClick={() => loadWorkspace()}>Reload attendance workspace</button>
+    <section className="attendance-panel"><header className="attendance-panel-header"><div><p>Session</p><h2>Mark attendance</h2></div><span>{workspaceReady ? `${roster.length} students` : "Unavailable"}</span></header><div className="attendance-session-picker"><StandardSelectField name="session" value={sessionId} disabled={Boolean(savingId) || !workspaceReady} onChange={selectSession} placeholder="Select a class" options={sessions.map((session) => ({ value: session.id, label: sessionLabel(session, batches) }))} /></div>
+      {!workspaceReady ? <p className="attendance-empty" role="status">{workspacePhase === "loading" ? "Loading attendance workspace…" : "Attendance workspace is unavailable. Reload to try again."}</p> : !sessionId ? <p className="attendance-empty">Schedule a class first.</p> : roster.length === 0 ? <p className="attendance-empty">No active enrolments exist for this batch yet.</p> : !recordsLoaded ? <div className="attendance-empty" role="status">{recordScope.phase === "error" ? <>Attendance records are unavailable. <button type="button" onClick={() => selectSession()}>Retry records</button></> : "Loading attendance records…"}</div> : <ul className="attendance-roster">{roster.map((student) => { const record = recordFor(student.id); return <li key={student.id}><div><b>{student.firstName} {student.lastName}</b><small>{record ? `Marked: ${record.status}` : "Not marked"}</small></div><StandardSelectField name={`attendance-${student.id}`} value={record?.status ?? ""} disabled={Boolean(savingId)} onChange={(status) => { void mark(student.id, status); }} placeholder="Select status" options={statuses.map((status) => ({ value: status, label: status }))} /><input value={notesFor(student.id)} disabled={Boolean(savingId)} maxLength={500} onChange={(event) => setNotesByStudent((current) => ({ ...current, [`${sessionId}:${student.id}`]: event.target.value }))} placeholder="Notes (optional)" /><button disabled={Boolean(savingId) || !record?.status} onClick={() => { const status = record?.status; if (status) void mark(student.id, status); }} className="attendance-save">{savingId === student.id ? "Saving…" : "Save"}</button></li>; })}</ul>}
     </section>
   </div></main>;
 }
