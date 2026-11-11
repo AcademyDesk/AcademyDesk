@@ -58,7 +58,7 @@ function WorkspaceSessionBoundary({ children, workspace }: { children: React.Rea
 export function WorkspaceFrame({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   if (pathname === "/login" || pathname === "/register") return <>{children}</>;
-  const content = publicRoutes.has(pathname) || ["/penta/onboarding", "/penta/teachers", "/penta/teachers/chat"].includes(pathname) || pathname.startsWith("/platform/") ? children : <EnterpriseShell>{children}</EnterpriseShell>;
+  const content = publicRoutes.has(pathname) || ["/penta/onboarding", "/penta/teachers", "/penta/teachers/chat", "/penta/enrollments"].includes(pathname) || pathname.startsWith("/platform/") ? children : <EnterpriseShell>{children}</EnterpriseShell>;
   // Route-keyed boundary discards obsolete UI state when a new workspace is opened.
   const workspace = portalWorkspaceForPath(pathname);
   const aiEntry = pathname === "/penta" || pathname.startsWith("/penta/") || pathname.endsWith("/ai");
