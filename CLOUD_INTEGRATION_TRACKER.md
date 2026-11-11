@@ -1,11 +1,21 @@
 # Academy Desk shared integration tracker
 
+## Protected PENTA payment collection — 11 November 2026
+
+- [x] Desktop added the Testing-only payment collection API with shared
+  Manual rules, exact approval, audit rollback and receipt recovery.
+- [ ] Desktop owns the payment approval and recovery browser flow next.
+  Cloud C34 at `cfee08e` covers batch setup lookup permissions.
+
+[Payment collection evidence](QA/REPORTS/PENTA_PAYMENT_COLLECTION_2026-11-11.md)
+
 ## Protected PENTA finance chat — 11 November 2026
 
 - [x] Desktop connected the six Testing-only finance reads to Academy Admin
   chat, with host-rendered results, refusals, access checks and Manual links.
-- [ ] Desktop owns protected payment collection next. Cloud C33 at
-  `6d508ee` contains the enrollment lookup and its handoff.
+- [x] Desktop added protected payment collection in the following
+  checkpoint. Cloud C33 at `6d508ee` contains the enrollment lookup and
+  its handoff.
 
 [Finance chat evidence](QA/REPORTS/PENTA_FINANCE_CHAT_2026-11-11.md)
 

@@ -1,13 +1,23 @@
 # Academy Desk handoff
 
+## Protected PENTA payment collection — 11 November 2026
+
+- [x] Testing-only payment collection reuses the Manual invoice lock and
+  adjusted balance. Approval binds the exact payment and reviewed ledger.
+  The payment, invoice status, audit and recoverable receipt commit together.
+- [ ] Next with Sol High is the Admin browser approval and recovery flow.
+  Verify the exact values shown at review, confirmation and lost-response
+  recovery before widening access.
+
+[Payment collection evidence](QA/REPORTS/PENTA_PAYMENT_COLLECTION_2026-11-11.md)
+
 ## Protected PENTA finance chat — 11 November 2026
 
 - [x] The Academy Admin PENTA workspace routes supported finance prompts to
   the existing audited read service. Results include exact amounts, invoice
   drill-down and links to Manual. The browser holds only the latest result.
-- [ ] Next with Sol High is the protected payment collection write path.
-  Reuse the Manual transaction, bind approval to the exact draft and prove
-  retry, contention and receipt recovery. Release acceptance remains open.
+- [x] The following checkpoint adds the protected payment collection API.
+  Browser approval, physical-device testing and release acceptance remain open.
 
 [Finance chat evidence](QA/REPORTS/PENTA_FINANCE_CHAT_2026-11-11.md)
 

@@ -49,6 +49,7 @@ builder.Services.AddScoped<PentaConversationService>();
 builder.Services.AddScoped<OutstandingFeesService>();
 builder.Services.AddScoped<PentaFinancePolicy>();
 builder.Services.AddScoped<PentaFinanceReadService>();
+builder.Services.AddScoped<PentaPaymentCollectionWorkflow>();
 builder.Services.AddScoped<AcademyDeskConnector>();
 builder.Services.AddScoped<PentaMiniOrchestrator>();
 builder.Services.AddScoped<PentaOnboardingDraftService>();
