@@ -41,21 +41,30 @@ public sealed partial class PentaOnboardingController
     public Task<ActionResult> PaymentExecute(Guid academyId, Guid conversationId, Guid requestId, [FromBody] JsonElement input,
         [FromServices] PentaPaymentCollectionWorkflow workflow, CancellationToken token) => PaymentSafely(workflow, () =>
         {
-            if (!Keys(input, "revision", "payloadHash", "approvalId") || !Integer(input, "revision", 1, 1, out var revision) ||
-                input.GetProperty("payloadHash").ValueKind != JsonValueKind.String ||
-                input.GetProperty("payloadHash").GetString() is not { Length: 64 } hash ||
-                hash.Any(c => c is not (>= '0' and <= '9' or >= 'a' and <= 'f')) ||
-                input.GetProperty("approvalId").ValueKind != JsonValueKind.String ||
-                !input.GetProperty("approvalId").TryGetGuid(out var approvalId) || approvalId == Guid.Empty) return InvalidPaymentInput();
-            return workflow.ExecuteAsync(User, academyId, conversationId, requestId, new(revision, hash, approvalId), token);
+            var binding = FinanceExecutionBinding(input);
+            return binding is null ? InvalidPaymentInput() : workflow.ExecuteAsync(User, academyId, conversationId, requestId, binding, token);
         });
 
     private Task<ActionResult> PaymentSafely(PentaPaymentCollectionWorkflow workflow, Func<Task<PentaConversationOutcome>> operation) =>
+        FinanceWriteSafely("payment collection", workflow.Enabled, operation);
+
+    private Task<ActionResult> FinanceWriteSafely(string subject, bool enabled, Func<Task<PentaConversationOutcome>> operation) =>
         Safely(async () =>
         {
             var outcome = await operation();
-            return ToResult(outcome.HttpStatus, outcome.Value, outcome.Error ?? "The payment collection request could not be completed.");
-        }, "payment collection", workflow.Enabled);
+            return ToResult(outcome.HttpStatus, outcome.Value, outcome.Error ?? $"The {subject} request could not be completed.");
+        }, subject, enabled);
+
+    private static PentaFinanceDraftBinding? FinanceExecutionBinding(JsonElement input)
+    {
+        if (!Keys(input, "revision", "payloadHash", "approvalId") || !Integer(input, "revision", 1, 1, out var revision) ||
+            input.GetProperty("payloadHash").ValueKind != JsonValueKind.String ||
+            input.GetProperty("payloadHash").GetString() is not { Length: 64 } hash ||
+            hash.Any(c => c is not (>= '0' and <= '9' or >= 'a' and <= 'f')) ||
+            input.GetProperty("approvalId").ValueKind != JsonValueKind.String ||
+            !input.GetProperty("approvalId").TryGetGuid(out var approvalId) || approvalId == Guid.Empty) return null;
+        return new(revision, hash, approvalId);
+    }
 
     private static Task<PentaConversationOutcome> InvalidPaymentInput() =>
         Task.FromResult(new PentaConversationOutcome(400, Error: "Enter the expected payment draft and approval fields."));

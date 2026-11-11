@@ -1,5 +1,4 @@
 using AcademyDesk.Api.Data;
-using AcademyDesk.Api.Domain.Entities;
 using AcademyDesk.Api.Infrastructure;
 using AcademyDesk.Api.ReadModels;
 using Microsoft.AspNetCore.Mvc;
@@ -39,15 +38,11 @@ public sealed class InvoicesController(AcademyDeskDbContext dbContext) : Control
     [HttpPost]
     public async Task<ActionResult<InvoiceSummary>> Create(Guid academyId, CreateInvoiceRequest request, CancellationToken cancellationToken)
     {
-        if (!await dbContext.Students.AnyAsync(x => x.Id == request.StudentId && x.AcademyId == academyId, cancellationToken)) return BadRequest(new { message = "The student does not belong to this academy." });
-        FeePlan? plan = null;
-        if (request.FeePlanId.HasValue) plan = await dbContext.FeePlans.SingleOrDefaultAsync(x => x.Id == request.FeePlanId && x.AcademyId == academyId && x.IsActive, cancellationToken);
-        if (request.FeePlanId.HasValue && plan is null) return BadRequest(new { message = "The fee plan does not belong to this academy." });
-        var amount = request.Amount ?? plan?.Amount ?? 0;
-        if (amount <= 0) return BadRequest(new { message = "A positive invoice amount is required." });
-        var number = $"INV-{DateTime.UtcNow:yyyyMMddHHmmss}-{Random.Shared.Next(100, 999)}";
-        var invoice = new Invoice { AcademyId = academyId, InvoiceNumber = number, StudentId = request.StudentId, FeePlanId = request.FeePlanId, TotalAmount = amount, Currency = plan?.Currency ?? "INR", DueDate = request.DueDate ?? DateOnly.FromDateTime(DateTime.UtcNow.AddDays(7)) };
-        dbContext.Invoices.Add(invoice); await dbContext.SaveChangesAsync(cancellationToken);
+        var now = DateTime.UtcNow;
+        var (plan, error) = await InvoiceIssuance.ReviewAsync(dbContext, academyId, request, now, cancellationToken);
+        if (plan is null) return BadRequest(new { message = error });
+        var invoice = InvoiceIssuance.Create(dbContext, academyId, plan, now);
+        await dbContext.SaveChangesAsync(cancellationToken);
         return Created($"/api/academies/{academyId}/invoices/{invoice.Id}", new InvoiceSummary(invoice.Id, invoice.InvoiceNumber, invoice.StudentId, invoice.FeePlanId, invoice.TotalAmount, invoice.AdjustedAmount, 0, invoice.Currency, invoice.IssuedDate, invoice.DueDate, invoice.Status));
     }
     [HttpPatch("{invoiceId:guid}/status")]

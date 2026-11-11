@@ -1,11 +1,20 @@
 # Academy Desk shared integration tracker
 
+## Protected PENTA invoice issuance — 11 November 2026
+
+- [x] Desktop added protected invoice issuance with exact approval,
+  duplicate checks and receipt recovery.
+- [ ] Desktop owns invoice issuance browser wiring next. Cloud C36 at
+  `1e15133` covers scoped scheduling options and read readiness.
+
+[Invoice issuance evidence](QA/REPORTS/PENTA_INVOICE_ISSUANCE_2026-11-11.md)
+
 ## PENTA payment review and receipt recovery — 11 November 2026
 
 - [x] Desktop connected exact payment review, approval and receipt recovery
   to the Testing-only Admin Finance chat.
-- [ ] Desktop owns protected invoice issuance next. Cloud C34 at
-  `c4bd654` contains the separate batch lookup return.
+- [x] Desktop added protected invoice issuance in the following checkpoint.
+  Cloud C34 at `c4bd654` contains the separate batch lookup return.
 
 [Payment browser evidence](QA/REPORTS/PENTA_PAYMENT_BROWSER_2026-11-11.md)
 
