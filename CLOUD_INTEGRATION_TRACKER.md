@@ -1,13 +1,21 @@
 # Academy Desk shared integration tracker
 
+## Protected PENTA finance chat — 11 November 2026
+
+- [x] Desktop connected the six Testing-only finance reads to Academy Admin
+  chat, with host-rendered results, refusals, access checks and Manual links.
+- [ ] Desktop owns protected payment collection next. Cloud C33 at
+  `6d508ee` contains the enrollment lookup and its handoff.
+
+[Finance chat evidence](QA/REPORTS/PENTA_FINANCE_CHAT_2026-11-11.md)
+
 ## PENTA expense and payroll reads — 10 November 2026
 
 - [x] Desktop added protected expense and payroll previews using the same
   ledger sources as Manual. Each response is limited to 20 rows, uses exact
   decimal strings, and requires current tenant authority and a saved audit.
-- [ ] Desktop owns protected finance conversation wiring next. Cloud C32
-  at `28be47a` owns the enrollment lifecycle return and C33 at `f365ad2`
-  claims separate enrollment options.
+- [x] Desktop connected finance chat in the following checkpoint. Cloud C32
+  at `28be47a` owns the separate enrollment lifecycle return.
 
 [Expense and payroll evidence](QA/REPORTS/PENTA_EXPENSE_PAYROLL_READS_2026-11-10.md)
 

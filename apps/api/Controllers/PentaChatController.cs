@@ -9,7 +9,8 @@ namespace AcademyDesk.Api.Controllers;
 
 [ApiController, Authorize]
 [Route("api/academies/{academyId:guid}/penta/chat")]
-public sealed class PentaChatController(PentaMiniOrchestrator chat, ILogger<PentaChatController> logger) : ControllerBase
+public sealed class PentaChatController(PentaMiniOrchestrator chat, PentaFinanceReadService finance,
+    ILogger<PentaChatController> logger) : ControllerBase
 {
     [HttpGet("health")]
     public async Task<ActionResult> Health(Guid academyId, CancellationToken token) => Result(await chat.HealthAsync(User, academyId, token));
@@ -18,6 +19,27 @@ public sealed class PentaChatController(PentaMiniOrchestrator chat, ILogger<Pent
     [HttpPost("conversations/{conversationId:guid}/turns"), RequestSizeLimit(12 * 1024)]
     public Task<ActionResult> Turn(Guid academyId, Guid conversationId, MiniTurnInput? input, CancellationToken token) =>
         Safely(() => chat.TurnAsync(User, academyId, conversationId, input, token));
+    [HttpGet("finance"), Authorize(AuthenticationSchemes = "Identity.Bearer")]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+    public Task<ActionResult> FinanceAvailability(Guid academyId, CancellationToken token) =>
+        Safely(() => finance.ChatAvailabilityAsync(User, academyId, token));
+
+    [HttpPost("finance"), RequestSizeLimit(2048), Authorize(AuthenticationSchemes = "Identity.Bearer")]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+    public Task<ActionResult> FinanceTurn(Guid academyId, PentaFinanceChatInput? input, CancellationToken token) =>
+        Safely(async () =>
+        {
+            var access = await finance.ChatAccessAsync(User, academyId, token);
+            if (access != 204) return new(access);
+            var request = PentaFinanceChat.Parse(input?.Text);
+            if (request is not { } command)
+                return new(422, Error: "Try finance overview, overdue invoices, recent expenses or recent payroll.");
+            var result = await finance.ReadAsync(User, academyId, command.Kind, command.Invoice, token);
+            return result.Value is { } value
+                ? new(result.Status, PentaFinanceChat.Present(value))
+                : new(result.Status);
+        });
+
     private async Task<ActionResult> Safely(Func<Task<PentaConversationOutcome>> operation)
     {
         try { return Result(await operation()); }

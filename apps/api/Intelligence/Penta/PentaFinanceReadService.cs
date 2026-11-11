@@ -42,8 +42,26 @@ internal enum PentaFinanceReadKind { Overview, Invoice, Collections, Reconciliat
 public sealed class PentaFinanceReadService(AcademyDeskDbContext db, IdentityDbContext identity, PentaFinancePolicy policy,
     PentaPilotPolicy pilot, UserManager<ApplicationUser> users, IConfiguration configuration, IHostEnvironment environment, TimeProvider clock)
 {
-    private const int PreviewSize = 20;
+    internal const int PreviewSize = 20;
     public bool Enabled => environment.IsEnvironment("Testing") && pilot.IsAvailable && configuration.GetValue<bool>("Penta:FinanceReadEnabled");
+
+    internal async Task<int> ChatAccessAsync(ClaimsPrincipal principal, Guid academy, CancellationToken token)
+    {
+        if (!Enabled) return 404;
+        return await policy.AllowsAsync(principal, academy, token) ? 204 : 403;
+    }
+
+    internal async Task<PentaConversationOutcome> ChatAvailabilityAsync(ClaimsPrincipal principal, Guid academy, CancellationToken token)
+    {
+        var access = await ChatAccessAsync(principal, academy, token);
+        return access == 204
+            ? new(200, new { financeControls = await HasFinanceControlsAsync(academy, token) })
+            : new(access);
+    }
+
+    private async Task<bool> HasFinanceControlsAsync(Guid academy, CancellationToken token) =>
+        SubscriptionPlanCatalog.Allows(await db.Academies.AsNoTracking().Where(x => x.Id == academy)
+            .Select(x => x.EnabledModulesJson).SingleOrDefaultAsync(token), "FinanceControls");
 
     internal async Task<PentaFinanceReadOutcome> ReadAsync(ClaimsPrincipal principal, Guid academy, PentaFinanceReadKind kind,
         Guid? invoice, CancellationToken token)
@@ -63,12 +81,8 @@ public sealed class PentaFinanceReadService(AcademyDeskDbContext db, IdentityDbC
         var current = await identity.Users.AsNoTracking().SingleOrDefaultAsync(x => x.Id == actor, token);
         if (current?.SecurityStamp != stamp || !await policy.AllowsAsync(principal, academy, token)) return new(403);
 
-        if (kind is PentaFinanceReadKind.Overview or PentaFinanceReadKind.Collections)
-        {
-            var modules = await db.Academies.AsNoTracking().Where(x => x.Id == academy)
-                .Select(x => x.EnabledModulesJson).SingleAsync(token);
-            if (!SubscriptionPlanCatalog.Allows(modules, "FinanceControls")) return new(403);
-        }
+        if (kind is PentaFinanceReadKind.Overview or PentaFinanceReadKind.Collections &&
+            !await HasFinanceControlsAsync(academy, token)) return new(403);
 
         var now = clock.GetUtcNow();
         object? result = kind switch
