@@ -9,6 +9,18 @@ public sealed partial class PentaOnboardingController
     private const string InvoiceConversationRoot = "~/api/academies/{academyId:guid}/penta/invoice-issuance/conversations";
     private const string InvoiceDraftRoute = InvoiceConversationRoot + "/{conversationId:guid}/drafts/{requestId:guid}";
 
+    [HttpPost("~/api/academies/{academyId:guid}/penta/invoice-issuance/options"), RequestSizeLimit(1024)]
+    public Task<ActionResult> InvoiceOptions(Guid academyId, [FromBody] JsonElement input,
+        [FromServices] PentaInvoiceIssuanceWorkflow workflow, CancellationToken token) =>
+        FinanceWriteSafely("invoice lookup", workflow.Enabled, () =>
+        {
+            if (!Keys(input, "kind", "query") || input.GetProperty("kind").ValueKind != JsonValueKind.String ||
+                input.GetProperty("kind").GetString() is not ("student" or "feePlan") ||
+                input.GetProperty("query").ValueKind != JsonValueKind.String) return InvalidInvoiceInput();
+            return workflow.OptionsAsync(User, academyId, input.GetProperty("kind").GetString()!,
+                input.GetProperty("query").GetString()!, token);
+        });
+
     [HttpPut(InvoiceConversationRoot + "/{startRequestId:guid}"), RequestSizeLimit(1024)]
     public Task<ActionResult> InvoiceStart(Guid academyId, Guid startRequestId,
         [FromServices] PentaInvoiceIssuanceWorkflow workflow, CancellationToken token) =>

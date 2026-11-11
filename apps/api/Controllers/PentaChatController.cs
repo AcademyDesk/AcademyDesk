@@ -21,8 +21,9 @@ public sealed class PentaChatController(PentaMiniOrchestrator chat, PentaFinance
         Safely(() => chat.TurnAsync(User, academyId, conversationId, input, token));
     [HttpGet("finance"), Authorize(AuthenticationSchemes = "Identity.Bearer")]
     [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
-    public Task<ActionResult> FinanceAvailability(Guid academyId, [FromServices] PentaPaymentCollectionWorkflow collection, CancellationToken token) =>
-        Safely(() => finance.ChatAvailabilityAsync(User, academyId, collection.Enabled, token));
+    public Task<ActionResult> FinanceAvailability(Guid academyId, [FromServices] PentaPaymentCollectionWorkflow collection,
+        [FromServices] PentaInvoiceIssuanceWorkflow issuance, CancellationToken token) =>
+        Safely(() => finance.ChatAvailabilityAsync(User, academyId, collection.Enabled, issuance.Enabled, token));
 
     [HttpPost("finance"), RequestSizeLimit(2048), Authorize(AuthenticationSchemes = "Identity.Bearer")]
     [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]

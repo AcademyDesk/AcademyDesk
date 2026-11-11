@@ -28,7 +28,8 @@ internal static partial class SqlHarnessEntryPoint
         using var availability = await admin.GetAsync(path);
         RequireFinanceStatus(availability, HttpStatusCode.OK, "finance chat availability");
         var capabilities = await ReadJson(availability);
-        if (!capabilities.GetProperty("financeControls").GetBoolean() || capabilities.GetProperty("paymentCollection").GetBoolean())
+        if (!capabilities.GetProperty("financeControls").GetBoolean() || capabilities.GetProperty("paymentCollection").GetBoolean() ||
+            capabilities.GetProperty("invoiceIssuance").GetBoolean())
             throw new InvalidOperationException("FinanceControls availability or default-off payment collection differs.");
         using var disabled = await off.GetAsync(path);
         RequireFinanceStatus(disabled, HttpStatusCode.NotFound, "finance chat default-off availability");

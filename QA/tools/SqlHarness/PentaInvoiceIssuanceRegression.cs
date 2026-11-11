@@ -41,6 +41,7 @@ internal static partial class SqlHarnessEntryPoint
         using var owner = await SignIn(host, "qa-penta-payroll-owner@example.invalid");
         using var anonymous = host.CreateClient();
         var count = 0;
+        var optionsPath = academyPath + "/penta/invoice-issuance/options";
         var start = Guid.NewGuid();
         var startPath = root + start.ToString("D");
 
@@ -51,6 +52,18 @@ internal static partial class SqlHarnessEntryPoint
         await Expect(foreignAdmin.PutAsync(startPath, null), 403);
         await Expect(teacher.PutAsync(startPath, null), 403);
         Pass("foreign academy and teacher refused");
+        await Expect(disabled.PostAsJsonAsync(optionsPath, new { kind = "student", query = "Isolated" }), 404);
+        await Expect(foreignAdmin.PostAsJsonAsync(optionsPath, new { kind = "student", query = "Isolated" }), 403);
+        await Expect(teacher.PostAsJsonAsync(optionsPath, new { kind = "student", query = "Isolated" }), 403);
+        await Expect(admin.PostAsJsonAsync(optionsPath, new { kind = "student", query = "I" }), 400);
+        Pass("lookup enforces enablement, current tenant, role and minimum query");
+
+        var lookupFault = new EnrollmentSharedAuditFault("PentaInvoiceOptionsRead");
+        using (var broken = new QaApiFactory(manifest, flags, isolatedDomainInterceptor: lookupFault))
+        using (var caller = await SignIn(broken, adminEmail))
+            await Expect(caller.PostAsJsonAsync(optionsPath, new { kind = "feePlan", query = "QA invoice" }), 503);
+        if (lookupFault.Hits != 1) throw new InvalidOperationException("Required lookup audit was bypassed.");
+        Pass("lookup withholds results when audit fails");
         var session = await Session(admin.PutAsync(startPath, null), 201);
         if (session != await Session(admin.PutAsync(startPath, null), 200))
             throw new InvalidOperationException("Starting again returned a different invoice conversation.");
@@ -179,7 +192,7 @@ internal static partial class SqlHarnessEntryPoint
             throw new InvalidOperationException("Expiry removed an already committed receipt.");
         Pass("expired approval blocked and committed receipt recoverable");
 
-        if (count != 24) throw new InvalidOperationException("Unexpected invoice issuance check count: " + count);
+        if (count != 26) throw new InvalidOperationException("Unexpected invoice issuance check count: " + count);
         Console.WriteLine($"FINANCE PENTA INVOICE SUMMARY {count} native HTTP/SQL checks PASS, including 5/5 duplicate invoice races.");
 
         string Draft(MiniSessionView? from = null) => root + (from ?? session).ConversationId.ToString("D") + "/drafts/" + Guid.NewGuid().ToString("D");
