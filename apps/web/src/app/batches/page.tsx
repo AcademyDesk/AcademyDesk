@@ -63,15 +63,22 @@ export default function BatchesPage() {
   const [editStartDate, setEditStartDate] = useState("");
   const [savingId, setSavingId] = useState<string | null>(null);
   const [detail, setDetail] = useState<"classes" | "teachers" | "capacity" | null>(null);
+  const [loadedAcademy, setLoadedAcademy] = useState("");
+  const [readLoading, setReadLoading] = useState(false);
+  const [visibleReadVersion, setVisibleReadVersion] = useState(0);
   const saveInFlight = useRef(false);
+  const loadedKey = useRef(loadedAcademy), readVersion = useRef(0), alive = useRef(true);
+  const workspaceReady = Boolean(academyId) && loadedAcademy === academyId && !readLoading;
+  function canUseWorkspace() { return alive.current && workspaceReady && loadedKey.current === academyId && readVersion.current === visibleReadVersion; }
+  useEffect(() => { alive.current = true; return () => { alive.current = false; loadedKey.current = ""; ++readVersion.current; }; }, []);
 
   function startSaving(id: string) {
-    if (saveInFlight.current) return false;
+    if (saveInFlight.current || !canUseWorkspace()) return false;
     saveInFlight.current = true;
     setSavingId(id);
     return true;
   }
-  function finishSaving() { saveInFlight.current = false; setSavingId(null); }
+  function finishSaving() { saveInFlight.current = false; if (alive.current) setSavingId(null); }
   async function refreshAfterSave(id: string, notice: string) {
     setMessage(notice);
     try { await loadWorkspace(id); }
@@ -79,28 +86,31 @@ export default function BatchesPage() {
   }
 
   async function loadWorkspace(id: string) {
-    if (!id) return;
-    const [courseResponse, teacherResponse, branchResponse, batchResponse] =
-      await Promise.all([
-        academyApi(`/api/academies/${id}/courses`, { cache: "no-store" }),
-        academyApi(`/api/academies/${id}/teachers`, { cache: "no-store" }),
-        academyApi(`/api/academies/${id}/branches`, { cache: "no-store" }),
-        academyApi(`/api/academies/${id}/batches`, { cache: "no-store" }),
-      ]);
-    if (
-      ![courseResponse, teacherResponse, branchResponse, batchResponse].every(
-        (response) => response.ok,
-      )
-    )
-      throw new Error();
-    const [courseData, teacherData, branchData, batchData]: [Course[], Teacher[], Branch[], Batch[]] = await Promise.all([
-      courseResponse.json(), teacherResponse.json(), branchResponse.json(), batchResponse.json(),
-    ]);
-    setCourses(courseData);
-    setTeachers(teacherData);
-    setBranches(branchData);
-    setBatches(batchData);
-    if (!courseId && courseData.length) setCourseId(courseData[0].id);
+    if (!id || !alive.current) return;
+    const version = ++readVersion.current;
+    loadedKey.current = ""; setLoadedAcademy(""); setReadLoading(true); setVisibleReadVersion(version); setDetail(null);
+    try {
+      const responses = await Promise.all([academyApi(`/api/academies/${id}/batches/options`, { cache: "no-store" }), academyApi(`/api/academies/${id}/batches`, { cache: "no-store" })]);
+      if (!responses.every(x => x.ok)) throw Error("Batch read refused");
+      const [options, batchData]: [{ courses: Course[]; teachers: Teacher[]; branches: Branch[] }, Batch[]] = await Promise.all([responses[0].json(), responses[1].json()]);
+      const courseData = options?.courses, teacherData = options?.teachers, branchData = options?.branches;
+      const validIds = (rows: { id: string }[]) => new Set(rows.map(x => x.id)).size === rows.length && rows.every(x => typeof x.id === "string" && Boolean(x.id.trim()));
+      if (!Array.isArray(courseData) || !courseData.every(x => x && typeof x.name === "string" && typeof x.academyType === "string") || !validIds(courseData)
+        || !Array.isArray(teacherData) || !teacherData.every(x => x && typeof x.firstName === "string" && typeof x.lastName === "string") || !validIds(teacherData)
+        || !Array.isArray(branchData) || !branchData.every(x => x && typeof x.name === "string") || !validIds(branchData)
+        || !Array.isArray(batchData) || !batchData.every(x => x && typeof x.name === "string" && typeof x.courseId === "string" && typeof x.isActive === "boolean" && typeof x.capacity === "number" && Number.isFinite(x.capacity)) || !validIds(batchData)) throw Error("Invalid batch records");
+      if (!alive.current || readVersion.current !== version) return;
+      setCourses(courseData); setTeachers(teacherData); setBranches(branchData); setBatches(batchData);
+      setCourseId(value => value || courseData[0]?.id || "");
+      loadedKey.current = id; setLoadedAcademy(id);
+    } catch (error) {
+      if (!alive.current || readVersion.current !== version) return;
+      setMessage("Batch information could not be loaded."); throw error;
+    } finally { if (alive.current && readVersion.current === version) setReadLoading(false); }
+  }
+  async function reloadWorkspace() {
+    if (!alive.current || saveInFlight.current) return;
+    try { await loadWorkspace(academyId); if (alive.current && loadedKey.current === academyId) setMessage(""); } catch { /* read failure already explains the unavailable workspace */ }
   }
 
   useEffect(() => {
@@ -117,15 +127,13 @@ export default function BatchesPage() {
     return () => { active = false; };
   }, []);
   useEffect(() => {
-    void loadWorkspace(academyId).catch(() =>
-      setMessage("Batch information could not be loaded."),
-    );
+    void loadWorkspace(academyId).catch(() => {});
   }, [academyId]);
 
   async function createBatch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (saveInFlight.current) return;
-    if (!academyId || !courseId) {
+    if (saveInFlight.current || !canUseWorkspace()) return;
+    if (!academyId || !courses.some(x => x.id === courseId)) {
       setMessage("Select an academy and course before creating the batch.");
       return;
     }
@@ -183,7 +191,7 @@ export default function BatchesPage() {
     finally { finishSaving(); }
   }
   function beginEdit(batch: Batch) {
-    if (saveInFlight.current) return;
+    if (saveInFlight.current || !canUseWorkspace()) return;
     setEditingId(batch.id);
     setEditName(batch.name);
     setEditCourseId(batch.courseId);
@@ -252,6 +260,7 @@ export default function BatchesPage() {
   const branchName = (id?: string | null) =>
     branches.find((branch) => branch.id === id)?.name ?? "No branch";
 
+  const readNotice = <div className="mt-4"><button type="button" className="enterprise-action-button" disabled={readLoading || savingId !== null || !academyId} onClick={() => void reloadWorkspace()}>Reload batch records</button>{!workspaceReady && <p role="status" className="mt-3">{readLoading ? "Loading batch records…" : "Batch records are unavailable. Reload to try again."}</p>}</div>;
   if (pathname === "/batches") {
     const active = batches.filter((batch) => batch.isActive);
     const unassigned = active.filter((batch) => !batch.teacherId);
@@ -279,7 +288,8 @@ export default function BatchesPage() {
               {message}
             </p>
           )}
-          <section className="batch-overview-kpis">
+          {readNotice}
+          {workspaceReady && <><section className="batch-overview-kpis">
             <Metric label="Active classes" value={active.length} note={`${oneToOne.length} 1:1 · ${groupClasses.length} group`} onClick={() => setDetail("classes")} />
             <Metric
               label="Teacher assignment"
@@ -324,6 +334,7 @@ export default function BatchesPage() {
               <p className="batch-overview-empty">No active classes or batches.</p>
             )}
           </section>
+          </>}
         </div>
       </main>
     );
@@ -339,6 +350,7 @@ export default function BatchesPage() {
             {message}
           </p>
         )}
+        {readNotice}
         {academies.length === 0 ? (
           <p className="mt-8 rounded-lg border border-dashed border-slate-700 p-8 text-center text-slate-400">
             Create an academy and course first.
@@ -351,7 +363,7 @@ export default function BatchesPage() {
               disabled={savingId !== null}
               name="academy"
               value={academyId}
-              onChange={(id) => { if (!saveInFlight.current) setAcademyId(id); }}
+              onChange={(id) => { if (!saveInFlight.current) { loadedKey.current = ""; ++readVersion.current; setLoadedAcademy(""); setAcademyId(id); setCourseId(""); setBranchId(""); setEditingId(null); } }}
               placeholder="Select academy"
               options={academies.map((academy) => ({ value: academy.id, label: academy.name }))}
             />
@@ -359,9 +371,9 @@ export default function BatchesPage() {
             <section className="batch-setup-layout">
               <form onSubmit={createBatch} className="batch-setup-panel">
                 <header className="batch-setup-panel-header"><div><p>Setup</p><h2>Create Class / Batch</h2></div></header>
-                <fieldset disabled={savingId !== null} className="batch-setup-form-fields" style={{ border: 0, margin: 0, minWidth: 0 }}>
+                <fieldset disabled={savingId !== null || !workspaceReady} className="batch-setup-form-fields" style={{ border: 0, margin: 0, minWidth: 0 }}>
                 <StandardSelectField
-                  disabled={savingId !== null}
+                  disabled={savingId !== null || !workspaceReady}
                   name="course"
                   value={courseId}
                   onChange={setCourseId}
@@ -382,7 +394,7 @@ export default function BatchesPage() {
                   className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
                 />
                 <StandardSelectField
-                  disabled={savingId !== null}
+                  disabled={savingId !== null || !workspaceReady}
                   name="branch"
                   value={branchId}
                   onChange={setBranchId}
@@ -401,7 +413,7 @@ export default function BatchesPage() {
                 />
                 <div className="mt-3 grid gap-3 sm:grid-cols-2">
                   <StandardSelectField
-                    disabled={savingId !== null}
+                    disabled={savingId !== null || !workspaceReady}
                     name="class-type"
                     value={classType}
                     onChange={setClassType}
@@ -409,7 +421,7 @@ export default function BatchesPage() {
                     options={[{ value: "Group", label: "Group class" }, { value: "OneToOne", label: "1:1 class" }]}
                   />
                   <StandardSelectField
-                    disabled={savingId !== null}
+                    disabled={savingId !== null || !workspaceReady}
                     name="delivery-mode"
                     value={deliveryMode}
                     onChange={setDeliveryMode}
@@ -507,14 +519,14 @@ export default function BatchesPage() {
                   className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
                 />
                 <StandardDateField name="batch-start-date" label="Batch start date" value={startDate} onChange={setStartDate} />
-                <button disabled={savingId !== null} className="mt-5 w-full rounded-lg bg-cyan-400 px-4 py-2.5 font-semibold text-slate-950 hover:bg-cyan-300">
+                <button disabled={savingId !== null || !workspaceReady || !courses.some(x => x.id === courseId)} className="mt-5 w-full rounded-lg bg-cyan-400 px-4 py-2.5 font-semibold text-slate-950 hover:bg-cyan-300">
                   Create batch
                 </button>
                 </fieldset>
               </form>
               <section className="batch-setup-panel batch-directory-panel">
-                <header className="batch-setup-panel-header"><div><p>Directory</p><h2>Batches</h2></div><span>{batches.length} records</span></header>
-                {batches.length === 0 ? (
+                <header className="batch-setup-panel-header"><div><p>Directory</p><h2>Batches</h2></div><span>{workspaceReady ? `${batches.length} records` : "Unavailable"}</span></header>
+                {!workspaceReady ? <p className="mt-6">Reload batch records to view the directory.</p> : batches.length === 0 ? (
                   <p className="mt-6 text-slate-400">No batches yet.</p>
                 ) : (
                   <ul className="mt-4 space-y-3">
@@ -524,14 +536,14 @@ export default function BatchesPage() {
                           key={batch.id}
                           className="rounded-lg border border-cyan-700/60 bg-slate-950 p-4"
                         >
-                          <fieldset disabled={savingId !== null} className="grid gap-2" style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
+                          <fieldset disabled={savingId !== null || !workspaceReady} className="grid gap-2" style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
                             <input
                               value={editName}
                               onChange={(e) => setEditName(e.target.value)}
                               className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2"
                             />
                             <StandardSelectField
-                              disabled={savingId !== null}
+                              disabled={savingId !== null || !workspaceReady}
                               name="edit-course"
                               value={editCourseId}
                               onChange={setEditCourseId}
@@ -539,7 +551,7 @@ export default function BatchesPage() {
                               options={courses.map((course) => ({ value: course.id, label: course.name }))}
                             />
                             <StandardSelectField
-                              disabled={savingId !== null}
+                              disabled={savingId !== null || !workspaceReady}
                               name="edit-teacher"
                               value={editTeacherId}
                               onChange={setEditTeacherId}
@@ -547,7 +559,7 @@ export default function BatchesPage() {
                               options={teachers.map((teacher) => ({ value: teacher.id, label: `${teacher.firstName} ${teacher.lastName}` }))}
                             />
                             <StandardSelectField
-                              disabled={savingId !== null}
+                              disabled={savingId !== null || !workspaceReady}
                               name="edit-branch"
                               value={editBranchId}
                               onChange={setEditBranchId}
@@ -567,14 +579,14 @@ export default function BatchesPage() {
                           <div className="mt-3 flex gap-2">
                             <button
                               onClick={() => void saveBatch(batch)}
-                              disabled={savingId !== null}
+                              disabled={savingId !== null || !workspaceReady}
                               className="rounded-lg bg-cyan-400 px-3 py-2 text-sm font-semibold text-slate-950"
                             >
                               Save
                             </button>
                             <button
                               onClick={() => { if (!saveInFlight.current) setEditingId(null); }}
-                              disabled={savingId !== null}
+                              disabled={savingId !== null || !workspaceReady}
                               className="rounded-lg border border-slate-700 px-3 py-2 text-sm"
                             >
                               Cancel
@@ -612,14 +624,14 @@ export default function BatchesPage() {
                           <div className="mt-3 flex gap-2">
                             <button
                               onClick={() => beginEdit(batch)}
-                              disabled={savingId !== null}
+                              disabled={savingId !== null || !workspaceReady}
                               className="rounded-lg border border-slate-700 px-3 py-1.5 text-sm"
                             >
                               Edit
                             </button>
                             <button
                               onClick={() => void toggleActive(batch)}
-                              disabled={savingId !== null}
+                              disabled={savingId !== null || !workspaceReady}
                               className="rounded-lg border border-slate-700 px-3 py-1.5 text-sm"
                             >
                               {batch.isActive ? "Deactivate" : "Reactivate"}

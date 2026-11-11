@@ -15,6 +15,24 @@ public sealed class BatchesController(AcademyDeskDbContext dbContext) : Controll
     // Embedded schedule JSON must accept the same property casing as form requests.
     private static readonly JsonSerializerOptions MeetingTimeJsonOptions = new() { PropertyNameCaseInsensitive = true };
 
+    // Batch workflows need labels, not course/workforce/branch management.
+    // Keep the existing batch permission and academy gate for this read.
+    [HttpGet("options")]
+    public async Task<ActionResult<BatchOptionsSummary>> Options(Guid academyId, CancellationToken token)
+    {
+        Response.Headers.CacheControl = "no-store";
+        var courses = await dbContext.Courses.AsNoTracking().Where(x => x.AcademyId == academyId)
+            .OrderBy(x => x.Name).ThenBy(x => x.Id)
+            .Select(x => new BatchCourseOption(x.Id, x.Name, x.AcademyType)).ToListAsync(token);
+        var teachers = await dbContext.Teachers.AsNoTracking().Where(x => x.AcademyId == academyId)
+            .OrderBy(x => x.LastName).ThenBy(x => x.FirstName).ThenBy(x => x.Id)
+            .Select(x => new BatchTeacherOption(x.Id, x.FirstName, x.LastName)).ToListAsync(token);
+        var branches = await dbContext.Branches.AsNoTracking().Where(x => x.AcademyId == academyId)
+            .OrderBy(x => x.Name).ThenBy(x => x.Id)
+            .Select(x => new BatchBranchOption(x.Id, x.Name)).ToListAsync(token);
+        return Ok(new BatchOptionsSummary(courses, teachers, branches));
+    }
+
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<BatchSummary>>> List(Guid academyId, CancellationToken token)
     {
@@ -86,4 +104,8 @@ public abstract record BatchRequest(string Name, string? BatchCode, Guid CourseI
 public sealed record CreateBatchRequest(string Name, string? BatchCode, Guid CourseId, Guid? TeacherId, Guid? BranchId, int Capacity, int WaitlistCapacity, string? DeliveryMode, string? MeetingPattern, string? RoomName, string? EnrollmentStatus, string? AdminNotes, DateOnly? StartDate, DateOnly? EndDate, string? ClassType = null, int? SessionMinutes = null, int? SessionsPerWeek = null, string? MeetingDaysJson = null, string? MeetingLink = null) : BatchRequest(Name, BatchCode, CourseId, TeacherId, BranchId, Capacity, WaitlistCapacity, DeliveryMode, MeetingPattern, RoomName, EnrollmentStatus, AdminNotes, StartDate, EndDate, ClassType, SessionMinutes, SessionsPerWeek, MeetingDaysJson, MeetingLink);
 public sealed record UpdateBatchRequest(string Name, string? BatchCode, Guid CourseId, Guid? TeacherId, Guid? BranchId, int Capacity, int WaitlistCapacity, string? DeliveryMode, string? MeetingPattern, string? RoomName, string? EnrollmentStatus, string? AdminNotes, DateOnly? StartDate, DateOnly? EndDate, bool IsActive) : BatchRequest(Name, BatchCode, CourseId, TeacherId, BranchId, Capacity, WaitlistCapacity, DeliveryMode, MeetingPattern, RoomName, EnrollmentStatus, AdminNotes, StartDate, EndDate);
 public sealed record BatchMeetingTime(string Day, string StartTime);
+public sealed record BatchCourseOption(Guid Id, string Name, string AcademyType);
+public sealed record BatchTeacherOption(Guid Id, string FirstName, string LastName);
+public sealed record BatchBranchOption(Guid Id, string Name);
+public sealed record BatchOptionsSummary(IReadOnlyList<BatchCourseOption> Courses, IReadOnlyList<BatchTeacherOption> Teachers, IReadOnlyList<BatchBranchOption> Branches);
 public sealed record BatchSummary(Guid Id, string Name, string? BatchCode, Guid CourseId, Guid? TeacherId, Guid? BranchId, int Capacity, int WaitlistCapacity, string DeliveryMode, string? MeetingPattern, string? MeetingLink, string? RoomName, string EnrollmentStatus, string? AdminNotes, DateOnly? StartDate, DateOnly? EndDate, bool IsActive, int ActiveEnrolments, string ClassType = "Group", int SessionMinutes = 60, int SessionsPerWeek = 1, string? MeetingDaysJson = null);

@@ -18,6 +18,7 @@ for (const mode of ['InPerson', 'Online', 'Hybrid', 'null-optionals']) for (cons
     const assigning = action === 'assign', initial = assigning
       ? [academy, [], teachers, [row], [], null, 't2', 'b', '', false]
       : [[academy], 'a', [{ id: 'c', name: 'Synthetic course' }], teachers, [], [row], 'c'];
+    if (!assigning) { initial[32] = 'a'; initial[33] = false; initial[2][0].academyType = 'Music'; }
     const state = new Map(), calls = [], refs = []; let index = 0, refIndex = 0;
     function execute(file) {
       const module = { exports: {} };
@@ -31,7 +32,7 @@ for (const mode of ['InPerson', 'Online', 'Hybrid', 'null-optionals']) for (cons
         if (name === '@/lib/batch-update') return execute('apps/web/src/lib/batch-update.ts');
         if (name === '@/lib/api') return { apiHeaders: () => ({}), academyApi: async (url, options = {}) => {
           calls.push({ url, ...options }); return { ok: true, status: 200, json: async () => options.method ? row :
-            url.endsWith('/batches') ? [row] : url.endsWith('/teachers') ? teachers : url.endsWith('/courses') ? initial[2] : [] };
+            url.endsWith('/batches/options') ? { courses: initial[2], teachers, branches: [] } : url.endsWith('/batches') ? [row] : url.endsWith('/teachers') ? teachers : url.endsWith('/courses') ? initial[2] : [] };
         } };
         throw Error(name);
       }, module, module.exports); return module.exports;

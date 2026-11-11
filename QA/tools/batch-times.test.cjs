@@ -5,9 +5,10 @@ function nodes(n, predicate) { if (Array.isArray(n)) return n.flatMap(x => nodes
   return [...(predicate(n) ? [n] : []), ...nodes(n.props?.children, predicate)]; }
 for (const mode of ['InPerson', 'Online', 'Hybrid']) for (const populated of [false, true])
   test(`${mode}/${populated ? 'selected-days' : 'optional-no-days'}: actual create schedule payload`, async () => {
-    const academy = { id: 'a', name: 'Synthetic academy' }, course = { id: 'c', name: 'Synthetic course' };
+    const academy = { id: 'a', name: 'Synthetic academy' }, course = { id: 'c', name: 'Synthetic course', academyType: 'Music' };
     const initial = [[academy], 'a', [course], [], [], [], 'c', '', 'Synthetic batch', '10', '', '0', mode, 'Group', '60', '1',
       mode === 'InPerson' ? '' : 'https://example.invalid/qa', populated ? ['Mon', 'Fri'] : [], populated ? { Mon: '09:00', Fri: '17:45' } : {}, '', 'Open', ''];
+    initial[32] = 'a'; initial[33] = false; // Valid preloaded read context.
     const calls = [], state = new Map(); let index = 0;
     function execute(file) {
       const module = { exports: {} }, code = ts.transpileModule(fs.readFileSync(file, 'utf8'), { compilerOptions: {
@@ -21,7 +22,7 @@ for (const mode of ['InPerson', 'Online', 'Hybrid']) for (const populated of [fa
         if (name.startsWith('@/components/design-system/')) return new Proxy({}, { get: (_, key) => key });
         if (name === '@/lib/batch-update') return execute('apps/web/src/lib/batch-update.ts');
         if (name === '@/lib/api') return { apiHeaders: () => ({}), academyApi: async (url, options = {}) => {
-          calls.push({ url, ...options }); return { ok: true, status: options.method ? 201 : 200, json: async () => url.endsWith('/courses') ? [course] : [] };
+          calls.push({ url, ...options }); return { ok: true, status: options.method ? 201 : 200, json: async () => url.endsWith('/batches/options') ? { courses: [course], teachers: [], branches: [] } : [] };
         } };
         throw Error(name);
       }, module, module.exports); return module.exports;
@@ -35,5 +36,6 @@ for (const mode of ['InPerson', 'Online', 'Hybrid']) for (const populated of [fa
     assert.equal(body.meetingPattern, populated ? 'Mon 09:00 · Fri 17:45' : null);
     assert.equal(body.deliveryMode, mode); assert.equal(body.meetingLink, initial[16] || null);
     assert.equal(body.teacherId, null); assert.equal(body.branchId, null); assert.equal(body.endDate, null);
-    assert.equal(calls.filter(x => !x.method).length, 4, 'existing post-save workspace refresh retained');
+    assert.equal(calls.filter(x => !x.method).length, 2, 'scoped post-save workspace refresh retained');
+    assert.deepEqual(calls.filter(x => !x.method).map(x => x.url).sort(), ['/api/academies/a/batches', '/api/academies/a/batches/options']);
   });

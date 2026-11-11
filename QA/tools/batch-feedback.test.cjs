@@ -24,6 +24,7 @@ function page({ failure, refreshFailure, delayed, delayedRefresh, active = true,
   const initial = [[{ id: 'a', name: 'Synthetic academy' }], academy, [{ id: 'c', name: 'Synthetic course' }], [], [], [row], 'c', 'r',
     blank ? '  ' : 'New synthetic', '12', 'QA', '3', 'Hybrid', 'OneToOne', '45', '2', 'https://example.invalid/qa',
     ['Mon', 'Fri'], { Mon: '09:00', Fri: '17:45' }, 'QA Room', 'Closed', '2026-10-02', '', null, '', '', '', '', '10', '', null, null];
+  initial[32] = academy; initial[33] = false; initial[2][0].academyType = "Music"; // Valid preloaded read context.
   const state = new Map(), refs = [], calls = []; let index = 0, refIndex = 0, committed = false, release;
   const gate = new Promise(resolve => { release = resolve; });
   function execute(file) {
@@ -49,7 +50,7 @@ function page({ failure, refreshFailure, delayed, delayedRefresh, active = true,
         if (delayedRefresh && committed) await gate;
         if (refreshFailure === 'network') throw Error('Synthetic refresh');
         return { ok: !refreshFailure || refreshFailure === 'json', status: refreshFailure || 200,
-          json: async () => { if (refreshFailure === 'json') throw Error('Synthetic JSON'); return url.endsWith('/courses') ? initial[2] : url.endsWith('/batches') ? [{ ...row, name: 'Persisted synthetic' }] : []; } };
+          json: async () => { if (refreshFailure === 'json') throw Error('Synthetic JSON'); return url.endsWith('/batches/options') ? { courses: initial[2], teachers: [], branches: [] } : url.endsWith('/courses') ? initial[2] : url.endsWith('/batches') ? [{ ...row, name: 'Persisted synthetic' }] : []; } };
       } };
       throw Error(name);
     }, module, module.exports); return module.exports;
@@ -59,10 +60,10 @@ function page({ failure, refreshFailure, delayed, delayedRefresh, active = true,
   const value = key => state.has(key) ? state.get(key) : initial[key];
   const button = label => nodes(render(), n => n.type === 'button' && text(n).trim() === label)[0];
   const edit = () => { button('Edit').props.onClick(); if (blank) state.set(24, '  '); };
-  const action = kind => kind === 'create' ? nodes(render(), n => n.type === 'form')[0].props.onSubmit({ preventDefault() {} }) :
-    button(kind === 'edit' ? 'Save' : active ? 'Deactivate' : 'Reactivate').props.onClick();
+  const handler = kind => kind === 'create' ? (() => { const submit=nodes(render(), n => n.type === 'form')[0].props.onSubmit; return () => submit({ preventDefault() {} }); })() : button(kind === 'edit' ? 'Save' : active ? 'Deactivate' : 'Reactivate').props.onClick;
+  const action = kind => handler(kind)();
   const settle = async () => { await flush(); await flush(); };
-  return { state, row, initial, value, render, button, edit, action, calls, release, settle, setFailure: value => { failure = value; } };
+  return { state, row, initial, value, render, button, edit, action, handler, calls, release, settle, setFailure: value => { failure = value; } };
 }
 for (const kind of ['create', 'edit', 'toggle', 'reactivate']) for (const refreshFailure of baseline ? [undefined] : [undefined, 500, 'network', 'json'])
   test(`${kind}: confirmed notice survives ${refreshFailure || 'successful'} refresh`, async () => {
@@ -108,8 +109,8 @@ if (!baseline) {
   });
   for (const kind of ['create', 'edit', 'toggle']) {
     test(`${kind}: delayed readback retains notice and lock`, async () => {
-      const p = page({ delayedRefresh: true }); if (kind === 'edit') p.edit(); const first = p.action(kind); await p.settle();
-      try { assert.ok(p.value(22).includes(notice[kind])); assert.notEqual(p.value(30), null); p.action(kind === 'edit' ? 'create' : 'toggle'); assert.equal(p.calls.filter(x => x.method).length, 1); }
+      const p = page({ delayedRefresh: true }); if (kind === 'edit') p.edit(); const opposing=p.handler(kind === 'edit' ? 'create' : 'toggle'); const first = p.action(kind); await p.settle();
+      try { assert.ok(p.value(22).includes(notice[kind])); assert.notEqual(p.value(30), null); opposing(); assert.equal(p.calls.filter(x => x.method).length, 1); }
       finally { p.release(); await first; await p.settle(); } assert.equal(p.value(30), null);
     });
     test(`${kind}: explicit retry after definite rejection clears old error`, async () => {
@@ -126,6 +127,6 @@ if (!baseline) {
     assert.equal(body.meetingDaysJson, null); assert.equal(body.meetingLink, null); assert.equal(body.classType, 'Group'); assert.equal(body.capacity, 10);
   });
   for (const kind of ['create','edit','toggle']) test(`${kind}: no academy means no mutation`, async () => {
-    const p = page({ academy: '' }); if (kind === 'edit') p.edit(); await p.action(kind); await p.settle(); assert.equal(p.calls.length, 0);
+    const p = page(); if (kind === 'edit') p.edit(); const retained=p.handler(kind); nodes(p.render(), n => n.props.name === 'academy')[0].props.onChange(''); await retained(); await p.settle(); assert.equal(p.calls.length, 0);
   });
 }
