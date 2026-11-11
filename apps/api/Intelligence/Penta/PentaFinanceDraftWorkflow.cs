@@ -34,6 +34,7 @@ internal abstract class PentaFinanceOperation<TRequest, TPlan, TReceipt>(string 
     internal string Approved { get; } = approved;
     internal string Executed { get; } = executed;
     internal string Changed { get; } = changed;
+    internal virtual string? AdditionalModule => null;
     internal abstract TRequest? Parse(string payload);
     internal abstract TRequest Restore(TPlan plan);
     internal abstract Task<PentaFinanceReview<TPlan>> ReviewAsync(Guid academy, TRequest request, DateTime now, CancellationToken token);
@@ -60,9 +61,15 @@ public sealed class PentaFinanceDraftWorkflow(AcademyDeskDbContext db, IdentityD
         if (!IsEnabled(operation.Flag)) return Task.FromResult(new PentaConversationOutcome(404));
         if (request == Guid.Empty || action != Action.Start && sessionId == Guid.Empty)
             return Task.FromResult(new PentaConversationOutcome(400));
-        return WithAuthorityAsync(operation.Flag, user, academy, (actor, stamp) => action == Action.Start
-            ? StartLockedAsync(operation.Purpose, operation.Started, academy, actor, request, stamp, token)
-            : DraftLockedAsync(operation, action, academy, actor, sessionId, request, stamp, context, payload, binding, token), token);
+        return WithAuthorityAsync(operation.Flag, user, academy, async (actor, stamp) =>
+        {
+            if (operation.AdditionalModule is { } module && !SubscriptionPlanCatalog.Allows(
+                await db.Academies.AsNoTracking().Where(x => x.Id == academy)
+                    .Select(x => x.EnabledModulesJson).SingleOrDefaultAsync(token), module)) return new(403);
+            return action == Action.Start
+                ? await StartLockedAsync(operation.Purpose, operation.Started, academy, actor, request, stamp, token)
+                : await DraftLockedAsync(operation, action, academy, actor, sessionId, request, stamp, context, payload, binding, token);
+        }, token);
     }
 
     internal async Task<PentaConversationOutcome> WithAuthorityAsync(string flag, ClaimsPrincipal user, Guid academy,

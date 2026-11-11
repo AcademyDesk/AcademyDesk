@@ -52,6 +52,7 @@ builder.Services.AddScoped<PentaFinanceReadService>();
 builder.Services.AddScoped<PentaFinanceDraftWorkflow>();
 builder.Services.AddScoped<PentaPaymentCollectionWorkflow>();
 builder.Services.AddScoped<PentaInvoiceIssuanceWorkflow>();
+builder.Services.AddScoped<PentaInvoiceAdjustmentWorkflow>();
 builder.Services.AddScoped<AcademyDeskConnector>();
 builder.Services.AddScoped<PentaMiniOrchestrator>();
 builder.Services.AddScoped<PentaOnboardingDraftService>();

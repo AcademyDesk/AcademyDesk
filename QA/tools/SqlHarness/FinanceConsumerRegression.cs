@@ -97,6 +97,7 @@ internal static partial class SqlHarnessEntryPoint
         await VerifyPentaFinanceChatAsync(factory, manifest, academyId, mixedId);
         await VerifyPentaPaymentCollectionAsync(factory, manifest, academyId, studentId);
         await VerifyPentaInvoiceIssuanceAsync(factory, manifest, academyId, studentId);
+        await VerifyPentaAdjustmentProposalAsync(factory, manifest, academyId, studentId);
         if (Environment.GetEnvironmentVariable("QA_PENTA_FINANCE_BROWSER") == "1")
             await ServePentaBrowserAsync(manifest, academyId, finance: true);
     }

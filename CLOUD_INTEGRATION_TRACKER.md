@@ -1,11 +1,23 @@
 # Academy Desk shared integration tracker
 
+## Protected PENTA invoice adjustment proposals — 11 November 2026
+
+- [x] Desktop owns the Testing-only adjustment proposal API. The
+  invoice lock, finance scope and exact approval protect submission.
+- [x] Local SQL and HTTP confirm that Manual approval applies the
+  proposed reduction separately.
+- [ ] Desktop owns Admin adjustment review and receipt recovery next.
+  Cloud C37 covers the separate enrollment assistant and preview at
+  `4c4382ff1cd5fc08e7ccd1c53af7146f29291fb2`.
+
+[Adjustment proposal evidence](QA/REPORTS/PENTA_ADJUSTMENT_PROPOSALS_2026-11-11.md)
+
 ## PENTA invoice review and receipt recovery — 11 November 2026
 
 - [x] Desktop connected Testing-only invoice issuance to Admin Finance
   chat and verified lookups, exact review and receipt recovery.
-- [ ] Desktop owns protected invoice adjustments next. Cloud C37 at
-  `617d308` owns enrollment assistant reads and preview.
+- [x] Desktop added protected invoice adjustment proposals in the
+  following checkpoint. Cloud C37 owns enrollment reads and preview.
 
 [Invoice browser evidence](QA/REPORTS/PENTA_INVOICE_BROWSER_2026-11-11.md)
 

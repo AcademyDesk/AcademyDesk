@@ -1,13 +1,26 @@
 # Academy Desk handoff
 
+## Protected PENTA invoice adjustment proposals — 11 November 2026
+
+- [x] The Testing API rechecks a typed reduction against the locked
+  invoice and the current Owner/Admin Finance and FinanceControls scope.
+- [x] Exact submission authorization creates one pending proposal and
+  recoverable receipt. Manual Finance approval separately applies it.
+- [x] Local HTTP/SQL verified approval, stale balance refusal, audit
+  rollback, receipt recovery and five duplicate proposal races.
+- [ ] Next with Sol High is Admin adjustment review, submission and
+  receipt recovery. Production acceptance still has six hard gates.
+
+[Adjustment proposal evidence](QA/REPORTS/PENTA_ADJUSTMENT_PROPOSALS_2026-11-11.md)
+
 ## PENTA invoice review and receipt recovery — 11 November 2026
 
 - [x] Admin Finance chat opens one-time and fee-plan invoice drafts with
   audited, tenant-scoped student and plan lookups.
 - [x] Exact review, approval and issuance are separate. The browser
   recovers the same invoice and receipt through GET after interruption.
-- [ ] Next with Sol High is protected invoice adjustments using the
-  existing Manual review and approval rules.
+- [x] The following checkpoint adds protected adjustment proposals
+  using the existing Manual review and approval rules.
 
 [Invoice browser evidence](QA/REPORTS/PENTA_INVOICE_BROWSER_2026-11-11.md)
 
