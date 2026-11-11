@@ -1,14 +1,25 @@
 # Academy Desk handoff
 
+## Protected PENTA finance chat — 11 November 2026
+
+- [x] The Academy Admin PENTA workspace routes supported finance prompts to
+  the existing audited read service. Results include exact amounts, invoice
+  drill-down and links to Manual. The browser holds only the latest result.
+- [ ] Next with Sol High is the protected payment collection write path.
+  Reuse the Manual transaction, bind approval to the exact draft and prove
+  retry, contention and receipt recovery. Release acceptance remains open.
+
+[Finance chat evidence](QA/REPORTS/PENTA_FINANCE_CHAT_2026-11-11.md)
+
 ## PENTA expense and payroll reads — 10 November 2026
 
 - [x] Added Testing-only, actor-audited expense and payroll previews on the
   shared Manual ledger queries. They retain exact currency amounts and
   payroll snapshot provenance. Free-form ledger fields, worker identity and
   payment references stay in Manual.
-- [ ] Next with Sol High is the protected conversation read path. Verify
-  server-authored results, refusal and fallback before exposing any new
-  finance tool to a model. Writes and release acceptance remain open.
+- [x] The following checkpoint connects the protected reads to the
+  Academy Admin chat. Finance writes, model qualification and release
+  acceptance remain open.
 
 [Expense and payroll evidence](QA/REPORTS/PENTA_EXPENSE_PAYROLL_READS_2026-11-10.md)
 

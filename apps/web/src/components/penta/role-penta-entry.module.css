@@ -38,3 +38,17 @@
 
 .retry { min-height: 44px; margin: 12px; padding: 10px 14px; color: var(--pui-text); background: var(--pui-control); border: 1px solid var(--pui-border); border-radius: 12px; cursor: pointer; }
 .retry:focus-visible { outline: 3px solid var(--pui-focus); outline-offset: 3px; }
+
+.financeTurn { margin-block: 16px; padding: 16px; border: 1px solid var(--pui-border); border-radius: 12px; background: var(--pui-canvas); overflow-wrap: anywhere; }
+.financeTable { max-width: 100%; overflow-x: auto; }
+.financeTable table { width: 100%; border-collapse: collapse; }
+.financeTable :is(th, td) { padding: 10px; border-bottom: 1px solid var(--pui-border); text-align: start; white-space: nowrap; }
+.financeComposer { margin-block: 16px; }
+.financeComposer label { display: block; margin-bottom: 8px; font-weight: 700; }
+.financeActions { display: flex; flex-wrap: wrap; gap: 8px; }
+.financeActions :is(input, button) { min-height: 44px; padding: 8px 12px; border: 1px solid var(--pui-border); border-radius: 10px; background: var(--pui-control); color: var(--pui-text); font: inherit; }
+.financeActions input { flex: 1 1 14rem; min-width: 0; }
+.financeActions button { cursor: pointer; }
+.financeActions button:disabled { cursor: default; opacity: .65; }
+.financeActions button[type="submit"] { background: var(--pui-accent); color: var(--pui-on-accent); }
+.financeActions :focus-visible, .financeTable:focus-visible { outline: 3px solid var(--pui-focus); outline-offset: 2px; }
