@@ -141,7 +141,7 @@ pass. No skipped/softened test or fabricated SQL receipt.
 | Native sandboxed Chromium |32/32 PASS:2 roles ×2 routes ×320/1440 ×loaded/denied/malformed/empty;synthetic API only |
 | Native writes |Four loaded setup cases each create,rename and deactivate;12 intended writes,exact retained update payloads;no course/teacher/branch management request |
 | Native resources/visuals |Sandbox enabled;owned profile removed;mobile/desktop no page overflow;actual overview detail dialog labels inspected |
-| Exact-lock build |Cached locked Next16.4.3/React19.2.8 optimized webpack export PASS;87 aliases,570 files;no install |
+| Exact-lock build |Cached locked Next16.4.3/React19.2.8 optimized webpack export PASS;87 aliases,571 files;no install |
 | Types/lint |TypeScript PASS;lint0 errors/61 retained warnings |
 | First full frontend |2,407 PASS/51 FAIL/2,458 tests;48 old-fixture failures in feedback/times plus3 missing SQL receipts;retained |
 | Final full frontend |91 files;2,455 PASS/3 FAIL/2,458 tests;zero skips/cancellations |
