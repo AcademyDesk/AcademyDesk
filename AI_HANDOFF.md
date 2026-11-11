@@ -1,13 +1,23 @@
 # Academy Desk handoff
 
+## Protected PENTA invoice issuance — 11 November 2026
+
+- [x] Testing-only invoice issuance shares Manual fee-plan and one-time
+  calculations. Approval binds the student, fee terms, currency, amount
+  and dates. Issuance commits one invoice, audit and recoverable receipt.
+- [ ] Next with Sol High is Admin browser review, explicit approval and
+  lost-response recovery for invoice issuance.
+
+[Invoice issuance evidence](QA/REPORTS/PENTA_INVOICE_ISSUANCE_2026-11-11.md)
+
 ## PENTA payment review and receipt recovery — 11 November 2026
 
 - [x] Admin Finance chat opens the received-payment form from a verified
   invoice. The exact review, explicit approval and recording are separate.
 - [x] Browser recovery reads the same draft after interruption and reload.
   A retry requires verified approval and an explicit action on that draft.
-- [ ] Next with Sol High is protected invoice issuance. Preserve the Manual
-  calculation, duplicate checks, approval binding and recoverable receipt.
+- [x] The following checkpoint adds the protected invoice issuance API
+  and retests payment review and recovery against the shared workflow.
 
 [Payment browser evidence](QA/REPORTS/PENTA_PAYMENT_BROWSER_2026-11-11.md)
 

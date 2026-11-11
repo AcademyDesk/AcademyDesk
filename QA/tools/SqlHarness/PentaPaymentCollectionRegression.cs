@@ -10,6 +10,7 @@ using AcademyDesk.Api.Tests.Infrastructure;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using PentaPaymentDraft = AcademyDesk.Api.Intelligence.Penta.PentaFinanceDraft<AcademyDesk.Api.Infrastructure.PaymentCollectionPlan, AcademyDesk.Api.Intelligence.Penta.PentaPaymentReceipt>;
 
 internal static partial class SqlHarnessEntryPoint
 {
