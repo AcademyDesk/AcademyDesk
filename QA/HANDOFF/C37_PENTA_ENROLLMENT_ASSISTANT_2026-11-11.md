@@ -8,12 +8,13 @@ b62b076;Desktop owns invoice issuance browser review/approval/recovery next.
 User prioritizes AI workflow integration now;broader Manual acceptance may follow.
 Model-loading/activation stop and all production release gates remain.
 
-Exact MAY MODIFY paths(8):
+Exact MAY MODIFY paths(9):
 - apps/web/src/app/penta/enrollments/page.tsx(new)
 - apps/web/src/components/penta/enrollment-assistant.tsx(new)
 - apps/web/src/components/penta/enrollment-assistant.module.css(new)
 - apps/web/src/lib/penta-enrollment-assistant.ts(new)
 - apps/web/src/components/penta/role-penta-entry.tsx(protected workflow link only)
+- apps/web/src/components/workspace-frame.tsx(add route to standalone PENTA chrome only;session boundary byte-exact)
 - QA/tools/penta-enrollment-assistant.test.cjs(new)
 - QA/tools/penta-enrollment-assistant-browser.cjs(new)
 - QA/HANDOFF/C37_PENTA_ENROLLMENT_ASSISTANT_2026-11-11.md
@@ -40,3 +41,7 @@ exact-lock types/lint/build/full frontend;combined API after Desktop import;
 release guard;preservation/source hashes. Native SQL/model/physical-device/hosted
 CI/90% conversational outcome acceptance remains open. Publish feature results
 and exact next-owner tasks;no issue closure from synthetic or unit totals.
+
+CLAIM AMENDMENT before shared-frame edit:the new assistant uses the same standalone
+chrome as existing onboarding routes. Only add /penta/enrollments to that route
+list;do not change WorkspaceSessionBoundary,authentication or shared navigation.
