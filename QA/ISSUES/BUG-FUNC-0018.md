@@ -4,7 +4,7 @@
 | --- | --- |
 | Status | OPEN |
 | Confirmation status | STATIC-FINDING |
-| Final verification | PARTIAL — C33 enrollment,C34 batch/setup,C35 attendance Cloud checks PASS;remaining workflow/native/device/release acceptance OPEN |
+| Final verification | PARTIAL — C33 enrollment,C34 batch/setup,C35 attendance,C36 scheduling Cloud checks PASS;remaining workflow/native/device/release acceptance OPEN |
 | Severity | Major authorized workflow blocked |
 | Priority | P1 |
 | Category | FUNC |
@@ -30,9 +30,9 @@
 | API response | Not captured for this issue; use synthetic request/response in isolated reproduction |
 | Database before/after | Not executed; fixture and fresh-context assertions defined below |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | C33 enrollment `9e10867`;C34 batch/setup `e93ed8d`;C35 attendance `7485173642d62abf7742acebf9d01c48bb3bb94c`;exact pins in each handoff;no deployment |
-| Retest result | C35 38 actual HTTP/Identity/InMemory cases in full API;19 new +34 retained note/isolation controls;32 synthetic Operations/Manager Chromium cases PASS;earlier scope evidence retained below |
-| Regression result | C35 full frontend2,474 PASS/3 inherited missing SQL-receipt failures;combined API2,559 PASS with Desktop f708879 preserved;exact source/limits in C35 handoff |
+| Fix commit | C33 enrollment `9e10867`;C34 batch/setup `e93ed8d`;C35 attendance `7485173642d62abf7742acebf9d01c48bb3bb94c`;C36 scheduling `2bf471d3bf1e99d5fd759e991bad9242847b668c`;exact pins in each handoff;no deployment |
+| Retest result | C36 38 HTTP/Identity/InMemory,26 new page +18 retained default controls,32 synthetic Operations/custom scheduling Chromium cases PASS;earlier scope evidence retained below |
+| Regression result | C36 full frontend2,500 PASS/3 inherited missing SQL-receipt failures;API2,597 PASS with Desktop f708879 preserved;exact source/limits in C36 handoff |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
 ## Exact reproduction
@@ -163,3 +163,30 @@ failures,not interpreted as independent defect counts.
 [Exact source,combined result and prioritized native tasks](../HANDOFF/C35_ATTENDANCE_OPTIONS_2026-11-11.md).
 Remain OPEN for scheduling/promotions/makeup/events lookup scopes and broader
 native SQL/browser/device/critical/release acceptance. Model loading stays stopped.
+
+## C36 scheduling subset — 11 November 2026
+
+`GET sessions/options` inherits existing scheduling.manage and global current
+academy/tenant/actor/module/maintenance gates. It returns only local batch
+id/name/teacherId/branchId,teacher id/firstName/lastName and branch id/name.
+Foreign/missing batch defaults project null;historical local labels remain.
+No-store/no-tracking;no writes/audit or unrelated management permissions.
+Existing List/Create/Update action and request/response bodies are byte-exact;
+server admission/clash/inheritance/transaction rules remain authoritative.
+
+The schedule page uses scoped options and the session register,without full
+batch/teacher/branch fallback. It validates both reads,discards late/unmounted
+results,and gates changes and empty-register notices until loading succeeds.
+GET-only reload preserves dates,overrides and a deliberate empty batch choice.
+Batch switches retain existing default/override behavior and IST conversion.
+A synchronous pending guard prevents overlapping create/status starts;finally
+releases busy state after refusal/loss. Confirmed writes retain their success
+notice if readback fails,with changes disabled until reload. Unknown-write
+recovery remains a separate acceptance task;no automatic replay is introduced.
+
+38 scoped HTTP/Identity/InMemory cases and26 new actual-page controls plus all18
+retained default/payload assertions pass. Native browser and combined-suite
+results,exact source pins and remaining SQL/device tasks are recorded in the
+[C36 handoff](../HANDOFF/C36_SCHEDULE_OPTIONS_2026-11-11.md).
+Remain OPEN for promotions/makeup/events and native SQL/device/critical/release
+acceptance. Mini/Plus/Pro remain unqualified;model loading remains stopped.
