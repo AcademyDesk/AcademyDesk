@@ -53,3 +53,12 @@ STOP WHEN:source-bound handoff and feature publication verified;no issue closure
 or production/native SQL/device qualification inferred.
 NEXT ROUTE:Desktop Sol High for native SQL/Identity/browser/device acceptance;
 Cloud next independently claimed non-AI scope. Model-loading stop remains.
+
+Claim extension before fixture edits: add QA/tools/batch-feedback.test.cjs and
+QA/tools/batch-times.test.cjs (12 paths total). The first full run found their
+preloaded fixtures omit the new successful-read scope and old refresh routes.
+Seed valid loaded state and scoped options,retain all existing payload/feedback/
+pending/no-write assertions;update exact refresh request expectations to the two
+new endpoints. No-academy tests must use the real context-change handler and a
+retained callback so the new unavailable-directory guard is exercised. Original
+failures remain private. No implementation weakening to satisfy old fixtures.
