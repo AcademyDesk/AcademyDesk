@@ -51,4 +51,8 @@
 .financeActions button { cursor: pointer; }
 .financeActions button:disabled { cursor: default; opacity: .65; }
 .financeActions button[type="submit"] { background: var(--pui-accent); color: var(--pui-on-accent); }
-.financeActions :focus-visible, .financeTable:focus-visible { outline: 3px solid var(--pui-focus); outline-offset: 2px; }
+.financeActions :focus-visible, .financeTable:focus-visible, .paymentField:focus-visible { outline: 3px solid var(--pui-focus); outline-offset: 2px; }
+.paymentField { min-height: 44px; max-width: 100%; width: 18rem; margin-bottom: 16px; padding: 8px 12px; border: 1px solid var(--pui-border); border-radius: 10px; color: var(--pui-text); background: var(--pui-control); font: inherit; }
+.paymentDetails { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(10rem, 100%), 1fr)); gap: 12px; margin-block: 16px; }
+.paymentDetails dt { color: var(--pui-muted); }
+.paymentDetails dd { margin: 4px 0 0; font-weight: 700; }

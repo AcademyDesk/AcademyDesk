@@ -51,11 +51,11 @@ public sealed class PentaFinanceReadService(AcademyDeskDbContext db, IdentityDbC
         return await policy.AllowsAsync(principal, academy, token) ? 204 : 403;
     }
 
-    internal async Task<PentaConversationOutcome> ChatAvailabilityAsync(ClaimsPrincipal principal, Guid academy, CancellationToken token)
+    internal async Task<PentaConversationOutcome> ChatAvailabilityAsync(ClaimsPrincipal principal, Guid academy, bool paymentCollection, CancellationToken token)
     {
         var access = await ChatAccessAsync(principal, academy, token);
         return access == 204
-            ? new(200, new { financeControls = await HasFinanceControlsAsync(academy, token) })
+            ? new(200, new { financeControls = await HasFinanceControlsAsync(academy, token), paymentCollection })
             : new(access);
     }
 

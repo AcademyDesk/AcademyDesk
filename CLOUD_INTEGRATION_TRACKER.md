@@ -1,11 +1,20 @@
 # Academy Desk shared integration tracker
 
+## PENTA payment review and receipt recovery — 11 November 2026
+
+- [x] Desktop connected exact payment review, approval and receipt recovery
+  to the Testing-only Admin Finance chat.
+- [ ] Desktop owns protected invoice issuance next. Cloud C34 at
+  `c4bd654` contains the separate batch lookup return.
+
+[Payment browser evidence](QA/REPORTS/PENTA_PAYMENT_BROWSER_2026-11-11.md)
+
 ## Protected PENTA payment collection — 11 November 2026
 
 - [x] Desktop added the Testing-only payment collection API with shared
   Manual rules, exact approval, audit rollback and receipt recovery.
-- [ ] Desktop owns the payment approval and recovery browser flow next.
-  Cloud C34 at `cfee08e` covers batch setup lookup permissions.
+- [x] Desktop verified payment approval and recovery in the following
+  checkpoint. Cloud C34 covers batch setup lookup permissions.
 
 [Payment collection evidence](QA/REPORTS/PENTA_PAYMENT_COLLECTION_2026-11-11.md)
 

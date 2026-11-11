@@ -1,13 +1,23 @@
 # Academy Desk handoff
 
+## PENTA payment review and receipt recovery — 11 November 2026
+
+- [x] Admin Finance chat opens the received-payment form from a verified
+  invoice. The exact review, explicit approval and recording are separate.
+- [x] Browser recovery reads the same draft after interruption and reload.
+  A retry requires verified approval and an explicit action on that draft.
+- [ ] Next with Sol High is protected invoice issuance. Preserve the Manual
+  calculation, duplicate checks, approval binding and recoverable receipt.
+
+[Payment browser evidence](QA/REPORTS/PENTA_PAYMENT_BROWSER_2026-11-11.md)
+
 ## Protected PENTA payment collection — 11 November 2026
 
 - [x] Testing-only payment collection reuses the Manual invoice lock and
   adjusted balance. Approval binds the exact payment and reviewed ledger.
   The payment, invoice status, audit and recoverable receipt commit together.
-- [ ] Next with Sol High is the Admin browser approval and recovery flow.
-  Verify the exact values shown at review, confirmation and lost-response
-  recovery before widening access.
+- [x] The following checkpoint connects Admin browser approval and
+  verifies recovery on the same draft.
 
 [Payment collection evidence](QA/REPORTS/PENTA_PAYMENT_COLLECTION_2026-11-11.md)
 

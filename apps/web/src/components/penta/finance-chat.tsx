@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { apiUrl, isPortalSignOutEvent, portalAccessToken, portalSessionChangedEvent, portalSessionEpoch, portalSignOutEvent } from "@/lib/api";
 import { readPentaJson } from "@/lib/penta-onboarding-channel";
+import type { PaymentChannel } from "@/lib/penta-payment-collection";
+import PaymentCollection from "./payment-collection";
 import styles from "./role-penta-entry.module.css";
 
 const manualRoutes = {
@@ -35,41 +37,43 @@ function isReply(value: unknown): value is FinanceReply {
     row.values.every(label) && (hasInvoice ? typeof row.invoiceId === "string" && guid.test(row.invoiceId) : row.invoiceId === null));
 }
 
-type Channel = {
+type Channel = PaymentChannel & {
   call(text?: string): Promise<Response>;
-  current(): boolean;
-  signal: AbortSignal;
+  financeControls: boolean;
+  paymentCollection: boolean;
 };
 type Turn = { prompt: string; reply?: FinanceReply; notice?: string };
 
 export default function FinanceChat({ academyId, fallback }: { academyId: string; fallback: ReactNode }) {
-  const [available, setAvailable] = useState<{ financeControls: boolean } | null>(null);
+  const [available, setAvailable] = useState<Channel | null>(null);
+  const [paymentInvoice, setPaymentInvoice] = useState<string | null>(null);
   const [prompt, setPrompt] = useState("");
   const [turn, setTurn] = useState<Turn | null>(null);
   const [pending, setPending] = useState(false);
-  const channel = useRef<Channel | null>(null);
   const active = useRef(false);
 
   useEffect(() => {
     const controller = new AbortController();
     const bearer = portalAccessToken("AcademyAdmin");
     const epoch = portalSessionEpoch("AcademyAdmin");
-    const endpoint = `${apiUrl}/api/academies/${academyId}/penta/chat/finance`;
+    const root = `${apiUrl}/api/academies/${academyId}/penta`;
     const current = () => !controller.signal.aborted && !!bearer &&
       portalAccessToken("AcademyAdmin") === bearer && portalSessionEpoch("AcademyAdmin") === epoch;
-    const call = (text?: string) => fetch(endpoint, {
-      method: text === undefined ? "GET" : "POST",
+    const request = (path: string, method: string, body?: unknown) => fetch(root + path, {
+      method,
       credentials: "omit", cache: "no-store", redirect: "error", referrerPolicy: "no-referrer",
       signal: controller.signal,
       headers: { Authorization: `Bearer ${bearer}`, Accept: "application/json",
-        ...(text === undefined ? {} : { "Content-Type": "application/json" }) },
-      body: text === undefined ? undefined : JSON.stringify({ text }),
+        ...(body === undefined ? {} : { "Content-Type": "application/json" }) },
+      body: body === undefined ? undefined : JSON.stringify(body),
     });
+    const call = (text?: string) => request("/chat/finance", text === undefined ? "GET" : "POST",
+      text === undefined ? undefined : { text });
 
     function clear() {
       controller.abort();
-      channel.current = null;
       setAvailable(null);
+      setPaymentInvoice(null);
       setTurn(null);
       setPrompt("");
       setPending(false);
@@ -94,14 +98,15 @@ export default function FinanceChat({ academyId, fallback }: { academyId: string
           if (!current() || response.status !== 200) return;
           const value = await readPentaJson(response, controller.signal);
           if (!current() || !object(value) || typeof value.financeControls !== "boolean") return;
-          channel.current = { call, current, signal: controller.signal };
-          setAvailable({ financeControls: value.financeControls });
+          setAvailable({ call, current, signal: controller.signal, epoch, financeControls: value.financeControls,
+            paymentCollection: value.paymentCollection === true,
+            payment: (path, method, body) => request("/payment-collection/conversations" + path, method, body),
+          });
         } catch { /* The Manual link remains available. */ }
       })();
     }
     return () => {
       controller.abort();
-      channel.current = null;
       window.removeEventListener(portalSessionChangedEvent, sessionChanged);
       window.removeEventListener(portalSignOutEvent, sessionChanged);
       window.removeEventListener("storage", storage);
@@ -110,7 +115,7 @@ export default function FinanceChat({ academyId, fallback }: { academyId: string
   }, [academyId]);
 
   async function send(text: string, displayText = text) {
-    const source = channel.current;
+    const source = available;
     const question = text.trim();
     if (active.current || !source?.current() || !question) return;
     active.current = true;
@@ -171,6 +176,8 @@ export default function FinanceChat({ academyId, fallback }: { academyId: string
                     onClick={() => void send(`show invoice ${row.invoiceId}`, `Show invoice ${row.values[0]}`)}>Invoice</button>}
                   <button type="button" disabled={pending}
                     onClick={() => void send(`show reconciliation ${row.invoiceId}`, "Show reconciliation")}>Reconciliation</button>
+                  {reply.kind === "invoice" && available.paymentCollection && <button type="button" disabled={pending || paymentInvoice !== null}
+                    onClick={() => setPaymentInvoice(row.invoiceId)}>Record payment</button>}
                 </div></td>}
               </tr>)}</tbody>
             </table>
@@ -179,6 +186,8 @@ export default function FinanceChat({ academyId, fallback }: { academyId: string
           {reply.hasMore && " More records are available in Manual."}</small></p>
       </section>}
     </div>}
+    {available.paymentCollection && <PaymentCollection academyId={academyId} invoiceId={paymentInvoice}
+      channel={available} onClose={() => setPaymentInvoice(null)} />}
     <form onSubmit={event => { event.preventDefault(); void send(prompt); }} className={styles.financeComposer}>
       <label htmlFor="finance-chat-prompt">Ask about finance</label>
       <div className={styles.financeActions}>
