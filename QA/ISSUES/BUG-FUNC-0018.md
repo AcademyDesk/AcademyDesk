@@ -4,7 +4,7 @@
 | --- | --- |
 | Status | OPEN |
 | Confirmation status | STATIC-FINDING |
-| Final verification | PARTIAL — C33 enrollment Cloud checks PASS;other workflow/native/device/release acceptance OPEN |
+| Final verification | PARTIAL — C33 enrollment and C34 batch/setup Cloud checks PASS;other workflow/native/device/release acceptance OPEN |
 | Severity | Major authorized workflow blocked |
 | Priority | P1 |
 | Category | FUNC |
@@ -30,9 +30,9 @@
 | API response | Not captured for this issue; use synthetic request/response in isolated reproduction |
 | Database before/after | Not executed; fixture and fresh-context assertions defined below |
 | Dependencies | Safe SQL/HTTP/browser harness as applicable; desired policy review where noted |
-| Fix commit | `9e108672b9c1e43f395ac11684b2e8235cb663ff` enrollment subset only;no deployment |
-| Retest result | 36 new actual HTTP/Identity/InMemory checks in full API;18 new +38 retained client checks and40 synthetic FrontDesk Chromium cases PASS |
-| Regression result | API2,487/2,487 PASS;frontend2,434 PASS/3 inherited missing SQL-receipt failures;other0018 pages not changed |
+| Fix commit | C33 enrollment `9e108672b9c1e43f395ac11684b2e8235cb663ff`;C34 batch/setup `e93ed8d7cdfa60b3d8a23426dbd852f0a85d8526`;no deployment |
+| Retest result | C34 34 new HTTP/Identity/InMemory;21 new +66 retained batch client controls;32 synthetic Operations/Manager Chromium cases PASS;C33 evidence retained below |
+| Regression result | C34 full frontend2,455 PASS/3 inherited missing SQL-receipt failures;full API2,521 PASS with Desktop fa2e19d payment source preserved;exact source/limits in C34 handoff |
 | Closure notes | Remain OPEN; follow closure requirements in QA README |
 
 ## Exact reproduction
@@ -99,3 +99,34 @@ acceptance. Existing enrollment action bodies and C32 assertions are byte-exact.
 [Exact source/results and ordered native handoff](../HANDOFF/C33_ENROLLMENT_OPTIONS_2026-11-10.md).
 Remain OPEN for other0018 batch/setup/scheduling/attendance/promotions/makeup/events
 lookup scopes and real SQL/browser/device/linked critical/release acceptance.
+
+## C34 batch and setup subset — 11 November 2026
+
+The recovered Cloud checkout preserved C33. New `GET batches/options` inherits
+the existing batches.manage and current academy/tenant/actor gates. It returns
+only course id/name/academyType,teacher id/firstName/lastName and branch id/name.
+Operations/Manager/custom or current direct grants can read these labels without
+academics/workforce/MultiBranch management calls. Existing full related APIs
+remain forbidden. Core-only batch operation is covered;no permissions or module
+policy changed. Historical labels do not grant eligibility or create authority.
+
+Both /batches and its /batch-setup alias use scoped options plus the register.
+Read readiness is invalidated during refresh,failed/invalid reads and academy
+changes. Obsolete/unmounted read results are discarded. Unavailable data does not
+produce authoritative zero metrics or an empty directory;direct and stale starts
+cannot write. Drafts survive refresh and complete replacement payloads preserve
+hidden settings. Existing server action bodies,admission/clash/teacher-inheritance
+and transaction rules remain unchanged. Broader unknown-write recovery is not
+added by this lookup packet.
+
+Original HTTP3/34 PASS/31 FAIL reflects the missing GET contract;original page
+0/21 controls passed,including absent new readiness/reload behavior. Final34 new
+HTTP cases,106 focused API checks,21 scoped page controls and66 retained payload/
+feedback/scheduling controls passed.32 Chromium cases cover Operations/Manager,
+both routes,320/1440 and loaded/denied/malformed/empty reads. Loaded setup cases
+also create,edit and deactivate with retained payloads. Synthetic API/browser and
+InMemory HTTP are not native SQL/device acceptance.
+
+[Source pins,latest combined result,fixture evolution and native tasks](../HANDOFF/C34_BATCH_OPTIONS_2026-11-11.md).
+Remain OPEN for scheduling/attendance/promotions/makeup/events lookup scopes and
+real SQL/browser/device/critical/release acceptance. Model loading remains stopped.
