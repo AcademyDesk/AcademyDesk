@@ -6,9 +6,9 @@ const batches=[{id:'a',name:'Assigned',teacherId:'ta',branchId:'ra'},{id:'b',nam
 function nodes(n){return Array.isArray(n)?n.flatMap(nodes):!n||typeof n!=='object'?[]:[n,...nodes(n.props?.children)];}
 function text(n){return Array.isArray(n)?n.map(text).join(''):n==null||typeof n==='boolean'?'':typeof n==='object'?text(n.props?.children):String(n);}
 async function page(config={}){
- let index=0,effectIndex=0;const state=new Map(),deps=[],effects=[],calls=[],module={exports:{}},sessions=[];
+ let index=0,effectIndex=0,refIndex=0;const refs=[];const state=new Map(),deps=[],effects=[],calls=[],module={exports:{}},sessions=[];
  const data=config.batches??batches;
- const react={useState:v=>{const k=index++;if(!state.has(k))state.set(k,typeof v==='function'?v():v);return[state.get(k),v=>state.set(k,typeof v==='function'?v(state.get(k)):v)];},useEffect:(fn,next)=>{const k=effectIndex++;if(!deps[k]||next.some((v,i)=>v!==deps[k][i])){deps[k]=next;effects.push(fn);}}};
+ const react={useRef:v=>{const k=refIndex++;return refs[k]??(refs[k]={current:v});},useState:v=>{const k=index++;if(!state.has(k))state.set(k,typeof v==='function'?v():v);return[state.get(k),v=>state.set(k,typeof v==='function'?v(state.get(k)):v)];},useEffect:(fn,next)=>{const k=effectIndex++;if(!deps[k]||next.some((v,i)=>v!==deps[k][i])){deps[k]=next;effects.push(fn);}}};
  const api=async(url,init={})=>{
   calls.push({url,...init});
   if(init.method==='POST'){
@@ -16,11 +16,11 @@ async function page(config={}){
    const body=JSON.parse(init.body),batch=data.find(b=>b.id===body.batchId);sessions.push({...body,id:'saved-'+sessions.length,teacherId:body.teacherId??batch.teacherId??null,branchId:body.branchId??batch.branchId??null,status:'Scheduled'});
    return{ok:true,status:201,json:async()=>sessions.at(-1)};
   }
-  const result=url==='/api/academies'?[{id:'owned',name:'Synthetic academy'}]:url.endsWith('/batches')?data:url.endsWith('/teachers')?[{id:'ta',firstName:'First',lastName:'Teacher'},{id:'tb',firstName:'Second',lastName:'Teacher'}]:url.endsWith('/branches')?[{id:'ra',name:'First branch'},{id:'rb',name:'Second branch'}]:url.endsWith('/sessions')?sessions:undefined;
+  const result=url==='/api/academies'?[{id:'owned',name:'Synthetic academy'}]:url.endsWith('/sessions/options')?{batches:data,teachers:[{id:'ta',firstName:'First',lastName:'Teacher'},{id:'tb',firstName:'Second',lastName:'Teacher'}],branches:[{id:'ra',name:'First branch'},{id:'rb',name:'Second branch'}]}:url.endsWith('/sessions')?sessions:undefined;
   if(!result)throw Error('Unexpected endpoint '+url);return{ok:true,status:200,json:async()=>structuredClone(result)};
  };
  new Function('require','module','exports',code)(n=>n==='react/jsx-runtime'?jsx:n==='react'?react:n==='@/components/workspace-nav'?{WorkspaceNav:'nav'}:n==='@/lib/api'?{academyApi:api,apiHeaders:()=>({})}:(()=>{throw Error(n)})(),module,module.exports);
- const render=()=>{index=effectIndex=0;return module.exports.default();};
+ const render=()=>{index=effectIndex=refIndex=0;return module.exports.default();};
  const form=()=>nodes(render()).find(n=>n.type==='form');
  const selectors=()=>nodes(form()).filter(n=>n.type==='select');
  const choose=(key,value)=>selectors()[key].props.onChange({target:{value}});

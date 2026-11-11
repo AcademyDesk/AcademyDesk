@@ -10,6 +10,25 @@ namespace AcademyDesk.Api.Controllers;
 [Route("api/academies/{academyId:guid}/sessions")]
 public sealed class ClassSessionsController(AcademyDeskDbContext dbContext) : ControllerBase
 {
+    [HttpGet("options")]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+    public async Task<ActionResult<ScheduleOptions>> Options(Guid academyId, CancellationToken cancellationToken)
+    {
+        var batches = await dbContext.Batches.AsNoTracking().Where(x => x.AcademyId == academyId)
+            .OrderBy(x => x.Name).ThenBy(x => x.Id)
+            .Select(x => new ScheduleBatchOption(x.Id, x.Name,
+                dbContext.Teachers.Any(t => t.AcademyId == academyId && t.Id == x.TeacherId) ? x.TeacherId : null,
+                dbContext.Branches.Any(b => b.AcademyId == academyId && b.Id == x.BranchId) ? x.BranchId : null))
+            .ToListAsync(cancellationToken);
+        var teachers = await dbContext.Teachers.AsNoTracking().Where(x => x.AcademyId == academyId)
+            .OrderBy(x => x.FirstName).ThenBy(x => x.LastName).ThenBy(x => x.Id)
+            .Select(x => new ScheduleTeacherOption(x.Id, x.FirstName, x.LastName)).ToListAsync(cancellationToken);
+        var branches = await dbContext.Branches.AsNoTracking().Where(x => x.AcademyId == academyId)
+            .OrderBy(x => x.Name).ThenBy(x => x.Id)
+            .Select(x => new ScheduleBranchOption(x.Id, x.Name)).ToListAsync(cancellationToken);
+        return Ok(new ScheduleOptions(batches, teachers, branches));
+    }
+
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<ClassSessionSummary>>> List(Guid academyId, DateTime? fromUtc, DateTime? toUtc, CancellationToken cancellationToken)
     {
@@ -48,3 +67,7 @@ public sealed class ClassSessionsController(AcademyDeskDbContext dbContext) : Co
 public sealed record CreateClassSessionRequest(Guid BatchId, Guid? TeacherId, Guid? BranchId, DateTime StartUtc, DateTime EndUtc, string? DeliveryMode, string? RoomName);
 public sealed record ClassSessionSummary(Guid Id, Guid BatchId, Guid? TeacherId, Guid? BranchId, DateTime StartUtc, DateTime EndUtc, string DeliveryMode, string? RoomName, string Status);
 public sealed record UpdateClassSessionRequest(DateTime StartUtc, DateTime EndUtc, string? DeliveryMode, string? RoomName, string Status);
+public sealed record ScheduleBatchOption(Guid Id, string Name, Guid? TeacherId, Guid? BranchId);
+public sealed record ScheduleTeacherOption(Guid Id, string FirstName, string LastName);
+public sealed record ScheduleBranchOption(Guid Id, string Name);
+public sealed record ScheduleOptions(IReadOnlyList<ScheduleBatchOption> Batches, IReadOnlyList<ScheduleTeacherOption> Teachers, IReadOnlyList<ScheduleBranchOption> Branches);

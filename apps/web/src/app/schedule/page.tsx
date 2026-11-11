@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { WorkspaceNav } from "@/components/workspace-nav";
 import { academyApi, apiHeaders } from "@/lib/api";
 
@@ -38,6 +38,33 @@ function istInputToUtc(value: string) {
   return new Date(`${withSeconds}+05:30`).toISOString();
 }
 
+type Options = { batches: Batch[]; teachers: Teacher[]; branches: Branch[] };
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object";
+}
+function labels(value: unknown, fields: string[]): value is Record<string, string>[] {
+  return Array.isArray(value) && value.every((x) => isRecord(x) &&
+    typeof x.id === "string" && x.id.length > 0 && fields.every((key) => typeof x[key] === "string")) &&
+    new Set(value.map((x) => x.id)).size === value.length;
+}
+function validOptions(value: unknown): value is Options {
+  if (!isRecord(value) || !labels(value.batches, ["name"]) ||
+      !labels(value.teachers, ["firstName", "lastName"]) || !labels(value.branches, ["name"])) return false;
+  const teachers = new Set(value.teachers.map((x) => x.id));
+  const branches = new Set(value.branches.map((x) => x.id));
+  return value.batches.every((x) => (x.teacherId == null || teachers.has(x.teacherId)) &&
+    (x.branchId == null || branches.has(x.branchId)));
+}
+function validSessions(value: unknown): value is Session[] {
+  return labels(value, ["batchId", "startUtc", "endUtc", "deliveryMode", "status"]) && value.every((x) =>
+    Number.isFinite(Date.parse(x.startUtc)) && Number.isFinite(Date.parse(x.endUtc)) &&
+    ["InPerson", "Online", "Hybrid"].includes(x.deliveryMode) &&
+    ["Scheduled", "Completed", "Cancelled", "NoShow"].includes(x.status) &&
+    (x.roomName == null || typeof x.roomName === "string") &&
+    (x.teacherId == null || typeof x.teacherId === "string") &&
+    (x.branchId == null || typeof x.branchId === "string"));
+}
+
 export default function SchedulePage() {
   const [academy, setAcademy] = useState<Academy>();
   const [batches, setBatches] = useState<Batch[]>([]);
@@ -54,63 +81,91 @@ export default function SchedulePage() {
   const [message, setMessage] = useState("Loading schedule…");
   const [savingId, setSavingId] = useState<string | null>(null);
 
+  const [phase, setPhase] = useState<"loading" | "ready" | "error">("loading");
+  const [readVersion, setReadVersion] = useState(0);
+  const mounted = useRef(false);
+  const reading = useRef(false);
+  const pending = useRef(false);
+  const sequence = useRef(0);
+  const readyAcademy = useRef("");
+  const initializedSelection = useRef(false);
+  const ready = phase === "ready" && !!academy;
+  const canWrite = () => mounted.current && ready && !reading.current && !pending.current &&
+    readVersion === sequence.current && readyAcademy.current === academy?.id;
+
   async function load(academyId?: string) {
-    const id = academyId ?? academy?.id;
-    if (!id) return;
-    const [batchResponse, teacherResponse, branchResponse, sessionResponse] =
-      await Promise.all([
-        academyApi(`/api/academies/${id}/batches`, { cache: "no-store" }),
-        academyApi(`/api/academies/${id}/teachers`, { cache: "no-store" }),
-        academyApi(`/api/academies/${id}/branches`, { cache: "no-store" }),
+    const version = ++sequence.current;
+    readyAcademy.current = "";
+    reading.current = true;
+    setReadVersion(version);
+    setPhase("loading");
+    const current = () => mounted.current && sequence.current === version;
+    try {
+      let id = academyId ?? academy?.id;
+      if (!id) {
+        const response = await academyApi("/api/academies", { cache: "no-store" });
+        if (!response.ok) throw new Error("Please sign in with schedule access and reload.");
+        const data: unknown = await response.json();
+        if (!labels(data, ["name"]) || !data[0]) throw new Error("No academy is available for scheduling.");
+        if (!current()) return false;
+        id = data[0].id;
+        setAcademy({ id, name: data[0].name });
+      }
+      const [optionsResponse, sessionsResponse] = await Promise.all([
+        academyApi(`/api/academies/${id}/sessions/options`, { cache: "no-store" }),
         academyApi(`/api/academies/${id}/sessions`, { cache: "no-store" }),
       ]);
-    if (
-      ![batchResponse, teacherResponse, branchResponse, sessionResponse].every(
-        (response) => response.ok,
-      )
-    )
-      throw new Error();
-    const batchData: Batch[] = await batchResponse.json();
-    setBatches(batchData);
-    setTeachers(await teacherResponse.json());
-    setBranches(await branchResponse.json());
-    setSessions(await sessionResponse.json());
-    if (!batchId && batchData.length) {
-      const initialBatch = batchData[0];
-      setBatchId(initialBatch.id);
-      setTeacherId(initialBatch.teacherId ?? "");
-      setBranchId(initialBatch.branchId ?? "");
+      if (!optionsResponse.ok || !sessionsResponse.ok) throw new Error("Schedule records could not be loaded. Check your access and reload.");
+      const options: unknown = await optionsResponse.json();
+      const records: unknown = await sessionsResponse.json();
+      if (!validOptions(options) || !validSessions(records)) throw new Error("Schedule records were incomplete. Reload before making changes.");
+      if (!current()) return false;
+      setBatches(options.batches);
+      setTeachers(options.teachers);
+      setBranches(options.branches);
+      setSessions(records);
+      if (!initializedSelection.current && options.batches.length) {
+        const first = options.batches[0];
+        setBatchId(first.id);
+        setTeacherId(first.teacherId ?? "");
+        setBranchId(first.branchId ?? "");
+      }
+      initializedSelection.current = true;
+      readyAcademy.current = id;
+      setPhase("ready");
+      return true;
+    } catch (error) {
+      if (current()) {
+        setPhase("error");
+        setMessage(error instanceof Error ? error.message : "Schedule records could not be loaded. Reload to try again.");
+      }
+      return false;
+    } finally {
+      if (current()) reading.current = false;
     }
-    setMessage("");
   }
 
+  function retire() { mounted.current = false; ++sequence.current; readyAcademy.current = ""; }
+
   useEffect(() => {
-    async function initialise() {
-      try {
-        const response = await academyApi("/api/academies", {
-          cache: "no-store",
-        });
-        if (response.status === 401)
-          return setMessage("Please sign in before opening the schedule.");
-        if (!response.ok) throw new Error();
-        const academies: Academy[] = await response.json();
-        if (!academies[0])
-          return setMessage(
-            "Create an academy, course, and batch before scheduling a class.",
-          );
-        setAcademy(academies[0]);
-        await load(academies[0].id);
-      } catch {
-        setMessage(
-          "The schedule could not be loaded. Confirm the API is running on port 5092.",
-        );
-      }
-    }
-    void initialise();
+    mounted.current = true;
+    void load().then((ok) => { if (ok && mounted.current) setMessage(""); });
+    return retire;
   }, []);
 
+  async function reload() {
+    if (!mounted.current || pending.current || reading.current) return;
+    if (await load() && mounted.current) setMessage("");
+  }
+
+  async function refusal(response: Response, fallback: string) {
+    let detail = "";
+    try { const data: unknown = await response.json(); if (isRecord(data) && typeof data.message === "string") detail = data.message; } catch { /* Response may have no JSON body. */ }
+    return response.status >= 500 ? "The result could not be confirmed. Check the schedule before retrying." : `${fallback}${detail ? ` ${detail}` : ""}`;
+  }
+
   function applyBatchDefaults(id: string) {
-    if (id === batchId) return;
+    if (!canWrite() || id === batchId) return;
     setBatchId(id);
     const batch = batches.find((item) => item.id === id);
     setTeacherId(batch?.teacherId ?? "");
@@ -119,56 +174,52 @@ export default function SchedulePage() {
 
   async function createSession(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!academy || !batchId || !startLocal || !endLocal) return;
+    if (!canWrite() || !academy || !batches.some((x) => x.id === batchId) || !startLocal || !endLocal) return;
     if (["Online", "Hybrid"].includes(deliveryMode) && !roomName.trim())
-      return setMessage(
-        "A meeting link is required for online and hybrid classes.",
-      );
-    const response = await academyApi(`/api/academies/${academy.id}/sessions`, {
-      method: "POST",
-      headers: apiHeaders(true),
-      body: JSON.stringify({
-        batchId,
-        teacherId: teacherId || null,
-        branchId: branchId || null,
-        startUtc: istInputToUtc(startLocal),
-        endUtc: istInputToUtc(endLocal),
-        deliveryMode,
-        roomName: roomName || null,
-      }),
-    });
-    if (!response.ok)
-      return setMessage(
-        "The session could not be saved. Ensure the end time is after the start time.",
-      );
-    setStartLocal("");
-    setEndLocal("");
-    setRoomName("");
-    setMessage("");
-    await load();
+      return setMessage("A meeting link is required for online and hybrid classes.");
+    let startUtc: string, endUtc: string;
+    try { startUtc = istInputToUtc(startLocal); endUtc = istInputToUtc(endLocal); }
+    catch { setMessage("Enter valid start and end times."); return; }
+    pending.current = true;
+    setSavingId("create");
+    try {
+      const response = await academyApi(`/api/academies/${academy.id}/sessions`, {
+        method: "POST", headers: apiHeaders(true),
+        body: JSON.stringify({ batchId, teacherId: teacherId || null, branchId: branchId || null,
+          startUtc, endUtc, deliveryMode, roomName: roomName || null }),
+      });
+      if (!mounted.current) return;
+      if (!response.ok) { const notice = await refusal(response, "The session could not be saved."); if (mounted.current) setMessage(notice); return; }
+      setStartLocal(""); setEndLocal(""); setRoomName("");
+      const refreshed = await load();
+      if (mounted.current) setMessage(refreshed ? "Session scheduled." : "Session scheduled, but records could not be refreshed. Reload the schedule before making more changes.");
+    } catch {
+      if (mounted.current) setMessage("The result could not be confirmed. Check the schedule before retrying.");
+    } finally {
+      pending.current = false;
+      if (mounted.current) setSavingId(null);
+    }
   }
   async function updateStatus(session: Session, status: string) {
-    if (!academy) return;
+    if (!canWrite() || !academy || !sessions.includes(session) || !["Scheduled", "Completed", "Cancelled", "NoShow"].includes(status)) return;
+    pending.current = true;
     setSavingId(session.id);
-    const response = await academyApi(
-      `/api/academies/${academy.id}/sessions/${session.id}`,
-      {
-        method: "PUT",
-        headers: apiHeaders(true),
-        body: JSON.stringify({
-          startUtc: session.startUtc,
-          endUtc: session.endUtc,
-          deliveryMode: session.deliveryMode,
-          roomName: session.roomName,
-          status,
-        }),
-      },
-    );
-    setSavingId(null);
-    if (!response.ok)
-      return setMessage("The session status could not be updated.");
-    setMessage("Session updated.");
-    await load();
+    try {
+      const response = await academyApi(`/api/academies/${academy.id}/sessions/${session.id}`, {
+        method: "PUT", headers: apiHeaders(true),
+        body: JSON.stringify({ startUtc: session.startUtc, endUtc: session.endUtc,
+          deliveryMode: session.deliveryMode, roomName: session.roomName, status }),
+      });
+      if (!mounted.current) return;
+      if (!response.ok) { const notice = await refusal(response, "The session status could not be updated."); if (mounted.current) setMessage(notice); return; }
+      const refreshed = await load();
+      if (mounted.current) setMessage(refreshed ? "Session updated." : "Session updated, but records could not be refreshed. Reload the schedule before making more changes.");
+    } catch {
+      if (mounted.current) setMessage("The result could not be confirmed. Check the schedule before retrying.");
+    } finally {
+      pending.current = false;
+      if (mounted.current) setSavingId(null);
+    }
   }
 
   const batchName = (id: string) =>
@@ -199,12 +250,15 @@ export default function SchedulePage() {
             {message}
           </p>
         )}
+        <button type="button" onClick={reload} disabled={phase === "loading" || savingId !== null}
+          className="mt-4 rounded-lg border border-slate-700 px-4 py-2 disabled:opacity-60">Reload schedule records</button>
         <section className="mt-8 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
           <form
             onSubmit={createSession}
             className="rounded-2xl border border-slate-800 bg-slate-900 p-6"
           >
             <h2 className="text-xl font-semibold">Schedule a class</h2>
+            <fieldset disabled={!ready || savingId !== null}>
             <select
               value={batchId}
               onChange={(event) => applyBatchDefaults(event.target.value)}
@@ -279,15 +333,16 @@ export default function SchedulePage() {
               className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
             />
             <button
-              disabled={!academy || batches.length === 0}
+              disabled={!ready || savingId !== null || !batches.some((x) => x.id === batchId)}
               className="mt-5 w-full rounded-lg bg-cyan-400 px-4 py-2.5 font-semibold text-slate-950 hover:bg-cyan-300 disabled:opacity-60"
             >
               Schedule class
             </button>
+            </fieldset>
           </form>
           <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
             <h2 className="text-xl font-semibold">Scheduled classes</h2>
-            {sessions.length === 0 ? (
+            {!ready ? (<p className="mt-6 text-slate-400">{phase === "loading" ? "Loading schedule records…" : "Schedule records unavailable. Reload to try again."}</p>) : sessions.length === 0 ? (
               <p className="mt-6 text-slate-400">No classes scheduled yet.</p>
             ) : (
               <ul className="mt-5 space-y-3">
@@ -329,7 +384,7 @@ export default function SchedulePage() {
                         onChange={(event) =>
                           void updateStatus(session, event.target.value)
                         }
-                        disabled={savingId === session.id}
+                        disabled={!ready || savingId !== null}
                         className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 text-sm"
                       >
                         <option>Scheduled</option>
