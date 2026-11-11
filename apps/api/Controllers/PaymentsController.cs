@@ -23,15 +23,10 @@ public sealed class PaymentsController(AcademyDeskDbContext dbContext) : Control
         await using var write = await InvoiceWriteScope.OpenAsync(dbContext, academyId, request.InvoiceId, cancellationToken);
         var invoice = write.Invoice;
         if (invoice is null) return NotFound();
-        if (string.Equals(invoice.Status, "Cancelled", StringComparison.OrdinalIgnoreCase))
-            return BadRequest(new { message = "A payment cannot be recorded on a cancelled invoice." });
-        if (request.Amount <= 0) return BadRequest(new { message = "Payment amount must be positive." });
-        var paid = await InvoiceWriteScope.ReadCollectedAsync(dbContext, invoice, cancellationToken);
-        var collectibleAmount = invoice.TotalAmount - invoice.AdjustedAmount;
-        if (paid + request.Amount > collectibleAmount) return BadRequest(new { message = "Payment exceeds the invoice balance." });
-        var payment = new Payment { AcademyId = academyId, InvoiceId = invoice.Id, Amount = request.Amount, Currency = invoice.Currency, Method = string.IsNullOrWhiteSpace(request.Method) ? "Offline" : request.Method.Trim(), Reference = request.Reference?.Trim() };
-        invoice.Status = paid + request.Amount == collectibleAmount ? "Paid" : "PartiallyPaid";
-        dbContext.Payments.Add(payment); await dbContext.SaveChangesAsync(cancellationToken);
+        var (plan, error) = await InvoicePaymentCollection.ReviewAsync(dbContext, invoice, request, cancellationToken);
+        if (plan is null) return BadRequest(new { message = error });
+        var payment = InvoicePaymentCollection.Record(dbContext, invoice, plan);
+        await dbContext.SaveChangesAsync(cancellationToken);
         await write.CommitAsync(cancellationToken);
         return Created($"/api/academies/{academyId}/payments/{payment.Id}", new PaymentSummary(payment.Id, payment.InvoiceId, payment.Amount, payment.Currency, payment.Method, payment.Status, payment.Reference, payment.PaidAtUtc, payment.ReconciliationReference, payment.ReconciledAtUtc));
     }
