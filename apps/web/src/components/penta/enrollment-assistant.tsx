@@ -147,7 +147,7 @@ export default function EnrollmentAssistant() {
         {preview && !creationOpen && <div role="status"><h3>Eligibility checked — approval still required</h3><p>{student?.label} · {batch?.label} · {preview.startDate} · {preview.status}</p><p>No enrollment created. No seat reserved. Availability and permissions will be checked again when an approved operation is executed.</p><Link href="/enrollments">Continue in Manual Enrollments</Link></div>}
       </section>}
       {channel && <EnrollmentCreation transport={channel.creation} candidate={preview && student && batch ? { ...preview, studentLabel: student.label, batchLabel: batch.label } : null} onActivity={creationActivity} />}
-      <p><Link href="/penta">Back to PENTA</Link> · <Link href="/enrollments">Open Manual Enrollments</Link></p>
+      <p><Link href="/penta/enrollments/manage">Enrollment status and transfers</Link> · <Link href="/penta">Back to PENTA</Link> · <Link href="/enrollments">Open Manual Enrollments</Link></p>
     </section>
   </main>;
 }
