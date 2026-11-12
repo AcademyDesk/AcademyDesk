@@ -50,20 +50,33 @@ public sealed partial class PentaEnrollmentCreationWorkflow
         Guid request, long context, string payload, CancellationToken token)
     {
         if (!BrowserEnabled) return Task.FromResult(new PentaEnrollmentDraftOutcome(404));
-        return RunAsync(Action.Prepare, user, academy, session, request, null, context, payload, token, browser: true);
+        return BrowserDraft(RunAsync(Action.Prepare, user, academy, session, request, null, context, payload, token, browser: true));
     }
 
     internal Task<PentaEnrollmentDraftOutcome> BrowserReadAsync(ClaimsPrincipal user, Guid academy, Guid session, Guid request, CancellationToken token) =>
-        BrowserEnabled ? RunAsync(Action.Read, user, academy, session, request, null, null, null, token, browser: true)
+        BrowserEnabled ? BrowserDraft(RunAsync(Action.Read, user, academy, session, request, null, null, null, token, browser: true))
             : Task.FromResult(new PentaEnrollmentDraftOutcome(404));
     internal Task<PentaEnrollmentDraftOutcome> BrowserApproveAsync(ClaimsPrincipal user, Guid academy, Guid session, Guid request,
         PentaEnrollmentBinding binding, CancellationToken token) => BrowserEnabled
-            ? RunAsync(Action.Approve, user, academy, session, request, binding, null, null, token, ApprovalIntent, browser: true)
+            ? BrowserDraft(RunAsync(Action.Approve, user, academy, session, request, binding, null, null, token, ApprovalIntent, browser: true))
             : Task.FromResult(new PentaEnrollmentDraftOutcome(404));
     internal Task<PentaEnrollmentDraftOutcome> BrowserExecuteAsync(ClaimsPrincipal user, Guid academy, Guid session, Guid request,
         PentaEnrollmentBinding binding, CancellationToken token) => BrowserEnabled
-            ? RunAsync(Action.Execute, user, academy, session, request, binding, null, null, token, browser: true)
+            ? BrowserDraft(RunAsync(Action.Execute, user, academy, session, request, binding, null, null, token, browser: true))
             : Task.FromResult(new PentaEnrollmentDraftOutcome(404));
+
+    private static async Task<PentaEnrollmentDraftOutcome> BrowserDraft(Task<PentaEnrollmentDraftOutcome> operation) =>
+        BrowserView(await operation);
+
+    // SQL datetime2 has no Kind. Stored values are UTC;preserve ticks,not machine timezone.
+    internal static PentaEnrollmentDraftOutcome BrowserView(PentaEnrollmentDraftOutcome outcome) => outcome.Draft is not { } draft ? outcome : outcome with
+    {
+        Draft = draft with
+        {
+            ExpiresAtUtc = DateTime.SpecifyKind(draft.ExpiresAtUtc, DateTimeKind.Utc),
+            Receipt = draft.Receipt is not { } receipt ? null : receipt with { CompletedAtUtc = DateTime.SpecifyKind(receipt.CompletedAtUtc, DateTimeKind.Utc) }
+        }
+    };
 
     private async Task<PentaConversationOutcome> BrowserAuthorityAsync(ClaimsPrincipal principal, Guid academy,
         Func<Guid, string, Task<PentaConversationOutcome>> run, CancellationToken token)
