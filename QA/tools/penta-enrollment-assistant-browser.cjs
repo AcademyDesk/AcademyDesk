@@ -67,6 +67,7 @@ async function main(){
      }else{
       a.equal(request.method,'GET');
       if(url.pathname==='/api/auth/session')data={workspace:'AcademyAdmin',academyId:academy,roles:[role],displayName:'Synthetic '+role,isPlatformOwner:false};
+      else if(url.pathname===base+'/penta/enrollments/browser-readiness')return await reply(404,{});
       else if(url.pathname===base+'/penta/student-search'||url.pathname===base+'/penta/batch-search'){
        searchReads++;if(variant==='denied')return await reply(403,{});const kind=url.pathname.endsWith('student-search')?'student':'batch';
        a.equal(url.searchParams.get('q'),kind==='student'?'Mira':'Piano');data=search(kind);if(variant==='malformed')data.academyId=student;

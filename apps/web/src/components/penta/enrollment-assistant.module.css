@@ -23,3 +23,7 @@
 .result dt { color: var(--pui-muted); }
 .result form > button { display: block; margin-top: 16px; }
 @media (max-width: 600px) { .page { padding: 16px; } .panel { padding: 16px; } .actions > * { width: 100%; } }
+
+.details { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(14rem, 100%), 1fr)); gap: 12px; }
+.details code, .result p code { display: block; overflow-wrap: anywhere; font-size: .8rem; }
+.actions > p { flex-basis: 100%; }
