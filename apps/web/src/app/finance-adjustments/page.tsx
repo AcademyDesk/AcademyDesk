@@ -3,33 +3,27 @@
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { academyApi, apiHeaders } from "@/lib/api";
+import { formatExactFinanceAmount } from "@/lib/finance-summary";
 import { StandardSelectField } from "@/components/design-system/controls";
 
 type Academy = { id: string };
 type Invoice = {
   id: string;
   invoiceNumber: string;
-  totalAmount: number;
-  adjustedAmount?: number;
+  totalAmountExact: string;
+  currency: string;
 };
 type Adjustment = {
   id: string;
   invoiceId: string;
   type: string;
-  amount: number;
+  amountExact: string;
   currency: string;
   reason: string;
   status: string;
   approvedAtUtc?: string | null;
   approvalNotes?: string | null;
 };
-const money = (amount: number, currency = "INR") =>
-  new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(amount);
-
 export default function AdjustmentsPage() {
   const [academy, setAcademy] = useState<Academy>();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -181,7 +175,10 @@ export default function AdjustmentsPage() {
               value={requestInvoiceId}
               onChange={setRequestInvoiceId}
               placeholder="Select invoice…"
-              options={invoices.map((invoice) => ({ value: invoice.id, label: `${invoice.invoiceNumber} · ${money(invoice.totalAmount)}` }))}
+              options={invoices.map((invoice) => {
+                const amount = formatExactFinanceAmount(invoice.totalAmountExact, invoice.currency);
+                return { value: invoice.id, label: amount ? `${invoice.invoiceNumber} · ${amount}` : invoice.invoiceNumber };
+              })}
             />
           </label>
           <label className="finance-adjustment-field">
@@ -284,7 +281,7 @@ export default function AdjustmentsPage() {
                         {item.reason}
                       </td>
                       <td className="py-3 pr-4 font-medium">
-                        {money(item.amount, item.currency)}
+                        {formatExactFinanceAmount(item.amountExact, item.currency) ?? "Amount unavailable"}
                       </td>
                       <td className="py-3">
                         <b

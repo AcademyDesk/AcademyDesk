@@ -25,6 +25,12 @@ export function formatFinanceMoney(amount: number, currency?: string): string {
   catch { return `${code || "Unspecified currency"} ${number}`; }
 }
 
+export function formatExactFinanceAmount(amount: unknown, currency: unknown): string | null {
+  if (typeof amount !== "string" || !/^-?(0|[1-9][0-9]{0,15})\.[0-9]{2}$/.test(amount) ||
+      typeof currency !== "string" || !/^[A-Za-z]{3}$/.test(currency.trim())) return null;
+  return `${currency.trim().toUpperCase()} ${amount}`;
+}
+
 export function financeMoney(summary: Pick<FinanceSummary, "byCurrency">, key: FinanceMoneyKey): string {
   const values = rows(summary);
   if (!values) return unavailable;

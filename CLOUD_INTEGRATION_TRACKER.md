@@ -4,8 +4,12 @@
 
 - [x] Desktop connected the protected adjustment proposal in Admin
   Finance chat and verified exact review, submission and receipt recovery.
-- [ ] Desktop owns exact amount and stored currency display in the
-  Manual adjustment register and approval queue.
+- [x] Desktop verified exact amount and stored currency in the Manual
+  adjustment register and approval queue using live browser and SQL.
+- [ ] Cloud C39 has claimed the enrollment approval and recovery UI.
+  Desktop is verifying the Cloud C38 SQL contract.
+
+[Manual adjustment display evidence](QA/REPORTS/MANUAL_ADJUSTMENT_AMOUNT_DISPLAY_2026-11-12.md)
 - [ ] Cloud C38 at `e8385f58b23de757928f99481c33ae3dd582b851`
   owns the separate enrollment browser host. Desktop SQL acceptance remains
   pending.

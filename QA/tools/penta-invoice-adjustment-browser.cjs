@@ -138,7 +138,14 @@ async function main() {
     await manual.click();
     await page.waitForURL(web + '/finance-adjustments');
     await page.getByRole('heading', { name: 'Adjustment request register' }).waitFor();
-    await page.getByText(reason, { exact: true }).waitFor();
+    const pendingRow = page.getByRole('row', { name: /QA-BROWSER-ADJUSTMENT/ });
+    await pendingRow.getByText(reason, { exact: true }).waitFor();
+    await pendingRow.getByText('USD 125.01', { exact: true }).waitFor();
+    await pendingRow.getByText('Pending approval', { exact: true }).waitFor();
+    await page.getByRole('link', { name: 'Approval queue', exact: true }).click();
+    await page.waitForURL(web + '/finance-governance');
+    const approval = page.getByText(reason, { exact: true }).locator('../..');
+    await approval.getByText('USD 125.01', { exact: true }).waitFor();
     console.log('PENTA ADJUSTMENT BROWSER CASE duplicate refusal and navigation to the Manual register PASS');
     console.log('PENTA ADJUSTMENT BROWSER SUMMARY 6 live browser checks PASS');
   } finally {

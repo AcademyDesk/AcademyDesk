@@ -5,9 +5,12 @@ const ts = require('../../apps/web/node_modules/typescript'), jsx = require('../
 const compiled = ts.transpileModule(fs.readFileSync(path.resolve(__dirname, '../../apps/web/src/app/finance-governance/page.tsx'), 'utf8'), {
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX },
 }).outputText;
+const summaryModule = { exports: {} };
+new Function('module', 'exports', ts.transpileModule(fs.readFileSync(path.resolve(__dirname, '../../apps/web/src/lib/finance-summary.ts'), 'utf8'),
+  { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText)(summaryModule, summaryModule.exports);
 const item = { id: 'w', type: 'Collections', title: 'Synthetic collection', description: null, priority: 'High', status: 'Open', escalationStage: 'Initial', promisedPaymentDate: null };
 const invoice = { id: 'i', invoiceNumber: 'QA-I', totalAmount: 100, balance: 100, currency: 'INR', dueDate: '2026-09-01', daysOverdue: 30 };
-const adjustment = { id: 'd', type: 'Discount', amount: 1, reason: 'Synthetic', status: 'PendingApproval' };
+const adjustment = { id: 'd', type: 'Discount', amountExact: '125.01', currency: 'USD', reason: 'Synthetic', status: 'PendingApproval' };
 const settings = { invoiceTemplateKey: 'Classic', payslipTemplateKey: 'Standard' };
 const flush = () => new Promise(resolve => setImmediate(resolve));
 function nodes(node, predicate) {
@@ -20,8 +23,8 @@ function text(node) {
   if (node == null || typeof node === 'boolean') return '';
   return typeof node === 'object' ? text(node.props?.children) : String(node);
 }
-function page({ ready = false, deniedRead = false, deniedWrite = false, failRefresh = false, allowGeneric = false, promptAnswer = '' } = {}) {
-  const states = ready ? [{ id: 'a' }, [adjustment], [invoice], [item], settings, '', undefined, false, 'Invoice', false] : [];
+function page({ ready = false, deniedRead = false, deniedWrite = false, failRefresh = false, allowGeneric = false, promptAnswer = '', pendingAdjustment = adjustment } = {}) {
+  const states = ready ? [{ id: 'a' }, [pendingAdjustment], [invoice], [item], settings, '', undefined, false, 'Invoice', false] : [];
   const writes = new Map(), effects = [], calls = []; let index = 0, mutated = false;
   const react = { useState: initial => { const key = index++; return [writes.has(key) ? writes.get(key) : ready ? states[key] : initial,
     value => writes.set(key, typeof value === 'function' ? value(writes.has(key) ? writes.get(key) : states[key]) : value)]; }, useEffect: fn => effects.push(fn) };
@@ -30,6 +33,7 @@ function page({ ready = false, deniedRead = false, deniedWrite = false, failRefr
     if (name === 'react') return react;
     if (name === 'react/jsx-runtime') return jsx;
     if (name === 'next/link') return { default: 'a' };
+    if (name === '@/lib/finance-summary') return summaryModule.exports;
     if (name === '@/lib/api') return { apiHeaders: () => ({}), academyApi: async (url, options = {}) => {
       const write = options.method && options.method !== 'GET'; calls.push({ url, ...options });
       const generic = url.includes('/admin-work-items');
@@ -37,7 +41,7 @@ function page({ ready = false, deniedRead = false, deniedWrite = false, failRefr
       if (write && status === 200) mutated = true;
       return { ok: status === 200, status, json: async () => url === '/api/academies' ? [{ id: 'a' }]
         : url.endsWith('/collection-tasks') || generic ? [item] : url.endsWith('/collections') ? [invoice]
-        : url.endsWith('/finance-adjustments') ? [adjustment] : url.endsWith('/settings') ? settings : {} };
+        : url.endsWith('/finance-adjustments') ? [pendingAdjustment] : url.endsWith('/settings') ? settings : {} };
     } };
     throw Error('Unexpected import ' + name);
   }, module, module.exports, class { constructor(fields) { this.fields = fields; } get(key) { return this.fields[key] ?? null; } }, { prompt: () => promptAnswer });
@@ -83,6 +87,20 @@ for (const kind of ['follow-up', 'approval']) for (const failRefresh of [false, 
   assert.match(p.writes.get(5), kind === 'follow-up' ? /Collections follow-up created/ : /Adjustment approved/);
   if (failRefresh) assert.match(p.writes.get(5), /could not be refreshed/);
   assert.equal(p.writes.get(7), false);
+});
+
+for (const [amountExact, currency, expected] of [
+  ['125.01', 'USD', 'USD 125.01'], ['0.01', 'EUR', 'EUR 0.01'],
+  ['9999999999999999.99', 'INR', 'INR 9999999999999999.99'],
+]) test(`adjustment approval shows exact ${expected}`, () => {
+  const p = page({ ready: true, pendingAdjustment: { ...adjustment, amountExact, currency } });
+  assert.ok(text(p.render()).includes(expected));
+});
+test('an unverifiable adjustment amount leaves approval disabled', () => {
+  const p = page({ ready: true, pendingAdjustment: { ...adjustment, amountExact: undefined } });
+  const view = p.render();
+  assert.match(text(view), /Amount unavailable/);
+  assert.equal(nodes(view, node => node.type === 'button' && text(node) === 'Approve')[0].props.disabled, true);
 });
 
 // Actual decision handler: null is Cancel/Escape; empty string is deliberate OK.
