@@ -1,3 +1,4 @@
+using System.Globalization;
 using AcademyDesk.Api.Data;
 using AcademyDesk.Api.Infrastructure;
 using AcademyDesk.Api.ReadModels;
@@ -69,7 +70,11 @@ public sealed class InvoicesController(AcademyDeskDbContext dbContext) : Control
 }
 
 public sealed record CreateInvoiceRequest(Guid StudentId, Guid? FeePlanId, decimal? Amount, DateOnly? DueDate);
-public sealed record InvoiceSummary(Guid Id, string InvoiceNumber, Guid StudentId, Guid? FeePlanId, decimal TotalAmount, decimal AdjustedAmount, decimal PaidAmount, string Currency, DateOnly IssuedDate, DateOnly DueDate, string Status){public decimal Balance => Math.Max(0, TotalAmount-AdjustedAmount-PaidAmount);}
+public sealed record InvoiceSummary(Guid Id, string InvoiceNumber, Guid StudentId, Guid? FeePlanId, decimal TotalAmount, decimal AdjustedAmount, decimal PaidAmount, string Currency, DateOnly IssuedDate, DateOnly DueDate, string Status)
+{
+    public decimal Balance => Math.Max(0, TotalAmount - AdjustedAmount - PaidAmount);
+    public string TotalAmountExact => TotalAmount.ToString("0.00", CultureInfo.InvariantCulture);
+}
 public sealed record UpdateInvoiceStatusRequest(string Status);
 public sealed record InvoiceStudentOption(Guid Id, string FirstName, string LastName, string? Email, string? Phone);
 public sealed record InvoiceDocumentSettingsSummary(string TaxRegistrationNumber, string TaxLabel, string? InvoiceLogoUrl,

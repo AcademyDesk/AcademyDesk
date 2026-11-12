@@ -6,9 +6,12 @@
 - [x] Exact review, authorization, submission and GET-only receipt recovery
   passed in the mobile-width browser against disposable SQL. One pending
   proposal and one audit were saved. Manual Finance approval applies it.
-- [ ] Next with Sol High is exact amount and stored currency display in
-  the Manual adjustment register and approval queue, then Cloud C38
-  enrollment browser host SQL acceptance.
+- [x] The Manual adjustment register and approval queue now show
+  exact amounts and stored currency. Live browser and SQL verified the handoff.
+- [ ] Next with Sol High is Cloud C38 enrollment browser host SQL acceptance.
+  Cloud C39 has claimed the enrollment browser UI.
+
+[Manual adjustment display evidence](QA/REPORTS/MANUAL_ADJUSTMENT_AMOUNT_DISPLAY_2026-11-12.md)
 
 [Adjustment browser evidence](QA/REPORTS/PENTA_ADJUSTMENT_BROWSER_2026-11-12.md)
 

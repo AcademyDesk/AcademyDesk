@@ -1,3 +1,4 @@
+using System.Globalization;
 using AcademyDesk.Api.Data;
 using AcademyDesk.Api.Domain.Entities;
 using AcademyDesk.Api.Infrastructure;
@@ -74,6 +75,7 @@ public sealed record CreateFinanceAdjustmentRequest(Guid InvoiceId, string? Type
 public sealed record FinanceAdjustmentDecisionRequest(bool Approve, string? Notes);
 public sealed record FinanceAdjustmentSummary(Guid Id, Guid InvoiceId, string Type, decimal Amount, string Currency, string Reason, string Status, DateTime? ApprovedAtUtc, string? ApprovalNotes)
 {
+    public string AmountExact => Amount.ToString("0.00", CultureInfo.InvariantCulture);
     public string FinancialEffect => string.Equals(Type, "Refund", StringComparison.OrdinalIgnoreCase) || string.Equals(Type, "CreditNote", StringComparison.OrdinalIgnoreCase) ? "LegacyInvoiceReductionNotSettlement" : "InvoiceReduction";
     public bool RequiresReviewedDisposition => FinancialEffect == "LegacyInvoiceReductionNotSettlement" && Status == "PendingApproval";
 }
