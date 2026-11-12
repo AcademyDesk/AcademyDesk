@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text.Json;
 using AcademyDesk.Api.Data;
 using AcademyDesk.Api.Domain.Entities;
 using AcademyDesk.Api.Intelligence.Penta;
@@ -17,12 +18,14 @@ internal static partial class SqlHarnessEntryPoint
         const string audit = "PentaInvoiceAdjustmentSubmitted";
         const string intent = "ApproveSubmitInvoiceAdjustment";
         const string reason = "QA private adjustment reason";
-        var flags = new Dictionary<string, string?> { ["Penta:Enabled"] = "true", ["Penta:InvoiceAdjustmentEnabled"] = "true" };
+        var flags = new Dictionary<string, string?> {
+            ["Penta:Enabled"] = "true", ["Penta:FinanceReadEnabled"] = "true", ["Penta:InvoiceAdjustmentEnabled"] = "true" };
         var root = $"/api/academies/{academy:D}";
         var conversations = root + "/penta/invoice-adjustments/conversations/";
         var key = Guid.NewGuid();
         var start = conversations + key.ToString("D");
         var count = 0;
+        var chat = root + "/penta/chat/finance";
         await CreateAccessActorAsync(factory, email, "AcademyAdmin", academy);
         using var host = new QaApiFactory(manifest, flags);
         using var admin = await SignIn(host, email);
@@ -36,12 +39,20 @@ internal static partial class SqlHarnessEntryPoint
         Pass("feature and authentication gates");
         await Expect(teacher.PutAsync(start, null), 403);
         await Expect(foreign.PutAsync(start, null), 403);
+        await Expect(teacher.GetAsync(chat), 403);
+        await Expect(foreign.GetAsync(chat), 403);
         Pass("teacher and cross-tenant access denied");
 
         var modules = await WithDb(db => db.Academies.Where(x => x.Id == academy).Select(x => x.EnabledModulesJson).SingleAsync());
         await Modules("""["Core","Finance"]""");
         await Expect(admin.PutAsync(start, null), 403);
+        using var basic = await admin.GetAsync(chat);
+        if ((await basic.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("invoiceAdjustment").GetBoolean())
+            throw new InvalidOperationException("Finance chat exposed adjustment without FinanceControls.");
         await Modules(modules);
+        using var entitled = await admin.GetAsync(chat);
+        if (!(await entitled.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("invoiceAdjustment").GetBoolean())
+            throw new InvalidOperationException("Finance chat did not expose the enabled adjustment action.");
         Pass("FinanceControls is required");
 
         using var started = await admin.PutAsync(start, null);

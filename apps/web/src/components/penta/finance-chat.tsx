@@ -6,6 +6,7 @@ import { apiUrl, isPortalSignOutEvent, portalAccessToken, portalSessionChangedEv
 import { readPentaJson } from "@/lib/penta-onboarding-channel";
 import type { FinanceDraftChannel } from "@/lib/penta-finance-draft";
 import type { InvoiceChannel } from "@/lib/penta-invoice-issuance";
+import InvoiceAdjustment from "./invoice-adjustment";
 import InvoiceIssuance from "./invoice-issuance";
 import PaymentCollection from "./payment-collection";
 import styles from "./role-penta-entry.module.css";
@@ -46,6 +47,7 @@ type Channel = {
   financeControls: boolean;
   payment: FinanceDraftChannel | null;
   issuance: InvoiceChannel | null;
+  adjustment: FinanceDraftChannel | null;
 };
 type Turn = { prompt: string; reply?: FinanceReply; notice?: string };
 
@@ -53,6 +55,7 @@ export default function FinanceChat({ academyId, fallback }: { academyId: string
   const [available, setAvailable] = useState<Channel | null>(null);
   const [paymentInvoice, setPaymentInvoice] = useState<string | null>(null);
   const [invoiceOpen, setInvoiceOpen] = useState(false);
+  const [adjustmentInvoice, setAdjustmentInvoice] = useState<{ id: string; title: string } | null>(null);
   const [prompt, setPrompt] = useState("");
   const [turn, setTurn] = useState<Turn | null>(null);
   const [pending, setPending] = useState(false);
@@ -81,6 +84,7 @@ export default function FinanceChat({ academyId, fallback }: { academyId: string
       setAvailable(null);
       setPaymentInvoice(null);
       setInvoiceOpen(false);
+      setAdjustmentInvoice(null);
       setTurn(null);
       setPrompt("");
       setPending(false);
@@ -113,6 +117,9 @@ export default function FinanceChat({ academyId, fallback }: { academyId: string
             issuance: value.invoiceIssuance === true ? { ...scope,
               send: (path, method, body) => request("/invoice-issuance/conversations" + path, method, body),
               options: (kind, query) => request("/invoice-issuance/options", "POST", { kind, query }),
+            } : null,
+            adjustment: value.financeControls && value.invoiceAdjustment === true ? { ...scope,
+              send: (path, method, body) => request("/invoice-adjustments/conversations" + path, method, body),
             } : null,
           });
         } catch { /* The Manual link remains available. */ }
@@ -191,6 +198,8 @@ export default function FinanceChat({ academyId, fallback }: { academyId: string
                     onClick={() => void send(`show reconciliation ${row.invoiceId}`, "Show reconciliation")}>Reconciliation</button>
                   {reply.kind === "invoice" && available.payment && <button type="button" disabled={pending || paymentInvoice !== null}
                     onClick={() => setPaymentInvoice(row.invoiceId)}>Record payment</button>}
+                  {reply.kind === "invoice" && available.adjustment && <button type="button" disabled={pending || adjustmentInvoice !== null}
+                    onClick={() => { if (row.invoiceId) setAdjustmentInvoice({ id: row.invoiceId, title: reply.title }); }}>Propose invoice adjustment</button>}
                 </div></td>}
               </tr>)}</tbody>
             </table>
@@ -201,6 +210,8 @@ export default function FinanceChat({ academyId, fallback }: { academyId: string
     </div>}
     {available.payment && <PaymentCollection academyId={academyId} invoiceId={paymentInvoice}
       channel={available.payment} onClose={() => setPaymentInvoice(null)} />}
+    {available.adjustment && <InvoiceAdjustment academyId={academyId} invoice={adjustmentInvoice}
+      channel={available.adjustment} onClose={() => setAdjustmentInvoice(null)} />}
     {available.issuance && <>
       <div className={styles.financeActions}>
         <button type="button" disabled={invoiceOpen} onClick={() => setInvoiceOpen(true)}>Prepare an invoice</button>

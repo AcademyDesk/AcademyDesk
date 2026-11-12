@@ -21,10 +21,11 @@ internal static partial class SqlHarnessEntryPoint
         var mini = !finance && Environment.GetEnvironmentVariable("QA_PENTA_MINI") == "1";
         var payment = finance && Environment.GetEnvironmentVariable("QA_PENTA_PAYMENT_BROWSER") == "1";
         var issuance = finance && Environment.GetEnvironmentVariable("QA_PENTA_INVOICE_BROWSER") == "1";
+        var adjustment = finance && Environment.GetEnvironmentVariable("QA_PENTA_ADJUSTMENT_BROWSER") == "1";
         using var factory = new QaApiFactory(manifest, new Dictionary<string, string?> {
             ["Penta:Enabled"] = "true", ["Penta:Mini:Enabled"] = mini.ToString(),
             ["Penta:FinanceReadEnabled"] = finance.ToString(), ["Penta:PaymentCollectionEnabled"] = payment.ToString(),
-            ["Penta:InvoiceIssuanceEnabled"] = issuance.ToString(),
+            ["Penta:InvoiceIssuanceEnabled"] = issuance.ToString(), ["Penta:InvoiceAdjustmentEnabled"] = adjustment.ToString(),
             ["Cors:AllowedOrigins:0"] = origin.GetLeftPart(UriPartial.Authority) });
         using var client = factory.CreateClient(new() { AllowAutoRedirect = false, HandleCookies = false });
         client.Timeout = TimeSpan.FromSeconds(140);
@@ -35,13 +36,15 @@ internal static partial class SqlHarnessEntryPoint
             var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
             return [await db.Students.CountAsync(), await db.Batches.CountAsync(), await db.PentaTasks.CountAsync(), await db.PentaExecutions.CountAsync(),
                 await db.PentaApprovals.CountAsync(), await db.Expenses.CountAsync(), await db.PayrollPayouts.CountAsync(),
-                await db.Invoices.CountAsync(), await db.Payments.CountAsync()];
+                await db.Invoices.CountAsync(), await db.Payments.CountAsync(), await db.FinanceAdjustments.CountAsync()];
         }
         var browserInvoice = payment ? await SeedBrowserPaymentAsync(factory, academyId) : Guid.Empty;
         var issuanceFixture = issuance ? await SeedBrowserInvoiceIssuanceAsync(factory, academyId) : null;
+        var adjustmentInvoice = adjustment ? await SeedBrowserPaymentAsync(factory, academyId, "QA-BROWSER-ADJUSTMENT") : Guid.Empty;
         var before = await Snapshot();
         var paymentAuditsBefore = payment ? await BrowserFinanceAuditCountAsync(factory, academyId, "PentaPaymentRecorded") : 0;
         var invoiceAuditsBefore = issuance ? await BrowserFinanceAuditCountAsync(factory, academyId, "PentaInvoiceIssued") : 0;
+        var adjustmentAuditsBefore = adjustment ? await BrowserFinanceAuditCountAsync(factory, academyId, "PentaInvoiceAdjustmentSubmitted") : 0;
         var builder = WebApplication.CreateSlimBuilder();
         builder.Logging.ClearProviders(); builder.WebHost.UseUrls($"http://127.0.0.1:{port}");
         await using var bridge = builder.Build();
@@ -60,9 +63,11 @@ internal static partial class SqlHarnessEntryPoint
             var invoiceRequest = issuance && (context.Request.Method is ("PUT" or "POST") &&
                 context.Request.Path.StartsWithSegments(invoiceRoot + "/conversations") ||
                 context.Request.Method == "POST" && context.Request.Path == invoiceRoot + "/options");
+            var adjustmentRequest = adjustment && context.Request.Method is ("PUT" or "POST") &&
+                context.Request.Path.StartsWithSegments($"/api/academies/{academyId:D}/penta/invoice-adjustments/conversations");
             if (context.Request.Method is not ("GET" or "OPTIONS") &&
                 !(context.Request.Method == "POST" && context.Request.Path == "/api/auth/login") &&
-                !miniPost && !financePost && !paymentRequest && !invoiceRequest)
+                !miniPost && !financePost && !paymentRequest && !invoiceRequest && !adjustmentRequest)
             { context.Response.StatusCode = 405; return; }
             using var request = new HttpRequestMessage(new HttpMethod(context.Request.Method), context.Request.Path + context.Request.QueryString);
             if (context.Request.ContentLength > 0) request.Content = new StreamContent(context.Request.Body);
@@ -88,8 +93,9 @@ internal static partial class SqlHarnessEntryPoint
         while (!File.Exists(stop) && DateTime.UtcNow < deadline) await Task.Delay(1000);
         await bridge.StopAsync();
         var after = await Snapshot();
-        if (payment) before[^1]++;
-        if (issuance) before[^2]++;
+        if (payment) before[^2]++;
+        if (issuance) before[^3]++;
+        if (adjustment) before[^1]++;
         PentaRequire(before.SequenceEqual(after), "Browser changed unexpected domain or AI execution rows.");
         if (payment)
         {
@@ -116,7 +122,20 @@ internal static partial class SqlHarnessEntryPoint
                 "Browser invoice recovery did not leave one exact audited invoice.");
             Console.WriteLine("PENTA INVOICE BROWSER SQL PASS: one exact invoice and one execution audit.");
         }
-        if (!payment && !issuance) Console.WriteLine("PENTA BROWSER PASS: domain and AI execution row counts unchanged.");
+        if (adjustment)
+        {
+            using var scope = factory.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+            var invoice = await db.Invoices.AsNoTracking().SingleAsync(x => x.Id == adjustmentInvoice && x.AcademyId == academyId);
+            var proposal = await db.FinanceAdjustments.AsNoTracking().SingleAsync(x => x.InvoiceId == invoice.Id && x.AcademyId == academyId);
+            PentaRequire(invoice is { Status: "PartiallyPaid", AdjustedAmount: 200m } &&
+                proposal is { Status: "PendingApproval", Type: "Scholarship", Currency: "USD", Amount: 125.01m, AppliedAtUtc: null } &&
+                await db.Payments.CountAsync(x => x.InvoiceId == invoice.Id) == 1 &&
+                await BrowserFinanceAuditCountAsync(factory, academyId, "PentaInvoiceAdjustmentSubmitted") == adjustmentAuditsBefore + 1,
+                "Browser adjustment did not leave one exact audited pending proposal and unchanged balance.");
+            Console.WriteLine("PENTA ADJUSTMENT BROWSER SQL PASS: one pending proposal, one execution audit and unchanged ledger.");
+        }
+        if (!payment && !issuance && !adjustment) Console.WriteLine("PENTA BROWSER PASS: domain and AI execution row counts unchanged.");
     }
 
     private static async Task<InvoiceBrowserFixture> SeedBrowserInvoiceIssuanceAsync(QaApiFactory factory, Guid academy)
@@ -134,12 +153,12 @@ internal static partial class SqlHarnessEntryPoint
 
     private sealed record InvoiceBrowserFixture(Guid Student, Guid FeePlan);
 
-    private static async Task<Guid> SeedBrowserPaymentAsync(QaApiFactory factory, Guid academy)
+    private static async Task<Guid> SeedBrowserPaymentAsync(QaApiFactory factory, Guid academy, string invoiceNumber = "QA-BROWSER-PAYMENT")
     {
         using var scope = factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
         var student = await db.Students.Where(x => x.AcademyId == academy).Select(x => x.Id).FirstAsync();
-        var invoice = new Invoice { AcademyId = academy, StudentId = student, InvoiceNumber = "QA-BROWSER-PAYMENT",
+        var invoice = new Invoice { AcademyId = academy, StudentId = student, InvoiceNumber = invoiceNumber,
             TotalAmount = 1000m, AdjustedAmount = 200m, Currency = "USD", Status = "PartiallyPaid",
             DueDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-999)) };
         db.Add(invoice);
