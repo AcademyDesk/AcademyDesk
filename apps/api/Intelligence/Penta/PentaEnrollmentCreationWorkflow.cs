@@ -65,21 +65,26 @@ public sealed partial class PentaEnrollmentCreationWorkflow(AcademyDeskDbContext
 
     private async Task<PentaEnrollmentDraftOutcome> RunAsync(Action action, ClaimsPrincipal principal, Guid academy,
         Guid session, Guid request, PentaEnrollmentBinding? binding, long? contextVersion, string? payload, CancellationToken token,
-        string? intent = null)
+        string? intent = null, bool browser = false)
     {
         if (!Enabled) return new(404);
+        if (browser && !BrowserEnabled) return new(404);
         if (session == Guid.Empty || request == Guid.Empty) return new(400);
         if (!Guid.TryParse(principal.FindFirstValue(ClaimTypes.NameIdentifier), out var actor) ||
             !await policy.AllowsAsync(principal, academy, token)) return new(403);
+        if (browser && action == Action.Prepare && !PentaEnrollmentFields.TryCreate(payload, out _)) return new(400);
         var stamp = principal.FindFirstValue(users.Options.ClaimsIdentity.SecurityStampClaimType);
+        if (browser && string.IsNullOrEmpty(stamp)) return new(403);
         var original = AcademyIdentityTransaction.Validate(db, identity);
         await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.Serializable, token);
         await using var linked = await AcademyIdentityTransaction.EnlistAsync(db, identity, transaction, original, token);
         if (await enrollments.CurrentHostRefusalAsync(principal, academy, stamp, token) is { } refusal) return new(refusal);
+        if (browser && !BrowserEnabled) return new(404);
 
         var conversation = await db.PentaMiniSessions.AsNoTracking().SingleOrDefaultAsync(x =>
             x.Id == session && x.AcademyId == academy && x.ActorUserId == actor, token);
         if (conversation is null) return new(404);
+        if (browser && (string.IsNullOrEmpty(stamp) || !new PentaEnrollmentBrowserSession(protection).Matches(conversation, stamp))) return new(404);
         if (conversation.ExpiresAtUtc <= Now) return new(410, Error: "The conversation expired.");
         // Scope the retry key to the actor, conversation and operation, even though the storage ID is global.
         var id = new Guid(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(new { Purpose, academy, actor, session, request })).AsSpan(0, 16));
@@ -96,6 +101,7 @@ public sealed partial class PentaEnrollmentCreationWorkflow(AcademyDeskDbContext
 
         var body = Open(row);
         if (body is null || body.SecurityStamp != stamp) return Changed();
+        if (browser && body.Change is not null) return new(404);
         if (body.Change is not null && !LifecycleEnabled) return new(404);
         if (action == Action.Prepare && (!PentaOperationalPayload.MatchesDigest(payload!, body.RequestHash) || contextVersion != row.ContextVersion)) return Changed();
         if (action == Action.Approve && intent != Intent(body.Change)) return Changed();

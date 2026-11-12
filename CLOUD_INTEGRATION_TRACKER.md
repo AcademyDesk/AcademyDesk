@@ -1,18 +1,26 @@
 # Academy Desk shared integration tracker
 
+## Protected enrollment browser contract on SQL — 12 November 2026
+
+- [x] Desktop integrated the exact C38 source and verified 15 new native
+  HTTP/SQL groups, 109 retained groups and 153 focused API tests.
+- [ ] Cloud C39 at `29c12181c8e6ed93921c6c93faa5a87b02f9a108` has a
+  browser UTC serialization correction. The approval and recovery UI
+  still needs its combined live browser and SQL acceptance.
+
+[Enrollment SQL evidence](QA/REPORTS/PENTA_ENROLLMENT_BROWSER_SQL_2026-11-12.md)
+
 ## PENTA invoice adjustment review and recovery — 12 November 2026
 
 - [x] Desktop connected the protected adjustment proposal in Admin
   Finance chat and verified exact review, submission and receipt recovery.
 - [x] Desktop verified exact amount and stored currency in the Manual
   adjustment register and approval queue using live browser and SQL.
-- [ ] Cloud C39 has claimed the enrollment approval and recovery UI.
-  Desktop is verifying the Cloud C38 SQL contract.
+- [ ] Cloud C39 owns the enrollment approval and recovery UI.
 
 [Manual adjustment display evidence](QA/REPORTS/MANUAL_ADJUSTMENT_AMOUNT_DISPLAY_2026-11-12.md)
-- [ ] Cloud C38 at `e8385f58b23de757928f99481c33ae3dd582b851`
-  owns the separate enrollment browser host. Desktop SQL acceptance remains
-  pending.
+- [x] Desktop verified the Cloud C38 enrollment browser host on SQL in
+  the following checkpoint.
 
 [Adjustment browser evidence](QA/REPORTS/PENTA_ADJUSTMENT_BROWSER_2026-11-12.md)
 

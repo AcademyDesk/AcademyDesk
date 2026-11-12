@@ -1,5 +1,17 @@
 # Academy Desk handoff
 
+## Protected enrollment browser contract on SQL — 12 November 2026
+
+- [x] Imported the exact C38 host and tests. The 153 focused API tests
+  and 15 new native HTTP/SQL groups passed.
+- [x] Verified purpose-bound start and recovery, concurrent execution,
+  Active and Waitlisted receipts, stale capacity, expiry, quotas, audit
+  rollback and current-role refusal. Retained 109 native groups passed.
+- [ ] Next with Sol High is live browser acceptance of the Cloud C39
+  enrollment approval and recovery UI when that work is published.
+
+[Enrollment SQL evidence](QA/REPORTS/PENTA_ENROLLMENT_BROWSER_SQL_2026-11-12.md)
+
 ## PENTA invoice adjustment review and recovery — 12 November 2026
 
 - [x] Admin Finance chat opens a protected proposal from a verified invoice.
@@ -8,8 +20,8 @@
   proposal and one audit were saved. Manual Finance approval applies it.
 - [x] The Manual adjustment register and approval queue now show
   exact amounts and stored currency. Live browser and SQL verified the handoff.
-- [ ] Next with Sol High is Cloud C38 enrollment browser host SQL acceptance.
-  Cloud C39 has claimed the enrollment browser UI.
+- [x] Cloud C38 enrollment browser host SQL acceptance passed in the
+  following checkpoint. Cloud C39 owns enrollment browser UI.
 
 [Manual adjustment display evidence](QA/REPORTS/MANUAL_ADJUSTMENT_AMOUNT_DISPLAY_2026-11-12.md)
 
