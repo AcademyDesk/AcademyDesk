@@ -24,7 +24,7 @@ internal sealed record PentaClassSessionOutcome(int HttpStatus, PentaClassSessio
 internal sealed record PentaClassSessionBinding(long Revision, string Hash, Guid? ApprovalId = null);
 
 /// <summary>Testing-only class scheduling and rescheduling with approval bound to the current plan.</summary>
-public sealed class PentaClassSessionSchedulingWorkflow(AcademyDeskDbContext db, IdentityDbContext identity,
+public sealed partial class PentaClassSessionSchedulingWorkflow(AcademyDeskDbContext db, IdentityDbContext identity,
     ClassSessionSchedulingService scheduler, PentaPilotPolicy policy, UserManager<ApplicationUser> users,
     IDataProtectionProvider protection, IConfiguration configuration, IHostEnvironment environment, TimeProvider clock)
 {
@@ -56,13 +56,16 @@ public sealed class PentaClassSessionSchedulingWorkflow(AcademyDeskDbContext db,
         PentaClassSessionBinding binding, CancellationToken token) => RunAsync(Action.Execute, user, academy, session, request, null, null, binding, token);
 
     private async Task<PentaClassSessionOutcome> RunAsync(Action action, ClaimsPrincipal user, Guid academy, Guid session, Guid request,
-        long? context, string? payload, PentaClassSessionBinding? binding, CancellationToken token, string? intent = null)
+        long? context, string? payload, PentaClassSessionBinding? binding, CancellationToken token, string? intent = null, bool browser = false)
     {
         if (!Enabled) return new(404);
+        if (browser && !BrowserEnabled) return new(404);
         if (session == Guid.Empty || request == Guid.Empty) return new(400);
         if (!Guid.TryParse(user.FindFirstValue(ClaimTypes.NameIdentifier), out var actor) ||
             !await policy.AllowsAsync(user, academy, token)) return new(403);
         var stamp = user.FindFirstValue(users.Options.ClaimsIdentity.SecurityStampClaimType);
+        if (browser && string.IsNullOrEmpty(stamp)) return new(403);
+        if (browser && action == Action.Prepare && (context != 0 || PentaClassSessionFields.Read(payload!) is null)) return new(400);
         var original = AcademyIdentityTransaction.Validate(db, identity);
         identity.ChangeTracker.Clear();
         await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.Serializable, token);
@@ -73,8 +76,10 @@ public sealed class PentaClassSessionSchedulingWorkflow(AcademyDeskDbContext db,
         var modules = await db.Academies.AsNoTracking().Where(x => x.Id == academy && x.IsActive).Select(x => x.EnabledModulesJson).SingleAsync(token);
         if (!SubscriptionPlanCatalog.Allows(modules, SubscriptionPlanCatalog.ModuleForController(nameof(ClassSessionsController)))) return new(403);
 
+        if (browser && !BrowserEnabled) return new(404);
         var conversation = await db.PentaMiniSessions.AsNoTracking().SingleOrDefaultAsync(x => x.Id == session && x.AcademyId == academy && x.ActorUserId == actor, token);
         if (conversation is null) return new(404);
+        if (browser && (string.IsNullOrEmpty(stamp) || !new PentaClassSessionBrowserSession(protection).Matches(conversation, stamp))) return new(404);
         if (conversation.ExpiresAtUtc <= Now) return new(410);
         var id = new Guid(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(new { Purpose, academy, actor, session, request })).AsSpan(0, 16));
         var row = await db.PentaOnboardingDrafts.SingleOrDefaultAsync(x => x.Id == id && x.AcademyId == academy && x.ActorUserId == actor && x.SessionId == session, token);
