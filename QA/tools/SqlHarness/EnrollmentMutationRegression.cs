@@ -209,6 +209,8 @@ internal static partial class SqlHarnessEntryPoint
         var dir=Path.GetFullPath(Path.Combine("QA","EVIDENCE","enrollment-shared-sql-"+manifest.RunId.ToString("N")));Directory.CreateDirectory(dir);
         await File.WriteAllTextAsync(Path.Combine(dir,"result.json"),JsonSerializer.Serialize(new{run=manifest.RunId.ToString("N"),passed=true,checks=count,capacityRaces=5,duplicateRaces=5,transferRaces=5,raceStatuses,sqlBacked=true,modelInference=false,toolRegistered=false,productionApproved=false},new JsonSerializerOptions{WriteIndented=true}));
         Console.WriteLine($"PASS: ENROLLMENTSHARED all {count} real SQL/HTTP/service cases;15 guarded mixed admission races, no model dispatch.");
+        if (Environment.GetEnvironmentVariable("QA_PENTA_ENROLLMENT_BROWSER") == "1")
+            await ServePentaBrowserAsync(manifest, academy, enrollment: true);
     }
     private sealed class EnrollmentSharedAuditFault(string action):SaveChangesInterceptor{
         public int Hits{get;private set;}

@@ -1,5 +1,15 @@
 # Academy Desk shared integration tracker
 
+## Live PENTA enrollment approval and recovery — 12 November 2026
+
+- [x] Desktop accepted the C37/C39 create browser workflow against
+  real SQL. Approval and execution recover the same operation with GET.
+- [ ] Desktop next owns the combined C40/C41 lifecycle SQL and browser
+  acceptance. C42 at `a19d5e2` recorded its cloud SQL image CDN blocker.
+  Cloud C43 at `38cef8f` covers the separate class scheduling host.
+
+[Live enrollment evidence](QA/REPORTS/PENTA_ENROLLMENT_LIVE_BROWSER_2026-11-12.md)
+
 ## Protected enrollment browser contract on SQL — 12 November 2026
 
 - [x] Desktop integrated the exact C38 source and verified 15 new native

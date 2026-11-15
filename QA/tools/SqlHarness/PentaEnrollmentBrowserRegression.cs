@@ -148,6 +148,9 @@ internal static partial class SqlHarnessEntryPoint
         await FillQuota(actor, 80);
         await Refuse(() => Start(Guid.NewGuid(), advancedOther), 429, "academy daily quota independent of actor");
         Pass("actor and academy start quotas are enforced independently");
+        var removed = await WithDb(db => db.PentaMiniSessions.Where(x => x.AcademyId == academy && x.ActorUserId == actor &&
+            x.ProtectedState == "Synthetic quota fixture").ExecuteDeleteAsync());
+        PentaRequire(removed == 100, "The disposable quota fixture did not remove its exact rows.");
 
         using (var scope = factory.Services.CreateScope())
         {

@@ -1,5 +1,16 @@
 # Academy Desk handoff
 
+## Live PENTA enrollment approval and recovery — 12 November 2026
+
+- [x] Integrated Cloud C37/C39 and verified Active and Waitlisted creation
+  with real Identity, a built browser client and disposable SQL.
+- [x] Six live browser groups, 124 native enrollment groups, 68 focused
+  API tests and 195 targeted client tests passed.
+- [ ] Next with Sol High is C40/C41 enrollment status and transfer native
+  acceptance. C42 could not obtain the SQL image in Cloud.
+
+[Live enrollment evidence](QA/REPORTS/PENTA_ENROLLMENT_LIVE_BROWSER_2026-11-12.md)
+
 ## Protected enrollment browser contract on SQL — 12 November 2026
 
 - [x] Imported the exact C38 host and tests. The 153 focused API tests
@@ -7,8 +18,8 @@
 - [x] Verified purpose-bound start and recovery, concurrent execution,
   Active and Waitlisted receipts, stale capacity, expiry, quotas, audit
   rollback and current-role refusal. Retained 109 native groups passed.
-- [ ] Next with Sol High is live browser acceptance of the Cloud C39
-  enrollment approval and recovery UI when that work is published.
+- [x] Live C39 enrollment approval and recovery passed in the following
+  checkpoint.
 
 [Enrollment SQL evidence](QA/REPORTS/PENTA_ENROLLMENT_BROWSER_SQL_2026-11-12.md)
 
