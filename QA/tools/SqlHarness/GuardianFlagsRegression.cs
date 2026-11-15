@@ -13,7 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 internal static partial class SqlHarnessEntryPoint
 {
-    private static async Task VerifyGuardianFlagsAsync(QaApiFactory factory, HttpClient client)
+    private static async Task VerifyGuardianFlagsAsync(QaApiFactory factory, HttpClient client, QaRunManifest manifest)
     {
         Guid academy, foreign; Student child, other, foreignChild; Guardian parent;
         StudentGuardian link; Invoice invoice, otherInvoice, foreignInvoice; Certificate certificate;
@@ -146,5 +146,7 @@ internal static partial class SqlHarnessEntryPoint
         using(var scope=factory.Services.CreateScope()){var db=scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();(await db.Students.SingleAsync(x=>x.Id==child.Id)).IsActive=false;await db.SaveChangesAsync();}
         foreach(var actor in new[]{"parent","learner"})foreach(var path in new[]{Details(child.Id),InvoiceRoute(child.Id,invoice.Id)}) {var label="inactive-"+actor+(path.Contains("invoices")?"-invoice":"-details");await Send(label,path,HttpStatusCode.Forbidden,actor);Pass(label);}
         Console.WriteLine($"GUARDIANFLAGS REGRESSION PASS: {count} real Identity/HTTP-SQL GET cases; all captured snapshots unchanged. Eight finance/document/academic combinations; existing certificate path retained; not browser/PDF/all-role/race acceptance.");
+        if (Environment.GetEnvironmentVariable("QA_PENTA_PORTAL_CONVERSATION_BROWSER") == "1")
+            await ServePentaBrowserAsync(manifest, academy, portal: true);
     }
 }

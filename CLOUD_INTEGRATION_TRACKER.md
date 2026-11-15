@@ -1,5 +1,15 @@
 # Academy Desk shared integration tracker
 
+## Live PENTA Student and Guardian conversation — 15 November 2026
+
+- [x] Desktop reused C29 source at `61abb67` and verified live revocation
+  alongside Student/Guardian guided reads, without reimplementing the fix.
+- [x] The Student retained own-record access and the Guardian retained the
+  other linked learner after revocation. No issue closure was claimed.
+- [ ] Check active Cloud work before claiming the Platform Owner conversation.
+
+[Portal conversation evidence](QA/REPORTS/PENTA_PORTAL_CONVERSATION_LIVE_2026-11-15.md)
+
 ## Live PENTA Teacher attendance — 15 November 2026
 
 - [x] Desktop verified Teacher-scoped search, active roster, confirmation and

@@ -8,6 +8,7 @@ import { validWorkspaceAccount, workspaceHomes } from "@/lib/workspace-entry";
 import { validPentaAccount } from "@/lib/penta-chat-contract";
 import FinanceChat from "./finance-chat";
 import TeacherAttendanceConversation from "./teacher-attendance-conversation";
+import PortalConversation from "./portal-conversation";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { usePentaManualTheme } from "@/components/penta-manual-theme";
 import styles from "./role-penta-entry.module.css";
@@ -27,7 +28,7 @@ export default function RolePentaEntry({ workspace }: { workspace: RoleWorkspace
   const theme = usePentaManualTheme();
   const [check, setCheck] = useState(0);
   const [financeAcademy, setFinanceAcademy] = useState<string | null>(null);
-  const [teacherAcademy, setTeacherAcademy] = useState<string | null>(null);
+  const [portalAcademy, setPortalAcademy] = useState<string | null>(null);
   const [state, setState] = useState<"checking" | "verified" | "signin" | "denied" | "unavailable">("checking");
   useEffect(() => {
     const controller = new AbortController();
@@ -46,7 +47,7 @@ export default function RolePentaEntry({ workspace }: { workspace: RoleWorkspace
         if (controller.signal.aborted) return;
         if (!sameLogin()) { setState("unavailable"); return; }
         setFinanceAcademy(workspace === "AcademyAdmin" && validPentaAccount(account) ? account.academyId : null);
-        setTeacherAcademy(workspace === "Teacher" && validWorkspaceAccount(account) && account.workspace === "Teacher" &&
+        setPortalAcademy((workspace === "Teacher" || workspace === "Portal") && validWorkspaceAccount(account) && account.workspace === workspace &&
           "academyId" in account && typeof account.academyId === "string" ? account.academyId : null);
         setState(validWorkspaceAccount(account) && account.workspace === workspace ? "verified" : "denied");
       } catch { if (!controller.signal.aborted) setState("unavailable"); }
@@ -70,8 +71,10 @@ export default function RolePentaEntry({ workspace }: { workspace: RoleWorkspace
       <div className={styles.hero}><span className={styles.orb} aria-hidden="true">P</span><h1>Your workspace. AI first.</h1><p>Your PENTA workspace, with Manual always available when you need it.</p></div>
       {state === "verified" && financeAcademy
         ? <FinanceChat key={financeAcademy} academyId={financeAcademy} fallback={fallback} />
-        : state === "verified" && teacherAcademy
-          ? <TeacherAttendanceConversation key={teacherAcademy} academyId={teacherAcademy} fallback={fallback} />
+        : state === "verified" && portalAcademy
+          ? workspace === "Teacher"
+            ? <TeacherAttendanceConversation key={portalAcademy} academyId={portalAcademy} fallback={fallback} />
+            : <PortalConversation key={portalAcademy} academyId={portalAcademy} fallback={fallback} />
           : fallback}
       {financeAcademy && state === "verified" && <section className={styles.panel} aria-labelledby="protected-workflows-title">
         <h2 id="protected-workflows-title">Protected workflows</h2>

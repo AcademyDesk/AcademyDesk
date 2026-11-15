@@ -1,5 +1,6 @@
 using AcademyDesk.Api.Data;
 using AcademyDesk.Api.Domain.Entities;
+using AcademyDesk.Api.Security;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -46,12 +47,15 @@ public sealed class StudentGuardiansController(AcademyDeskDbContext dbContext) :
         return Created($"/api/academies/{academyId}/students/{studentId}/guardians/{guardian.Id}", Summary(guardian, studentGuardian));
     }
     [HttpPatch("{guardianId:guid}/portal-access")]
+    [AtomicAcademyMutation(IncludePlatformOwner = true)]
     public async Task<ActionResult<StudentGuardianSummary>> SetPortalAccess(Guid academyId, Guid studentId, Guid guardianId, ParentPortalAccessRequest request, CancellationToken token)
     {
+        if (request.AllowPortalAccess is null) return BadRequest(new { message = "Provide an explicit portal access choice." });
         var link = await dbContext.StudentGuardians.Include(x => x.Guardian).Include(x => x.Student).SingleOrDefaultAsync(x => x.AcademyId == academyId && x.StudentId == studentId && x.GuardianId == guardianId, token);
-        if (link?.Guardian is null || link.Student is null) return NotFound();
-        var isMinor = link.Student.DateOfBirth.HasValue && link.Student.DateOfBirth.Value.AddYears(18) > DateOnly.FromDateTime(DateTime.UtcNow);
-        var access = isMinor || request.AllowPortalAccess;
+        if (link?.Guardian is null || link.Student is null || link.Guardian.AcademyId != academyId || link.Student.AcademyId != academyId) return NotFound();
+        var access = request.AllowPortalAccess.Value;
+        if (access && (!link.Guardian.IsActive || !link.Student.IsActive))
+            return Conflict(new { message = "Reactivate the guardian and student before granting portal access." });
         link.CanAccessPortal = access;
         link.CanViewAcademicProgress = access && request.AllowAcademicProgress;
         link.CanViewFinance = access && request.AllowFinance;
@@ -70,5 +74,5 @@ public sealed class StudentGuardiansController(AcademyDeskDbContext dbContext) :
 }
 
 public sealed record LinkGuardianRequest(Guid GuardianId, string? Relationship, bool IsPrimary, bool AllowParentPortalAccess = false, bool AllowAcademicProgress = true, bool AllowFinance = true, bool AllowDocuments = true, bool AllowLeave = true);
-public sealed record ParentPortalAccessRequest(bool AllowPortalAccess, bool AllowAcademicProgress = true, bool AllowFinance = true, bool AllowDocuments = true, bool AllowLeave = true);
+public sealed record ParentPortalAccessRequest(bool? AllowPortalAccess, bool AllowAcademicProgress = true, bool AllowFinance = true, bool AllowDocuments = true, bool AllowLeave = true);
 public sealed record StudentGuardianSummary(Guid GuardianId, string FirstName, string LastName, string? Email, string? Phone, string? Relationship, bool IsPrimary, bool CanAccessPortal, bool CanViewAcademicProgress, bool CanViewFinance, bool CanViewDocuments, bool CanManageLeave, DateTime? AccessGrantedAtUtc, DateTime? AccessRevokedAtUtc);

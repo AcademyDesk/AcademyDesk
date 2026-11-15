@@ -32,7 +32,7 @@ including the correct refusal or clarification when required.
 
 | Workstream | Evidence required |
 | --- | --- |
-| Role workflows | Finish the scoped Student/Guardian reads and the separate Platform Owner support and health reads. Exercise current assignment, guardian linkage and platform-versus-academy scope in browser and SQL. |
+| Role workflows | Student/Guardian guided reads and current-link revocation now have live evidence. Finish the separate Platform Owner support and health reads and verify platform-versus-academy scope in browser and SQL. |
 | Critical records | Run the outstanding browser, device and linked security or finance scenarios against the release candidate. The checker currently reports collection, adjustment consumers, payroll, void/restoration, private media and session revocation open. |
 | Exact release artifact | Review the integrated candidate, run its hosted CI and verify the exact API/web images and security checks. Rehearse migrations, restore and rollback in staging. |
 | Azure and Hayansh Academy | After acceptance, verify the intended revision, authenticated read-only smoke and role access. Onboard Hayansh Academy after go-live. |

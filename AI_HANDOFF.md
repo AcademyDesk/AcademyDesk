@@ -1,14 +1,29 @@
 # Academy Desk handoff
 
+## Live PENTA Student and Guardian conversation — 15 November 2026
+
+- [x] Integrated Cloud C29 guardian authorization and connected Student and
+  Guardian guided reads for next class, upcoming due work and outstanding fees.
+- [x] Verified a real Admin revocation against the Guardian's original bearer,
+  with sibling scope and Student self-access retained.
+- [x] Passed the frontend and API builds, 36 focused API tests, 12 client
+  tests, 61 native HTTP/SQL checks and three live browser groups.
+- [ ] Next with Sol High is the separately scoped Platform Owner read
+  conversation. Private-model evaluation, physical devices, 90% measurement
+  and six production gates remain open.
+
+[Portal conversation evidence](QA/REPORTS/PENTA_PORTAL_CONVERSATION_LIVE_2026-11-15.md)
+
 ## Live PENTA Teacher attendance — 15 November 2026
 
 - [x] Connected the Teacher composer to scoped class and active roster search,
   exact confirmation, queued notice and receipt recovery.
 - [x] Passed the frontend and API builds, 12 prompt/client tests, 57 native
   checks and 3 live browser groups. SQL verified one mark, notice and audit.
-- [ ] Next with Sol High is a scoped Student/Guardian conversation using
-  current learner linkage. The first private Mini qualification is still
-  pending within the existing model-load boundary.
+- [x] The following checkpoint verified scoped Student/Guardian conversation
+  using current learner linkage.
+- [ ] The first private Mini qualification is still pending within the
+  existing model-load boundary.
 - [ ] The 90% target is unmeasured. Six critical records and exact release
   candidate CI, images, staging recovery and device acceptance remain open.
 

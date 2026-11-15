@@ -1,5 +1,13 @@
 # PENTA host integration status — 5 November 2026
 
+## Student and Guardian conversation — 15 November 2026
+
+The guided Student/Guardian composer has live evidence for next class,
+upcoming due work and exact outstanding invoice reads. Each turn uses
+current portal permissions. A live Admin revocation removed access under the
+same Guardian bearer while preserving the other link and Student access.
+[Portal conversation evidence](QA/REPORTS/PENTA_PORTAL_CONVERSATION_LIVE_2026-11-15.md)
+
 ## Shared conversational workspace — 15 November 2026
 
 The Academy Owner/Admin PENTA composer now supports verified learner and
