@@ -1,5 +1,13 @@
 # PENTA host integration status — 5 November 2026
 
+## Platform Owner conversation — 15 November 2026
+
+The Platform workspace has separate live evidence for health, onboarding
+and support summaries under current Platform Owner authority. The Academy
+Admin and a role label without the platform flag were denied. Platform
+reads expose aggregates and save attributable audits.
+[Platform conversation evidence](QA/REPORTS/PENTA_PLATFORM_CONVERSATION_LIVE_2026-11-15.md)
+
 ## Student and Guardian conversation — 15 November 2026
 
 The guided Student/Guardian composer has live evidence for next class,

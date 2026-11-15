@@ -50,6 +50,7 @@ async function main() {
     ];
     async function page(config) {
       const { targetId } = await cdp.send('Target.createTarget', { url: 'about:blank' }); const { sessionId: sid } = await cdp.send('Target.attachToTarget', { targetId, flatten: true });
+      let closing = false;
       await cdp.send('Page.enable', {}, sid); await cdp.send('Runtime.enable', {}, sid);
       await cdp.send('Emulation.setDeviceMetricsOverride', { width: config.width || 1280, height: 900, deviceScaleFactor: 1, mobile: false }, sid);
       cdp.on(sid, 'Runtime.exceptionThrown', event => runtimeErrors.push(event.exceptionDetails.text + ':' + (event.exceptionDetails.exception?.description || '')));
@@ -72,20 +73,31 @@ async function main() {
           if (config.status) return await fulfill(config.status, {});
           return await fulfill(200, config.badProfile ? { workspace: config.workspace, roles: ['WrongRole'], isPlatformOwner: false } : { workspace: config.workspace, roles: config.roles, isPlatformOwner: config.workspace === 'Platform' });
           async function fulfill(code, body) { await cdp.send('Fetch.fulfillRequest', { requestId, responseCode: code, responseHeaders: [{ name: 'Content-Type', value: 'application/json' }, { name: 'Access-Control-Allow-Origin', value: origin }, { name: 'Access-Control-Allow-Headers', value: 'Authorization, Content-Type' }, { name: 'Access-Control-Allow-Methods', value: 'GET, POST, OPTIONS' }], body: code===204?'':Buffer.from(JSON.stringify(body)).toString('base64') }, sid); }
-        } catch (error) { runtimeErrors.push('Intercept: ' + error.message); }
+        } catch (error) {
+          if (!closing || error.message !== 'Session with given id not found.')
+            runtimeErrors.push('Intercept: ' + error.message);
+        }
       });
       await cdp.send('Fetch.enable', { patterns: [{ urlPattern: '*', requestStage: 'Request' }] }, sid);
       await cdp.send('Page.addScriptToEvaluateOnNewDocument', { source: `if(location.origin===${JSON.stringify(origin)}){localStorage.clear();localStorage.setItem('academydesk.theme',${JSON.stringify(config.theme || 'dark')});localStorage.setItem(${JSON.stringify('academydesk.accessToken.' + config.workspace)},'synthetic-access');localStorage.setItem(${JSON.stringify('academydesk.refreshToken.' + config.workspace)},'synthetic-refresh');${config.epoch ? "localStorage.setItem("+JSON.stringify('academydesk.sessionEpoch.' + config.workspace)+",'synthetic-login');" : ''}}` }, sid);
       const evaluate = async expression => { const value = await cdp.send('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true }, sid); if (value.exceptionDetails) throw Error(value.exceptionDetails.exception?.description || value.exceptionDetails.text); return value.result.value; };
       const wait = async expression => { for (let i = 0; i < 100; i++) { if (await evaluate(expression)) return; await sleep(50); } throw Error('DOM wait failed: ' + expression); };
       await cdp.send('Page.navigate', { url: origin + config.route }, sid);
-      return { sid, targetId, evaluate, wait, close: () => cdp.send('Target.closeTarget', { targetId }) };
+      return { sid, targetId, evaluate, wait, close: () => {
+        closing = true;
+        return cdp.send('Target.closeTarget', { targetId });
+      } };
     }
     for (const item of cases) for (const width of [1280, 390]) {
       const p = await page({ ...item, width, theme: width === 390 ? 'light' : 'dark' });
       try {
-        await p.wait(`document.querySelector('#penta-role-status')?.textContent.includes('conversation is not available')`);
-        a.ok(await p.evaluate(`document.body?.innerText.includes('Conversations not available')`));
+        if (item.workspace === 'Platform') {
+          await p.wait(`document.body?.innerText.includes('Platform conversation is unavailable in this session')`);
+          a.equal(await p.evaluate(`document.querySelector('#platform-penta-prompt')===null`), true);
+        } else {
+          await p.wait(`document.querySelector('#penta-role-status')?.textContent.includes('conversation is not available')`);
+          a.ok(await p.evaluate(`document.body?.innerText.includes('Conversations not available')`));
+        }
         a.equal(await p.evaluate(`document.querySelector('a[href="${item.manual}"]')!==null`), true);
         a.equal(await p.evaluate(`document.documentElement.scrollWidth<=innerWidth+1`), true);
         a.equal(await p.evaluate(`document.querySelector('[data-penta-theme]')?.getAttribute('data-penta-theme')`), width === 390 ? 'prism' : 'orbit');
@@ -256,8 +268,8 @@ async function main() {
     const ownedProfile=path.resolve(profile);
     a.equal(path.dirname(ownedProfile),path.resolve(os.tmpdir()));
     a.ok(path.basename(ownedProfile).startsWith('c3-chromium-'));
-    fs.rmSync(ownedProfile, { recursive: true, force: true });
     fs.writeFileSync(resultFile,JSON.stringify({status:success?'PASS':'FAIL',failure,results,requests,interceptedSyntheticWrites:writes,runtimeErrors,limitation:'All API responses intercepted synthetic fixtures, including six teacher workflow mutations; no live Identity/SQL/model/provider/physical-device qualification.'},null,2));
+    fs.rmSync(ownedProfile, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 });
   }
 }
 main().catch(error => { console.error(error); process.exitCode = 1; });

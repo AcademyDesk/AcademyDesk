@@ -14,7 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 internal static partial class SqlHarnessEntryPoint
 {
     // Same-currency balances only; real auth/filter/model binding and disposable SQL.
-    private static async Task VerifyPlatformBillingAsync(QaApiFactory factory, HttpClient client)
+    private static async Task VerifyPlatformBillingAsync(QaApiFactory factory, HttpClient client, QaRunManifest manifest)
     {
         var baseline = Environment.GetEnvironmentVariable("QA_PLATFORM_BILLING_BASELINE") == "1";
         Guid academy, foreign, ownerId;
@@ -213,5 +213,7 @@ internal static partial class SqlHarnessEntryPoint
         await Overview("two-tenant-decimal-zero-aggregate", 1011.10m, 4.44m, 1006.66m, 1);
         await Overview("repeat-aggregate-read-no-write", 1011.10m, 4.44m, 1006.66m, 1);
         Console.WriteLine($"PLATFORMBILLING REGRESSION PASS: {count} real Identity/HTTP-SQL cases; independent INR lifecycle/decimal/two-tenant totals, exact invoice/audit writes and unchanged reads/denials. Not browser/currency/race/full-critical acceptance.");
+        if (Environment.GetEnvironmentVariable("QA_PENTA_PLATFORM_CONVERSATION_BROWSER") == "1")
+            await ServePentaBrowserAsync(manifest, academy, platform: true);
     }
 }

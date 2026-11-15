@@ -1,5 +1,18 @@
 # Academy Desk handoff
 
+## Live PENTA Platform Owner conversation — 15 November 2026
+
+- [x] Connected platform health, onboarding and support summaries under
+  current Platform Owner authority.
+- [x] Verified the first guided workflows across all four portals. Platform
+  passed 8 client tests, 55 native checks, 3 live browser groups and 24
+  controlled role-entry browser groups. Both original PENTA services were restored.
+- [ ] Next with Sol High is exact-candidate critical acceptance and the
+  first authorized private Mini qualification. Six release records,
+  physical devices, staging recovery and the 90% measurement remain open.
+
+[Platform conversation evidence](QA/REPORTS/PENTA_PLATFORM_CONVERSATION_LIVE_2026-11-15.md)
+
 ## Live PENTA Student and Guardian conversation — 15 November 2026
 
 - [x] Integrated Cloud C29 guardian authorization and connected Student and
@@ -8,9 +21,9 @@
   with sibling scope and Student self-access retained.
 - [x] Passed the frontend and API builds, 36 focused API tests, 12 client
   tests, 61 native HTTP/SQL checks and three live browser groups.
-- [ ] Next with Sol High is the separately scoped Platform Owner read
-  conversation. Private-model evaluation, physical devices, 90% measurement
-  and six production gates remain open.
+- [x] The following checkpoint verified the separate Platform Owner conversation.
+- [ ] Private-model evaluation, physical devices, 90% measurement and six
+  production gates remain open.
 
 [Portal conversation evidence](QA/REPORTS/PENTA_PORTAL_CONVERSATION_LIVE_2026-11-15.md)
 

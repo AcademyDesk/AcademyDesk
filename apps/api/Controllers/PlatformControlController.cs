@@ -12,7 +12,7 @@ namespace AcademyDesk.Api.Controllers;
 [ApiController]
 [Authorize]
 [Route("api/platform")]
-public sealed class PlatformControlController(AcademyDeskDbContext db, UserManager<ApplicationUser> users) : ControllerBase
+public sealed partial class PlatformControlController(AcademyDeskDbContext db, UserManager<ApplicationUser> users) : ControllerBase
 {
     [HttpGet("overview")]
     public async Task<ActionResult> Overview(CancellationToken token)

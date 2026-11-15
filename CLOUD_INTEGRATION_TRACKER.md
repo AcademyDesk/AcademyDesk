@@ -1,12 +1,29 @@
 # Academy Desk shared integration tracker
 
+## Live PENTA Platform Owner conversation — 15 November 2026
+
+- [x] Desktop verified separate platform health, onboarding and support reads.
+  The Platform slice uses its own page and host and leaves the C45 Portal
+  entry path available for reconciliation.
+- [x] Retained Academy Admin denial and refusal for a role label without the
+  Platform Owner flag. Live reads produced one actor audit per summary.
+- [ ] Use the current integration branch for release acceptance and private
+  model handoff.
+
+[Platform conversation evidence](QA/REPORTS/PENTA_PLATFORM_CONVERSATION_LIVE_2026-11-15.md)
+
 ## Live PENTA Student and Guardian conversation — 15 November 2026
 
 - [x] Desktop reused C29 source at `61abb67` and verified live revocation
   alongside Student/Guardian guided reads, without reimplementing the fix.
 - [x] The Student retained own-record access and the Guardian retained the
   other linked learner after revocation. No issue closure was claimed.
-- [ ] Check active Cloud work before claiming the Platform Owner conversation.
+- [x] Cloud C45 at `a623fdf` contained a parallel learner claim when Desktop
+  published the verified implementation at `48f735f`. Use the published
+  Desktop checkpoint for learner conversation and native/browser evidence.
+  Preserve the Cloud claim as coordination history.
+- [x] Desktop took the Platform Owner slice in separate files, leaving the
+  shared role entry path available to the learner handoff.
 
 [Portal conversation evidence](QA/REPORTS/PENTA_PORTAL_CONVERSATION_LIVE_2026-11-15.md)
 

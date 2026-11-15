@@ -362,7 +362,7 @@ static async Task VerifyRealHttpAsync(QaRunManifest manifest, bool classMediaOnl
             if (auditMode == "--audit-guardian-flags") { await VerifyGuardianFlagsAsync(factory, client, manifest); return; }
             if (auditMode == "--audit-announcement-audience") { await VerifyAnnouncementAudienceAsync(factory, client); return; }
             if (auditMode == "--audit-activity-deletion") { await VerifyActivityDeletionAsync(factory, client); return; }
-            if (auditMode == "--audit-platform-billing") { await VerifyPlatformBillingAsync(factory, client); return; }
+            if (auditMode == "--audit-platform-billing") { await VerifyPlatformBillingAsync(factory, client, manifest); return; }
             if (auditMode == "--audit-tenant-plan") { await VerifyTenantPlanAsync(factory, client); return; }
             if (auditMode == "--audit-trial-duration") { await VerifyTrialDurationAsync(factory, client); return; }
             if (auditMode == "--audit-platform-provisioning") { await VerifyPlatformProvisioningAsync(factory, client, manifest); return; }

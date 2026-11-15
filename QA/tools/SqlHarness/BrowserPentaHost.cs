@@ -11,14 +11,14 @@ using Microsoft.Extensions.Logging;
 internal static partial class SqlHarnessEntryPoint
 {
     // Opt-in browser bridge; only the runner's disposable SQL and exact loopback origin.
-    private static async Task ServePentaBrowserAsync(QaRunManifest manifest, Guid academyId, bool finance = false, bool enrollment = false, bool lifecycle = false, bool scheduling = false, bool teacherAttendance = false, bool portal = false)
+    private static async Task ServePentaBrowserAsync(QaRunManifest manifest, Guid academyId, bool finance = false, bool enrollment = false, bool lifecycle = false, bool scheduling = false, bool teacherAttendance = false, bool portal = false, bool platform = false)
     {
         if (!int.TryParse(Environment.GetEnvironmentVariable("QA_BROWSER_API_PORT"), out var port) || port is < 1024 or > 65535 ||
             !Uri.TryCreate(Environment.GetEnvironmentVariable("QA_BROWSER_ORIGIN"), UriKind.Absolute, out var origin) ||
             origin.Scheme != "http" || origin.Host != "127.0.0.1" || origin.Port is < 1024 or > 65535 || origin.Port == port ||
             origin.AbsolutePath != "/" || origin.Query != "" || origin.Fragment != "" || origin.UserInfo != "")
             throw new InvalidOperationException("Exact distinct loopback browser API port and origin required.");
-        var mini = !finance && !enrollment && !lifecycle && !scheduling && !teacherAttendance && !portal && Environment.GetEnvironmentVariable("QA_PENTA_MINI") == "1";
+        var mini = !finance && !enrollment && !lifecycle && !scheduling && !teacherAttendance && !portal && !platform && Environment.GetEnvironmentVariable("QA_PENTA_MINI") == "1";
         var sharedConversation = scheduling && Environment.GetEnvironmentVariable("QA_PENTA_SHARED_CONVERSATION") == "1";
         var payment = finance && Environment.GetEnvironmentVariable("QA_PENTA_PAYMENT_BROWSER") == "1";
         var issuance = finance && Environment.GetEnvironmentVariable("QA_PENTA_INVOICE_BROWSER") == "1";
@@ -37,6 +37,7 @@ internal static partial class SqlHarnessEntryPoint
             ["Penta:ClassSchedulingBrowserContractsEnabled"] = scheduling.ToString(),
             ["Penta:TeacherAttendanceEnabled"] = teacherAttendance.ToString(),
             ["Penta:PortalReadsEnabled"] = portal.ToString(),
+            ["Penta:PlatformReadsEnabled"] = platform.ToString(),
             ["Cors:AllowedOrigins:0"] = origin.GetLeftPart(UriPartial.Authority) });
         using var client = factory.CreateClient(new() { AllowAutoRedirect = false, HandleCookies = false });
         client.Timeout = TimeSpan.FromSeconds(140);
@@ -59,6 +60,8 @@ internal static partial class SqlHarnessEntryPoint
         if (teacherAttendanceFixture is not null) await VerifyTeacherAttendanceBrowserOptionsAsync(factory, academyId, teacherAttendanceFixture);
         var portalFixture = portal ? await SeedBrowserPortalAsync(factory, academyId) : null;
         if (portalFixture is not null) await VerifyBrowserPortalScopeAsync(factory, portalFixture);
+        var platformFixture = platform ? await SeedBrowserPlatformConversationAsync(factory, academyId) : null;
+        if (platformFixture is not null) await VerifyBrowserPlatformOptionsAsync(factory);
         var classesBefore = 0;
         if (scheduling)
         {
@@ -123,7 +126,7 @@ internal static partial class SqlHarnessEntryPoint
             await response.Content.CopyToAsync(context.Response.Body, context.RequestAborted);
         });
         await bridge.StartAsync();
-        var stop = Path.Combine(manifest.Root, portal ? "stop-portal-conversation-browser" : teacherAttendance ? "stop-teacher-attendance-browser" : scheduling ? "stop-class-scheduling-browser" : lifecycle ? "stop-enrollment-lifecycle-browser" : enrollment ? "stop-enrollment-browser" : finance ? "stop-finance-chat-browser" : "stop-browser");
+        var stop = Path.Combine(manifest.Root, platform ? "stop-platform-conversation-browser" : portal ? "stop-portal-conversation-browser" : teacherAttendance ? "stop-teacher-attendance-browser" : scheduling ? "stop-class-scheduling-browser" : lifecycle ? "stop-enrollment-lifecycle-browser" : enrollment ? "stop-enrollment-browser" : finance ? "stop-finance-chat-browser" : "stop-browser");
         Console.WriteLine($"PENTA BROWSER READY run={manifest.RunId:N} academy={academyId:N} api={port} origin={origin.Port} stop={stop}");
         var deadline = DateTime.UtcNow.AddHours(mini ? 4 : 0.5);
         while (!File.Exists(stop) && DateTime.UtcNow < deadline) await Task.Delay(1000);
@@ -178,6 +181,7 @@ internal static partial class SqlHarnessEntryPoint
         if (schedulingFixture is not null) await VerifyBrowserClassSchedulingAsync(factory, academyId, schedulingFixture, classesBefore);
         if (teacherAttendanceFixture is not null) await VerifyBrowserTeacherAttendanceAsync(factory, academyId, teacherAttendanceFixture);
         if (portalFixture is not null) await VerifyBrowserPortalConversationAsync(factory, portalFixture);
+        if (platformFixture is not null) await VerifyBrowserPlatformConversationAsync(factory, platformFixture);
         if (!payment && !issuance && !adjustment && !enrollment && !lifecycle)
             Console.WriteLine("PENTA BROWSER PASS: domain and AI execution row counts unchanged.");
     }
