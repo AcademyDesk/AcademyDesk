@@ -11,7 +11,7 @@ Manual revocation against an existing Guardian bearer.
 
 All C45 implementation claims below are RELEASED. No duplicate host, UI mount
 or replacement of Desktop's portal source was pushed. C45's tested comparison
-is preserved locally at commit `follows in local Git history` on
+is preserved locally at commit `33f5c61c9284e7c817199c940d7a8e2110103bd6` on
 `codex/private-c45-portal-comparison-20261115` and in
 `/workspace/c45-learner-conversation-20261115/c45-comparison-only.zip`, with
 its SHA256 receipt. It is not an integration packet. Earlier C43 and C44 remain
