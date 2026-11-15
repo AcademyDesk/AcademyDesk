@@ -1,11 +1,22 @@
 # Academy Desk shared integration tracker
 
+## PENTA enrollment lifecycle and class scheduling SQL — 15 November 2026
+
+- [x] Desktop verified all six lifecycle statuses on SQL and accepted the
+  seven exact Cloud C43 files at `38cef8f`.
+- [x] C43 protected scheduling and rescheduling passed native HTTP/SQL
+  verification, including audit rollback and concurrent receipt recovery.
+- [ ] Connected scheduling UI and live browser acceptance remain open.
+  Check the active Cloud branch before claiming the UI.
+
+[Desktop SQL verification](QA/REPORTS/PENTA_ENROLLMENT_AND_SCHEDULING_SQL_2026-11-15.md)
+
 ## Live PENTA enrollment pause and transfer — 15 November 2026
 
 - [x] Desktop integrated 14 exact C41 paths and verified pause, transfer
   and recovery with live Identity, browser and SQL.
-- [ ] Broader lifecycle-only native cases remain open.
-  Cloud C43 `38cef8f` is the separate class scheduling host.
+- [x] The following desktop checkpoint covered all six lifecycle statuses
+  and verified the separate C43 scheduling host on SQL.
 
 [Live lifecycle evidence](QA/REPORTS/PENTA_ENROLLMENT_LIFECYCLE_LIVE_2026-11-15.md)
 

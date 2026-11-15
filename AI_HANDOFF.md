@@ -1,14 +1,28 @@
 # Academy Desk handoff
 
+## PENTA enrollment lifecycle and class scheduling SQL — 15 November 2026
+
+- [x] Imported the seven exact C43 files at `38cef8f` and verified the
+  scheduling browser host on desktop SQL.
+- [x] Exercised all six enrollment lifecycle statuses against real Identity
+  and SQL. The earlier live Paused and Transfer evidence still applies.
+- [x] 317 focused API tests, 132 enrollment and 95 scheduling native groups
+  passed. Both original PENTA services were restored.
+- [ ] Next with Sol High is the live scheduling conversation, approval and
+  recovery UI. Teacher attendance has separate portal acceptance.
+- [ ] Private model qualification, all-role coverage and the six critical
+  production gates remain open.
+
+[Desktop SQL verification](QA/REPORTS/PENTA_ENROLLMENT_AND_SCHEDULING_SQL_2026-11-15.md)
+
 ## Live PENTA enrollment pause and transfer — 15 November 2026
 
 - [x] C40/C41 passed live Academy Admin pause and Academy Owner transfer.
   The batch search cache header now meets the browser contract.
 - [x] Verified lost-response recovery, exact source and target state,
   and one audit per transition on disposable SQL.
-- [ ] Next with Sol High is broader lifecycle host acceptance and C43
-  scheduling host SQL verification. Teacher portal attendance UI is
-  a separate workstream. Model and production acceptance remain open.
+- [x] The next checkpoint verified all six lifecycle statuses and the C43
+  scheduling browser host on disposable SQL.
 
 [Live lifecycle evidence](QA/REPORTS/PENTA_ENROLLMENT_LIFECYCLE_LIVE_2026-11-15.md)
 

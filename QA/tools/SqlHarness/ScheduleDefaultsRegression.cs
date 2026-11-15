@@ -76,5 +76,6 @@ internal static partial class SqlHarnessEntryPoint
         if(count!=18)throw new InvalidOperationException("Unexpected schedule case count: "+count);
         Console.WriteLine("SCHEDULEDEFAULTS REGRESSION PASS:18 cases; twelve actual TSX payloads to real Identity/HTTP/fresh SQL/GET, current teacher/branch defaults and deliberate overrides, unchanged null inheritance and batch rows, five no-write person/batch/route/auth denials; browser/device pending.");
         await VerifyClassSchedulingAsync(factory, manifest, academy, foreign);
+        await VerifyPentaClassBrowserAsync(factory, manifest, academy, foreign);
     }
 }

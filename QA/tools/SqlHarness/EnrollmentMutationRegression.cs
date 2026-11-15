@@ -199,6 +199,7 @@ internal static partial class SqlHarnessEntryPoint
 
         await VerifyEnrollmentCreationWorkflowAsync(factory, manifest, academy, foreign, actor, email, () => Seed());
         await VerifyEnrollmentBrowserAsync(factory, manifest, academy, foreign, () => Seed());
+        await VerifyEnrollmentLifecycleBrowserAsync(factory, manifest, academy, foreign, () => Seed());
 
         var revocation=await Seed();using(var scope=factory.Services.CreateScope()){
             var identity=scope.ServiceProvider.GetRequiredService<IdentityDbContext>();var roleIds=await identity.Roles.Where(x=>x.Name=="AcademyAdmin").Select(x=>x.Id).ToArrayAsync();
