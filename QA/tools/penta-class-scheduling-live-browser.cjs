@@ -14,6 +14,7 @@ const api = loopback(process.env.QA_FINANCE_CHAT_API);
 assert.notEqual(web, api);
 const route = '/penta/scheduling', hostSegment = '/penta/class-scheduling/browser/';
 const pointer = 'academydesk.penta.class-scheduling-recovery.v1';
+const shared = process.env.QA_PENTA_SHARED_CONVERSATION === '1';
 const meeting = 'https://class.example.invalid/rehearsal';
 const clock = (days, hour) => {
   const now = new Date();
@@ -38,14 +39,19 @@ async function verify(browser, move) {
     const session = page.waitForResponse(response => response.url() === api + '/api/auth/session' && response.status() === 200);
     await page.getByRole('button', { name: 'Sign in', exact: true }).click();
     assert.ok((await (await session).json()).roles.includes(move ? 'Owner' : 'AcademyAdmin'));
-    await page.getByRole('link', { name: 'Class scheduling', exact: true }).click();
-    await page.waitForURL(web + route);
+    if (shared && !move) await startInSharedConversation(page);
+    else {
+      await page.getByRole('link', { name: 'Class scheduling', exact: true }).click();
+      await page.waitForURL(web + route);
+    }
     const conversation = page.getByRole('region', { name: 'Class scheduling conversation' });
     const button = name => conversation.getByRole('button', { name, exact: true });
     const writes = () => requests.filter(request => request.method !== 'GET');
-    const prompt = conversation.getByLabel('Message Executor about a class');
-    await prompt.fill((move ? 'Reschedule' : 'Schedule') + ' a class for Browser Rehearsal');
-    await button('Send message').click();
+    if (!shared || move) {
+      const prompt = conversation.getByLabel('Message Executor about a class');
+      await prompt.fill((move ? 'Reschedule' : 'Schedule') + ' a class for Browser Rehearsal');
+      await button('Send message').click();
+    }
     const selected = conversation.getByRole('button', { name: move ? /^Select Browser Rehearsal at .*09:00 UTC$/ : /^Select Browser Rehearsal$/ });
     await selected.click();
     const day = move ? 62 : 61, hour = move ? 13 : 11;
@@ -105,6 +111,50 @@ async function verify(browser, move) {
   } finally {
     await context.close();
   }
+}
+
+async function startInSharedConversation(page) {
+  const chat = page.getByRole('region', { name: 'PENTA conversation' });
+  const input = chat.getByLabel('Message PENTA');
+  const send = async text => {
+    await input.fill(text);
+    await chat.getByRole('button', { name: 'Send', exact: true }).click();
+  };
+  const request = (suffix, method) => page.waitForResponse(response =>
+    response.url().startsWith(api + '/') && new URL(response.url()).pathname.endsWith(suffix) && response.request().method() === method);
+
+  const lookup = request('/student-search', 'GET');
+  await send('Look up student Mira Conversation');
+  const records = await lookup;
+  assert.equal(records.status(), 200);
+  assert.match(records.headers()['cache-control'], /no-store/);
+  const beta = chat.getByRole('link', { name: 'Mira Conversation Beta', exact: true });
+  await beta.waitFor();
+  const betaPath = await beta.getAttribute('href');
+  await send('Open it');
+  await chat.getByText(/Which result/).waitFor();
+  await send('Open the second result');
+  await chat.getByText(/Selected record/).waitFor();
+  assert.equal(await beta.getAttribute('href'), betaPath);
+  await send('Try Mira Conversation Alpha');
+  await chat.getByRole('link', { name: 'Mira Conversation Alpha', exact: true }).waitFor();
+  assert.equal(await beta.count(), 0);
+  console.log('PENTA SHARED CASE scoped student lookup, ambiguity and follow-up PASS');
+
+  const batch = request('/batch-search', 'GET');
+  await send('Find batch Browser Rehearsal');
+  assert.equal((await batch).status(), 200);
+  assert.equal(await chat.getByRole('link', { name: 'Browser Rehearsal', exact: true }).getAttribute('href'), '/batch-setup');
+  const finance = request('/chat/finance', 'POST');
+  await send('Show recent expenses');
+  assert.equal((await finance).status(), 200);
+  await chat.getByRole('heading', { name: 'Recent expenses' }).waitFor();
+  console.log('PENTA SHARED CASE batch lookup and finance in one composer PASS');
+
+  await send('Schedule a class for Browser Rehearsal');
+  await chat.getByRole('region', { name: 'Class scheduling conversation' }).waitFor();
+  assert.equal(new URL(page.url()).pathname, '/penta');
+  console.log('PENTA SHARED CASE class request opens the protected review in chat PASS');
 }
 
 async function main() {

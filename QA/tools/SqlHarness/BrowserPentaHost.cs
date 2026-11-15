@@ -19,12 +19,13 @@ internal static partial class SqlHarnessEntryPoint
             origin.AbsolutePath != "/" || origin.Query != "" || origin.Fragment != "" || origin.UserInfo != "")
             throw new InvalidOperationException("Exact distinct loopback browser API port and origin required.");
         var mini = !finance && !enrollment && !lifecycle && !scheduling && Environment.GetEnvironmentVariable("QA_PENTA_MINI") == "1";
+        var sharedConversation = scheduling && Environment.GetEnvironmentVariable("QA_PENTA_SHARED_CONVERSATION") == "1";
         var payment = finance && Environment.GetEnvironmentVariable("QA_PENTA_PAYMENT_BROWSER") == "1";
         var issuance = finance && Environment.GetEnvironmentVariable("QA_PENTA_INVOICE_BROWSER") == "1";
         var adjustment = finance && Environment.GetEnvironmentVariable("QA_PENTA_ADJUSTMENT_BROWSER") == "1";
         using var factory = new QaApiFactory(manifest, new Dictionary<string, string?> {
             ["Penta:Enabled"] = "true", ["Penta:Mini:Enabled"] = mini.ToString(),
-            ["Penta:FinanceReadEnabled"] = finance.ToString(), ["Penta:PaymentCollectionEnabled"] = payment.ToString(),
+            ["Penta:FinanceReadEnabled"] = (finance || sharedConversation).ToString(), ["Penta:PaymentCollectionEnabled"] = payment.ToString(),
             ["Penta:InvoiceIssuanceEnabled"] = issuance.ToString(), ["Penta:InvoiceAdjustmentEnabled"] = adjustment.ToString(),
             ["Penta:EnrollmentPreviewEnabled"] = enrollment.ToString(),
             ["Penta:EnrollmentCreationEnabled"] = (enrollment || lifecycle).ToString(),
@@ -72,7 +73,7 @@ internal static partial class SqlHarnessEntryPoint
             // The optional payment fixture admits only the protected routes in this disposable academy.
             var miniPost = mini && context.Request.Method == "POST" &&
                 context.Request.Path.StartsWithSegments($"/api/academies/{academyId:D}/penta/chat/conversations");
-            var financePost = finance && context.Request.Method == "POST" &&
+            var financePost = (finance || sharedConversation) && context.Request.Method == "POST" &&
                 context.Request.Path == $"/api/academies/{academyId:D}/penta/chat/finance";
             var paymentRequest = payment && context.Request.Method is ("PUT" or "POST") &&
                 context.Request.Path.StartsWithSegments($"/api/academies/{academyId:D}/penta/payment-collection/conversations");

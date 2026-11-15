@@ -33,9 +33,9 @@ async function main() {
     const requests = [];
     page.on('request', request => requests.push(new URL(request.url())));
     await login(page, 'qa-admin-a@example.invalid', '/penta');
-    const chat = page.getByRole('region', { name: 'Finance chat' });
+    const chat = page.getByRole('region', { name: 'PENTA conversation' });
     await chat.waitFor();
-    const input = chat.getByLabel('Ask about finance');
+    const input = chat.getByLabel('Message PENTA');
     async function post(action, status) {
       const wait = page.waitForResponse(response => response.url().startsWith(api + '/') &&
         financeRoute.test(new URL(response.url()).pathname) && response.request().method() === 'POST');
@@ -102,7 +102,7 @@ async function main() {
     await login(instructor, 'qa-teacher-a@example.invalid', '/teacher/ai');
     await instructor.goto(web + '/penta');
     await instructor.getByRole('heading', { name: 'Workspace verification is unavailable' }).waitFor();
-    assert.equal(await instructor.getByLabel('Ask about finance').count(), 0);
+    assert.equal(await instructor.getByLabel('Message PENTA').count(), 0);
     assert.ok(requests.every(url => [web, api].includes(url.origin) || url.protocol === 'data:'));
     console.log('PENTA FINANCE BROWSER CASE teacher has no finance composer PASS');
     console.log('PENTA FINANCE BROWSER SUMMARY 6 real browser checks PASS');

@@ -34,7 +34,7 @@ async function main() {
     await page.getByRole('button', { name: 'Sign in', exact: true }).click();
     await page.waitForURL(web + '/penta');
 
-    const chat = page.getByRole('region', { name: 'Finance chat' });
+    const chat = page.getByRole('region', { name: 'PENTA conversation' });
     await chat.getByRole('button', { name: 'Show overdue invoices' }).click();
     const row = chat.getByRole('row', { name: /QA-BROWSER-PAYMENT/ });
     await row.getByRole('button', { name: 'Invoice', exact: true }).click();

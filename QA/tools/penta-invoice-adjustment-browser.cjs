@@ -35,7 +35,7 @@ async function main() {
     await page.getByRole('button', { name: 'Sign in', exact: true }).click();
     await page.waitForURL(web + '/penta');
 
-    const chat = page.getByRole('region', { name: 'Finance chat' });
+    const chat = page.getByRole('region', { name: 'PENTA conversation' });
     const form = chat.getByRole('region', { name: 'Propose an invoice adjustment' });
     async function open() {
       await chat.getByRole('button', { name: 'Show overdue invoices' }).click();

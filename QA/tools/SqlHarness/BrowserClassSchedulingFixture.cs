@@ -15,13 +15,17 @@ internal static partial class SqlHarnessEntryPoint
         var owner = await CreateAccessActorAsync(factory, "qa-class-move@example.invalid", "Owner", academy);
         using var scope = factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+        if (Environment.GetEnvironmentVariable("QA_PENTA_SHARED_CONVERSATION") == "1")
+            (await db.Academies.SingleAsync(x => x.Id == academy)).EnabledModulesJson = """["Core","Finance"]""";
         var teacher = new Teacher { AcademyId = academy, FirstName = "Synthetic", LastName = "Class browser" };
         var branch = new Branch { AcademyId = academy, Name = "Synthetic browser campus" };
         var batch = new Batch { AcademyId = academy, Name = "Browser Rehearsal", CourseId = Guid.NewGuid(), TeacherId = teacher.Id, BranchId = branch.Id };
         var day = DateTime.UtcNow.Date.AddDays(60);
         var source = new ClassSession { AcademyId = academy, BatchId = batch.Id, TeacherId = teacher.Id, BranchId = branch.Id,
             StartUtc = day.AddHours(9), EndUtc = day.AddHours(10), DeliveryMode = "InPerson", RoomName = "Before rehearsal", Status = "Scheduled" };
-        db.AddRange(teacher, branch, batch, source);
+        db.AddRange(teacher, branch, batch, source,
+            new Student { AcademyId = academy, FirstName = "Mira", LastName = "Conversation Alpha" },
+            new Student { AcademyId = academy, FirstName = "Mira", LastName = "Conversation Beta" });
         await db.SaveChangesAsync();
         return new(admin, owner, batch.Id, teacher.Id, branch.Id, source.Id, day);
     }
@@ -47,6 +51,14 @@ internal static partial class SqlHarnessEntryPoint
         PentaRequire(audits.Length == 2 && audits.Count(x => x.ActorUserId == fixture.Admin && x.Action == "PentaClassSessionScheduled") == 1 &&
             audits.Count(x => x.ActorUserId == fixture.Owner && x.Action == "PentaClassSessionRescheduled") == 1,
             "Class browser must record exactly one execution audit per acting role.");
+        if (Environment.GetEnvironmentVariable("QA_PENTA_SHARED_CONVERSATION") == "1")
+        {
+            var reads = db.AuditLogs.AsNoTracking().Where(x => x.AcademyId == academy && x.ActorUserId == fixture.Admin);
+            PentaRequire(await reads.CountAsync(x => x.Action == "PentaStudentSearchRead") == 2 &&
+                await reads.CountAsync(x => x.Action == "PentaBatchSearchRead") == 1,
+                "Shared conversation context must use the exact approved student and batch read path.");
+            Console.WriteLine("PENTA SHARED CONVERSATION SQL PASS: expected scoped lookup audits.");
+        }
         Console.WriteLine("PENTA CLASS BROWSER SQL PASS: one new class, one moved original and one execution audit per actor.");
     }
 }

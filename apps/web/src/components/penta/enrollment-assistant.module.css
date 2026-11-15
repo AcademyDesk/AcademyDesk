@@ -8,12 +8,12 @@
 .panel p { line-height: 1.65; margin-block: 14px; }
 .boundary { color: var(--pui-muted); }
 .page a { color: var(--pui-accent); text-underline-offset: 3px; }
-.panel label { display: block; margin-block: 14px 8px; font-weight: 650; }
-.panel :is(input, select, button) { min-height: 44px; padding: 10px 12px; border: 1px solid var(--pui-border); border-radius: 10px; background: var(--pui-control); color: var(--pui-text); font: inherit; max-width: 100%; }
-.panel :is(input, select) { min-width: 0; }
-.panel button { cursor: pointer; }
-.panel :is(input, select, button):disabled { opacity: .6; cursor: default; }
-.panel :is(input, select, button, a):focus-visible { outline: 3px solid var(--pui-focus); outline-offset: 3px; }
+:is(.panel, .controls) label { display: block; margin-block: 14px 8px; font-weight: 650; }
+:is(.panel, .controls) :is(input, select, button) { min-height: 44px; padding: 10px 12px; border: 1px solid var(--pui-border); border-radius: 10px; background: var(--pui-control); color: var(--pui-text); font: inherit; max-width: 100%; }
+:is(.panel, .controls) :is(input, select) { min-width: 0; }
+:is(.panel, .controls) button { cursor: pointer; }
+:is(.panel, .controls) :is(input, select, button):disabled { opacity: .6; cursor: default; }
+:is(.panel, .controls) :is(input, select, button, a):focus-visible { outline: 3px solid var(--pui-focus); outline-offset: 3px; }
 .actions { display: flex; flex-wrap: wrap; gap: 10px; }
 .actions input { flex: 1 1 16rem; }
 .result { border-top: 1px solid var(--pui-border); margin-top: 24px; padding-top: 16px; }

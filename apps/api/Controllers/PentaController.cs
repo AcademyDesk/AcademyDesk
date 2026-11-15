@@ -44,7 +44,17 @@ public sealed class PentaController(PentaPilotPolicy policy, PentaExecutionServi
         return result is null ? NotFound() : Ok(result);
     }
 
+    [HttpGet("lookup-readiness"), Authorize(AuthenticationSchemes = "Identity.Bearer")]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+    public async Task<ActionResult> LookupReadiness(Guid academyId, CancellationToken token)
+    {
+        if (!policy.IsAvailable) return NotFound();
+        if (!await policy.AllowsAsync(User, academyId, token)) return Forbid();
+        return Ok(new { protocol = "academy-lookup.v1", academyId });
+    }
+
     [HttpGet("student-search")]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public async Task<ActionResult<PentaStudentSearchResult>> StudentSearch(Guid academyId,
         [FromQuery] string? q, CancellationToken token)
     {

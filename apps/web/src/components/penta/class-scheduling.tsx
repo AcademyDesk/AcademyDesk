@@ -16,7 +16,11 @@ const initialSlot: SlotInput = { start: "", end: "", mode: "InPerson", location:
 const modeLabel = (mode: DeliveryMode) => mode === "InPerson" ? "Offline" : mode;
 const clock = (value: string) => value.slice(0, 10) + " " + value.slice(11, 16) + " UTC";
 
-function SchedulingConversation({ transport }: { transport: EnrollmentTransport }) {
+type SchedulingCommand = { request: ReturnType<typeof schedulingPrompt>; text: string };
+
+export function SchedulingConversation({ transport, command, embedded = false }: {
+  transport: EnrollmentTransport; command?: SchedulingCommand; embedded?: boolean;
+}) {
   const driver = useRef<ReturnType<typeof createClassScheduling> | null>(null);
   const [view, setView] = useState(initialSchedulingState);
   const [prompt, setPrompt] = useState("");
@@ -32,14 +36,32 @@ function SchedulingConversation({ transport }: { transport: EnrollmentTransport 
     return () => { operation.dispose(); driver.current = null; };
   }, [transport]);
 
+  const handled = useRef<SchedulingCommand | null>(null);
+  useEffect(() => {
+    if (!command || command === handled.current || !view.ready || view.pending || !driver.current) return;
+    let live = true;
+    void Promise.resolve().then(() => {
+      if (!live || !driver.current) return;
+      handled.current = command;
+      if (view.key) {
+        setInputError("Finish or check the saved class request before starting another.");
+        return;
+      }
+      setInputError(""); setSelected(null); setSlot(initialSlot);
+      void driver.current.search(command.request.kind, command.request.query);
+    });
+    return () => { live = false; };
+  }, [command, view.ready, view.pending, view.key]);
+
   const ready = view.ready && !view.pending && !view.key;
   const draft = view.draft;
   const hasSelection = selected && view.matches?.rows.includes(selected);
   const verifyInManual = view.phase === "missing" || view.phase === "expired";
-  return <section aria-label="Class scheduling conversation" aria-busy={view.pending}>
+  return <section className={styles.controls} aria-label="Class scheduling conversation" aria-busy={view.pending}>
     {view.notice && <p role="status">{view.notice}</p>}
     {view.phase === "unavailable" && <p><Link href="/sessions">Open Manual Sessions</Link></p>}
     {view.ready && !view.key && <>
+      {!embedded && <>
       <div role="log" aria-label="Scheduling messages">
         <p><strong>Executor</strong> · Which batch would you like to schedule or reschedule?</p>
         {sent && <p><strong>You</strong> · {sent}</p>}
@@ -60,7 +82,7 @@ function SchedulingConversation({ transport }: { transport: EnrollmentTransport 
           <button type="submit" disabled={!ready || !prompt.trim()}>Send message</button>
         </div>
         <p>Try “Schedule a class for Piano” or “Reschedule a class for Piano”.</p>
-      </form>
+      </form></>}
       {view.matches && <section className={styles.result} aria-label="Matching academy records">
         <h2>{view.matches.kind === "create" ? "Choose a batch" : "Choose the class to move"}</h2>
         {!view.matches.rows.length && <p>No matching records. Try a different batch name.</p>}

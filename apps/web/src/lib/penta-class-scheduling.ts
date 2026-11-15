@@ -40,6 +40,11 @@ export function schedulingPrompt(text: string): { kind: ScheduleKind; query: str
   return { kind: match[1].toLowerCase() === "schedule" ? "create" : "move", query };
 }
 
+export function schedulingReady(v: unknown) {
+  return obj(v) && v.protocol === "class-scheduling-browser.v1" && v.requiresApproval === true &&
+    Array.isArray(v.tools) && v.tools.length === 2 && v.tools.includes(createTool) && v.tools.includes(moveTool);
+}
+
 export function schedulingLookup(v: unknown, academyId: string, kind: ScheduleKind): Lookup {
   const tool = kind === "create" ? "class-scheduling.batch-options.v1" : "class-session.search.v1";
   if (!obj(v) || v.tool !== tool || v.capability !== "executor" || v.academyId !== academyId || !id(academyId) || !utc(v.asOfUtc) ||
@@ -202,8 +207,7 @@ export function createClassScheduling(transport: EnrollmentTransport, storage: (
       const key = pointer();
       if (key) update({ key });
       const r = await call("/readiness", "GET");
-      if (!obj(r) || r.protocol !== "class-scheduling-browser.v1" || r.requiresApproval !== true ||
-        !Array.isArray(r.tools) || r.tools.length !== 2 || !r.tools.includes(createTool) || !r.tools.includes(moveTool)) throw Error("Unverified availability.");
+      if (!schedulingReady(r)) throw Error("Unverified availability.");
       update({ ready: true, phase: "idle" });
       if (key) await recover();
     }).then(() => { if (state.phase === "loading") update({ phase: "unavailable" }); }),

@@ -1,5 +1,15 @@
 # PENTA host integration status — 5 November 2026
 
+## Shared conversational workspace — 15 November 2026
+
+The Academy Owner/Admin PENTA composer now supports verified learner and
+batch lookup with in-session follow-up, existing protected finance reads and
+inline scheduling with separate approval and receipt recovery. The browser
+and SQL verification covers the guided preview. Private-model evaluation
+and the approved eligible outcome set are still required to score 90%.
+
+[Shared conversation verification](QA/REPORTS/PENTA_SHARED_CONVERSATION_2026-11-15.md) · [Mini evaluation handoff](QA/HANDOFF/PENTA_MINI_CONVERSATION_EVALUATION_2026-11-15.md)
+
 ## Backend integration sequence — 10 November 2026
 
 The Academy Desk host and Manual release work can advance in parallel. Host

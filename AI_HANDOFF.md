@@ -1,5 +1,20 @@
 # Academy Desk handoff
 
+## PENTA shared conversation — 15 November 2026
+
+- [x] The verified Admin/Owner composer handles student and batch lookup,
+  clarification and follow-up, finance reads and protected class scheduling.
+- [x] Verified an Admin scheduling receipt through a shared chat reload with
+  no repeated execution. Retained Owner lost-response recovery.
+- [x] Exact-lock frontend build, 16 client tests, 7 live browser groups and
+  95 native SQL groups passed. Both original PENTA services were restored.
+- [ ] Next with Sol High is actual private learner lookup qualification
+  under the existing model-load boundary. Teacher attendance remains the
+  next separate portal integration. The 90% score and six critical
+  production gates remain open.
+
+[Shared conversation verification](QA/REPORTS/PENTA_SHARED_CONVERSATION_2026-11-15.md) · [Mini evaluation handoff](QA/HANDOFF/PENTA_MINI_CONVERSATION_EVALUATION_2026-11-15.md)
+
 ## Live PENTA class scheduling and rescheduling — 15 November 2026
 
 - [x] Connected the C43 host to the Academy Admin and Owner PENTA workspace.

@@ -1,5 +1,16 @@
 # Academy Desk shared integration tracker
 
+## PENTA shared conversation — 15 November 2026
+
+- [x] Desktop extended the existing verified Admin/Owner composer using
+  the current student, batch, finance and C43 scheduling endpoints.
+- [x] Browser and disposable SQL verified lookup follow-up, scoped audits,
+  finance reads and inline class review and receipt recovery.
+- [ ] Cloud can reuse this checkpoint for the next role-scoped outcome.
+  The private Mini evaluation has a separate handoff.
+
+[Shared conversation verification](QA/REPORTS/PENTA_SHARED_CONVERSATION_2026-11-15.md)
+
 ## Live PENTA class scheduling and rescheduling — 15 November 2026
 
 - [x] Desktop connected the C43 scheduling host, with no remaining Cloud

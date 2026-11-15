@@ -67,7 +67,7 @@ export default function RolePentaEntry({ workspace }: { workspace: RoleWorkspace
       {state === "verified" && financeAcademy
         ? <FinanceChat key={financeAcademy} academyId={financeAcademy} fallback={fallback} />
         : fallback}
-      {workspace === "AcademyAdmin" && state === "verified" && <section className={styles.panel} aria-labelledby="protected-workflows-title">
+      {financeAcademy && state === "verified" && <section className={styles.panel} aria-labelledby="protected-workflows-title">
         <h2 id="protected-workflows-title">Protected workflows</h2>
         <p>Protected workflows check the host before opening a private draft. Availability and approval remain controlled by your academy. A qualified AI model is not connected.</p>
         <nav aria-label="Protected workflows"><Link className={styles.open} href="/penta/enrollments">Enrollment assistant</Link>{" "}<Link className={styles.open} href="/penta/onboarding">Student onboarding</Link>{" "}<Link className={styles.open} href="/penta/teachers/chat">Teacher onboarding</Link>{" "}<Link className={styles.open} href="/penta/scheduling">Class scheduling</Link></nav>
