@@ -31,6 +31,7 @@ public sealed class PentaController(PentaPilotPolicy policy, PentaExecutionServi
     }
 
     [HttpGet("batch-search")]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public async Task<ActionResult<PentaBatchSearchResult>> BatchSearch(Guid academyId,
         [FromQuery] string? q, CancellationToken token)
     {

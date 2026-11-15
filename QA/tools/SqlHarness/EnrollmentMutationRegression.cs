@@ -211,6 +211,8 @@ internal static partial class SqlHarnessEntryPoint
         Console.WriteLine($"PASS: ENROLLMENTSHARED all {count} real SQL/HTTP/service cases;15 guarded mixed admission races, no model dispatch.");
         if (Environment.GetEnvironmentVariable("QA_PENTA_ENROLLMENT_BROWSER") == "1")
             await ServePentaBrowserAsync(manifest, academy, enrollment: true);
+        else if (Environment.GetEnvironmentVariable("QA_PENTA_ENROLLMENT_LIFECYCLE_BROWSER") == "1")
+            await ServePentaBrowserAsync(manifest, academy, lifecycle: true);
     }
     private sealed class EnrollmentSharedAuditFault(string action):SaveChangesInterceptor{
         public int Hits{get;private set;}

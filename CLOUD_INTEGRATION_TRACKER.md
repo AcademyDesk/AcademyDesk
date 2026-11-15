@@ -1,12 +1,20 @@
 # Academy Desk shared integration tracker
 
+## Live PENTA enrollment pause and transfer — 15 November 2026
+
+- [x] Desktop integrated 14 exact C41 paths and verified pause, transfer
+  and recovery with live Identity, browser and SQL.
+- [ ] Broader lifecycle-only native cases remain open.
+  Cloud C43 `38cef8f` is the separate class scheduling host.
+
+[Live lifecycle evidence](QA/REPORTS/PENTA_ENROLLMENT_LIFECYCLE_LIVE_2026-11-15.md)
+
 ## Live PENTA enrollment approval and recovery — 12 November 2026
 
 - [x] Desktop accepted the C37/C39 create browser workflow against
   real SQL. Approval and execution recover the same operation with GET.
-- [ ] Desktop next owns the combined C40/C41 lifecycle SQL and browser
-  acceptance. C42 at `a19d5e2` recorded its cloud SQL image CDN blocker.
-  Cloud C43 at `38cef8f` covers the separate class scheduling host.
+- [x] Desktop verified the C40/C41 pause and transfer subset in the
+  following checkpoint. C42 at `a19d5e2` records the Cloud SQL image blocker.
 
 [Live enrollment evidence](QA/REPORTS/PENTA_ENROLLMENT_LIVE_BROWSER_2026-11-12.md)
 
