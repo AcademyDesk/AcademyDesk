@@ -1,5 +1,36 @@
 # C45 — scoped Student/Guardian conversation
 
+## Claim released — Desktop delivered the same workflow
+
+At the final pre-publication check, Desktop advanced to
+`48f735f9f7189879796b3dca9d866831a3d067aa`, delivering its own Student/Guardian
+conversation and C29 guardian authorization integration. Its source-bound report
+`QA/REPORTS/PENTA_PORTAL_CONVERSATION_LIVE_2026-11-15.md` records36 focused API,
+12 prompt/client,61 native SQL checks and3 live browser groups, including real
+Manual revocation against an existing Guardian bearer.
+
+All C45 implementation claims below are RELEASED. No duplicate host, UI mount
+or replacement of Desktop's portal source was pushed. C45's tested comparison
+is preserved locally at commit `follows in local Git history` on
+`codex/private-c45-portal-comparison-20261115` and in
+`/workspace/c45-learner-conversation-20261115/c45-comparison-only.zip`, with
+its SHA256 receipt. It is not an integration packet. Earlier C43 and C44 remain
+preserved. This remote branch contains only the claim and this reconciliation.
+
+Cloud next: C46 will claim only the completed Desktop portal response validator
+and separate contract tests, with no API, SQL harness, role entry, composer or
+Platform Owner edits. Desktop's latest next task is the separate Platform Owner
+conversation. Check fresh ownership before further workflow implementation.
+
+GitHub access and feature pushes now work. Read-only exact CI checks found no
+Actions run at Academy `e481a770` (only successful Vercel preview/status checks).
+Mini Tests failed at `14c11fcf`, Desktop return `e55e5b96`, and launch `933a7bf4`;
+the launch branch's separate no-model protected-host workflow passed. Detailed
+job logs could not be fetched because their redirect is policy-blocked403.
+No model qualification, production qualification or90% result is established.
+
+Keep the original claim below as history; it is superseded by this release.
+
 Claimed 15 November 2026 (Asia/Calcutta), Cloud / Sol High.
 Base: `e481a7705618b6135f0fd06f4929dce06f0422bf`, Desktop's current
 `codex/penta-host-integration-20261030` tip verified by fetch. Both checkouts
