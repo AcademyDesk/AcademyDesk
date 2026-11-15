@@ -1,5 +1,19 @@
 # Academy Desk handoff
 
+## Live PENTA Teacher attendance — 15 November 2026
+
+- [x] Connected the Teacher composer to scoped class and active roster search,
+  exact confirmation, queued notice and receipt recovery.
+- [x] Passed the frontend and API builds, 12 prompt/client tests, 57 native
+  checks and 3 live browser groups. SQL verified one mark, notice and audit.
+- [ ] Next with Sol High is a scoped Student/Guardian conversation using
+  current learner linkage. The first private Mini qualification is still
+  pending within the existing model-load boundary.
+- [ ] The 90% target is unmeasured. Six critical records and exact release
+  candidate CI, images, staging recovery and device acceptance remain open.
+
+[Teacher attendance evidence](QA/REPORTS/PENTA_TEACHER_ATTENDANCE_LIVE_2026-11-15.md) · [Production acceptance](QA/HANDOFF/PENTA_PRODUCTION_ACCEPTANCE_2026-11-15.md)
+
 ## PENTA shared conversation — 15 November 2026
 
 - [x] The verified Admin/Owner composer handles student and batch lookup,
@@ -9,8 +23,8 @@
 - [x] Exact-lock frontend build, 16 client tests, 7 live browser groups and
   95 native SQL groups passed. Both original PENTA services were restored.
 - [ ] Next with Sol High is actual private learner lookup qualification
-  under the existing model-load boundary. Teacher attendance remains the
-  next separate portal integration. The 90% score and six critical
+  under the existing model-load boundary. The following checkpoint verified
+  the guided Teacher attendance flow. The 90% score and six critical
   production gates remain open.
 
 [Shared conversation verification](QA/REPORTS/PENTA_SHARED_CONVERSATION_2026-11-15.md) · [Mini evaluation handoff](QA/HANDOFF/PENTA_MINI_CONVERSATION_EVALUATION_2026-11-15.md)

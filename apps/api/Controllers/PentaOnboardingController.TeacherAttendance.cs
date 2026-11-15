@@ -6,7 +6,32 @@ namespace AcademyDesk.Api.Controllers;
 
 public sealed partial class PentaOnboardingController
 {
-    private const string TeacherAttendanceDraftRoute = "~/api/teacher/penta/attendance/sessions/{sessionId:guid}/drafts/{requestId:guid}";
+    private const string TeacherAttendanceRoot = "~/api/teacher/penta/attendance";
+    private const string TeacherAttendanceDraftRoute = TeacherAttendanceRoot + "/sessions/{sessionId:guid}/drafts/{requestId:guid}";
+
+    [HttpGet(TeacherAttendanceRoot + "/readiness")]
+    public Task<ActionResult> TeacherAttendanceReadiness([FromServices] PentaTeacherAttendanceWorkflow workflow,
+        CancellationToken token) => Safely(async () =>
+        {
+            var result = await workflow.ReadinessAsync(User, token);
+            return ToResult(result.Status, result.Value, result.Error);
+        }, "teacher attendance readiness", workflow.Enabled);
+
+    [HttpGet(TeacherAttendanceRoot + "/sessions")]
+    public Task<ActionResult> TeacherAttendanceSessions([FromQuery] string? q, [FromServices] PentaTeacherAttendanceWorkflow workflow,
+        CancellationToken token) => Safely(async () =>
+        {
+            var result = await workflow.SessionsAsync(User, q, token);
+            return ToResult(result.Status, result.Value, result.Error);
+        }, "teacher attendance session search", workflow.Enabled);
+
+    [HttpGet(TeacherAttendanceRoot + "/sessions/{sessionId:guid}/roster")]
+    public Task<ActionResult> TeacherAttendanceRoster(Guid sessionId, [FromQuery] string? q,
+        [FromServices] PentaTeacherAttendanceWorkflow workflow, CancellationToken token) => Safely(async () =>
+        {
+            var result = await workflow.RosterAsync(User, sessionId, q, token);
+            return ToResult(result.Status, result.Value, result.Error);
+        }, "teacher attendance roster search", workflow.Enabled);
 
     [HttpPut(TeacherAttendanceDraftRoute), RequestSizeLimit(5 * 1024)]
     public Task<ActionResult> PrepareTeacherAttendance(Guid sessionId, Guid requestId, [FromBody] JsonElement input,

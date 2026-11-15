@@ -21,8 +21,17 @@ public sealed class TeacherAttendanceService(AcademyDeskDbContext db, IdentityDb
     private static readonly string[] Statuses = ["Present", "Absent"];
     private const string NoticeTitle = "Attendance updated";
 
-    internal async Task<TeacherAttendanceOutcome<T>> InAssignedSessionAsync<T>(ClaimsPrincipal principal, Guid sessionId,
-        Func<TeacherAttendanceActor, ClassSession, Task<TeacherAttendanceOutcome<T>>> operation, CancellationToken token)
+    internal Task<TeacherAttendanceOutcome<T>> InAssignedSessionAsync<T>(ClaimsPrincipal principal, Guid sessionId,
+        Func<TeacherAttendanceActor, ClassSession, Task<TeacherAttendanceOutcome<T>>> operation, CancellationToken token) =>
+        InTeacherScopeAsync<T>(principal, async actor =>
+        {
+            var session = await db.ClassSessions.AsNoTracking().SingleOrDefaultAsync(x =>
+                x.Id == sessionId && x.AcademyId == actor.AcademyId && x.TeacherId == actor.TeacherId, token);
+            return session is null ? new(403) : await operation(actor, session);
+        }, token);
+
+    internal async Task<TeacherAttendanceOutcome<T>> InTeacherScopeAsync<T>(ClaimsPrincipal principal,
+        Func<TeacherAttendanceActor, Task<TeacherAttendanceOutcome<T>>> operation, CancellationToken token)
     {
         var initial = await users.GetUserAsync(principal);
         if (initial is not { IsActive: true, IsPlatformOwner: false, AcademyId: { } academy, TeacherId: not null })
@@ -42,10 +51,7 @@ public sealed class TeacherAttendanceService(AcademyDeskDbContext db, IdentityDb
             !await db.Teachers.AnyAsync(x => x.Id == teacher && x.AcademyId == academy && x.IsActive, token))
             return new(403);
 
-        var session = await db.ClassSessions.AsNoTracking().SingleOrDefaultAsync(x =>
-            x.Id == sessionId && x.AcademyId == academy && x.TeacherId == teacher, token);
-        if (session is null) return new(403);
-        var result = await operation(new(actorId, academy, teacher, stamp), session);
+        var result = await operation(new(actorId, academy, teacher, stamp));
         if (result.Status < 300 && transaction is not null) await transaction.CommitAsync(token);
         return result;
     }

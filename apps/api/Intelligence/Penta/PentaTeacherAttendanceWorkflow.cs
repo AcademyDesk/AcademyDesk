@@ -14,7 +14,7 @@ public sealed record PentaTeacherAttendanceReceipt(Guid Id, Guid AuditId, Guid A
 public sealed record PentaTeacherAttendanceDraft(Guid RequestId, Guid ClassSessionId, Guid BatchId, DateTime SessionStartUtc,
     string Status, DateTime ExpiresAtUtc, TeacherAttendanceChange Change, string PayloadHash, PentaTeacherAttendanceReceipt? Receipt);
 
-public sealed class PentaTeacherAttendanceWorkflow(AcademyDeskDbContext db, TeacherAttendanceService attendance, PentaPilotPolicy policy,
+public sealed partial class PentaTeacherAttendanceWorkflow(AcademyDeskDbContext db, TeacherAttendanceService attendance, PentaPilotPolicy policy,
     IConfiguration configuration, IHostEnvironment environment, IDataProtectionProvider protection, TimeProvider clock)
 {
     internal const string ConfirmIntent = "ConfirmTeacherAttendanceAndQueueInApp";
@@ -153,7 +153,8 @@ public sealed class PentaTeacherAttendanceWorkflow(AcademyDeskDbContext db, Teac
     private static Slot SessionSlot(ClassSession session) => new(session.Id, session.BatchId, session.StartUtc, session.EndUtc, session.Status);
     private static string Digest<T>(T value) => Convert.ToHexStringLower(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(value)));
     private static TeacherAttendanceOutcome<PentaTeacherAttendanceDraft> View(int code, Guid requestId, PentaOnboardingDraft row, Body body) =>
-        new(code, new(requestId, body.Session.Id, body.Session.BatchId, body.Session.StartUtc, row.Status, row.ExpiresAtUtc,
+        new(code, new(requestId, body.Session.Id, body.Session.BatchId, DateTime.SpecifyKind(body.Session.StartUtc, DateTimeKind.Utc), row.Status,
+            DateTime.SpecifyKind(row.ExpiresAtUtc, DateTimeKind.Utc),
             body.Change, Digest(new { body.Session, body.Change }), body.Receipt));
     private static TeacherAttendanceOutcome<PentaTeacherAttendanceDraft> Changed() =>
         new(409, Error: "The reviewed attendance could not be verified. Review the current attendance before preparing a new draft.");

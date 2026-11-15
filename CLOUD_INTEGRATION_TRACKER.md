@@ -1,5 +1,15 @@
 # Academy Desk shared integration tracker
 
+## Live PENTA Teacher attendance — 15 November 2026
+
+- [x] Desktop verified Teacher-scoped search, active roster, confirmation and
+  lost-response recovery with the built browser and disposable SQL.
+- [x] C35 remains the separate delegated Academy Admin attendance packet.
+- [ ] Check current Cloud ownership before claiming the Student/Guardian
+  conversation. Production acceptance remains tracked separately.
+
+[Teacher attendance evidence](QA/REPORTS/PENTA_TEACHER_ATTENDANCE_LIVE_2026-11-15.md)
+
 ## PENTA shared conversation — 15 November 2026
 
 - [x] Desktop extended the existing verified Admin/Owner composer using

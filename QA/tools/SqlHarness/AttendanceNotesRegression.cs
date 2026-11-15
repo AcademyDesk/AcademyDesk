@@ -91,5 +91,7 @@ internal static partial class SqlHarnessEntryPoint
         if(count!=16)throw new InvalidOperationException("Unexpected attendance case count: "+count);
         Console.WriteLine("ATTENDANCENOTES REGRESSION PASS:16 cases; ten actual TSX payloads to real Identity/HTTP/fresh SQL/GET, optional null/clear/trim/unicode/500 characters, session independence and five no-write denials. Browser/device acceptance pending.");
         await VerifyAssignedTeacherAttendanceAsync(factory, manifest, academy, foreign, batch, student);
+        if (Environment.GetEnvironmentVariable("QA_PENTA_TEACHER_ATTENDANCE_BROWSER") == "1")
+            await ServePentaBrowserAsync(manifest, academy, teacherAttendance: true);
     }
 }
