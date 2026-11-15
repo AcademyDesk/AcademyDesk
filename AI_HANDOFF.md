@@ -1,5 +1,20 @@
 # Academy Desk handoff
 
+## Live PENTA class scheduling and rescheduling — 15 November 2026
+
+- [x] Connected the C43 host to the Academy Admin and Owner PENTA workspace.
+- [x] Verified Admin Offline creation and Owner Hybrid rescheduling through
+  explicit approval, execution and GET receipt recovery on disposable SQL.
+- [x] Passed the exact-lock Next build, 9 client tests, 4 live browser groups
+  and 95 native scheduling groups. Both local PENTA services were restored.
+- [ ] Next with Sol High is the Teacher attendance pilot. Reuse the existing
+  assigned-teacher workflow and verify the scope, confirmation and receipt
+  through the Teacher portal. Make-up scheduling remains a separate flow.
+- [ ] Physical devices, private-model qualification, all-role coverage and
+  the six critical production gates remain open.
+
+[Live scheduling evidence](QA/REPORTS/PENTA_CLASS_SCHEDULING_LIVE_2026-11-15.md)
+
 ## PENTA enrollment lifecycle and class scheduling SQL — 15 November 2026
 
 - [x] Imported the seven exact C43 files at `38cef8f` and verified the
@@ -8,8 +23,8 @@
   and SQL. The earlier live Paused and Transfer evidence still applies.
 - [x] 317 focused API tests, 132 enrollment and 95 scheduling native groups
   passed. Both original PENTA services were restored.
-- [ ] Next with Sol High is the live scheduling conversation, approval and
-  recovery UI. Teacher attendance has separate portal acceptance.
+- [x] The next checkpoint verified live scheduling, approval and recovery.
+  Teacher attendance has separate portal acceptance.
 - [ ] Private model qualification, all-role coverage and the six critical
   production gates remain open.
 

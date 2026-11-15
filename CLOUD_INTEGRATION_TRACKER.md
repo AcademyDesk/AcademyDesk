@@ -1,13 +1,23 @@
 # Academy Desk shared integration tracker
 
+## Live PENTA class scheduling and rescheduling — 15 November 2026
+
+- [x] Desktop connected the C43 scheduling host, with no remaining Cloud
+  scheduling UI branch open when this checkpoint was taken.
+- [x] Real Identity, disposable SQL and the built PENTA browser verified
+  Academy Admin schedule and Owner reschedule, including receipt recovery.
+- [ ] Teacher attendance needs a separate portal acceptance packet. Check
+  current Cloud ownership before editing the Teacher paths.
+
+[Live scheduling evidence](QA/REPORTS/PENTA_CLASS_SCHEDULING_LIVE_2026-11-15.md)
+
 ## PENTA enrollment lifecycle and class scheduling SQL — 15 November 2026
 
 - [x] Desktop verified all six lifecycle statuses on SQL and accepted the
   seven exact Cloud C43 files at `38cef8f`.
 - [x] C43 protected scheduling and rescheduling passed native HTTP/SQL
   verification, including audit rollback and concurrent receipt recovery.
-- [ ] Connected scheduling UI and live browser acceptance remain open.
-  Check the active Cloud branch before claiming the UI.
+- [x] The next desktop checkpoint connected and verified the scheduling UI.
 
 [Desktop SQL verification](QA/REPORTS/PENTA_ENROLLMENT_AND_SCHEDULING_SQL_2026-11-15.md)
 

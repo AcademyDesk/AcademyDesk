@@ -77,5 +77,7 @@ internal static partial class SqlHarnessEntryPoint
         Console.WriteLine("SCHEDULEDEFAULTS REGRESSION PASS:18 cases; twelve actual TSX payloads to real Identity/HTTP/fresh SQL/GET, current teacher/branch defaults and deliberate overrides, unchanged null inheritance and batch rows, five no-write person/batch/route/auth denials; browser/device pending.");
         await VerifyClassSchedulingAsync(factory, manifest, academy, foreign);
         await VerifyPentaClassBrowserAsync(factory, manifest, academy, foreign);
+        if (Environment.GetEnvironmentVariable("QA_PENTA_CLASS_SCHEDULING_BROWSER") == "1")
+            await ServePentaBrowserAsync(manifest, academy, scheduling: true);
     }
 }
