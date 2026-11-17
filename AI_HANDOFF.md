@@ -1,5 +1,20 @@
 # Academy Desk handoff
 
+## C49 preview scope and live recipient revocation — 17 November 2026
+
+- [x] Integrated C49 from cloud `ed252d3`. The 90 media tests, 16 actual
+  component browser groups and locked build passed.
+- [x] Live protected recording, preview, cancellation and exact native
+  download passed. An Admin revocation blocked the Guardian's original
+  bearer reads, fresh ticket request and separately pre-issued ticket.
+- [x] Ordinary hosted verification for C48 `2b28699` passed. The paired
+  job still needs the read-only private Core credential.
+- [ ] Continue with source-bound C49 hosted CI and the outstanding physical
+  devices, staging and private Mini qualifications. Keep Sol High.
+
+[Source-bound media evidence](QA/REPORTS/PENTA_INTEGRATION_RELEASE_RETEST_2026-11-17.md#c49-preview-lifetime-and-live-guardian-revocation)
+
+
 ## C48 live private media and local API rollback — 17 November 2026
 
 - [x] Integrated Cloud C48 at `67f24f7` and passed 90 media client tests.

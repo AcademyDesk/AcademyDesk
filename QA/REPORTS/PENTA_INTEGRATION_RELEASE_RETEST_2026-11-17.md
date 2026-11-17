@@ -190,3 +190,35 @@ covered a small Blob-backed recording. The combined evidence leaves physical
 iOS/Android, larger real storage transfers, broader interruption/revocation and
 production restore acceptance open. BUG-SEC-0001 and the other five critical
 records stay open.
+
+## C49 preview lifetime and live Guardian revocation
+
+Integrated the three C49 files at
+`ed252d3d631b85fc1374fa2e6e19f4983716e3a0` onto `2b28699`.
+The independent hosted verification for `2b28699` passed all 2,493 API
+tests, 26 SQL modules, 75 private Blob assertions and the frontend,
+production export, browser and API image checks. Its paired Core job
+remained blocked by the repository secret prerequisite.
+
+[C48 hosted run](https://github.com/AcademyDesk/AcademyDesk/actions/runs/44058511583)
+
+The C49 integration passed 62 private-media boundary and 28 retained media
+client tests. All 16 actual component/Chromium scenarios passed at 390 and
+1280 pixels, including file changes, abort, close, remount and native target
+cleanup. The locked Next.js production build and TypeScript checks passed.
+
+The Desktop live run `d2bc234d32b048ef8f688a7d2b496c04`, disposable SQL run
+`1c898532f1f24d879c3a1cb797403b8e`, again passed actual Teacher recording
+and upload, Student preview and cancellation, a 206 response with the exact
+authorized byte range, and byte-exact Student and Guardian native downloads.
+An authorized pre-revocation ticket downloaded the exact recording as a
+positive control. The Admin then revoked the Guardian's only linked learner.
+The original Guardian bearer got 404 on HEAD, GET and a new ticket request.
+A separate ticket issued before revocation was also denied without the file.
+This used real Identity, SQL and a private Azurite fixture. The runner
+disposed the owned fixture and restored both original PENTA services.
+
+Same-instance component replacement was exercised at the browser fixture,
+while the live portal run covered cancellation/retry, link revocation and
+download authorization. Physical iOS/Android, larger real-storage
+transfers, staging restore and all six critical records are still open.
