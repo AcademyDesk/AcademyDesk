@@ -1,5 +1,22 @@
 # Academy Desk handoff
 
+## Hosted candidate verification and private Core access — 17 November 2026
+
+- [x] Hosted verification on `84c54ab` passed the API regressions, frontend
+  install/audit, typecheck and lint. The private paired checkout then failed
+  with Repository not found. The exact Mini SHA is present in its private repo.
+- [x] Separated the real paired foundation/transport check into its own
+  required job. Ordinary SQL, private media, browser and container checks can
+  run independently. Validated the job wiring and 15 release guard tests.
+- [ ] The paired job needs the existing `PENTA_SOURCE_READ_TOKEN` secret
+  configured with read-only access to AcademyDesk/PentaMini. The reusable
+  deployment verification still requires both jobs to pass.
+- [ ] Continue exact candidate CI and original-byte Mini prerequisite checks
+  with Sol High. All six critical records, staging, devices and the private
+  model evaluation are still open.
+
+[Hosted failure and follow-up](QA/REPORTS/PENTA_INTEGRATION_RELEASE_RETEST_2026-11-17.md#hosted-checkout-failure)
+
 ## Integration candidate acceptance and frontend security — 17 November 2026
 
 - [x] Passed ten local finance, session, private media and recovery modules.

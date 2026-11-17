@@ -81,3 +81,24 @@ and its built artifacts need their own observed results.
 The guided portal evidence does not yet measure the 90% conversation target.
 Mini/Plus/Pro qualification remains open and Ultra is deferred. The owner stop
 before loading the prepared checkpoint remains in effect.
+
+## Hosted checkout failure
+
+[Actions run 44021358007](https://github.com/AcademyDesk/AcademyDesk/actions/runs/44021358007)
+for `84c54ab81e424eda2cb7e9f2f532ad010199101f` passed the API regression
+and npm install/audit/type/lint steps. The repo-scoped credential could
+not fetch the private paired Core repository. Checkout logged Repository
+not found. An authorized read-only GitHub probe confirmed PentaMini is
+private and its pinned commit `c3c61b9ef3f239035c8b8f46649c66997e98f2b6`
+exists. The repository secret metadata lookup returned 404.
+
+The workflow now runs standard verification separately from the paired
+PENTA foundation job. The paired job fails with a specific access message
+when `PENTA_SOURCE_READ_TOKEN` is unavailable. It checks the exact private
+Core SHA and keeps credentials out of the local Git config. The paired
+foundation and loopback transport checks remain required. The reusable
+deployment workflow forwards only the named checkout secret and still
+depends on the entire verification result before the production guard.
+No repository settings or credential values were changed.
+
+[GitHub checkout scope](https://github.com/actions/checkout#checkout-multiple-repos-private)

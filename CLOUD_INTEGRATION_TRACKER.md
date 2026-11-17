@@ -1,5 +1,19 @@
 # Academy Desk shared integration tracker
 
+## Hosted verification lane split — 17 November 2026
+
+- [x] The original candidate Actions run reached the private paired checkout
+  after passing its API and frontend preflight, then received Repository
+  not found. The pinned Mini commit is reachable with repo access.
+- [x] The candidate gate now runs the private Core and independent
+  AcademyDesk checks as separate required jobs. No duplicate Cloud work
+  was applied, and no GitHub access setting was changed.
+- [ ] Record individual job results. The paired runner needs
+  `PENTA_SOURCE_READ_TOKEN` scoped to read private PentaMini contents.
+  All six production records and all model qualification gates remain open.
+
+[Hosted verification evidence](QA/REPORTS/PENTA_INTEGRATION_RELEASE_RETEST_2026-11-17.md#hosted-checkout-failure)
+
 ## Local C46 integration and release retest — 17 November 2026
 
 - [x] Cloud C45 released its duplicate implementation at `bbc9964`. Desktop

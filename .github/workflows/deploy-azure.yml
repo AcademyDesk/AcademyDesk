@@ -15,6 +15,8 @@ concurrency:
 jobs:
   verify:
     uses: ./.github/workflows/verify.yml
+    secrets:
+      PENTA_SOURCE_READ_TOKEN: ${{ secrets.PENTA_SOURCE_READ_TOKEN }}
   deploy:
     needs: verify
     if: github.ref == 'refs/heads/main'

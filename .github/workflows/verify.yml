@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main]
   workflow_call:
+    secrets:
+      PENTA_SOURCE_READ_TOKEN:
+        description: Read-only contents access to the private PentaMini repository
+        required: false
   workflow_dispatch:
 
 permissions:
@@ -23,7 +27,6 @@ jobs:
     env:
       DOTNET_CLI_TELEMETRY_OPTOUT: '1'
       DOTNET_NOLOGO: '1'
-      QA_PENTA_BRIDGE_SOURCE: ${{ github.workspace }}/.build-check/paired-mini
     steps:
       - uses: actions/checkout@v4
         with:
@@ -63,16 +66,6 @@ jobs:
           npx next typegen
           npx tsc --noEmit
           npm run lint
-      - name: Checkout pinned paired Core source for scripted host transport
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-        with:
-          repository: AcademyDesk/PentaMini
-          ref: c3c61b9ef3f239035c8b8f46649c66997e98f2b6
-          path: .build-check/paired-mini
-          token: ${{ secrets.PENTA_SOURCE_READ_TOKEN || github.token }}
-          persist-credentials: false
-      - name: Prepare pure Core bridge fixture dependencies
-        run: python -m pip install -r QA/tools/requirements-penta-bridge.txt
       - name: Compile existing guarded SQL harness
         run: >-
           dotnet build QA/tools/SqlHarness/SqlHarness.csproj --nologo
@@ -86,8 +79,8 @@ jobs:
         shell: pwsh
         run: |
           $harness = Join-Path $PWD '.build-check/ci-sql/bin/SqlHarness/debug/SqlHarness.dll'
-          foreach ($module in @('Reconciliation', 'CollectionRace', 'Adjustment', 'AdjustmentRace', 'Payroll', 'Transition', 'Consumers', 'Access', 'EnrollmentShared', 'TeacherCreationShared', 'StudentOnboardingShared', 'PentaHostMigration', 'PentaFoundation', 'PentaOnboardingProtected', 'PentaTeacherProtected', 'FinanceIntegrity', 'RecordIntegrity', 'ClassMedia', 'CommunicationRoundtrip', 'WorkItemIntegrity', 'ExportSecurity', 'RoleReplacement', 'RoleRevocation', 'SessionRevocationRepair', 'SessionRefresh', 'RefreshConcurrency', 'Recovery')) {
-            $env:QA_PENTA_HOST_SECURITY = if ($module -eq 'PentaFoundation') { '1' } else { '' }
+          foreach ($module in @('Reconciliation', 'CollectionRace', 'Adjustment', 'AdjustmentRace', 'Payroll', 'Transition', 'Consumers', 'Access', 'EnrollmentShared', 'TeacherCreationShared', 'StudentOnboardingShared', 'PentaHostMigration', 'PentaOnboardingProtected', 'PentaTeacherProtected', 'FinanceIntegrity', 'RecordIntegrity', 'ClassMedia', 'CommunicationRoundtrip', 'WorkItemIntegrity', 'ExportSecurity', 'RoleReplacement', 'RoleRevocation', 'SessionRevocationRepair', 'SessionRefresh', 'RefreshConcurrency', 'Recovery')) {
+            $env:QA_PENTA_HOST_SECURITY = ''
             $env:QA_PENTA_MINI = '0'
             $log = if ($module -eq 'CommunicationRoundtrip') {
               'QA/EVIDENCE/logs/phase-2b-communication-roundtrip-sql.log'
@@ -192,3 +185,65 @@ jobs:
             .build-check/assessment-browser/
             QA/EVIDENCE/logs/phase-2b-communication-roundtrip-ui.log
             QA/EVIDENCE/logs/phase-2b-communication-roundtrip-sql.log
+
+  paired_core:
+    name: PENTA foundation and private Core transport
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: '1'
+      QA_PENTA_BRIDGE_SOURCE: ${{ github.workspace }}/.build-check/paired-mini
+      QA_PENTA_CORE_SHA: c3c61b9ef3f239035c8b8f46649c66997e98f2b6
+      QA_PENTA_HOST_SECURITY: '1'
+      QA_PENTA_MINI: '0'
+    steps:
+      - name: Require access to pinned private Core source
+        env:
+          PENTA_SOURCE_READ_TOKEN: ${{ secrets.PENTA_SOURCE_READ_TOKEN }}
+        run: |
+          if [ -z "$PENTA_SOURCE_READ_TOKEN" ]; then
+            echo "::error::Configure PENTA_SOURCE_READ_TOKEN with read-only contents access to AcademyDesk/PentaMini."
+            exit 1
+          fi
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Checkout pinned paired Core source for scripted host transport
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          repository: AcademyDesk/PentaMini
+          ref: ${{ env.QA_PENTA_CORE_SHA }}
+          path: .build-check/paired-mini
+          token: ${{ secrets.PENTA_SOURCE_READ_TOKEN }}
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.403'
+      - name: Prepare pure Core bridge fixture dependencies
+        run: |
+          mkdir -p .build-check/paired-ci
+          git rev-parse HEAD > .build-check/paired-ci/source-commit.txt
+          git -C "$QA_PENTA_BRIDGE_SOURCE" rev-parse HEAD > .build-check/paired-ci/core-commit.txt
+          test "$(cat .build-check/paired-ci/core-commit.txt)" = "$QA_PENTA_CORE_SHA"
+          python -m pip install -r QA/tools/requirements-penta-bridge.txt
+      - name: Compile existing guarded SQL harness
+        run: >-
+          dotnet build QA/tools/SqlHarness/SqlHarness.csproj --nologo
+          --artifacts-path .build-check/paired-sql
+      - name: Verify actual scripted Core transport and foundation on SQL
+        shell: pwsh
+        run: |
+          $harness = Join-Path $PWD '.build-check/paired-sql/bin/SqlHarness/debug/SqlHarness.dll'
+          & ./QA/tools/SqlHarness/Run-ReconciledPayment.ps1 -Module PentaFoundation -HarnessPath $harness 2>&1 |
+            Tee-Object -FilePath '.build-check/paired-ci/penta-foundation-sql.log'
+      - name: Ensure paired verification did not modify tracked source
+        run: git diff --exit-code
+      - name: Preserve paired Core verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: paired-core-verification-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 7
+          if-no-files-found: ignore
+          path: .build-check/paired-ci/
