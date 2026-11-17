@@ -2,7 +2,15 @@
 import { useEffect, useRef, useState } from "react";
 import { boundedMaterialBlob, externalMaterialUrl, handoffNativeMaterial, materialInfo, nativeMaterialTicket, PREVIEW_BYTES, previewMime, privateMaterialPath } from "@/lib/private-material";
 
-export function PrivateMaterialActions({ url, title }: { url: string; title: string }) {
+type MaterialProps = { url: string; title: string };
+
+export function PrivateMaterialActions(props: MaterialProps) {
+  // Each file owns its preview, pending action and native targets. Replacing
+  // the URL must discard that lifetime before displaying the replacement.
+  return <PrivateFileActions key={props.url} {...props} />;
+}
+
+function PrivateFileActions({ url, title }: MaterialProps) {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [preview, setPreview] = useState<{ url: string; mime: string } | null>(null);
