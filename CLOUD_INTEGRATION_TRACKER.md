@@ -1,5 +1,20 @@
 # Academy Desk shared integration tracker
 
+## Local C46 integration and release retest — 17 November 2026
+
+- [x] Cloud C45 released its duplicate implementation at `bbc9964`. Desktop
+  integrated only the completed C46 learner validator at `17e50d8`, with
+  live browser/SQL validation and a malformed reply regression.
+- [x] Cloud C47 at `91132ef` has its own integrated test results and Mini
+  archive diagnosis. All seven directly named inputs are present on Desktop.
+  Original-byte verification and portable Mini retest are still pending.
+- [x] Desktop owns the Next.js 16.4.5 patch, lint dependency repair and
+  feature-branch CI trigger. The local PENTA services were restored.
+- [ ] Check exact hosted CI, complete linked critical and physical device
+  acceptance, and rehearse staging recovery. All six critical records stay open.
+
+[Desktop integration and security evidence](QA/REPORTS/PENTA_INTEGRATION_RELEASE_RETEST_2026-11-17.md)
+
 ## Live PENTA Platform Owner conversation — 15 November 2026
 
 - [x] Desktop verified separate platform health, onboarding and support reads.

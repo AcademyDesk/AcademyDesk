@@ -1,5 +1,17 @@
 # Academy Desk PENTA launch acceptance
 
+## Local release retest — 17 November 2026
+
+Ten bounded HTTP/SQL modules passed, including five regular and five adjusted
+collection races, payroll, session revocation, private media and six restore
+checks. The integrated C46 learner browser rejected an unexpected response
+field, suppressed the returned record and recovered on retry. The new Next.js
+security pin and lint dependency repair have a zero-finding lock audit.
+The exact hosted candidate, physical devices, staging and all six critical
+records still need acceptance.
+
+[Source-bound retest and remaining evidence](../REPORTS/PENTA_INTEGRATION_RELEASE_RETEST_2026-11-17.md)
+
 ## Measure conversation by verified outcomes
 
 The launch target is 90% of eligible first-academy outcomes completed through

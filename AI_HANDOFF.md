@@ -1,5 +1,20 @@
 # Academy Desk handoff
 
+## Integration candidate acceptance and frontend security — 17 November 2026
+
+- [x] Passed ten local finance, session, private media and recovery modules.
+  Both collection races passed 5/5 and six SQL restore checks passed.
+- [x] Integrated Cloud C46 and verified 50 focused client tests, 36 API tests,
+  61 native HTTP/SQL checks and four browser groups. Malformed learner
+  responses were refused and retry returned the verified result.
+- [x] Updated Next.js to 16.4.5 and repaired the separate lint dependency
+  advisory. The final lock audit reported zero vulnerabilities.
+- [ ] Continue with Sol High on exact hosted verification, critical and
+  physical device cases, staging recovery and the private Mini evaluation
+  prerequisites. All six critical records are open. The 90% target is unmeasured.
+
+[Local release retest](QA/REPORTS/PENTA_INTEGRATION_RELEASE_RETEST_2026-11-17.md)
+
 ## Live PENTA Platform Owner conversation — 15 November 2026
 
 - [x] Connected platform health, onboarding and support summaries under

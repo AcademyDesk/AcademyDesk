@@ -56,6 +56,23 @@ async function main() {
     assert.equal(await student.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true);
     console.log('PENTA PORTAL CASE Student next class and published unsubmitted due work PASS');
 
+    const classEndpoint = api + root + '/students/' + learner + '/next-class';
+    const malformedName = 'Malformed class result';
+    await student.route(classEndpoint, async route => {
+      const response = await route.fetch();
+      const valid = await response.json();
+      await route.fulfill({
+        response,
+        json: { ...valid, diagnostic: 'unexpected field', rows: [{ ...valid.rows[0], batchName: malformedName }] }
+      });
+    }, { times: 1 });
+    await ask(student, 'When is my next class?');
+    await studentChat.getByText('PENTA could not verify this information. Try again or open the Student Portal.').waitFor();
+    assert.equal(await studentChat.getByText(malformedName).count(), 0);
+    await ask(student, 'When is my next class?');
+    await studentChat.getByText(/PENTA Browser Piano/).waitFor();
+    console.log('PENTA PORTAL CASE malformed read is hidden and verified retry works PASS');
+
     const parentContext = await browser.newContext({ viewport: { width: 1440, height: 900 } });
     const { page: parent, account } = await login(parentContext, 'qa-penta-portal-guardian@example.invalid', '/portal/ai', 'Guardian');
     const chat = await ask(parent, 'Show outstanding fees');
@@ -96,7 +113,7 @@ async function main() {
     });
     assert.equal(own.status(), 200);
     console.log('PENTA PORTAL CASE current link revocation preserves sibling and Student access PASS');
-    console.log('PENTA PORTAL BROWSER SUMMARY 3 groups PASS');
+    console.log('PENTA PORTAL BROWSER SUMMARY 4 groups PASS');
   } finally { await browser.close(); }
 }
 main().catch(error => { console.error(error.message); process.exitCode = 1; });
