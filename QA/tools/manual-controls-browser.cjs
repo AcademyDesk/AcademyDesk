@@ -77,7 +77,12 @@ async function main(){
      if(['/api/portal/announcements','/api/portal/notifications','/api/teacher/payments','/api/teacher/practice-logs','/api/teacher/progress'].includes(url.pathname))return await reply(200,[]);
      if(url.pathname==='/api/teacher/me')return await reply(200,{userId:'55555555-5555-4555-8555-555555555555',firstName:'Synthetic',lastName:'Teacher',batches:[{id:batch,name:'Synthetic batch',capacity:8,deliveryMode:'InPerson'}],sessions:[]});
      if(url.pathname==='/api/teacher/calendar')return await reply(200,{sessions:[],holidays:[]});
-     if(url.pathname===`/api/academies/${academy}/finance-adjustments`)return await reply(200,[{id:adjustment,type:'Discount',amount:10,reason:'Synthetic discount',status:state.status}]);
+     if(url.pathname===`/api/academies/${academy}/finance-adjustments`)return await reply(200,[{
+      id:adjustment,invoiceId:'66666666-6666-4666-8666-666666666666',type:'Discount',amount:10,amountExact:'10.00',currency:'USD',
+      reason:'Synthetic discount',status:state.status,approvedAtUtc:state.status==='PendingApproval'?null:'2026-11-17T10:00:00Z',
+      approvalNotes:state.writes.at(-1)?.body.notes?.trim()||null,financialEffect:'InvoiceReduction',requiresReviewedDisposition:false,
+      ...config.adjustmentPatch,
+     }]);
      if([`/api/academies/${academy}/finance-governance/collections`,`/api/academies/${academy}/finance-governance/collection-tasks`].includes(url.pathname))return await reply(200,[]);
      if(url.pathname===`/api/academies/${academy}/finance-governance/settings`)return await reply(200,{taxRegistrationNumber:'',taxLabel:'Tax',taxRatePercent:0,defaultPaymentTermsDays:14,taxInclusivePricing:false,invoiceTemplateKey:'Classic',payslipTemplateKey:'Standard'});
      throw Error('Unexpected API request '+url.pathname);
@@ -96,6 +101,7 @@ async function main(){
    const name='finance '+config.label+' '+JSON.stringify(config.answer)+(config.denied?' denied':'');const p=await page({...config,finance:true});
    try{
     await p.wait(`Array.from(document.querySelectorAll('button')).some(b=>b.textContent==='Approve'&&!b.disabled)`);
+    a.equal(await p.evaluate(`document.body.innerText.includes('USD 10.00')`),true,'Review must show exact amount and currency');
     await p.evaluate(`Array.from(document.querySelectorAll('button')).find(b=>b.textContent===${JSON.stringify(config.label)}).click()`);
     await p.wait(`!Array.from(document.querySelectorAll('button')).some(b=>b.textContent==='Approve'&&b.disabled)`);await sleep(100);
     a.equal(p.state.dialogs.length,1);a.equal(p.state.dialogs[0].type,'prompt');
@@ -105,6 +111,16 @@ async function main(){
     else{a.deepEqual(p.state.writes[0].body,{approve:config.label==='Approve',notes:config.answer});a.equal(p.state.fixtureCommits,config.denied?0:1);if(config.denied)a.equal(p.state.status,'PendingApproval');}
     results.push({case:name,pass:true,requests:p.state.writes,fixtureCommits:p.state.fixtureCommits});
    }catch(e){results.push({case:name,pass:false,error:e.message,requests:p.state.writes});}finally{await p.close();}
+  }
+  for(const config of [{name:'missing exact amount',adjustmentPatch:{amountExact:undefined}},{name:'invalid currency',adjustmentPatch:{currency:'USD/INR'}}]){
+   const p=await page({...config,finance:true,answer:null});
+   try{
+    await p.wait(`document.body?.innerText.includes('Amount unavailable')`);
+    a.equal(await p.evaluate(`Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Approve')?.disabled`),true);
+    await p.evaluate(`Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Approve').click()`);await sleep(50);
+    a.equal(p.state.writes.length,0);a.equal(p.state.fixtureCommits,0);a.equal(p.state.dialogs.length,0);a.equal(p.state.status,'PendingApproval');
+    results.push({case:'finance '+config.name+' refuses approval without writes',pass:true,requests:p.state.writes,fixtureCommits:p.state.fixtureCommits});
+   }catch(e){results.push({case:'finance '+config.name,pass:false,error:e.message,requests:p.state.writes});}finally{await p.close();}
   }
   for(const config of [{kind:'assignments',published:'true'},{kind:'assignments',published:'false'},{kind:'assessments',published:'true',date:'2026-11-07T17:30'},{kind:'assessments',published:'false',date:''},{kind:'lesson-plans'},{kind:'assignments',published:'true',denied:true},{kind:'assessments',published:'false',date:'',lost:true}]){
    const name='teacher '+config.kind+(config.denied?' denied':config.lost?' unconfirmed':' '+(config.published??''));const p=await page({...config,finance:false,width:390});
