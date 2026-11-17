@@ -5,7 +5,7 @@
 - [x] Hosted verification on `84c54ab` passed the API regressions, frontend
   install/audit, typecheck and lint. The private paired checkout then failed
   with Repository not found. The exact Mini SHA is present in its private repo.
-- [x] Separated the real paired foundation/transport check into its own
+- [x] Separated protected onboarding and its real transport check into a
   required job. Ordinary SQL, private media, browser and container checks can
   run independently. Validated the job wiring and 15 release guard tests.
 - [ ] The paired job needs the existing `PENTA_SOURCE_READ_TOKEN` secret

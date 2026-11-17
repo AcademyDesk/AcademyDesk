@@ -79,8 +79,8 @@ jobs:
         shell: pwsh
         run: |
           $harness = Join-Path $PWD '.build-check/ci-sql/bin/SqlHarness/debug/SqlHarness.dll'
-          foreach ($module in @('Reconciliation', 'CollectionRace', 'Adjustment', 'AdjustmentRace', 'Payroll', 'Transition', 'Consumers', 'Access', 'EnrollmentShared', 'TeacherCreationShared', 'StudentOnboardingShared', 'PentaHostMigration', 'PentaOnboardingProtected', 'PentaTeacherProtected', 'FinanceIntegrity', 'RecordIntegrity', 'ClassMedia', 'CommunicationRoundtrip', 'WorkItemIntegrity', 'ExportSecurity', 'RoleReplacement', 'RoleRevocation', 'SessionRevocationRepair', 'SessionRefresh', 'RefreshConcurrency', 'Recovery')) {
-            $env:QA_PENTA_HOST_SECURITY = ''
+          foreach ($module in @('Reconciliation', 'CollectionRace', 'Adjustment', 'AdjustmentRace', 'Payroll', 'Transition', 'Consumers', 'Access', 'EnrollmentShared', 'TeacherCreationShared', 'StudentOnboardingShared', 'PentaHostMigration', 'PentaFoundation', 'PentaTeacherProtected', 'FinanceIntegrity', 'RecordIntegrity', 'ClassMedia', 'CommunicationRoundtrip', 'WorkItemIntegrity', 'ExportSecurity', 'RoleReplacement', 'RoleRevocation', 'SessionRevocationRepair', 'SessionRefresh', 'RefreshConcurrency', 'Recovery')) {
+            $env:QA_PENTA_HOST_SECURITY = if ($module -eq 'PentaFoundation') { '1' } else { '' }
             $env:QA_PENTA_MINI = '0'
             $log = if ($module -eq 'CommunicationRoundtrip') {
               'QA/EVIDENCE/logs/phase-2b-communication-roundtrip-sql.log'
@@ -187,7 +187,7 @@ jobs:
             QA/EVIDENCE/logs/phase-2b-communication-roundtrip-sql.log
 
   paired_core:
-    name: PENTA foundation and private Core transport
+    name: PENTA protected onboarding and private Core transport
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     env:
@@ -195,7 +195,6 @@ jobs:
       DOTNET_NOLOGO: '1'
       QA_PENTA_BRIDGE_SOURCE: ${{ github.workspace }}/.build-check/paired-mini
       QA_PENTA_CORE_SHA: c3c61b9ef3f239035c8b8f46649c66997e98f2b6
-      QA_PENTA_HOST_SECURITY: '1'
       QA_PENTA_MINI: '0'
     steps:
       - name: Require access to pinned private Core source
@@ -231,12 +230,15 @@ jobs:
         run: >-
           dotnet build QA/tools/SqlHarness/SqlHarness.csproj --nologo
           --artifacts-path .build-check/paired-sql
-      - name: Verify actual scripted Core transport and foundation on SQL
+      - name: Verify protected onboarding and actual scripted Core transport on SQL
         shell: pwsh
         run: |
           $harness = Join-Path $PWD '.build-check/paired-sql/bin/SqlHarness/debug/SqlHarness.dll'
-          & ./QA/tools/SqlHarness/Run-ReconciledPayment.ps1 -Module PentaFoundation -HarnessPath $harness 2>&1 |
-            Tee-Object -FilePath '.build-check/paired-ci/penta-foundation-sql.log'
+          $log = '.build-check/paired-ci/penta-onboarding-sql.log'
+          & ./QA/tools/SqlHarness/Run-ReconciledPayment.ps1 -Module PentaOnboardingProtected -HarnessPath $harness 2>&1 |
+            Tee-Object -FilePath $log
+          $bridgeChecks = @(Select-String -LiteralPath $log -Pattern '^PASS: PENTAPRIVATEBRIDGE ')
+          if ($bridgeChecks.Count -ne 5) { throw 'Expected all five actual private Core transport checks.' }
       - name: Ensure paired verification did not modify tracked source
         run: git diff --exit-code
       - name: Preserve paired Core verification evidence

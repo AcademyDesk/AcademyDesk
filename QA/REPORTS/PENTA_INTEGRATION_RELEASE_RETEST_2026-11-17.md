@@ -93,10 +93,10 @@ private and its pinned commit `c3c61b9ef3f239035c8b8f46649c66997e98f2b6`
 exists. The repository secret metadata lookup returned 404.
 
 The workflow now runs standard verification separately from the paired
-PENTA foundation job. The paired job fails with a specific access message
+PENTA protected onboarding job. The paired job fails with a specific access message
 when `PENTA_SOURCE_READ_TOKEN` is unavailable. It checks the exact private
 Core SHA and keeps credentials out of the local Git config. The paired
-foundation and loopback transport checks remain required. The reusable
+onboarding and loopback transport checks remain required. The reusable
 deployment workflow forwards only the named checkout secret and still
 depends on the entire verification result before the production guard.
 No repository settings or credential values were changed.
