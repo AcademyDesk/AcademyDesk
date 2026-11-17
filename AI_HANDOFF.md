@@ -1,5 +1,28 @@
 # Academy Desk handoff
 
+## C48 Desktop coordination and finance access evidence — 17 November 2026
+
+Desktop received Cloud's handoff at `592939d`. The actual Desktop baseline
+was `6590278`, which already corrected the paired job to verify the five
+actual protected onboarding transport checks. Cloud owns
+`apps/web/src/lib/private-material.ts` and
+`QA/tools/private-material-boundaries.test.cjs`.
+
+- [x] Fixed the finance access fixture after hosted CI reached the SQL
+  Access module. Its Admin and Owner test payouts shared a worker and period.
+  Distinct synthetic periods preserve the enforced duplicate rule and the
+  129-case matrix passed on disposable SQL.
+- [x] Recovered the seven direct Mini input paths in place and verified the
+  11 retained portable-receipt hashes. Prepared 12 proposed local scenarios
+  and recorded the locked Mini identity, without loading weights.
+- [ ] The hosted paired job needs `PENTA_SOURCE_READ_TOKEN` configured with
+  read-only Contents access to private AcademyDesk/PentaMini. The unconfigured
+  secret remains a real CI failure.
+- [ ] The release still needs its hosted result, linked critical acceptance,
+  physical devices, staging and private Mini qualification. Keep Sol High.
+
+[Local and hosted results](QA/REPORTS/PENTA_INTEGRATION_RELEASE_RETEST_2026-11-17.md)
+
 ## Hosted candidate verification and private Core access — 17 November 2026
 
 - [x] Hosted verification on `84c54ab` passed the API regressions, frontend

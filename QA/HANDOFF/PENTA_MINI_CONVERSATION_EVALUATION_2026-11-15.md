@@ -1,5 +1,25 @@
 # PENTA Mini conversation evaluation handoff
 
+## Desktop preparation after C48 handoff — 17 November 2026
+
+The planned Mini candidate is the locked Qwen3.5-2B Q4_0 at revision
+`f6d5376be1edb4d416d56da11e5397a961aca8ae`. The separate Ministral3B
+setup is a Plus-path diagnostic. The private Desktop packet under
+`.build-check/c48-mini-evaluation/` records the Mini weight checksum from
+the original library manifest, Academy contract hash, paired Core source
+pin and hash for 12 proposed held-out learner-finance scenarios.
+
+All seven C47 directly listed archived inputs were located and fingerprinted
+in place. All 11 archived portable-receipt inputs still match their original
+hashes. The retained acquisition proposal binds the exact trainer lock.
+The existing versioned verifier and its tests match the Cloud C5 revision.
+Archive and prompt bytes stay private.
+
+Before any authorized run, independently review the proposed fixtures for
+exposure, bind them to disposable SQL identities and expected responses,
+rehash the selected model file, and pin the exact engine, template and
+decoding settings. The owner stop before model loading remains active.
+
 ## First private-model milestone
 
 Qualify learner search and follow-up against the existing

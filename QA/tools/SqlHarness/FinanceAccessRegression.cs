@@ -12,7 +12,11 @@ using Microsoft.Extensions.DependencyInjection;
 
 internal static partial class SqlHarnessEntryPoint
 {
-    private sealed record AccessFixture(Guid Academy, Guid Student, Guid Teacher, Guid Invoice, Guid Payment, Guid Adjustment, Guid Profile);
+    private sealed record AccessFixture(Guid Academy, Guid Student, Guid Teacher, Guid Invoice, Guid Payment, Guid Adjustment, Guid Profile)
+    {
+        // Role fixtures share a worker, so successful payouts need distinct pay periods.
+        public string PayoutPeriod => $"QA-ACCESS-{Profile:N}";
+    }
     private sealed record AccessAction(string Name, string Method, string Path, object? Body, HttpStatusCode Success, bool Payroll = false);
 
     private static async Task VerifyFinanceAccessAsync(QaApiFactory factory, HttpClient client)
@@ -177,7 +181,7 @@ internal static partial class SqlHarnessEntryPoint
             new("profile-create", "POST", root + "/payroll/profiles", AccessProfileBody(f), HttpStatusCode.Created, true),
             new("profile-update", "PUT", root + $"/payroll/profiles/{f.Profile}", AccessProfileBody(f), HttpStatusCode.OK, true),
             new("payout-list", "GET", root + "/payroll/payouts", null, HttpStatusCode.OK, true),
-            new("payout-create", "POST", root + "/payroll/payouts", new { payrollProfileId = f.Profile, periodLabel = "QA-ACCESS", deductions = 10m }, HttpStatusCode.Created, true)
+            new("payout-create", "POST", root + "/payroll/payouts", new { payrollProfileId = f.Profile, periodLabel = f.PayoutPeriod, deductions = 10m }, HttpStatusCode.Created, true)
         ];
     }
     private static object AccessProfileBody(AccessFixture f) => new { workerType = "Teacher", teacherId = f.Teacher,
@@ -279,7 +283,7 @@ internal static partial class SqlHarnessEntryPoint
             "reminder-queue" => await db.Notifications.AsNoTracking().AnyAsync(x => x.AcademyId == f.Academy && x.RecipientId == f.Student && x.Title == "Fee payment reminder"),
             "profile-create" => await db.PayrollProfiles.AsNoTracking().AnyAsync(x => x.Id == responseId && x.AcademyId == f.Academy && x.TeacherId == f.Teacher && x.MonthlyAmount == 1000m),
             "profile-update" => await db.PayrollProfiles.AsNoTracking().AnyAsync(x => x.Id == f.Profile && x.TeacherId == f.Teacher && x.MonthlyAmount == 1000m),
-            "payout-create" => await db.PayrollPayouts.AsNoTracking().AnyAsync(x => x.Id == responseId && x.AcademyId == f.Academy && x.PayrollProfileId == f.Profile && x.GrossAmount == 1000m && x.Deductions == 10m && x.NetAmount == 990m),
+            "payout-create" => await db.PayrollPayouts.AsNoTracking().AnyAsync(x => x.Id == responseId && x.AcademyId == f.Academy && x.PayrollProfileId == f.Profile && x.PeriodLabel == f.PayoutPeriod && x.GrossAmount == 1000m && x.Deductions == 10m && x.NetAmount == 990m),
             _ => false
         };
         if (!valid) throw new InvalidOperationException("Allowed access response not persisted correctly: " + action.Name);

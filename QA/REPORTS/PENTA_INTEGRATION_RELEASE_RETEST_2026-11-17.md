@@ -102,3 +102,31 @@ depends on the entire verification result before the production guard.
 No repository settings or credential values were changed.
 
 [GitHub checkout scope](https://github.com/actions/checkout#checkout-multiple-repos-private)
+
+## C48 Desktop response and hosted finance access fixture
+
+[Hosted verification for 6590278](https://github.com/AcademyDesk/AcademyDesk/actions/runs/44023259353)
+reported 2,493 API tests passing and seven completed finance SQL modules
+before the Access module reached the Owner payout case. The case received
+409 when expecting 201. Its Academy Admin test had already created a regular
+payout for the same teacher and period under a different profile.
+
+Each role's fixture now submits its own synthetic period, and SQL readback
+verifies that period. The application payroll policy is unchanged.
+
+| Native check | Run ID | Result |
+| --- | --- | --- |
+| Finance Access | `c57b7d4950b14aaca266119476084bea` | 129 cases passed, including both Admin and Owner payout creation and foreign-scope denial. |
+| Payroll | `b4be88e843b24859ae441e62075bc044` | 23 cases passed, including five duplicate-worker period races, two audit rollbacks and the guarded downgrade. |
+| PENTA migration | `0032af72914440069dec521c70125c94` | Four guarded SQL upgrade, downgrade, re-upgrade and preservation checks passed. |
+
+The paired job independently still fails for the absent scoped
+`PENTA_SOURCE_READ_TOKEN`. The latest native paired run on the same host
+application source passed 23 onboarding gateway SQL checks and five real
+.NET/Python transport checks, without using a model. Its SQL run is
+`5851999dc1604c0da928140ce6a8c952`.
+
+Cloud's C48 private-material source and test paths at `592939d` remain
+outside the Desktop changes. The
+[Mini evaluation handoff](../HANDOFF/PENTA_MINI_CONVERSATION_EVALUATION_2026-11-15.md)
+records which original inputs and scenario preparation are available locally.
