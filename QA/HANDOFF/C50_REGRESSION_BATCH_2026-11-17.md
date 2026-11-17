@@ -14,6 +14,21 @@ Only these paths may change:
 - `QA/HANDOFF/C49_PRIVATE_PREVIEW_SCOPE_2026-11-17.md`: original C49 handoff.
 - this C50 task-specific result/handoff.
 
+### Scope amendment after the first complete browser batch
+
+The first20-suite run completed19 PASS /1 FAIL. All eight failing cases are
+in `QA/tools/manual-controls-browser.cjs`: its old adjustment fixture supplies
+only numeric `amount` and omits current server fields `amountExact` and
+`currency`. The current UI correctly disables approval when exact financial
+terms cannot be verified. No mutation was sent in those failing cases.
+
+Cloud additionally claims `QA/tools/manual-controls-browser.cjs` only to update
+its synthetic producer to the existing `FinanceAdjustmentSummary` contract and
+retain all original approval/rejection assertions. Add explicit missing-exact-
+amount/invalid-currency no-write controls so the safety refusal stays tested.
+No product financial behavior, UI guard, source DTO or API will be changed.
+Desktop's latest60036cfb changes do not overlap this runner.
+
 Integrate C49 final commit `ed252d3d631b85fc1374fa2e6e19f4983716e3a0`
 into the newer Desktop source. C48 is already integrated there. No new
 application behavior or test weakening is planned. Preserve prior branches,
