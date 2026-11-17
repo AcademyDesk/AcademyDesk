@@ -2,6 +2,75 @@ import { academyApi, apiUrl } from "./api";
 
 export const PREVIEW_BYTES = 32 * 1024 * 1024;
 export const BUFFERED_DOWNLOAD_BYTES = 64 * 1024 * 1024;
+const MAX_FILE_BYTES = 2_000_000_000;
+const TICKET_RESPONSE_BYTES = 8192;
+const ticketError = "The private download could not be prepared. Retry.";
+const discardBody = (response: Response) => { void response.body?.cancel().catch(() => undefined); };
+const validBytes = (value: number, maximum: number) => Number.isSafeInteger(value) && value > 0 && value <= maximum;
+
+function contentLength(response: Response) {
+  const raw = response.headers.get("Content-Length");
+  if (raw === null) return undefined;
+  const length = Number(raw);
+  if (!/^[1-9]\d{0,9}$/.test(raw) || !validBytes(length, MAX_FILE_BYTES))
+    throw Error("File size could not be verified. Contact your academy.");
+  return length;
+}
+
+async function completeResponse(response: Response, path: string, signal: AbortSignal) {
+  if (signal.aborted) { discardBody(response); signal.throwIfAborted(); }
+  await requireMaterialResponse(response);
+  if (signal.aborted) { discardBody(response); signal.throwIfAborted(); }
+  if (response.status !== 200 || response.redirected || response.headers.has("Content-Range") ||
+      response.url && response.url !== new URL(path, apiUrl).href) {
+    discardBody(response);
+    throw Error("The complete private response could not be verified. Retry.");
+  }
+  return response;
+}
+
+function decodedLength(response: Response, expected: number | undefined, limit: number) {
+  try {
+    // Fetch exposes decoded bytes. A compressed wire Content-Length cannot be
+    // compared with those bytes; the decoded stream still has the strict cap.
+    const encoding = response.headers.get("Content-Encoding");
+    const declared = encoding && encoding.toLowerCase() !== "identity" ? undefined : contentLength(response);
+    if (declared !== undefined && (declared > limit || expected !== undefined && declared !== expected))
+      throw Error("The file changed or exceeded the safe memory limit. Retry.");
+    return expected ?? declared;
+  } catch (error) { discardBody(response); throw error; }
+}
+
+async function boundedBody(response: Response, length: number | undefined, limit: number, signal: AbortSignal) {
+  if (!response.body) throw Error("File response has no content.");
+  const reader = response.body.getReader();
+  const chunks: Uint8Array<ArrayBuffer>[] = [];
+  let total = 0;
+  let result: Blob;
+  const cancel = () => { void reader.cancel(signal.reason).catch(() => undefined); };
+  signal.addEventListener("abort", cancel, { once: true });
+  try {
+    while (true) {
+      signal.throwIfAborted();
+      const result = await reader.read();
+      signal.throwIfAborted();
+      if (result.done) break;
+      total += result.value.byteLength;
+      if (total > limit || length !== undefined && total > length)
+        throw Error("The file changed or exceeded the safe memory limit. Retry.");
+      chunks.push(new Uint8Array(result.value));
+    }
+    if (length !== undefined && total !== length) throw Error("The download was interrupted. Retry.");
+    signal.throwIfAborted();
+    result = new Blob(chunks, { type: "application/octet-stream" });
+  } finally {
+    signal.removeEventListener("abort", cancel);
+    await reader.cancel().catch(() => undefined);
+    reader.releaseLock();
+  }
+  signal.throwIfAborted();
+  return result;
+}
 export function privateMaterialPath(url: string) {
   let path = url;
   if (!url.startsWith("/")) {
@@ -28,47 +97,51 @@ export function previewMime(bytes: Uint8Array): string | null {
 }
 export async function requireMaterialResponse(response: Response) {
   if (response.ok) return response;
+  discardBody(response);
   throw Error(({ 401: "Sign in again to access this file.", 403: "Your account cannot access this file.", 404: "This file is no longer available to your account.", 429: "Wait a minute and try again.", 503: "Private storage is temporarily unavailable. Try again later." } as Record<number,string>)[response.status] ?? "The file could not be retrieved. Try again.");
 }
 export async function materialInfo(path: string, signal: AbortSignal) {
-  if (!privateMaterialPath(path)) throw Error("This is not an approved private material path.");
-  const response = await requireMaterialResponse(await academyApi(path, { method: "HEAD", signal, redirect: "error", cache: "no-store" }));
-  const length = Number(response.headers.get("Content-Length"));
-  if (!Number.isSafeInteger(length) || length <= 0 || length > 2_000_000_000) throw Error("File size could not be verified. Contact your academy.");
+  signal.throwIfAborted();
+  const contentPath = privateMaterialPath(path);
+  if (!contentPath) throw Error("This is not an approved private material path.");
+  const response = await completeResponse(await academyApi(contentPath, { method: "HEAD", signal, redirect: "error", cache: "no-store" }), contentPath, signal);
+  let length: number | undefined;
+  try { length = contentLength(response); } finally { discardBody(response); }
+  if (length === undefined) throw Error("File size could not be verified. Contact your academy.");
   const disposition = response.headers.get("Content-Disposition") ?? "";
   let filename = "class-material";
   const encoded = /filename\*=UTF-8''([^;]+)/i.exec(disposition)?.[1];
   const plain = /filename="([^"]+)"/i.exec(disposition)?.[1];
   try { filename = encoded ? decodeURIComponent(encoded) : plain ?? filename; } catch { /* safe default */ }
+  signal.throwIfAborted();
   return { length, filename: filename.replace(/[\x00-\x1f\x7f/\\:]/g, "_").slice(0,250) };
 }
 export async function boundedMaterialBlob(path: string, length: number, limit: number, signal: AbortSignal, api = academyApi) {
-  if (!privateMaterialPath(path) || length < 1) throw Error("This is not an approved private material or its size is invalid.");
+  signal.throwIfAborted();
+  const contentPath = privateMaterialPath(path);
+  if (!contentPath || !validBytes(length, MAX_FILE_BYTES) || !validBytes(limit, BUFFERED_DOWNLOAD_BYTES))
+    throw Error("This is not an approved private material or its size or memory limit is invalid.");
   if (length > limit) throw Error("This file is too large to preview here. Select Download to save the original file.");
-  const response = await requireMaterialResponse(await api(path, { signal, redirect: "error", cache: "no-store" }));
-  if (!response.body) throw Error("File response has no content.");
-  const reader = response.body.getReader(); const chunks: Uint8Array<ArrayBuffer>[] = []; let total = 0;
-  try {
-    while (true) {
-      signal.throwIfAborted(); const result = await reader.read(); if (result.done) break;
-      total += result.value.byteLength;
-      if (total > length || total > limit) throw Error("The file changed or exceeded the safe memory limit. Retry.");
-      chunks.push(new Uint8Array(result.value));
-    }
-    if (total !== length) throw Error("The download was interrupted. Retry.");
-    return new Blob(chunks, { type: "application/octet-stream" });
-  } finally { await reader.cancel().catch(() => undefined); reader.releaseLock(); }
+  const response = await completeResponse(await api(contentPath, { signal, redirect: "error", cache: "no-store" }), contentPath, signal);
+  return boundedBody(response, decodedLength(response, length, limit), limit, signal);
 }
 
 export async function nativeMaterialTicket(path: string, signal: AbortSignal, api = academyApi) {
-  if (!privateMaterialPath(path) || !path.startsWith("/")) throw Error("This is not an approved private material path.");
-  const response = await requireMaterialResponse(await api("/api/class-material-downloads/tickets", {
-    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ path }), signal, redirect: "error", cache: "no-store",
-  }));
-  const result = await response.json();
   signal.throwIfAborted();
-  if (!result || typeof result !== "object" || typeof result.ticket !== "string" || !/^[a-zA-Z0-9_-]{1,3000}$/.test(result.ticket) ||
-      result.expiresInSeconds !== 60) throw Error("The private download could not be prepared. Retry.");
+  if (!privateMaterialPath(path) || !path.startsWith("/")) throw Error("This is not an approved private material path.");
+  const endpoint = "/api/class-material-downloads/tickets";
+  const response = await completeResponse(await api(endpoint, {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ path }), signal, redirect: "error", cache: "no-store",
+  }), endpoint, signal);
+  const body = await boundedBody(response, decodedLength(response, undefined, TICKET_RESPONSE_BYTES), TICKET_RESPONSE_BYTES, signal);
+  const text = await body.text();
+  signal.throwIfAborted();
+  let result;
+  try { result = JSON.parse(text); } catch { throw Error(ticketError); }
+  signal.throwIfAborted();
+  if (!result || typeof result !== "object" || Array.isArray(result) || Object.keys(result).length !== 2 ||
+      typeof result.ticket !== "string" || !/^[a-zA-Z0-9_-]{1,3000}$/.test(result.ticket) ||
+      result.expiresInSeconds !== 60) throw Error(ticketError);
   return result.ticket as string;
 }
 
