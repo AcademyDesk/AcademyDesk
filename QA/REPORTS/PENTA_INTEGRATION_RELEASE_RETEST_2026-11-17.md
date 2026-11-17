@@ -222,3 +222,31 @@ Same-instance component replacement was exercised at the browser fixture,
 while the live portal run covered cancellation/retry, link revocation and
 download authorization. Physical iOS/Android, larger real-storage
 transfers, staging restore and all six critical records are still open.
+
+## Payslip reference identity and live concurrency retest
+
+[Hosted C49 run](https://github.com/AcademyDesk/AcademyDesk/actions/runs/44062528045)
+for `60036cf` observed two real SQL waiters. The first three payroll pairs
+returned 201 and 409. The fourth returned 201 and 500. The hosted runner
+did not emit the underlying server exception. The exact cause of that
+particular 500 is unconfirmed.
+
+The previous number generator shared a three-digit random suffix space
+across all payouts created in the same second in one academy. SQL requires
+unique payslip numbers per academy. Each newly created reference now uses
+the persisted payout GUID after the existing prefix and UTC timestamp,
+within the existing 60-character constraint. The native regression matches
+the returned number to the SQL row and the stored payout identity.
+
+- 81 focused payroll API tests passed with zero skipped cases.
+- Three real SQL/HTTP suites ran 23 checks each on disposable data.
+  Their SQL IDs were `41abccb021664538954a8760ff923618`,
+  `a67bb324b1b04805b63961f40cb1e79c` and
+  `a55ecf96a3744ec5ba00809976c736b0`.
+- All 15 contention pairs observed two waiters on the exact application
+  lock, yielded one 201 and one 409, and stored one payout. All six
+  mandatory audit fault rollback checks passed.
+
+Hosted verification on the new source must run again. BUG-DATA-0003
+remains open for its broader acceptance. See the
+[go-live checklist](../HANDOFF/PENTA_PRODUCTION_ACCEPTANCE_2026-11-15.md).

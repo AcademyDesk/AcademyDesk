@@ -62,6 +62,9 @@ internal static partial class SqlHarnessEntryPoint
                 throw new InvalidOperationException("Recorded payout lacks exact amount/identity provenance.");
             using var scope = factory.Services.CreateScope(); var row = await scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>().PayrollPayouts.AsNoTracking().SingleAsync(x => x.Id == paidId);
             if (row.TeacherIdSnapshot != teacher || row.IdentityRecordedAtUtc is null || row.NetAmount != 999.99m) throw new InvalidOperationException("Payout snapshot not persisted.");
+            if (body.GetProperty("payslipNumber").GetString() != row.PayslipNumber ||
+                !row.PayslipNumber.EndsWith($"-{paidId:N}", StringComparison.Ordinal))
+                throw new InvalidOperationException("The public payslip number does not match the saved payout identity.");
         }
         Pass("positive payout records exact amount and worker provenance");
         await Refuse("alternate profile cannot repeat regular period", () => client.PostAsJsonAsync(path + "/payouts", new { payrollProfileId = alternate, periodLabel = "  " + period.ToUpperInvariant() + "  ", deductions = 0m }), HttpStatusCode.Conflict);
@@ -169,7 +172,9 @@ internal static partial class SqlHarnessEntryPoint
             if (!observed || !pair.SequenceEqual(new[] { 201, 409 })) throw new InvalidOperationException($"Payroll race refused:observed={observed};waiters={maximumWaiters};statuses={string.Join(',', pair)}; requires two exact-resource waiters and201/409.");
             using var scope = factory.Services.CreateScope(); var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
             var rows = await db.PayrollPayouts.AsNoTracking().Where(x => x.PayrollProfileId == aProfile || x.PayrollProfileId == bProfile).ToArrayAsync();
-            if (rows.Length != 1 || rows[0].NetAmount != 1000m || rows[0].TeacherIdSnapshot != teacher) throw new InvalidOperationException("Concurrent payroll stored duplicate or incorrect payout.");
+            if (rows.Length != 1 || rows[0].NetAmount != 1000m || rows[0].TeacherIdSnapshot != teacher ||
+                !rows[0].PayslipNumber.EndsWith($"-{rows[0].Id:N}", StringComparison.Ordinal))
+                throw new InvalidOperationException("Concurrent payroll stored a duplicate payout or incorrect payout identity.");
             statuses.Add(pair); Pass("two observed SQL lock waiters; alternate-profile race " + attempt + " one201/one409 and one payout");
         }
         var beforeDowngrade = await State();

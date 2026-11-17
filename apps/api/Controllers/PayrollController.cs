@@ -91,7 +91,9 @@ public sealed class PayrollController(AcademyDeskDbContext db, IdentityDbContext
             return Conflict(new { message = "This worker's payroll history requires review before recording another regular statement." });
         if (priorPeriods.Any(label => RegularPeriodKey(label) == periodKey))
             return Conflict(new { message = "A regular payroll statement already exists for this worker and pay period. Additional amounts require a separately approved payroll adjustment." });
-        var payout = new PayrollPayout { AcademyId = academyId, PayrollProfileId = profile.Id, PayslipNumber = $"PS-{DateTime.UtcNow:yyyyMMddHHmmss}-{Random.Shared.Next(100, 999)}", PeriodLabel = request.PeriodLabel.Trim(), SessionsCovered = sessions, GrossAmount = gross, Deductions = request.Deductions, NetAmount = gross - request.Deductions, PaymentMethod = string.IsNullOrWhiteSpace(request.PaymentMethod) ? "BankTransfer" : request.PaymentMethod.Trim(), Reference = Clean(request.Reference), PaidAtUtc = request.PaidAtUtc ?? DateTime.UtcNow };
+        // Use the payout identity so different periods saved in the same second cannot share a payslip number.
+        var payoutId = Guid.NewGuid();
+        var payout = new PayrollPayout { Id = payoutId, AcademyId = academyId, PayrollProfileId = profile.Id, PayslipNumber = $"PS-{DateTime.UtcNow:yyyyMMddHHmmss}-{payoutId:N}", PeriodLabel = request.PeriodLabel.Trim(), SessionsCovered = sessions, GrossAmount = gross, Deductions = request.Deductions, NetAmount = gross - request.Deductions, PaymentMethod = string.IsNullOrWhiteSpace(request.PaymentMethod) ? "BankTransfer" : request.PaymentMethod.Trim(), Reference = Clean(request.Reference), PaidAtUtc = request.PaidAtUtc ?? DateTime.UtcNow };
         payout.WorkerNameSnapshot = profile.WorkerName;
         payout.WorkerTypeSnapshot = profile.WorkerType;
         payout.TeacherIdSnapshot = profile.TeacherId;

@@ -125,3 +125,13 @@ explanation and retains its draft. The saved print document matched fresh
 SQL-backed readback at the print-call boundary. Physical-device, native PDF
 and linked critical acceptance remain open.
 [Local browser verification](../REPORTS/LOCAL_P0_PAYROLL_BROWSER_ACCEPTANCE_2026-11-08.md)
+
+## Hosted concurrency return and local payslip identity checks — 17 November 2026
+
+Hosted C49 reported a 201/500 pair after two exact SQL lock waiters. The
+number now uses the saved payout identifier, which eliminates same-second
+collisions between distinct payouts. The 500's underlying exception was
+not sufficient to attribute its exact cause. The local retest passed
+81 focused API tests and all 15 live SQL race pairs across three runs.
+Broader and hosted acceptance remain open.
+[Source-bound report](../REPORTS/PENTA_INTEGRATION_RELEASE_RETEST_2026-11-17.md#payslip-reference-identity-and-live-concurrency-retest)

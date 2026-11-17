@@ -1,5 +1,18 @@
 # Academy Desk handoff
 
+## Payroll race return and go-live checklist — 17 November 2026
+
+- [x] Hosted C49 reproduced a 201/500 payout pair. Removed the same-second
+  random reference collision risk by using the persisted payout identifier.
+- [x] All 81 payroll API tests and all 15 observed native contention pairs
+  passed, with one stored payout per pair and six audit rollbacks verified.
+- [ ] Rerun hosted CI on the new source, including the paired Core access
+  prerequisite. The exact underlying error in the earlier run is unconfirmed.
+- [ ] Complete the six critical records and staging/device/Mini acceptance
+  in the [go-live checklist](QA/HANDOFF/PENTA_PRODUCTION_ACCEPTANCE_2026-11-15.md).
+  Keep Sol High for the remaining native and security work.
+
+
 ## C49 preview scope and live recipient revocation — 17 November 2026
 
 - [x] Integrated C49 from cloud `ed252d3`. The 90 media tests, 16 actual

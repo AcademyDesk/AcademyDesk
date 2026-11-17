@@ -1,5 +1,47 @@
 # Academy Desk PENTA launch acceptance
 
+## Go-live checklist — 17 November 2026
+
+### Completed evidence
+
+- [x] Initial guided PENTA workflows verified across all four portals.
+- [x] Next.js security update and dependency audit, with the locked frontend
+  build, TypeScript checks and 2,493 API tests verified on the C48 checkpoint.
+- [x] Independent hosted C48 run passed the 26 protected SQL modules, 75
+  private Blob assertions, frontend suite and API image/startup checks.
+- [x] C49 passed 90 media tests and 16 browser groups. Real SQL proved that
+  Guardian revocation rejects the original bearer and a pre-issued download
+  ticket. Native recordings and family downloads matched byte for byte.
+- [x] Disposable SQL restore checks and 43 local API image upgrade, rollback
+  and roll-forward checks passed. Rollback preserved the upgraded schema,
+  both synthetic tenants and tenant access controls.
+- [x] Prepared original Mini archive fingerprints and 12 proposed offline
+  evaluation scenarios. The owner stop before model loading remains active.
+
+### Required before go-live
+
+- [ ] Confirm the locally verified payroll patch in hosted CI and verify the
+  latest candidate's full ordinary pipeline, dependency audits and artifacts.
+- [ ] Configure the scoped read-only `PENTA_SOURCE_READ_TOKEN` in AcademyDesk
+  Actions secrets and pass the separate protected onboarding/Core job.
+- [ ] Close all six critical records after their required broader verification.
+  Collection, adjustment consumers, payroll, void/restoration, private media
+  and session revocation remain open. Complete physical iOS and Android
+  coverage as well as the linked critical acceptance.
+- [ ] Rehearse the reviewed release candidate in staging with target
+  configuration, migrations, database backup/restore, private Blob recovery,
+  rollback and authenticated read-only smoke.
+- [ ] Qualify private Mini under separate owner approval before enabling the
+  model-backed experience. Measure model-backed completion against the
+  adopted first-academy workflow list. The 90% target remains unmeasured.
+- [ ] Review the release, deploy only after the quality gates and production
+  authorization, verify the running revision and smoke checks, then onboard
+  Hayansh Academy.
+
+[C48 independent verification](https://github.com/AcademyDesk/AcademyDesk/actions/runs/44058511583)
+[Latest local and hosted evidence](../REPORTS/PENTA_INTEGRATION_RELEASE_RETEST_2026-11-17.md)
+
+
 ## Local release retest — 17 November 2026
 
 Ten bounded HTTP/SQL modules passed, including five regular and five adjusted
