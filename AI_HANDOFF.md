@@ -1,5 +1,23 @@
 # Academy Desk handoff
 
+## C48 live private media and local API rollback — 17 November 2026
+
+- [x] Integrated Cloud C48 at `67f24f7` and passed 90 media client tests.
+  The actual Chromium recording, preview, cancellation, authorized range
+  and Student/Guardian native downloads passed with real Identity, SQL
+  and a run-owned private Blob emulator.
+- [x] Hosted independent verification for `f1f6215` passed on attempt 2.
+  The first attempt hit SQL migration-lock error 1223. The rerun used
+  identical source and SQL image. The paired credential is still absent.
+- [x] Passed all 43 offline Production-mode API replacement, migration,
+  rollback and roll-forward checks. Both original services recovered.
+- [ ] Continue exact hosted verification on the C48 integration, plus
+  physical devices, linked critical scenarios, staging and first private
+  model qualification. The six critical records remain open. Keep Sol High.
+
+[Source-bound local and hosted evidence](QA/REPORTS/PENTA_INTEGRATION_RELEASE_RETEST_2026-11-17.md)
+
+
 ## C48 Desktop coordination and finance access evidence — 17 November 2026
 
 Desktop received Cloud's handoff at `592939d`. The actual Desktop baseline

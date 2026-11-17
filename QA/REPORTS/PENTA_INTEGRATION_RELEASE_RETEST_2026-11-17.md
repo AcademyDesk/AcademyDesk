@@ -130,3 +130,63 @@ Cloud's C48 private-material source and test paths at `592939d` remain
 outside the Desktop changes. The
 [Mini evaluation handoff](../HANDOFF/PENTA_MINI_CONVERSATION_EVALUATION_2026-11-15.md)
 records which original inputs and scenario preparation are available locally.
+
+## Hosted retry and local API revision rollback
+
+The independent job for `f1f62158eb692564d50aeb60a36dad3c109b9c45`
+completed successfully on attempt 2. It passed 2,493 API tests, 26 native SQL
+modules, 75 private Blob assertions, the full frontend suite with the fresh
+48-case communication SQL receipt, the production frontend build, the
+payroll PDF and assessment browser checks, and the API image/startup smoke.
+The first attempt reported SQL error 1223 while EF released its migration lock.
+The successful rerun used the same source and SQL image digest, so this is
+an observed intermittent failure with no established underlying fix.
+
+The separate protected onboarding/Core job remained blocked at the missing
+`PENTA_SOURCE_READ_TOKEN` prerequisite.
+
+[Exact hosted verification](https://github.com/AcademyDesk/AcademyDesk/actions/runs/44025630062/attempts/2)
+
+Run `40dd9809e12147e380bb4186b11b41c3` passed 43 local Production-mode
+build and runtime checks using the previous API image from `b6793d4` and
+the current API tree at `f1f6215`. The current image was built offline using
+the existing hash-verified feed of 53 NuGet packages. The two images ran
+in sequence on a private, unexposed Docker network with one disposable SQL
+database and an encrypted disposable key ring. The upgrade applied
+`20261110112020_TrackClassSessionTeacherInheritance`. Rolling back the API
+image with migration execution disabled preserved that record in SQL and
+both synthetic tenants. The existing Admin bearer worked and cross-tenant
+reads were refused before and after rollback. Roll-forward and SQL outage
+recovery passed. The runner removed its own resources and restored PENTA
+health to HTTP 200.
+
+This is a local revision rollback rehearsal. Staging deployment, Azure PITR
+and private Blob restore remain open. C48 changes the frontend helper and tests.
+The API tree used for this rehearsal is identical in the C48 integration.
+
+## C48 protected media integration
+
+Integrated the three C48 return paths at
+`67f24f79d1ab6ca3fc5b81b215b4637cdfefa312` on top of `f1f6215`.
+All 62 new boundary tests and 28 retained client tests passed.
+The exact-lock Next.js 16.4.5 production static export and TypeScript
+checks passed with 682 local export files fingerprinted before the browser run.
+
+The live Chromium run `99b34f601c324463ad774c05298d36a3` used real
+Identity, SQL run `03adc045637a4577bab1cdaf05752a82` and a private disposable
+Azurite account. It recorded a teacher attachment through the browser's
+synthetic microphone and verified upload persistence and media decoding.
+Student HEAD/GET returned 200, and authenticated Range GET returned 206 with
+the correct 16 bytes. Cancelling a held preview GET cleared the preview and
+an unmodified retry decoded. Student and linked Guardian native downloads
+both reproduced the exact 17,677-byte attachment. Anonymous access returned
+401 and the unassigned Teacher got 404. The 59 observed in-browser API
+responses included no HTTP 429 or 5xx. The SQL runner removed its database,
+login and owned containers, then restored the two original PENTA services.
+
+C48's 68 MiB transfer, malformed-response and incomplete-read Chromium
+checks used a separate loopback synthetic fixture. The Desktop live test above
+covered a small Blob-backed recording. The combined evidence leaves physical
+iOS/Android, larger real storage transfers, broader interruption/revocation and
+production restore acceptance open. BUG-SEC-0001 and the other five critical
+records stay open.
