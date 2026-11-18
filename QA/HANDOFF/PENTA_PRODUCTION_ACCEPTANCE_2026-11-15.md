@@ -1,5 +1,16 @@
 # Academy Desk PENTA launch acceptance
 
+## Mini 0.15 learner-finance evidence
+
+- [x] Both previously missed workflows passed independent development
+  examples and a separate 12-case local evaluation on the pinned model.
+- [ ] Integrated composer, wider academy workflows and measured AI
+  coverage remain open.
+- [ ] Hosted checks and Core access, six critical acceptance records,
+  physical devices and staging evidence remain required.
+
+[Exact candidate evidence](PENTA_MINI_CONVERSATION_EVALUATION_2026-11-15.md)
+
 ## Mini held-out result
 
 - [x] Ran all 12 held-out scenarios against isolated Mini and real

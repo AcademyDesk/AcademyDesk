@@ -1,5 +1,20 @@
 # Academy Desk handoff
 
+## Mini 0.15 learner correction and ranking
+
+- [x] Mini fcb4672 adds bounded read paths for explicit full-name
+  corrections and outstanding-balance rankings. All 81 focused tests
+  passed. Both workflows also passed against disposable SQL.
+- [x] Planner 0.15 passed 12/12 on a separate sealed case set, including
+  correction, ranking, tenant scope, injection refusal, revocation and
+  outage fallback. Invoice and payment counts and totals matched.
+- [ ] Verify the integrated customer composer, then measure the 90%
+  launch target across eligible academy workflows.
+- [ ] Hosted verification, private Core Actions access, six critical
+  acceptance records, physical devices and staging recovery remain open.
+
+[Development and fresh evaluation results](QA/HANDOFF/PENTA_MINI_CONVERSATION_EVALUATION_2026-11-15.md)
+
 ## Frozen Mini held-out evaluation
 
 - [x] Bound all 12 existing held-out scenarios to disposable SQL with

@@ -28,6 +28,12 @@ internal static partial class SqlHarnessEntryPoint
         string tokenA, string tokenC)
     {
         var root = Path.GetFullPath(Path.Combine(".build-check", "c48-mini-evaluation"));
+        root = Environment.GetEnvironmentVariable("QA_PENTA_MINI_HELD_OUT_SET") switch
+        {
+            null or "" => root,
+            "planner-0.15-fresh" => Path.Combine(root, "planner-0.15-fresh"),
+            _ => throw new InvalidOperationException("Unknown held-out fixture set."),
+        };
         var file = Path.Combine(root, "held-out-sql-bindings-v1.json");
         var bytes = await File.ReadAllBytesAsync(file);
         var digest = Convert.ToHexStringLower(SHA256.HashData(bytes));

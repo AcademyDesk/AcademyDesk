@@ -1,5 +1,28 @@
 # PENTA Mini conversation evaluation handoff
 
+## Mini 0.15 fresh evaluation
+
+Mini fcb4672 and Academy e716b04 (with QA-only harness additions) independently
+verified explicit learner replacement and outstanding-balance ranking.
+Separate development examples reproduced both gaps on 0.14. Planner 0.15
+passed all 81 focused tests and both workflows through real Identity and
+disposable SQL. Development run 06ae90291aa649ed8c2b45c0632ac958 confirmed
+the corrected learner's exact balance and the four authorized balances
+in descending order.
+
+The candidate was pinned before preparing the separate case set. Fresh
+run 09c12fcedb5240a0abbbf8a91d6fa70e passed all 12 cases across 15 turns.
+It verified correction, ranking, ambiguity, ordinal lookup, pending-fee
+scope, foreign-tenant denial, injection refusal, revocation and private
+HTTP 503 fallback. Financial row counts and totals matched before and
+after. All 12 reduced per-case receipts and the final receipt were retained
+locally under the SQL run 07b2c8a95c524a9f86e467e5b1f2c9e0.
+
+The earlier 10/12 result is preserved as separate evidence. The fresh
+set covers the bounded learner-finance workflow. Customer-composer
+acceptance, broader academy workflows and the 90% launch measurement
+remain open.
+
 ## Frozen held-out evaluation
 
 Academy dbca689 (application source identical to a81674c), planner 0.14

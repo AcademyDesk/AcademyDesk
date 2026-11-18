@@ -169,6 +169,27 @@ internal static partial class SqlHarnessEntryPoint
             var state = await ready.Content.ReadAsStringAsync();
             PentaRequire(ready.StatusCode == HttpStatusCode.OK && state.Contains("Available"), $"REAL Mini readiness failed: HTTP {(int)ready.StatusCode}; {state}");
         }
+        if (Environment.GetEnvironmentVariable("QA_PENTA_MINI_QUERY_DEV") == "1")
+        {
+            var developmentSession = await Create(admin);
+            var initial = await Turn(admin, developmentSession, "Find the learner with record code AD-A001.");
+            PentaRequire(initial.Kind == "RESULT" && initial.Result is { Count: 1, Rows.Length: 1 } &&
+                initial.Result.Rows[0].SourceId == ananya.Id, "Development lookup did not establish the original learner.");
+            var corrected = await Turn(admin, developmentSession with { Version = initial.Version }, "Actually, I meant Rohan Guitar.");
+            PentaRequire(corrected.Kind == "RESULT" && corrected.Result is { Count: 1, Rows.Length: 1 } &&
+                corrected.Result.Rows[0].SourceId == rohan.Id && corrected.Result.Rows[0].Balances.Single().Outstanding == 700m &&
+                corrected.Context.Filters.Count == 1 && corrected.Context.Filters.GetValueOrDefault("name") == "Rohan Guitar",
+                "Development correction retained the original learner or the wrong fees.");
+            Console.WriteLine("PENTA MINI QUERY DEV CORRECTION PASS: current learner replaced and exact fee balance verified.");
+            var rank = await Turn(admin, await Create(admin), "Rank learners by highest unpaid balance.");
+            PentaRequire(rank.Kind == "RESULT" && rank.Result is { Count: 4, Rows.Length: 4, HasMore: false } &&
+                rank.Result.Rows.Select(x => x.SourceId).SequenceEqual(new[] { rohan.Id, meera.Id, ananya.Id, duplicate.Id }) &&
+                rank.Result.Rows.Select(x => x.Balances.Single().Outstanding).SequenceEqual(new[] { 700m, 400m, 300m, 200m }) &&
+                rank.Context.Filters.GetValueOrDefault("balance_status") == "Pending" && rank.Context.SortBy == "outstanding_desc",
+                "Development ranking returned the wrong scope, records or order.");
+            Console.WriteLine("PENTA MINI QUERY DEV RANKING PASS: outstanding authorized rows sorted by exact SQL balance.");
+            return;
+        }
         async Task<(MiniSessionView Session, MiniReceipt Fourth)> FourTurnFlow(HttpClient flowAdmin)
         {
         var session = await Create(flowAdmin);
