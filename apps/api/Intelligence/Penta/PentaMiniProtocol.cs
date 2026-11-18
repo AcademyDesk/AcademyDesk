@@ -36,6 +36,25 @@ public interface IPentaProvider
     Task<MiniProviderOutcome> PlanAsync(MiniPlanRequest request, CancellationToken token);
     Task<string> ReadinessAsync(CancellationToken token);
 }
+public static class PentaMiniRecovery
+{
+    public static bool ValidReceipt(MiniReceipt? value, Guid conversation, Guid request, long expectedVersion)
+    {
+        if (value is null || conversation == Guid.Empty || request == Guid.Empty || expectedVersion < 0 || expectedVersion == long.MaxValue ||
+            value.ConversationId != conversation || value.RequestId != request || value.Version != expectedVersion + 1 ||
+            value.Provider != "PENTA Mini" || value.Protocol != PentaMiniTools.ProtocolVersion ||
+            !PentaCapabilities.All.Contains(value.Capability) || value.Message is not { Length: > 0 and <= 500 } ||
+            !PentaMiniTools.ValidState(value.Context) ||
+            value.Kind is not ("RESULT" or "ERROR" or "REFUSAL" or "UNSUPPORTED" or "TEXT_RESPONSE" or "CLARIFICATION_REQUIRED" or "APPROVAL_REQUIRED")) return false;
+        if (value.Result is null) return value.Kind != "RESULT";
+        var result = value.Result;
+        return value.Kind is "RESULT" or "CLARIFICATION_REQUIRED" && result.Count >= 0 && result.Rows is not null &&
+            result.Rows.Length == Math.Min(result.Count, 10) && result.HasMore == (result.Count > result.Rows.Length) &&
+            result.Rows.All(row => row is not null && row.SourceId != Guid.Empty &&
+                row.SourcePath == $"/student-management?studentId={row.SourceId:D}") &&
+            result.Rows.Select(row => row.SourceId.ToString("D")).SequenceEqual(value.Context.CurrentResultIds);
+    }
+}
 public static class PentaMiniTools
 {
     public const string ProtocolVersion = "0.1";
