@@ -1,5 +1,33 @@
 # PENTA Mini conversation evaluation handoff
 
+## Frozen held-out evaluation
+
+Academy dbca689 (application source identical to a81674c), planner 0.14
+at c9dc67d and the pinned Qwen3.5-2B ran all 12 existing held-out scenarios.
+The QA fixture bound the unchanged prompts to 11 invented learner records,
+ten from the current academy and one from another academy. Scoring used
+fixed decimal balances and expected statuses. The fixture digest and
+application/model source pins were checked before execution.
+
+The first run scored **10 pass / 2 fail**. The explicit learner correction
+and the direct highest-balance sort did not meet the expected outcomes.
+Ten cases passed, including ambiguity and exact ordinal selection, no
+match, scoped pending-fees reads, cross-tenant requests, injection
+refusal, current-authority revocation and an actual private HTTP 503
+fallback. The before/after financial checks preserved invoice and payment
+counts and totals. Both original services were restored. First run
+886b4b0bf2e741f1a9111e1f0925cb15 retains all case-level decisions in its log.
+Its detailed receipt was written inside a disposable directory and removed
+by normal teardown. The diagnostic rerun 8add15c981ba4562ad238bf560cf74cf
+stopped at the memory guard before reporting a second score. Both original
+services recovered and inventory matched. The runner now records each
+completed case in a durable local folder as well as writing the final
+summary. Prompts and learner names are omitted from those receipts.
+
+Use these evaluated cases for regressions. Qualify future candidate changes
+with a new held-out set. This limited learner-finance result does not score
+the 90% launch objective across eligible academy workflows.
+
 ## Planner 0.14 full local smoke pass
 
 Planner 0.13 first passed the broad four-record search on corrected Academy

@@ -496,7 +496,12 @@ internal static partial class SqlHarnessEntryPoint
         if (Environment.GetEnvironmentVariable("QA_PENTA_HOST_SECURITY") == "1")
             await VerifyPentaHostSecurityAsync(manifest, academyA, academyB, tokenA, tokenC, tokenB, teacher);
         if (Environment.GetEnvironmentVariable("QA_PENTA_MINI") == "1")
-            await VerifyPentaMiniAsync(manifest, academyA, academyB, tokenA, tokenC, tokenB, teacher);
+        {
+            if (Environment.GetEnvironmentVariable("QA_PENTA_MINI_HELD_OUT_SHA256") is { Length: > 0 })
+                await VerifyPentaMiniHeldOutAsync(manifest, academyA, academyB, tokenA, tokenC);
+            else
+                await VerifyPentaMiniAsync(manifest, academyA, academyB, tokenA, tokenC, tokenB, teacher);
+        }
         Console.WriteLine("PENTA PASS: real Identity/SQL, single dispatch/restart, concurrent tenant/user quota, scoped approval FK, known usage and unknown-outcome retention.");
         if (Environment.GetEnvironmentVariable("QA_PENTA_BROWSER") == "1")
             await ServePentaBrowserAsync(manifest, academyA);

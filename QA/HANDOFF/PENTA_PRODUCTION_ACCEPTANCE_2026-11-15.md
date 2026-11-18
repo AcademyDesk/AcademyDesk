@@ -1,5 +1,18 @@
 # Academy Desk PENTA launch acceptance
 
+## Mini held-out result
+
+- [x] Ran all 12 held-out scenarios against isolated Mini and real
+  disposable SQL. The first score was 10/12. Tenant isolation, injection
+  refusal, revocation and outage controls passed.
+- [ ] Correct learner correction and direct highest-balance sorting,
+  then verify the integrated composer and fresh held-out workflows.
+  The 90% launch target remains unmeasured.
+- [ ] Hosted checks and Core access, six critical records, physical
+  devices and staging recovery remain required.
+
+[Exact model evaluation evidence](PENTA_MINI_CONVERSATION_EVALUATION_2026-11-15.md)
+
 ## Full local Mini smoke
 
 - [x] Mini planner 0.14 passed the existing local PENTA/SQL smoke with

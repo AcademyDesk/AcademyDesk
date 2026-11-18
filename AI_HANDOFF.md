@@ -1,5 +1,22 @@
 # Academy Desk handoff
 
+## Frozen Mini held-out evaluation
+
+- [x] Bound all 12 existing held-out scenarios to disposable SQL with
+  fixed learner identities, expected cents and authority boundaries. The
+  sealed prompts and raw receipts stay local.
+- [x] The first planner 0.14 run scored 10/12. Learner correction and
+  direct highest-balance sorting failed. Ambiguity, ordinal selection,
+  tenant boundary, injection refusal, revocation and outage fallback
+  passed. Financial row counts and totals matched before and after.
+- [ ] Fix the two failed workflows with separate development examples.
+  Use the now-exposed cases as regressions and keep the next held-out
+  qualification set fresh. The 90% launch goal remains unmeasured.
+- [ ] The integrated customer composer and existing production gates
+  remain open.
+
+[Held-out results and source pins](QA/HANDOFF/PENTA_MINI_CONVERSATION_EVALUATION_2026-11-15.md)
+
 ## Mini 0.14 full local smoke
 
 - [x] Planner 0.13 varied on a short subject change across live runs. On the
