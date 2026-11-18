@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 
@@ -23,8 +24,10 @@ public sealed class PentaMiniProvider(HttpClient http, IConfiguration config, IH
         try
         {
             using var message = new HttpRequestMessage(HttpMethod.Post, new Uri(endpoint, "v1/chat")) { Content = JsonContent.Create(request) };
+            message.Headers.Accept.ParseAdd("application/json");
+            message.Headers.AcceptEncoding.ParseAdd("identity");
             using var response = await http.SendAsync(message, HttpCompletionOption.ResponseHeadersRead, deadline.Token);
-            if (!response.IsSuccessStatusCode) return new(null, "Unavailable");
+            if (response.StatusCode != HttpStatusCode.OK) return new(null, "Unavailable");
             runtime = MiniRuntimeIdentity.FromHeaders(response.Headers);
             if (runtime is null) return new(null, "RuntimeIdentityFailed");
             var data = await BoundedJsonAsync(response.Content, deadline.Token);
@@ -43,9 +46,13 @@ public sealed class PentaMiniProvider(HttpClient http, IConfiguration config, IH
         deadline.CancelAfter(TimeSpan.FromSeconds(3));
         try
         {
-            using var response = await http.GetAsync(new Uri(endpoint, "readiness"), HttpCompletionOption.ResponseHeadersRead, deadline.Token);
-            if (!response.IsSuccessStatusCode) return "Unavailable";
+            using var message = new HttpRequestMessage(HttpMethod.Get, new Uri(endpoint, "readiness"));
+            message.Headers.Accept.ParseAdd("application/json");
+            message.Headers.AcceptEncoding.ParseAdd("identity");
+            using var response = await http.SendAsync(message, HttpCompletionOption.ResponseHeadersRead, deadline.Token);
+            if (response.StatusCode != HttpStatusCode.OK) return "Unavailable";
             var data = await BoundedJsonAsync(response.Content, deadline.Token);
+            if (data.ValueKind != JsonValueKind.Object) return "Unavailable";
             return data.TryGetProperty("inference_ready", out var ready) && ready.ValueKind == JsonValueKind.True ? "Available" : "Degraded";
         }
         catch (Exception ex) when (ex is OperationCanceledException or HttpRequestException or IOException or JsonException)
@@ -54,6 +61,12 @@ public sealed class PentaMiniProvider(HttpClient http, IConfiguration config, IH
     private static async Task<JsonElement> BoundedJsonAsync(HttpContent content, CancellationToken token)
     {
         const int max = 16 * 1024;
+        var charset = content.Headers.ContentType?.CharSet;
+        if (!string.Equals(content.Headers.ContentType?.MediaType, "application/json", StringComparison.OrdinalIgnoreCase) ||
+            (!string.IsNullOrEmpty(charset) && !string.Equals(charset.Trim('"'), "utf-8", StringComparison.OrdinalIgnoreCase)) ||
+            content.Headers.ContentEncoding.Count > 1 ||
+            content.Headers.ContentEncoding.Any(value => !string.Equals(value, "identity", StringComparison.OrdinalIgnoreCase)))
+            throw new JsonException("Invalid provider response representation.");
         if (content.Headers.ContentLength > max) throw new JsonException("Provider response too large.");
         await using var stream = await content.ReadAsStreamAsync(token);
         using var buffer = new MemoryStream();
