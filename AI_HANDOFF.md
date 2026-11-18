@@ -1,5 +1,45 @@
 # Academy Desk handoff
 
+## Mini replay and Student 360 balance parity
+
+- [x] Planner 0.13 returned all four pending-fee learners on the
+  original live case. The next three turns, duplicate-name clarification,
+  and own, foreign and unknown record-code cases passed.
+- [x] The replay found that Student 360 omitted adjustments. Student 360
+  now uses the shared invoice ledger for settled payments and shows the net
+  balance, keeping currencies separate in the Fees tile. All six real SQL
+  consumer stages and 35 frontend tests passed.
+- [ ] Rerun the complete live Mini harness on the corrected host, then
+  qualify held-out conversations. The earlier full harness stopped at
+  Student 360, so the remaining live checks are open.
+- [ ] Hosted audit and Core credential, six critical issues, physical
+  devices and staging acceptance remain open.
+
+[Mini and Student 360 evidence](QA/HANDOFF/PENTA_MINI_CONVERSATION_EVALUATION_2026-11-15.md)
+
+## Isolated Mini smoke and release audit — 18 November 2026
+
+- [x] Verified one isolated Mini load under the existing RAM guard. The
+  locked Qwen3.5-2B runtime was ready in 15.3 seconds. Both original services
+  were restored, API health returned 200, and Docker inventory matched.
+- [ ] Model smoke failed on the first synthetic fees question. Mini proposed
+  an unrequested Piano filter, returning three of four verified SQL rows.
+  The remaining model turns were not run. Planner 0.13 at local Mini commit
+  5b8f58d separates general fees from subject examples. Its 71 model-free
+  tests passed. A separately scoped inference rerun and held-out
+  qualification remain open.
+- [ ] Hosted run 44274804584 passed API regressions and stopped on the
+  frontend dependency audit for CVE-2026-112366. Both impacted picomatch
+  copies are flagged as dev dependencies in the lockfile. The separate
+  production-only audit returned zero findings. Keep the required
+  build dependency audit in place. The paired job still lacks the private
+  Core Actions credential.
+- [ ] Six critical records, physical devices and staging recovery remain
+  required. Keep Sol High for the next Mini and release-security batch.
+
+[Mini smoke handoff](QA/HANDOFF/PENTA_MINI_CONVERSATION_EVALUATION_2026-11-15.md) ·
+[Hosted result](https://github.com/AcademyDesk/AcademyDesk/actions/runs/44274804584)
+
 ## C53 Mini transport and Hayansh release — 18 November 2026
 
 - [x] Integrated Cloud C53 at 400d0c6. Local validation passed 785 PENTA API

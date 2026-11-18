@@ -1,5 +1,55 @@
 # PENTA Mini conversation evaluation handoff
 
+## Planner 0.13 isolated replay
+
+Academy 219bba2, Mini 5b8f58d and the same hashed Qwen3.5-2B artifact
+replayed the earlier smoke. The general pending-fees request returned four
+eligible records with no subject filter. The next turns narrowed to three
+Piano learners, sorted exact balances and opened the second authorized
+record. Ambiguous learner names, exact record-code retrieval and no results
+for foreign and unknown record codes also passed. Thirteen turns were
+recorded before the full harness stopped in the separate Student 360 parity
+check. That response omitted adjustedAmount. Keep the original failure
+and run receipts. Both PENTA services were restored, API health returned
+200, and Docker inventory matched.
+
+The host correction reused the shared invoice projection. Student 360 now
+includes the applied adjustment and authoritative outstanding balance. Six
+real SQL finance-consumer stages verified parity for applied, unapplied,
+fully adjusted and one-cent cases, including foreign denial. The 35
+frontend regressions include the mixed-currency Fees tile. The focused
+Consumer run was model-free (local receipt 217b1ce2930d44aca2ae30c732a41a71
+records the initial LINQ translation failure; d6cf1a404296469a9450c023fe4ad604
+records the corrected read projection).
+
+These known smoke prompts establish the observed model behavior. The complete
+model harness, independent held-out cases and measured launch coverage remain
+open. Run the full smoke after integrating the Student 360 balance correction.
+
+## One isolated model-backed smoke — 18 November 2026
+
+Desktop ran the pinned Mini after releasing memory from the two pre-existing
+local services. Exact Academy source 219bba2, Core c3c61b9 and the retained
+Qwen3.5-2B Q4_0 artifact used the pinned llama image. The CPU-only run used
+one worker, four threads, 2048 context, temperature zero, reasoning off and
+a 256-token output limit. Start admission had 3.65 GiB free RAM. The private
+runtime reached readiness in 15.3 seconds.
+
+The real host and synthetic SQL case failed on turn one. The request for
+students with pending fees resulted in SearchLearners with Pending and an
+unrequested Piano subject. Three rows were returned instead of the four
+authorized fixture rows. The valid plan reached SQL under existing role and
+tenant checks. Later model turns and held-out cases did not run. Preserve the
+failure rather than weakening the exact-count assertion or changing the fixture.
+
+Mini candidate planner 0.13 at local commit 5b8f58d separates general fee
+queries from explicit subject examples. Its 71 isolated model-free tests
+passed. The old prompt example is a plausible cause and the model-backed
+fix remains unverified. Replay the same failure first, then test the
+independent held-out set. Smoke receipt e56f40ae89524fefb721077891845090
+stays local along with synthetic traces. Both original services and Docker
+inventory recovered. No customer rollout or production readiness claim.
+
 ## Desktop artifact and transport preflight — 18 November 2026
 
 Cloud C53 (400d0c6) tightens readiness and model-plan transport before the

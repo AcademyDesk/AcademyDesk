@@ -28,6 +28,10 @@ internal static class InvoiceReadModel
                 (payment.Status == "Completed" || payment.Status == "Reconciled") &&
                 payment.Currency.Trim().ToUpper() == invoice.Currency.Trim().ToUpper())
                 .Sum(payment => (decimal?)payment.Amount) ?? 0,
+            LastPaidAtUtc = db.Payments.Where(payment => payment.AcademyId == invoice.AcademyId && payment.InvoiceId == invoice.Id &&
+                (payment.Status == "Completed" || payment.Status == "Reconciled") &&
+                payment.Currency.Trim().ToUpper() == invoice.Currency.Trim().ToUpper())
+                .Max(payment => (DateTime?)payment.PaidAtUtc),
             Currency = invoice.Currency,
             IssuedDate = invoice.IssuedDate,
             DueDate = invoice.DueDate,
@@ -44,6 +48,7 @@ internal sealed class InvoiceReadEntry
     public decimal TotalAmount { get; init; }
     public decimal AdjustedAmount { get; init; }
     public decimal PaidAmount { get; init; }
+    public DateTime? LastPaidAtUtc { get; init; }
     public required string Currency { get; init; }
     public DateOnly IssuedDate { get; init; }
     public DateOnly DueDate { get; init; }

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { academyApi } from "@/lib/api";
+import { reportMoney } from "@/lib/reports-finance";
 import { useRecordEditor } from "@/lib/use-record-editor";
 import { StudentAdminProfile } from "@/components/student-admin-profile";
 import { StudentFeeArrangements } from "@/components/student-fee-arrangements";
@@ -44,7 +45,18 @@ type Profile = {
 type Guardian = { id: string; name: string; email?: string | null; phone?: string | null; relationship?: string | null };
 type Enrollment = { batchName: string; courseName: string; status: string; startDate: string; endDate?: string | null };
 type StatusCount = { status: string; count: number };
-type Invoice = { invoiceNumber: string; totalAmount: number; currency: string; dueDate: string; status: string; subjectName?: string | null; paidAmount?: number; lastPaidAtUtc?: string | null };
+type Invoice = {
+  invoiceNumber: string;
+  totalAmount: number;
+  adjustedAmount?: number;
+  balance?: number;
+  currency: string;
+  dueDate: string;
+  status: string;
+  subjectName?: string | null;
+  paidAmount?: number;
+  lastPaidAtUtc?: string | null;
+};
 type StudentDetail = "enrolments" | "attendance" | "fees" | "family";
 
 const count = (items?: unknown[]) => items?.length ?? 0;
@@ -132,16 +144,15 @@ export default function StudentProfilePage() {
   }
   const notice = message || (editor.loading ? "Loading student record…" : editor.message);
   const student = students.find((item) => item.id === studentId);
-  const balance = (item: Invoice) => Math.max(0, item.totalAmount - (item.paidAmount ?? 0));
-  const outstanding = (profile?.invoices ?? [])
-    .reduce((sum, item) => sum + balance(item), 0);
+  const balance = (item: Invoice) => item.status === "Cancelled" ? 0 :
+    item.balance ?? Math.max(0, item.totalAmount - (item.adjustedAmount ?? 0) - (item.paidAmount ?? 0));
+  const feeBalances = (profile?.invoices ?? []).map(item => ({
+    amount: balance(item), currency: item.currency, dueDate: item.dueDate,
+  })).filter(item => item.amount > 0);
   const today = new Date().toISOString().slice(0, 10);
-  const upcoming = (profile?.invoices ?? [])
-    .filter((item) => balance(item) > 0 && item.dueDate >= today)
-    .reduce((sum, item) => sum + balance(item), 0);
-  const overdue = (profile?.invoices ?? [])
-    .filter((item) => balance(item) > 0 && item.dueDate < today)
-    .reduce((sum, item) => sum + balance(item), 0);
+  const outstanding = reportMoney(feeBalances);
+  const upcoming = reportMoney(feeBalances.filter(item => item.dueDate >= today));
+  const overdue = reportMoney(feeBalances.filter(item => item.dueDate < today));
   return (
     <main className="enterprise-settings student-360-standard">
       <header className="student-360-heading">
@@ -182,7 +193,7 @@ export default function StudentProfilePage() {
           <section className="student-360-summary-grid">
             <StandardInteractiveTile className="student-summary-tile" label="Enrolments" value={count(profile.enrollments)} detail={profile.enrollments?.map((item) => item.courseName).filter((value, index, values) => values.indexOf(value) === index).join(" · ") || "No enrolled subjects"} onClick={() => setDetail("enrolments")} />
             <StandardInteractiveTile className="student-summary-tile" label="Attendance" value={attendanceCount(profile.attendance)} detail={formatAttendance(profile.currentMonthAttendance) + " this month"} onClick={() => setDetail("attendance")} />
-            <StandardInteractiveTile className="student-summary-tile" label="Fees" value={`₹${outstanding.toLocaleString("en-IN")}`} detail={`₹${upcoming.toLocaleString("en-IN")} upcoming · ₹${overdue.toLocaleString("en-IN")} overdue`} onClick={() => setDetail("fees")} />
+            <StandardInteractiveTile className="student-summary-tile" label="Fees" value={outstanding} detail={`${upcoming} upcoming · ${overdue} overdue`} onClick={() => setDetail("fees")} />
             <StandardInteractiveTile className="student-summary-tile" label="Family" value={count(profile.guardians)} detail="View parent details" onClick={() => setDetail("family")} />
           </section>
           <section className="student-360-detail-grid">
@@ -228,7 +239,7 @@ export default function StudentProfilePage() {
           </section>
           {detail === "enrolments" && <StandardDetailModal title="Enrolled subjects" eyebrow="Student 360" onClose={() => setDetail(null)}><div className="standard-detail-content"><StudentDetailList rows={(profile.enrollments ?? []).map((item) => [item.courseName, `${item.batchName} · ${item.status} · Started ${formatDate(item.startDate)}`])} empty="This student is not enrolled in any subject." /></div></StandardDetailModal>}
           {detail === "attendance" && <StandardDetailModal title="Attendance" eyebrow="Student 360" onClose={() => setDetail(null)}><div className="standard-detail-content"><section className="standard-detail-group"><h3>All recorded attendance</h3><StudentDetailList rows={(profile.attendance ?? []).map((item) => [item.status, `${item.count} class${item.count === 1 ? "" : "es"}`])} empty="No attendance has been recorded for this student." /></section><section className="standard-detail-group"><h3>This month</h3><StudentDetailList rows={(profile.currentMonthAttendance ?? []).map((item) => [item.status, `${item.count} class${item.count === 1 ? "" : "es"}`])} empty="No attendance has been recorded this month." /></section></div></StandardDetailModal>}
-          {detail === "fees" && <StandardDetailModal title="Fee payments" eyebrow="Student 360" onClose={() => setDetail(null)}><div className="standard-detail-content"><StudentDetailList rows={(profile.invoices ?? []).map((item) => { const remaining = balance(item); return [item.invoiceNumber, `${item.subjectName || "General fee"} · ${item.status} · ${item.currency} ${item.paidAmount ?? 0} paid · ${remaining > 0 ? `${item.currency} ${remaining} due` : "Paid in full"} · Due ${formatDate(item.dueDate)}${item.lastPaidAtUtc ? ` · Last payment ${formatDate(item.lastPaidAtUtc)}` : ""}`]; })} empty="No fee payments or invoices are recorded for this student." /></div></StandardDetailModal>}
+          {detail === "fees" && <StandardDetailModal title="Fee payments" eyebrow="Student 360" onClose={() => setDetail(null)}><div className="standard-detail-content"><StudentDetailList rows={(profile.invoices ?? []).map((item) => { const remaining = balance(item); return [item.invoiceNumber, `${item.subjectName || "General fee"} · ${item.status} · ${item.currency} ${item.paidAmount ?? 0} paid · ${remaining > 0 ? `${item.currency} ${remaining} due` : "No balance due"} · Due ${formatDate(item.dueDate)}${item.lastPaidAtUtc ? ` · Last payment ${formatDate(item.lastPaidAtUtc)}` : ""}`]; })} empty="No fee payments or invoices are recorded for this student." /></div></StandardDetailModal>}
           {detail === "family" && <StandardDetailModal title="Family" eyebrow="Student 360" onClose={() => setDetail(null)}><div className="standard-detail-content"><StudentDetailList rows={(profile.guardians ?? []).map((guardian) => [guardian.name, `${guardian.relationship || "Parent"}${guardian.email ? ` · ${guardian.email}` : ""}${guardian.phone ? ` · ${guardian.phone}` : ""}`])} empty="No parent or guardian is linked to this student." /></div></StandardDetailModal>}
         </>
       )}

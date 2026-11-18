@@ -47,6 +47,20 @@ test('student profile offers recovery after a rejected detail read', async () =>
   assert.equal(editor(f.h).props.profile.studentNumber, 'ONE'); f.h.unmount();
 });
 
+test('Student 360 uses the adjusted balance and keeps currencies separate', async () => {
+  const f = await studentPage(() => response({ studentNumber: 'ONE', invoices: [
+    { invoiceNumber: 'ADJUSTED', currency: 'INR', totalAmount: 600, adjustedAmount: 100, paidAmount: 200, balance: 300, dueDate: '2099-01-01', status: 'Open' },
+    { invoiceNumber: 'USD-OPEN', currency: 'USD', totalAmount: 10, paidAmount: 4, balance: 6, dueDate: '2000-01-01', status: 'Open' },
+    { invoiceNumber: 'CANCELLED', currency: 'INR', totalAmount: 999, balance: 999, dueDate: '2099-01-01', status: 'Cancelled' },
+  ] }));
+  const fee = nodes(f.h.render()).find(n => n.props.label === 'Fees');
+  assert.ok(fee);
+  const format = value => value.replace(/\s+/g, ' ');
+  assert.equal(format(fee.props.value), 'INR 300.00 · USD 6.00');
+  assert.equal(format(fee.props.detail), 'INR 300.00 upcoming · USD 6.00 overdue');
+  f.h.unmount();
+});
+
 async function adminProfile(write, props = {}) {
   const writes = [], saved = [];
   const h = mount('apps/web/src/components/student-admin-profile.tsx', async (url, init) => {

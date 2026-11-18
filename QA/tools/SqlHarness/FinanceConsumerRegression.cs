@@ -88,9 +88,13 @@ internal static partial class SqlHarnessEntryPoint
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", studentToken);
         using var studentReminder = await client.PostAsJsonAsync($"/api/academies/{academyId}/fee-reminders", new { invoiceId = mixedId });
         RequireFinanceStatus(studentReminder, HttpStatusCode.Forbidden, "student cannot queue reminder");
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", otherToken);
+        using var foreignProfile = await client.GetAsync($"/api/academies/{academyId}/students/{studentId}/profile");
+        RequireFinanceStatus(foreignProfile, HttpStatusCode.Forbidden, "foreign Student 360 invoice profile");
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", studentToken);
         using var foreignDocument = await client.GetAsync($"/api/portal/students/{Guid.NewGuid()}/invoices/{mixedId}/download");
         RequireFinanceStatus(foreignDocument, HttpStatusCode.Forbidden, "foreign student invoice document");
-        Console.WriteLine("CONSUMER REGRESSION PASS: six stages agree across fresh SQL/Admin/Student/document/dashboard/reminder; approved versus PendingApproval/Rejected, mixed Completed/Reconciled/Voided, full adjustment, settlement and cent balance; read/reminder financial snapshots unchanged; foreign/student reminder and foreign document denied. No restoration or full critical acceptance.");
+        Console.WriteLine("CONSUMER REGRESSION PASS: six stages agree across fresh SQL/Admin/Student/Student 360/document/dashboard/reminder; approved versus PendingApproval/Rejected, mixed Completed/Reconciled/Voided, full adjustment, settlement and cent balance; read/reminder financial snapshots unchanged; foreign/student reminder and foreign document denied. No restoration or full critical acceptance.");
         await VerifyPentaFinanceReadsAsync(factory, manifest, academyId, studentId);
         await VerifyPentaCollectionReadsAsync(factory, manifest, academyId, studentId);
         await VerifyPentaExpensePayrollReadsAsync(factory, manifest, academyId);
@@ -111,6 +115,22 @@ internal static partial class SqlHarnessEntryPoint
             throw new InvalidOperationException("Consumer SQL fixture arithmetic differs.");
         var views = await ReadFinanceViewsAsync(client, $"/api/academies/{academyId}/invoices", studentId, invoiceId, adminToken, studentToken);
         if (views != (expectedPaid, expectedBalance, expectedBalance)) throw new InvalidOperationException("Consumer Admin/Student balances differ.");
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", adminToken);
+        using (var profile = await client.GetAsync($"/api/academies/{academyId}/students/{studentId}/profile"))
+        {
+            RequireFinanceStatus(profile, HttpStatusCode.OK, "Student 360 invoice profile");
+            using var profileJson = JsonDocument.Parse(await profile.Content.ReadAsStringAsync());
+            using var scope = factory.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+            var number = await db.Invoices.Where(invoice => invoice.Id == invoiceId).Select(invoice => invoice.InvoiceNumber).SingleAsync();
+            var item = profileJson.RootElement.GetProperty("invoices").EnumerateArray()
+                .Single(invoice => invoice.GetProperty("invoiceNumber").GetString() == number);
+            if (item.GetProperty("adjustedAmount").GetDecimal() != before.Adjusted ||
+                item.GetProperty("paidAmount").GetDecimal() != expectedPaid ||
+                item.GetProperty("balance").GetDecimal() != expectedBalance)
+                throw new InvalidOperationException("Student 360 adjustment, payment or outstanding amounts disagree with SQL.");
+        }
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", studentToken);
         using var document = await client.GetAsync($"/api/portal/students/{studentId}/invoices/{invoiceId}/download");
         RequireFinanceStatus(document, HttpStatusCode.OK, "consumer invoice document");
         var html = await document.Content.ReadAsStringAsync();

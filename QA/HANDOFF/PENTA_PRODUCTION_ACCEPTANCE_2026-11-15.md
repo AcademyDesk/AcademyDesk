@@ -1,5 +1,31 @@
 # Academy Desk PENTA launch acceptance
 
+## Mini follow-up and Student 360
+
+- The live grounding replay passed the original query and the fee sequence.
+  The full smoke stopped at Student 360 balance parity.
+- The Student 360 correction passed six real SQL consumer stages and 35
+  frontend tests. The complete Mini rerun and held-out qualification are
+  still required. No critical issue was closed on this evidence alone.
+
+[Source-bound Mini and Student 360 results](PENTA_MINI_CONVERSATION_EVALUATION_2026-11-15.md)
+
+## Latest release evidence — 18 November 2026
+
+- The isolated Qwen Mini runtime loaded. Its first model-backed fees
+  workflow failed because the plan added an unrequested subject filter.
+  A planner candidate passed 71 model-free tests. The actual replay and
+  held-out qualification remain open.
+- Hosted 219bba2 passed its API regressions. Its full frontend audit flagged
+  picomatch CVE-2026-112366 and its private Core job failed at credential
+  access. Both picomatch lock entries are build/dev dependencies and a
+  separate production-only audit returned zero findings. The required
+  full audit remains in force while remediation is evaluated.
+
+[Mini smoke handoff](PENTA_MINI_CONVERSATION_EVALUATION_2026-11-15.md) ·
+[Hosted candidate verification](https://github.com/AcademyDesk/AcademyDesk/actions/runs/44274804584) ·
+[picomatch advisory](https://github.com/advisories/GHSA-fc5q-39xc-vjpf)
+
 ## 18 November release checkpoint
 
 - [x] Ordinary hosted verification passed on 4cbe56a, including the payroll
