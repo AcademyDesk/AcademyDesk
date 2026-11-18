@@ -1,5 +1,30 @@
 # Academy Desk handoff
 
+## C53 Mini transport and Hayansh release — 18 November 2026
+
+- [x] Integrated Cloud C53 at 400d0c6. Local validation passed 785 PENTA API
+  tests, 10 shared contract checks, the guarded PENTA Foundation SQL module
+  and six disposable SQL restore scenarios.
+- [x] The exact paired Core pin passed locally, including all five real
+  .NET-to-Python transport checks through protected onboarding and SQL.
+- [x] Integrated Cloud C50's Manual-controls correction and passed 17 scoped
+  Chromium cases against the locked local web export and intercepted APIs.
+- [x] Matched all eight selected GGUF weight and projector files on D: to the
+  retained manifest. Mini's embedded tokenizer metadata and chat template
+  matched the archived inspection, and the pinned runtime archive verified.
+- [x] The ordinary hosted job passed on preceding commit 4cbe56a, including
+  payroll. The separate Core job still needs PENTA_SOURCE_READ_TOKEN.
+- [ ] Complete the held-out SQL fixture binding and review. The owner stop
+  before candidate loading remains active. Mini is first, with a private
+  learner lookup and follow-up evaluation before wider role coverage.
+- [ ] Close the six critical records and complete device, staging, protected
+  hosted CI and private Mini acceptance before Azure. Keep Sol High for
+  model/host qualification and the remaining security checks.
+- Business scope confirmed by the owner. Hayansh launches first, followed by
+  a small-school pilot. Small, medium and large schools are the target market.
+
+[Mini evaluation and local readiness](QA/HANDOFF/PENTA_MINI_CONVERSATION_EVALUATION_2026-11-15.md)
+
 ## Payroll race return and go-live checklist — 17 November 2026
 
 - [x] Hosted C49 reproduced a 201/500 payout pair. Removed the same-second

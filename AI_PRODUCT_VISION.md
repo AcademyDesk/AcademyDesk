@@ -35,7 +35,11 @@ The existing ERP is not discarded. The existing Next.js frontend, ASP.NET Core b
 
 The AI layer sits above that trusted domain platform.
 
-Initial market is music academies. The architecture should be capable of supporting other instructor-led academies, such as dance and arts.
+The target market is small, medium and large schools. Hayansh Academy is the
+first live customer. The next school milestone is a small-school pilot that
+proves one complete school year. Extend validated school workflows to campuses
+and school groups, with capacity evidence, before claiming large-school readiness.
+Keep music and other specialty instruction workloads supported.
 
 ## AI interaction model
 

@@ -1,5 +1,21 @@
 # Academy Desk PENTA launch acceptance
 
+## 18 November release checkpoint
+
+- [x] Ordinary hosted verification passed on 4cbe56a, including the payroll
+  follow-up. The paired Core job failed at private source access.
+- [x] The C53 transport source passed targeted Desktop API, SQL, shared
+  contract and C50 browser validation. Run hosted verification on the new
+  integrated candidate before using it for release. All five paired Core
+  checks passed locally against the exact source pin and real disposable SQL.
+- [x] D: artifacts and the Mini runtime archive passed offline verification.
+  Private Mini conversation qualification remains open under the owner stop.
+- [ ] Six critical records, physical devices, private Core workflow access,
+  staging and AI-inclusive launch acceptance remain required.
+
+[Hosted verification](https://github.com/AcademyDesk/AcademyDesk/actions/runs/44065049153) ·
+[Private Mini evaluation](PENTA_MINI_CONVERSATION_EVALUATION_2026-11-15.md)
+
 ## Go-live checklist — 17 November 2026
 
 ### Completed evidence

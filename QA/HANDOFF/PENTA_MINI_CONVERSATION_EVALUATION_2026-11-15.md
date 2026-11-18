@@ -1,5 +1,30 @@
 # PENTA Mini conversation evaluation handoff
 
+## Desktop artifact and transport preflight — 18 November 2026
+
+Cloud C53 (400d0c6) tightens readiness and model-plan transport before the
+first authorized candidate run. The integrated Desktop source passed 785
+PENTA API tests, 10 cross-language contract checks at Core c3c61b9 and
+protected Identity/HTTP/SQL checks including 40 host security controls and
+16 read privacy controls. The exact paired Core checkout also passed all
+five scripted .NET-to-Python transport checks through protected onboarding
+and real SQL. Readiness by itself establishes availability.
+
+The original D: model-library verifier passed all seven manifest entries and
+190 archived payload files. The Mini weights, embedded tokenizer metadata and
+chat-template hash match the retained artifacts, as does the native runtime
+archive. The pinned runtime image is already cached. These checks used file
+inspection and checksums. The evaluation candidate remains unloaded.
+
+A normalized exact-string scan of the 12 proposed cases against 90 local
+benchmarks and original JSON archives found no exact reuse. Independent
+semantic contamination review and binding the cases to disposable SQL
+identities and expected outcomes remain open. The historical PentaMini
+harness can provide a source-bound local smoke under the separate loading
+decision. Keep its previously exercised prompts out of the held-out score.
+Mini remains first. Plus and Pro are later qualification targets, Ultra is
+deferred, and 9B remains for internal evaluation.
+
 ## Desktop preparation after C48 handoff — 17 November 2026
 
 The planned Mini candidate is the locked Qwen3.5-2B Q4_0 at revision

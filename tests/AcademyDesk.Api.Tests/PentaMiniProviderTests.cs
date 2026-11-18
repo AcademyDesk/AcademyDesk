@@ -23,7 +23,7 @@ public sealed class PentaMiniProviderTests
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken token)
         {
             Calls++; Request = request.Content is null ? null : await request.Content.ReadAsStringAsync(token);
-            var response = new HttpResponseMessage(status) { Content = new StringContent(body) };
+            var response = new HttpResponseMessage(status) { Content = new StringContent(body, System.Text.Encoding.UTF8, "application/json") };
             if (runtime is not null)
                 response.Headers.TryAddWithoutValidation(MiniRuntimeIdentity.HeaderName,
                     duplicate ? new[] { runtime, runtime } : new[] { changing ? Runtime.Replace("2.4.1", $"2.4.{Calls}") : runtime == "default" ? Runtime : runtime });
