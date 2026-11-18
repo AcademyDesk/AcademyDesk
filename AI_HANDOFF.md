@@ -1,5 +1,22 @@
 # Academy Desk handoff
 
+## Mini 0.14 full local smoke
+
+- [x] Planner 0.13 varied on a short subject change across live runs. On the
+  corrected application it dropped Pending after "Only piano." Planner 0.14
+  constrains short contextual refinements and preserves untouched criteria.
+- [x] Seventy-five focused Mini tests passed. The full existing model-backed
+  PentaFoundation suite passed with the exact Academy a81674c and Mini c9dc67d
+  source, locked Qwen3.5-2B, real Identity and disposable SQL. The final
+  run restored both original PENTA services and the Docker inventory.
+- [ ] The 12 proposed held-out conversations still lack independent fixture
+  binding/review and an execution result. Scoring the 90% launch target and
+  integrating the Mini composer for customers remain open.
+- [ ] Hosted dependency audit, private Core Actions access, six critical
+  acceptance records, physical devices and staging recovery remain open.
+
+[Mini acceptance evidence](QA/HANDOFF/PENTA_MINI_CONVERSATION_EVALUATION_2026-11-15.md)
+
 ## Mini replay and Student 360 balance parity
 
 - [x] Planner 0.13 returned all four pending-fee learners on the

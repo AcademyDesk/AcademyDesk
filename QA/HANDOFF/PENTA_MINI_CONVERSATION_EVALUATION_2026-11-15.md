@@ -1,5 +1,30 @@
 # PENTA Mini conversation evaluation handoff
 
+## Planner 0.14 full local smoke pass
+
+Planner 0.13 first passed the broad four-record search on corrected Academy
+a81674c. On turn two it searched by Piano while dropping the Pending
+criterion. That exact pair had passed on the earlier application run, so the
+single prior success did not establish consistent refinement. The failed
+receipt is 98dd3c9a72784358b435e17670f993c9.
+
+Planner 0.14 (Mini c9dc67d) constrains a short contextual "Only X" follow-up
+to a refinement and withholds replacement/removal plans. Explicit reset
+requests retain their existing path. Seventy-five focused tests passed.
+The full existing PentaFoundation SQL smoke then passed on Academy a81674c
+with the locked Qwen3.5-2B artifact. It observed 13 real-model turns and
+separate scripted safety checks. It verified four pending rows, then three
+with the requested Piano filter, exact sorting, ordinal resolution,
+duplicate-name clarification, scoped record-code lookup and Student 360
+balance parity. Host checks verified tenant denial, rejected forged state,
+revocation, outage handling and audit rollback under disposable SQL.
+The complete local run receipt is 51b10e520a0e4609afd2e53023e158e0.
+Both original services recovered and Docker inventory matched.
+
+These are previously exercised smoke cases. The 12 proposed held-out
+scenarios still need independent review, expected SQL bindings and a run.
+Current production and activation gates remain open.
+
 ## Planner 0.13 isolated replay
 
 Academy 219bba2, Mini 5b8f58d and the same hashed Qwen3.5-2B artifact

@@ -1,5 +1,16 @@
 # Academy Desk PENTA launch acceptance
 
+## Full local Mini smoke
+
+- [x] Mini planner 0.14 passed the existing local PENTA/SQL smoke with
+  Student 360 balance parity and original services restored.
+- [ ] Held-out qualification, customer-facing Mini composer acceptance and
+  measured 90% launch coverage remain open.
+- [ ] Hosted audit, private Core credential, six critical records, physical
+  devices and staging recovery remain required.
+
+[Source-bound smoke evidence](PENTA_MINI_CONVERSATION_EVALUATION_2026-11-15.md)
+
 ## Mini follow-up and Student 360
 
 - The live grounding replay passed the original query and the fee sequence.
