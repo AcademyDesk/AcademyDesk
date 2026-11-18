@@ -1,5 +1,17 @@
 # Academy Desk PENTA launch acceptance
 
+## C54 composer integration status
+
+- [x] The protected Mini SQL preflight authenticated the live test actor,
+  preserved a single committed receipt after the discarded response and
+  verified no replay or financial-row delta.
+- [ ] C54 source publication, authorized read-only GET and browser
+  recovery are still required. The latest C54 tip contains the handoff.
+- [ ] Wider AI coverage, hosted checks, physical devices, staging and the
+  six critical acceptance records remain open.
+
+[Exact preflight evidence](PENTA_MINI_CONVERSATION_EVALUATION_2026-11-15.md)
+
 ## Mini 0.15 learner-finance evidence
 
 - [x] Both previously missed workflows passed independent development

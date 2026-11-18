@@ -1,5 +1,31 @@
 # PENTA Mini conversation evaluation handoff
 
+## C54 composer native recovery preflight
+
+The published Cloud C54 tip 6f033cd contains only its handoff. Academy
+74f9362 does not expose the read-only Mini receipt GET or the
+customer-facing Mini composer. Desktop left the Cloud-owned application
+and browser paths alone.
+
+Desktop run f726c908f9fa4d5299881311b2f6a684 built the SQL harness cleanly
+and ran the protected preflight against real Identity and disposable
+SQL using a controlled planner. A pending GET exposed no result and left
+the durable claim unchanged. After the caller discarded the committed
+reply, SQL held one completed protected receipt, one provider dispatch
+and exactly two request audits. Another GET returned no receipt while
+the route was absent. There was no POST replay and the before/after
+financial counts and totals matched.
+
+The optional PentaFoundation mode is enabled by
+QA_PENTA_MINI_COMPOSER_PREFLIGHT=1 with QA_PENTA_MINI=0. It detects the
+registered Mini receipt route. On an integrated candidate it also
+checks the exact owner receipt, no-store headers, anonymous and
+different-actor/academy refusals, a single added audit and unchanged
+turn state. Confirm the published route and version semantics first.
+Then run the separately scoped stale, expired, revoked and audit
+failure checks and browser lost-response/reload cases. Build both the
+default-off and evaluation-flag variants before composer acceptance.
+
 ## Mini 0.15 fresh evaluation
 
 Mini fcb4672 and Academy e716b04 (with QA-only harness additions) independently

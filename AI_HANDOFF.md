@@ -1,5 +1,20 @@
 # Academy Desk handoff
 
+## C54 composer SQL preflight
+
+- [x] Desktop verified the protected receipt lifecycle on Academy 74f9362
+  with the disposable SQL harness. A pending GET exposed no result. A
+  discarded successful reply left one turn, one planner dispatch and the
+  required claim/completion audits. Financial counts and totals matched.
+- [ ] The published C54 branch still points to the ownership-only commit
+  6f033cd. The Mini composer and GET receipt implementation await that
+  handoff. No browser or customer-composer pass is claimed.
+- [ ] Integrate the published C54 paths, verify scoped and audited GET
+  recovery, then exercise the flagged and default-off browser builds.
+  The launch measurement and production gates remain open.
+
+[C54 native preflight evidence](QA/HANDOFF/PENTA_MINI_CONVERSATION_EVALUATION_2026-11-15.md)
+
 ## Mini 0.15 learner correction and ranking
 
 - [x] Mini fcb4672 adds bounded read paths for explicit full-name

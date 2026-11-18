@@ -495,6 +495,8 @@ internal static partial class SqlHarnessEntryPoint
             tokenA, tokenC, tokenB, teacher, platform);
         if (Environment.GetEnvironmentVariable("QA_PENTA_HOST_SECURITY") == "1")
             await VerifyPentaHostSecurityAsync(manifest, academyA, academyB, tokenA, tokenC, tokenB, teacher);
+        if (Environment.GetEnvironmentVariable("QA_PENTA_MINI_COMPOSER_PREFLIGHT") == "1")
+            await VerifyMiniComposerPreflightAsync(manifest, academyA, tokenA, tokenC, tokenB);
         if (Environment.GetEnvironmentVariable("QA_PENTA_MINI") == "1")
         {
             if (Environment.GetEnvironmentVariable("QA_PENTA_MINI_HELD_OUT_SHA256") is { Length: > 0 })
