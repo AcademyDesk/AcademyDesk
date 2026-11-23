@@ -9,7 +9,7 @@ namespace AcademyDesk.Api.Controllers;
 
 [ApiController, Authorize]
 [Route("api/academies/{academyId:guid}/penta/chat")]
-public sealed class PentaChatController(PentaMiniOrchestrator chat, PentaFinanceReadService finance,
+public sealed partial class PentaChatController(PentaMiniOrchestrator chat, PentaFinanceReadService finance,
     ILogger<PentaChatController> logger) : ControllerBase
 {
     [HttpGet("health")]

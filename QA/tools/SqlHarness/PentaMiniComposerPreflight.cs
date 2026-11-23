@@ -59,6 +59,7 @@ internal static partial class SqlHarnessEntryPoint
 
         var receiptEndpoints = factory.Services.GetRequiredService<EndpointDataSource>().Endpoints.OfType<RouteEndpoint>()
             .Where(endpoint => endpoint.Metadata.GetMetadata<ControllerActionDescriptor>()?.ControllerTypeInfo.AsType() == typeof(PentaChatController) &&
+                endpoint.Metadata.GetMetadata<ControllerActionDescriptor>()?.ActionName == nameof(PentaChatController.ReadTurn) &&
                 endpoint.Metadata.GetMetadata<HttpMethodMetadata>()?.HttpMethods.Contains("GET") == true &&
                 new[] { "academyId", "conversationId", "requestId" }.All(name =>
                     endpoint.RoutePattern.Parameters.Any(parameter => parameter.Name == name)))

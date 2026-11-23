@@ -58,9 +58,8 @@ public sealed class PentaMiniProvider(HttpClient http, IConfiguration config, IH
         catch (Exception ex) when (ex is OperationCanceledException or HttpRequestException or IOException or JsonException)
         { return "Unavailable"; }
     }
-    private static async Task<JsonElement> BoundedJsonAsync(HttpContent content, CancellationToken token)
+    internal static async Task<JsonElement> BoundedJsonAsync(HttpContent content, CancellationToken token, int max = 16 * 1024)
     {
-        const int max = 16 * 1024;
         var charset = content.Headers.ContentType?.CharSet;
         if (!string.Equals(content.Headers.ContentType?.MediaType, "application/json", StringComparison.OrdinalIgnoreCase) ||
             (!string.IsNullOrEmpty(charset) && !string.Equals(charset.Trim('"'), "utf-8", StringComparison.OrdinalIgnoreCase)) ||

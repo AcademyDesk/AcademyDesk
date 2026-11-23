@@ -26,8 +26,9 @@ internal sealed class QaApiFactory : WebApplicationFactory<Program>
     private readonly IPentaOnboardingInterpreter? isolatedOnboardingInterpreter;
     private readonly PentaPrivateContextLeases? isolatedOnboardingLeases;
     private readonly IPentaTeacherInterpreter? isolatedTeacherInterpreter;
+    private readonly IPentaTaskPlanner? isolatedTaskPlanner;
 
-    public QaApiFactory(QaRunManifest manifest, IReadOnlyDictionary<string, string?>? overrides = null, IMediaBlobStore? isolatedMediaStore = null, IInterceptor? isolatedIdentityInterceptor = null, IPentaSyntheticProvider? isolatedPentaProvider = null, IInterceptor? isolatedDomainInterceptor = null, TimeProvider? isolatedClock = null, IPentaProvider? isolatedMiniProvider = null,IPentaOnboardingInterpreter? isolatedOnboardingInterpreter=null,PentaPrivateContextLeases? isolatedOnboardingLeases=null,IPentaTeacherInterpreter? isolatedTeacherInterpreter=null)
+    public QaApiFactory(QaRunManifest manifest, IReadOnlyDictionary<string, string?>? overrides = null, IMediaBlobStore? isolatedMediaStore = null, IInterceptor? isolatedIdentityInterceptor = null, IPentaSyntheticProvider? isolatedPentaProvider = null, IInterceptor? isolatedDomainInterceptor = null, TimeProvider? isolatedClock = null, IPentaProvider? isolatedMiniProvider = null,IPentaOnboardingInterpreter? isolatedOnboardingInterpreter=null,PentaPrivateContextLeases? isolatedOnboardingLeases=null,IPentaTeacherInterpreter? isolatedTeacherInterpreter=null,IPentaTaskPlanner? isolatedTaskPlanner=null)
     {
         this.manifest = manifest;
         this.overrides = overrides ?? new Dictionary<string, string?>();
@@ -40,6 +41,7 @@ internal sealed class QaApiFactory : WebApplicationFactory<Program>
         this.isolatedOnboardingInterpreter=isolatedOnboardingInterpreter;
         this.isolatedOnboardingLeases=isolatedOnboardingLeases;
         this.isolatedTeacherInterpreter=isolatedTeacherInterpreter;
+        this.isolatedTaskPlanner=isolatedTaskPlanner;
     }
 
     public bool PreflightPassed { get; private set; }
@@ -136,6 +138,9 @@ internal sealed class QaApiFactory : WebApplicationFactory<Program>
             {
                 services.RemoveAll<IPentaProvider>();
                 services.AddSingleton(isolatedMiniProvider);
+            }
+            if (isolatedTaskPlanner is not null) {
+                services.RemoveAll<IPentaTaskPlanner>(); services.AddSingleton(isolatedTaskPlanner);
             }
             if(isolatedOnboardingInterpreter is not null) {
                 services.RemoveAll<IPentaOnboardingInterpreter>();services.AddSingleton(isolatedOnboardingInterpreter);

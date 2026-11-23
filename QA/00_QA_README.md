@@ -1,5 +1,20 @@
 # AcademyDesk QA control centre — Phase 1
 
+## D63 protected multi-task runtime — 23 November 2026
+
+- [x]934affected host regressions,167current Mini model-free Linux checks and
+  cross-language catalog contract pass. New19SQL/API checks pass with existing
+ 40security/16privacy controls, exact money/recovery,86+7migrations and owned
+  cleanup. Synthetic QA planner is explicit; no real-model pass is inferred.
+- [x] Default-off encrypted draft/history/recovery, current stored authority,
+  retained corrections, pending/replay protection and audit rollback implemented.
+- [ ] Real cached2B semantic/latency probes failed; no activation or teacher fix.
+  All-domain grounded conversation, protected execution, UI/device/model and
+  existing enterprise/paired-CI/staging release gates remain open.
+
+[D63 exact results, failures and next work](REPORTS/D63_PROTECTED_TASK_DIALOGUE_2026-11-23.md)
+
+
 ## D62 whole-product conversation task foundation — 23 November 2026
 
 - [x] Internal source-derived cross-portal Manual operation index; nine typed

@@ -2,7 +2,7 @@
 
 | Field | Value |
 | --- | --- |
-| Status | OPEN — real-model reproduction; implementation pending |
+| Status | OPEN — default-off foundation implemented; live semantic repair/acceptance pending |
 | Priority | P1 / blocker for AI-first product acceptance |
 | Source | 29f908a494f2c0919cd1b5a29175c72735eee895 |
 | Confirmation | Owner screenshot plus real cached Mini / Identity / SQL |
@@ -69,3 +69,13 @@ foundation code, not a repaired live conversation. The current demo's two-tool
 learner path is unchanged. Keep this issue OPEN; teacher/entity correction and
 compound cross-domain model/SQL/browser acceptance remain mandatory. See
 `QA/REPORTS/D62_CONVERSATIONAL_TASK_FOUNDATION_2026-11-23.md`.
+
+## D63 runtime progress — 23 November 2026
+
+Default-off protected draft conversations/current-authority catalog now exist,
+with934affected host tests,167model-free Mini checks and19actual SQL/API checks
+passing. Existing security/privacy/exact-money regressions also pass. These use
+a synthetic planner and do not close this issue. The new catalog is write-draft
+only; teacher factual reads/context/answer composition still need implementation.
+Real cached2B goal/mapping/compound/latency probes failed; the live legacy composer
+is unchanged. Keep OPEN. See QA/REPORTS/D63_PROTECTED_TASK_DIALOGUE_2026-11-23.md.

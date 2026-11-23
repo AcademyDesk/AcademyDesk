@@ -1,5 +1,28 @@
 # Academy Desk handoff
 
+## D63 protected task dialogue runtime — 23 November 2026
+
+- [x] Default-off current-Identity/tenant/module catalog for first nine Owner/
+  Admin draft tools; durable encrypted multi-task state, corrections, chronological
+  history/pagination, one-call claims, GET recovery and mandatory atomic audit.
+- [x]934affected host tests,167Mini model-free Linux checks,19new actual SQL/API
+  checks plus existing40host-security/16privacy controls, exact money/recovery
+  and owned migration/cleanup all pass. Counts overlap as documented, not summed.
+- [x] Mini additive candidate published at4a0ad0bc90c60e0882c4374704344bb35ae83c70.
+  Legacy originals/entrypoint unchanged; new task entrypoint and host flags OFF.
+- [ ] Real cached2B semantic/latency packet FAILED; teacher read, compound
+  execution, all-role coverage and natural source-backed responses remain open.
+  No live composer repair, production model acceptance or Azure release claimed.
+- [ ] Next: trained tool-call/runtime investigation, authorized reads/context/
+  grounded answers, task additions/reference resolution and protected adapters,
+  then real model/SQL/browser acceptance. Sol High; preserve candidate-load stop.
+
+See QA/REPORTS/D63_PROTECTED_TASK_DIALOGUE_2026-11-23.md for source pins,
+preserved harness/quota failures and current evidence. Old synthetic demo database
+and keys preserved privately before restart; use current private ACTIVE_DEMO for
+live state and logins. Existing enterprise issues/gates remain OPEN.
+
+
 ## D62 shared task foundation — 23 November 2026
 
 - [x] Source-derived internal Manual operation index across portals; nine typed

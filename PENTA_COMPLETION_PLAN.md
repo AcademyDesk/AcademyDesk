@@ -24,6 +24,24 @@ implementation order below; the D59 failure evidence remains accurate.
 
 ## D62 implementation checkpoint — 23 November 2026
 
+### D63 additive runtime progress
+
+- [x] B1.03b1 First current stored Identity/tenant/module-filtered nine-operation
+  catalog, Owner/Admin only, default-off Development/Testing. This is not the
+  complete all-role capability registry or qualified real-model selection.
+- [x] B1.04b1/B1.05a Protected encrypted SQL draft dialogue, retained corrections,
+  history/pagination, current-authority revalidation, pending/replay protection,
+  GET receipt recovery and mandatory audit rollback; no domain execution.
+- [x]934affected host tests,167Mini model-free Linux checks,19new native SQL/API
+  checks with existing40security/16privacy controls and exact money/recovery pass.
+- [ ] Real cached2B semantic/latency acceptance FAILED. New provider remains off;
+  all-domain reads/grounded answers, task additions/reference resolution,
+  approvals/compound dispatch, unified UI and real model/browser/device gates
+  remain.24-hour expiry is not physical retention purge. BUG-AI-0001 stays OPEN.
+
+Read QA/REPORTS/D63_PROTECTED_TASK_DIALOGUE_2026-11-23.md before continuing. The
+following D62 statements describe that historical checkpoint, not current wiring.
+
 - [x] B1.03a Internal source-derived Manual controller/action index across role
   surfaces; nine typed draft definitions reuse existing operational fields/rules.
   All-domain source inventory does not mean all-domain runtime tool integration.

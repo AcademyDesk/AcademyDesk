@@ -81,6 +81,7 @@ jobs:
           $harness = Join-Path $PWD '.build-check/ci-sql/bin/SqlHarness/debug/SqlHarness.dll'
           foreach ($module in @('Reconciliation', 'CollectionRace', 'Adjustment', 'AdjustmentRace', 'Payroll', 'Transition', 'Consumers', 'Access', 'GuardianFlags', 'EnrollmentShared', 'TeacherCreationShared', 'StudentOnboardingShared', 'PentaHostMigration', 'PentaFoundation', 'PentaTeacherProtected', 'FinanceIntegrity', 'RecordIntegrity', 'ClassMedia', 'CommunicationRoundtrip', 'WorkItemIntegrity', 'ExportSecurity', 'RoleReplacement', 'RoleRevocation', 'SessionRevocationRepair', 'SessionRefresh', 'RefreshConcurrency', 'Recovery')) {
             $env:QA_PENTA_HOST_SECURITY = if ($module -eq 'PentaFoundation') { '1' } else { '' }
+            $env:QA_PENTA_TASKS_NATIVE = if ($module -eq 'PentaFoundation') { '1' } else { '' }
             $env:QA_PENTA_MINI = '0'
             $log = if ($module -eq 'CommunicationRoundtrip') {
               'QA/EVIDENCE/logs/phase-2b-communication-roundtrip-sql.log'
