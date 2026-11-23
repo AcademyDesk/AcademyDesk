@@ -24,6 +24,7 @@ function fixture(options={}) {
     value={conversationId:conversation,requestId:body.requestId,version,kind:'RESULT',message:'Verified learner read.',capability:'executor',provider:'PENTA Mini',protocol:'0.1',
      context:{filters:{},sort_by:null,current_learner_id:null,current_result_ids:[learner]},
      result:{count:1,hasMore:false,rows:[{sourceId:learner,displayName:'Synthetic learner',recordCode:'SYN-1',subjects:['Piano'],balances:[{currency:'USD',outstanding:450.01}],sourcePath:'/student-management?studentId='+learner}],asOfUtc:'2026-11-18T09:00:00Z',source:'Invoices',balanceScope:'All outstanding fees'}};
+    if(options.produce)value=options.produce(value);
     receipts.set(body.requestId,clone(value));code=201;
     if(options.lost)throw Error('lost reply');
     if(options.patch)value=options.patch(clone(value));
@@ -58,3 +59,19 @@ for(const code of [404,409,410,503])test('recovery '+code+' never replays a POST
 test('late response after session change cannot be accepted',async()=>{let release;const o={hold:new Promise(r=>release=r)},f=fixture(o);await f.ready();const pending=f.mini.send('Find Mira');while(!f.plans())await new Promise(r=>setTimeout(r,1));f.setCurrent(false);release();await pending;a.equal(f.state().receipt,null);});
 test('competing pointer is not overwritten by a new request',async()=>{const f=fixture();await f.ready();const raw=JSON.stringify({epoch,academyId:academy,conversationId:id(90),requestId:id(91),expectedVersion:0,expiresAtUtc:expiry});f.map.set(lib.miniPointerKey,raw);await f.mini.send('Find Mira');a.equal(f.plans(),0);a.equal(f.map.get(lib.miniPointerKey),raw);});
 test('duplicate submissions share a single pending turn',async()=>{let release;const f=fixture({hold:new Promise(r=>release=r)});await f.ready();const pending=f.mini.send('Find Mira');await f.mini.send('Other prompt');release();await pending;a.equal(f.plans(),1);});
+
+// Versioned exact money is host presentation, never a JS-number reconstruction.
+const withMoney = v => ({...v,exactMoney:{version:'mini-exact-money.v1',rows:v.result.rows.map(row=>({sourceId:row.sourceId,balances:row.balances.map(b=>({currency:b.currency,outstandingExact:'450.01'}))}))}});
+for(const amount of ['0.00','0.01','1.10','90071992547409.91','9999999999999999.99','9999999999999999999999.99','79228162514264337593543950335.00'])test('canonical exact amount remains a string '+amount,()=>a.equal(lib.validMiniMoneyAmount(amount),true));
+for(const amount of [0,450.01,'','01.00','1','1.0','1.001','-0.01','1e3','1,000.00','NaN','Infinity','79228162514264337593543950336.00','79228162514264337593543950335.01'])test('noncanonical or unrepresentable amount refused '+JSON.stringify(amount),()=>a.equal(lib.validMiniMoneyAmount(amount),false));
+test('unsafe JS numeric balance never determines the exact display string',async()=>{const f=fixture({produce:v=>{v.result.rows[0].balances[0].outstanding=Number('9999999999999999.99');const x=withMoney(v);x.exactMoney.rows[0].balances[0].outstandingExact='9999999999999999.99';return x;}});await f.ready();await f.mini.send('Find Mira');a.equal(f.state().receipt.exactMoney.rows[0].balances[0].outstandingExact,'9999999999999999.99');});
+test('exact money survives GET-only lost-response recovery and is not persisted locally',async()=>{const f=fixture({produce:withMoney,lost:true});await f.ready();await f.mini.send('Find Mira');const before=f.requests.length;await f.mini.recover();a.equal(f.state().receipt.exactMoney.rows[0].balances[0].outstandingExact,'450.01');a.ok(f.requests.slice(before).every(x=>x.method==='GET'));a.doesNotMatch(f.map.get(lib.miniPointerKey),/450\.01|exactMoney/);a.equal(f.plans(),1);});
+const moneyCorrupt=[
+ ['version',m=>{m.version='other';}],['private metadata',m=>{m.privateNote='secret';}],['row scope',m=>{m.rows[0].sourceId=id(99);}],
+ ['extra rows',m=>{m.rows.push(clone(m.rows[0]));}],['private row',m=>{m.rows[0].privateNote='secret';}],['currency',m=>{m.rows[0].balances[0].currency='INR';}],
+ ['extra balances',m=>{m.rows[0].balances.push(clone(m.rows[0].balances[0]));}],['private balance',m=>{m.rows[0].balances[0].privateNote='secret';}],
+ ['numeric amount',m=>{m.rows[0].balances[0].outstandingExact=450.01;}],['noncanonical amount',m=>{m.rows[0].balances[0].outstandingExact='0450.01';}],
+ ['overprecision',m=>{m.rows[0].balances[0].outstandingExact='450.011';}],['decimal overflow',m=>{m.rows[0].balances[0].outstandingExact='79228162514264337593543950336.00';}],
+];
+for(const [name,alter] of moneyCorrupt)test('exact projection '+name+' is refused and safe recovery retains the original',async()=>{const f=fixture({produce:withMoney,patch:v=>{alter(v.exactMoney);return v;}});await f.ready();await f.mini.send('Find Mira');a.equal(f.state().receipt,null);await f.mini.recover();a.equal(f.state().receipt.exactMoney.rows[0].balances[0].outstandingExact,'450.01');a.equal(f.plans(),1);});
+test('legacy receipt keeps a safe absence of exact money instead of manufacturing cents',async()=>{const f=fixture();await f.ready();await f.mini.send('Find Mira');a.equal(f.state().receipt.exactMoney,undefined);});

@@ -1,10 +1,12 @@
 import { readPentaJson } from "./penta-onboarding-channel";
 import { validPentaHealth, validPentaReceipt, validPentaSession, type PentaReceipt, type PentaSession } from "./penta-chat-contract";
 
+export type MiniExactMoney = { version: "mini-exact-money.v1"; rows: { sourceId: string; balances: { currency: string; outstandingExact: string }[] }[] };
+export type MiniReadReceipt = PentaReceipt & { exactMoney?: MiniExactMoney | null };
 export const miniPointerKey = "academydesk.penta.mini-read-recovery.v1";
 export type MiniPointer = { epoch: string; academyId: string; conversationId: string; requestId: string; expectedVersion: number; expiresAtUtc: string };
 export type MiniView = { phase: "checking" | "unavailable" | "ready" | "idle" | "unknown" | "closed";
-  available: boolean; pending: boolean; session: PentaSession | null; pointer: MiniPointer | null; receipt: PentaReceipt | null; notice: string };
+  available: boolean; pending: boolean; session: PentaSession | null; pointer: MiniPointer | null; receipt: MiniReadReceipt | null; notice: string };
 export const initialMiniView: MiniView = { phase: "checking", available: false, pending: false, session: null, pointer: null, receipt: null, notice: "Checking private Mini availability…" };
 export type MiniChannel = { academyId: string; epoch: string; current(): boolean; invalidate(): void; signal: AbortSignal;
   send(path: string, method: "GET" | "POST", body?: unknown): Promise<Response> };
@@ -26,16 +28,36 @@ export function readMiniPointer(storage: Storage, academyId: string, epoch: stri
   storage.removeItem(miniPointerKey);
   return null;
 }
-function checkedReceipt(value: unknown, pointer: MiniPointer): value is PentaReceipt {
+// Validate .NET decimal representability lexically. Never parse/format financial
+// strings with Number, floating-point arithmetic or locale-dependent conversion.
+export function validMiniMoneyAmount(value: unknown): value is string {
+  if (typeof value !== "string" || !/^(?:0|[1-9]\d{0,28})\.\d{2}$/.test(value)) return false;
+  let coefficient = value.replace(".", ""), scale = 2;
+  while (scale > 0 && coefficient.endsWith("0")) { coefficient = coefficient.slice(0, -1); scale--; }
+  coefficient = coefficient.replace(/^0+(?=\d)/, "");
+  const maximum = "79228162514264337593543950335";
+  return coefficient.length < maximum.length || coefficient.length === maximum.length && coefficient <= maximum;
+}
+function validMoney(value: unknown, result: NonNullable<PentaReceipt["result"]>): value is MiniExactMoney {
+  return obj(value) && exact(value, ["version", "rows"]) && value.version === "mini-exact-money.v1" && Array.isArray(value.rows) &&
+    value.rows.length === result.rows.length && value.rows.every((row: unknown, index: number) => obj(row) &&
+      exact(row, ["sourceId", "balances"]) && row.sourceId === result.rows[index].sourceId && Array.isArray(row.balances) &&
+      row.balances.length === result.rows[index].balances.length && row.balances.every((balance: unknown, b: number) =>
+        obj(balance) && exact(balance, ["currency", "outstandingExact"]) && balance.currency === result.rows[index].balances[b].currency &&
+        validMiniMoneyAmount(balance.outstandingExact)));
+}
+function checkedReceipt(value: unknown, pointer: MiniPointer): value is MiniReadReceipt {
   const session = { conversationId: pointer.conversationId, version: pointer.expectedVersion, expiresAtUtc: pointer.expiresAtUtc };
   if (!validPentaReceipt(value, session, pointer.requestId, "executor") || !exact(value as unknown as Record<string, unknown>,
-    ["conversationId", "requestId", "version", "kind", "message", "capability", "provider", "protocol", "context", "result"])) return false;
+    ["conversationId", "requestId", "version", "kind", "message", "capability", "provider", "protocol", "context", "result", ...(obj(value) && Object.hasOwn(value, "exactMoney") ? ["exactMoney"] : [])])) return false;
   if (!exact(value.context, ["filters", "sort_by", "current_learner_id", "current_result_ids"])) return false;
-  if (!value.result) return true;
+  const money = (value as MiniReadReceipt).exactMoney;
+  if (!value.result) return money == null;
   if (!exact(value.result, ["count", "hasMore", "rows", "asOfUtc", "source", "balanceScope"])) return false;
-  return value.result.rows.every(row => exact(row, ["sourceId", "displayName", "subjects", "balances", "sourcePath", ...(Object.hasOwn(row, "recordCode") ? ["recordCode"] : [])]) &&
+  const rowsValid = value.result.rows.every(row => exact(row, ["sourceId", "displayName", "subjects", "balances", "sourcePath", ...(Object.hasOwn(row, "recordCode") ? ["recordCode"] : [])]) &&
     row.displayName.length <= 500 && (row.recordCode == null || row.recordCode.length <= 120) &&
     row.subjects.every(s => s.length <= 500) && row.balances.length <= 20 && row.balances.every(b => exact(b, ["currency", "outstanding"])));
+  return rowsValid && (money == null || validMoney(money, value.result));
 }
 class StatusError extends Error { constructor(readonly code: number) { super("Mini response unavailable."); } }
 class StorageError extends Error {}

@@ -48,11 +48,16 @@ export default function MiniConversation({ academyId }: { academyId: string }) {
         <ol>{receipt.result.rows.map((row, index) => <li key={row.sourceId}>
           <Link href={row.sourcePath}>{row.displayName}</Link>{row.recordCode && <> · {row.recordCode}</>}
           {row.subjects.length > 0 && <p>{row.subjects.join(", ")}</p>}
+          {receipt.exactMoney && (receipt.exactMoney.rows[index].balances.length > 0
+            ? <ul aria-label={"Exact outstanding balances for " + row.displayName}>
+              {receipt.exactMoney.rows[index].balances.map(balance => <li key={balance.currency}>{balance.currency} {balance.outstandingExact}</li>)}
+            </ul> : <p>No outstanding balances in this snapshot.</p>)}
           <button type="button" disabled={view.pending || !view.available || view.phase !== "idle"} onClick={() => void driver.current?.send("Open result " + (index + 1))}>Ask about result {index + 1}</button>
         </li>)}</ol>
         {receipt.result.rows.length === 0 && <p>No matching learners.</p>}
         {receipt.result.hasMore && <p>More matches exist. Refine the learner name.</p>}
-        <p>Exact financial amounts remain available in <Link href="/finance">Manual Finance</Link>.</p>
+        {receipt.exactMoney ? <p>{receipt.result.balanceScope} <Link href="/finance">Open Manual Finance</Link>.</p>
+          : <p>Exact amounts are unavailable in this response. Open <Link href="/finance">Manual Finance</Link> to verify them.</p>}
         <small>Source checked <time dateTime={receipt.result.asOfUtc}>{new Date(receipt.result.asOfUtc).toLocaleString()}</time>.</small>
       </>}
       <small>Verified response reference <code>{receipt.requestId}</code></small>

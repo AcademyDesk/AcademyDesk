@@ -1,5 +1,20 @@
 # Academy Desk handoff
 
+## C55 exact money and Mini reconciliation — 23 November 2026
+
+- [x] Integrated Cloud C55;837PENTA API,1020client and214browser cases passed.
+  Native SQL preserves one-cent/large/mixed-currency strings, legacy recovery,
+  one dispatch, required audit rollback and unchanged ledger rows/totals.
+- [x] Reused accepted Mini C1/C5paths on planner0.15;289checks passed and the
+  original62record context verified with14exposed records excluded. All33
+  original byte seals remain intact. Mini feature tip2686d90is published.
+- [ ] Browser wrapper resource gate stays false for one changed built-in bridge
+  ID despite healthy restored services. Diagnose rather than hide that result.
+- [ ] Restore the demo after its RAM safety stop; continue full CI/private Core
+  access, genuine archive/platform gates, broader90%, six critical/device/staging gates.
+
+[Combined results and limits](QA/REPORTS/PENTA_C55_COMBINED_ACCEPTANCE_2026-11-23.md)
+
 ## Verified interactive demo — 23 November 2026
 
 - [x] Local demo at http://127.0.0.1:3000/login, using only invented records.
