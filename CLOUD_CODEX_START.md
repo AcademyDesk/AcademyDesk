@@ -1,5 +1,46 @@
 # Start / resume Cloud Codex from this source checkpoint
 
+## D56 current Desktop continuation — 23 November 2026
+
+This section supersedes the historical next-task text below. Fetch the actual
+tip of `codex/penta-host-integration-20261030`; do not reset to an older SHA.
+D56 started from `c3617f28d458287189ca7173c8fe26ddea8fa271`.
+Read [D56 ownership and next handoff](QA/HANDOFF/D56_DESKTOP_ACCEPTANCE_2026-11-23.md)
+and [source-bound results](QA/REPORTS/D56_DESKTOP_RELEASE_READINESS_2026-11-23.md).
+
+- [x] C54/C55 integrated once; do not replay C54/C53/C50. Cloud C55 remains
+  ea7da00781666732ff2e54340fa825ce987f2a47, imported at8077a56.
+- [x] Actual c3617f2 hosted ordinary job passed: 2,600 API, 2,637 frontend,
+  26 SQL modules, 75 private Blob assertions, full dependency audits/builds/smoke.
+  Required paired Core job failed missing private source credential; overall
+  [45119449295](https://github.com/AcademyDesk/AcademyDesk/actions/runs/45119449295)
+  is FAILURE, not a release pass.
+- [x] D56 native C55 boundary extension passed: unsupported legacy precision,
+  near40k receipt fallback, retained Identity/denial/audit/ledger/one-dispatch
+  checks; owned cleanup and complete inventory restoration passed.
+- [x] Preserve Mini planner4732116 and reconciled Core/provenance2686d90.
+  Full hosted Mini remains1,748pass/13fail/63errors/1skip; genuine private originals
+  are missing in that runner. Do not fabricate archives, hashes, paths or passes.
+- [ ] Six critical records, actual physical devices, staging/private Blob/key
+  restore/rollback and production AI transport/qualification remain open.
+  The90%target is unmeasured; Mini/Plus/Pro unqualified and Ultra deferred.
+
+Next Cloud: claim before overlapping production transport/pipeline files. Prepare
+the reviewed production private-service/security contract and safe staged
+migration/artifact-promotion changes, with model-free integration tests. Do not
+make Testing the production environment or bypass host permissions. Owner must
+securely supply read-only PENTA_SOURCE_READ_TOKEN; Cloud cannot solve missing
+credentials by removing the required job. Coordinate private-original provisioning
+with Mini using the genuine existing inputs; keep raw evidence private.
+
+Next Desktop: preserve the current synthetic demo, execute native/device/staging
+acceptance when its actual prerequisites are available, and retain failed resource
+and demo-restoration receipts. No new model candidate/download/training/activation,
+main merge, paid provisioning or Azure deployment. Sol High for security/native/
+production transport; Sol Medium for routine pipeline and handoff tasks.
+
+## Historical continuation below — preserve as source-scoped history
+
 ## Cloud conversation/container source integrated — 6 November 2026
 
 - [x] C3.2+C4 returned66implementation paths copied byte-exact;12vendor pins pass.

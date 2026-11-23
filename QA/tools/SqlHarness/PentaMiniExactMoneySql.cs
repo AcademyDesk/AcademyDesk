@@ -6,6 +6,7 @@ using System.Text.Json.Nodes;
 using AcademyDesk.Api.Data;
 using AcademyDesk.Api.Domain.Entities;
 using AcademyDesk.Api.Intelligence.Penta;
+using AcademyDesk.Api.Infrastructure;
 using AcademyDesk.Api.Tests.Infrastructure;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
@@ -75,8 +76,37 @@ internal static partial class SqlHarnessEntryPoint
             RequireFinanceStatus(recovered, HttpStatusCode.OK, "legacy exact-money recovery during provider downtime");
             Check(await recovered.Content.ReadAsStringAsync());
         }
+        var legacyState = await StateAsync();
+        PentaRequire(legacyState == (1, 4) && planner.Calls == 1, "Legacy recovery redispatched or changed its turn.");
+        await VerifyLegacyVariantAsync("unsupported precision", receipt => receipt with {
+            Result = receipt.Result! with { Rows = [receipt.Result.Rows[0] with { Balances = [new LearnerBalance("INR", 0.001m)] }] }
+        }, body => {
+            PentaRequire(!body.TryGetProperty("exactMoney", out _), "Unsupported precision became an exact-money claim.");
+            PentaRequire(body.GetProperty("result").GetProperty("rows")[0].GetProperty("balances")[0].GetProperty("outstanding").GetDecimal() == 0.001m,
+                "Legacy unsupported precision was silently rounded.");
+        });
+        await VerifyLegacyVariantAsync("receipt size fallback", receipt => {
+            var currencies = new[] { "USD", "INR", "GBP", "EUR", "AUD", "CAD", "JPY", "CNY", "SGD", "CHF", "NZD", "SEK", "NOK", "DKK", "AED", "SAR", "ZAR", "BRL", "KRW", "HKD" };
+            var row = receipt.Result!.Rows[0] with { DisplayName = "", Subjects = [],
+                Balances = currencies.Select(currency => new LearnerBalance(currency, decimal.MaxValue)).ToArray() };
+            var candidate = receipt with { Result = receipt.Result with { Rows = [row] } };
+            // Tune only the invented legacy display text. All IDs still refer to
+            // the real active SQL learner; the ledger itself is never changed.
+            var original = JsonNode.Parse(JsonSerializer.Serialize(candidate))!.AsObject();
+            original.Remove("ExactMoney");
+            row = row with { DisplayName = new string('n', MiniReceipt.MaximumSerializedCharacters - 50 - original.ToJsonString().Length) };
+            candidate = candidate with { Result = candidate.Result! with { Rows = [row] } };
+            var encoded = JsonSerializer.Serialize(candidate);
+            PentaRequire(encoded.Length <= MiniReceipt.MaximumSerializedCharacters && candidate.ExactMoney is null,
+                "Near-bound legacy fixture did not exercise optional projection suppression.");
+            var hypothetical = JsonNode.Parse(encoded)!.AsObject();
+            hypothetical["ExactMoney"] = JsonSerializer.SerializeToNode(PentaMiniMoney.FromResult(candidate.Result));
+            PentaRequire(hypothetical.ToJsonString().Length > MiniReceipt.MaximumSerializedCharacters,
+                "Size fixture would fit with the projection and did not test the bound.");
+            return candidate;
+        }, body => PentaRequire(!body.TryGetProperty("exactMoney", out _), "Oversized optional projection was returned."));
         var valid = await StateAsync();
-        PentaRequire(valid == (1, 4) && planner.Calls == 1, "Legacy recovery redispatched or changed its turn.");
+        PentaRequire(valid == (1, 6) && planner.Calls == 1, "Legacy boundary recovery repeated a turn or missed mandatory audit.");
         fault.Enabled = true;
         try
         {
@@ -89,10 +119,51 @@ internal static partial class SqlHarnessEntryPoint
         finally { fault.Enabled = false; }
         PentaRequire(await StateAsync() == valid && planner.Calls == 1 && before == await LedgerAsync(),
             "Exact-money recovery changed ledger data, committed a failed audit or repeated planning.");
-        Console.WriteLine("PENTA MINI EXACT MONEY SQL PASS: one cent, large/mixed currency strings, original and legacy GET, provider downtime, audit rollback, one dispatch and unchanged ledger.");
+        Console.WriteLine("PENTA MINI EXACT MONEY SQL PASS: one cent, large/mixed currency strings, original and legacy GET, unsupported precision, receipt-size fallback, provider downtime, audit rollback, one dispatch and unchanged ledger.");
+
+        async Task VerifyLegacyVariantAsync(string name, Func<MiniReceipt, MiniReceipt> variant, Action<JsonElement> check)
+        {
+            string originalProtected;
+            await using (var scope = factory.Services.CreateAsyncScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+                var actor = await db.PentaMiniSessions.Where(x => x.Id == session.ConversationId).Select(x => x.ActorUserId).SingleAsync();
+                var turn = await db.PentaMiniTurns.SingleAsync(x => x.SessionId == session.ConversationId && x.RequestId == request);
+                originalProtected = turn.ProtectedReceipt!;
+                var protector = scope.ServiceProvider.GetRequiredService<IDataProtectionProvider>().CreateProtector(
+                    "PentaMini.local.v1", academy.ToString("D"), actor.ToString("D"), session.ConversationId.ToString("D"));
+                var receipt = variant(JsonSerializer.Deserialize<MiniReceipt>(protector.Unprotect(originalProtected))!);
+                PentaRequire(PentaMiniRecovery.ValidReceipt(receipt, session.ConversationId, request, 0), "Legacy boundary fixture violated recovery identity.");
+                var encoded = JsonSerializer.Serialize(receipt);
+                PentaRequire(encoded.Length <= MiniReceipt.MaximumSerializedCharacters, "Legacy fixture exceeded its stored bound.");
+                turn.ProtectedReceipt = protector.Protect(encoded);
+                await db.SaveChangesAsync();
+            }
+            try
+            {
+                using var recovered = await client.GetAsync(url + $"/{request:D}");
+                RequireFinanceStatus(recovered, HttpStatusCode.OK, name + " protected legacy GET");
+                var raw = await recovered.Content.ReadAsStringAsync();
+                PentaRequire(raw.Length <= MiniReceipt.MaximumSerializedCharacters && recovered.Headers.CacheControl?.NoStore == true,
+                    "Legacy boundary response exceeded its limit or became cacheable.");
+                using var json = JsonDocument.Parse(raw);
+                check(json.RootElement);
+                PentaRequire(planner.Calls == 1 && before == await LedgerAsync(), "Legacy boundary GET redispatched or changed the ledger.");
+                Console.WriteLine($"PENTA MINI EXACT MONEY {name} protected GET PASS");
+            }
+            finally
+            {
+                await using var scope = factory.Services.CreateAsyncScope();
+                var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+                var turn = await db.PentaMiniTurns.SingleAsync(x => x.SessionId == session.ConversationId && x.RequestId == request);
+                turn.ProtectedReceipt = originalProtected;
+                await db.SaveChangesAsync();
+            }
+        }
 
         void Check(string raw)
         {
+            PentaRequire(raw.Length <= MiniReceipt.MaximumSerializedCharacters, "Exact-money wire receipt exceeded its bound.");
             using var doc = JsonDocument.Parse(raw);
             var money = doc.RootElement.GetProperty("exactMoney");
             var row = money.GetProperty("rows").EnumerateArray().Single();

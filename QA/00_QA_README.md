@@ -1,5 +1,27 @@
 # AcademyDesk QA control centre — Phase 1
 
+## D56 current acceptance — 23 November 2026
+
+- [x] C55 already integrated once; preserved current application/Student360/
+  Mini grounding/browser-helper source. No application or workflow change here.
+- [x] Current c3617f2 ordinary CI passed2,600API/2,637frontend/26SQL modules/
+  75private Blob assertions, audits, builds and container smoke.
+  Overall45119449295failed the mandatory private Core credential step.
+- [x] Fresh native C55 legacy precision/near40k fallback, retained denial/
+  audit/ledger/one-dispatch checks and exact owned inventory restoration passed.
+- [x] Restored synthetic demo12994a6a:13real-model/Identity/SQL checks and
+  11Core-outage recovery/denial/Manual checks passed. Pause/unpause preserved
+  bindings and inference StartedAt. Prior stop/start restoration failure and
+  its private synthetic DB/key backup remain retained.
+- [ ] Owner supplies dedicated read-only Actions credential; full Mini private
+  prerequisite suite, production transport, broader eligible outcomes/90%,
+  six critical records, actual devices and staging restore/rollback remain open.
+
+[Current demo and private login location](HANDOFF/INTERACTIVE_DEMO_2026-11-23.md)
+[Exact results/blocker owners](REPORTS/D56_DESKTOP_RELEASE_READINESS_2026-11-23.md)
+[Next Cloud ownership/handoff](HANDOFF/D56_DESKTOP_ACCEPTANCE_2026-11-23.md)
+[Azure preparation only](../docs/production-deployment.md)
+
 ## Current C55 demo and integration — 23 November 2026
 
 - [x] Restored http://127.0.0.1:3000/login on the verified C55 backend/UI.

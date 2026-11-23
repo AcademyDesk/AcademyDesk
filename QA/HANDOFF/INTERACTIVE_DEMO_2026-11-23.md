@@ -1,5 +1,92 @@
 # Interactive synthetic academy demo — 23 November 2026
 
+## D56 live demo — current instructions
+
+Current run: `12994a6ab57b40f2b333f6efc554f2ba`, restored on23November2026.
+Open http://127.0.0.1:3000/login on this development laptop.
+Use `owner@demo.example.invalid` for the complete academy workspace; the
+generated password and all six test accounts are in the private local file
+`D:\AcademyDesk-penta-host\.build-check\interactive-demo-12994a6ab57b40f2b333f6efc554f2ba\LOGIN.txt`.
+Do not commit it, paste its password into chat, or reuse an older run's file.
+
+- [x] Six real Identity/session roles, nine pending-fee learners, two Piano
+  follow-up rows, exact INR2250.00, GET receipt recovery and Manual optional-empty
+  save passed. First measured local query26.242seconds.
+- [x] Eleven additional recovery/outage assertions passed: owned Core pause,
+  authoritative unavailable status, same GET-only receipt, unauthorized actor/
+  tenant denials, persisted Manual save, unchanged ledger/turn count and stable
+  Core bindings/inference start time/resource inventory after unpause.
+- [x] Two synthetic Manual saves leave14learners with four teachers/courses/
+  batches, two branches, invoices/payments and scheduled classes.
+- [ ] This is not unrestricted conversational CRUD, all-role Mini qualification,
+  a fresh physical-device browser test, production configuration or90%coverage.
+  Mini's free-prompt read workflow is currently Owner/Admin-only.
+
+### Start, use and stop
+
+The current demo is already running; do not launch a second window. If it has
+stopped, first confirm the original two PENTA services are restored and the global
+validation lease is free. Use the existing D:-only cached setup and local helper:
+
+~~~powershell
+Set-Location D:\AcademyDesk-penta-host
+$env:QA_DEMO_REUSE_WEB = '1'
+node .build-check/start-interactive-demo.cjs
+~~~
+
+That private helper uses already-installed dependencies, the pinned local2B model,
+the existing lease and opt-in disposable Identity/SQL fixture. It is a
+laptop-specific test launcher, not an Azure production recipe. No new package or
+weight download is part of these instructions. Read the new ACTIVE_DEMO pointer
+after a restart; credentials and disposable IDs change. Open the private file
+locally with Notepad; never expose its contents in a published handoff.
+
+~~~powershell
+$demoState = Get-Content .build-check/ACTIVE_DEMO.json | ConvertFrom-Json
+notepad $demoState.loginFile
+~~~
+
+Try “Show students with pending fees”, then “Only piano”; a new conversation can
+look up “Show Riya Menon”. Use the Manual switch for Students, Teachers, Batches,
+Calendar and Finance. Teacher/Student/Guardian/Platform Owner have real linked
+identities; they are not authorized to use the Owner financial Mini conversation.
+
+The new recovery tool needs an existing unexpired Owner receipt. It sends no model
+request, pauses only the exact owned Core API and preserves the loaded inference
+container. It adds one invented learner to prove Manual save during downtime:
+
+~~~powershell
+$env:QA_INTERACTIVE_DEMO_RECOVERY = '1'
+node QA/tools/interactive-demo-recovery.cjs
+Remove-Item Env:QA_INTERACTIVE_DEMO_RECOVERY
+~~~
+
+Do not rerun the original private seed verifier after editing data; it deliberately
+expects the fresh12-learner fixture. Use its retained result or the recovery tool.
+
+Current expiry: **24November2026 at03:43IST**, earlier on shutdown or unrecoverable
+low RAM. Keep heavy builds/suites out of this window. The3GiBadmission and512MiB
+safety guards remain unchanged. For graceful stop:
+
+~~~powershell
+$demoState = Get-Content .build-check/ACTIVE_DEMO.json | ConvertFrom-Json
+Set-Content -LiteralPath $demoState.stop -Value 'Owner finished synthetic demo'
+~~~
+
+Wait for cleanup and restoration of the exact two original services. The final
+demo is intentionally still active; its final shutdown/restoration is not yet a
+completed check. The earlier dynamic-port restoration failure and stop-file cleanup
+race are retained in the D56 report, including a private SQL/key-ring backup of
+the affected synthetic fixture. Never manually prune images/volumes or erase
+evidence to stop the demo. Evaluation remains default-off outside this setup.
+
+[Source-bound results and blockers](../REPORTS/D56_DESKTOP_RELEASE_READINESS_2026-11-23.md)
+
+## Historical demo sections below
+
+The following run IDs, credentials, expiry times and pending-work statements are
+historical. Use the current section and ACTIVE_DEMO above.
+
 ## Current restored demo
 
 The active run is 00e3a635dfdc49db936783a668306fc8, restored after the earlier demo's RAM safety stop. Current credentials are in D:\AcademyDesk-penta-host\.build-check\interactive-demo-00e3a635dfdc49db936783a668306fc8\LOGIN.txt; older login files belong to stopped disposable runs. The local URL remains http://127.0.0.1:3000/login. Use owner@demo.example.invalid for the full academy workspace.
