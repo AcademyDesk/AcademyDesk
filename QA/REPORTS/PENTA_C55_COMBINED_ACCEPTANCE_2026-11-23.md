@@ -47,3 +47,11 @@ No main merge or Azure deployment. Sol High remains the route for native/securit
 
 - .build-check/penta-host/mini-exact-money-native-6758a9ce7a004db4b76e952c7a539293/result.json: 94b588a2dd7b0ee8fe4df9ffc17bb336487124063b23bfb0271f4e7835fd9d8c
 - .build-check/penta-host/c55-browser-checkpoint-e953397b2f7447b382e978981dc89ae1/result.json: c5f3fe185c3bffeef71960bb0ad16ba4d341c1fac7edac92c20a1bb932ab23f1
+
+## Restored demo, current CI pin and final limits
+
+The C55 demo was restored and all13 live checks passed, including exact INR2250.00 in the host response, six portal identities, nine pending learners, two Piano matches, original GET recovery and a retained Manual save. The current credential location and expiry are in the demo handoff. The passive resource observation found stable inventory and API200; it does not erase the earlier browser wrapper bridge-ID drift. No more heavy local tests run alongside the demo.
+
+Paired verification now pins Mini2686d90. All operational Core source files and the bridge fixture dependency test_operational_contract.py match the old c3c61b9 bytes. Thirty-one model-free private-bridge checks pass on2686d90. The mandatory private source credential step, exact checkout assertion and all host/SQL checks remain unchanged. Hosted execution still requires the owner-provisioned read-only Core credential.
+
+Mini hosted run45118369025 on2686d90reports1748passes,13failures,63errors,1skip and5subtests passed. All final failure/error summaries are FileNotFoundError for original private archive prerequisites. Genuine local originals are present and verified, but were not uploaded or path-aliased into CI. The full Windows collection failure, historical platform boundaries, wider model qualification and all production gates remain open. This is meaningful progress, not complete production or90%acceptance.

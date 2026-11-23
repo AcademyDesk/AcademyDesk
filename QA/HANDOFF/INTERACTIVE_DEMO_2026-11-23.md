@@ -1,5 +1,16 @@
 # Interactive synthetic academy demo — 23 November 2026
 
+## Current restored demo
+
+The active run is 00e3a635dfdc49db936783a668306fc8, restored after the earlier demo's RAM safety stop. Current credentials are in D:\AcademyDesk-penta-host\.build-check\interactive-demo-00e3a635dfdc49db936783a668306fc8\LOGIN.txt; older login files belong to stopped disposable runs. The local URL remains http://127.0.0.1:3000/login. Use owner@demo.example.invalid for the full academy workspace.
+
+All13 live checks passed on the C55 application: six role logins, seeded records, nine pending-fee learners, two-row contextual Piano refinement, GET recovery, the host's exact INR2250.00 string, and a persisted Manual learner save. The first measured conversation took20.9seconds locally. The same fixture contains thirteen learners after verification, four teachers/courses/batches, two branches and the financial/classroom data described below. The UI now presents versioned exact balance strings rather than requiring the older numeric-only fallback.
+
+This run expires automatically at 23 November 2026 at 11:06 pm IST, or earlier on shutdown/unrecoverable low RAM. No more heavy local regression suites run while it is available. Its live-model checks retain planner0.15 at4732116; the reviewed Core/CI reconciliation at2686d90 changes portability/provenance only, preserving all serving code. Current verification SHA256: fea4c21e902a7525ee90549111fc058fa9a8a47a6ad534647278cb746deb924d.
+
+The earlier run details below are historical. These current credentials/status supersede them.
+
+
 ## Open the application
 
 Local URL: http://127.0.0.1:3000/login

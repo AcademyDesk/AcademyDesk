@@ -1,5 +1,31 @@
 # Academy Desk — continue from the work laptop or another profile
 
+## Current C55 demo and integration — 23 November 2026
+
+- [x] Restored http://127.0.0.1:3000/login on the verified C55 backend/UI.
+  Thirteen real-model/Identity/SQL checks passed, including exact INR2250.00
+  in the conversation, nine pending learners, two Piano matches and a Manual save.
+- [x] Owner/Admin, Teacher, Student, Guardian and Platform Owner logins passed.
+  Current generated credentials stay local at D:\AcademyDesk-penta-host\.build-check\interactive-demo-00e3a635dfdc49db936783a668306fc8\LOGIN.txt.
+- [x] C55: 837 PENTA API, 1,020 client and 214 browser assertions passed;
+  native SQL verifies exact cents, large/mixed currencies, legacy recovery,
+  mandatory audit rollback, unchanged ledger and one planner dispatch.
+- [x] Mini feature tip 2686d90 reuses the accepted C1/C5 paths while retaining
+  planner0.15. The genuine 62-record verification and 289 selected checks passed.
+  Hosted run45118369025 reports1,748 passes,13 failures,63 errors and1 skip;
+  every reported failure/error requires an original archive absent in that runner.
+- [x] Paired CI now pins the intended2686d90source rather than c3c61b9.
+  Its operational Core/bridge source is byte-identical;31 private-bridge checks pass.
+- [ ] Dedicated read-only Core Actions credential and secure original-archive
+  provisioning remain required. No raw archive or secret was pushed.
+- [ ] One earlier built-in Docker bridge ID drift remains an explicit resource
+  qualification failure. A later passive observation was stable with API200.
+- [ ] Broad conversational CRUD/role outcomes and90%measurement, six critical
+  acceptance records, physical devices and staging/private Blob/restore/rollback.
+
+[Current demo instructions](QA/HANDOFF/INTERACTIVE_DEMO_2026-11-23.md)
+[Combined C55 results](QA/REPORTS/PENTA_C55_COMBINED_ACCEPTANCE_2026-11-23.md)
+
 ## C55 exact money and Mini reconciliation — 23 November 2026
 
 - [x] Integrated Cloud C55;837PENTA API,1020client and214browser cases passed.

@@ -194,7 +194,7 @@ jobs:
       DOTNET_CLI_TELEMETRY_OPTOUT: '1'
       DOTNET_NOLOGO: '1'
       QA_PENTA_BRIDGE_SOURCE: ${{ github.workspace }}/.build-check/paired-mini
-      QA_PENTA_CORE_SHA: c3c61b9ef3f239035c8b8f46649c66997e98f2b6
+      QA_PENTA_CORE_SHA: 2686d90e3d3fb57e58889e09969a336312e6d9a5
       QA_PENTA_MINI: '0'
     steps:
       - name: Require access to pinned private Core source
