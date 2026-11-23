@@ -17,6 +17,8 @@ Cloud claims exactly:
 
 - apps/web/src/components/penta-manual-theme.module.css
 - apps/web/src/components/penta/role-penta-entry.tsx
+- apps/web/src/components/penta/role-penta-entry.module.css
+- apps/web/src/components/penta/mini-conversation.tsx
 - QA/tools/penta-visual-alignment-browser.cjs
 - QA/HANDOFF/C58_PENTA_VISUAL_ALIGNMENT_2026-11-23.md
 
@@ -32,3 +34,9 @@ C57 handoff remains published at3a0c37942b0445e52c4695d048c0b146ca61676e and is
 queued for Desktop's independent review. Do not replay completed packets.
 No credentials, model loading/activation, source of authority, environment/public
 access, main merge, Azure/deployment or human visual acceptance changes.
+
+Rendered evidence also confirmed Mini's prompt and send button omit the shared
+financeActions row used by the other conversation components, leaving Send and
+recovery/availability controls unstyled. Expand the claim to those two paths
+before edits: restore existing shared control presentation only, preserving every
+handler, request, gate and receipt rule. Validate original Mini browser matrices.
