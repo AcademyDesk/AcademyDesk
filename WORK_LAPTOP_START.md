@@ -1,5 +1,21 @@
 # Academy Desk — continue from the work laptop or another profile
 
+## C54 integrated native acceptance — 23 November 2026
+
+- [x] Integrated the final Cloud C54 composer and scoped GET receipt recovery.
+  All 2,571 API tests passed in six isolated processes; TypeScript, changed
+  lint, 35 Student 360 and 38 Mini client tests passed.
+- [x] Expanded real SQL recovery/denial/audit rollback passed. Enabled 118/118
+  and default-off 4/4 browser cases passed with sandboxed Chromium.
+- [x] Mini 0.15 source is published on codex/mini-query-grounding-20261118
+  at 4732116; its full hosted suite remains failed and is not accepted.
+- [ ] Prepare and verify the owner's interactive synthetic-data demo, including
+  the real Mini composer and Manual save; broader 90% and release gates remain open.
+- [ ] C55 exact money, paired CI credential, full dependency/model/archive gates,
+  six critical records, devices and staging recovery remain outstanding.
+
+[Native results and source pins](QA/REPORTS/PENTA_C54_NATIVE_ACCEPTANCE_2026-11-23.md)
+
 ## C23 family finance and session acceptance — 9 November 2026
 
 - [x] Integrated Cloud C23's 15 paths and verified the 120-record inventory.

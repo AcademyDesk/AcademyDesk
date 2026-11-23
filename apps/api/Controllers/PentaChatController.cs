@@ -13,12 +13,19 @@ public sealed class PentaChatController(PentaMiniOrchestrator chat, PentaFinance
     ILogger<PentaChatController> logger) : ControllerBase
 {
     [HttpGet("health")]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public async Task<ActionResult> Health(Guid academyId, CancellationToken token) => Result(await chat.HealthAsync(User, academyId, token));
     [HttpPost("conversations"), RequestSizeLimit(1024)]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public Task<ActionResult> Create(Guid academyId, CancellationToken token) => Safely(() => chat.CreateAsync(User, academyId, token));
     [HttpPost("conversations/{conversationId:guid}/turns"), RequestSizeLimit(12 * 1024)]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public Task<ActionResult> Turn(Guid academyId, Guid conversationId, MiniTurnInput? input, CancellationToken token) =>
         Safely(() => chat.TurnAsync(User, academyId, conversationId, input, token));
+    [HttpGet("conversations/{conversationId:guid}/turns/{requestId:guid}")]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+    public Task<ActionResult> ReadTurn(Guid academyId, Guid conversationId, Guid requestId, CancellationToken token) =>
+        Safely(() => chat.ReadAsync(User, academyId, conversationId, requestId, token));
     [HttpGet("finance"), Authorize(AuthenticationSchemes = "Identity.Bearer")]
     [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public Task<ActionResult> FinanceAvailability(Guid academyId, [FromServices] PentaPaymentCollectionWorkflow collection,

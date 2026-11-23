@@ -7,6 +7,7 @@ import { academyApi, portalAccessToken, portalSessionEpoch, type PortalWorkspace
 import { validWorkspaceAccount, workspaceHomes } from "@/lib/workspace-entry";
 import { validPentaAccount } from "@/lib/penta-chat-contract";
 import FinanceChat from "./finance-chat";
+import MiniConversation from "./mini-conversation";
 import TeacherAttendanceConversation from "./teacher-attendance-conversation";
 import PortalConversation from "./portal-conversation";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -69,6 +70,8 @@ export default function RolePentaEntry({ workspace }: { workspace: RoleWorkspace
     </header>
     <section className={styles.content}>
       <div className={styles.hero}><span className={styles.orb} aria-hidden="true">P</span><h1>Your workspace. AI first.</h1><p>Your PENTA workspace, with Manual always available when you need it.</p></div>
+      {state === "verified" && financeAcademy && process.env.NEXT_PUBLIC_PENTA_MINI_EVALUATION === "true" &&
+        <MiniConversation key={financeAcademy + "-mini"} academyId={financeAcademy} />}
       {state === "verified" && financeAcademy
         ? <FinanceChat key={financeAcademy} academyId={financeAcademy} fallback={fallback} />
         : state === "verified" && portalAcademy

@@ -5,11 +5,13 @@ using System.Text.Json;
 using AcademyDesk.Api.Controllers;
 using AcademyDesk.Api.Data;
 using AcademyDesk.Api.Domain.Entities;
+using AcademyDesk.Api.Domain.Identity;
 using AcademyDesk.Api.Intelligence.Penta;
 using AcademyDesk.Api.Tests.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 
 internal static partial class SqlHarnessEntryPoint
@@ -28,10 +30,11 @@ internal static partial class SqlHarnessEntryPoint
             Entered = new(TaskCreationOptions.RunContinuationsAsynchronously),
             Release = new(TaskCreationOptions.RunContinuationsAsynchronously)
         };
+        var auditFault = new MiniAuditFault();
         using var factory = new QaApiFactory(manifest, new Dictionary<string, string?>
         {
             ["Penta:Enabled"] = "true", ["Penta:Mini:Enabled"] = "true"
-        }, isolatedMiniProvider: planner);
+        }, isolatedMiniProvider: planner, isolatedDomainInterceptor: auditFault);
         using var owner = factory.CreateClient();
         owner.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenA);
         PentaRequire(factory.PreflightPassed, "Composer preflight missed disposable SQL validation.");
@@ -82,6 +85,8 @@ internal static partial class SqlHarnessEntryPoint
             using var pendingRead = await owner.GetAsync(receiptUrl);
             PentaRequire(!pendingRead.IsSuccessStatusCode && await ReadTurnAsync() == pending && planner.Calls == 1,
                 "GET exposed a pending result or changed its durable claim.");
+            if (receiptEndpoints.Length == 1)
+                RequireFinanceStatus(pendingRead, HttpStatusCode.Conflict, "pending receipt recovery");
             Console.WriteLine("PENTA MINI COMPOSER PREFLIGHT pending receipt withheld without dispatch PASS");
         }
         finally
@@ -127,6 +132,99 @@ internal static partial class SqlHarnessEntryPoint
                     "GET exposed a receipt to a different actor or academy.");
             }
             Console.WriteLine("PENTA MINI COMPOSER PREFLIGHT exact GET receipt and actor scope PASS; browser acceptance still required");
+
+            var recoverable = await ReadTurnAsync();
+            using (var unknown = await owner.GetAsync($"{turnRoot}/{Guid.NewGuid():D}"))
+                RequireFinanceStatus(unknown, HttpStatusCode.NotFound, "unknown receipt recovery");
+            await DeniedMutationAsync("expired", (s, _, _, _) => s.ExpiresAtUtc = DateTime.UtcNow.AddMinutes(-1), HttpStatusCode.Gone);
+            await DeniedMutationAsync("newer version", (s, _, _, _) => s.Version++, HttpStatusCode.Conflict);
+            await DeniedMutationAsync("pending newer request", (s, _, _, _) => s.PendingRequestId = Guid.NewGuid(), HttpStatusCode.Conflict);
+            await DeniedMutationAsync("onboarding purpose", (s, _, _, _) => s.ProtectedOnboardingState = "synthetic-purpose", HttpStatusCode.Conflict);
+            await DeniedMutationAsync("tampered receipt", (_, t, _, _) => t.ProtectedReceipt = "synthetic-corruption", HttpStatusCode.Conflict);
+            await DeniedMutationAsync("inactive learner", (_, _, s, _) => s.IsActive = false, HttpStatusCode.Conflict);
+            await DeniedMutationAsync("revoked Finance module", (_, _, _, a) => a.EnabledModulesJson = "[\"Core\"]", HttpStatusCode.Forbidden);
+            await using (var scope = factory.Services.CreateAsyncScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+                var actor = await db.PentaMiniSessions.Where(row => row.Id == session.ConversationId).Select(row => row.ActorUserId).SingleAsync();
+                var users = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+                var user = (await users.FindByIdAsync(actor.ToString("D")))!;
+                var roles = (await users.GetRolesAsync(user)).Where(role => role is "Owner" or "AcademyAdmin").ToArray();
+                PentaRequire(roles.Length > 0 && user.IsActive, "Receipt actor lacked its expected active role.");
+                try
+                {
+                    PentaRequire((await users.RemoveFromRolesAsync(user, roles)).Succeeded, "QA role revocation failed.");
+                    using var denied = await owner.GetAsync(receiptUrl);
+                    RequireFinanceStatus(denied, HttpStatusCode.Forbidden, "current role revocation recovery");
+                }
+                finally { PentaRequire((await users.AddToRolesAsync(user, roles)).Succeeded, "QA role restoration failed."); }
+                try
+                {
+                    user.IsActive = false;
+                    PentaRequire((await users.UpdateAsync(user)).Succeeded, "QA account deactivation failed.");
+                    using var denied = await owner.GetAsync(receiptUrl);
+                    PentaRequire(denied.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden, "Inactive actor recovered a receipt.");
+                }
+                finally
+                {
+                    user.IsActive = true;
+                    PentaRequire((await users.UpdateAsync(user)).Succeeded, "QA account restoration failed.");
+                }
+            }
+            PentaRequire(await ReadTurnAsync() == recoverable && planner.Calls == 1,
+                "Rejected recovery changed private state, audit or planner count.");
+
+            auditFault.Enabled = true;
+            try
+            {
+                using var failed = await owner.GetAsync(receiptUrl);
+                RequireFinanceStatus(failed, HttpStatusCode.ServiceUnavailable, "receipt replay audit failure");
+                var body = await failed.Content.ReadAsStringAsync();
+                PentaRequire(!body.Contains(code, StringComparison.Ordinal) && !body.Contains(learner.Id.ToString("D"), StringComparison.OrdinalIgnoreCase),
+                    "Audit failure leaked a receipt.");
+            }
+            finally { auditFault.Enabled = false; }
+            PentaRequire(await ReadTurnAsync() == recoverable && planner.Calls == 1,
+                "Failed recovery audit committed state or repeated the planner.");
+            using (var health = await owner.GetAsync($"/api/academies/{academyA:D}/penta/chat/health"))
+            {
+                RequireFinanceStatus(health, HttpStatusCode.OK, "unavailable provider readiness");
+                using var data = JsonDocument.Parse(await health.Content.ReadAsStringAsync());
+                PentaRequire(data.RootElement.GetProperty("status").GetString() == "Unavailable", "QA provider was unexpectedly available.");
+            }
+            using (var finalRecovery = await owner.GetAsync(receiptUrl))
+                RequireFinanceStatus(finalRecovery, HttpStatusCode.OK, "recovery after audit repair during provider downtime");
+            PentaRequire(await ReadTurnAsync() == recoverable with { RequestAudits = recoverable.RequestAudits + 1 } && planner.Calls == 1,
+                "Repaired recovery changed more than its replay audit.");
+            Console.WriteLine("PENTA MINI COMPOSER PREFLIGHT SQL denial boundaries, audit rollback and provider-down recovery PASS");
+
+            async Task DeniedMutationAsync(string name, Action<PentaMiniSession, PentaMiniTurn, Student, Academy> mutate, HttpStatusCode expected)
+            {
+                await using var scope = factory.Services.CreateAsyncScope();
+                var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+                var storedSession = await db.PentaMiniSessions.SingleAsync(row => row.Id == session.ConversationId);
+                var storedTurn = await db.PentaMiniTurns.SingleAsync(row => row.SessionId == session.ConversationId && row.RequestId == input.RequestId);
+                var storedLearner = await db.Students.SingleAsync(row => row.Id == learner.Id);
+                var storedAcademy = await db.Academies.SingleAsync(row => row.Id == academyA);
+                var entries = new object[] { storedSession, storedTurn, storedLearner, storedAcademy }.Select(db.Entry).ToArray();
+                var original = entries.Select(entry => entry.CurrentValues.Clone()).ToArray();
+                try
+                {
+                    mutate(storedSession, storedTurn, storedLearner, storedAcademy);
+                    await db.SaveChangesAsync();
+                    using var denied = await owner.GetAsync(receiptUrl);
+                    RequireFinanceStatus(denied, expected, name + " receipt recovery");
+                    var body = await denied.Content.ReadAsStringAsync();
+                    PentaRequire(!body.Contains(code, StringComparison.Ordinal) && !body.Contains(learner.Id.ToString("D"), StringComparison.OrdinalIgnoreCase),
+                        "Denied recovery leaked a receipt.");
+                }
+                finally
+                {
+                    for (var index = 0; index < entries.Length; index++) entries[index].CurrentValues.SetValues(original[index]);
+                    await db.SaveChangesAsync();
+                }
+                PentaRequire(await ReadTurnAsync() == recoverable && planner.Calls == 1, name + " recovery changed state or dispatched planning.");
+            }
         }
 
         PentaRequire(planner.Calls == 1 && before == await FinanceSnapshotAsync(),

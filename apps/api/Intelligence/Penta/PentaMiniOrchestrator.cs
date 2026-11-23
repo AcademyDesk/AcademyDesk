@@ -58,6 +58,40 @@ public sealed class PentaMiniOrchestrator(AcademyDeskDbContext db, IdentityDbCon
         await tx.CommitAsync(token);
         return new(201, new MiniSessionView(session.Id, 0, session.ExpiresAtUtc));
     }
+    public async Task<PentaConversationOutcome> ReadAsync(ClaimsPrincipal principal, Guid academy, Guid sessionId,
+        Guid requestId, CancellationToken token)
+    {
+        if (!Enabled) return new(404);
+        if (sessionId == Guid.Empty || requestId == Guid.Empty) return new(400);
+        if (!db.Database.IsSqlServer()) return new(503);
+        if (!await policy.AllowsAsync(principal, academy, token)) return new(403);
+        var actor = (await users.GetUserAsync(principal))!.Id;
+        await using var tx = await db.Database.BeginTransactionAsync(IsolationLevel.Serializable, token);
+        await LockAcademyAsync(academy, token);
+        if (!await Reauthorize(principal, academy, token)) return new(403);
+        var session = await OwnSession(academy, actor, sessionId, token);
+        if (session is null) return new(404);
+        if (session.ExpiresAtUtc <= Now) return new(410);
+        if (session.ProtectedOnboardingState is not null) return new(409);
+        var turn = await db.PentaMiniTurns.SingleOrDefaultAsync(x => x.AcademyId == academy && x.ActorUserId == actor &&
+            x.SessionId == sessionId && x.RequestId == requestId, token);
+        if (turn is null) return new(404);
+        if (turn.ProtectedReceipt is null || session.PendingRequestId is not null || session.Version != turn.ExpectedVersion + 1)
+            return new(409);
+        MiniReceipt? receipt;
+        try { receipt = JsonSerializer.Deserialize<MiniReceipt>(Protector(academy, actor, sessionId).Unprotect(turn.ProtectedReceipt)); }
+        catch (Exception ex) when (ex is CryptographicException or JsonException) { return new(409); }
+        if (!PentaMiniRecovery.ValidReceipt(receipt, sessionId, requestId, turn.ExpectedVersion)) return new(409);
+        var ids = receipt!.Context.CurrentResultIds.Select(Guid.Parse).ToArray();
+        if (await db.Students.CountAsync(x => x.AcademyId == academy && x.IsActive && ids.Contains(x.Id), token) != ids.Length)
+            return new(409);
+        // A stored read is never dispatched to the planner/connector again. The
+        // mandatory replay audit commits before any private receipt is returned.
+        Audit(academy, actor, sessionId, requestId, "Replayed", null, 0, null, receipt.Capability);
+        await db.SaveChangesAsync(token);
+        await tx.CommitAsync(token);
+        return new(200, receipt);
+    }
     public async Task<PentaConversationOutcome> TurnAsync(ClaimsPrincipal principal, Guid academy, Guid sessionId,
         MiniTurnInput? input, CancellationToken token)
     {
