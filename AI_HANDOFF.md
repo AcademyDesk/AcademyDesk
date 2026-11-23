@@ -1,5 +1,28 @@
 # Academy Desk handoff
 
+## D64 native-routing diagnostic and demo recovery — 24 November 2026
+
+- [x] Mini inactive adapter published atd9c3d7550194685d4e3572befbc092d25541ff04;
+ 207current model-free checks pass, including40new cases. No serving import.
+- [ ] All three real cached2Brouting profiles FAILED:3/4,1/2,0/1executed;
+  remaining cases unrun after failures. No teacher fix, broad conversation,
+  domain execution, model qualification or default activation claimed.
+- [x] Recovered current demo's original SQL address after Docker reassigned its
+  dynamic port; preserved exact container/data/keys/credentials. Final real
+  login,13students/4teachers/4batches and legacy Mini Available pass.
+- [x] Future interactive SQL port pinned; eight actual Docker/socket checks and
+  existing protected Reconciliation SQL/API module pass with cleanup. Ordinary
+  short QA keeps its dynamic binding. No production application code changed.
+- [ ] Pinned existing4Bcomparison packet prepared and artifact verified only;
+  may_execute=false, owner approval pending under the candidate-weight stop.
+  Do not assume approval from this handoff or a generic continuation.
+
+See QA/REPORTS/D64_NATIVE_ROUTING_AND_DEMO_RECOVERY_2026-11-24.md for actual
+failures, source-retention limits, current recovery process and acceptance gaps.
+Academy195e8d4 ordinary CI succeeded; paired Core remains credential-blocked.
+Stay with Sol High. No main merge/Azure/new model load; critical issues stay OPEN.
+
+
 ## D63 protected task dialogue runtime — 23 November 2026
 
 - [x] Default-off current-Identity/tenant/module catalog for first nine Owner/

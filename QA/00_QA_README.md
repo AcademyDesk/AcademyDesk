@@ -1,5 +1,18 @@
 # AcademyDesk QA control centre — Phase 1
 
+## D64 native routing and local restoration — 24 November 2026
+
+- [x]207current Mini model-free cases pass. Real cached2Bsemantic packets FAIL;
+  native adapter remains inactive. No live teacher/general AI repair claimed.
+- [x] Found/fixed demo SQL port reassignment after restart. Future interactive
+  port binding plus8real Docker/socket checks and actual protected Reconciliation
+  SQL/API/migration/cleanup pass. Final owner demo readback and Mini readiness pass.
+- [ ] Verified existing4Bartifact only; bounded comparison remains approval-
+  pending/default-off. All model/enterprise/CI/private-archive/release gaps remain.
+
+[D64 exact evidence and stops](REPORTS/D64_NATIVE_ROUTING_AND_DEMO_RECOVERY_2026-11-24.md)
+
+
 ## D63 protected multi-task runtime — 23 November 2026
 
 - [x]934affected host regressions,167current Mini model-free Linux checks and

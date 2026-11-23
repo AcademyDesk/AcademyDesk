@@ -79,3 +79,14 @@ a synthetic planner and do not close this issue. The new catalog is write-draft
 only; teacher factual reads/context/answer composition still need implementation.
 Real cached2B goal/mapping/compound/latency probes failed; the live legacy composer
 is unchanged. Keep OPEN. See QA/REPORTS/D63_PROTECTED_TASK_DIALOGUE_2026-11-23.md.
+
+## D64 native-routing investigation — 24 November 2026
+
+Native-template variants still fail semantics on the cached2Bprofile: parallel
+calls repeat/truncate, a bounded workflow list converts a teacher read into
+Teacher.Create, and a serial loop adds unrequested operations. Actual execution
+is absent and the new adapter stays inactive.207model-free checks do not close
+this issue.4Bartifact verified only; comparison requires owner approval under
+the existing loading stop. Missing authorized read/context/grounded-answer and
+full operational integration remain separate host gaps. Keep OPEN; see
+QA/REPORTS/D64_NATIVE_ROUTING_AND_DEMO_RECOVERY_2026-11-24.md.

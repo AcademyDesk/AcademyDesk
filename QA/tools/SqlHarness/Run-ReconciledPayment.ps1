@@ -12,6 +12,8 @@ $qaContainer = "academydesk-qa-$qaRun"
 $qaPreviousSa = $env:QA_SQL_SA_PASSWORD
 $qaPreviousMssql = $env:MSSQL_SA_PASSWORD
 $qaStarted = [DateTime]::UtcNow
+. (Join-Path $qaRepo 'QA/tools/SqlHarness/DemoSqlPort.ps1')
+$qaSqlPublish = Get-QaSqlPublish -InteractiveDemo ($env:QA_INTERACTIVE_DEMO -eq '1')
 $qaSwitch = switch ($Module) { 'StudentOnboardingShared' { '--audit-student-onboarding-shared' }; 'TeacherCreationShared' { '--audit-teacher-creation-service' }; 'EnrollmentShared' { '--audit-enrollment-shared' }; 'CollectionRace' { '--finance-collection-race' }; 'AdjustmentRace' { '--finance-adjustment-race' }; 'YearClosure' { '--audit-year-closure' }; 'CoursePrerequisites' { '--audit-course-prerequisites' }; 'CoursePreservation' { '--audit-course-preservation' }; 'PromotionDecisions' { '--audit-promotion-decisions' }; 'Adjustment' { '--finance-adjustment' }; 'Payroll' { '--payroll-net' }; 'Transition' { '--payment-transition' }; 'Consumers' { '--finance-consumers' }; 'Access' { '--finance-access' }; 'Lookups' { '--finance-lookups' }; 'Governance' { '--finance-governance' }; 'CollectionsBaseline' { '--collections-baseline' }; 'Collections' { '--collections-balance' }; 'InvoiceSettingsBaseline' { '--invoice-settings-baseline' }; 'InvoiceSettings' { '--invoice-settings' }; 'BatchTimesBaseline' { '--audit-batch-times-baseline' }; 'BatchTimes' { '--audit-batch-times-fixed' }; 'BatchPreservationBaseline' { '--audit-batch-preservation-baseline' }; 'BatchPreservation' { '--audit-batch-preservation-fixed' }; 'BranchAddressBaseline' { '--audit-branch-address-baseline' }; 'BranchAddress' { '--audit-branch-address-fixed' }; 'AuditBaseline' { '--audit-baseline' }; 'AuditFixed' { '--audit-fixed' }; 'PeopleBaseline' { '--audit-people-baseline' }; 'PeopleFixed' { '--audit-people-fixed' }; 'LinkedBaseline' { '--audit-linked-baseline' }; 'LinkedFixed' { '--audit-linked-fixed' }; 'BranchBaseline' { '--audit-branch-baseline' }; 'BranchFixed' { '--audit-branch-fixed' }; default { '--finance-reconciliation' } }
 try {
     if ($Module -eq 'MusicProgress') { $qaSwitch = '--audit-music-progress' }
@@ -83,9 +85,9 @@ try {
     $env:MSSQL_SA_PASSWORD = $env:QA_SQL_SA_PASSWORD
     if ($env:QA_CLOUD_FINANCE_RECONCILIATION -eq '1') {
         $qaMemoryMb = if ($Module -in @('ManualControls','MusicProgress','PaymentRecoveryBrowser','FinanceRecoveryBrowser','AcademicAcceptance','CloudReturns','TeacherAvailability','CurrencySupport','PlatformBilling','ReportingBrowser','LegacyCurrencyWrites','PayrollAcceptanceBrowser','ExpenseBranchAcceptance','ExpenseRecoveryBrowser')) { 1024 } else { 1536 }
-        $qaId = docker run -d --pull=never --memory 2g --cpus 2 --name $qaContainer --hostname $qaContainer --label "academydesk.qa.run=$qaRun" -e ACCEPT_EULA=Y -e MSSQL_PID=Developer -e "MSSQL_MEMORY_LIMIT_MB=$qaMemoryMb" -e MSSQL_SA_PASSWORD -p 127.0.0.1::1433 mcr.microsoft.com/mssql/server:2022-latest
+        $qaId = docker run -d --pull=never --memory 2g --cpus 2 --name $qaContainer --hostname $qaContainer --label "academydesk.qa.run=$qaRun" -e ACCEPT_EULA=Y -e MSSQL_PID=Developer -e "MSSQL_MEMORY_LIMIT_MB=$qaMemoryMb" -e MSSQL_SA_PASSWORD -p $qaSqlPublish mcr.microsoft.com/mssql/server:2022-latest
     } else {
-    $qaId = docker run -d --name $qaContainer --hostname $qaContainer --label "academydesk.qa.run=$qaRun" -e ACCEPT_EULA=Y -e MSSQL_PID=Developer -e MSSQL_SA_PASSWORD -p 127.0.0.1::1433 mcr.microsoft.com/mssql/server:2022-latest
+    $qaId = docker run -d --name $qaContainer --hostname $qaContainer --label "academydesk.qa.run=$qaRun" -e ACCEPT_EULA=Y -e MSSQL_PID=Developer -e MSSQL_SA_PASSWORD -p $qaSqlPublish mcr.microsoft.com/mssql/server:2022-latest
     }
     if ($LASTEXITCODE -ne 0) { throw 'Could not create isolated SQL container.' }
     Write-Output "QA $Module run=$qaRun container=$qaContainer started=$($qaStarted.ToString('o'))"
@@ -98,6 +100,16 @@ try {
     if (!$qaReady) { throw "Readiness failed; retained exact owned container $qaContainer" }
     $qaPort = [int]((docker port $qaContainer 1433/tcp).Trim().Split(':')[-1])
     Write-Output "QA SQL port=$qaPort"
+    if ($env:QA_INTERACTIVE_DEMO -eq '1') {
+        $qaExpectedPort = [int]($qaSqlPublish.Split(':')[1])
+        $qaPortConfig = docker inspect $qaContainer | ConvertFrom-Json
+        if ($LASTEXITCODE -ne 0 -or $qaPort -ne $qaExpectedPort -or
+            $qaPortConfig[0].HostConfig.PortBindings.'1433/tcp'[0].HostPort -ne "$qaExpectedPort" -or
+            $qaPortConfig[0].NetworkSettings.Ports.'1433/tcp'[0].HostIp -ne '127.0.0.1') {
+            throw 'Demo SQL fixed loopback binding was not preserved.'
+        }
+        Write-Output 'QA SQL explicit restart-stable loopback binding PASS'
+    }
     Push-Location -LiteralPath $qaRepo
     try {
         if ($HarnessPath) {

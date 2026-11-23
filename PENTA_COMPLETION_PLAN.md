@@ -24,6 +24,20 @@ implementation order below; the D59 failure evidence remains accurate.
 
 ## D62 implementation checkpoint — 23 November 2026
 
+### D64 investigation update — 24 November 2026
+
+- [x] Native tool-format/context/lease/strict-response adapter and207model-free
+  checks; diagnostic source published, serving remains unchanged/inactive.
+- [ ] Real2Bsemantic acceptance still FAILS all tested native variants. Do not
+  mark B1.03b model selection or BUG-AI-0001 complete. No new domain task qualified.
+- [x] Local demo restoration port defect repaired; future interactive SQL pins
+  its address.8Docker/socket plus protected Reconciliation SQL/API checks pass.
+- [ ] Existing4Bartifact verified; bounded pinned comparison proposed, owner
+  approval pending under the loading stop. No extra weights loaded or tier enabled.
+
+See QA/REPORTS/D64_NATIVE_ROUTING_AND_DEMO_RECOVERY_2026-11-24.md. Broader host
+reads/context/field/approval/UI integration and all release gates still apply.
+
 ### D63 additive runtime progress
 
 - [x] B1.03b1 First current stored Identity/tenant/module-filtered nine-operation
