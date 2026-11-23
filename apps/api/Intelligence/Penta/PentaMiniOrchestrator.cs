@@ -18,7 +18,26 @@ namespace AcademyDesk.Api.Intelligence.Penta;
 public sealed record MiniTurnInput(Guid RequestId, long ExpectedVersion, string Text, string Capability);
 public sealed record MiniSessionView(Guid ConversationId, long Version, DateTime ExpiresAtUtc);
 public sealed record MiniReceipt(Guid ConversationId, Guid RequestId, long Version, string Kind, string Message,
-    string Capability, OutstandingResult? Result, MiniState Context, string Provider = "PENTA Mini", string Protocol = "0.1");
+    string Capability, OutstandingResult? Result, MiniState Context, string Provider = "PENTA Mini", string Protocol = "0.1")
+{
+    public const int MaximumSerializedCharacters = 40000;
+    // Computed from the original typed decimal snapshot, never from an incoming
+    // projection. Old stored receipts need no rewrite or model/ledger redispatch.
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public MiniExactMoney? ExactMoney
+    {
+        get
+        {
+            if (Kind is not ("RESULT" or "CLARIFICATION_REQUIRED")) return null;
+            var money = PentaMiniMoney.FromResult(Result);
+            if (money is null) return null;
+            var original = JsonSerializer.Serialize(new { ConversationId, RequestId, Version, Kind, Message, Capability, Result, Context, Provider, Protocol });
+            // An additive presentation must not make a previously valid read
+            // exceed the existing stored-receipt bound. Keep the safe fallback.
+            return original.Length + JsonSerializer.Serialize(money).Length + nameof(ExactMoney).Length + 4 <= MaximumSerializedCharacters ? money : null;
+        }
+    }
+}
 
 /// <summary>Durable claim -> private planner -> reauthorize -> atomic read/state/audit.
 /// No inference runs inside a SQL transaction; no raw prompt or model prose is persisted.</summary>
@@ -183,7 +202,7 @@ public sealed class PentaMiniOrchestrator(AcademyDeskDbContext db, IdentityDbCon
         var receiptValue = new MiniReceipt(sessionId, input.RequestId, owned.Version + 1, outcome.Kind, outcome.Message,
             input.Capability, outcome.Result, outcome.State);
         var serialized = JsonSerializer.Serialize(receiptValue);
-        if (serialized.Length > 40000) throw new InvalidOperationException("Result exceeds the private receipt bound.");
+        if (serialized.Length > MiniReceipt.MaximumSerializedCharacters) throw new InvalidOperationException("Result exceeds the private receipt bound.");
         owned.ProtectedState = protector.Protect(JsonSerializer.Serialize(outcome.State));
         owned.Version++; owned.PendingRequestId = null;
         var turn = await db.PentaMiniTurns.SingleAsync(x => x.AcademyId == academy && x.ActorUserId == actor && x.SessionId == sessionId && x.RequestId == input.RequestId, token);
