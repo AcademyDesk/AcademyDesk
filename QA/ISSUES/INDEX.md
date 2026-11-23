@@ -6,6 +6,7 @@ Bounded runtime follow-up [DRAFT-ISOLATION-UX-001](../REPORTS/PHASE_2B_TEACHER_S
 
 | Issue ID | Title | Priority | Severity | Evidence type | Regression test |
 | --- | --- | --- | --- | --- | --- |
+| [BUG-AI-0001](BUG-AI-0001.md) | Teacher requests/corrections become successful learner searches | P1 | AI-first acceptance blocker | Real cached model/Identity/SQL reproduction; Manual teacher source has4 records; OPEN | PENTA-ENTITY-CORRECTION-001 |
 | [BUG-FUNC-0034](BUG-FUNC-0034.md) | Guardian child list returns500 for a valid linked learner | P1 | Major family portal availability | Reproduced500; bounded API36/SQL58/six-role69 PASS; broader release OPEN | GUARDIAN-CHILD-LIST-SQL-001 |
 | [BUG-AUTH-REFRESH-001](BUG-AUTH-REFRESH-001.md) | Renewed bearer overwritten by stale request headers | P1 | Major session reliability | Bounded helper/native Identity/HTTP/SQL repair; broader cross-tab/device/critical acceptance OPEN | AUTH-002; SECURITY-SESSION-001 |
 | [BUG-AUTH-REVOCATION-001](BUG-AUTH-REVOCATION-001.md) | Inactive credential issuance and incomplete token revocation | P1 | Major session security | Bounded repair/native SQL/browser evidence; full session scenario remains a required P0 release gate | SECURITY-SESSION-001; AUTH-001 |

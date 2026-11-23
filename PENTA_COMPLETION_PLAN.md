@@ -4,6 +4,74 @@ Owner: Desktop Codex. Direction updated 23 November 2026. Source reviewed:
 bbfd475b8eb8e004671d771970c7ff155c850ea9. This extends the existing implementation
 and enterprise program; it does not restart the audit or discard accepted work.
 
+## Whole-product scope correction — 23 November 2026
+
+The owner explicitly rejected treating teachers as the scope. Map all existing
+Manual capabilities for Platform, Owner/Admin, Teacher and Student/Guardian into
+one conversational operating system. Read
+`docs/PENTA_CONVERSATIONAL_OPERATING_CONTRACT.md` before further implementation.
+It records the source-backed portal/domain map, required task descriptors,
+multi-turn dependent workflow state, missing/optional-field behaviour and the
+canonical student + batch + enrollment acceptance journey. Reuse existing QA
+inventories and protected domain adapters rather than restarting their work.
+
+The inactive two-domain AcademyRead/Mini draft is preserved uncommitted and has
+not been wired or qualified. It is not the all-domain architecture. Next build
+the shared registry and dependent-plan/clarification/history/recovery foundation,
+then bind existing operations. Teacher correctness remains a regression case;
+it is not a sufficient delivery milestone. This supersedes item5's teacher-first
+implementation order below; the D59 failure evidence remains accurate.
+
+## D62 implementation checkpoint — 23 November 2026
+
+- [x] B1.03a Internal source-derived Manual controller/action index across role
+  surfaces; nine typed draft definitions reuse existing operational fields/rules.
+  All-domain source inventory does not mean all-domain runtime tool integration.
+- [x] B1.04a Closed dependent task draft graph, missing/conditional details,
+  retained field edits, affected draft revisions and typed dependency results.
+  Final896affected checks pass, including56new cases; no skips or weak assertions.
+- [ ] B1.03b Current-Identity/tenant/record-authorized catalog and live model
+  selection against it. No new HTTP/DI/model endpoint is registered in D62.
+- [ ] B1.04b–B1.05 Durable multi-task clarification/history, replacement/cancel,
+  in-flight/unknown protection and verified receipts; host adapter dispatch,
+  protected batch creation/compound coordination, grounded answers and native
+  model/SQL/browser qualification. Draft reduction alone is not execution.
+
+See QA/REPORTS/D62_CONVERSATIONAL_TASK_FOUNDATION_2026-11-23.md for exact sources,
+retained failures and the distinction between draft tests and live acceptance.
+BUG-AI-0001 and all existing release gates remain OPEN.
+
+## Confirmed defect — real conversation understanding (D59)
+
+Owner's teacher prompt reproduced a genuine semantic failure at29f908a: four
+authorized teacher records exist, but both the teacher request and correction
+return a successful empty learner search. BUG-AI-0001 is OPEN. The current
+learner-only pilot is not the requested academy-wide conversational intelligence.
+Further cosmetic expansion is secondary to this repair. Reorder the existing
+B1.03–B1.06 work accordingly; do not restart domain services or the audit.
+
+1. Create the server-authorized entity/capability catalog and versioned tool/
+   result contract. Teacher reads must use the teacher domain, independently of
+   learner finance. Preserve legacy contract/receipts and enforce current policy.
+2. Retain scoped dialogue meaning: requested entity/task, selected source IDs,
+   filters, references, corrections, pending clarification and explicit context
+   switches. "I said teachers" changes entity; "only piano" then filters teachers.
+3. Add natural answer composition over verified tool facts with source/time
+   binding and honest unknowns. Separate host authorization and deterministic
+   financial calculations from model interpretation/prose. Current fixed pilot
+   messages are not this conversation layer.
+4. Render typed teacher/student/other work artifacts and conversation history;
+   remove the learner-only assumption from result presentation. Keep drafts,
+   approvals, exact receipts/recovery and Manual fallback in the same journey.
+5. Prove one real teacher conversation end to end first, including corrections,
+   follow-ups, source accuracy, denial and recovery. Then extend the catalog
+   across Batch2 using existing services. Use held-out multi-turn evaluations
+   to qualify each model/role; UI/HTTP counts do not establish model understanding.
+
+No teacher conversation fix is claimed yet. The active cached2B evaluation does
+not authorize other model loading, training or activation. Improved prompting,
+model size or an attractive shell alone cannot replace missing tools/context.
+
 ## Goal and acceptance contract
 
 Every supported, permitted task must be reachable by conversation. Target 90% of

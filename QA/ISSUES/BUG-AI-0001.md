@@ -1,0 +1,71 @@
+# BUG-AI-0001 — Teacher requests are answered as verified learner searches
+
+| Field | Value |
+| --- | --- |
+| Status | OPEN — real-model reproduction; implementation pending |
+| Priority | P1 / blocker for AI-first product acceptance |
+| Source | 29f908a494f2c0919cd1b5a29175c72735eee895 |
+| Confirmation | Owner screenshot plus real cached Mini / Identity / SQL |
+| Regression | PENTA-ENTITY-CORRECTION-001 |
+
+23 November 2026: on the owned synthetic demo
+`fc7ae045f5574f66b143e2ff9291507f`, an authenticated Owner reads four teachers
+from the existing authorized academy teachers API. In a separate Mini conversation,
+both prompts below return HTTP201, kind RESULT, a learner result with count0 and
+the message "No students match these filters.":
+
+1. "Show me the teachers in my academy."
+2. "I said teachers"
+
+Private evidence is retained in that demo's
+`teacher-intent-reproduction-5e823352-7cd0-4a8b-b139-e13f2757b65c.json`.
+No credentials or customer records are published. This did not alter the owner's
+browser conversation, ledger or domain records. The already-authorized running
+cached model was used; no download, model replacement or Azure action occurred.
+
+## Root causes verified in current source
+
+- `PentaMiniProtocol.cs`: Available exposes only SearchLearners/GetLearner;
+  MiniState stores learner IDs and learner query filters only.
+- `AcademyDeskConnector.cs`: both executable paths read OutstandingFeesService.
+  There is no teacher retrieval path in this connection.
+- Mini's current orchestrator prompt/schema plans into that narrow vocabulary;
+  it incorrectly converts these unsupported requests into learner searches.
+- `PentaMiniOrchestrator.cs`: non-tool model prose is replaced by fixed pilot
+  messages. This is not a general grounded conversation/answer composition stage.
+- `mini-conversation.tsx`: every RESULT receives the heading Verified learner
+  read. Successful schema/HTTP checks do not verify that the requested entity
+  and answer source agree.
+
+## Required repair and acceptance
+
+Use the existing domain services and host authority. Implement a versioned
+entity-aware conversation/tool contract, permitted teacher list/detail reads,
+domain-scoped contextual references and source-backed answer composition. Keep
+legacy receipts and exact-money/recovery safeguards; do not relabel teachers as
+learners, pass arbitrary SQL to the model or accept invented facts.
+
+First acceptance journey: teacher list from real authorized teacher records;
+correction from students to teachers; "only piano" stays in teacher context;
+selection/disambiguation opens the correct teacher; status/subject/branch facts
+match the source; switching back to students clears incompatible context.
+Ambiguous relationships ask a useful question. Unsupported/denied/outage requests
+must not become a successful empty learner search. Validate role/tenant and
+revocation limits, audit, duplicate dispatch/recovery and real paraphrases.
+Evaluate fresh held-out wording separately from exposed regression examples.
+
+The existing 1020-client/256-browser/13-native pilot checks remain valid at their
+stated scope. They do not cover or pass this outcome. Do not close this issue
+with a wording change, a keyword-only demo, a mock teacher response or a larger
+model selection. Teacher conversational acceptance and broader AI-first launch
+remain OPEN until the real model-to-source-to-answer path passes.
+
+## D62 foundation progress — 23 November 2026
+
+Owner clarified that teachers are an example, not the product scope. Whole-product
+Manual capability indexing and the first typed multi-task draft reducer now exist;
+896affected checks pass, including56new cases. They are inactive internal host
+foundation code, not a repaired live conversation. The current demo's two-tool
+learner path is unchanged. Keep this issue OPEN; teacher/entity correction and
+compound cross-domain model/SQL/browser acceptance remain mandatory. See
+`QA/REPORTS/D62_CONVERSATIONAL_TASK_FOUNDATION_2026-11-23.md`.

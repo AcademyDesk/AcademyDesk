@@ -1,5 +1,61 @@
 # Academy Desk handoff
 
+## D62 shared task foundation — 23 November 2026
+
+- [x] Source-derived internal Manual operation index across portals; nine typed
+  draft descriptors reusing existing fields/rules, with draft-only batch binding.
+- [x] Closed dependent task plans, conditional missing details, retained edits,
+  affected revision invalidation and typed host-result dependency materialization.
+- [x] Final affected regression:896passed/zero failed/skipped across39classes in
+  eight isolated processes, including56new cases. API/test build and diff checks
+  pass. Earlier future-DOB failure, one-process OOM and wrapper-count failure are
+  preserved and explained in the source-bound report; no assertion was weakened.
+- [ ] No runtime/HTTP/DI/composer activation. Current Mini remains learner-only;
+  BUG-AI-0001 is OPEN. Draft parsing is not domain execution or current permission.
+  Trusted host observations must come from verified scoped durable receipts/audit.
+- [ ] Next: current-authority runtime catalog + real Mini planning, durable
+  multi-task dialogue/recovery, protected batch/compound coordinator, remaining
+  adapters and actual model/SQL/browser/device outcome acceptance. Sol High.
+
+Existing demo/API remainHTTP200; containers/models/evidence preserved. New code
+does not supersede enterprise gates or authorize Azure. Inactive AcademyRead and
+Mini drafts remain separate/uncommitted; preserve unrelated local work.
+
+[D62 exact results and limits](QA/REPORTS/D62_CONVERSATIONAL_TASK_FOUNDATION_2026-11-23.md)
+
+## Whole-product conversation scope clarification — 23 November 2026
+
+Owner paused the narrow teacher implementation: all supported/permitted Manual
+features across Platform, Owner/Admin, Teacher, Student/Guardian must work through
+one conversation, including dependent multi-operation prompts and multi-turn
+missing-field collection. Recorded the operating contract and current source
+map in `docs/PENTA_CONVERSATIONAL_OPERATING_CONTRACT.md`; completion ledger now
+prioritizes the common registry/task-plan/history/clarification/recovery layer.
+No new runtime behaviour, teacher fix or production/model acceptance is claimed.
+The earlier untracked C# AcademyRead contracts and separate Mini draft remain
+inactive, untested and preserved. No app edits in this scope-correction slice;
+no demo/container/model changes. Existing QA evidence and unrelated work intact.
+Next: Sol High for shared whole-product contracts and adapter binding; retain
+the compound student/batch/enrollment and teacher-correction acceptance cases.
+
+## D59 real teacher intent failure — 23 November 2026
+
+Owner rejected the learner-only behaviour as incompatible with the product goal.
+Reproduced on29f908a using the current owned demo: Manual teacher GET200/count4;
+"Show me the teachers in my academy." then "I said teachers" both Mini201/RESULT/
+learner count0, "No students match these filters." BUG-AI-0001 is OPEN; no repair
+or general conversational qualification is claimed. Credentials/raw evidence stay
+private. No application/model source was changed in this diagnostic slice.
+
+Verified root causes: two learner-only tools, fee-only connector and state,
+fixed host response messages and learner-only result presentation. Prior pilot
+passes do not qualify this outcome. PENTA_COMPLETION_PLAN.md now prioritizes the
+existing B1 entity/tool/context/answer work and a real teacher correction/follow-up
+journey ahead of further cosmetic expansion. Preserve existing services, legacy
+receipts, approvals, exact money and all host security gates. Stay with Sol High.
+
+[Reproduction and required acceptance](QA/ISSUES/BUG-AI-0001.md)
+
 ## Desktop-only ownership and reference-based PENTA shell — 23 November 2026
 
 Owner ended Cloud/Desktop division. Desktop now owns the complete delivery.

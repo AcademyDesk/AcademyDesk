@@ -1,5 +1,19 @@
 # AcademyDesk QA control centre — Phase 1
 
+## D62 whole-product conversation task foundation — 23 November 2026
+
+- [x] Internal source-derived cross-portal Manual operation index; nine typed
+  task draft definitions, conditional fields, retained corrections/dependencies
+  and host-result identity binding. Existing domain/approval code reused.
+- [x] 896affected tests across39classes/eight fresh processes PASS, including56
+  new cases; zero failures/skips. Build and diff checks PASS. Preserved first
+  semantic failure, broad-run OOM and wrapper counting mismatch are documented.
+- [ ] Not wired to live Mini/HTTP/DI. Durable dialogue, protected compound
+  execution and real model/SQL/browser/device acceptance remain pending. Existing
+  demo/APIHTTP200; no Docker/model/production change. BUG-AI-0001 remains OPEN.
+
+[D62 source-bound results and next implementation](REPORTS/D62_CONVERSATIONAL_TASK_FOUNDATION_2026-11-23.md)
+
 ## D58 Desktop-only continuation and actual PENTA visual shell
 
 Owner has ended Cloud/Desktop task splitting. Use the existing enterprise program
