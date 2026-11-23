@@ -1,5 +1,26 @@
 # AcademyDesk QA control centre — Phase 1
 
+## D57 Guardian and preflight acceptance — 23 November 2026
+
+- [x] Imported only completed Cloud C56's3QA paths atba4b261; fixed two reproduced
+  local preflight edge cases. Final90pure checks pass; no Azure call.
+- [x] Real linked Guardian children500 reproduced, repaired without permission/
+  DTO changes;58SQL and36focused API checks pass. Existing GuardianFlags module
+  added once to ordinary CI (27total); required paired Core job retained.
+- [x] Fresh demoe13e7272:69six-role native permission assertions/no429,
+  13real-model/Identity/SQL smoke checks and11outage/recovery/Manual checks pass.
+  Private current logins remain in ACTIVE_DEMO; no password is published.
+- [ ] BUG-FUNC-0034 stays OPEN with bounded repair verified. Six existing critical
+  chains, exact paired CI credential, private Mini originals, production AI
+  qualification/90%, physical devices and staging acceptance remain open.
+- [ ] Final fetch found Cloud C57 implementation3a0c37942b0445e52c4695d048c0b146ca61676e.
+  Its four-path inactive foundation is queued for separate review/integration;
+  receiver/host activation is not accepted. Do not duplicate its implementation.
+
+[Current demo](HANDOFF/INTERACTIVE_DEMO_2026-11-23.md)
+[Exact results and preserved failures](REPORTS/D57_PORTAL_AND_PREFLIGHT_ACCEPTANCE_2026-11-23.md)
+[Desktop scope and next Cloud handoff](HANDOFF/D57_DESKTOP_CHECKS_2026-11-23.md)
+
 ## D56 current acceptance — 23 November 2026
 
 - [x] C55 already integrated once; preserved current application/Student360/

@@ -1,5 +1,43 @@
 # Interactive synthetic academy demo — 23 November 2026
 
+## D57 current demo — 23 November 2026
+
+Current run is `e13e72728f55494ab957e7e04d22182b`. Open
+http://127.0.0.1:3000/login. The generated password and six accounts are in
+`D:\AcademyDesk-penta-host\.build-check\interactive-demo-e13e72728f55494ab957e7e04d22182b\LOGIN.txt`.
+Use owner@demo.example.invalid for the complete academy workspace; never publish
+the password or reuse a stopped run's file.
+
+- [x] Current-source six-role native permission packet69/69: finance and tenant
+  boundaries, Platform Owner restrictions, linked-family access/downloads,
+  fixed Guardian children list and Teacher period validation. No429; unchanged
+  ledger/Mini state. Read-only packet, not a browser/device or model test.
+- [x] Thirteen real-model/Identity/SQL demo checks passed again: six identities,
+  pending fees, contextual Piano follow-up, exact INR2250.00, GET recovery and
+  Manual optional-fields-empty save. First local query29.422seconds.
+- [x] Eleven Core-outage/recovery/denial/Manual checks passed; original endpoint/
+  inference start time/resource inventory preserved. Two invented Manual saves
+  leave14learners. Guardian list500 is fixed on this backend.
+- [ ] Exact-candidate hosted acceptance, devices/staging/private archives and
+  qualified production AI/90%remain open. No universal conversational CRUD claim.
+
+Expiry is24November2026 at06:04IST, or earlier on shutdown/low-RAM safety stop.
+Use the same startup/stop instructions below and ACTIVE_DEMO to obtain the latest
+private login path after any restart. Do not run heavy tests beside the demo.
+Earlier fixtures and failures remain private, including the preceding synthetic
+database/key-ring backup. This section supersedes all older run IDs and expiry
+statements below.
+
+Read-only portal check (existing synthetic fixture only):
+
+~~~powershell
+$env:QA_INTERACTIVE_DEMO_PERMISSIONS = '1'
+node QA/tools/interactive-demo-permissions.cjs
+Remove-Item Env:QA_INTERACTIVE_DEMO_PERMISSIONS
+~~~
+
+[Source-bound D57 acceptance](../REPORTS/D57_PORTAL_AND_PREFLIGHT_ACCEPTANCE_2026-11-23.md)
+
 ## D56 live demo — current instructions
 
 Current run: `12994a6ab57b40f2b333f6efc554f2ba`, restored on23November2026.

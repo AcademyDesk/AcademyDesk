@@ -114,6 +114,14 @@ internal static partial class SqlHarnessEntryPoint
             foreach(var marker in new[]{"QA-FLAGS-OTHER-PRIVATE","QA-FLAGS-UNPUBLISHED","QA-FLAGS-UNENROLLED","QA-FLAGS-FOREIGN"})if(text.Contains(marker))throw new InvalidOperationException("Out-of-scope disclosure: "+label);
             if(!documents&&(text.Contains("https://example.invalid/qa/")||text.Contains("QA-FLAGS-CERT")))throw new InvalidOperationException("Document restriction leaked bytes: "+label);
         }
+        var childListRoute = $"/api/portal/guardians/{parent.Id:D}/children";
+        using (var listed = JsonDocument.Parse(await Send("active-parent-child-list", childListRoute, HttpStatusCode.OK, "parent"))) {
+            if (listed.RootElement.GetArrayLength() != 1 || listed.RootElement[0].GetProperty("id").GetGuid() != child.Id)
+                throw new InvalidOperationException("Guardian child list missed its authorized learner or crossed scope.");
+        }
+        Pass("active-parent-child-list");
+        await Send("foreign-parent-child-list", $"/api/portal/guardians/{Guid.NewGuid():D}/children", HttpStatusCode.Forbidden, "parent");
+        Pass("foreign-parent-child-list");
         foreach(var finance in new[]{false,true})foreach(var documents in new[]{false,true})foreach(var academic in new[]{false,true}) {
             await ChangeLink(x=>{x.CanViewFinance=finance;x.CanViewDocuments=documents;x.CanViewAcademicProgress=academic;});
             var key=$"F{(finance?1:0)}D{(documents?1:0)}A{(academic?1:0)}";
@@ -136,6 +144,10 @@ internal static partial class SqlHarnessEntryPoint
             var label="scoped-missing-invoice-"+row;await Send(label,InvoiceRoute(child.Id,row),HttpStatusCode.NotFound,"parent");Pass(label);
         }
         await ChangeLink(x=>x.AccessRevokedAtUtc=DateTime.UtcNow);
+        using (var revoked = JsonDocument.Parse(await Send("revoked-parent-child-list", childListRoute, HttpStatusCode.OK, "parent"))) {
+            if (revoked.RootElement.GetArrayLength() != 0) throw new InvalidOperationException("Revoked learner remained in the Guardian list.");
+        }
+        Pass("revoked-parent-child-list");
         foreach(var path in new[]{Details(child.Id),InvoiceRoute(child.Id,invoice.Id)}) {var label="live-link-revoked-"+(path.Contains("invoices")?"invoice":"details");await Send(label,path,HttpStatusCode.Forbidden,"parent");Pass(label);}
         await ChangeLink(x=>{x.AccessRevokedAtUtc=null;x.CanAccessPortal=false;});
         foreach(var path in new[]{Details(child.Id),InvoiceRoute(child.Id,invoice.Id)}) {var label="portal-off-"+(path.Contains("invoices")?"invoice":"details");await Send(label,path,HttpStatusCode.Forbidden,"parent");Pass(label);}
