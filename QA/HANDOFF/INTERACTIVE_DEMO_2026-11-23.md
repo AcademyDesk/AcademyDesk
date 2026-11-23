@@ -1,5 +1,21 @@
 # Interactive synthetic academy demo — 23 November 2026
 
+## Current test passwords — separate per account
+
+The owner requested unique generated passwords. All six accounts in the active
+e13e7272 fixture now have different passwords; all new logins/sessions passed,
+and every former shared password and old access ticket was refused401. Sign in
+again if an existing tab has an expired session. Login IDs and role scope stay
+the same. The current permission packet passed69/69 using the new credentials.
+
+Passwords are stored only in the private per-run LOGIN.txt and credentials.json
+named by .build-check/ACTIVE_DEMO.json, restricted to the current Windows owner
+and SYSTEM. No password value is in this handoff or committed source. These are
+disposable demo credentials, not production accounts. QA helpers support the
+per-account file and retain compatibility with a freshly seeded local fixture.
+The local private launcher is prepared to rotate future seeds before announcing
+readiness; that new-start lifecycle has not been rerun during the active demo.
+
 ## D57 current demo — 23 November 2026
 
 Current run is `e13e72728f55494ab957e7e04d22182b`. Open

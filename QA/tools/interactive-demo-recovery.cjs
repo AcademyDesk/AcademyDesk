@@ -7,6 +7,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const cp = require('node:child_process');
 const crypto = require('node:crypto');
+const { demoPassword } = require('./interactive-demo-credentials.cjs');
 const root = path.resolve(__dirname, '../..');
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 const digest = value => crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex');
@@ -47,8 +48,6 @@ async function main() {
     before: inventory(), checks: [], synthetic: true, azure: false, modelRequests: 0, modelLoaded: false, modelPromoted: false };
   const save = () => fs.writeFileSync(output, JSON.stringify(result, null, 2));
   const pass = check => { result.checks.push({ check, pass: true }); save(); };
-  const password = fs.readFileSync(active.loginFile, 'utf8').match(/Password for all six demo accounts: (.+)/)?.[1];
-  a.ok(password, 'Private synthetic credentials unavailable.');
   let token, paused = false;
   const api = async (route, method = 'GET', body, bearer = token) => {
     const response = await fetch(meta.fixture.api + route, { method, headers: {
@@ -71,7 +70,7 @@ async function main() {
     '(SELECT COUNT(*) FROM PentaMiniTurns) AS turns FOR JSON PATH;');
   save();
   try {
-    const login = await api('/api/auth/login', 'POST', { email: 'owner@demo.example.invalid', password }, null);
+    const login = await api('/api/auth/login', 'POST', { email: 'owner@demo.example.invalid', password: demoPassword(active, 'owner') }, null);
     a.equal(login.status, 200); a.ok(login.data?.accessToken); token = login.data.accessToken;
     pass('Owner real Identity login');
     const profile = await api('/api/auth/session'); a.equal(profile.status, 200);
@@ -102,7 +101,7 @@ async function main() {
     const anon = await api(receiptRoute, 'GET', undefined, null); a.equal(anon.status, 401);
     pass('Anonymous receipt recovery denied');
     for (const role of ['teacher', 'student']) {
-      const login = await api('/api/auth/login', 'POST', { email: role + '@demo.example.invalid', password }, null);
+      const login = await api('/api/auth/login', 'POST', { email: role + '@demo.example.invalid', password: demoPassword(active, role) }, null);
       a.equal(login.status, 200);
       const denied = await api(receiptRoute, 'GET', undefined, login.data.accessToken);
       a.ok([403, 404].includes(denied.status)); a.equal(denied.data?.exactMoney, undefined);

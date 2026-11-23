@@ -3,6 +3,7 @@
 // Only login POSTs and application GETs; no mutation, model request or resources.
 const a = require('node:assert/strict'), fs = require('node:fs'), path = require('node:path');
 const cp = require('node:child_process'), crypto = require('node:crypto');
+const { demoPassword } = require('./interactive-demo-credentials.cjs');
 const root = path.resolve(__dirname, '../..');
 const hash = value => crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex');
 async function main() {
@@ -15,8 +16,6 @@ async function main() {
   a.equal(meta.ready, true); a.equal(meta.synthetic, true); a.equal(meta.azure, false);
   a.equal(meta.fixture.synthetic, true); a.equal(meta.fixture.api, 'http://127.0.0.1:54999');
   a.ok(Date.parse(meta.expiresAtUtc) > Date.now()); a.match(meta.fixture.academyId, /^[a-f0-9-]{36}$/i);
-  const password = fs.readFileSync(active.loginFile, 'utf8').match(/Password for all six demo accounts: (.+)/)?.[1];
-  a.ok(password);
   // Preserve the real120/minute limiter. Separate complete packets by one
   // window; never retry a429 or alter an assertion to conceal rate limiting.
   const previous = fs.readdirSync(folder).filter(name => /^permissions-[a-f0-9]{32}\.json$/.test(name))
@@ -69,7 +68,7 @@ async function main() {
     const workspaces = ['AcademyAdmin', 'AcademyAdmin', 'Teacher', 'Portal', 'Portal', 'Platform'];
     for (let i = 0; i < roles.length; i++) {
       const role = roles[i]; currentCheck = role + ' real Identity login';
-      const r = await request('/api/auth/login', null, { email: role + '@demo.example.invalid', password });
+      const r = await request('/api/auth/login', null, { email: role + '@demo.example.invalid', password: demoPassword(active, role) });
       a.equal(r.status, 200); a.ok(r.data?.accessToken); tokens[role] = r.data.accessToken; pass(currentCheck, r.status);
       const me = await expect(role + ' authoritative workspace', '/api/auth/session', role, 200);
       a.equal(me.data.workspace, workspaces[i]);

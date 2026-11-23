@@ -1,5 +1,15 @@
 # Academy Desk handoff
 
+## Private demo password storage — 23 November 2026
+
+Owner requested distinct passwords for six synthetic roles. Current demo account
+passwords rotated through the real authenticated password-change route: six new
+logins/sessions pass, six former passwords and six old access tickets refuse401.
+Generated values remain only in owner/SYSTEM-restricted local files referenced
+by ACTIVE_DEMO; no credentials are committed. QA helper readers now support
+per-account storage, with69native permission assertions passing after rotation.
+No application, production credential, model, database schema or Azure change.
+
 ## D57 Guardian and preflight acceptance — 23 November 2026
 
 - [x] Imported only completed Cloud C56's3QA paths atba4b261; fixed two reproduced
