@@ -265,6 +265,8 @@ static async Task VerifyRealHttpAsync(QaRunManifest manifest, bool classMediaOnl
 {
     try
     {
+        if (auditMode == "--audit-penta-foundation" && Environment.GetEnvironmentVariable("QA_INTERACTIVE_DEMO") == "1")
+        { await ServeInteractiveDemoAsync(manifest); return; }
         var linkedFault = auditMode is "--audit-linked-baseline" or "--audit-linked-fixed" or "--audit-branch-fixed" ? new LinkedIdentitySqlFault() : null;
         using var factory = new QaApiFactory(manifest, isolatedIdentityInterceptor: linkedFault);
         using var client = factory.CreateClient(new() { AllowAutoRedirect = false });

@@ -1,5 +1,19 @@
 # Academy Desk handoff
 
+## Verified interactive demo — 23 November 2026
+
+- [x] Local demo at http://127.0.0.1:3000/login, using only invented records.
+  Six real Identity logins, nine-row Mini pending-fee query, two-row Piano
+  follow-up, exact GET recovery and an optional-fields-empty Manual save passed.
+- [x] Data includes two branches, four teachers/courses/batches, twelve invoices
+  and enrolled learners; the Manual check retained a thirteenth learner.
+- [x] Removed32old unmounted QA containers; preserved original PENTA services,
+  mounted media data, model files, images, volumes and private evidence.
+- [ ] Broader free-prompt CRUD/role coverage and90%measurement, C55, exact CI,
+  model full-suite/archive blockers, six critical records, devices and staging.
+
+[Demo instructions, credentials location and lifecycle](QA/HANDOFF/INTERACTIVE_DEMO_2026-11-23.md)
+
 ## C54 integrated native acceptance — 23 November 2026
 
 - [x] Integrated the final Cloud C54 composer and scoped GET receipt recovery.
