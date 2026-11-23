@@ -1,5 +1,19 @@
 # AcademyDesk Brand and Visual Standard
 
+## Current PENTA AI and Manual alignment — 23 November 2026
+
+The integrated product uses the immutable shared PENTA foundation/tokens:
+Orbit with Aura accents for dark, Prism for light, and Geist Sans. Both AI and
+Manual must share that visual language. The host adapter maps legacy --ad-*
+variables to --pui-* so existing modules inherit the same palette. Do not edit
+vendor token files or invent another local theme to resolve a host mismatch.
+Current desktop page titles follow --ad-page-title-size (30px,28px on mobile),
+and shared touch targets follow the44px foundation token. Earlier42px controls,
+headline scale and legacy action palettes below are historical guidance where
+they differ; remaining consumers must converge through the host adapter.
+Screenshots remain candidates until owner review. Preserving a visual contract
+does not assert that every portal/state has already passed visual acceptance.
+
 This document is the implementation reference for AcademyDesk branding and visual refinement. Product work must use these rules instead of introducing local colours, fonts, or control styles.
 
 ## Typography

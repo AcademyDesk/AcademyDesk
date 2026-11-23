@@ -1,5 +1,27 @@
 # Academy Desk handoff
 
+## Desktop-only ownership and reference-based PENTA shell — 23 November 2026
+
+Owner ended Cloud/Desktop division. Desktop now owns the complete delivery.
+`PENTA_COMPLETION_PLAN.md` lists the remaining four batches without discarding
+accepted ERP/enterprise work. Goal: 100% supported/permitted conversational task
+coverage, approximately 90% AI usage, with secure approvals and usable Manual.
+
+Recovered original Orbit/Prism/Aurora and later UI2 references; implemented the
+shared role shell, capability help, conversation canvas, multiline Mini composer
+and context rail/drawers. No prototype business data or unlocked model/tools.
+Validation: 1020 client assertions, 256 synthetic browser cases, both builds,
+TypeScript and zero-warning changed-file lint pass. Restored local demo passes
+fresh 13 real-model/SQL, 69 permission and 11 outage/recovery checks; credentials
+remain private and originals restore when the exclusive demo stops.
+Guided adapters remain separate and retained; full unified history/tool driver
+and every Manual route's visual acceptance stay open. Current local demo/logins
+come only from private ACTIVE_DEMO, never passwords in this handoff.
+
+[Reference map](docs/PENTA_VISUAL_REFERENCE_MAP.md) ·
+[Source-bound checks](QA/REPORTS/D58_DESKTOP_TAKEOVER_AND_VISUALS_2026-11-23.md) ·
+[Desktop continuation](QA/HANDOFF/D58_DESKTOP_OWNER_AND_VISUALS_2026-11-23.md)
+
 ## Private demo password storage — 23 November 2026
 
 Owner requested distinct passwords for six synthetic roles. Current demo account

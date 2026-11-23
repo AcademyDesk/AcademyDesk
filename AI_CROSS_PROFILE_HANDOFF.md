@@ -1,5 +1,14 @@
 # Academy Desk — shared continuation across profiles
 
+## Desktop-only ownership — 23 November 2026
+
+The owner has ended Cloud/Desktop task splitting. Desktop Codex now owns the
+complete delivery. Preserve the history below, but do not dispatch or wait for
+Cloud assignments. Fetch/review returned branches once; do not repeat their work.
+Current delivery ledger: [PENTA_COMPLETION_PLAN.md](PENTA_COMPLETION_PLAN.md).
+Existing source, private evidence, model-packet restrictions and release gates
+remain in force. No main merge, paid provisioning or Azure deployment is implied.
+
 ## Current C55 demo and integration — 23 November 2026
 
 - [x] Restored http://127.0.0.1:3000/login on the verified C55 backend/UI.

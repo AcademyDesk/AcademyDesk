@@ -1,9 +1,32 @@
 /* Academy host bridge. Vendor FW1-R1 stays immutable; no demo shell/state. */
 .manual {
   --penta-font: var(--font-geist-sans), system-ui, sans-serif;
+  --background: var(--pui-canvas);
+  --foreground: var(--pui-text);
+  --ad-canvas: var(--pui-canvas);
+  --ad-surface: var(--pui-surface);
+  --ad-surface-subtle: var(--pui-elevated);
+  --ad-surface-strong: var(--pui-elevated);
+  --ad-control-surface: var(--pui-control);
+  --ad-text: var(--pui-text);
+  --ad-text-muted: var(--pui-muted);
+  --ad-text-subtle: var(--pui-muted);
+  --ad-border: var(--pui-border);
+  --ad-border-strong: var(--pui-border);
+  --ad-accent: var(--pui-accent);
+  --ad-accent-strong: var(--pui-accent);
+  --ad-accent-soft: var(--pui-selected);
+  --ad-action: var(--pui-accent);
+  --ad-action-hover: var(--pui-accent);
+  --ad-action-text: var(--pui-on-accent);
+  --ad-success: var(--pui-success);
+  --ad-warning: var(--pui-warning);
+  --ad-danger: var(--pui-danger);
+  --ad-shadow: var(--pui-shadow);
   --manual-card-radius: var(--pui-radius-card);
   --manual-control-radius: var(--pui-radius-control);
   min-width: 0;
+  font-family: var(--penta-font);
 }
 .manual :global(.enterprise-sidebar) {
   background: linear-gradient(180deg, color-mix(in srgb, var(--manual-aura) 6%, var(--pui-surface)), var(--pui-canvas));

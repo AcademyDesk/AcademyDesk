@@ -103,7 +103,7 @@ async function start({ academyId, evidence, prefix = 'penta-browser-' }) {
       const wait = async (expression, message = expression) => { for (let i = 0; i < 120; i++) { if (await evaluate(expression)) return; await sleep(50); } throw Error('DOM wait: ' + message); };
       const fill = async (selector, text) => {
         await wait(`Boolean(document.querySelector(${JSON.stringify(selector)}))`);
-        await evaluate(`(()=>{const n=document.querySelector(${JSON.stringify(selector)});Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(n,${JSON.stringify(text)});n.dispatchEvent(new Event('input',{bubbles:true}));})()`);
+        await evaluate(`(()=>{const n=document.querySelector(${JSON.stringify(selector)});const prototype=n instanceof HTMLTextAreaElement?HTMLTextAreaElement.prototype:HTMLInputElement.prototype;Object.getOwnPropertyDescriptor(prototype,'value').set.call(n,${JSON.stringify(text)});n.dispatchEvent(new Event('input',{bubbles:true}));})()`);
       };
       const button = label => `Array.from(document.querySelectorAll('button')).find(n=>n.textContent.trim()===${JSON.stringify(label)})`;
       const click = async label => { await wait(`Boolean(${button(label)}&&!(${button(label)}).disabled)`); await evaluate(`(${button(label)}).click()`); };

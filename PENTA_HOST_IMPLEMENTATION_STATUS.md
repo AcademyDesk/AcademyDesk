@@ -1,5 +1,15 @@
 # PENTA host integration status — 5 November 2026
 
+## Current Desktop-owned continuation — 23 November 2026
+
+Cloud assignments below are historical. Desktop owns all delivery; follow
+PENTA_COMPLETION_PLAN.md. The owner rejected the basic stacked entry page;
+recovered Orbit/Prism/Aurora and UI2 references now inform the host-owned role
+shell. Layout/help/composer/context integration does not qualify all tools/models.
+Existing guided adapters and prior native results below remain preserved, while
+full free-prompt outcome coverage, history, work-canvas binding and production
+acceptance stay open. See the D58 report and visual reference map.
+
 ## Platform Owner conversation — 15 November 2026
 
 The Platform workspace has separate live evidence for health, onboarding

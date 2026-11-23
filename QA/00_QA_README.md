@@ -1,5 +1,25 @@
 # AcademyDesk QA control centre — Phase 1
 
+## D58 Desktop-only continuation and actual PENTA visual shell
+
+Owner has ended Cloud/Desktop task splitting. Use the existing enterprise program
+and `PENTA_COMPLETION_PLAN.md`; no new audit from zero. Recovered original
+Orbit/Prism/Aurora and UI2 references now guide the host shell. Six visual and
+36 role/theme/viewport shell checks pass; full regression/restoration results
+remain source-bound in the report below. This does not close critical issues,
+qualify models, accept all Manual screens or permit Azure deployment.
+
+- [x] Final affected suite: 1020 client assertions; 256 synthetic browser cases;
+  enabled/default-off builds, TypeScript and zero-warning changed-file lint.
+- [x] Validation resource inventory/identity restoration and API health200.
+- [x] Updated live local demo: 13 real-model/SQL, 69 permission and 11 outage/
+  recovery checks, six unique private credentials. Existing cached model only.
+- [ ] All-operation conversation coverage, all-screen Manual acceptance,
+  model qualification, six critical chains, paired CI and staging release gates.
+
+[D58 report](REPORTS/D58_DESKTOP_TAKEOVER_AND_VISUALS_2026-11-23.md) ·
+[Desktop continuation](HANDOFF/D58_DESKTOP_OWNER_AND_VISUALS_2026-11-23.md)
+
 ## D57 Guardian and preflight acceptance — 23 November 2026
 
 - [x] Imported only completed Cloud C56's3QA paths atba4b261; fixed two reproduced

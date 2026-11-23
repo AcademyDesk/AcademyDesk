@@ -1,5 +1,14 @@
 # Start / resume Cloud Codex from this source checkpoint
 
+## Desktop-only ownership — 23 November 2026
+
+The owner has ended Cloud/Desktop task splitting. Desktop Codex now owns the
+complete delivery. Preserve the history below, but do not dispatch or wait for
+Cloud assignments. Fetch/review returned branches once; do not repeat their work.
+Current delivery ledger: [PENTA_COMPLETION_PLAN.md](PENTA_COMPLETION_PLAN.md).
+Existing source, private evidence, model-packet restrictions and release gates
+remain in force. No main merge, paid provisioning or Azure deployment is implied.
+
 ## D57 Guardian and preflight acceptance — 23 November 2026
 
 - [x] Imported only completed Cloud C56's3QA paths atba4b261; fixed two reproduced

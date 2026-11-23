@@ -23,6 +23,6 @@ export function usePentaManualTheme() {
     "data-penta-foundation": FOUNDATION_VERSION,
     "data-penta-tokens": TOKEN_VERSION,
     "data-penta-manual": "fw1-r1",
-    style: { "--manual-aura": light ? "#6446b4" : colors.aura.accent } as CSSProperties,
+    style: { "--manual-aura": light ? colors.prism.accent : colors.aura.accent } as CSSProperties,
   };
 }

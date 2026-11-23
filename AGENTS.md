@@ -1,5 +1,19 @@
 # Academy Desk agent instructions
 
+## Single Desktop owner — 23 November 2026
+
+The owner has ended the split Cloud/Desktop execution model. Desktop Codex owns
+architecture, product implementation, AI/Core integration, frontend, Manual
+portals, native validation and release preparation. Historical Cloud claims are
+handover records, not active assignments. Fetch and review their latest returns
+once; preserve all worktrees/evidence and do not repeat accepted work.
+Read PENTA_COMPLETION_PLAN.md for the current task ledger and product target.
+GitHub remains the shared source of truth; use bounded feature commits. Existing
+authorization, model-packet stops, main/release/Azure and private-evidence rules
+remain. Single ownership does not authorize production deployment or weakening
+host security. No external design tool or another project handoff is required
+for routine AcademyDesk development; preserve versioned Mini/Core contracts.
+
 Academy Desk is an existing enterprise SaaS codebase. It is not a greenfield prototype.
 
 GitHub is the accepted source of truth for application changes. Local working trees, design tools, and experimental prototypes do not override `origin/main` until their changes are reviewed and accepted there.

@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { ThemeToggle } from "@/components/theme-toggle";
-import { usePentaManualTheme } from "@/components/penta-manual-theme";
+import PentaWorkspaceShell from "./penta-workspace-shell";
 import { apiUrl, isPortalSignOutEvent, portalAccessToken, portalSessionChangedEvent, portalSessionEpoch, portalSignOutEvent } from "@/lib/api";
 import { readPentaJson } from "@/lib/penta-onboarding-channel";
 import { platformAnswer, platformPrompt, platformReady, type PlatformRead } from "@/lib/penta-platform-reads";
@@ -16,7 +15,6 @@ type Channel = { current(): boolean; get(kind: PlatformRead | "readiness"): Prom
 type Turn = { question: string; notice?: string; result?: ReturnType<typeof platformAnswer> };
 
 export default function PlatformConversation() {
-  const theme = usePentaManualTheme();
   const [channel, setChannel] = useState<Channel | null>(null);
   const [prompt, setPrompt] = useState("");
   const [turn, setTurn] = useState<Turn | null>(null);
@@ -89,15 +87,9 @@ export default function PlatformConversation() {
     }
   }
 
-  return <main {...theme} className={theme.className + " " + styles.page}>
-    <header className={styles.top}>
-      <div className={styles.brand}><span aria-hidden="true">P</span><div><strong>Academy Desk PENTA AI</strong><small>Platform Owner workspace</small></div></div>
-      <ThemeToggle />
-      <nav className={styles.switcher} aria-label="Work view"><span aria-current="page">PENTA AI</span><Link href="/platform">Manual workspace</Link></nav>
-    </header>
-    <section className={styles.content}>
+  return <PentaWorkspaceShell workspace="Platform" verified={channel !== null} miniEvaluation={false}>
       <section className={styles.panel} aria-labelledby="platform-penta-title" aria-busy={pending}>
-        <h1 id="platform-penta-title">Platform conversation</h1>
+        <h2 id="platform-penta-title">Platform conversation</h2>
         {status && <p role="status">{status}</p>}
         {!channel && <p><Link href="/login">Sign in</Link></p>}
         {channel && <>
@@ -125,6 +117,5 @@ export default function PlatformConversation() {
         </>}
         <p><Link href="/platform/control">Open Manual Platform Control</Link></p>
       </section>
-    </section>
-  </main>;
+  </PentaWorkspaceShell>;
 }

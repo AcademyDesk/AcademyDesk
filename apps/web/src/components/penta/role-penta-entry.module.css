@@ -1,4 +1,4 @@
-.page { min-height: 100dvh; background: var(--pui-canvas); color: var(--pui-text); padding: 24px; }
+.page { min-height: 100dvh; background: radial-gradient(ellipse at top right, color-mix(in srgb, var(--manual-aura) 7%, transparent), transparent 55%), var(--pui-canvas); color: var(--pui-text); padding: 24px; }
 .page *, .modeBar * { box-sizing: border-box; }
 .top, .modeBar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
 .top { max-width: 1200px; margin: 0 auto 36px; }
@@ -13,9 +13,9 @@
 .content { max-width: 1040px; margin: auto; }
 .hero { padding: 28px 0; }
 .orb { margin-bottom: 20px; width: 64px; height: 64px; border-radius: 20px; box-shadow: 0 0 50px color-mix(in srgb, var(--pui-accent) 15%, transparent); }
-.hero h1 { margin: 0 0 14px; font-size: clamp(28px, 4vw, 40px); line-height: 1.15; }
+.page .hero h1 { margin: 0 0 14px; font-size: var(--ad-page-title-size); font-weight: var(--ad-page-title-weight); letter-spacing: var(--ad-page-title-tracking); line-height: var(--ad-page-title-line-height); }
 .hero p { max-width: 65ch; line-height: 1.7; color: var(--pui-muted); }
-.panel { padding: 24px; border: 1px solid var(--pui-border); border-radius: 20px; background: var(--pui-surface); }
+.panel { padding: 24px; margin-bottom: 20px; border: 1px solid var(--pui-border); border-radius: var(--pui-radius-panel); background: var(--pui-surface); }
 .panel h2 { margin: 12px 0; font-size: 22px; }
 .panel p { line-height: 1.65; }
 .badge { display: inline-block; padding: 8px 12px; border: 1px solid var(--pui-border); border-radius: 999px; font-size: 13px; color: var(--pui-muted); }
@@ -46,11 +46,13 @@
 .financeComposer { margin-block: 16px; }
 .financeComposer label { display: block; margin-bottom: 8px; font-weight: 700; }
 .financeActions { display: flex; flex-wrap: wrap; gap: 8px; }
-.financeActions :is(input, button) { min-height: 44px; padding: 8px 12px; border: 1px solid var(--pui-border); border-radius: 10px; background: var(--pui-control); color: var(--pui-text); font: inherit; }
+.financeActions :is(input, textarea, button, a) { min-height: var(--pui-target); max-width: 100%; padding: 8px 12px; border: 1px solid var(--pui-border); border-radius: var(--pui-radius-control); background: var(--pui-control); color: var(--pui-text); font: inherit; }
+.financeActions a { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
 .financeActions input { flex: 1 1 14rem; min-width: 0; }
+.financeActions textarea { flex: 1 1 100%; min-width: 0; resize: vertical; width: 100%; max-height: 180px; }
 .financeActions button { cursor: pointer; }
 .financeActions button:disabled { cursor: default; opacity: .65; }
-.financeActions button[type="submit"] { background: var(--pui-accent); color: var(--pui-on-accent); }
+.financeActions button[type="submit"]:not(:disabled) { background: var(--pui-accent); color: var(--pui-on-accent); }
 .financeActions :focus-visible, .financeTable:focus-visible, .paymentField:focus-visible { outline: 3px solid var(--pui-focus); outline-offset: 2px; }
 .paymentField { min-height: 44px; max-width: 100%; width: 18rem; margin-bottom: 16px; padding: 8px 12px; border: 1px solid var(--pui-border); border-radius: 10px; color: var(--pui-text); background: var(--pui-control); font: inherit; }
 .paymentDetails { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(10rem, 100%), 1fr)); gap: 12px; margin-block: 16px; }
@@ -61,3 +63,58 @@
 .invoiceOptions { display: grid; gap: 6px; padding: 0; list-style: none; }
 .invoiceOptions button { min-height: 44px; width: 100%; padding: 8px 12px; text-align: start; border: 1px solid var(--pui-border); border-radius: 10px; background: var(--pui-control); color: var(--pui-text); font: inherit; cursor: pointer; }
 .invoiceOptions button:focus-visible { outline: 3px solid var(--pui-focus); outline-offset: 2px; }
+
+/* Live conversation canvas; source/receipt handling stays in the host driver. */
+.panel.miniWorkspace { display: flex; flex-direction: column; min-height: 520px; height: 100%; padding: 0; margin: 0; border: 0; border-radius: 0; background: transparent; }
+.miniHeader { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; border-bottom: 1px solid color-mix(in srgb, var(--pui-border) 28%, transparent); padding: 8px 0 16px; }
+.miniIdentity { display: inline-flex; align-items: center; gap: 9px; color: var(--pui-accent); }
+.miniHeader h2 { margin: 0; font-size: 12px; font-weight: 550; color: var(--pui-text); }
+.miniScope { font-size: 10px; color: var(--pui-muted); border: 1px solid color-mix(in srgb, var(--pui-border) 45%, transparent); border-radius: 999px; padding: 5px 9px; }
+.miniTranscript { flex: 1; min-height: 160px; padding: 20px 0; }
+.miniWelcome { text-align: center; padding: 20px 8px; max-width: 560px; margin: auto; }
+.miniOrb { display: inline-grid; place-items: center; width: 50px; height: 50px; border-radius: 17px; background: linear-gradient(135deg, var(--pui-selected), color-mix(in srgb, var(--manual-aura) 17%, var(--pui-surface))); color: var(--pui-accent); border: 1px solid color-mix(in srgb, var(--pui-accent) 30%, transparent); box-shadow: 0 0 45px color-mix(in srgb, var(--manual-aura) 10%, transparent); }
+.miniOrb svg { width: 27px; height: 27px; }
+.miniWelcome h3 { font-size: 23px; letter-spacing: -.04em; font-weight: 550; margin: 18px 0 8px; }
+.miniWelcome p { font-size: 13px; color: var(--pui-muted); line-height: 1.8; margin: 0; }
+.miniSuggestions { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin: 20px 0 0; }
+.miniWorkspace .miniSuggestions button { display: inline-flex; align-items: center; gap: 7px; min-height: 44px; padding: 8px 12px; font: inherit; font-size: 11px; color: var(--pui-muted); background: var(--pui-surface); border: 1px solid color-mix(in srgb, var(--pui-border) 40%, transparent); border-radius: 12px; text-align: left; }
+.miniSuggestions svg { width: 16px; height: 16px; color: var(--pui-accent); flex-shrink: 0; }
+.miniSuggestions button:disabled { opacity: .6; }
+.miniNotice { border-left: 2px solid color-mix(in srgb, var(--pui-accent) 50%, transparent); padding: 8px 12px; font-size: 11px; color: var(--pui-muted); line-height: 1.7; }
+.miniUser { display: flex; flex-direction: column; align-items: flex-end; margin: 0 0 24px; }
+.miniUser > span { color: var(--pui-muted); font-size: 10px; margin-bottom: 7px; }
+.miniUser > p { background: var(--pui-selected); border: 1px solid color-mix(in srgb, var(--pui-accent) 18%, transparent); border-radius: 16px 16px 4px 16px; padding: 13px 18px; font-size: 13px; max-width: 90%; margin: 0; white-space: pre-wrap; }
+.miniAnswerIdentity { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.miniAnswerIdentity svg { color: var(--pui-accent); }
+.miniAnswerIdentity span { color: var(--pui-muted); font-size: 10px; margin-left: auto; }
+.miniAnswer h3 { margin: 16px 0 8px; font-size: 15px; font-weight: 550; }
+.miniAnswer > p { font-size: 13px; line-height: 1.8; }
+.miniAnswer > small { display: block; color: var(--pui-muted); font-size: 10px; margin-top: 12px; }
+.miniAnswer ol { padding: 0; list-style: none; display: grid; gap: 10px; }
+.miniAnswer ol > li { padding: 16px; border: 1px solid color-mix(in srgb, var(--pui-border) 40%, transparent); background: var(--pui-surface); border-radius: var(--pui-radius-control); font-size: 12px; }
+.miniAnswer a { color: var(--pui-accent); }
+.miniAnswer li > a { font-size: 14px; font-weight: 550; }
+.miniAnswer li > p { color: var(--pui-muted); font-size: 12px; }
+.miniAnswer li ul { list-style: none; padding: 8px 0; line-height: 1.8; }
+.miniWorkspace .financeComposer { margin: 12px 0; border: 1px solid color-mix(in srgb, var(--pui-border) 65%, transparent); padding: 14px; border-radius: 18px; background: var(--pui-surface); box-shadow: 0 8px 32px color-mix(in srgb, var(--pui-canvas) 40%, transparent); }
+.miniWorkspace .financeComposer label { font-size: 11px; font-weight: 550; color: var(--pui-muted); }
+.miniWorkspace .financeActions textarea { background: var(--pui-control); font-size: 14px; line-height: 1.6; }
+.miniWorkspace .financeActions button[type="submit"] { display: inline-flex; align-items: center; gap: 8px; margin-left: auto; font-size: 12px; }
+.miniControls { justify-content: center; gap: 6px; }
+.miniWorkspace .miniControls :is(button,a) { font-size: 10px; padding: 7px 9px; background: transparent; border-color: color-mix(in srgb, var(--pui-border) 40%, transparent); }
+.miniFootnote { font-size: 10px; line-height: 1.6; text-align: center; color: var(--pui-muted); margin: 12px 0 0; }
+.guided { border-top: 1px solid color-mix(in srgb, var(--pui-border) 35%, transparent); margin-top: 24px; padding-top: 12px; }
+.guided > summary { display: flex; align-items: center; justify-content: space-between; min-height: 44px; gap: 8px; font-size: 12px; color: var(--pui-muted); cursor: pointer; }
+.guided > summary small { font-size: 10px; border: 1px solid var(--pui-border); border-radius: 999px; padding: 4px 8px; }
+.guided[open] > summary { margin-bottom: 12px; }
+@media (max-width: 760px) {
+  .panel.miniWorkspace { min-height: 460px; }
+  .miniWelcome { padding: 10px 0; }
+  .miniWelcome h3 { font-size: 20px; }
+  .miniSuggestions { flex-direction: column; }
+  .miniSuggestions button { width: 100%; }
+  .miniWorkspace .financeComposer { padding: 10px; }
+  .miniWorkspace .financeActions textarea { font-size: 16px; }
+  .miniControls { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .miniControls :is(button,a) { font-size: 10px; }
+}

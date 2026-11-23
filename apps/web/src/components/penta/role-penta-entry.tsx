@@ -10,23 +10,15 @@ import FinanceChat from "./finance-chat";
 import MiniConversation from "./mini-conversation";
 import TeacherAttendanceConversation from "./teacher-attendance-conversation";
 import PortalConversation from "./portal-conversation";
-import { ThemeToggle } from "@/components/theme-toggle";
+import PentaWorkspaceShell from "./penta-workspace-shell";
 import { usePentaManualTheme } from "@/components/penta-manual-theme";
 import styles from "./role-penta-entry.module.css";
 
 type RoleWorkspace = PortalWorkspace;
 const labels: Record<RoleWorkspace, string> = { AcademyAdmin: "Academy administration", Platform: "Platform Owner", Teacher: "Teacher", Portal: "Student / Guardian" };
-const capabilities = [
-  ["P", "Pulse", "Proactive briefings, alerts and priorities."],
-  ["E", "Executor", "Authorized operational actions through conversation."],
-  ["N", "Navigator", "Admissions, growth and opportunity guidance."],
-  ["T", "Twin", "Source-backed academy context and explanations."],
-  ["A", "Autopilot", "Explicitly approved, bounded recurring workflows."],
-] as const;
 
 /** Entry presentation only: does not grant a role, discover a tenant or call tools. */
 export default function RolePentaEntry({ workspace }: { workspace: RoleWorkspace }) {
-  const theme = usePentaManualTheme();
   const [check, setCheck] = useState(0);
   const [financeAcademy, setFinanceAcademy] = useState<string | null>(null);
   const [portalAcademy, setPortalAcademy] = useState<string | null>(null);
@@ -62,31 +54,20 @@ export default function RolePentaEntry({ workspace }: { workspace: RoleWorkspace
     {state === "signin" || state === "denied" ? <Link className={styles.open} href="/login">Sign in</Link> : <Link className={styles.open} href={workspaceHomes[workspace].manual}>Open Manual workspace</Link>}
     {state === "unavailable" && <button type="button" className={styles.retry} onClick={() => { setState("checking"); setCheck(value => value + 1); }}>Check workspace again</button>}
   </section>;
-  return <main {...theme} className={`${theme.className} ${styles.page}`}>
-    <header className={styles.top}>
-      <div className={styles.brand}><span aria-hidden="true">P</span><div><strong>Academy Desk PENTA AI</strong><small>{labels[workspace]} workspace</small></div></div>
-      <ThemeToggle />
-      <nav className={styles.switcher} aria-label="Work view"><span aria-current="page">PENTA AI</span><Link href={workspaceHomes[workspace].manual}>Manual workspace</Link></nav>
-    </header>
-    <section className={styles.content}>
-      <div className={styles.hero}><span className={styles.orb} aria-hidden="true">P</span><h1>Your workspace. AI first.</h1><p>Your PENTA workspace, with Manual always available when you need it.</p></div>
-      {state === "verified" && financeAcademy && process.env.NEXT_PUBLIC_PENTA_MINI_EVALUATION === "true" &&
-        <MiniConversation key={financeAcademy + "-mini"} academyId={financeAcademy} />}
+  const miniEvaluation = state === "verified" && financeAcademy !== null && process.env.NEXT_PUBLIC_PENTA_MINI_EVALUATION === "true";
+  return <PentaWorkspaceShell workspace={workspace} verified={state === "verified"} miniEvaluation={miniEvaluation}
+    workflows={state === "verified" && financeAcademy ? <><Link href="/penta/enrollments">Enrollment assistant</Link><Link href="/penta/onboarding">Student onboarding</Link><Link href="/penta/teachers/chat">Teacher onboarding</Link><Link href="/penta/scheduling">Class scheduling</Link></> : undefined}>
+      {miniEvaluation && financeAcademy && <MiniConversation key={financeAcademy + "-mini"} academyId={financeAcademy} />}
       {state === "verified" && financeAcademy
-        ? <FinanceChat key={financeAcademy} academyId={financeAcademy} fallback={fallback} />
+        ? miniEvaluation
+          ? <details className={styles.guided}><summary>More supported workflows <small>Host-guided</small></summary><FinanceChat key={financeAcademy} academyId={financeAcademy} fallback={fallback} /></details>
+          : <FinanceChat key={financeAcademy} academyId={financeAcademy} fallback={fallback} />
         : state === "verified" && portalAcademy
           ? workspace === "Teacher"
             ? <TeacherAttendanceConversation key={portalAcademy} academyId={portalAcademy} fallback={fallback} />
             : <PortalConversation key={portalAcademy} academyId={portalAcademy} fallback={fallback} />
           : fallback}
-      {financeAcademy && state === "verified" && <section className={styles.panel} aria-labelledby="protected-workflows-title">
-        <h2 id="protected-workflows-title">Protected workflows</h2>
-        <p>Protected workflows check the host before opening a private draft. Availability and approval remain controlled by your academy. A qualified AI model is not connected.</p>
-        <nav aria-label="Protected workflows"><Link className={styles.open} href="/penta/enrollments">Enrollment assistant</Link>{" "}<Link className={styles.open} href="/penta/onboarding">Student onboarding</Link>{" "}<Link className={styles.open} href="/penta/teachers/chat">Teacher onboarding</Link>{" "}<Link className={styles.open} href="/penta/scheduling">Class scheduling</Link></nav>
-      </section>}
-      <section className={styles.capabilities} aria-label="PENTA capability information">{capabilities.map(([letter, name, description]) => <details key={letter}><summary><span aria-hidden="true">{letter}</span>{name} ⓘ</summary><p>{description}</p><small>Planned for this role. Not available yet.</small></details>)}</section>
-    </section>
-  </main>;
+  </PentaWorkspaceShell>;
 }
 
 /** Manual remains the existing role portal. This link never enables AI tools. */
@@ -100,10 +81,11 @@ export function RoleManualModeBar({ workspace }: { workspace: RoleWorkspace }) {
   useEffect(() => {
     const dialog = leaveDialog.current;
     if (!confirmLeave || !dialog) return;
+    const modeAnchor = modeLink.current;
     dialog.showModal();
     return () => {
       if (dialog.open) dialog.close();
-      modeLink.current?.focus();
+      modeAnchor?.focus();
     };
   }, [confirmLeave]);
   useEffect(() => {

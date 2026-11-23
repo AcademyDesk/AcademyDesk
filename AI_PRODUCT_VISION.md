@@ -1,5 +1,31 @@
 # Academy Desk product vision
 
+## Current owner direction — 23 November 2026
+
+Desktop Codex is the single delivery owner. Target 100% conversational coverage of
+supported, permitted AcademyDesk tasks, with approximately 90% routine operational
+work completed through AI and Manual retained as the 10% choice/fallback. These are
+coverage/usage targets, not accepted current results. Track each role/outcome,
+actual domain effect, required human approval, audit, confirmation and recovery.
+Do not count prompts, screens or API declarations as completed business outcomes.
+The product serves schools and academies of small, medium and large scale;
+music-specific demo data must not restrict the domain or imply large-school
+capacity has already been qualified.
+
+PENTA AI remains Pulse, Executor, Navigator, Twin and Autopilot. The UI must be a
+proper conversation workspace with prompt-first interaction, contextual results,
+approved action review, source/time/currency and recoverable history. Preserve
+Orbit with Aura accents in dark mode, Prism light, Geist and one visual/control
+system across AI and Manual for Platform, academy administration, Teacher and
+Student/Guardian. Do not introduce a second visual product or replace domain
+services with model logic. Required approvals remain usable within the journey.
+Passwords/secrets and restricted role/security configuration stay in their secure
+human-governed controls; a model cannot grant itself a new tool or permission.
+List such boundaries explicitly rather than claiming unrestricted automation.
+
+The complete continuation is PENTA_COMPLETION_PLAN.md. Existing enterprise work,
+financial decisions, model loading restrictions and release gates are preserved.
+
 ## Owner continuation decisions — 28 October 2026
 
 Cloud work/decisions are the common development starting point for all three

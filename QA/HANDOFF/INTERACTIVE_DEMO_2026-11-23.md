@@ -1,5 +1,41 @@
 # Interactive synthetic academy demo — 23 November 2026
 
+## D58 reference-based workspace — current demo
+
+Current run: `fc7ae045f5574f66b143e2ff9291507f`. Open
+http://127.0.0.1:3000/login and sign in with `owner@demo.example.invalid`.
+The current private account/password file is
+`D:/AcademyDesk-penta-host/.build-check/interactive-demo-fc7ae045f5574f66b143e2ff9291507f/LOGIN.txt`.
+All six synthetic roles have distinct generated passwords; native new login/
+session and old password/ticket rejection checks pass. File access is restricted
+to the Windows owner/SYSTEM. No password value is committed or published.
+
+The enabled frontend is the source-verified Orbit+Aura/Prism host shell at
+`desktop-visual-20261123-c9e7f43b6456428cbfcda2e31e546426/apps/web/out-enabled`.
+The separate `out` build remains evaluation-off. The local launcher verifies
+current frontend bytes, uses the existing authorized cached 2B packet and rotates
+each new synthetic seed's credentials before announcing readiness. That startup
+lifecycle now passed twice. No new model/runtime/download was introduced.
+
+Thirteen fresh real-model/Identity/SQL checks pass: six role logins/sessions,
+pending-fee search, contextual Piano follow-up, exact INR2250.00, GET recovery and
+Manual optional-empty save. First current query 28900 ms. The fresh 69-assertion role/tenant permission packet
+passes; these are native checks, not browser/device acceptance.
+Fresh 11-check outage/GET recovery/Manual packet also passes with Core and resource
+inventory restored. Its second synthetic Manual save leaves 14 learners.
+Only Owner/Admin have the free-prompt Mini read pilot. Other roles retain scoped
+guided/fallback workspaces. Five capability names do not mean five enabled
+intelligence systems. Earlier edited fixtures/key rings are privately backed up.
+
+Expiry: 24 November 2026 at 07:54 IST, or earlier on shutdown/low-RAM safety stop.
+The exclusive demo lease pauses the two original PENTA services while active;
+stopping this exact owned demo restores them. Do not run heavy tests beside it.
+Use ACTIVE_DEMO for the latest private credentials after every restart. These
+instructions supersede the older run IDs/expiry/status statements below.
+
+[Reference map](../../docs/PENTA_VISUAL_REFERENCE_MAP.md) ·
+[D58 verification](../REPORTS/D58_DESKTOP_TAKEOVER_AND_VISUALS_2026-11-23.md)
+
 ## Current test passwords — separate per account
 
 The owner requested unique generated passwords. All six accounts in the active

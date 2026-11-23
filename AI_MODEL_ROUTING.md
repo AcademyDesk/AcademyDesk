@@ -1,5 +1,17 @@
 # Academy Desk model and tool routing
 
+## Current delivery environment — 23 November 2026
+
+The owner has selected Desktop Codex as the single implementation environment.
+Do not require Cloud Codex, Cursor, v0, Lovable or Framer handoffs to continue the
+application. Historical tool routes below are reference only unless the owner
+re-enables one. Desktop owns both AcademyDesk and its versioned Mini integration;
+preserve the separate repositories and genuine contract/evidence boundaries.
+Use Sol High for security, AI/domain integration and difficult native validation;
+Sol Medium is sufficient for routine implementation and visual polish. Recommend
+changes at meaningful task boundaries; do not interrupt authorized work merely
+because another model could do a small step. See PENTA_COMPLETION_PLAN.md.
+
 Credit conservation is a standing requirement. Choose the smallest capable route. Escalate only when the task needs that capability.
 
 GitHub is the single source of truth for accepted application changes. Azure is the deployment target. Azure deployment occurs only after the required quality gates in `ENTERPRISE_TESTING_ROADMAP.md`, and only when a task explicitly instructs deployment.
