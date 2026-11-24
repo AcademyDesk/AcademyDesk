@@ -1,5 +1,50 @@
 # Academy Desk handoff
 
+## D71/D72 attendance and Aurora AI workbench — 24 November 2026
+
+- [x] Recorded student attendance joins the same query catalog/history: scoped
+  stored marks, class-start date/window, canonical mark status and update-time
+  label, no notes/contact/unmarked-as-Absent/staff/aggregate/write substitution.
+  Current stored authority and existing shared audit/recovery remain mandatory.
+- [x] Owner's Aurora reference implemented for AI only: left navigation/history/
+  connections, centre conversation/composer, right real receipt artifacts/context.
+  Mini/Plus/Pro/Ultra picker shows actual connection/qualification limits; no tier
+  or unavailable P/E/N/T/A activation. Manual layout and services unchanged.
+- [x]325affected host tests,174client,26new pure Mini Windows cases and actual
+  twelve-tool C#->Python vector pass. Harness compiles zero warnings/errors.
+  16query+36shell browser cases, cached build/typecheck92pages and lint pass.
+- [x] New preview http://127.0.0.1:3001/login uses current frontend and preserved
+  D70SQL/Identity/data/accounts; same private LOGIN.txt. Actual browser login/AI
+  landing/theme/model dialog/Manual navigation pass without intercepted APIs.
+  Six actual role API logins/sessions pass through preview; anonymous401 retained.
+- [ ] Current39-check native packet and Linux/full exact-source CI not yet locally
+  qualified. Active owner's demo lease preserved; no competing local SQL run.
+  D69ordinary CI passed2,778API/locked npm-ci/audit0/SQL31/build, historical only.
+- [x] Mini9dafedb28e3f8c3250659ee60be9cc2abd4b7c47 published, paired pin updated.
+  Required private-source credential/original archives/model qualification and
+  all-domain/role/execution/device/staging gates remain; BUG-AI-0001 stays OPEN.
+  Keep Sol High for integration/security; no model load, main merge or Azure.
+
+[D71/D72 source/evidence/limits](QA/REPORTS/D71_D72_ATTENDANCE_AURORA_2026-11-24.md)
+
+## D70 owner test environment — 24 November 2026
+
+- [x] Current66bb16a frontend and actual Identity/disposable SQL available on
+  http://127.0.0.1:3000/login. Current ACTIVE_DEMO points to owner/SYSTEM-only
+  generated passwords; all six role logins/sessions verified, prior passwords/
+  access refused. Do not print or commit the credential files.
+- [x]13synthetic students,4teachers,4batches,4classes; actual CORS/API-origin
+  checks and optional-empty Manual save201/persisted readback pass.
+- [ ] Live model conversation remains unavailable. Current ten-tool query catalog
+  reports Unavailable honestly; no new model load/inference or synthetic planner.
+  Existing candidate/model acceptance stop remains. Owner can inspect shell/themes
+  and Manual/guided operations; no new full browser/device or90%AI claim.
+- [x] Only new owned SQL runs; previous containers/data/evidence preserved. Demo
+  expires25November03:46IST or earlier safety/shutdown. Exclusive shared lease
+  active; don't start heavy validation beside the owner. No app source/main/Azure.
+
+Current login/stop/receipt instructions: QA/HANDOFF/INTERACTIVE_DEMO_2026-11-23.md.
+
 ## D69 connected calendar reads — 24 November 2026
 
 - [x] Class/calendar search and same-class opening now share the query catalog,

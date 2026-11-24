@@ -24,6 +24,24 @@ implementation order below; the D59 failure evidence remains accurate.
 
 ## D62 implementation checkpoint — 23 November 2026
 
+### D71/D72 recorded attendance and requested Aurora AI workbench
+
+- [x] Same read architecture adds stored student attendance, private-field exclusion,
+  all-related-row tenant checks, class-start time filtering, pinned dates, status
+  validation and same-mark references. Never synthesize unmarked students as Absent.
+- [x] Reference-based three-panel AI layout, dynamic verified receipt artifacts,
+  current response navigation, connection/review dialogs, four-tier model picker,
+  matching light/dark and responsive drawers across all role AI shells. Manual kept.
+- [x]325host/174client/26new Windows Mini checks and actual schema vector;52recorded-
+  API browser cases; cached build/typecheck/lint; live Owner UI and six-role API
+  preview verification. Mini9dafedb published. No fake AI/approval/connector counts.
+- [ ] Current39-check SQL packet and Linux/full exact CI; real model/tier and
+  connector qualification, all-role tools, compound execution, original release
+  gates. Active owner demo preserved; no extra SQL or model experiment started.
+
+See QA/REPORTS/D71_D72_ATTENDANCE_AURORA_2026-11-24.md. The owner's visible UI
+preview is not current-source native acceptance or a production/90%AI milestone.
+
 ### D69 connected calendar progress — 24 November 2026
 
 - [x] Same conversational query supports session/calendar search/open, batch and

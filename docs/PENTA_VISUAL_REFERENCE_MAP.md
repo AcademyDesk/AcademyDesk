@@ -1,5 +1,22 @@
 # PENTA AI visual references recovered — 23 November 2026
 
+## Owner-confirmed Aurora direction — 24 November 2026
+
+The owner's latest attached Aurora reference is now the AI workspace direction:
+left navigation/connections/history, centre conversation/composer, right verified
+artifacts/context/review. Preserve all five P/E/N/T/A cards with explanatory !
+dialogs, Mini/Plus/Pro/Ultra picker, graphite/violet Aura dark and proper Prism
+light, Geist, accessible overlays and responsive drawers. Apply this composition
+across all role AI entries. Manual retains its current layout and controls.
+
+D72 implements this workbench in the existing host shell, with in-memory
+projections from validated receipts, not fake history/CRM/review counts. Model
+picker shows Mini evaluation only, Plus/Pro not connected, Ultra deferred; it
+cannot activate a runtime or grant permissions. Connection/review views expose
+known status and protected workflow links, not an invented connected brain.
+Live brain/connector/model qualification remains a separate backend requirement.
+See QA/REPORTS/D71_D72_ATTENDANCE_AURORA_2026-11-24.md for source and evidence.
+
 The owner rejected the basic stacked entry page and reiterated the earlier
 concepts. Desktop recovered and inspected the original local assets, gallery,
 delivery plan and later chat interaction prototype. Do not replace this direction

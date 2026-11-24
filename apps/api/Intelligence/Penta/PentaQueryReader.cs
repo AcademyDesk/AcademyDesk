@@ -14,6 +14,11 @@ public sealed class PentaQueryReader(AcademyDeskDbContext db, TimeProvider clock
         var ids = context.ResultIds;
         if (ids.Length == 0) return true;
         var count = context.Entity switch {
+            "attendance" => await db.AttendanceRecords.CountAsync(x=>x.AcademyId==academy && ids.Contains(x.Id) &&
+                db.Students.Any(s=>s.Id==x.StudentId && s.AcademyId==academy) &&
+                db.ClassSessions.Any(c=>c.Id==x.ClassSessionId && c.AcademyId==academy &&
+                    db.Batches.Any(b=>b.Id==c.BatchId && b.AcademyId==academy) &&
+                    (c.TeacherId==null || db.Teachers.Any(t=>t.Id==c.TeacherId && t.AcademyId==academy))),token),
             "teacher" => await db.Teachers.CountAsync(x => x.AcademyId == academy && ids.Contains(x.Id), token),
             "student" => await db.Students.CountAsync(x => x.AcademyId == academy && ids.Contains(x.Id), token),
             "student-fees" => await db.Students.CountAsync(x => x.AcademyId == academy && x.IsActive && ids.Contains(x.Id), token),
@@ -43,6 +48,7 @@ public sealed class PentaQueryReader(AcademyDeskDbContext db, TimeProvider clock
             selected = previous.ResultIds[plan.Position!.Value - 1];
             filters = previous.Filters.Where(pair => PentaQueryContract.Fields(plan.Entity!).Contains(pair.Key)).ToDictionary(pair => pair.Key, pair => pair.Value);
         }
+        if (plan.Entity == "attendance") return await PentaQueryAttendanceReader.ReadAsync(db,clock,academy,filters,selected,token);
         if (plan.Entity == "session") return await PentaQueryCalendarReader.ReadAsync(db, clock, academy, filters, selected, token);
         if (plan.Entity == "student-fees") {
             // The Finance module is required by the current permitted tool set.

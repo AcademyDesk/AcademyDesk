@@ -1,5 +1,60 @@
 # Interactive synthetic academy demo — 23 November 2026
 
+## D72 Aurora AI preview — 24 November 2026
+
+Open http://127.0.0.1:3001/login for the new owner-requested AI workbench. Use the
+SAME six account IDs/passwords from current ACTIVE_DEMO's private LOGIN.txt.
+No password/data reset. The original3000demo remains available. This preview
+serves the latest isolated frontend with a same-origin loopback API proxy to
+the preserved D70backend66bb16a/SQL; it does not activate the pending D71reader.
+
+Actual browser Owner login -> AI landing -> light/dark -> model picker -> Manual
+navigation passes without API interception. All six actual API logins/sessions
+pass and anonymous academy access stays401. The connected provider remains
+Unavailable. Model picker: Mini evaluation, Plus/Pro not connected, Ultra deferred.
+New layout does not imply live high-end model inference or all-AI functionality.
+
+Preview source/expiry/credential pointer: `.build-check/d72-aurora/preview.json`.
+It stops when the original demo expires/stops; no new model/container resources.
+Existing D70expiry/data/evidence/lease and privacy instructions below still apply.
+
+## D70 current owner test environment — 24 November 2026
+
+Current local run `1ad22516e1fd4e8f8376ee6d71466556`, application source
+`66bb16a1e88d0e9c6fc98677061e434a19615914`. Open http://127.0.0.1:3000/login.
+Use owner@demo.example.invalid for the academy owner workspace. Current generated
+passwords for all six roles are in the owner/SYSTEM-restricted local file
+`D:/AcademyDesk-penta-host/.build-check/interactive-demo-1ad22516e1fd4e8f8376ee6d71466556/LOGIN.txt`.
+Use `.build-check/ACTIVE_DEMO.json` for the current file after any restart; do not
+publish passwords or use an earlier run's account file.
+
+- [x] Current frontend export, actual Identity and owned disposable SQL; six unique
+  account passwords, all six new logins/sessions passed, old passwords/access
+  rejected. Browser API origin/CORS/preflight and real Owner login/session pass.
+- [x] Readback:13synthetic students (12seeded + one verified Manual save),4teachers,
+  4batches,4classes. Optional-empty Manual student creation returned201 and persisted.
+- [x] Current ten-tool query catalog returns correct Unavailable state. No model
+  loaded, inference run, synthetic planner substituted or production AI activated.
+  Owner can inspect the current PENTA visual shell and use Manual/guided controls;
+  free-prompt model conversation is NOT currently enabled in this environment.
+- [x] Only the new owned SQL container runs. All prior containers, databases,
+  evidence, private credentials and model artifacts preserved. No Azure/downloads.
+- [ ] Live connected-model semantics and browser/physical-device acceptance remain
+  open. This is not the old learner-only AI demo or a90%coverage claim.
+
+Current demo expires25November2026 at03:46IST, or earlier on shutdown/low-memory
+safety stop. Its supervisor holds the existing exclusive validation lease; avoid
+heavy SQL/model tests beside the owner's demo. Use the exact `stop` file in
+ACTIVE_DEMO for graceful shutdown and owned runner cleanup. Do not delete old
+containers/evidence, repoint the API to production or publish private account files.
+
+The local private supervisor is `.build-check/d70-test-demo/start.cjs`. It serves
+the existing D69export on3000, proxies its compiled API origin49142 to the guarded
+fixture54999, and leaves the real query provider unavailable at unbound49151.
+These local loopback settings do not modify application/production defaults.
+Source-bound readiness receipt is `owner-readiness.json` in the current private
+run folder. This section supersedes all older run/expiry/readiness claims below.
+
 ## D58 reference-based workspace — current demo
 
 Current run: `fc7ae045f5574f66b143e2ff9291507f`. Open

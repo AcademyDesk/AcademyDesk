@@ -108,6 +108,7 @@
 .queryHeader .miniIdentity > span { font-size: 11px; }
 .queryWorkspace .queryTranscript { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; }
 .queryWorkspace .financeComposer { margin: 8px 0; }
+.panel.queryWorkspace { min-height: 0; }
 .queryFooter > :is(button,a) { font-size: 11px; }
 .queryFooter > button { margin: 4px 8px 4px 0; }
 .miniWorkspace .miniControls :is(button,a) { font-size: 10px; padding: 7px 9px; background: transparent; border-color: color-mix(in srgb, var(--pui-border) 40%, transparent); }

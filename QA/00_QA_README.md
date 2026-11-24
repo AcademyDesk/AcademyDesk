@@ -1,5 +1,21 @@
 # AcademyDesk QA control centre — Phase 1
 
+## D71/D72 — recorded attendance / Aurora workbench, 24 November 2026
+
+- [x]325affected host,174client,26new pure Mini Windows cases and actual twelve-tool
+  host schema vector pass; harness build clean. No current Linux/model claim.
+- [x]16query+36shell browser cases pass for updated AI workbench; model availability,
+  modal/focus, three-panel layout, receipt artifacts, new-conversation reset and
+  protected recovery checked. Cached92-page build/typecheck and lint pass.
+- [x] Live preview on3001: actual Owner UI login, AI landing, light/dark, model
+  picker and Manual navigation; actual six-role API logins/session and anonymous401.
+  Existing D70data/accounts retained. This does not enable a live model.
+- [ ]39-check native packet compiled/required in CI, not locally run alongside
+  active owner demo. Current Linux/full CI/model/device/staging gates remain.
+  Historical D69ordinary CI passed2,778API/locked audit0/SQL31/build; not current.
+
+[D71/D72 exact evidence and failures](REPORTS/D71_D72_ATTENDANCE_AURORA_2026-11-24.md)
+
 ## D69 connected calendar — 24 November 2026
 
 - [x]304affected host,260Mini model-free,163client,31actual query SQL/Identity/API,

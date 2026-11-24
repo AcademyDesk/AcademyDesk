@@ -134,3 +134,26 @@ for(const [name,tamper] of [
   ['foreign money',v=>{v.result.records[0].balances=[];}],
   ['unsafe destination',v=>{v.result.records[0].sourcePath='/teacher-profile';}],
 ]) test(`reject calendar ${name} before rendering`,()=>{const v=calendar();tamper(v);a.equal(lib.validQueryReceipt(v,conversation),false);});
+
+function attendance() {
+  const v=calendar();v.inputText='Show recorded student attendance';v.context.entity=v.result.entity='attendance';
+  v.result.attendanceScope=lib.queryAttendanceScope;const row=v.result.records[0];row.sourcePath='/attendance';
+  row.attendance={status:'Absent',markedAtUtc:'2026-11-28T18:00:00Z',batch:'Synthetic Class'};
+  return v;
+}
+test('stored attendance keeps class date separate from mark-update timestamp and never infers absent roster rows',()=>{
+  const v=attendance();a.equal(lib.validQueryReceipt(v,conversation),true);a.equal(v.result.records.length,1);
+  a.equal(v.result.records[0].attendance.markedAtUtc,'2026-11-28T18:00:00Z');
+});
+for(const [name,tamper] of [
+  ['missing semantics',v=>{delete v.result.attendanceScope;}],
+  ['unmarked as a stored status',v=>{v.result.records[0].attendance.status='Unmarked';}],
+  ['class status as attendance',v=>{v.result.records[0].attendance.status='Scheduled';}],
+  ['private notes',v=>{v.result.records[0].attendance.notes='private';}],
+  ['missing class details',v=>{delete v.result.records[0].schedule;}],
+  ['arrival claim',v=>{v.result.attendanceScope='Marked time proves arrival.';}],
+  ['money fields',v=>{v.result.records[0].balances=[];}],
+  ['wrong date context',v=>{v.context.filters.through='2026-11-25';}],
+  ['non-UTC mark',v=>{v.result.records[0].attendance.markedAtUtc='2026-11-28T18:00:00+05:30';}],
+  ['unsafe deep link',v=>{v.result.records[0].sourcePath='/attendance?sessionId=foreign';}],
+])test(`reject attendance ${name}`,()=>{const v=attendance();tamper(v);a.equal(lib.validQueryReceipt(v,conversation),false);});

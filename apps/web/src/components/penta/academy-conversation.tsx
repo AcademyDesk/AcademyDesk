@@ -6,6 +6,7 @@ import { apiUrl, isPortalSignOutEvent, portalAccessToken, portalSessionChangedEv
 import { createQueryConversation, initialQueryView, queryEntityLabel } from "@/lib/penta-query-conversation";
 import MiniConversation from "./mini-conversation";
 import { PentaGlyph } from "./penta-glyph";
+import { usePentaWorkspaceProjection } from "./penta-workspace-context";
 import styles from "./role-penta-entry.module.css";
 
 /** One entry point negotiates the actual host protocol. A missing query route
@@ -32,6 +33,9 @@ export function QueryConversation({ academyId }: { academyId: string }) {
   const [view, setView] = useState(initialQueryView), [prompt, setPrompt] = useState("");
   const driver = useRef<ReturnType<typeof createQueryConversation> | null>(null);
   const transcript = useRef<HTMLDivElement>(null);
+  const publish = usePentaWorkspaceProjection();
+  useEffect(() => {publish?.({available:view.available,pending:view.pending,turns:view.turns,entities:view.entities,phase:view.phase,hasMore:view.hasMore});},[publish,view]);
+  useEffect(() => () => publish?.(null),[publish]);
   useEffect(() => {
     const node = transcript.current;
     const answer = node?.lastElementChild?.querySelector<HTMLElement>('[aria-label="PENTA response"]');
@@ -51,6 +55,8 @@ export function QueryConversation({ academyId }: { academyId: string }) {
       }),
     }, () => window.sessionStorage, setView);
     driver.current = conversation;
+    const newConversation = () => {if(current())void conversation.start();};
+    window.addEventListener("penta-request-new-conversation",newConversation);
     function changed(event: Event) { if ((event as CustomEvent).detail === "AcademyAdmin") clear(); }
     function check() { if (!current()) clear(); }
     function storage(event: StorageEvent) { if (isPortalSignOutEvent(event, "AcademyAdmin")) clear(); else check(); }
@@ -58,6 +64,7 @@ export function QueryConversation({ academyId }: { academyId: string }) {
     window.addEventListener("focus", check); window.addEventListener("storage", storage);
     void conversation.initialise();
     return () => { abort.abort(); conversation.dispose(); driver.current = null;
+      window.removeEventListener("penta-request-new-conversation",newConversation);
       window.removeEventListener(portalSessionChangedEvent, changed); window.removeEventListener(portalSignOutEvent, changed);
       window.removeEventListener("focus", check); window.removeEventListener("storage", storage); };
   }, [academyId]);
@@ -70,32 +77,34 @@ export function QueryConversation({ academyId }: { academyId: string }) {
     </div>
     <div ref={transcript} className={`${styles.miniTranscript} ${styles.queryTranscript}`} aria-label="Conversation messages" aria-live="polite" aria-busy={view.pending}>
       {view.hasMore && <p>Showing the latest 20 responses. Earlier responses remain in the protected conversation history.</p>}
-      {view.turns.map(turn => <div key={turn.requestId}>
+      {view.turns.length===0 && <div className={styles.miniWelcome}><span className={styles.miniOrb}><PentaGlyph name="spark" /></span><h3>What would you like to work on?</h3><p>Find a record, explore a question, or take the next step with your academy. Connected tools and permissions determine what can be completed.</p></div>}
+      {view.turns.map(turn => <div key={turn.requestId} id={"penta-turn-"+turn.requestId}>
         <div className={styles.miniUser}><span>You</span><p>{turn.inputText}</p></div>
         <section className={styles.miniAnswer} aria-label="PENTA response">
           <div className={styles.miniAnswerIdentity}><PentaGlyph name="spark" /><strong>PENTA AI</strong><span>{turn.kind === "RESULT" ? "Verified academy records" : "No action completed"}</span></div>
           <p>{turn.message}</p>
           {turn.result && <><ol>{turn.result.records.map((record, index) => <li key={record.id}>
-            {turn.result!.entity === "batch" || turn.result!.entity === "session" ? <><strong>{record.label}</strong> · <Link href={record.sourcePath}>{turn.result!.entity === "session" ? "Open Manual schedule" : "Open Manual batch directory"}</Link></> : <Link href={record.sourcePath}>{record.label}</Link>}{record.code && <> · {record.code}</>}
+            {turn.result!.entity === "batch" || turn.result!.entity === "session" || turn.result!.entity === "attendance" ? <><strong>{record.label}</strong> · <Link href={record.sourcePath}>{turn.result!.entity === "attendance" ? "Open Manual attendance" : turn.result!.entity === "session" ? "Open Manual schedule" : "Open Manual batch directory"}</Link></> : <Link href={record.sourcePath}>{record.label}</Link>}{record.code && <> · {record.code}</>}
+            {record.attendance && <div aria-label="Stored student attendance"><p><strong>{record.attendance.status}</strong> · {record.attendance.batch}</p><p>Mark updated <time dateTime={record.attendance.markedAtUtc}>{new Date(record.attendance.markedAtUtc).toLocaleString(undefined,{timeZone:turn.result!.calendarScope!.timeZone})}</time></p></div>}
             {record.schedule && turn.result!.calendarScope ? <div aria-label="Verified class time"><p><time dateTime={record.schedule.startUtc}>{new Date(record.schedule.startUtc).toLocaleString(undefined,{timeZone:turn.result!.calendarScope.timeZone})}</time> – <time dateTime={record.schedule.endUtc}>{new Date(record.schedule.endUtc).toLocaleString(undefined,{timeZone:turn.result!.calendarScope.timeZone})}</time></p><p>{turn.result!.calendarScope.timeZone} · {record.schedule.deliveryMode} · {record.schedule.status}{record.schedule.teacher && <> · {record.schedule.teacher}</>}</p></div>
               : <p>{record.active ? "Active" : "Inactive"}{record.subjects.length > 0 && <> · {record.subjects.join(", ")}</>}</p>}
             {record.balances && (record.balances.length > 0 ? <ul aria-label="Exact outstanding balances">{record.balances.map(balance => <li key={balance.currency}>{balance.currency} {balance.outstandingExact}</li>)}</ul> : <p>No outstanding balances in this snapshot.</p>)}
             {turn.version === view.session?.version && <button className="pui-button pui-button-quiet" type="button" disabled={view.pending || !view.available || view.phase !== "idle"}
               onClick={() => void driver.current?.send(`Open result ${index + 1}`)}>Open result {index + 1} in conversation</button>}
-          </li>)}</ol>{turn.result.balanceScope && <p>{turn.result.balanceScope}</p>}<small>Source: {turn.result.entity === "student-fees" ? "Invoices / Completed + Reconciled payments / Active enrollments" : `academy ${turn.result.entity} records`} · Checked <time dateTime={turn.result.asOfUtc}>{new Date(turn.result.asOfUtc).toLocaleString()}</time></small></>}
+          </li>)}</ol>{turn.result.balanceScope && <p>{turn.result.balanceScope}</p>}{turn.result.attendanceScope && <p>{turn.result.attendanceScope}</p>}<small>Source: {turn.result.entity === "student-fees" ? "Invoices / Completed + Reconciled payments / Active enrollments" : `academy ${turn.result.entity} records`} · Checked <time dateTime={turn.result.asOfUtc}>{new Date(turn.result.asOfUtc).toLocaleString()}</time></small></>}
           <small>Response reference <code>{turn.requestId}</code></small>
         </section>
       </div>)}
     </div>
     <div className={styles.queryFooter}>
-    {view.phase === "idle" && view.available && <form className={styles.financeComposer} onSubmit={event => {
+    <form className={styles.financeComposer} onSubmit={event => {
       event.preventDefault(); const value = prompt; void driver.current?.send(value).then(sent => { if (sent) setPrompt(current => current === value ? "" : current); });
     }}>
       <label htmlFor="penta-academy-query">Message PENTA AI</label>
-      <div className={styles.financeActions}><textarea id="penta-academy-query" rows={2} maxLength={2000} value={prompt} autoComplete="off" disabled={view.pending}
-        placeholder={view.entities.includes("student-fees") ? "Ask about records or student balances…" : "Ask about students, teachers or batches…"} onChange={event => setPrompt(event.currentTarget.value)} />
-        <button type="submit" disabled={view.pending || !prompt.trim()}><PentaGlyph name="arrow" /><span>Send</span></button></div>
-    </form>}
+      <div className={styles.financeActions}><textarea id="penta-academy-query" rows={2} maxLength={2000} value={prompt} autoComplete="off" disabled={view.pending || !view.available || view.phase!=="idle"}
+        placeholder={view.available ? "Ask PENTA about your academy…" : "AI connection unavailable — Manual remains ready"} onChange={event => setPrompt(event.currentTarget.value)} />
+        <button type="submit" disabled={view.pending || !view.available || view.phase!=="idle" || !prompt.trim()}><PentaGlyph name="arrow" /><span>Send</span></button></div>
+    </form>
     {view.pending && <p role="status">Checking your academy records…</p>}
     {view.pointer && (view.phase === "unknown" || view.phase === "closed") && <button className="pui-button" type="button" disabled={view.pending} onClick={() => void driver.current?.recover()}>Recover saved response</button>}
     {view.available && view.pointer && !view.pending && <button className="pui-button pui-button-quiet" type="button" onClick={() => void driver.current?.start()}>Start a separate conversation</button>}

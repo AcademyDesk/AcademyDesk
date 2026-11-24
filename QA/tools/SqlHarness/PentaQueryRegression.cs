@@ -16,7 +16,7 @@ internal static partial class SqlHarnessEntryPoint
     // semantics. Production DI never registers this fixture or grants tools to it.
     private sealed class QueryQaPlanner : IPentaQueryPlanner {
         internal int Calls;
-        internal int ExpectedTools = 8;
+        internal int ExpectedTools = 10;
         internal PentaQueryPlan? Plan;
         internal TaskCompletionSource<bool>? Entered, Release;
         public Task<bool> ReadyAsync(CancellationToken token) => Task.FromResult(Plan is not null);
@@ -38,7 +38,7 @@ internal static partial class SqlHarnessEntryPoint
         PentaRequire(factory.PreflightPassed, "Query fixture missed owned SQL guard.");
         var email = $"query-owner-{Guid.NewGuid():N}@example.invalid";
         var password = "Qa!Query7" + Guid.NewGuid().ToString("N");
-        Guid actorId, teacherId, studentId, batchId, calendarId;
+        Guid actorId, teacherId, studentId, batchId, calendarId, attendanceId;
         string originalModules, originalZone;
         await using (var scope = factory.Services.CreateAsyncScope()) {
             var users = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
@@ -60,12 +60,28 @@ internal static partial class SqlHarnessEntryPoint
             var start = new DateTime(2026,11,23,18,30,0,DateTimeKind.Utc);
             var calendar = new ClassSession { AcademyId=academy,BatchId=batch.Id,TeacherId=teacher.Id,StartUtc=start,EndUtc=start.AddHours(1),DeliveryMode="Hybrid",RoomName="private-query-room" };
             calendarId=calendar.Id;
+            var foreignCalendar=new ClassSession { AcademyId=foreignAcademy,BatchId=foreignBatch.Id,TeacherId=foreignTeacher.Id,StartUtc=start,EndUtc=start.AddHours(1) };
             db.ClassSessions.AddRange(calendar,
-                new ClassSession { AcademyId=foreignAcademy,BatchId=foreignBatch.Id,TeacherId=foreignTeacher.Id,StartUtc=start,EndUtc=start.AddHours(1) },
+                foreignCalendar,
                 new ClassSession { AcademyId=academy,BatchId=foreignBatch.Id,TeacherId=teacher.Id,StartUtc=start,EndUtc=start.AddHours(1) },
                 new ClassSession { AcademyId=academy,BatchId=batch.Id,TeacherId=foreignTeacher.Id,StartUtc=start,EndUtc=start.AddHours(1) },
                 new ClassSession { AcademyId=academy,BatchId=batch.Id,TeacherId=teacher.Id,StartUtc=start.AddDays(1),EndUtc=start.AddDays(1).AddHours(1) },
                 new ClassSession { AcademyId=academy,BatchId=batch.Id,TeacherId=teacher.Id,StartUtc=start.AddMinutes(-1),EndUtc=start.AddMinutes(59) });
+            var storedAttendance=new AttendanceRecord { AcademyId=academy,ClassSessionId=calendar.Id,StudentId=student.Id,Status="absent",MarkedAtUtc=start.AddDays(10),Notes="private-query-attendance" };
+            attendanceId=storedAttendance.Id;
+            db.AttendanceRecords.AddRange(storedAttendance,
+                new AttendanceRecord { AcademyId=academy,ClassSessionId=calendar.Id,StudentId=foreignStudent.Id,Status="Absent" },
+                new AttendanceRecord { AcademyId=academy,ClassSessionId=foreignCalendar.Id,StudentId=student.Id,Status="Absent" },
+                new AttendanceRecord { AcademyId=foreignAcademy,ClassSessionId=foreignCalendar.Id,StudentId=foreignStudent.Id,Status="Absent" });
+            // More than ten recorded marks, plus an active enrollee without a mark.
+            // Missing marks must never be synthesized as Absent.
+            for(var index=0;index<12;index++){
+                var pupil=new Student { AcademyId=academy,FirstName="PageMark",LastName=index.ToString("D2") };db.Students.Add(pupil);
+                db.Enrollments.Add(new Enrollment {AcademyId=academy,StudentId=pupil.Id,BatchId=batch.Id,Status="Active"});
+                db.AttendanceRecords.Add(new AttendanceRecord { AcademyId=academy,ClassSessionId=calendar.Id,StudentId=pupil.Id,Status="Present" });
+            }
+            var unmarkedPupil=new Student {AcademyId=academy,FirstName="UnmarkedMark",LastName="Roster"};db.Students.Add(unmarkedPupil);
+            db.Enrollments.Add(new Enrollment {AcademyId=academy,StudentId=unmarkedPupil.Id,BatchId=batch.Id,Status="Active"});
             for(var index=0;index<12;index++) db.ClassSessions.Add(new ClassSession { AcademyId=academy,BatchId=batch.Id,TeacherId=teacher.Id,
                 StartUtc=start.AddDays(1).AddMinutes(index+1),EndUtc=start.AddDays(1).AddMinutes(index+61) });
             var invoice = new Invoice { AcademyId = academy, StudentId = student.Id, InvoiceNumber = "QA-Q-INR", TotalAmount = 1000m };
@@ -104,6 +120,7 @@ internal static partial class SqlHarnessEntryPoint
             await using var scope = factory.Services.CreateAsyncScope(); var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
             return JsonSerializer.Serialize(new { students = await db.Students.CountAsync(), teachers = await db.Teachers.CountAsync(), batches = await db.Batches.CountAsync(),
                 sessions=await db.ClassSessions.OrderBy(x=>x.Id).Select(x=>new { x.Id,x.StartUtc,x.EndUtc,x.Status,x.TeacherId }).ToArrayAsync(),
+                attendance=await db.AttendanceRecords.OrderBy(x=>x.Id).Select(x=>new { x.Id,x.ClassSessionId,x.StudentId,x.Status,x.MarkedAtUtc,x.Notes }).ToArrayAsync(),
                 payments = await db.Payments.CountAsync(), total = await db.Payments.SumAsync(x => x.Amount),
                 invoices = await db.Invoices.CountAsync(), billed = await db.Invoices.SumAsync(x => x.TotalAmount), adjusted = await db.Invoices.SumAsync(x => x.AdjustedAmount) });
         }
@@ -155,13 +172,13 @@ internal static partial class SqlHarnessEntryPoint
         using (var health = await client.GetAsync(root + "/health")) {
             RequireFinanceStatus(health, HttpStatusCode.OK, "directory-only query catalog");
             var value = await health.Content.ReadFromJsonAsync<JsonElement>();
-            Check(value.GetProperty("tools").GetArrayLength() == 8 && !value.GetProperty("tools").EnumerateArray().Any(x => x.GetProperty("entity").GetString() == "student-fees"), "Finance tool appeared without Finance module.");
+            Check(value.GetProperty("tools").GetArrayLength() == 10 && !value.GetProperty("tools").EnumerateArray().Any(x => x.GetProperty("entity").GetString() == "student-fees"), "Finance tool appeared without Finance module.");
         }
         await using (var scope = factory.Services.CreateAsyncScope()) {
             var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
             (await db.Academies.SingleAsync(x => x.Id == academy)).EnabledModulesJson = "[\"Finance\"]"; await db.SaveChangesAsync();
         }
-        planner.ExpectedTools = 10;
+        planner.ExpectedTools = 12;
         var moneySession = await Create();
         var money = await Turn(moneySession, 0, "Show outstanding student fees", "student-fees");
         var balances = money.Result?.Records.Single().Balances;
@@ -192,7 +209,7 @@ internal static partial class SqlHarnessEntryPoint
             var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
             (await db.Academies.SingleAsync(x => x.Id == academy)).EnabledModulesJson = "[]"; await db.SaveChangesAsync();
         }
-        planner.ExpectedTools = 8;
+        planner.ExpectedTools = 10;
         using (var denied = await client.GetAsync(Turns(moneySession) + $"/{followup.RequestId:D}")) {
             RequireFinanceStatus(denied, HttpStatusCode.Forbidden, "revoked finance receipt");
             Check(planner.Calls == calls, "Finance revocation invoked the model.");
@@ -233,6 +250,37 @@ internal static partial class SqlHarnessEntryPoint
         using(var response=await client.PostAsJsonAsync(Turns(invalidRangeSession),new PentaTaskTurnInput(Guid.NewGuid(),0,"Show classes"))) {
             RequireFinanceStatus(response,HttpStatusCode.Created,"invalid calendar range receipt");
             Check((await response.Content.ReadFromJsonAsync<PentaQueryTurnReceipt>())?.Kind=="ERROR","Unbounded calendar dates executed.");
+        }
+        var attendanceSession=await Create();
+        planner.Plan=new(PentaQueryContract.Version,"search","attendance",new() { ["from"]="2026-11-24",["name"]="Synthetic Query",["status"]="Absent",["teacher"]="Synthetic Query" },null);
+        PentaQueryTurnReceipt storedMark;
+        using(var response=await client.PostAsJsonAsync(Turns(attendanceSession),new PentaTaskTurnInput(Guid.NewGuid(),0,"Show student attendance for teacher Synthetic Query's classes on 2026-11-24"))){
+            RequireFinanceStatus(response,HttpStatusCode.Created,"protected recorded attendance read");storedMark=(await response.Content.ReadFromJsonAsync<PentaQueryTurnReceipt>())!;
+            var row=storedMark.Result?.Records.Single();
+            Check(row?.Id==attendanceId && row.Attendance?.Status=="Absent" && row.Attendance.MarkedAtUtc==new DateTime(2026,12,3,18,30,0,DateTimeKind.Utc),"Attendance used mark date instead of class date, lost legacy case, or crossed tenant relations.");
+            Check(storedMark.Result?.AttendanceScope==PentaQueryContract.AttendanceScope && storedMark.Result.CalendarScope?.From=="2026-11-24" && !JsonSerializer.Serialize(storedMark).Contains("private-query"),"Attendance leaked notes/contact or confused time/status semantics.");
+        }
+        calls=planner.Calls;
+        using(var response=await client.GetAsync(Turns(attendanceSession)+$"/{storedMark.RequestId:D}")){
+            RequireFinanceStatus(response,HttpStatusCode.OK,"recorded attendance GET recovery");
+            Check((await response.Content.ReadFromJsonAsync<PentaQueryTurnReceipt>())?.Result?.Records.Single().Id==attendanceId && planner.Calls==calls,"Attendance recovery redispatched interpretation or changed saved IDs.");
+        }
+        var openMark=await Turn(attendanceSession,1,"Open result 1","attendance","open",1);
+        Check(openMark.Result?.Records.Single().Id==attendanceId,"Attendance ordinal did not keep its own stored mark reference.");
+        var wrongMark=await Turn(attendanceSession,2,"Show teacher attendance","attendance");
+        Check(wrongMark.Kind=="ERROR" && wrongMark.Result is null,"Teacher attendance became student marks.");
+        var markPage=await Create();planner.Plan=new(PentaQueryContract.Version,"search","attendance",new() { ["from"]="2026-11-24",["name"]="PageMark" },null);
+        using(var response=await client.PostAsJsonAsync(Turns(markPage),new PentaTaskTurnInput(Guid.NewGuid(),0,"Show recorded student attendance on 2026-11-24"))){
+            RequireFinanceStatus(response,HttpStatusCode.Created,"bounded recorded attendance page");
+            var value=await response.Content.ReadFromJsonAsync<PentaQueryTurnReceipt>();
+            Check(value?.Result is {HasMore:true,Records.Length:10} && value.Message.Contains("first 10") && value.Message.Contains("more exist"),"Truncated attendance appeared complete.");
+        }
+        var writeMark=await Turn(attendanceSession,3,"Mark attendance for students","attendance");
+        Check(writeMark.Kind=="ERROR" && writeMark.Result is null,"Read conversation accepted attendance mutation.");
+        var missingMark=await Create();planner.Plan=new(PentaQueryContract.Version,"search","attendance",new() { ["from"]="2026-11-24",["name"]="UnmarkedMark",["status"]="Absent" },null);
+        using(var response=await client.PostAsJsonAsync(Turns(missingMark),new PentaTaskTurnInput(Guid.NewGuid(),0,"Show stored attendance on 2026-11-24"))){
+            RequireFinanceStatus(response,HttpStatusCode.Created,"missing mark semantics");
+            Check((await response.Content.ReadFromJsonAsync<PentaQueryTurnReceipt>())?.Result is {Records.Length:0},"Missing enrolled student's mark became an inferred absence.");
         }
         // Claims must commit before generation; pending concurrency/recovery may
         // never dispatch another planner call or return incomplete private facts.

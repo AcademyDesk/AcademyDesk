@@ -91,7 +91,7 @@ jobs:
               & ./QA/tools/SqlHarness/Run-ReconciledPayment.ps1 -Module $module -HarnessPath $harness 2>&1 | Tee-Object -FilePath $log
               if ($module -eq 'PentaFoundation') {
                 $queries = @(Select-String -LiteralPath $log -Pattern '^PENTA QUERY NATIVE ([0-9]+) SQL/Identity/API checks PASS;')
-                if ($queries.Count -ne 1 -or [int]$queries[0].Matches[0].Groups[1].Value -lt 31) {
+                if ($queries.Count -ne 1 -or [int]$queries[0].Matches[0].Groups[1].Value -lt 39) {
                   throw 'The connected query SQL/Identity/API packet did not complete.'
                 }
               }
@@ -202,7 +202,7 @@ jobs:
       DOTNET_CLI_TELEMETRY_OPTOUT: '1'
       DOTNET_NOLOGO: '1'
       QA_PENTA_BRIDGE_SOURCE: ${{ github.workspace }}/.build-check/paired-mini
-      QA_PENTA_CORE_SHA: a36b4636e5afd8cf2e877d7fa2b59b41b2cbcafe
+      QA_PENTA_CORE_SHA: 9dafedb28e3f8c3250659ee60be9cc2abd4b7c47
       QA_PENTA_MINI: '0'
     steps:
       - name: Require access to pinned private Core source

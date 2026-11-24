@@ -1,6 +1,6 @@
 // Host presentation glyphs adapted from PENTA chat-visual-preview/src/visuals.tsx.
 // Reuses the owner's existing October 2026 concept vocabulary; no new icon package.
-export type PentaGlyphName = "pulse" | "chat" | "grid" | "compass" | "twin" | "play" | "panel" | "arrow" | "spark";
+export type PentaGlyphName = "pulse" | "chat" | "grid" | "compass" | "twin" | "play" | "panel" | "arrow" | "spark" | "connections" | "receipt" | "shield";
 const paths: Record<PentaGlyphName, string> = {
   pulse: "M2 12h4l3-8 5 16 3-8h5",
   chat: "M21 11.5a8.5 8.5 0 0 1-8.5 8.5H4l-2 2V11.5a9.5 9.5 0 1 1 19 0Z",
@@ -11,6 +11,9 @@ const paths: Record<PentaGlyphName, string> = {
   panel: "M3 4h18v16H3zM15 4v16",
   arrow: "M12 20V4m-6 6 6-6 6 6",
   spark: "M12 2l2.8 7.2L22 12l-7.2 2.8L12 22l-2.8-7.2L2 12l7.2-2.8z",
+  connections: "M20 5c0 2-4 3-8 3S4 7 4 5s4-3 8-3 8 1 8 3Zm0 0v14c0 2-4 3-8 3s-8-1-8-3V5m0 7c0 2 4 3 8 3s8-1 8-3",
+  receipt: "M6 2h9l4 4v16H5V2h1Zm8 0v6h5M8 12h8M8 16h8",
+  shield: "M12 2l8 3v6c0 6-8 11-8 11S4 17 4 11V5l8-3Zm-4 9 3 3 5-6",
 };
 export function PentaGlyph({ name }: { name: PentaGlyphName }) {
   return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[name]} /></svg>;

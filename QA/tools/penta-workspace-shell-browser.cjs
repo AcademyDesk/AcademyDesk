@@ -35,6 +35,18 @@ async function main() {
         await p.wait('!document.querySelector("dialog[open]")');
         a.equal(await p.evaluate('document.activeElement?.getAttribute("aria-label")'), 'About Pulse');
         a.equal(p.requests.slice(before).filter(req => req.method === 'POST').length, 0, 'Capability help dispatched a tool');
+        if(width===320){
+          await p.evaluate(`document.querySelector('button[aria-label="Open workspace navigation"]').click()`);
+          await p.wait('Boolean(document.querySelector("dialog[open]"))');
+          await p.click('Model · MINI');
+        }else await p.evaluate(`document.querySelector('button[aria-label="Choose PENTA model"]').click()`);
+        await p.wait(`document.querySelector('dialog[open]')?.textContent.includes('ULTRA')`);
+        const tiers=await p.evaluate(`Array.from(document.querySelectorAll('dialog[open] button[aria-pressed]')).map(n=>({text:n.textContent,disabled:n.disabled}))`);
+        a.equal(tiers.length,4);a.ok(tiers.filter(t=>!t.text.startsWith('MINI')).every(t=>t.disabled));
+        a.match((await p.text()),/Not connected/);a.match((await p.text()),/Deferred/);
+        await p.evaluate(`document.querySelector('dialog[open] button[aria-label="Close Choose your PENTA model"]').click()`);
+        await p.wait('!document.querySelector("dialog[open]")');
+        a.equal(p.requests.slice(before).filter(req=>req.method==='POST').length,0,'Model selection dispatched or activated a model');
         const capabilityState = await p.evaluate(`Array.from(document.querySelectorAll('nav[aria-label="PENTA capabilities"] > div > button:first-child')).map(n=>({name:n.textContent,disabled:n.disabled}))`);
         a.equal(capabilityState.length, 5);
         a.ok(capabilityState.filter(n => !n.name.startsWith('Executor')).every(n => n.disabled));
@@ -53,6 +65,10 @@ async function main() {
         } else a.equal(p.requests.filter(req => req.path.includes('/penta/chat/')).length, 0, 'Mini contacted for an excluded role');
         const layout = await p.evaluate('(()=>{const main=document.querySelector("main"),h=document.querySelector("main h1");return{pageFits:document.documentElement.scrollWidth<=innerWidth+1,viewport:main.getBoundingClientRect().height<=innerHeight+1,font:getComputedStyle(h).fontFamily};})()');
         a.equal(layout.pageFits, true); a.equal(layout.viewport, true); a.match(layout.font, /Geist/);
+        if(width===1440){
+          const columns=await p.evaluate(`(()=>{const l=document.querySelector('aside[aria-label="Workspace navigation"]').getBoundingClientRect(),c=document.querySelector('section[aria-label="PENTA workspace conversation"]').getBoundingClientRect(),r=document.querySelector('aside[aria-label="Workspace context"]').getBoundingClientRect();return{left:l.width,centre:c.width,right:r.width,ordered:l.right<=c.left+1&&c.right<=r.left+1};})()`);
+          a.ok(columns.left>=200&&columns.centre>=400&&columns.right>=300&&columns.ordered,'Enterprise three-panel layout must remain usable');
+        }
         await p.assertClean();
         await p.screenshot(actor.role + '-' + theme + '-' + width);
         cases.push({ role: actor.role, width, theme, passed: true });
