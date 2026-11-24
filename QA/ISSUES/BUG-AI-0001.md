@@ -25,6 +25,15 @@ cached model was used; no download, model replacement or Azure action occurred.
 
 ## Root causes verified in current source
 
+D73 closes a separate transport gap: structured task/query generation must stop
+normally and return one assistant JSON object without duplicate keys and within
+response bounds before compilation.322selected Linux model-free checks pass,
+including actual transport-to-endpoint rejection; this is not model intelligence
+acceptance. Aurora/attendance4147048 ordinary exact CI passes2,799API and39native
+query checks with synthetic planner/real SQL. The NEW connected4Bpacket is prepared
+and awaits explicit approval. Teacher/live quality and all-domain conversation
+remain OPEN. See ../REPORTS/D73_REPLY_BOUNDARY_AND_MODEL_PACKET_2026-11-24.md.
+
 D69 adds connected calendar reads and denies teacher/batch directory substitution
 for classes, unsupported student-calendar inference and known scheduling writes.
 304affected host,260model-free Mini,163client,31native query and52browser checks

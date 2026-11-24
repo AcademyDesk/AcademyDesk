@@ -1,5 +1,12 @@
 # D71/D72 — recorded attendance and Aurora AI workbench
 
+Follow-up verification: ordinary exact-source CI for41470488c183817672673e1f092bf2a342e20d88
+PASSED, including2,799API tests and all39native query SQL/Identity/API checks.
+The earlier NOT LOCALLY RUN entries below retain their original scope; CI supplies
+the current native result, not a real-model pass. Required paired Core job still
+fails missing private-source credential. See D73_REPLY_BOUNDARY_AND_MODEL_PACKET_2026-11-24.md
+for exact job links, Mini failures and the new unexecuted4Bpacket.
+
 24 November2026. Academy base66bb16a1e88d0e9c6fc98677061e434a19615914;
 Mini basea36b4636e5afd8cf2e877d7fa2b59b41b2cbcafe. Mini published
 9dafedb28e3f8c3250659ee60be9cc2abd4b7c47, paired workflow pinned. Continues the

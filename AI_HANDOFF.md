@@ -1,5 +1,29 @@
 # Academy Desk handoff
 
+## D73 reply boundary and model packet — 24 November 2026
+
+- [x] Mini e4b2d1ccd47bb5a149d9223456c531883ba6ae2b published; task/query
+  transport rejects incomplete/ambiguous/repeated-key/oversized completions
+  before compilation. Shared lease/cancellation, host authority and frozen
+  legacy provider preserved.322Linux model-free and56Windows cases pass.
+- [x] Aurora/attendance4147048 ordinary exact CI PASS:2,799API tests,39native
+  query SQL/Identity/API checks, locked audits0,92pages and container smoke.
+  Retained finance/security/migration/restore/private-media checks also passed.
+- [x] NEW4Bpacket prepared:14exposed cases, protected current demo checks,
+  15-minute automated cap, conditional one-hour total preview,5GiBRAM guard,
+  768MiBsafety, no existing service stops/downloads/Azure.7Python/3Node evaluator
+  tests and no-load artifact/image/source/demo/RAM preflight pass.
+- [ ] NEW explicit approval requested, not yet received/executed. D65approval
+  cannot be reused. Live backend66bb16a has10tools; attendance is Core-only in
+  this packet. Preview3001 and private LOGIN.txt/accounts/data remain available.
+- [ ] Paired CI private-source credential; Mini e4b2d1c full CI13failed,
+  1,956passed,1skipped,63errors,5passed subtests; missing original files retained
+  honestly. No archive fabrication, assertion weakening or production claim.
+- [ ] Real model/domain/role/compound execution, original enterprise/device/
+  staging/release gates and90%outcome acceptance remain OPEN. Keep Sol High.
+
+[D73 exact evidence and continuation](QA/REPORTS/D73_REPLY_BOUNDARY_AND_MODEL_PACKET_2026-11-24.md)
+
 ## D71/D72 attendance and Aurora AI workbench — 24 November 2026
 
 - [x] Recorded student attendance joins the same query catalog/history: scoped

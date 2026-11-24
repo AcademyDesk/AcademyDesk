@@ -1,5 +1,18 @@
 # AcademyDesk QA control centre — Phase 1
 
+## D73 — completion boundary and current native CI, 24 November 2026
+
+- [x] Mini transport strengthened;322Linux model-free/56Windows cases pass.
+- [x] Aurora/attendance4147048 ordinary exact CI:2,799API,39native query SQL/
+  Identity checks,locked audits0,92pages/API image/smoke; retained migration/
+  restore/finance/security/private-media checks. No real-model pass inferred.
+- [x] New4Bpacket prepared;7Python/3Node evaluator tests and no-load preflight pass.
+- [ ] NEW model approval; paired Actions credential; Mini original/full-suite
+  failures; full semantic/domain/role/execution and enterprise/device/staging/
+  release gates. BUG-AI-0001 OPEN. Active owner's demo services/lease preserved.
+
+[D73 evidence and packet](REPORTS/D73_REPLY_BOUNDARY_AND_MODEL_PACKET_2026-11-24.md)
+
 ## D71/D72 — recorded attendance / Aurora workbench, 24 November 2026
 
 - [x]325affected host,174client,26new pure Mini Windows cases and actual twelve-tool
