@@ -13,7 +13,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace AcademyDesk.Api.Tests;
 
-public sealed class PentaQueryTests
+public sealed partial class PentaQueryTests
 {
     private sealed class Environment(string name) : IHostEnvironment {
         public string EnvironmentName { get; set; } = name;
@@ -57,7 +57,7 @@ public sealed class PentaQueryTests
     public async Task Catalog_uses_stored_admin_identity_and_does_not_require_finance(string role) {
         using var f = new Fixture(role);
         var value = await f.Access().ResolveAsync(f.Principal, f.Academy.Id, default);
-        Assert.NotNull(value); Assert.Equal(6, value.Tools.Count); Assert.All(value.Tools, tool => Assert.DoesNotContain("Payment", tool));
+        Assert.NotNull(value); Assert.Equal(8, value.Tools.Count); Assert.Contains("AcademyDesk.session.search", value.Tools); Assert.All(value.Tools, tool => Assert.DoesNotContain("Payment", tool));
         Assert.Equal(f.Actor.Id, value.ActorId);
     }
     [Theory][InlineData("Teacher")][InlineData("Student")][InlineData("Guardian")][InlineData("PlatformOwner")][InlineData("Staff")]
@@ -134,7 +134,7 @@ public sealed class PentaQueryTests
         var value = PentaQueryContract.Request("I said teachers", new("student", new() { ["name"] = "Synthetic" }, [privateId]), All);
         var json = value.GetRawText();
         Assert.DoesNotContain(privateId.ToString("D"), json); Assert.DoesNotContain("actor", json); Assert.DoesNotContain("salary", json);
-        Assert.Equal(8, value.GetProperty("tools").GetArrayLength());
+        Assert.Equal(10, value.GetProperty("tools").GetArrayLength());
         Assert.Equal("Result 1", value.GetProperty("context").GetProperty("result_labels")[0].GetString());
         if (System.Environment.GetEnvironmentVariable("QA_QUERY_CONTRACT_VECTOR") is { Length: > 0 } destination) File.WriteAllText(destination, json);
     }
@@ -195,7 +195,7 @@ public sealed class PentaQueryTests
         Assert.DoesNotContain("AcademyDesk.student-fees.search", initial!.Tools);
         f.Academy.EnabledModulesJson = "[\"Finance\"]"; await f.Db.SaveChangesAsync();
         var enabled = await access.ResolveAsync(f.Principal, f.Academy.Id, default);
-        Assert.Contains("AcademyDesk.student-fees.search", enabled!.Tools); Assert.Equal(8, enabled.Tools.Count);
+        Assert.Contains("AcademyDesk.student-fees.search", enabled!.Tools); Assert.Equal(10, enabled.Tools.Count);
         Assert.NotEqual(initial.Version, enabled.Version);
         f.Academy.EnabledModulesJson = "[]"; await f.Db.SaveChangesAsync();
         var revoked = await access.ResolveAsync(f.Principal, f.Academy.Id, default);

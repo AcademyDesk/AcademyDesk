@@ -17,7 +17,10 @@ public sealed class PentaQueryReader(AcademyDeskDbContext db, TimeProvider clock
             "teacher" => await db.Teachers.CountAsync(x => x.AcademyId == academy && ids.Contains(x.Id), token),
             "student" => await db.Students.CountAsync(x => x.AcademyId == academy && ids.Contains(x.Id), token),
             "student-fees" => await db.Students.CountAsync(x => x.AcademyId == academy && x.IsActive && ids.Contains(x.Id), token),
-            "batch" => await db.Batches.CountAsync(x => x.AcademyId == academy && ids.Contains(x.Id), token), _ => -1 };
+            "batch" => await db.Batches.CountAsync(x => x.AcademyId == academy && ids.Contains(x.Id), token),
+            "session" => await db.ClassSessions.CountAsync(x => x.AcademyId == academy && ids.Contains(x.Id) &&
+                db.Batches.Any(b => b.Id == x.BatchId && b.AcademyId == academy) &&
+                (x.TeacherId == null || db.Teachers.Any(t => t.Id == x.TeacherId && t.AcademyId == academy)), token), _ => -1 };
         return count == ids.Length;
     }
 
@@ -26,7 +29,7 @@ public sealed class PentaQueryReader(AcademyDeskDbContext db, TimeProvider clock
     {
         if (!PentaQueryContract.ValidPlan(plan)) return new("ERROR", "I could not verify the intended operation. No records were searched.", previous);
         if (plan!.Kind is "clarify" or "unsupported") return new(plan.Kind == "clarify" ? "CLARIFICATION_REQUIRED" : "UNSUPPORTED",
-            plan.Kind == "clarify" ? "Which student, teacher or batch do you mean? Tell me the name or choose a displayed result."
+            plan.Kind == "clarify" ? "Which student, teacher, batch or class do you mean? Give a name, an exact date, or choose a displayed result."
                 : "That operation is not connected to this read conversation. No records were searched or changed. Your guided workflows and Manual workspace remain available.",
             // Unsupported/topic-switch turns must not silently retain a different entity's IDs.
             plan.Kind == "clarify" && plan.Entity == previous.Entity ? previous : PentaQueryContext.Empty);
@@ -40,6 +43,7 @@ public sealed class PentaQueryReader(AcademyDeskDbContext db, TimeProvider clock
             selected = previous.ResultIds[plan.Position!.Value - 1];
             filters = previous.Filters.Where(pair => PentaQueryContract.Fields(plan.Entity!).Contains(pair.Key)).ToDictionary(pair => pair.Key, pair => pair.Value);
         }
+        if (plan.Entity == "session") return await PentaQueryCalendarReader.ReadAsync(db, clock, academy, filters, selected, token);
         if (plan.Entity == "student-fees") {
             // The Finance module is required by the current permitted tool set.
             // QueryConversation reauthorizes under the shared Identity/SQL lock.

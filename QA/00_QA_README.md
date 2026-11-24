@@ -1,5 +1,20 @@
 # AcademyDesk QA control centre — Phase 1
 
+## D69 connected calendar — 24 November 2026
+
+- [x]304affected host,260Mini model-free,163client,31actual query SQL/Identity/API,
+  retained Foundation/5races/86+7migrations/owned cleanup,16query+36shell browser;
+  cached92-page build/typecheck and frontend lint pass.
+- [x] Calendar scoped to current academy and related teacher/batch, local-date
+  boundaries/DST, pinned follow-ups, exact receipt/recovery, paging and mobile UI.
+  Native planner and browser API are synthetic; no real-model/device pass inferred.
+- [x] D68 ordinary exact CI passed2,754API/locked dependencies/audit0/SQL24/build.
+- [ ] Current D69 CI, paired Actions credential, original Mini archives, real model,
+  all-domain/all-role/compound operations and original enterprise release gates.
+  No activation, domain mutation, main merge or Azure; BUG-AI-0001 remains OPEN.
+
+[D69 results and retained failures](REPORTS/D69_CONNECTED_CALENDAR_READS_2026-11-24.md)
+
 ## D68 connected exact balances — 24 November 2026
 
 - [x]280affected host;244Mini model-free;116client;24actual query SQL/Identity/API

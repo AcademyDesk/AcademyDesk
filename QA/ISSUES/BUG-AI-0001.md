@@ -25,6 +25,12 @@ cached model was used; no download, model replacement or Azure action occurred.
 
 ## Root causes verified in current source
 
+D69 adds connected calendar reads and denies teacher/batch directory substitution
+for classes, unsupported student-calendar inference and known scheduling writes.
+304affected host,260model-free Mini,163client,31native query and52browser checks
+pass. Real-model conversation quality and all-domain/role acceptance remain OPEN;
+see ../REPORTS/D69_CONNECTED_CALENDAR_READS_2026-11-24.md. No model was activated.
+
 D68 extends D67's connected query path to permission-bound student balances and
 same-student follow-ups. Final280affected host,244Mini model-free,116client,
 24native query and52synthetic-API browser checks pass. No real model was called;

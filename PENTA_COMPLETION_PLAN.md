@@ -24,6 +24,23 @@ implementation order below; the D59 failure evidence remains accurate.
 
 ## D62 implementation checkpoint — 23 November 2026
 
+### D69 connected calendar progress — 24 November 2026
+
+- [x] Same conversational query supports session/calendar search/open, batch and
+  teacher filtering, authoritative academy-local dates, bounded range/paging and
+  source-backed class times/status/mode. Saved dates and IDs govern follow-ups.
+- [x]304affected host/260Mini model-free/163client/31native query/52browser checks
+  pass; cached build/typecheck/export/lint pass. Mini a36b463 published and pinned.
+- [x] D68 ordinary exact-source CI now passed2,754API, locked dependencies/audit0,
+  SQL24 and full export. This does not qualify new D69 source or paired Core.
+- [ ] Attendance, student-enrollment calendar joins, remaining domain/role parity,
+  protected dependent execution and real-model outcome/latency qualification;
+  original security/device/staging gates and missing credentials/archives remain.
+  No 90% measurement, model activation or production readiness claimed.
+
+Read QA/REPORTS/D69_CONNECTED_CALENDAR_READS_2026-11-24.md. This is an additional
+calendar read slice, not scheduling writes or completion of the whole AI system.
+
 ### D68 connected exact-balance progress — 24 November 2026
 
 - [x] Student-fees search/open in the same catalog/history/composer, current Finance

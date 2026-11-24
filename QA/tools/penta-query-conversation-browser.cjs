@@ -8,20 +8,23 @@ const id = n => String(n).padStart(8,'0') + '-1111-4111-8111-111111111111';
 const academy = id(1), session = id(2), teacher = id(3), student = id(4), expiry = '2030-01-01T00:00:00Z';
 const base = `/api/academies/${academy}/penta/queries`;
 const finance = process.env.QA_QUERY_FINANCE_EXPECTED === 'true';
-const catalog = ['teacher', 'student', 'batch', ...(finance ? ['student-fees'] : [])].flatMap(entity => ['search', 'open'].map(kind => ({ key: `AcademyDesk.${entity}.${kind}`,
-  entity, kind, readOnly: true, fields: entity === 'teacher' ? ['name', 'subject', 'status'] : entity === 'student-fees' ? ['name', 'subject', 'balance_status'] : ['name', 'status'] })));
+const calendar = process.env.QA_QUERY_CALENDAR_EXPECTED === 'true';
+const catalog = ['teacher', 'student', 'batch', ...(finance ? ['student-fees'] : []), ...(calendar ? ['session'] : [])].flatMap(entity => ['search', 'open'].map(kind => ({ key: `AcademyDesk.${entity}.${kind}`,
+  entity, kind, readOnly: true, fields: entity === 'teacher' ? ['name', 'subject', 'status'] : entity === 'student-fees' ? ['name', 'subject', 'balance_status'] : entity === 'session' ? ['name','teacher','from','through','status'] : ['name', 'status'] })));
 function receipt(body, entity) {
   const record = entity === 'teacher' ? teacher : student;
   return { protocol: 'academy-query.v1', conversationId: session, requestId: body.requestId, version: body.expectedVersion + 1,
-    kind: 'RESULT', message: `Verified ${entity} source`, inputText: body.text, context: { entity, filters: {}, resultIds: [record] },
+    kind: 'RESULT', message: `Verified ${entity} source`, inputText: body.text, context: { entity, filters: entity === 'session' ? {from:'2026-11-24',through:'2026-11-24'} : {}, resultIds: [record] },
     result: { entity, ...(entity === 'student-fees' ? { balanceScope: 'All outstanding fees for each student; subject filters select students, not course-specific invoices.' } : {}),
-      records: [{ id: record, label: entity === 'teacher' ? 'Nisha Teacher' : 'Mira Student', code: null, active: true,
+      ...(entity === 'session' ? {calendarScope:{timeZone:'Asia/Kolkata',from:'2026-11-24',through:'2026-11-24'}} : {}),
+      records: [{ id: record, label: entity === 'session' ? 'Synthetic Calendar Batch' : entity === 'teacher' ? 'Nisha Teacher' : 'Mira Student', code: null, active: true,
+      ...(entity === 'session' ? {schedule:{startUtc:'2026-11-23T18:30:00Z',endUtc:'2026-11-23T19:30:00Z',deliveryMode:'Hybrid',status:'Scheduled',teacher:'Nisha Teacher'}} : {}),
       ...(entity === 'student-fees' ? { balances: [{ currency: 'INR', outstandingExact: '400.00' }, { currency: 'USD', outstandingExact: '0.01' }, { currency: 'EUR', outstandingExact: '90071992547409.91' }] } : {}),
-      subjects: entity === 'teacher' ? ['Piano'] : [], sourcePath: entity === 'teacher' ? `/teacher-profile?teacherId=${record}` : `/student-management?studentId=${record}` }],
+      subjects: entity === 'teacher' ? ['Piano'] : [], sourcePath: entity === 'session' ? '/schedule' : entity === 'teacher' ? `/teacher-profile?teacherId=${record}` : `/student-management?studentId=${record}` }],
       hasMore: false, asOfUtc: '2026-11-24T01:00:00Z' } };
 }
 async function main() {
-  const browser = await start({ academyId: academy, evidence: path.join(root, finance ? '.build-check/d68-finance/browser' : '.build-check/d68-finance/directory-browser'), prefix: 'penta-query-' });
+  const browser = await start({ academyId: academy, evidence: path.join(root, calendar ? '.build-check/d69-calendar/browser' : finance ? '.build-check/d68-finance/browser' : '.build-check/d68-finance/directory-browser'), prefix: 'penta-query-' });
   const results = []; let failure = null, cleanup;
   try {
     for (const role of ['Owner', 'AcademyAdmin']) for (const width of [320, 1440]) for (const theme of ['light', 'dark']) {
@@ -32,7 +35,7 @@ async function main() {
           if (req.path === base + '/conversations') return { status: 201, body: { conversationId: session, version: 0, expiresAtUtc: expiry } };
           if (req.path === base + `/conversations/${session}/turns`) {
             posts++; a.deepEqual(Object.keys(req.body).sort(), ['expectedVersion','requestId','text']);
-            const value = receipt(req.body, posts === 1 ? 'teacher' : posts === 3 && finance ? 'student-fees' : 'student'); stored.set(value.requestId, value);
+            const value = receipt(req.body, calendar && req.body.text.includes('classes') ? 'session' : posts === 1 ? 'teacher' : posts === 3 && finance ? 'student-fees' : 'student'); stored.set(value.requestId, value);
             return posts === 2 ? { fail: 'ConnectionReset' } : { status: 201, body: value };
           }
           if (req.path.startsWith(base + `/conversations/${session}/turns/`)) { recovery++; return { body: stored.get(req.path.split('/').at(-1)) }; }
@@ -61,6 +64,17 @@ async function main() {
           await p.wait(`(()=>{const area=document.querySelector('[aria-label="Conversation messages"]').getBoundingClientRect();return [...document.querySelectorAll('[aria-label="Exact outstanding balances"] li')].every(n=>{const r=n.getBoundingClientRect();return r.top>=area.top-1&&r.bottom<=area.bottom+1;});})()`);
           a.equal(posts, 3); a.equal(recovery, 3);
           a.equal(await p.evaluate(`JSON.stringify(sessionStorage).includes('90071992547409.91')`), false);
+        }
+        if (calendar) {
+          const beforePosts=posts;
+          await p.submit('#penta-academy-query','Show Nisha classes on 2026-11-24');
+          await p.wait(`document.body?.innerText.includes('Synthetic Calendar Batch')`);
+          a.equal(await p.evaluate(`document.querySelector('[aria-label="Verified class time"] time')?.getAttribute('datetime')`),'2026-11-23T18:30:00Z');
+          a.ok((await p.evaluate(`document.querySelector('[aria-label="Verified class time"]')?.textContent`)).includes('Asia/Kolkata · Hybrid · Scheduled'));
+          await p.reload(); await p.wait(`document.body?.innerText.includes('Synthetic Calendar Batch')`);
+          a.equal(posts,beforePosts+1);
+          await p.wait(`(()=>{const area=document.querySelector('[aria-label="Conversation messages"]').getBoundingClientRect();const r=document.querySelector('[aria-label="Verified class time"]').getBoundingClientRect();return r.top>=area.top-1&&r.bottom<=area.bottom+1;})()`);
+          a.equal(await p.evaluate(`document.querySelector('a[href="/schedule"]')?.textContent`),'Open Manual schedule');
         }
         a.equal(await p.evaluate(`JSON.stringify(sessionStorage).includes('Nisha Teacher')`), false);
         const mode = await p.evaluate(`document.documentElement.getAttribute('data-theme')`); a.equal(mode, theme);

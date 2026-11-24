@@ -16,7 +16,7 @@ internal static partial class SqlHarnessEntryPoint
     // semantics. Production DI never registers this fixture or grants tools to it.
     private sealed class QueryQaPlanner : IPentaQueryPlanner {
         internal int Calls;
-        internal int ExpectedTools = 6;
+        internal int ExpectedTools = 8;
         internal PentaQueryPlan? Plan;
         internal TaskCompletionSource<bool>? Entered, Release;
         public Task<bool> ReadyAsync(CancellationToken token) => Task.FromResult(Plan is not null);
@@ -38,22 +38,36 @@ internal static partial class SqlHarnessEntryPoint
         PentaRequire(factory.PreflightPassed, "Query fixture missed owned SQL guard.");
         var email = $"query-owner-{Guid.NewGuid():N}@example.invalid";
         var password = "Qa!Query7" + Guid.NewGuid().ToString("N");
-        Guid actorId, teacherId, studentId, batchId;
-        string originalModules;
+        Guid actorId, teacherId, studentId, batchId, calendarId;
+        string originalModules, originalZone;
         await using (var scope = factory.Services.CreateAsyncScope()) {
             var users = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
             var owner = new ApplicationUser { UserName = email, Email = email, EmailConfirmed = true, DisplayName = "Synthetic query owner", AcademyId = academy, IsActive = true };
             PentaRequire((await users.CreateAsync(owner, password)).Succeeded && (await users.AddToRoleAsync(owner, "AcademyAdmin")).Succeeded, "Query owner setup failed."); actorId = owner.Id;
             var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
             var tenant = await db.Academies.SingleAsync(x => x.Id == academy);
-            originalModules = tenant.EnabledModulesJson; tenant.EnabledModulesJson = "[]";
+            originalModules = tenant.EnabledModulesJson; originalZone = tenant.TimeZone; tenant.EnabledModulesJson = "[]"; tenant.TimeZone = "Asia/Kolkata";
             var course = new ProgramCourse { AcademyId = academy, Name = "Synthetic query course" }; db.Courses.Add(course);
             var teacher = new Teacher { AcademyId = academy, FirstName = "Synthetic Query", LastName = "Teacher", EmployeeCode = "QA-QUERY-T", Specialties = "Piano", Email = "private-query@example.invalid" };
             var student = new Student { AcademyId = academy, FirstName = "Synthetic Query", LastName = "Student", StudentNumber = "QA-QUERY-S" };
             var batch = new Batch { AcademyId = academy, CourseId = course.Id, Name = "Synthetic Query Batch", TeacherId = teacher.Id };
-            db.Teachers.AddRange(teacher, new Teacher { AcademyId = foreignAcademy, FirstName = "Synthetic Query", LastName = "Teacher", Specialties = "Piano" });
+            var foreignTeacher=new Teacher { AcademyId = foreignAcademy, FirstName = "Synthetic Query", LastName = "Teacher", Specialties = "Piano" };
+            db.Teachers.AddRange(teacher, foreignTeacher);
             var foreignStudent = new Student { AcademyId = foreignAcademy, FirstName = "Synthetic Query", LastName = "Foreign Student" };
-            db.Students.AddRange(student, foreignStudent); db.Batches.Add(batch);
+            var foreignCourse=new ProgramCourse { AcademyId=foreignAcademy,Name="Foreign Query Course" };
+            var foreignBatch=new Batch { AcademyId=foreignAcademy,CourseId=foreignCourse.Id,Name="Synthetic Query Foreign" };
+            db.Courses.Add(foreignCourse); db.Students.AddRange(student, foreignStudent); db.Batches.AddRange(batch,foreignBatch);
+            var start = new DateTime(2026,11,23,18,30,0,DateTimeKind.Utc);
+            var calendar = new ClassSession { AcademyId=academy,BatchId=batch.Id,TeacherId=teacher.Id,StartUtc=start,EndUtc=start.AddHours(1),DeliveryMode="Hybrid",RoomName="private-query-room" };
+            calendarId=calendar.Id;
+            db.ClassSessions.AddRange(calendar,
+                new ClassSession { AcademyId=foreignAcademy,BatchId=foreignBatch.Id,TeacherId=foreignTeacher.Id,StartUtc=start,EndUtc=start.AddHours(1) },
+                new ClassSession { AcademyId=academy,BatchId=foreignBatch.Id,TeacherId=teacher.Id,StartUtc=start,EndUtc=start.AddHours(1) },
+                new ClassSession { AcademyId=academy,BatchId=batch.Id,TeacherId=foreignTeacher.Id,StartUtc=start,EndUtc=start.AddHours(1) },
+                new ClassSession { AcademyId=academy,BatchId=batch.Id,TeacherId=teacher.Id,StartUtc=start.AddDays(1),EndUtc=start.AddDays(1).AddHours(1) },
+                new ClassSession { AcademyId=academy,BatchId=batch.Id,TeacherId=teacher.Id,StartUtc=start.AddMinutes(-1),EndUtc=start.AddMinutes(59) });
+            for(var index=0;index<12;index++) db.ClassSessions.Add(new ClassSession { AcademyId=academy,BatchId=batch.Id,TeacherId=teacher.Id,
+                StartUtc=start.AddDays(1).AddMinutes(index+1),EndUtc=start.AddDays(1).AddMinutes(index+61) });
             var invoice = new Invoice { AcademyId = academy, StudentId = student.Id, InvoiceNumber = "QA-Q-INR", TotalAmount = 1000m };
             db.Invoices.AddRange(invoice,
                 new Invoice { AcademyId = academy, StudentId = student.Id, InvoiceNumber = "QA-Q-USD", TotalAmount = 0.01m, Currency = "USD" },
@@ -89,6 +103,7 @@ internal static partial class SqlHarnessEntryPoint
         async Task<string> Snapshot() {
             await using var scope = factory.Services.CreateAsyncScope(); var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
             return JsonSerializer.Serialize(new { students = await db.Students.CountAsync(), teachers = await db.Teachers.CountAsync(), batches = await db.Batches.CountAsync(),
+                sessions=await db.ClassSessions.OrderBy(x=>x.Id).Select(x=>new { x.Id,x.StartUtc,x.EndUtc,x.Status,x.TeacherId }).ToArrayAsync(),
                 payments = await db.Payments.CountAsync(), total = await db.Payments.SumAsync(x => x.Amount),
                 invoices = await db.Invoices.CountAsync(), billed = await db.Invoices.SumAsync(x => x.TotalAmount), adjusted = await db.Invoices.SumAsync(x => x.AdjustedAmount) });
         }
@@ -140,13 +155,13 @@ internal static partial class SqlHarnessEntryPoint
         using (var health = await client.GetAsync(root + "/health")) {
             RequireFinanceStatus(health, HttpStatusCode.OK, "directory-only query catalog");
             var value = await health.Content.ReadFromJsonAsync<JsonElement>();
-            Check(value.GetProperty("tools").GetArrayLength() == 6 && !value.GetProperty("tools").EnumerateArray().Any(x => x.GetProperty("entity").GetString() == "student-fees"), "Finance tool appeared without Finance module.");
+            Check(value.GetProperty("tools").GetArrayLength() == 8 && !value.GetProperty("tools").EnumerateArray().Any(x => x.GetProperty("entity").GetString() == "student-fees"), "Finance tool appeared without Finance module.");
         }
         await using (var scope = factory.Services.CreateAsyncScope()) {
             var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
             (await db.Academies.SingleAsync(x => x.Id == academy)).EnabledModulesJson = "[\"Finance\"]"; await db.SaveChangesAsync();
         }
-        planner.ExpectedTools = 8;
+        planner.ExpectedTools = 10;
         var moneySession = await Create();
         var money = await Turn(moneySession, 0, "Show outstanding student fees", "student-fees");
         var balances = money.Result?.Records.Single().Balances;
@@ -177,7 +192,7 @@ internal static partial class SqlHarnessEntryPoint
             var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
             (await db.Academies.SingleAsync(x => x.Id == academy)).EnabledModulesJson = "[]"; await db.SaveChangesAsync();
         }
-        planner.ExpectedTools = 6;
+        planner.ExpectedTools = 8;
         using (var denied = await client.GetAsync(Turns(moneySession) + $"/{followup.RequestId:D}")) {
             RequireFinanceStatus(denied, HttpStatusCode.Forbidden, "revoked finance receipt");
             Check(planner.Calls == calls, "Finance revocation invoked the model.");
@@ -185,6 +200,40 @@ internal static partial class SqlHarnessEntryPoint
         var teacherAfterRevocation = await Create();
         var teacherRead = await Turn(teacherAfterRevocation, 0, "Show teachers", "teacher");
         Check(teacherRead.Result?.Entity == "teacher" && teacherRead.Result.Records.Single().Balances is null, "Revoking Finance broke or polluted unrelated teacher reads.");
+        var calendarSession=await Create();
+        planner.Plan=new(PentaQueryContract.Version,"search","session",new() { ["from"]="2026-11-24",["name"]="Synthetic Query",["teacher"]="Synthetic Query" },null);
+        PentaQueryTurnReceipt calendarReceipt;
+        using (var response=await client.PostAsJsonAsync(Turns(calendarSession),new PentaTaskTurnInput(Guid.NewGuid(),0,"Show teacher Synthetic Query's classes on 2026-11-24"))) {
+            RequireFinanceStatus(response,HttpStatusCode.Created,"calendar protected read");
+            calendarReceipt=(await response.Content.ReadFromJsonAsync<PentaQueryTurnReceipt>())!;
+            var row=calendarReceipt.Result?.Records.Single();
+            Check(row?.Id==calendarId && row.Schedule?.StartUtc==new DateTime(2026,11,23,18,30,0,DateTimeKind.Utc) && row.Schedule.Teacher=="Synthetic Query Teacher" &&
+                row.Schedule.DeliveryMode=="Hybrid" && row.Schedule.Status=="Scheduled", "Calendar boundary, relational teacher or delivery mode was wrong.");
+            Check(calendarReceipt.Context.Filters["from"]=="2026-11-24" && calendarReceipt.Context.Filters["through"]=="2026-11-24" &&
+                calendarReceipt.Result!.CalendarScope?.TimeZone=="Asia/Kolkata" && !JsonSerializer.Serialize(calendarReceipt).Contains("private-query"), "Calendar scope drifted or private room/contact leaked.");
+        }
+        calls=planner.Calls;
+        using (var recovered=await client.GetAsync(Turns(calendarSession)+$"/{calendarReceipt.RequestId:D}")) {
+            RequireFinanceStatus(recovered,HttpStatusCode.OK,"calendar GET-only recovery");
+            Check((await recovered.Content.ReadFromJsonAsync<PentaQueryTurnReceipt>())?.Result?.Records.Single().Id==calendarId && planner.Calls==calls,"Calendar recovery redispatched planner or changed source.");
+        }
+        var calendarOpen=await Turn(calendarSession,1,"Open result 1","session","open",1);
+        Check(calendarOpen.Result?.Records.Single().Id==calendarId && calendarOpen.Context.Filters["from"]=="2026-11-24","Calendar ordinal lost current host IDs or pinned dates.");
+        var calendarPage=await Create();
+        planner.Plan=new(PentaQueryContract.Version,"search","session",new() { ["from"]="2026-11-25",["name"]="Synthetic Query" },null);
+        using(var response=await client.PostAsJsonAsync(Turns(calendarPage),new PentaTaskTurnInput(Guid.NewGuid(),0,"Show classes on 2026-11-25"))) {
+            RequireFinanceStatus(response,HttpStatusCode.Created,"bounded calendar page");
+            var result=await response.Content.ReadFromJsonAsync<PentaQueryTurnReceipt>();
+            Check(result?.Result is { HasMore:true,Records.Length:10 } && result.Message.Contains("first 10") && result.Message.Contains("more exist"),"Truncated calendar appeared complete.");
+        }
+        var wrongCalendar=await Turn(calendarSession,2,"Show the teacher calendar","teacher");
+        Check(wrongCalendar.Kind=="ERROR" && wrongCalendar.Result is null,"Calendar request became a teacher directory answer.");
+        var invalidRangeSession=await Create();
+        planner.Plan=new(PentaQueryContract.Version,"search","session",new() { ["from"]="2026-11-01",["through"]="2026-12-02" },null);
+        using(var response=await client.PostAsJsonAsync(Turns(invalidRangeSession),new PentaTaskTurnInput(Guid.NewGuid(),0,"Show classes"))) {
+            RequireFinanceStatus(response,HttpStatusCode.Created,"invalid calendar range receipt");
+            Check((await response.Content.ReadFromJsonAsync<PentaQueryTurnReceipt>())?.Kind=="ERROR","Unbounded calendar dates executed.");
+        }
         // Claims must commit before generation; pending concurrency/recovery may
         // never dispatch another planner call or return incomplete private facts.
         var pending = await Create(); planner.Plan = new(PentaQueryContract.Version, "search", "teacher", [], null);
@@ -220,7 +269,7 @@ internal static partial class SqlHarnessEntryPoint
         } finally {
             fault.Enabled = false; planner.Release?.TrySetResult(true);
             await using var scope = factory.Services.CreateAsyncScope(); var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
-            (await db.Academies.SingleAsync(x => x.Id == academy)).EnabledModulesJson = originalModules; await db.SaveChangesAsync();
+            var tenant=await db.Academies.SingleAsync(x => x.Id == academy); tenant.EnabledModulesJson = originalModules; tenant.TimeZone=originalZone; await db.SaveChangesAsync();
         }
     }
 }

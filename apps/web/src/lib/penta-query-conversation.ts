@@ -5,14 +5,15 @@ import { validMiniMoneyAmount } from "./penta-mini-conversation";
 
 export const queryPointerKey = "academydesk.penta.query-recovery.v1";
 export const queryProtocol = "academy-query.v1";
-export type QueryEntity = "teacher" | "student" | "batch" | "student-fees";
+export type QueryEntity = "teacher" | "student" | "batch" | "student-fees" | "session";
 export const queryBalanceScope = "All outstanding fees for each student; subject filters select students, not course-specific invoices.";
-export const queryEntityLabel = (entity: QueryEntity) => entity === "student-fees" ? "student balances" : entity === "batch" ? "batches" : entity + "s";
+export const queryEntityLabel = (entity: QueryEntity) => entity === "student-fees" ? "student balances" : entity === "session" ? "class calendar" : entity === "batch" ? "batches" : entity + "s";
 type QueryContext = { entity: QueryEntity | null; filters: Record<string, string>; resultIds: string[] };
 export type QueryReceipt = { conversationId: string; requestId: string; version: number; kind: string; message: string;
   context: QueryContext; result: { entity: QueryEntity; records: { id: string; label: string; code: string | null; active: boolean; subjects: string[]; sourcePath: string;
-    balances?: { currency: string; outstandingExact: string }[] }[];
-    hasMore: boolean; asOfUtc: string; balanceScope?: string } | null; inputText: string; protocol: typeof queryProtocol };
+    balances?: { currency: string; outstandingExact: string }[];
+    schedule?: { startUtc: string; endUtc: string; deliveryMode: string; status: string; teacher: string | null } }[];
+    hasMore: boolean; asOfUtc: string; balanceScope?: string; calendarScope?: { timeZone: string; from: string; through: string } } | null; inputText: string; protocol: typeof queryProtocol };
 export type QueryView = { phase: "checking" | "unavailable" | "ready" | "idle" | "unknown" | "closed";
   available: boolean; pending: boolean; session: PentaSession | null; pointer: MiniPointer | null;
   turns: QueryReceipt[]; notice: string; entities: QueryEntity[]; hasMore: boolean };
@@ -21,13 +22,34 @@ export const initialQueryView: QueryView = { phase: "checking", available: false
 const object = (v: unknown): v is Record<string, unknown> => v !== null && typeof v === "object" && !Array.isArray(v);
 const exact = (v: Record<string, unknown>, keys: string[]) => Object.keys(v).length === keys.length && keys.every(k => Object.hasOwn(v, k));
 const id = (v: unknown): v is string => typeof v === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(v) && v !== "00000000-0000-0000-0000-000000000000";
-const entity = (v: unknown): v is QueryEntity => v === "teacher" || v === "student" || v === "batch" || v === "student-fees";
+const entity = (v: unknown): v is QueryEntity => v === "teacher" || v === "student" || v === "batch" || v === "student-fees" || v === "session";
 const text = (v: unknown, max: number): v is string => typeof v === "string" && v.length > 0 && v.length <= max && !/[\u0000-\u001f\u007f-\u009f]/.test(v);
 const version = (v: unknown): v is number => Number.isSafeInteger(v) && Number(v) >= 0 && Number(v) <= 50;
 const date = (v: unknown): v is string => typeof v === "string" && /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d{1,7})?Z$/.test(v) &&
   Number.isFinite(Date.parse(v)) && new Date(v).toISOString().slice(0, 19) === v.slice(0, 19);
-const path = (e: QueryEntity, value: string) => e === "teacher" ? `/teacher-profile?teacherId=${value}` : e === "student" || e === "student-fees" ? `/student-management?studentId=${value}` : "/batch-setup";
-const fields = (e: QueryEntity) => e === "teacher" ? ["name", "subject", "status"] : e === "student-fees" ? ["name", "subject", "balance_status"] : ["name", "status"];
+const path = (e: QueryEntity, value: string) => e === "teacher" ? `/teacher-profile?teacherId=${value}` : e === "student" || e === "student-fees" ? `/student-management?studentId=${value}` : e === "session" ? "/schedule" : "/batch-setup";
+const fields = (e: QueryEntity) => e === "teacher" ? ["name", "subject", "status"] : e === "student-fees" ? ["name", "subject", "balance_status"] : e === "session" ? ["name", "teacher", "from", "through", "status"] : ["name", "status"];
+const calendarDate = (v: unknown): v is string => typeof v === "string" && /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(v) &&
+  v >= "0001-01-01" && v < "9999-01-01" && date(`${v}T00:00:00Z`);
+const sessionStatus = (v: unknown) => ["Scheduled", "InProgress", "Completed", "Cancelled", "Rescheduled"].includes(String(v));
+function calendarFilters(v: Record<string, unknown>) {
+  if (!Object.entries(v).every(([k, x]) => text(x,100) && (k === "name" || k === "teacher" || k === "status" && sessionStatus(x) ||
+    k === "from" && (["Today", "Tomorrow", "Yesterday", "Next7Days"].includes(x) || calendarDate(x)) || k === "through" && calendarDate(x)))) return false;
+  return !("through" in v) || calendarDate(v.from) && calendarDate(v.through) && v.from <= v.through && Date.parse(v.through) - Date.parse(v.from) < 31 * 86400000;
+}
+function calendarScope(v: unknown): v is { timeZone: string; from: string; through: string } {
+  if (!object(v) || !exact(v,["timeZone","from","through"]) || !text(v.timeZone,100) || !calendarDate(v.from) || !calendarDate(v.through) ||
+    v.from > v.through || Date.parse(v.through) - Date.parse(v.from) >= 31 * 86400000) return false;
+  try { new Intl.DateTimeFormat("en",{timeZone:v.timeZone}).format(); return true; } catch { return false; }
+}
+function calendarRow(v: unknown, scope: unknown) {
+  if (!object(v) || !exact(v,["startUtc","endUtc","deliveryMode","status","teacher"]) || !date(v.startUtc) || !date(v.endUtc) ||
+    Date.parse(v.startUtc) >= Date.parse(v.endUtc) || !["InPerson","Online","Hybrid"].includes(String(v.deliveryMode)) ||
+    !sessionStatus(v.status) || v.teacher !== null && !text(v.teacher,240) || !calendarScope(scope)) return false;
+  const parts = new Intl.DateTimeFormat("en",{timeZone:scope.timeZone,year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date(v.startUtc));
+  const day = ["year","month","day"].map(type=>parts.find(p=>p.type===type)?.value.padStart(type==="year"?4:2,"0")).join("-");
+  return day >= scope.from && day <= scope.through;
+}
 
 export function validQueryReceipt(v: unknown, session: string): v is QueryReceipt {
   if (!object(v) || !exact(v, ["conversationId", "requestId", "version", "kind", "message", "context", "result", "inputText", "protocol"]) ||
@@ -37,21 +59,23 @@ export function validQueryReceipt(v: unknown, session: string): v is QueryReceip
     !["RESULT", "ERROR", "UNSUPPORTED", "CLARIFICATION_REQUIRED"].includes(String(v.kind)) || !object(v.context)) return false;
   const c = v.context;
   if (!exact(c, ["entity", "filters", "resultIds"]) || c.entity !== null && !entity(c.entity) || !object(c.filters) ||
-    Object.keys(c.filters).length > 3 || !Object.entries(c.filters).every(([k, value]) => text(value, 100) &&
+    Object.keys(c.filters).length > 5 || !(c.entity === "session" ? calendarFilters(c.filters) : Object.entries(c.filters).every(([k, value]) => text(value, 100) &&
       (k === "name" || k === "subject" && (c.entity === "teacher" || c.entity === "student-fees") ||
         k === "balance_status" && c.entity === "student-fees" && ["Pending", "Clear"].includes(value) ||
-        k === "status" && c.entity !== "student-fees" && ["Active", "Inactive"].includes(value))) ||
+        k === "status" && c.entity !== "student-fees" && ["Active", "Inactive"].includes(value)))) ||
     !Array.isArray(c.resultIds) || c.resultIds.length > 10 || !c.resultIds.every(id) || new Set(c.resultIds).size !== c.resultIds.length ||
     c.entity === null && (c.resultIds.length !== 0 || Object.keys(c.filters).length !== 0)) return false;
   if (v.result === null) return v.kind !== "RESULT";
   const r = v.result;
-  if (v.kind !== "RESULT" || !object(r) || !exact(r, ["entity", "records", "hasMore", "asOfUtc", ...(r.entity === "student-fees" ? ["balanceScope"] : [])]) || !entity(r.entity) ||
+  if (v.kind !== "RESULT" || !object(r) || !exact(r, ["entity", "records", "hasMore", "asOfUtc", ...(r.entity === "student-fees" ? ["balanceScope"] : []), ...(r.entity === "session" ? ["calendarScope"] : [])]) || !entity(r.entity) ||
     r.entity === "student-fees" && r.balanceScope !== queryBalanceScope ||
+    r.entity === "session" && (!calendarScope(r.calendarScope) || c.filters.from !== r.calendarScope.from || c.filters.through !== r.calendarScope.through) ||
     r.entity !== c.entity || typeof r.hasMore !== "boolean" || !date(r.asOfUtc) || !Array.isArray(r.records) || r.records.length > 10 ||
     r.records.length !== c.resultIds.length) return false;
-  return r.records.every((row: unknown, index: number) => object(row) && exact(row, ["id", "label", "code", "active", "subjects", "sourcePath", ...(r.entity === "student-fees" ? ["balances"] : [])]) &&
+  return r.records.every((row: unknown, index: number) => object(row) && exact(row, ["id", "label", "code", "active", "subjects", "sourcePath", ...(r.entity === "student-fees" ? ["balances"] : []), ...(r.entity === "session" ? ["schedule"] : [])]) &&
     id(row.id) && row.id === (c.resultIds as string[])[index] && text(row.label, 240) && (row.code === null || text(row.code, 100)) &&
     typeof row.active === "boolean" && Array.isArray(row.subjects) && row.subjects.length <= (r.entity === "student-fees" ? 5 : 1) && row.subjects.every(x => text(x, 200)) &&
+    (r.entity !== "session" || calendarRow(row.schedule, r.calendarScope) && object(row.schedule) && row.active === ["Scheduled","InProgress"].includes(String(row.schedule.status))) &&
     (r.entity !== "student-fees" || Array.isArray(row.balances) && row.balances.length <= 20 && row.balances.every(b => object(b) &&
       exact(b, ["currency", "outstandingExact"]) && typeof b.currency === "string" && /^[A-Z]{3}$/.test(b.currency) && validMiniMoneyAmount(b.outstandingExact)) &&
       new Set(row.balances.map(b => b.currency)).size === row.balances.length) &&
@@ -122,7 +146,7 @@ export function createQueryConversation(channel: MiniChannel, storage: () => Sto
       try {
         const health = await call("/health", "GET");
         if (!object(health) || !exact(health, ["protocol", "readOnly", "tools", "status"]) || health.protocol !== queryProtocol || health.readOnly !== true ||
-          !["Available", "Unavailable"].includes(String(health.status)) || !Array.isArray(health.tools) || health.tools.length > 8 ||
+          !["Available", "Unavailable"].includes(String(health.status)) || !Array.isArray(health.tools) || health.tools.length > 10 ||
           !health.tools.every(x => object(x) && exact(x, ["key", "entity", "kind", "readOnly", "fields"]) && entity(x.entity) && ["search", "open"].includes(String(x.kind)) &&
             x.key === `AcademyDesk.${x.entity}.${x.kind}` && x.readOnly === true && Array.isArray(x.fields) &&
             x.fields.length === fields(x.entity).length && new Set(x.fields).size === x.fields.length &&

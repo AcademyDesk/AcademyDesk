@@ -1,5 +1,29 @@
 # Academy Desk handoff
 
+## D69 connected calendar reads — 24 November 2026
+
+- [x] Class/calendar search and same-class opening now share the query catalog,
+  context, composer/history and audited recovery. Current stored Owner/Admin and
+  Core permission remain required. Typed scoped class/batch/teacher joins, exact
+  date range, academy-zone conversion and pinned dates replace model UTC math.
+- [x] Dates limited31days; default next7localdays disclosed, truncated first10
+  disclosed. Verified times/status/mode/teacher shown in academy time zone; no
+  room/contact/meeting links or money. Teacher/batch directory substitution,
+  student-enrollment inference and scheduling/attendance mutations refused.
+- [x]304affected .NET (24new);260Mini Linux model-free (16new);163client (12new,
+  plus retained35portal-boundary cases);31native query SQL/Identity/API;52browser
+  checks; cached Next16.4.5 build/typecheck/export92pages and lint pass.
+- [x]Mini a36b4636e5afd8cf2e877d7fa2b59b41b2cbcafe published and CI pinned; native
+  CI guard raised31. D68 ordinary exact-source CI passed2,754API/locked npm-ci/
+  audit0/full build and SQL24; current D69 exact CI still required separately.
+- [ ] Paired Actions private-source secret and genuine Mini archives remain
+  blockers. No model load/inference/activation or all-role/product qualification.
+  Query defaults OFF, BUG-AI-0001 OPEN. Next attendance/remaining domain readers,
+  real-model acceptance, protected compound execution and remaining release gates.
+  Keep Sol High. Main/Azure/original evidence/unrelated scaffolds unchanged.
+
+[D69 exact evidence and boundaries](QA/REPORTS/D69_CONNECTED_CALENDAR_READS_2026-11-24.md)
+
 ## D68 connected student balances — 24 November 2026
 
 - [x] Same query conversation now supports permission-bound student-fees search/

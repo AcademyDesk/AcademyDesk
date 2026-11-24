@@ -112,3 +112,25 @@ for (const [name, tamper] of [
   ['private ledger data', v => { v.result.records[0].balances[0].bankReference = 'private'; }],
   ['overflow', v => { v.result.records[0].balances[0].outstandingExact = '79228162514264337593543950335.01'; }],
 ]) test(`reject financial ${name} before rendering`, () => { const value = financial(); tamper(value); a.equal(lib.validQueryReceipt(value, conversation), false); });
+
+function calendar() {
+  const value=receipt(id(10),0,'Show classes today','session');
+  value.context.filters={from:'2026-11-24',through:'2026-11-24'};
+  value.result.calendarScope={timeZone:'Asia/Kolkata',from:'2026-11-24',through:'2026-11-24'};
+  Object.assign(value.result.records[0],{sourcePath:'/schedule',schedule:{startUtc:'2026-11-23T18:30:00Z',endUtc:'2026-11-23T19:30:00Z',deliveryMode:'Hybrid',status:'Scheduled',teacher:'Nisha Synthetic'}});
+  return value;
+}
+test('calendar receipt retains exact UTC times with verified academy-local date scope',()=>a.equal(lib.validQueryReceipt(calendar(),conversation),true));
+for(const [name,tamper] of [
+  ['untrusted time zone',v=>{v.result.calendarScope.timeZone='unknown-zone';}],
+  ['reversed time',v=>{v.result.records[0].schedule.endUtc='2026-11-23T17:30:00Z';}],
+  ['outside local day',v=>{v.result.records[0].schedule.startUtc='2026-11-24T18:30:00Z';v.result.records[0].schedule.endUtc='2026-11-24T19:30:00Z';}],
+  ['impossible date',v=>{v.result.calendarScope.from='2026-02-30';}],
+  ['drifting context',v=>{v.context.filters.from='Today';}],
+  ['non-domain status',v=>{v.result.records[0].schedule.status='Active';}],
+  ['false active',v=>{v.result.records[0].active=false;}],
+  ['foreign private field',v=>{v.result.records[0].schedule.meetingLink='private';}],
+  ['missing scope',v=>{delete v.result.calendarScope;}],
+  ['foreign money',v=>{v.result.records[0].balances=[];}],
+  ['unsafe destination',v=>{v.result.records[0].sourcePath='/teacher-profile';}],
+]) test(`reject calendar ${name} before rendering`,()=>{const v=calendar();tamper(v);a.equal(lib.validQueryReceipt(v,conversation),false);});
