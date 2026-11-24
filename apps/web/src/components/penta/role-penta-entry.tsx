@@ -7,7 +7,7 @@ import { academyApi, portalAccessToken, portalSessionEpoch, type PortalWorkspace
 import { validWorkspaceAccount, workspaceHomes } from "@/lib/workspace-entry";
 import { validPentaAccount } from "@/lib/penta-chat-contract";
 import FinanceChat from "./finance-chat";
-import MiniConversation from "./mini-conversation";
+import AcademyConversation from "./academy-conversation";
 import TeacherAttendanceConversation from "./teacher-attendance-conversation";
 import PortalConversation from "./portal-conversation";
 import PentaWorkspaceShell from "./penta-workspace-shell";
@@ -57,7 +57,7 @@ export default function RolePentaEntry({ workspace }: { workspace: RoleWorkspace
   const miniEvaluation = state === "verified" && financeAcademy !== null && process.env.NEXT_PUBLIC_PENTA_MINI_EVALUATION === "true";
   return <PentaWorkspaceShell workspace={workspace} verified={state === "verified"} miniEvaluation={miniEvaluation}
     workflows={state === "verified" && financeAcademy ? <><Link href="/penta/enrollments">Enrollment assistant</Link><Link href="/penta/onboarding">Student onboarding</Link><Link href="/penta/teachers/chat">Teacher onboarding</Link><Link href="/penta/scheduling">Class scheduling</Link></> : undefined}>
-      {miniEvaluation && financeAcademy && <MiniConversation key={financeAcademy + "-mini"} academyId={financeAcademy} />}
+      {miniEvaluation && financeAcademy && <AcademyConversation key={financeAcademy + "-mini"} academyId={financeAcademy} />}
       {state === "verified" && financeAcademy
         ? miniEvaluation
           ? <details className={styles.guided}><summary>More supported workflows <small>Host-guided</small></summary><FinanceChat key={financeAcademy} academyId={financeAcademy} fallback={fallback} /></details>

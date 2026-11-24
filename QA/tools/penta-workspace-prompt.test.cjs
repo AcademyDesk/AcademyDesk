@@ -48,9 +48,19 @@ test('a scheduling message opens a request for review rather than approving or s
   assert.deepEqual(prompt('Schedule a class for Piano', null).request, { kind: 'create', query: 'Piano' });
   assert.deepEqual(prompt('Reschedule a class for Piano', null).request, { kind: 'move', query: 'Piano' });
   assert.equal(prompt('Schedule a class', null).kind, 'clarify');
-  assert.equal(prompt('Approve the schedule', null).kind, 'finance');
+  assert.equal(prompt('Approve the schedule', null).kind, 'clarify');
 });
 test('existing finance prompts stay with the separately authorized finance endpoint', () => {
   assert.equal(prompt('Show recent expenses', context).kind, 'finance');
   assert.equal(prompt('Show overdue invoices', null).kind, 'finance');
+});
+
+test('unconnected domains and compound actions never silently become finance', () => {
+  for (const text of ['Show the teachers in my academy.', 'Find teacher Nisha', 'I said teachers',
+    'Show teacher attendance today', 'Create a student and a batch and enroll the student',
+    'Delete a teacher', 'Show the support queue', 'What homework is due?', 'Show payroll and email everybody']) {
+    const result = prompt(text, context);
+    assert.equal(result.kind, 'clarify', text);
+    assert.match(result.message, /no finance read or action was run/);
+  }
 });

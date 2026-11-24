@@ -2,7 +2,7 @@
 
 | Field | Value |
 | --- | --- |
-| Status | OPEN — default-off foundation implemented; live semantic repair/acceptance pending |
+| Status | OPEN — typed query wiring/SQL/browser checks pass; real-model semantic acceptance pending |
 | Priority | P1 / blocker for AI-first product acceptance |
 | Source | 29f908a494f2c0919cd1b5a29175c72735eee895 |
 | Confirmation | Owner screenshot plus real cached Mini / Identity / SQL |
@@ -24,6 +24,11 @@ browser conversation, ledger or domain records. The already-authorized running
 cached model was used; no download, model replacement or Azure action occurred.
 
 ## Root causes verified in current source
+
+Historical reproduced source is described below. D66 confirmed the wider missing
+catalog/result/history/dispatch connections. D67 adds the first connected typed
+query slice and legacy/guided routing guards; the all-portal/model requirement
+remains OPEN, not repaired merely by a model swap.
 
 - `PentaMiniProtocol.cs`: Available exposes only SearchLearners/GetLearner;
   MiniState stores learner IDs and learner query filters only.
@@ -90,3 +95,17 @@ this issue.4Bartifact verified only; comparison requires owner approval under
 the existing loading stop. Missing authorized read/context/grounded-answer and
 full operational integration remain separate host gaps. Keep OPEN; see
 QA/REPORTS/D64_NATIVE_ROUTING_AND_DEMO_RECOVERY_2026-11-24.md.
+
+## D67 integration correction — 24 November 2026
+
+Typed teacher/student/batch search/open now have a current-authority host catalog,
+real scoped readers, protected context/history/recovery and a negotiated main
+composer. Unknown guided prompts no longer go to Finance; legacy known unsupported
+domains cannot become successful learner reads.264host tests,237model-free Mini,
+106client/parser assertions,16real SQL/Identity/API query checks and8query/36shell
+synthetic browser cases pass. No real model was invoked in this batch; queries
+remain default-off. The actual connected held-out teacher/correction/follow-up
+journey plus remaining operational coverage are still required to close this
+issue. See QA/REPORTS/D67_CONNECTED_QUERY_PIPELINE_2026-11-24.md. Earlier4Bapproval-
+pending text above is historical; the single approved comparison completed and
+failed before this integration correction, without activation.

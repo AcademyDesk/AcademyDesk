@@ -24,6 +24,26 @@ implementation order below; the D59 failure evidence remains accurate.
 
 ## D62 implementation checkpoint — 23 November 2026
 
+### D67 connected query progress — 24 November 2026
+
+- [x] Shared versioned host catalog, typed readers/results for teacher/student/batch
+  search/open, encrypted history/GET recovery and current-authority atomic audit;
+  main composer negotiates the actual host protocol. Unknown guided requests no
+  longer fall through to Finance; legacy mismatched domains fail closed.
+- [x]264affected host,237model-free Mini,106client/parser,16native query checks,
+  existing foundation/migrations,8query +36shell browser checks pass. Screenshots
+  found/fixed composer overlap. Source wiring and synthetic-provider acceptance
+  are distinct from actual model-backed business outcomes.
+- [ ] Real-model qualification, finance/calendar/attendance and remaining-family
+  catalog bindings, protected task approval/execution and all-role parity.
+  Query defaults OFF, 90% target unmeasured, BUG-AI-0001 OPEN; no Azure release.
+- [ ] Exact locked dependencies/paired CI/private archives and original enterprise
+  gates remain. Next16.4.5 compatibility export is not a locked-install release pass.
+
+Read QA/REPORTS/D67_CONNECTED_QUERY_PIPELINE_2026-11-24.md. D64's comparison-
+approval note below is historical: that single4Bpacket completed and failed;
+no additional model experiment was authorized or run by D67.
+
 ### D64 investigation update — 24 November 2026
 
 - [x] Native tool-format/context/lease/strict-response adapter and207model-free

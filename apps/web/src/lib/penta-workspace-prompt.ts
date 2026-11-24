@@ -33,5 +33,13 @@ export function workspacePrompt(input: string, context: AcademicSearch | null): 
     try { return { kind: "schedule", request: schedulingPrompt(text), text }; }
     catch { return { kind: "clarify", message: "Which batch? Try “Schedule a class for Piano” or “Reschedule a class for Piano”." }; }
   }
-  return { kind: "finance" };
+  // This guided parser is not a general AI classifier. Unknown domains must
+  // never be dispatched to Finance merely because no earlier expression matched.
+  const normalized = text.replace(/[?.]+$/, "").replace(/ +/g, " ").toLowerCase();
+  if (new Set(["finance overview", "show finance overview", "show the finance overview",
+    "collections", "show collections", "show overdue invoices", "expenses", "show expenses",
+    "show recent expenses", "payroll", "show payroll", "show recent payroll"]).has(normalized) ||
+    /^show (?:invoice|reconciliation) [0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(normalized))
+    return { kind: "finance" };
+  return { kind: "clarify", message: "That request is not connected to this guided workflow. Use the main PENTA conversation or the matching Manual workspace; no finance read or action was run." };
 }

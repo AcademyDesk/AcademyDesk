@@ -1,5 +1,35 @@
 # AcademyDesk QA control centre — Phase 1
 
+## D67 connected queries — 24 November 2026
+
+- [x]264affected host tests;237Mini model-free checks; actual C# request parsed by
+  Python;106client/parser checks;16new actual SQL/Identity/API read checks with
+  retained foundation/migrations/owned cleanup;8query +36shell browser cases.
+- [x] Routing/context/result wiring for six teacher/student/batch reads, encrypted
+  history/recovery, current authority and mandatory audit. Composer overlap found
+  visually and fixed with geometry regression. No domain writes enabled.
+- [ ] Real-model and combined browser/SQL outcome acceptance, remaining roles/
+  domains, task execution, exact locked dependencies/CI and original release gates.
+  Compatibility export uses current Next16.4.5 cache, not an accepted locked install.
+
+[D67 source and evidence limits](REPORTS/D67_CONNECTED_QUERY_PIPELINE_2026-11-24.md)
+
+## D65/D66 — model comparison and integration diagnosis, 24 November 2026
+
+- [x] Approved 4B packet: 1/2 executed passed, seven unrun, FAILED semantic
+  acceptance; no activation/domain execution, originals restored at completion.
+- [x] Read-only source trace exposes two-tool learner-only live chat, separate
+  guided workflows, disconnected draft task planner and incomplete all-portal
+  mappings. Four teacher prompts/one compound prompt hit guided finance fallback.
+- [x] 89 narrow parser/client assertions pass with existing cached TypeScript;
+  this does not qualify broad conversation. Direct initial module loading failed
+  in this worktree. Fresh live/API/SQL checks blocked by offline demo/Docker.
+- [ ] Implement the D66 catalog/context/dispatch corrections and real outcome
+  acceptance after the requested diagnosis review; no model swap is a wiring fix.
+
+[D65 results](REPORTS/D65_FOURB_COMPARISON_2026-11-24.md) ·
+[D66 diagnosis and 30-family map](REPORTS/D66_PENTA_INTEGRATION_DIAGNOSIS_2026-11-24.md)
+
 ## D64 native routing and local restoration — 24 November 2026
 
 - [x]207current Mini model-free cases pass. Real cached2Bsemantic packets FAIL;

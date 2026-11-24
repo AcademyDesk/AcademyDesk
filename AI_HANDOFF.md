@@ -1,5 +1,51 @@
 # Academy Desk handoff
 
+## D67 connected entity-aware query pipeline — 24 November 2026
+
+- [x] Six typed teacher/student/batch reads, current stored authority/module scope,
+  encrypted context/history, durable claims, atomic audit and GET-only recovery.
+  Main composer negotiates the actual query host; legacy/guided paths retained.
+- [x] Corrected unknown->Finance routing and guarded legacy wrong-domain reads.
+  Screenshots exposed composer overlap; fixed independent transcript scrolling
+  and added geometry assertions. Shared light/dark shell and Manual remain.
+- [x]264affected .NET (44new),237Mini Linux model-free (30new), actual C#->Python
+  vector,106client/parser,16real SQL/Identity/HTTP query checks + existing protected
+  foundation/migrations/cleanup,8query and36shell browser cases pass. Counts are
+  different layers, not a product completion percentage. Synthetic planners/APIs
+  do NOT establish real-model semantics or a combined SQL/browser conversation.
+- [x]Next16.4.5 cached compatibility build/typecheck/export passes. Current locked
+  dependency-tree validation remains OPEN; cached dev/optional packages differ.
+- [x]Mini source published30b88db356d3e22653dca706ffb4212c7bf37cb6. Paired CI pins
+  it; ordinary CI requires the actual query SQL packet. Required private access
+  job remains enforced, and no deployment workflow was dispatched.
+- [ ] No real model call/load/activation; query defaults OFF and BUG-AI-0001 OPEN.
+  Next: qualify the connected model contract, extend finance/calendar/attendance,
+  bind protected task execution, then remaining roles/domains and release gates.
+  Keep Sol High. No main/Azure/production data or unrelated scaffolds changed.
+
+[D67 implementation, actual evidence and remaining scope](QA/REPORTS/D67_CONNECTED_QUERY_PIPELINE_2026-11-24.md)
+
+## D65 comparison and D66 read-only integration diagnosis — 24 November 2026
+
+- [x] Owner-approved single bounded 4B comparison completed: 1/2 executed passed,
+  seven unrun; teacher read selected teacher creation in a write-only selector.
+  No domain execution/activation; original inventory restored at test completion.
+  D64's approval-pending statement is historical for this completed packet only.
+- [x] Diagnosed current frontend/host/Mini source at Academy 3540c978 and Mini
+  d9c3d755. Live free-text path has only learner search/get; result/context contracts
+  are learner-only. Guided adapters and new disabled draft planner are separate.
+- [x] Actual guided parser sends four teacher examples and compound onboarding to
+  finance fallback. Existing narrow client/parser assertions: 89 passed using an
+  existing cached compiler, with no source/assertion changes. This is not AI/SQL
+  outcome acceptance. Current demo fetch/Docker engine unavailable; no restart or
+  new inference initiated during diagnosis. Earlier live passes remain historical.
+- [ ] Correct unified domain catalog/result/history/dispatch wiring before more
+  model changes. Detailed 30-family gaps and acceptance sequence in D66. No code
+  changed; preserve existing untracked scaffolds and QA/EVIDENCE. No deployment.
+
+[D65 comparison](QA/REPORTS/D65_FOURB_COMPARISON_2026-11-24.md) ·
+[D66 complete diagnosis](QA/REPORTS/D66_PENTA_INTEGRATION_DIAGNOSIS_2026-11-24.md)
+
 ## D64 native-routing diagnostic and demo recovery — 24 November 2026
 
 - [x] Mini inactive adapter published atd9c3d7550194685d4e3572befbc092d25541ff04;

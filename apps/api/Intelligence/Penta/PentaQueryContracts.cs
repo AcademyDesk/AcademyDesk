@@ -1,0 +1,70 @@
+using System.Text.Json.Serialization;
+using System.Text.Json;
+
+namespace AcademyDesk.Api.Intelligence.Penta;
+
+// Entity-aware reads are a separate version. Legacy learner/fee receipts and
+// task drafts retain their original wire contracts and protection purposes.
+[JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
+public sealed record PentaQueryPlan([property: JsonRequired, JsonPropertyName("contract")] string Contract,
+    [property: JsonRequired, JsonPropertyName("kind")] string Kind, [property: JsonRequired, JsonPropertyName("entity")] string? Entity,
+    [property: JsonRequired, JsonPropertyName("filters")] Dictionary<string, string> Filters, [property: JsonRequired, JsonPropertyName("position")] int? Position);
+public sealed record PentaQueryContext(string? Entity, Dictionary<string, string> Filters, Guid[] ResultIds)
+{
+    public static PentaQueryContext Empty => new(null, [], []);
+}
+public sealed record PentaQueryRecord(Guid Id, string Label, string? Code, bool Active,
+    string[] Subjects, string SourcePath);
+public sealed record PentaQueryResult(string Entity, PentaQueryRecord[] Records, bool HasMore, DateTime AsOfUtc);
+public sealed record PentaQueryDecision(string Kind, string Message, PentaQueryContext Context, PentaQueryResult? Result = null);
+public sealed record PentaQueryTurnReceipt(Guid ConversationId, Guid RequestId, long Version, string Kind,
+    string Message, PentaQueryContext Context, PentaQueryResult? Result, string InputText,
+    string Protocol = PentaQueryContract.Version);
+public sealed record PentaQueryHistory(Guid ConversationId, long Version, DateTime ExpiresAtUtc,
+    IReadOnlyList<PentaQueryTurnReceipt> Turns, Guid? PendingRequestId, bool HasMore);
+
+public static class PentaQueryContract
+{
+    public const string Version = "academy-query.v1";
+    internal static JsonElement Request(string text, PentaQueryContext context, IReadOnlySet<string> tools) =>
+        JsonSerializer.SerializeToElement(new { contract = Version, text,
+            context = new { entity = context.Entity, filters = context.Filters,
+                result_labels = Enumerable.Range(1, context.ResultIds.Length).Select(index => "Result " + index).ToArray() },
+            tools = PentaQueryAccess.Describe(tools) });
+    // Adding a name here does not implement a domain. Each descriptor below
+    // has a matching typed host reader and a source controller/module policy.
+    public static readonly IReadOnlyDictionary<string, string> Controllers =
+        new Dictionary<string, string>(StringComparer.Ordinal) {
+            ["teacher"] = "TeachersController", ["student"] = "StudentsController", ["batch"] = "BatchesController" };
+    public static string Tool(string entity, string kind) => $"AcademyDesk.{entity}.{kind}";
+    public static bool ValidContext(PentaQueryContext? value) => value is not null &&
+        ValidFilters(value.Entity, value.Filters) && value.ResultIds is { Length: <= 10 } &&
+        value.ResultIds.All(id => id != Guid.Empty) && value.ResultIds.Distinct().Count() == value.ResultIds.Length &&
+        (value.Entity is not null || value.ResultIds.Length == 0);
+    public static bool ValidFilters(string? entity, Dictionary<string, string>? values) => values is { Count: <= 3 } &&
+        (entity is null ? values.Count == 0 : Controllers.ContainsKey(entity)) && values.All(pair =>
+            pair.Value is { Length: > 0 and <= 100 } && !string.IsNullOrWhiteSpace(pair.Value) && !pair.Value.Any(char.IsControl) &&
+            (pair.Key == "name" || entity == "teacher" && pair.Key == "subject" ||
+             pair.Key == "status" && pair.Value is "Active" or "Inactive"));
+    public static bool ValidPlan(PentaQueryPlan? value) => value is not null && value.Contract == Version &&
+        value.Kind is "search" or "open" or "clarify" or "unsupported" && ValidFilters(value.Entity, value.Filters) &&
+        (value.Kind == "search" ? value.Entity is not null && value.Position is null :
+         value.Kind == "open" ? value.Entity is not null && value.Filters.Count == 0 && value.Position is >= 1 and <= 10 :
+         value.Filters.Count == 0 && value.Position is null);
+    public static string Path(string entity, Guid id) => entity switch {
+        "teacher" => $"/teacher-profile?teacherId={id:D}",
+        "student" => $"/student-management?studentId={id:D}",
+        "batch" => "/batch-setup", _ => throw new ArgumentException("Unknown read entity.") };
+    public static bool ValidReceipt(PentaQueryTurnReceipt? value, Guid session, Guid request, long version) =>
+        value is not null && value.Protocol == Version && value.ConversationId == session && value.RequestId == request &&
+        value.Version == version && version > 0 && value.InputText is { Length: > 0 and <= 2000 } &&
+        value.Message is { Length: > 0 and <= 500 } && ValidContext(value.Context) &&
+        value.Kind is "RESULT" or "ERROR" or "UNSUPPORTED" or "CLARIFICATION_REQUIRED" &&
+        (value.Result is null ? value.Kind != "RESULT" : value.Kind == "RESULT" &&
+         value.Result.Entity == value.Context.Entity && value.Result.Records is { Length: <= 10 } &&
+         value.Result.AsOfUtc.Kind == DateTimeKind.Utc && value.Result.Records.All(row =>
+             row.Id != Guid.Empty && row.Label is { Length: > 0 and <= 240 } && row.Subjects is { Length: <= 1 } &&
+             row.Subjects.All(x => x.Length <= 200) && row.Code is null or { Length: <= 100 } &&
+             row.SourcePath == Path(value.Result.Entity, row.Id)) &&
+         value.Result.Records.Select(x => x.Id).SequenceEqual(value.Context.ResultIds));
+}

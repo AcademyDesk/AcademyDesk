@@ -41,7 +41,7 @@ export default function PentaWorkspaceShell({ workspace, verified, miniEvaluatio
     <button type="button" className={s.navActive} onClick={focusConversation}><PentaGlyph name="chat" />Conversation</button>
     <Link href={workspaceHomes[workspace].manual}><PentaGlyph name="grid" />Manual workspace</Link>
     <button type="button" onClick={() => setOverlay("context")}><PentaGlyph name="panel" />Workspace context</button>
-    <div className={s.sidebarNote}><span className={s.sessionDot} />Current session only<p>Earlier chat history is not connected. Your saved response can be recovered inside the conversation.</p></div>
+    <div className={s.sidebarNote}><span className={s.sessionDot} />Conversation recovery<p>Saved responses and history are available when supported by your connected workspace.</p></div>
     {workflows && <div className={s.workflowLinks}><p className={s.eyebrow}>PROTECTED WORKFLOWS</p>{workflows}</div>}
   </>;
   const context = <>

@@ -195,7 +195,9 @@ public sealed class PentaMiniOrchestrator(AcademyDeskDbContext db, IdentityDbCon
         ConnectorOutcome outcome;
         var valid = PentaMiniTools.ValidPlan(planned.Plan);
         var plan = planned.Plan;
-        if (!valid) outcome = new("ERROR", "PENTA Mini could not prepare a verified response. Your manual workspace remains available.", state);
+        if (PentaLegacyReadGuard.Unsupported(input.Text)) outcome = new("UNSUPPORTED",
+            "This learner-fee pilot cannot answer that domain or action. No learner search or mutation was run. Use the connected PENTA query workspace, guided workflow or Manual.", MiniState.Empty);
+        else if (!valid) outcome = new("ERROR", "PENTA Mini could not prepare a verified response. Your manual workspace remains available.", state);
         else if (plan!.Kind == "TOOL_REQUEST") outcome = await connector.ExecuteAsync(principal, academy, plan.ToolCall!, state, token);
         else outcome = new(plan.Kind, SafeMessage(plan.Kind), state);
         // Never adopt the model's returned state, free prose, risk or record facts.

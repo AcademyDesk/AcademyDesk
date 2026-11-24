@@ -76,7 +76,7 @@ export default function MiniConversation({ academyId }: { academyId: string }) {
       <label htmlFor="private-mini-prompt">Message private Mini</label>
       <div className={styles.financeActions}>
       <textarea id="private-mini-prompt" autoComplete="off" value={prompt} maxLength={2000} disabled={view.pending} rows={2}
-        onChange={e => setPrompt(e.currentTarget.value)} placeholder="Ask about your academy…" onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); if (prompt.trim() && !view.pending) e.currentTarget.form?.requestSubmit(); } }} />
+        onChange={e => setPrompt(e.currentTarget.value)} placeholder="Ask about students and outstanding fees…" onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); if (prompt.trim() && !view.pending) e.currentTarget.form?.requestSubmit(); } }} />
       <button type="submit" disabled={view.pending || !prompt.trim()}><PentaGlyph name="arrow" /><span>Send Mini request</span></button>
       </div>
     </form>}

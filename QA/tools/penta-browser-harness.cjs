@@ -4,7 +4,8 @@ const a = require('node:assert/strict'), fs = require('node:fs'), path = require
 const os = require('node:os'), http = require('node:http');
 const { spawn } = require('node:child_process');
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
-const root = path.resolve(__dirname, '../..'), exported = path.join(root, 'apps/web/out');
+const root = path.resolve(__dirname, '../..'), exported = process.env.QA_PENTA_BROWSER_EXPORT
+  ? path.resolve(process.env.QA_PENTA_BROWSER_EXPORT) : path.join(root, 'apps/web/out');
 const mime = { '.html': 'text/html', '.js': 'application/javascript', '.css': 'text/css', '.txt': 'text/plain',
   '.json': 'application/json', '.svg': 'image/svg+xml', '.ico': 'image/x-icon', '.woff2': 'font/woff2' };
 class CDP {
