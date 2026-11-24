@@ -10,7 +10,8 @@ function load(name, imports = {}) {
 }
 const channel = load('penta-onboarding-channel', { './api': {} });
 const contract = load('penta-chat-contract');
-const lib = load('penta-query-conversation', { './penta-onboarding-channel': channel, './penta-chat-contract': contract });
+const mini = load('penta-mini-conversation', { './penta-onboarding-channel': channel, './penta-chat-contract': contract });
+const lib = load('penta-query-conversation', { './penta-onboarding-channel': channel, './penta-chat-contract': contract, './penta-mini-conversation': mini });
 const id = n => String(n).padStart(8, '0') + '-1111-4111-8111-111111111111';
 const academy = id(1), conversation = id(2), record = id(3), expiry = '2030-01-01T00:00:00Z';
 function receipt(requestId, expectedVersion, text, entity = 'teacher') {
@@ -88,3 +89,26 @@ test('foreign epoch recovery pointers do not leak prior conversation history', a
     requestId: id(10), expectedVersion: 0, expiresAtUtc: expiry })]]);
   const f = fixture({ map }); await f.driver.initialise(); a.equal(f.view.phase, 'ready'); a.equal(f.requests.length, 1); a.equal(map.size, 0);
 });
+
+function financial() {
+  const value = receipt(id(10), 0, 'What fees are outstanding?', 'student');
+  value.context.entity = value.result.entity = 'student-fees';
+  value.result.balanceScope = lib.queryBalanceScope;
+  value.result.records[0].balances = [{ currency: 'INR', outstandingExact: '400.00' }, { currency: 'USD', outstandingExact: '0.01' }, { currency: 'EUR', outstandingExact: '90071992547409.91' }];
+  return value;
+}
+test('financial receipt preserves exact separate currency strings without JS arithmetic', () => {
+  const value = financial(); a.equal(lib.validQueryReceipt(value, conversation), true);
+  a.equal(value.result.records[0].balances[2].outstandingExact, '90071992547409.91');
+});
+for (const [name, tamper] of [
+  ['numeric amount', v => { v.result.records[0].balances[0].outstandingExact = 400; }],
+  ['noncanonical amount', v => { v.result.records[0].balances[0].outstandingExact = '400.0'; }],
+  ['excess precision', v => { v.result.records[0].balances[0].outstandingExact = '0.001'; }],
+  ['duplicate currency', v => { v.result.records[0].balances[1].currency = 'INR'; }],
+  ['foreign money on directory', v => { v.context.entity = v.result.entity = 'student'; delete v.result.balanceScope; }],
+  ['missing money', v => { delete v.result.records[0].balances; }],
+  ['wrong accounting scope', v => { v.result.balanceScope = 'Only the selected course'; }],
+  ['private ledger data', v => { v.result.records[0].balances[0].bankReference = 'private'; }],
+  ['overflow', v => { v.result.records[0].balances[0].outstandingExact = '79228162514264337593543950335.01'; }],
+]) test(`reject financial ${name} before rendering`, () => { const value = financial(); tamper(value); a.equal(lib.validQueryReceipt(value, conversation), false); });

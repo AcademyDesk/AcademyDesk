@@ -16,6 +16,7 @@ internal static partial class SqlHarnessEntryPoint
     // semantics. Production DI never registers this fixture or grants tools to it.
     private sealed class QueryQaPlanner : IPentaQueryPlanner {
         internal int Calls;
+        internal int ExpectedTools = 6;
         internal PentaQueryPlan? Plan;
         internal TaskCompletionSource<bool>? Entered, Release;
         public Task<bool> ReadyAsync(CancellationToken token) => Task.FromResult(Plan is not null);
@@ -23,7 +24,7 @@ internal static partial class SqlHarnessEntryPoint
             Calls++; Entered?.TrySetResult(true);
             if (Release is { } release) await release.Task.WaitAsync(token);
             PentaRequire(request.GetProperty("contract").GetString() == PentaQueryContract.Version &&
-                request.GetProperty("tools").GetArrayLength() == 6, "Query host catalog was not supplied.");
+                request.GetProperty("tools").GetArrayLength() == ExpectedTools, "Query host catalog was not supplied.");
             return new(Plan, Plan is null ? "Unavailable" : null);
         }
     }
@@ -38,19 +39,37 @@ internal static partial class SqlHarnessEntryPoint
         var email = $"query-owner-{Guid.NewGuid():N}@example.invalid";
         var password = "Qa!Query7" + Guid.NewGuid().ToString("N");
         Guid actorId, teacherId, studentId, batchId;
+        string originalModules;
         await using (var scope = factory.Services.CreateAsyncScope()) {
             var users = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
             var owner = new ApplicationUser { UserName = email, Email = email, EmailConfirmed = true, DisplayName = "Synthetic query owner", AcademyId = academy, IsActive = true };
             PentaRequire((await users.CreateAsync(owner, password)).Succeeded && (await users.AddToRoleAsync(owner, "AcademyAdmin")).Succeeded, "Query owner setup failed."); actorId = owner.Id;
             var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+            var tenant = await db.Academies.SingleAsync(x => x.Id == academy);
+            originalModules = tenant.EnabledModulesJson; tenant.EnabledModulesJson = "[]";
             var course = new ProgramCourse { AcademyId = academy, Name = "Synthetic query course" }; db.Courses.Add(course);
             var teacher = new Teacher { AcademyId = academy, FirstName = "Synthetic Query", LastName = "Teacher", EmployeeCode = "QA-QUERY-T", Specialties = "Piano", Email = "private-query@example.invalid" };
             var student = new Student { AcademyId = academy, FirstName = "Synthetic Query", LastName = "Student", StudentNumber = "QA-QUERY-S" };
             var batch = new Batch { AcademyId = academy, CourseId = course.Id, Name = "Synthetic Query Batch", TeacherId = teacher.Id };
             db.Teachers.AddRange(teacher, new Teacher { AcademyId = foreignAcademy, FirstName = "Synthetic Query", LastName = "Teacher", Specialties = "Piano" });
-            db.Students.Add(student); db.Batches.Add(batch); await db.SaveChangesAsync();
+            var foreignStudent = new Student { AcademyId = foreignAcademy, FirstName = "Synthetic Query", LastName = "Foreign Student" };
+            db.Students.AddRange(student, foreignStudent); db.Batches.Add(batch);
+            var invoice = new Invoice { AcademyId = academy, StudentId = student.Id, InvoiceNumber = "QA-Q-INR", TotalAmount = 1000m };
+            db.Invoices.AddRange(invoice,
+                new Invoice { AcademyId = academy, StudentId = student.Id, InvoiceNumber = "QA-Q-USD", TotalAmount = 0.01m, Currency = "USD" },
+                new Invoice { AcademyId = academy, StudentId = student.Id, InvoiceNumber = "QA-Q-EUR", TotalAmount = 90071992547409.91m, Currency = "EUR" },
+                new Invoice { AcademyId = foreignAcademy, StudentId = foreignStudent.Id, InvoiceNumber = "QA-Q-FOREIGN", TotalAmount = 999m, Currency = "GBP" });
+            db.Payments.AddRange(new Payment { AcademyId = academy, InvoiceId = invoice.Id, Amount = 600m, Status = "Reconciled" },
+                new Payment { AcademyId = academy, InvoiceId = invoice.Id, Amount = 500m, Status = "Pending" });
+            for (var index = 0; index < 12; index++) {
+                var pageStudent = new Student { AcademyId = academy, FirstName = "PageFee", LastName = index.ToString("D2") };
+                db.Students.Add(pageStudent);
+                db.Invoices.Add(new Invoice { AcademyId = academy, StudentId = pageStudent.Id, InvoiceNumber = "QA-Q-PAGE-" + index, TotalAmount = 1m });
+            }
+            await db.SaveChangesAsync();
             teacherId = teacher.Id; studentId = student.Id; batchId = batch.Id;
         }
+        try {
         client.DefaultRequestHeaders.Authorization = new("Bearer", await LoginAsync(client, email, password));
         var root = $"/api/academies/{academy:D}/penta/queries";
         var checks = 0;
@@ -70,7 +89,8 @@ internal static partial class SqlHarnessEntryPoint
         async Task<string> Snapshot() {
             await using var scope = factory.Services.CreateAsyncScope(); var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
             return JsonSerializer.Serialize(new { students = await db.Students.CountAsync(), teachers = await db.Teachers.CountAsync(), batches = await db.Batches.CountAsync(),
-                payments = await db.Payments.CountAsync(), total = await db.Payments.SumAsync(x => x.Amount) });
+                payments = await db.Payments.CountAsync(), total = await db.Payments.SumAsync(x => x.Amount),
+                invoices = await db.Invoices.CountAsync(), billed = await db.Invoices.SumAsync(x => x.TotalAmount), adjusted = await db.Invoices.SumAsync(x => x.AdjustedAmount) });
         }
         async Task<(long Version, Guid? Pending, string? Receipt)> Stored(MiniSessionView s, Guid request) {
             await using var scope = factory.Services.CreateAsyncScope(); var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
@@ -115,6 +135,56 @@ internal static partial class SqlHarnessEntryPoint
             RequireFinanceStatus(unavailable, HttpStatusCode.Created, "query provider outage receipt");
             Check((await unavailable.Content.ReadFromJsonAsync<PentaQueryTurnReceipt>())?.Kind == "ERROR", "Outage became false success.");
         }
+        // Finance is a separate current-host permission, never implied by a
+        // selected student or a model's choice. Preserve the typed directory.
+        using (var health = await client.GetAsync(root + "/health")) {
+            RequireFinanceStatus(health, HttpStatusCode.OK, "directory-only query catalog");
+            var value = await health.Content.ReadFromJsonAsync<JsonElement>();
+            Check(value.GetProperty("tools").GetArrayLength() == 6 && !value.GetProperty("tools").EnumerateArray().Any(x => x.GetProperty("entity").GetString() == "student-fees"), "Finance tool appeared without Finance module.");
+        }
+        await using (var scope = factory.Services.CreateAsyncScope()) {
+            var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+            (await db.Academies.SingleAsync(x => x.Id == academy)).EnabledModulesJson = "[\"Finance\"]"; await db.SaveChangesAsync();
+        }
+        planner.ExpectedTools = 8;
+        var moneySession = await Create();
+        var money = await Turn(moneySession, 0, "Show outstanding student fees", "student-fees");
+        var balances = money.Result?.Records.Single().Balances;
+        Check(money.Result?.Entity == "student-fees" && money.Result.Records[0].Id == studentId && balances?.Length == 3 &&
+            balances.Single(x => x.Currency == "INR").OutstandingExact == "400.00" &&
+            balances.Single(x => x.Currency == "USD").OutstandingExact == "0.01" &&
+            balances.Single(x => x.Currency == "EUR").OutstandingExact == "90071992547409.91" &&
+            money.Result.BalanceScope == PentaQueryContract.BalanceScope, "Exact ledger balances were rounded, netted, recalculated or leaked across tenants.");
+        var directory = await Turn(moneySession, 1, "Open student result 1", "student", "open", 1);
+        Check(directory.Result?.Records.Single().Balances is null && directory.Result?.BalanceScope is null, "Financial fields leaked into ordinary directory view.");
+        var followup = await Turn(moneySession, 2, "What does she owe?", "student-fees", "open", 1);
+        Check(followup.Result?.Records.Single().Id == studentId && followup.Result.Records[0].Balances?.Length == 3, "Finance follow-up lost the selected host student reference.");
+        calls = planner.Calls;
+        using (var recovered = await client.GetAsync(Turns(moneySession) + $"/{followup.RequestId:D}")) {
+            RequireFinanceStatus(recovered, HttpStatusCode.OK, "exact finance GET recovery");
+            var value = await recovered.Content.ReadFromJsonAsync<PentaQueryTurnReceipt>();
+            Check(value?.Result?.Records[0].Balances?.Single(x => x.Currency == "USD").OutstandingExact == "0.01" && planner.Calls == calls, "Finance recovery lost exact strings or dispatched the model.");
+        }
+        var pageSession = await Create();
+        planner.Plan = new(PentaQueryContract.Version, "search", "student-fees", new() { ["name"] = "PageFee" }, null);
+        using (var paged = await client.PostAsJsonAsync(Turns(pageSession), new PentaTaskTurnInput(Guid.NewGuid(), 0, "Show outstanding fees for PageFee"))) {
+            RequireFinanceStatus(paged, HttpStatusCode.Created, "bounded fee search");
+            var value = await paged.Content.ReadFromJsonAsync<PentaQueryTurnReceipt>();
+            Check(value?.Result is { HasMore: true, Records.Length: 10 } && value.Message.Contains("first 10") && value.Message.Contains("More matches"), "Truncated fee search appeared complete.");
+        }
+        calls = planner.Calls;
+        await using (var scope = factory.Services.CreateAsyncScope()) {
+            var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+            (await db.Academies.SingleAsync(x => x.Id == academy)).EnabledModulesJson = "[]"; await db.SaveChangesAsync();
+        }
+        planner.ExpectedTools = 6;
+        using (var denied = await client.GetAsync(Turns(moneySession) + $"/{followup.RequestId:D}")) {
+            RequireFinanceStatus(denied, HttpStatusCode.Forbidden, "revoked finance receipt");
+            Check(planner.Calls == calls, "Finance revocation invoked the model.");
+        }
+        var teacherAfterRevocation = await Create();
+        var teacherRead = await Turn(teacherAfterRevocation, 0, "Show teachers", "teacher");
+        Check(teacherRead.Result?.Entity == "teacher" && teacherRead.Result.Records.Single().Balances is null, "Revoking Finance broke or polluted unrelated teacher reads.");
         // Claims must commit before generation; pending concurrency/recovery may
         // never dispatch another planner call or return incomplete private facts.
         var pending = await Create(); planner.Plan = new(PentaQueryContract.Version, "search", "teacher", [], null);
@@ -147,5 +217,10 @@ internal static partial class SqlHarnessEntryPoint
         } finally { planner.Release?.TrySetResult(true); }
         Check(await Snapshot() == before, "Read conversation changed domain records or financial rows/totals.");
         Console.WriteLine($"PENTA QUERY NATIVE {checks} SQL/Identity/API checks PASS; synthetic planner, real typed domain reads, no model acceptance.");
+        } finally {
+            fault.Enabled = false; planner.Release?.TrySetResult(true);
+            await using var scope = factory.Services.CreateAsyncScope(); var db = scope.ServiceProvider.GetRequiredService<AcademyDeskDbContext>();
+            (await db.Academies.SingleAsync(x => x.Id == academy)).EnabledModulesJson = originalModules; await db.SaveChangesAsync();
+        }
     }
 }

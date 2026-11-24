@@ -25,6 +25,13 @@ cached model was used; no download, model replacement or Azure action occurred.
 
 ## Root causes verified in current source
 
+D68 extends D67's connected query path to permission-bound student balances and
+same-student follow-ups. Final280affected host,244Mini model-free,116client,
+24native query and52synthetic-API browser checks pass. No real model was called;
+teacher intent/answer quality and complete conversational acceptance remain
+OPEN. See ../REPORTS/D68_QUERY_STUDENT_BALANCES_2026-11-24.md. This progress does
+not close the issue or qualify all domains/roles.
+
 Historical reproduced source is described below. D66 confirmed the wider missing
 catalog/result/history/dispatch connections. D67 adds the first connected typed
 query slice and legacy/guided routing guards; the all-portal/model requirement

@@ -45,6 +45,6 @@ public sealed class PentaQueryAccess(IdentityDbContext identity, AcademyDeskDbCo
     internal static object[] Describe(IReadOnlySet<string> tools) => PentaQueryContract.Controllers.Keys
         .SelectMany(entity => new[] { "search", "open" }.Select(kind => new {
             key = PentaQueryContract.Tool(entity, kind), entity, kind, readOnly = true,
-            fields = entity == "teacher" ? new[] { "name", "subject", "status" } : new[] { "name", "status" } }))
+            fields = PentaQueryContract.Fields(entity) }))
         .Where(tool => tools.Contains(tool.key)).Cast<object>().ToArray();
 }

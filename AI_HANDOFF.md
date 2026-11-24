@@ -1,5 +1,26 @@
 # Academy Desk handoff
 
+## D68 connected student balances — 24 November 2026
+
+- [x] Same query conversation now supports permission-bound student-fees search/
+  open and student follow-ups using the existing deterministic ledger. Exact
+  decimal strings/currencies, source/scope and first-ten disclosure reach history
+  and UI. No money in ordinary directory receipts or silent Finance elevation.
+- [x]280affected host,244Mini model-free,116client,24actual SQL/Identity/API checks,
+  retained Foundation/5races/86+7migrations,16query+36shell browser cases pass.
+  Final compatibility build/typecheck/export92pages and frontend lint pass.
+  Mobile amount visibility was corrected and explicitly asserted.
+- [x]Mini f8ff21ec996cbf659c0062ce5356f006b3f46f39 published; paired workflow pins it
+  and requires24native query checks. D67 ordinary CI passed2,738API tests and locked
+  npm-ci/audit0/build; current D68 exact-source CI must qualify independently.
+- [ ] Paired Actions read-only credential and genuine missing Mini archives remain.
+  No real model test/activation, all-domain completion or production readiness.
+  Query defaults OFF; BUG-AI-0001 OPEN. Next: connected model acceptance, calendar/
+  attendance, protected compound execution and remaining roles/release gates.
+  Keep Sol High; main/Azure/original evidence/unrelated scaffolds unchanged.
+
+[D68 evidence, retained failures and boundaries](QA/REPORTS/D68_QUERY_STUDENT_BALANCES_2026-11-24.md)
+
 ## D67 connected entity-aware query pipeline — 24 November 2026
 
 - [x] Six typed teacher/student/batch reads, current stored authority/module scope,

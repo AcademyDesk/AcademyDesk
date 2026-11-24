@@ -134,7 +134,7 @@ public sealed class PentaQueryTests
         var value = PentaQueryContract.Request("I said teachers", new("student", new() { ["name"] = "Synthetic" }, [privateId]), All);
         var json = value.GetRawText();
         Assert.DoesNotContain(privateId.ToString("D"), json); Assert.DoesNotContain("actor", json); Assert.DoesNotContain("salary", json);
-        Assert.Equal(6, value.GetProperty("tools").GetArrayLength());
+        Assert.Equal(8, value.GetProperty("tools").GetArrayLength());
         Assert.Equal("Result 1", value.GetProperty("context").GetProperty("result_labels")[0].GetString());
         if (System.Environment.GetEnvironmentVariable("QA_QUERY_CONTRACT_VECTOR") is { Length: > 0 } destination) File.WriteAllText(destination, json);
     }
@@ -186,5 +186,59 @@ public sealed class PentaQueryTests
         var transport = new Transport(json);
         Assert.Null((await Provider(transport).PlanAsync(JsonSerializer.SerializeToElement(new { contract=PentaQueryContract.Version }),default)).Plan);
         Assert.Equal(1,transport.Calls);
+    }
+
+    [Fact]
+    public async Task Finance_tool_is_independent_of_directory_access_and_revocable() {
+        using var f = new Fixture(); var access = f.Access();
+        var initial = await access.ResolveAsync(f.Principal, f.Academy.Id, default);
+        Assert.DoesNotContain("AcademyDesk.student-fees.search", initial!.Tools);
+        f.Academy.EnabledModulesJson = "[\"Finance\"]"; await f.Db.SaveChangesAsync();
+        var enabled = await access.ResolveAsync(f.Principal, f.Academy.Id, default);
+        Assert.Contains("AcademyDesk.student-fees.search", enabled!.Tools); Assert.Equal(8, enabled.Tools.Count);
+        Assert.NotEqual(initial.Version, enabled.Version);
+        f.Academy.EnabledModulesJson = "[]"; await f.Db.SaveChangesAsync();
+        var revoked = await access.ResolveAsync(f.Principal, f.Academy.Id, default);
+        Assert.DoesNotContain("AcademyDesk.student-fees.search", revoked!.Tools); Assert.Contains("AcademyDesk.teacher.search", revoked.Tools);
+    }
+    [Theory]
+    [InlineData("0.00")][InlineData("0.01")][InlineData("400.00")][InlineData("90071992547409.91")][InlineData("79228162514264337593543950335.00")]
+    public void Exact_financial_amounts_remain_canonical_strings(string amount) => Assert.True(PentaQueryMoney.ValidAmount(amount));
+    [Theory]
+    [InlineData("400")][InlineData("400.0")][InlineData("0.001")][InlineData("-0.01")][InlineData("1e3")][InlineData("01.00")][InlineData("79228162514264337593543950335.01")]
+    public void Noncanonical_unrepresentable_or_negative_balances_fail_closed(string amount) => Assert.False(PentaQueryMoney.ValidAmount(amount));
+    [Fact]
+    public async Task Missing_finance_permission_is_rejected_before_querying_the_ledger() {
+        using var f = new Fixture();
+        var student = new Student { AcademyId = f.Academy.Id, FirstName = "Synthetic", LastName = "Ledger" };
+        f.Db.Students.Add(student);
+        await f.Db.SaveChangesAsync(); var reader = new PentaQueryReader(f.Db, TimeProvider.System);
+        var directory = await reader.ExecuteAsync(f.Academy.Id, Search("student"), PentaQueryContext.Empty, All, default);
+        Assert.Null(Assert.Single(directory.Result!.Records).Balances);
+        var noFinance = All.Where(x => !x.Contains("student-fees")).ToHashSet();
+        var denied = await reader.ExecuteAsync(f.Academy.Id, Search("student-fees"), directory.Context, noFinance, default);
+        Assert.Equal("UNSUPPORTED",denied.Kind); Assert.Null(denied.Result);
+        // Shared ledger Collate/decimal assertions live in PentaQueryRegression
+        // on disposable SQL, not a fake InMemory translation or altered query.
+    }
+    [Fact]
+    public void Directory_receipts_remain_compatible_and_cannot_carry_financial_fields() {
+        var id = Guid.NewGuid(); var session = Guid.NewGuid(); var request = Guid.NewGuid();
+        var row = new PentaQueryRecord(id, "Synthetic", null, true, [], PentaQueryContract.Path("student",id));
+        var receipt = new PentaQueryTurnReceipt(session,request,1,"RESULT","Verified",new("student",[],[id]),
+            new("student",[row],false,DateTime.UtcNow),"Show students");
+        Assert.True(PentaQueryContract.ValidReceipt(receipt,session,request,1));
+        Assert.DoesNotContain("Balances",JsonSerializer.Serialize(receipt));
+        Assert.DoesNotContain("BalanceScope",JsonSerializer.Serialize(receipt));
+        var financial = row with { Balances = [new("INR","400.00")] };
+        Assert.False(PentaQueryContract.ValidReceipt(receipt with { Result = receipt.Result! with { Records = [financial] } },session,request,1));
+    }
+    [Fact]
+    public void Generic_open_cannot_silently_upgrade_directory_to_finance() {
+        var plan = Search("student-fees");
+        Assert.False(PentaQueryIntentGuard.Compatible("Open result 1",plan,new("student",[],[Guid.NewGuid()])));
+        Assert.True(PentaQueryIntentGuard.Compatible("What does she owe?",plan,new("student",[],[Guid.NewGuid()])));
+        Assert.False(PentaQueryIntentGuard.Compatible("Show teacher salary",plan));
+        Assert.False(PentaQueryMoney.Valid([new("INR","1.00"),new("INR","2.00")]));
     }
 }

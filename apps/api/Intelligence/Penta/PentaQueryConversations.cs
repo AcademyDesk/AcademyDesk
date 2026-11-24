@@ -126,7 +126,7 @@ public sealed class PentaQueryConversations(AcademyDeskDbContext db, IdentityDbC
         if (owned is null || owned.ExpiresAtUtc <= Now || owned.PendingRequestId != input.RequestId || owned.Version != input.ExpectedVersion ||
             !await reader.CurrentAsync(academy, state.Context, token)) return new(409);
         var proposal = outcome.Plan;
-        if (!PentaQueryIntentGuard.Compatible(input.Text, proposal)) proposal = null;
+        if (!PentaQueryIntentGuard.Compatible(input.Text, proposal, state.Context)) proposal = null;
         var decision = await reader.ExecuteAsync(academy, proposal, state.Context, current.Tools, token);
         var receiptValue = new PentaQueryTurnReceipt(conversation, input.RequestId, owned.Version + 1, decision.Kind,
             decision.Message, decision.Context, decision.Result, input.Text);

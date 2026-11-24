@@ -14,8 +14,10 @@ public sealed record PentaQueryContext(string? Entity, Dictionary<string, string
     public static PentaQueryContext Empty => new(null, [], []);
 }
 public sealed record PentaQueryRecord(Guid Id, string Label, string? Code, bool Active,
-    string[] Subjects, string SourcePath);
-public sealed record PentaQueryResult(string Entity, PentaQueryRecord[] Records, bool HasMore, DateTime AsOfUtc);
+    string[] Subjects, string SourcePath,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] MiniExactBalance[]? Balances = null);
+public sealed record PentaQueryResult(string Entity, PentaQueryRecord[] Records, bool HasMore, DateTime AsOfUtc,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? BalanceScope = null);
 public sealed record PentaQueryDecision(string Kind, string Message, PentaQueryContext Context, PentaQueryResult? Result = null);
 public sealed record PentaQueryTurnReceipt(Guid ConversationId, Guid RequestId, long Version, string Kind,
     string Message, PentaQueryContext Context, PentaQueryResult? Result, string InputText,
@@ -26,6 +28,7 @@ public sealed record PentaQueryHistory(Guid ConversationId, long Version, DateTi
 public static class PentaQueryContract
 {
     public const string Version = "academy-query.v1";
+    public const string BalanceScope = "All outstanding fees for each student; subject filters select students, not course-specific invoices.";
     internal static JsonElement Request(string text, PentaQueryContext context, IReadOnlySet<string> tools) =>
         JsonSerializer.SerializeToElement(new { contract = Version, text,
             context = new { entity = context.Entity, filters = context.Filters,
@@ -35,7 +38,12 @@ public static class PentaQueryContract
     // has a matching typed host reader and a source controller/module policy.
     public static readonly IReadOnlyDictionary<string, string> Controllers =
         new Dictionary<string, string>(StringComparer.Ordinal) {
-            ["teacher"] = "TeachersController", ["student"] = "StudentsController", ["batch"] = "BatchesController" };
+            ["teacher"] = "TeachersController", ["student"] = "StudentsController", ["batch"] = "BatchesController",
+            ["student-fees"] = "InvoicesController" };
+    public static string[] Fields(string entity) => entity switch {
+        "teacher" => ["name", "subject", "status"], "student-fees" => ["name", "subject", "balance_status"], _ => ["name", "status"] };
+    public static bool SameReferences(string? first, string? second) => first is not null && second is not null &&
+        (first == second || first is "student" or "student-fees" && second is "student" or "student-fees");
     public static string Tool(string entity, string kind) => $"AcademyDesk.{entity}.{kind}";
     public static bool ValidContext(PentaQueryContext? value) => value is not null &&
         ValidFilters(value.Entity, value.Filters) && value.ResultIds is { Length: <= 10 } &&
@@ -44,8 +52,9 @@ public static class PentaQueryContract
     public static bool ValidFilters(string? entity, Dictionary<string, string>? values) => values is { Count: <= 3 } &&
         (entity is null ? values.Count == 0 : Controllers.ContainsKey(entity)) && values.All(pair =>
             pair.Value is { Length: > 0 and <= 100 } && !string.IsNullOrWhiteSpace(pair.Value) && !pair.Value.Any(char.IsControl) &&
-            (pair.Key == "name" || entity == "teacher" && pair.Key == "subject" ||
-             pair.Key == "status" && pair.Value is "Active" or "Inactive"));
+            (pair.Key == "name" || entity is "teacher" or "student-fees" && pair.Key == "subject" ||
+             entity == "student-fees" && pair.Key == "balance_status" && pair.Value is "Pending" or "Clear" ||
+             entity != "student-fees" && pair.Key == "status" && pair.Value is "Active" or "Inactive"));
     public static bool ValidPlan(PentaQueryPlan? value) => value is not null && value.Contract == Version &&
         value.Kind is "search" or "open" or "clarify" or "unsupported" && ValidFilters(value.Entity, value.Filters) &&
         (value.Kind == "search" ? value.Entity is not null && value.Position is null :
@@ -53,7 +62,7 @@ public static class PentaQueryContract
          value.Filters.Count == 0 && value.Position is null);
     public static string Path(string entity, Guid id) => entity switch {
         "teacher" => $"/teacher-profile?teacherId={id:D}",
-        "student" => $"/student-management?studentId={id:D}",
+        "student" or "student-fees" => $"/student-management?studentId={id:D}",
         "batch" => "/batch-setup", _ => throw new ArgumentException("Unknown read entity.") };
     public static bool ValidReceipt(PentaQueryTurnReceipt? value, Guid session, Guid request, long version) =>
         value is not null && value.Protocol == Version && value.ConversationId == session && value.RequestId == request &&
@@ -62,9 +71,13 @@ public static class PentaQueryContract
         value.Kind is "RESULT" or "ERROR" or "UNSUPPORTED" or "CLARIFICATION_REQUIRED" &&
         (value.Result is null ? value.Kind != "RESULT" : value.Kind == "RESULT" &&
          value.Result.Entity == value.Context.Entity && value.Result.Records is { Length: <= 10 } &&
-         value.Result.AsOfUtc.Kind == DateTimeKind.Utc && value.Result.Records.All(row =>
-             row.Id != Guid.Empty && row.Label is { Length: > 0 and <= 240 } && row.Subjects is { Length: <= 1 } &&
+         value.Result.AsOfUtc.Kind == DateTimeKind.Utc &&
+         (value.Result.Entity == "student-fees" ? value.Result.BalanceScope == BalanceScope : value.Result.BalanceScope is null) &&
+         value.Result.Records.All(row =>
+             row.Id != Guid.Empty && row.Label is { Length: > 0 and <= 240 } && row.Subjects is not null &&
+             row.Subjects.Length <= (value.Result.Entity == "student-fees" ? 5 : 1) &&
              row.Subjects.All(x => x.Length <= 200) && row.Code is null or { Length: <= 100 } &&
+             (value.Result.Entity == "student-fees" ? PentaQueryMoney.Valid(row.Balances) : row.Balances is null) &&
              row.SourcePath == Path(value.Result.Entity, row.Id)) &&
          value.Result.Records.Select(x => x.Id).SequenceEqual(value.Context.ResultIds));
 }

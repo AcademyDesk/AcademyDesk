@@ -24,6 +24,24 @@ implementation order below; the D59 failure evidence remains accurate.
 
 ## D62 implementation checkpoint — 23 November 2026
 
+### D68 connected exact-balance progress — 24 November 2026
+
+- [x] Student-fees search/open in the same catalog/history/composer, current Finance
+  permission, deterministic shared ledger, exact strings/currencies and scope.
+  Same-student references supported; no teacher/batch confusion or money leaks
+  into ordinary directory; paging and mobile amount visibility explicitly tested.
+- [x]280affected host,244Mini model-free,116client,24native query checks plus
+  retained Foundation/migrations/cleanup;16query+36shell browser and final cached
+  build/typecheck/export/lint pass. Mini source f8ff21e published and CI pinned.
+- [x] D67 ordinary locked CI passed2,738API tests/npm-ci/audit0/build; historical
+  source only. D68 exact CI and required paired source access remain unresolved.
+- [ ] Real-model semantic/latency outcomes; attendance/calendar/remaining finance
+  and domain bindings; protected dependent execution; all-role parity; original
+  enterprise/device/staging gates. No 90% measurement or production qualification.
+
+Read QA/REPORTS/D68_QUERY_STUDENT_BALANCES_2026-11-24.md. D68 is a student-balance
+read slice, not a full finance module, model upgrade or completed AI platform.
+
 ### D67 connected query progress — 24 November 2026
 
 - [x] Shared versioned host catalog, typed readers/results for teacher/student/batch

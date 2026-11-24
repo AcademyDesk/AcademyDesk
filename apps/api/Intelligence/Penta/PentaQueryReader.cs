@@ -1,11 +1,12 @@
 using AcademyDesk.Api.Data;
+using AcademyDesk.Api.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
 namespace AcademyDesk.Api.Intelligence.Penta;
 
 /// <summary>Typed, tenant-scoped projection over existing domain tables. No
 /// credentials/contact details, financial calculations, writes or model SQL.</summary>
-public sealed class PentaQueryReader(AcademyDeskDbContext db, TimeProvider clock)
+public sealed class PentaQueryReader(AcademyDeskDbContext db, TimeProvider clock, OutstandingFeesService? fees = null)
 {
     internal async Task<bool> CurrentAsync(Guid academy, PentaQueryContext context, CancellationToken token)
     {
@@ -15,6 +16,7 @@ public sealed class PentaQueryReader(AcademyDeskDbContext db, TimeProvider clock
         var count = context.Entity switch {
             "teacher" => await db.Teachers.CountAsync(x => x.AcademyId == academy && ids.Contains(x.Id), token),
             "student" => await db.Students.CountAsync(x => x.AcademyId == academy && ids.Contains(x.Id), token),
+            "student-fees" => await db.Students.CountAsync(x => x.AcademyId == academy && x.IsActive && ids.Contains(x.Id), token),
             "batch" => await db.Batches.CountAsync(x => x.AcademyId == academy && ids.Contains(x.Id), token), _ => -1 };
         return count == ids.Length;
     }
@@ -33,10 +35,27 @@ public sealed class PentaQueryReader(AcademyDeskDbContext db, TimeProvider clock
         Guid? selected = null;
         var filters = plan.Filters;
         if (plan.Kind == "open") {
-            if (plan.Entity != previous.Entity || plan.Position > previous.ResultIds.Length)
+            if (!PentaQueryContract.SameReferences(plan.Entity, previous.Entity) || plan.Position > previous.ResultIds.Length)
                 return new("CLARIFICATION_REQUIRED", "Search in that domain first, then choose a displayed result.", PentaQueryContext.Empty);
             selected = previous.ResultIds[plan.Position!.Value - 1];
-            filters = previous.Filters;
+            filters = previous.Filters.Where(pair => PentaQueryContract.Fields(plan.Entity!).Contains(pair.Key)).ToDictionary(pair => pair.Key, pair => pair.Value);
+        }
+        if (plan.Entity == "student-fees") {
+            // The Finance module is required by the current permitted tool set.
+            // QueryConversation reauthorizes under the shared Identity/SQL lock.
+            var snapshot = await (fees ?? new OutstandingFeesService(db, clock)).ReadAsync(academy, filters, null, selected, token);
+            var money = PentaMiniMoney.FromResult(snapshot);
+            if (money is null) return new("ERROR", "The stored balance precision or currency could not be verified. Use Manual Finance; no amounts were changed.", previous);
+            if (selected is not null && snapshot.Rows.Length != 1)
+                return new("CLARIFICATION_REQUIRED", "That student is no longer available for this fee read. Search again.", PentaQueryContext.Empty);
+            var records = snapshot.Rows.Select((row, index) => new PentaQueryRecord(row.SourceId, Clip(row.DisplayName, 240),
+                string.IsNullOrWhiteSpace(row.RecordCode) ? null : Clip(row.RecordCode, 100), true,
+                row.Subjects.Take(5).Select(x => Clip(x, 200)).ToArray(), PentaQueryContract.Path("student-fees", row.SourceId), money.Rows[index].Balances)).ToArray();
+            var feeContext = new PentaQueryContext("student-fees", new(filters), records.Select(x => x.Id).ToArray());
+            var feeMessage = records.Length == 0 ? "No students match this fee search in your academy."
+                : snapshot.HasMore ? "Here are the first 10 matching students' verified balances, separately by currency. More matches exist; refine the student name or subject."
+                : "Here are the verified outstanding balances, shown separately for each currency.";
+            return new("RESULT", feeMessage, feeContext, new("student-fees", records, snapshot.HasMore, snapshot.AsOfUtc, PentaQueryContract.BalanceScope));
         }
         filters.TryGetValue("name", out var name); filters.TryGetValue("status", out var status);
         filters.TryGetValue("subject", out var subject);

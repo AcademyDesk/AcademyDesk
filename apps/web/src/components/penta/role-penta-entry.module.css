@@ -103,6 +103,9 @@
 .miniControls { justify-content: center; gap: 6px; }
 .panel.queryWorkspace { min-height: 0; overflow: hidden; }
 .queryHeader, .queryFooter { flex: 0 0 auto; }
+.queryHeader .miniIdentity { display: flex; flex-wrap: wrap; row-gap: 4px; }
+.queryHeader .miniIdentity strong { white-space: nowrap; }
+.queryHeader .miniIdentity > span { font-size: 11px; }
 .queryWorkspace .queryTranscript { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; }
 .queryWorkspace .financeComposer { margin: 8px 0; }
 .queryFooter > :is(button,a) { font-size: 11px; }

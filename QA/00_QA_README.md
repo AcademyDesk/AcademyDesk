@@ -1,5 +1,20 @@
 # AcademyDesk QA control centre — Phase 1
 
+## D68 connected exact balances — 24 November 2026
+
+- [x]280affected host;244Mini model-free;116client;24actual query SQL/Identity/API
+  checks, retained Foundation/5races/86+7migrations and owned cleanup;16query+
+  36shell browser cases; final compatibility build/typecheck/export92pages/lint.
+- [x] Same query financial view reuses deterministic ledger; exact separate money,
+  student references, scope, paging, Finance revocation and receipt recovery.
+  Browser uses synthetic APIs; native uses a synthetic planner, not a real model.
+- [x] Historical D67 ordinary CI passed2,738API and locked npm-ci/audit0/build.
+- [ ] D68 exact CI, paired private source secret, genuine original Mini archives,
+  real-model/combined browser-SQL/device/staging and original release acceptance.
+  No model activation/default change/mutation; BUG-AI-0001 remains OPEN.
+
+[D68 source-bound results and remaining work](REPORTS/D68_QUERY_STUDENT_BALANCES_2026-11-24.md)
+
 ## D67 connected queries — 24 November 2026
 
 - [x]264affected host tests;237Mini model-free checks; actual C# request parsed by

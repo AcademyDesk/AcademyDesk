@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { apiUrl, isPortalSignOutEvent, portalAccessToken, portalSessionChangedEvent, portalSessionEpoch, portalSignOutEvent } from "@/lib/api";
-import { createQueryConversation, initialQueryView } from "@/lib/penta-query-conversation";
+import { createQueryConversation, initialQueryView, queryEntityLabel } from "@/lib/penta-query-conversation";
 import MiniConversation from "./mini-conversation";
 import { PentaGlyph } from "./penta-glyph";
 import styles from "./role-penta-entry.module.css";
@@ -32,7 +32,11 @@ export function QueryConversation({ academyId }: { academyId: string }) {
   const [view, setView] = useState(initialQueryView), [prompt, setPrompt] = useState("");
   const driver = useRef<ReturnType<typeof createQueryConversation> | null>(null);
   const transcript = useRef<HTMLDivElement>(null);
-  useEffect(() => { const node = transcript.current; if (node) node.scrollTop = node.scrollHeight; }, [view.turns.length, view.pending]);
+  useEffect(() => {
+    const node = transcript.current;
+    const answer = node?.lastElementChild?.querySelector<HTMLElement>('[aria-label="PENTA response"]');
+    if (node && answer) node.scrollTop += answer.getBoundingClientRect().top - node.getBoundingClientRect().top;
+  }, [view.turns.length, view.pending]);
   useEffect(() => {
     const bearer = portalAccessToken("AcademyAdmin"), epoch = portalSessionEpoch("AcademyAdmin");
     if (!bearer || !epoch) return;
@@ -60,7 +64,7 @@ export function QueryConversation({ academyId }: { academyId: string }) {
   return <section className={`${styles.panel} ${styles.miniWorkspace} ${styles.queryWorkspace}`} aria-label="Academy conversation">
     <div className={styles.queryHeader}>
     <div className={styles.miniIdentity}><PentaGlyph name="spark" /><strong>PENTA AI</strong><span>Connected read evaluation</span></div>
-    {view.entities.length > 0 && <p className={styles.miniNotice}>Connected records: {view.entities.map(x => x === "batch" ? "batches" : x + "s").join(", ")}. Other actions remain in guided workflows and Manual.</p>}
+    {view.entities.length > 0 && <p className={styles.miniNotice}>Connected records: {view.entities.map(queryEntityLabel).join(", ")}. Other actions remain in guided workflows and Manual.</p>}
     {view.notice && <p role="status">{view.notice}</p>}
     {view.phase === "ready" && <button className="pui-button" type="button" disabled={view.pending} onClick={() => void driver.current?.start()}>Start conversation</button>}
     </div>
@@ -74,9 +78,10 @@ export function QueryConversation({ academyId }: { academyId: string }) {
           {turn.result && <><ol>{turn.result.records.map((record, index) => <li key={record.id}>
             {turn.result!.entity === "batch" ? <><strong>{record.label}</strong> · <Link href={record.sourcePath}>Open Manual batch directory</Link></> : <Link href={record.sourcePath}>{record.label}</Link>}{record.code && <> · {record.code}</>}
             <p>{record.active ? "Active" : "Inactive"}{record.subjects.length > 0 && <> · {record.subjects.join(", ")}</>}</p>
+            {record.balances && (record.balances.length > 0 ? <ul aria-label="Exact outstanding balances">{record.balances.map(balance => <li key={balance.currency}>{balance.currency} {balance.outstandingExact}</li>)}</ul> : <p>No outstanding balances in this snapshot.</p>)}
             {turn.version === view.session?.version && <button className="pui-button pui-button-quiet" type="button" disabled={view.pending || !view.available || view.phase !== "idle"}
               onClick={() => void driver.current?.send(`Open result ${index + 1}`)}>Open result {index + 1} in conversation</button>}
-          </li>)}</ol><small>Source: academy {turn.result.entity} records · Checked <time dateTime={turn.result.asOfUtc}>{new Date(turn.result.asOfUtc).toLocaleString()}</time></small></>}
+          </li>)}</ol>{turn.result.balanceScope && <p>{turn.result.balanceScope}</p>}<small>Source: {turn.result.entity === "student-fees" ? "Invoices / Completed + Reconciled payments / Active enrollments" : `academy ${turn.result.entity} records`} · Checked <time dateTime={turn.result.asOfUtc}>{new Date(turn.result.asOfUtc).toLocaleString()}</time></small></>}
           <small>Response reference <code>{turn.requestId}</code></small>
         </section>
       </div>)}
@@ -87,7 +92,7 @@ export function QueryConversation({ academyId }: { academyId: string }) {
     }}>
       <label htmlFor="penta-academy-query">Message PENTA AI</label>
       <div className={styles.financeActions}><textarea id="penta-academy-query" rows={2} maxLength={2000} value={prompt} autoComplete="off" disabled={view.pending}
-        placeholder="Ask about students, teachers or batches…" onChange={event => setPrompt(event.currentTarget.value)} />
+        placeholder={view.entities.includes("student-fees") ? "Ask about records or student balances…" : "Ask about students, teachers or batches…"} onChange={event => setPrompt(event.currentTarget.value)} />
         <button type="submit" disabled={view.pending || !prompt.trim()}><PentaGlyph name="arrow" /><span>Send</span></button></div>
     </form>}
     {view.pending && <p role="status">Checking your academy records…</p>}
