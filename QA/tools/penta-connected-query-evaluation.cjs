@@ -5,7 +5,14 @@ const fs=require('node:fs'),path=require('node:path'),cp=require('node:child_pro
 const crypto=require('node:crypto'),os=require('node:os'),assert=require('node:assert/strict');
 const root=path.resolve(__dirname,'../..');
 const mini=process.env.QA_MINI_WORKTREE||'D:/PENTA-Models/operations/mini-academy-conversation-20261123';
-const packetFile=path.join(root,'QA/HANDOFF/D73_CONNECTED_4B_PACKET_2026-11-24.json');
+function packetFileFor(file){
+  const target=path.resolve(root,file);
+  assert.equal(path.dirname(target),path.join(root,'QA/HANDOFF'),'Packet must be a reviewed repository handoff');
+  assert.ok(['D73_CONNECTED_4B_PACKET_2026-11-24.json','D74_CONTEXT_ISOLATION_4B_PACKET_2026-11-24.json'].includes(path.basename(target)),'Unreviewed model packet');
+  return target;
+}
+const packetAt=process.argv.indexOf('--packet');
+const packetFile=packetFileFor(packetAt>=0?process.argv[packetAt+1]:'QA/HANDOFF/D73_CONNECTED_4B_PACKET_2026-11-24.json');
 const packet=JSON.parse(fs.readFileSync(packetFile));
 const probeFile=path.join(__dirname,'penta-connected-query-probe.py');
 const digest=bytes=>crypto.createHash('sha256').update(bytes).digest('hex');
@@ -90,7 +97,7 @@ async function run(context,approvalFile){
   process.once('SIGINT',()=>abort('Owner interrupted'));process.once('SIGTERM',()=>abort('Owner terminated'));
   try{
     live();result.supervisorPid=process.pid;result.absoluteDeadline=Math.min(Date.now()+packet.limits.max_total_seconds*1000,Date.parse(context.demo.expiresAtUtc));save();
-    const watcher=cp.spawn(process.execPath,[__filename,'--watchdog',folder],{detached:true,windowsHide:true,stdio:'ignore'});watcher.unref();
+    const watcher=cp.spawn(process.execPath,[__filename,'--packet',packetFile,'--watchdog',folder],{detached:true,windowsHide:true,stdio:'ignore'});watcher.unref();
     deadline=setTimeout(()=>abort('One-hour absolute deadline'),packet.limits.max_total_seconds*1000);
     monitor=setInterval(()=>{try{live();if(os.freemem()<packet.limits.minimum_free_safety_bytes)abort('768 MiB RAM safety guard');
       if(!automatedDone&&Date.now()-Date.parse(result.startedAt)>packet.limits.max_automated_seconds*1000)abort('15-minute automated deadline');
@@ -175,4 +182,4 @@ if(require.main===module){(async()=>{const watchdogAt=process.argv.indexOf('--wa
   const context=await preflight();if(!process.argv.includes('--execute')){console.log(JSON.stringify({preflight:true,approvalRequired:true,...context.approval,freeBytes:context.freeBytes,ramGuardPassed:context.ramGuardPassed,modelLoaded:false,source:context.code}));return;}
   const at=process.argv.indexOf('--approval');assert.ok(at>=0&&process.argv[at+1],'Bound NEW explicit approval file is required');await run(context,process.argv[at+1]);
 })().catch(error=>{console.error(error.message);process.exitCode=1;});}
-module.exports={bindings,validateApproval};
+module.exports={bindings,validateApproval,packetFileFor};

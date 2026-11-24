@@ -1,0 +1,290 @@
+{
+  "contract": "penta-connected-query-evaluation.v1",
+  "status": "PREPARED_REQUIRES_NEW_EXPLICIT_OWNER_APPROVAL",
+  "may_execute": false,
+  "scope": "one-local-4b-context-isolation-retest-and-conditional-owner-preview",
+  "academy_code_source": "9f6ac917aa7ec3678cee1344ea46cbc6e37f283a",
+  "demo_backend_source": "66bb16a1e88d0e9c6fc98677061e434a19615914",
+  "mini_source": "76560ee043fe90a785669ef51f5822726af24298",
+  "model": {
+    "relative_path": "Qwen/Qwen3.5-4B/e87f176479d0855a907a41277aca2f8ee7a09523/Q4_K_M/Qwen3.5-4B-Q4_K_M.gguf",
+    "bytes": 2740937888,
+    "sha256": "00fe7986ff5f6b463e62455821146049db6f9313603938a70800d1fb69ef11a4",
+    "image": "sha256:559ac229adefe0f7e2d4e32f5222f26927b6bb8ba44b9db08e2544afebf41984",
+    "core_image": "sha256:c7eb72ae4cc71208006b57e32122165f4f45b4e9c88d709b8ce05d28ceed6bdf",
+    "context_tokens": 8192,
+    "cpu_threads": 4,
+    "gpu_layers": 0,
+    "parallel_slots": 1,
+    "reasoning": "off",
+    "output_tokens_per_call": 768,
+    "output_token_budgets_by_stage": [
+      96,
+      768
+    ]
+  },
+  "limits": {
+    "max_automated_seconds": 900,
+    "max_total_seconds": 3600,
+    "max_case_seconds": 125,
+    "minimum_free_bytes_before_loading": 5368709120,
+    "minimum_free_safety_bytes": 805306368,
+    "model_memory_bytes": 4294967296,
+    "core_memory_bytes": 268435456,
+    "owned_disk_bytes": 67108864,
+    "new_download_bytes": 0,
+    "automatic_retries": 0,
+    "stop_on_first_case_failure": true
+  },
+  "fields": {
+    "teacher": [
+      "name",
+      "subject",
+      "status"
+    ],
+    "student": [
+      "name",
+      "status"
+    ],
+    "batch": [
+      "name",
+      "status"
+    ],
+    "student-fees": [
+      "name",
+      "subject",
+      "balance_status"
+    ],
+    "session": [
+      "name",
+      "teacher",
+      "from",
+      "through",
+      "status"
+    ],
+    "attendance": [
+      "name",
+      "batch",
+      "teacher",
+      "from",
+      "through",
+      "status"
+    ]
+  },
+  "cases": [
+    {
+      "id": "teacher-list",
+      "text": "Show the teachers in my academy.",
+      "expected": {
+        "kind": "search",
+        "entity": "teacher",
+        "filters": {},
+        "position": null
+      }
+    },
+    {
+      "id": "teacher-correction",
+      "text": "I said teachers",
+      "context": {
+        "entity": "student",
+        "filters": {
+          "name": "Mira",
+          "status": "Inactive"
+        },
+        "result_labels": [
+          "Result 1"
+        ]
+      },
+      "expected": {
+        "kind": "search",
+        "entity": "teacher",
+        "filters": {},
+        "position": null
+      }
+    },
+    {
+      "id": "teacher-specialty",
+      "text": "Only active piano ones",
+      "context": {
+        "entity": "teacher",
+        "filters": {},
+        "result_labels": []
+      },
+      "expected": {
+        "kind": "search",
+        "entity": "teacher",
+        "filters": {
+          "subject": "Piano",
+          "status": "Active"
+        },
+        "position": null
+      }
+    },
+    {
+      "id": "teacher-open",
+      "text": "Open the second result",
+      "context": {
+        "entity": "teacher",
+        "filters": {},
+        "result_labels": [
+          "Result 1",
+          "Result 2"
+        ]
+      },
+      "expected": {
+        "kind": "open",
+        "entity": "teacher",
+        "filters": {},
+        "position": 2
+      }
+    },
+    {
+      "id": "student-list",
+      "text": "List the students registered here.",
+      "expected": {
+        "kind": "search",
+        "entity": "student",
+        "filters": {},
+        "position": null
+      }
+    },
+    {
+      "id": "batch-list",
+      "text": "Show all batches.",
+      "expected": {
+        "kind": "search",
+        "entity": "batch",
+        "filters": {},
+        "position": null
+      }
+    },
+    {
+      "id": "outstanding-fees",
+      "text": "Which students have outstanding fees?",
+      "expected": {
+        "kind": "search",
+        "entity": "student-fees",
+        "filters": {
+          "balance_status": "Pending"
+        },
+        "position": null
+      }
+    },
+    {
+      "id": "student-fee-followup",
+      "text": "What does she owe?",
+      "context": {
+        "entity": "student",
+        "filters": {},
+        "result_labels": [
+          "Result 1"
+        ]
+      },
+      "expected": {
+        "kind": "open",
+        "entity": "student-fees",
+        "filters": {},
+        "position": 1
+      }
+    },
+    {
+      "id": "calendar-tomorrow",
+      "text": "Show classes tomorrow.",
+      "expected": {
+        "kind": "search",
+        "entity": "session",
+        "filters": {
+          "from": "Tomorrow"
+        },
+        "position": null
+      }
+    },
+    {
+      "id": "calendar-refine",
+      "text": "Only Nisha's",
+      "context": {
+        "entity": "session",
+        "filters": {
+          "from": "2026-11-24",
+          "through": "2026-11-30"
+        },
+        "result_labels": []
+      },
+      "expected": {
+        "kind": "search",
+        "entity": "session",
+        "filters": {
+          "from": "2026-11-24",
+          "through": "2026-11-30",
+          "teacher": "Nisha"
+        },
+        "position": null
+      }
+    },
+    {
+      "id": "recorded-attendance",
+      "text": "Show recorded student attendance today.",
+      "expected": {
+        "kind": "search",
+        "entity": "attendance",
+        "filters": {
+          "from": "Today"
+        },
+        "position": null
+      }
+    },
+    {
+      "id": "staff-attendance",
+      "text": "Show teacher attendance.",
+      "expected_kinds": [
+        "unsupported"
+      ]
+    },
+    {
+      "id": "missing-finance-tool",
+      "text": "Show outstanding student fees.",
+      "omit_entities": [
+        "student-fees"
+      ],
+      "expected_kinds": [
+        "unsupported"
+      ]
+    },
+    {
+      "id": "compound-mutation",
+      "text": "Create student Anika Rao, create an online batch called Tuesday Explorers and enroll her.",
+      "expected_kinds": [
+        "unsupported"
+      ]
+    }
+  ],
+  "host_checks": [
+    "Current actual Owner Identity login and ten-tool query health, no synthetic planner.",
+    "Student search then teacher correction in the same protected conversation; compare receipt record IDs/labels to current scoped teacher API.",
+    "Open first teacher; GET-only receipt recovery returns the same stored receipt without another model dispatch.",
+    "Teacher actor is denied this admin query route; no privilege grant by model or UI."
+  ],
+  "operations": [
+    "Preflight verifies existing weights/images, Mini commit/clean tracked tree, source bytes, active synthetic demo source/expiry/lease, loopback ports, RAM and exact services. Both D65 and D73 approvals are consumed; require a NEW approval bound to this packet and source.",
+    "Use only newly labelled containers/internal network. Never stop/restart existing demo SQL or other containers, Docker or apps; no new packages/downloads. If RAM is insufficient, stop before loading and report BLOCKED.",
+    "Run the unchanged fourteen exposed synthetic cases serially through actual integrated workspace API and loaded4B. Scope selection cannot see old filter values/labels; fresh argument extraction receives clean context; current permitted refinements/references are retained. Each case uses at most two independently bounded calls (96 then768 output tokens), actual template token counts and the existing shared inference lease/API deadline. No SQL/code/model-fact or domain mutation.",
+    "Only after all fourteen pass, publish Core on 127.0.0.1:49151, run current demo's protected host checks and permit owner conversation preview on3001 for the remainder of the one-hour window. The existing backend has ten tools; attendance is only a direct-Core semantic test in this packet.",
+    "At the first case failure, RAM/time/lease/service change or demo expiry/stop, stop/remove only owned evaluation containers/network. Preserve failure/raw replies privately; unexecuted cases stay UNRUN. No automatic retries, model substitution or prompt/guard relaxation.",
+    "Owner preview is conditional on complete automated success and ends at one hour or demo expiry, whichever comes first. Core shutdown returns AI to Unavailable; preserve SQL/accounts/Manual access and verify them afterward."
+  ],
+  "qualification_limits": [
+    "Cases are exposed diagnostics, not held-out intelligence certification.",
+    "This is one bounded local model experiment, not production/tier activation.",
+    "No compound write execution, all-role coverage, ChatGPT parity, 90-percent outcome measurement, throughput or physical-device acceptance is inferred.",
+    "Live demo backend66bb16a and current twelve-tool host4147048 remain distinct; do not report combined latest-host model acceptance.",
+    "Mini/Plus/Pro remain production-unqualified; Ultra deferred. Main/Azure/production data unchanged."
+  ],
+  "previous_experiment": {
+    "run": "81872e0fd0154c689a2879f0067d648a",
+    "accepted": false,
+    "passed": 1,
+    "executed": 2,
+    "unrun": 12,
+    "approvalConsumed": true
+  }
+}
