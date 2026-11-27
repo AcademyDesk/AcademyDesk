@@ -58,6 +58,17 @@ async function preflight(){
   return {active,demo,leaseBytes,lease,existing,weight,code,querySource,approval:bindings(),freeBytes:os.freemem(),ramGuardPassed:os.freemem()>=packet.limits.minimum_free_bytes_before_loading};
 }
 function validateApproval(file,expected){const approval=read(file);assert.equal(approval.approved,true,'Explicit approval missing');for(const[key,value]of Object.entries(expected))assert.equal(approval[key],value,'Approval binding changed: '+key);}
+function preserveContainerLogs(ids,inspectOwned,folder,readLogs=id=>cp.spawnSync('docker',['logs','--tail','200',id],{encoding:'utf8',windowsHide:true,timeout:10000,maxBuffer:256*1024})){
+  const metadata={};
+  for(const key of ['model','core','probe']){
+    if(!ids[key])continue;
+    try{inspectOwned(ids[key]);const output=readLogs(ids[key]),raw=Buffer.from((output.stdout||'')+(output.stderr||'')),kept=raw.subarray(0,128*1024);
+      fs.writeFileSync(path.join(folder,key+'-diagnostics.log'),kept);
+      metadata[key]={captured:true,bytes:kept.length,sha256:digest(kept),truncated:raw.length>kept.length||!!output.error,exit:output.status};
+    }catch{metadata[key]={captured:false,error:'capture_failed'};}
+  }
+  return metadata;
+}
 async function run(context,approvalFile){
   validateApproval(approvalFile,context.approval);
   assert.equal(context.ramGuardPassed,true,'5 GiB free RAM guard: stop before model loading');
@@ -75,7 +86,12 @@ async function run(context,approvalFile){
   const inspect=id=>{const c=JSON.parse(docker(['inspect',id]))[0];assert.equal(c.Config.Labels['academydesk.query.eval'],run);assert.ok(Object.values(names).includes(c.Name.slice(1)));return c;};
   const ids={};
   function stopOwned(key){const id=ids[key]||docker(['ps','-aq','--no-trunc','--filter','name=^/'+names[key]+'$','--filter','label='+label]);if(!id)return;const c=inspect(id);if(c.State.Running)docker(['stop','--timeout','3',c.Id]);docker(['rm',c.Id]);delete ids[key];}
-  function abort(reason){if(aborted)return;aborted=true;result.abort=reason;save();for(const key of ['probe','core','model'])try{stopOwned(key);}catch{result.cleanupErrors.push(key);}}
+  const capture=()=>{result.containerLogs={...result.containerLogs,...preserveContainerLogs(ids,inspect,folder)};save();};
+  function abort(reason){if(aborted)return;aborted=true;result.abort=reason;save();
+    // Reclaim RAM before collecting evidence, but retain stopped containers until
+    // their bounded private logs are saved. Never inspect a foreign container.
+    for(const key of ['probe','core','model'])if(ids[key])try{const c=inspect(ids[key]);if(c.State.Running)docker(['stop','--timeout','3',c.Id]);}catch{result.cleanupErrors.push(key);}
+    capture();for(const key of ['probe','core','model'])try{stopOwned(key);}catch{result.cleanupErrors.push(key);}}
   const live=()=>{assert.deepEqual(fs.readFileSync(leaseFile),context.leaseBytes);process.kill(context.lease.pid,0);
     assert.equal(fs.existsSync(context.active.stop),false);assert.ok(Date.now()<Date.parse(context.demo.expiresAtUtc));
     assert.deepEqual(running().filter(id=>!Object.values(ids).includes(id)),context.existing,'Existing running services changed');};
@@ -136,6 +152,7 @@ async function run(context,approvalFile){
   }catch(error){result.failure=error.message;console.log(JSON.stringify({run,phase:'failed',reason:error.message}));}
   finally{
     clearInterval(monitor);clearTimeout(deadline);
+    capture();
     try{result.cases=fs.readFileSync(path.join(folder,'semantic.jsonl'),'utf8').split(/\r?\n/).filter(Boolean).flatMap(line=>{try{const row=JSON.parse(line);return row.id?[{id:row.id,passed:row.passed,status:row.status,seconds:row.seconds}]:[];}catch{return[];}});}catch{result.cases=[];}
     result.unrun=packet.cases.filter(row=>!result.cases.some(done=>done.id===row.id)).map(row=>row.id);
     for(const key of ['probe','core','model'])try{stopOwned(key);}catch{result.cleanupErrors.push(key);}
@@ -182,4 +199,4 @@ if(require.main===module){(async()=>{const watchdogAt=process.argv.indexOf('--wa
   const context=await preflight();if(!process.argv.includes('--execute')){console.log(JSON.stringify({preflight:true,approvalRequired:true,...context.approval,freeBytes:context.freeBytes,ramGuardPassed:context.ramGuardPassed,modelLoaded:false,source:context.code}));return;}
   const at=process.argv.indexOf('--approval');assert.ok(at>=0&&process.argv[at+1],'Bound NEW explicit approval file is required');await run(context,process.argv[at+1]);
 })().catch(error=>{console.error(error.message);process.exitCode=1;});}
-module.exports={bindings,validateApproval,packetFileFor};
+module.exports={bindings,validateApproval,packetFileFor,preserveContainerLogs};

@@ -1,5 +1,32 @@
 # Academy Desk handoff
 
+## D74/D75 actual 4B results and diagnostic recovery — 27 November 2026
+
+- [x] Both recent approved packets ran24November and stopped as required. D73:
+  teacher-list PASS53.707s, stale-name correction FAIL23.882s;1/2passed,12UNRUN.
+  D74 source76560ee: first teacher-list503/16.926s;0/1passed,13UNRUN. Both owned
+  cleanups0errors and owner demo preserved at completion. No default promotion.
+- [x] D74context isolation published76560ee;344Linux model-free/78Windows passed.
+  The failed live retest does not establish that the isolation fix works live.
+- [x] New diagnostic source d144e0aed426e0b01af070a4a63b780ace78d4f8 published;
+  closed stage/reason logs, public-safe503,32-level JSON bound and bounded private
+  owned-container capture.361Linux model-free/80pure Windows/21Academy guards pass.
+- [ ] D74internal failure cause UNKNOWN: old runner did not retain Core logs.
+  Do not invent a token-limit/model-quality diagnosis. No new inference27Nov.
+- [x] Exact9f6ac91 ordinary CI PASS:2,799API,39query native SQL,locked audits0,
+  full frontend/container/native checks. Required paired source credential still
+  fails. Mini76560ee full CI13failed/1,978passed/63errors; original files absent.
+  Current d144e0a full CI also FAILS:13missing-file failures,1,995passed,63missing-
+  file errors,1skipped/5passed subtests; new diagnostic tests are not failing.
+- [ ] Old demo EXPIRED, ports/PIDs absent; stale lease archived intact after
+  inspection. Docker started for offline checks only; no containers now running.
+  Existing SQL/model/evidence/credentials preserved; don't advertise old login.
+- [ ] Both packet approvals consumed. Next prepare a fresh isolated diagnostic
+  environment/source-bound packet, then explicit loading approval. No tier/model
+  retirement, activation, main/Azure or production/90%claim. Keep Sol High.
+
+[D74/D75 exact results and limitations](QA/REPORTS/D74_D75_4B_RESULTS_2026-11-27.md)
+
 ## D73 reply boundary and model packet — 24 November 2026
 
 - [x] Mini e4b2d1ccd47bb5a149d9223456c531883ba6ae2b published; task/query

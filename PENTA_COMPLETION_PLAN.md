@@ -24,6 +24,21 @@ implementation order below; the D59 failure evidence remains accurate.
 
 ## D62 implementation checkpoint — 23 November 2026
 
+### D74/D75 measured model result — verified27November2026
+
+- [x] Ran both explicitly approved recent4Bpackets24November: first1/2passed,
+  then context-isolation retest0/1passed/503; remaining cases UNRUN, cleanup clean.
+- [x] Scope/argument memory isolation implemented; live qualification still FAILS.
+  Safe stage/reason logging and bounded private logs now prevent another blind
+  diagnostic.361Linux model-free/80pure Windows/21Academy guard cases pass.
+- [ ]4Bdefault suitability UNDECIDED; preserve Mini/Core/engines. No Plus/Pro/Ultra
+  activation or bigger-model substitution from failed/partial tests. Ultra deferred.
+- [ ] Fresh diagnostic environment/packet/approval; actual failure cause, semantic
+  correctness, grounded outcomes, latency/capacity, all-role/compound operations
+  and original B1-B4release gates. Old preview expired; no new inference27Nov.
+
+QA/REPORTS/D74_D75_4B_RESULTS_2026-11-27.md is current. Stay Sol High.
+
 ### D73 current-source acceptance and model next step
 
 - [x] Aurora/attendance4147048 ordinary exact CI:2,799API,39native query SQL/

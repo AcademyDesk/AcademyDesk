@@ -1,5 +1,20 @@
 # AcademyDesk QA control centre — Phase 1
 
+## D74/D75 — actual 4B failures / diagnostic evidence, 27 November 2026
+
+- [x] Recovered24November runs: D73one pass/one stale-filter failure; D74first
+  query503/16.926s.12and13cases UNRUN respectively; owned cleanups0errors.
+- [x] Context isolation76560ee and safe diagnostics d144e0a published;361current
+  Linux model-free/80pure Windows checks and21Academy guard checks pass.
+- [x]9f6ac91 ordinary exact CI PASS:2,799API/39query SQL/locked audits0/build/
+  container/retained native gates. Paired job still missing private-source secret.
+- [ ] D74precise failure unknown (old Core logs not retained); no live pass after
+  diagnostics. Expired demo is not an available login. Both loading approvals
+  consumed; fresh diagnostic packet/environment/approval, real-model semantics/
+  latency, all-role/compound outcomes and original release gates remain open.
+
+[Current report](REPORTS/D74_D75_4B_RESULTS_2026-11-27.md)
+
 ## D73 — completion boundary and current native CI, 24 November 2026
 
 - [x] Mini transport strengthened;322Linux model-free/56Windows cases pass.

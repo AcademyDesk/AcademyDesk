@@ -25,6 +25,14 @@ cached model was used; no download, model replacement or Azure action occurred.
 
 ## Root causes verified in current source
 
+27November verification: D73real4Bteacher correction selected teacher but copied
+student name Mira; D74context isolation implemented at Mini76560ee, but its real
+retest stopped at first503/16.926s,13UNRUN. Internal cause unknown because old
+runner removed Core logs. Current d144e0a diagnostics preserve closed failure
+stage/reason and bounded private logs;361Linux model-free checks pass. No live
+pass follows this change. Issue remains OPEN;4Bhas not earned default promotion.
+See ../REPORTS/D74_D75_4B_RESULTS_2026-11-27.md. Do not discard old engines/evidence.
+
 D73 closes a separate transport gap: structured task/query generation must stop
 normally and return one assistant JSON object without duplicate keys and within
 response bounds before compilation.322selected Linux model-free checks pass,

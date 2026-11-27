@@ -1,6 +1,6 @@
 'use strict';
 const test=require('node:test'),a=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
-const{bindings,validateApproval,packetFileFor}=require('./penta-connected-query-evaluation.cjs');
+const{bindings,validateApproval,packetFileFor,preserveContainerLogs}=require('./penta-connected-query-evaluation.cjs');
 const directory=path.resolve(__dirname,'../../.build-check/d73-evaluator-approval-tests');
 fs.mkdirSync(directory,{recursive:true});
 test('new approval must bind every current packet/evaluator/probe/source component',()=>{
@@ -29,4 +29,18 @@ test('packet selection accepts reviewed paths and rejects arbitrary or escaping 
   a.throws(()=>packetFileFor('.build-check/arbitrary.json'),/reviewed repository/);
   a.throws(()=>packetFileFor('QA/HANDOFF/arbitrary.json'),/Unreviewed model packet/);
   a.throws(()=>packetFileFor('QA/HANDOFF/../D73_CONNECTED_4B_PACKET_2026-11-24.json'),/reviewed repository/);
+});
+test('private diagnostic capture verifies ownership before reading or writing logs',()=>{
+  const folder=fs.mkdtempSync(path.join(directory,'foreign-'));let reads=0;
+  const result=preserveContainerLogs({core:'foreign'},()=>{throw Error('Wrong label');},folder,()=>{reads++;return{};});
+  a.equal(reads,0);a.deepEqual(fs.readdirSync(folder),[]);a.deepEqual(result,{core:{captured:false,error:'capture_failed'}});
+});
+test('owned diagnostics retain stdout/stderr and hashes with a strict byte limit',()=>{
+  const folder=fs.mkdtempSync(path.join(directory,'owned-'));let checked=false;
+  const result=preserveContainerLogs({core:'owned'},id=>{a.equal(id,'owned');checked=true;},folder,()=>{
+    a.equal(checked,true);return{status:0,stdout:'x'.repeat(128*1024),stderr:'OVER_LIMIT'};
+  });
+  const bytes=fs.readFileSync(path.join(folder,'core-diagnostics.log'));
+  a.equal(bytes.length,128*1024);a.equal(result.core.truncated,true);a.equal(result.core.bytes,bytes.length);
+  a.equal(result.core.sha256,require('node:crypto').createHash('sha256').update(bytes).digest('hex'));
 });

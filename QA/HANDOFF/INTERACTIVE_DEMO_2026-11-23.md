@@ -1,5 +1,16 @@
 # Interactive synthetic academy demo — 23 November 2026
 
+## Current state — verified 27 November 2026
+
+The 24 November demo has EXPIRED. Its supervisor and listeners are absent; do not
+advertise 3000/3001 or reuse old credentials as a live environment. Existing SQL
+container/data/keys/password files remain preserved. The dead expired owner's
+lease was archived intact after PID/deadline/listener inspection. No model or
+demo was restarted on 27 November; Docker was started only for offline model-free
+validation. Both recent 4B packet approvals are consumed. A fresh supervised
+isolated environment and separately approved source-bound model packet are next.
+See ../REPORTS/D74_D75_4B_RESULTS_2026-11-27.md. Historical instructions follow.
+
 ## D72 Aurora AI preview — 24 November 2026
 
 Open http://127.0.0.1:3001/login for the new owner-requested AI workbench. Use the
