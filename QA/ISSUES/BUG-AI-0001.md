@@ -25,6 +25,13 @@ cached model was used; no download, model replacement or Azure action occurred.
 
 ## Root causes verified in current source
 
+28November D77:3attempts7/8,7/8,2/3,6/6/11UNRUN. Current financial target
+not yet reliable; prompt-only change also lost a teacher status filter. New
+context-bound single-action catalog at Mini ffba8f2 passes391selected Linux checks;
+live acceptance pending. Frozen14cases unchanged. Standing local authorization
+now recorded; no default promotion or issue closure. Read
+../REPORTS/D77_REFERENCE_4B_RESULTS_2026-11-28.md.
+
 28November D76: actual evidence proves first empty-context503 was completed
 teacher/search/refine, then an open reply included an illegal name filter. Source
 9f09e48 passes all4teacher cases plus student/batch/outstanding fees; latest7/8

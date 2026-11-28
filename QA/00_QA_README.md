@@ -1,5 +1,28 @@
 # AcademyDesk QA control centre — Phase 1
 
+## D77 results / D78 action catalog — 28 November 2026
+
+- [x] Owner standing local development/model testing/RAM cleanup authorization
+  recorded in AGENTS.md; GitHub feature sync and existing CI allowed. No repeated
+  per-run questions; fresh bounded source records/guards remain mandatory. No
+  Azure, paid cloud, external inference, production/main/tier promotion.
+- [x] D77 all3attempts finished, exact cases unchanged:7/8,7/8,2/3. First omitted
+  current ordinal; next selected cross-view list refinement (safely clarified);
+  last prompt change regressed teacher refinement by dropping prior status.
+  Remaining6/6/11cases UNRUN. Owned cleanup clean, existing services preserved.
+- [x] Mini ffba8f271bec21e95a8ae68c54fb490bdadf6759 replaces independent scope
+  fields with a single context/permitted-tool catalog choice. Original external
+  query/host authorization/finance/audit contracts remain;391selected Linux and
+ 26Academy guard tests pass. No frozen evaluator/expectation changes.
+- [ ] D78 fresh local catalog window prepared under standing permission, same14
+  exposed cases/weights/resource limits. Live acceptance still pending.
+- [ ] BUG-AI-0001 OPEN; all-role/compound outcomes, held-out semantics, latency,
+  private-source Actions credential, Mini originals/full CI and enterprise/
+  device/staging/release gates remain.4Bnot production default; Ultra deferred.
+
+[Current evidence](REPORTS/D77_REFERENCE_4B_RESULTS_2026-11-28.md). Sol High.
+
+
 ## D76 — bounded real-model diagnostics, 28 November 2026
 
 - [x] Three approved attempts completed:0/1,3/4,7/8;13/10/6cases UNRUN. Exact

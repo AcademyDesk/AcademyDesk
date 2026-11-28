@@ -1,5 +1,23 @@
 # Academy Desk agent instructions
 
+## Standing local authorization — owner update, 28 November 2026
+
+The owner has explicitly authorized local development, model testing, necessary
+RAM cleanup and continuing local retests without repeatedly asking permission.
+This supersedes the historical per-experiment model-loading stop below for this
+local work. Prepare and retain bounded, source-bound experiment records and
+validation evidence, but do not ask again for each local retest or repair window.
+Retain RAM/VRAM/time/disk limits, current authority checks, first-failure evidence,
+owned-resource cleanup and protection of worktrees, data, credentials and models.
+Do not silently weaken a guard or reuse a consumed bounded-run record; create a
+fresh bounded record under this standing authorization when further work is needed.
+
+The owner also explicitly allows GitHub commits, feature-branch pushes and existing
+GitHub CI. Avoid Azure, paid cloud compute and external AI inference. Standing
+local access does not authorize production data changes, main merges, paid
+provisioning, model/tier promotion or Azure deployment; existing release gates
+and independent host permissions still apply. Preserve all legitimate work.
+
 ## Single Desktop owner — 23 November 2026
 
 The owner has ended the split Cloud/Desktop execution model. Desktop Codex owns

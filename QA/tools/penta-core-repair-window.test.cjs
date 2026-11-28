@@ -26,3 +26,11 @@ test('validation evidence must match exact source, hash, coverage and all passin
   a.throws(()=>validationResult(make('<testsuite tests="360" failures="0" errors="0" skipped="0"></testsuite>'),'synthetic-source'),/coverage missing/);
   a.throws(()=>validationResult(make('<testsuite tests="361" failures="0" errors="0" skipped="0"></testsuite>'),'another-source'),/another Mini/);
 });
+
+test('standing-authorized catalog window preserves frozen cases and resource limits with distinct state',()=>{
+ const previous=JSON.parse(fs.readFileSync(selectProposal('QA/HANDOFF/D77_REFERENCE_4B_REPAIR_WINDOW_2026-11-28.json').file));
+ const selected=selectProposal('QA/HANDOFF/D78_ACTION_CATALOG_4B_WINDOW_2026-11-28.json'),current=JSON.parse(fs.readFileSync(selected.file));
+ a.deepEqual(current.cases,previous.cases);a.deepEqual(current.limits,previous.limits);a.deepEqual(current.model,previous.model);
+ a.notEqual(selected.directory,selectProposal('QA/HANDOFF/D77_REFERENCE_4B_REPAIR_WINDOW_2026-11-28.json').directory);
+ a.equal(current.may_execute,false);
+});
