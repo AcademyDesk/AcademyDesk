@@ -1,5 +1,27 @@
 # AcademyDesk PENTA AI — single-owner completion ledger
 
+## D79 final measured result — 28 November 2026
+
+- [x] Standing owner local testing/RAM cleanup/GitHub authorization recorded in
+  both repositories; no repeated per-run questions. Main/Azure/paid cloud untouched.
+- [x] Action catalog, unique student financial reference and source-grounded dates:
+ 398selected Linux checks PASS;7diagnostic adapter and27Academy guard checks PASS.
+- [x] All3D79sources ran, stopped at first failure:8/9,8/9,9/10. Latest passes all
+ 4teacher cases, student/batch/fees/current-student fees and Tomorrow calendar.
+  Cleanup0errors, existing services preserved; owned containers removed/lease released.
+- [ ] Calendar follow-up still misroutes to student;4cases UNRUN. Real source
+ 3183f60not qualified; documentation-only Mini successor 5b16dd7f42db6494bb92468db7bca15fb337a090.
+  BUG-AI-0001 remains OPEN; no4Bdefault/tier/production/90%claim.
+- [x] ed92fa5 ordinary exact GitHub application/native job PASS; paired job FAILS
+  required private-source access.3183f60Mini full CI FAILS:13missing-file failures,
+ 2,032passed,63missing-file errors,1skipped; all76failure/error rows are missing files.
+- [ ] Next Sol High: semantic catalog/field-role context and refinement safety,
+  fresh bounded record under standing permission, unchanged/held-out semantics,
+  protected real host outcomes; original archives/credential/device/staging/gates.
+
+[Actual results and next tasks](QA/REPORTS/D79_4B_CATALOG_DATE_RESULTS_2026-11-28.md).
+
+
 ## D77 results / D78 action catalog — 28 November 2026
 
 - [x] Owner standing local development/model testing/RAM cleanup authorization

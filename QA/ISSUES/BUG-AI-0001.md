@@ -25,6 +25,12 @@ cached model was used; no download, model replacement or Azure action occurred.
 
 ## Root causes verified in current source
 
+28November D79latest3183f60:9/10executed,4UNRUN. Teacher cases and relative
+calendar date now pass; calendar refinement incorrectly becomes a student search.
+398selected Linux checks pass. Still OPEN; source-bound Core diagnostic is not
+all-role/host/held-out/production acceptance. See
+../REPORTS/D79_4B_CATALOG_DATE_RESULTS_2026-11-28.md.
+
 28November D77:3attempts7/8,7/8,2/3,6/6/11UNRUN. Current financial target
 not yet reliable; prompt-only change also lost a teacher status filter. New
 context-bound single-action catalog at Mini ffba8f2 passes391selected Linux checks;
