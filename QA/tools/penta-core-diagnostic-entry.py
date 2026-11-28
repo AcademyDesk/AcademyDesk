@@ -64,7 +64,17 @@ class DiagnosticTransport(httpx.AsyncBaseTransport):
             schema = payload.get("response_format", {}).get("json_schema", {})
             properties = set(schema.get("schema", {}).get("properties", {}))
             budget = payload.get("max_tokens")
-            permitted = {96, 192, 256} if properties == {"kind", "entity", "mode"} else {768} if properties == {"kind", "entity", "mode", "filters", "remove", "position"} else set()
+            shape = schema.get("schema", {})
+            action = shape.get("properties", {}).get("action", {})
+            choices = action.get("enum", [])
+            action_scope = (properties == {"action"} and shape.get("type") == "object"
+                and shape.get("required") == ["action"] and action.get("type") == "string"
+                and isinstance(choices, list) and 2 <= len(choices) <= 32
+                and all(isinstance(value, str) and value in ({"clarify", "unsupported"} |
+                    {f"{operation}:{entity}" for operation in ("list", "filter", "current", "position")
+                     for entity in ("teacher", "student", "batch", "student-fees", "session", "attendance")}) for value in choices)
+                and len(choices) == len(set(choices)))
+            permitted = {96, 192, 256} if properties == {"kind", "entity", "mode"} or action_scope else {768} if properties == {"kind", "entity", "mode", "filters", "remove", "position"} else set()
             if type(budget) is not int or budget not in permitted or payload.get("temperature") != 0 or payload.get("stream") is not False or schema.get("strict") is not True or schema.get("schema", {}).get("additionalProperties") is not False:
                 raise ValueError("Diagnostic generation profile changed")
             if payload.get("chat_template_kwargs", {}).get("enable_thinking") not in (None, False):

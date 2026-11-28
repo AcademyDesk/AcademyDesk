@@ -44,3 +44,23 @@ at inspection; paired job failed private access. No previous pass relabeled.
 Keep BUG-AI-0001 OPEN. No14/14, held-out/full-role/host/device/compound/90%claim,
 no default-model decision, Mini/Plus/Pro remain unqualified and Ultra deferred.
 Next Sol High: actual catalog-model result, then held-out and full host outcomes.
+
+## D78 actual transport failure / D79 corrected continuation
+
+D78 run46be7e28b1c944df9a400c03a5989fb1 on Mini ffba8f2 stopped at first
+case503/0.082s:0/1,13UNRUN. Diagnostic transport still recognized the previous
+scope shape only; zero model completion calls, so this is NOT a model semantic
+score. Owned cleanup0errors/services preserved; evidence retained privately.
+Seven adapter checks and actual Mini-source-to-diagnostic-transport compatibility
+with mocked HTTP replies now pass (no inference). Same source391Linux checks
+remain valid. D79fresh source-bound window preserves all14cases/resources; no
+old binding/state re-used. Owner standing local authorization applies. Live
+acceptance pending; BUG-AI-0001 OPEN, no default/production/tier promotion.
+
+
+Current Mini full CI ffba8f2:13failed,2,025passed,1skipped,1warning,63errors,
+5passed subtests. Failures/errors reference genuine missing archive/acquisition/
+review inputs; no substitution/waiver. Exact run:
+https://github.com/AcademyDesk/PentaMini/actions/runs/46112965947
+Academy ed92fa5 exact CI started:
+https://github.com/AcademyDesk/AcademyDesk/actions/runs/46113008723

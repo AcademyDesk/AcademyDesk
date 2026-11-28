@@ -90,5 +90,41 @@ class EntryTests(unittest.TestCase):
                 self.assertTrue(json.loads(Path(directory, 'completion-001.json').read_text())['truncated'])
         asyncio.run(run())
 
+    def test_new_closed_action_scope_is_forwarded_unchanged_with_existing_budget(self):
+        async def run():
+            with tempfile.TemporaryDirectory() as directory:
+                calls = []
+                def respond(request):
+                    calls.append(json.loads(request.content))
+                    return httpx.Response(200, content=b'{"action":"list:teacher"}')
+                body = payload()
+                body['response_format']['json_schema']['schema'] = {'type': 'object',
+                    'properties': {'action': {'type': 'string', 'enum': ['list:teacher', 'clarify', 'unsupported']}},
+                    'required': ['action'], 'additionalProperties': False}
+                async with httpx.AsyncClient(transport=entry.DiagnosticTransport(directory, lambda: httpx.MockTransport(respond))) as client:
+                    response = await client.post('http://model:8080/v1/chat/completions', json=body)
+                self.assertEqual(calls, [body])
+                self.assertEqual(response.content, b'{"action":"list:teacher"}')
+                self.assertEqual(Path(directory, 'completion-001.bin').read_bytes(), response.content)
+        asyncio.run(run())
+
+    def test_action_schema_unknown_choices_extra_shape_or_argument_budget_never_dispatch(self):
+        async def run():
+            with tempfile.TemporaryDirectory() as directory:
+                def factory(): raise AssertionError('Must not dispatch')
+                async with httpx.AsyncClient(transport=entry.DiagnosticTransport(directory, factory)) as client:
+                    for choices, required, budget in [(['execute:sql', 'clarify'], ['action'], 96),
+                            (['list:teacher', 'list:teacher'], ['action'], 96),
+                            (['list:teacher', 'clarify'], [], 96),
+                            (['list:teacher', 'clarify'], ['action'], 768)]:
+                        body = payload(budget)
+                        body['response_format']['json_schema']['schema'] = {'type': 'object',
+                            'properties': {'action': {'type': 'string', 'enum': choices}},
+                            'required': required, 'additionalProperties': False}
+                        with self.assertRaises(ValueError):
+                            await client.post('http://model:8080/v1/chat/completions', json=body)
+                self.assertEqual(list(Path(directory).iterdir()), [])
+        asyncio.run(run())
+
 
 if __name__ == '__main__': unittest.main()

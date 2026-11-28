@@ -34,3 +34,9 @@ test('standing-authorized catalog window preserves frozen cases and resource lim
  a.notEqual(selected.directory,selectProposal('QA/HANDOFF/D77_REFERENCE_4B_REPAIR_WINDOW_2026-11-28.json').directory);
  a.equal(current.may_execute,false);
 });
+
+test('new diagnostic transport binding uses a fresh window without changing semantic/resource acceptance',()=>{
+ const old=selectProposal('QA/HANDOFF/D78_ACTION_CATALOG_4B_WINDOW_2026-11-28.json'),next=selectProposal('QA/HANDOFF/D79_CATALOG_TRANSPORT_4B_WINDOW_2026-11-28.json');
+ const a0=JSON.parse(fs.readFileSync(old.file)),a1=JSON.parse(fs.readFileSync(next.file));
+ a.notEqual(old.directory,next.directory);a.deepEqual(a1.cases,a0.cases);a.deepEqual(a1.model,a0.model);a.deepEqual(a1.limits,a0.limits);
+});

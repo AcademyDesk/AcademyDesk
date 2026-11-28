@@ -5,7 +5,7 @@ const fs=require('node:fs'),path=require('node:path'),cp=require('node:child_pro
 const crypto=require('node:crypto'),os=require('node:os'),a=require('node:assert/strict');
 const root=path.resolve(__dirname,'../..'),mini='D:/PENTA-Models/operations/mini-academy-conversation-20261123';
 function selectProposal(file){const target=path.resolve(root,file);a.equal(path.dirname(target),path.join(root,'QA/HANDOFF'),'Unreviewed proposal path');
-  const names={'D76_CORE_4B_REPAIR_WINDOW_2026-11-28.json':'d76-core-window','D77_REFERENCE_4B_REPAIR_WINDOW_2026-11-28.json':'d77-core-window','D78_ACTION_CATALOG_4B_WINDOW_2026-11-28.json':'d78-core-window'};
+  const names={'D76_CORE_4B_REPAIR_WINDOW_2026-11-28.json':'d76-core-window','D77_REFERENCE_4B_REPAIR_WINDOW_2026-11-28.json':'d77-core-window','D78_ACTION_CATALOG_4B_WINDOW_2026-11-28.json':'d78-core-window','D79_CATALOG_TRANSPORT_4B_WINDOW_2026-11-28.json':'d79-core-window'};
   a.ok(Object.hasOwn(names,path.basename(target)),'Unreviewed proposal file');return{file:target,directory:path.join(root,'.build-check',names[path.basename(target)])};}
 const proposalAt=process.argv.indexOf('--proposal'),selected=selectProposal(proposalAt>=0?process.argv[proposalAt+1]:'QA/HANDOFF/D76_CORE_4B_REPAIR_WINDOW_2026-11-28.json');
 const proposalFile=selected.file;
