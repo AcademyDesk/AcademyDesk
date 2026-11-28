@@ -4,13 +4,17 @@
 const fs=require('node:fs'),path=require('node:path'),cp=require('node:child_process');
 const crypto=require('node:crypto'),os=require('node:os'),a=require('node:assert/strict');
 const root=path.resolve(__dirname,'../..'),mini='D:/PENTA-Models/operations/mini-academy-conversation-20261123';
-const proposalFile=path.join(root,'QA/HANDOFF/D76_CORE_4B_REPAIR_WINDOW_2026-11-28.json');
+function selectProposal(file){const target=path.resolve(root,file);a.equal(path.dirname(target),path.join(root,'QA/HANDOFF'),'Unreviewed proposal path');
+  const names={'D76_CORE_4B_REPAIR_WINDOW_2026-11-28.json':'d76-core-window','D77_REFERENCE_4B_REPAIR_WINDOW_2026-11-28.json':'d77-core-window'};
+  a.ok(Object.hasOwn(names,path.basename(target)),'Unreviewed proposal file');return{file:target,directory:path.join(root,'.build-check',names[path.basename(target)])};}
+const proposalAt=process.argv.indexOf('--proposal'),selected=selectProposal(proposalAt>=0?process.argv[proposalAt+1]:'QA/HANDOFF/D76_CORE_4B_REPAIR_WINDOW_2026-11-28.json');
+const proposalFile=selected.file;
 const proposal=JSON.parse(fs.readFileSync(proposalFile));
 const probeFile=path.join(__dirname,'penta-connected-query-probe.py'),helperFile=path.join(__dirname,'penta-connected-query-evaluation.cjs');
 const entryFile=path.join(__dirname,'penta-core-diagnostic-entry.py');
 const{preserveContainerLogs}=require('./penta-connected-query-evaluation.cjs');
 const coordination='D:/AcademyDesk-codex-p0/.build-check';
-const windowDir=path.join(root,'.build-check/d76-core-window');
+const windowDir=selected.directory;
 const hash=bytes=>crypto.createHash('sha256').update(bytes).digest('hex');
 const read=file=>JSON.parse(fs.readFileSync(file));
 const command=(file,args,options={})=>cp.execFileSync(file,args,{encoding:'utf8',windowsHide:true,timeout:30000,stdio:['ignore','pipe','pipe'],...options}).trim();
@@ -79,7 +83,7 @@ async function execute(context,approvalFile,validationFile){
     '--memory',String(memory),'--memory-swap',String(memory),'--cpus',key==='model'?'4':'1','--pids-limit','128','--cap-drop','ALL','--security-opt','no-new-privileges',
     '--log-driver','json-file','--log-opt','max-size=1m','--log-opt','max-file=1'];
   try{
-    live();save();const watcher=cp.spawn(process.execPath,[__filename,'--watchdog',resultFile],{detached:true,windowsHide:true,stdio:'ignore'});watcher.unref();
+    live();save();const watcher=cp.spawn(process.execPath,[__filename,'--proposal',proposalFile,'--watchdog',resultFile],{detached:true,windowsHide:true,stdio:'ignore'});watcher.unref();
     monitor=setInterval(()=>{try{live();if(Date.now()>result.deadline)abort('Attempt/window deadline');if(os.freemem()<proposal.limits.minimum_free_safety_bytes)abort('768 MiB safety guard');
       if(footprint(windowDir)+9*1024*1024>proposal.limits.owned_disk_bytes)abort('Evidence disk cap');
     }catch{abort('Validation lease or existing services changed');}},1000);
@@ -133,4 +137,4 @@ if(require.main===module)(async()=>{
   const approvalAt=process.argv.indexOf('--approval'),validationAt=process.argv.indexOf('--validation');a.ok(approvalAt>=0&&validationAt>=0,'Approval and validation records required');
   await require('D:/AcademyDesk-codex-p0/QA/tools/local-validation-lease.cjs').withLease(coordination,'penta-core-repair',()=>execute(context,process.argv[approvalAt+1],process.argv[validationAt+1]));
 })().catch(error=>{console.error(error.message);process.exitCode=1;});
-module.exports={bindings,validateApproval,validateAttempt,validationResult};
+module.exports={bindings,validateApproval,validateAttempt,validationResult,selectProposal};

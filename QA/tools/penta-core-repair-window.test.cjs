@@ -1,8 +1,14 @@
 const test=require('node:test'),a=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
-const{bindings,validateApproval,validateAttempt,validationResult}=require('./penta-core-repair-window.cjs');
+const{bindings,validateApproval,validateAttempt,validationResult,selectProposal}=require('./penta-core-repair-window.cjs');
 test('repair window rejects missing approval and any altered binding',()=>{
   a.throws(()=>validateApproval({approved:false,...bindings()}),/approval missing/);
   for(const key of Object.keys(bindings()))a.throws(()=>validateApproval({approved:true,...bindings(),[key]:'synthetic-invalid'}),/binding changed/);
+});
+test('reviewed continuation has distinct state and cannot reuse an arbitrary window path',()=>{
+  const first=selectProposal('QA/HANDOFF/D76_CORE_4B_REPAIR_WINDOW_2026-11-28.json'),next=selectProposal('QA/HANDOFF/D77_REFERENCE_4B_REPAIR_WINDOW_2026-11-28.json');
+  a.notEqual(first.directory,next.directory);
+  a.throws(()=>selectProposal('QA/HANDOFF/arbitrary.json'),/Unreviewed proposal file/);
+  a.throws(()=>selectProposal('.build-check/D77_REFERENCE_4B_REPAIR_WINDOW_2026-11-28.json'),/Unreviewed proposal path/);
 });
 test('attempt limit, deadline and source/code retries are independently enforced',()=>{
   a.doesNotThrow(()=>validateAttempt({deadline:20,attempts:[]},'new',10,'code-new'));

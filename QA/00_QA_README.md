@@ -1,5 +1,18 @@
 # AcademyDesk QA control centre — Phase 1
 
+## D76 — bounded real-model diagnostics, 28 November 2026
+
+- [x] Three approved attempts completed:0/1,3/4,7/8;13/10/6cases UNRUN. Exact
+  private replies/logs/source/usage/cleanup retained; no score/assertion changes.
+- [x] Original4teacher regressions plus student/batch/outstanding-fee cases pass
+  in real4B at9f09e48; no latest host/SQL/browser acceptance inferred.
+- [x]370current Linux model-free checks for typed reference/no-broadening repair.
+- [ ] Student-fee follow-up live repair, remaining6cases, held-out/capacity/roles,
+  original enterprise/device/staging/release gates. BUG-AI-0001 remains OPEN.
+  D76approval consumed; D77continuation prepared and awaiting explicit approval.
+
+[D76 evidence and limits](REPORTS/D76_4B_REPAIR_WINDOW_2026-11-28.md)
+
 ## D74/D75 — actual 4B failures / diagnostic evidence, 27 November 2026
 
 - [x] Recovered24November runs: D73one pass/one stale-filter failure; D74first

@@ -24,6 +24,21 @@ implementation order below; the D59 failure evidence remains accurate.
 
 ## D62 implementation checkpoint — 23 November 2026
 
+### D76 real-model repair — 28 November 2026
+
+- [x] Bounded3attempt window completed with actual raw evidence: empty-context
+  refinement rejection, invalid open filters, compatible-reference loss isolated.
+- [x] Generated-state/operation constraints and focused prompts: real4Bpasses7
+  latest executed cases including all4teacher cases.10prior passes are overlapping
+  diagnostics, not10unique qualified workflows; latest7/8,6casesUNRUN.
+- [x] Typed reference metadata and fail-closed broadening guard:370Linux model-
+  free PASS at45d7a5a; live reference acceptance pending.
+- [ ] Separate approved continuation, all14cases, held-out and real host/roles/
+  outcomes, latency/capacity and original release gates. No4Bdefault promotion,
+  engine deletion or90%claim. Mini/Core preserved; Ultra deferred. Sol High next.
+
+QA/REPORTS/D76_4B_REPAIR_WINDOW_2026-11-28.md is current.
+
 ### D74/D75 measured model result — verified27November2026
 
 - [x] Ran both explicitly approved recent4Bpackets24November: first1/2passed,

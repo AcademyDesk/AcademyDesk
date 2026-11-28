@@ -25,6 +25,15 @@ cached model was used; no download, model replacement or Azure action occurred.
 
 ## Root causes verified in current source
 
+28November D76: actual evidence proves first empty-context503 was completed
+teacher/search/refine, then an open reply included an illegal name filter. Source
+9f09e48 passes all4teacher cases plus student/batch/outstanding fees; latest7/8
+executed,6UNRUN. Student financial follow-up still lost a compatible reference.
+Typed reference/no-broadening repair at45d7a5a passes370Linux model-free checks,
+not live acceptance. D76all3attempts consumed; D77approval pending. Keep OPEN;
+original mixed-source/host/role/outcome/device release conditions still apply.
+See ../REPORTS/D76_4B_REPAIR_WINDOW_2026-11-28.md.
+
 27November verification: D73real4Bteacher correction selected teacher but copied
 student name Mira; D74context isolation implemented at Mini76560ee, but its real
 retest stopped at first503/16.926s,13UNRUN. Internal cause unknown because old

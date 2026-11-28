@@ -1,5 +1,29 @@
 # Academy Desk handoff
 
+## D76 repair window complete / D77 continuation prepared — 28 November 2026
+
+- [x] Owner explicitly approved D76, max3attempts/30minutes. All3executed and
+  stopped at first failure; no more D76loads. Clean owned cleanup, no SQL/host
+  dispatch, model/tier activation, downloads, production/main/Azure changes.
+- [x] Actual attempts: d144e0a0/1 (scope/refine on empty context); ba35b973/4
+  (open added an illegal name filter);9f09e487/8 (compatible student fee reference
+  lost to fresh academy search). Remaining13/10/6cases UNRUN respectively.
+- [x] Cold-start/mode constraints, domain-focused prompts and operation-specific
+  closed argument schemas now pass the original4teacher cases, student/batch
+  directories and outstanding fees in a real4Brun. Latency remains CPU-only.
+- [x] New typed-current-reference metadata and no-broadening guard pass370Linux
+  model-free checks; Mini45d7a5a committed. New reference repair NOT live-qualified.
+- [x] RAM reclaimed with renderer working-set trimming and guest cache release;
+  Dell background-stop attempts denied, services/security/dev apps preserved.
+- [ ] D77separate same-limits continuation prepared; explicit approval requested,
+  not received at this entry. Same14expectations, bounded private raw synthetic
+  replies, new source/validation/approval bindings. No reuse of consumed D76scope.
+- [ ]4Bdefault suitability, held-out semantics, real host/SQL/browser/roles and
+  all-operation/90%outcomes remain unqualified. Mini/Core/engines preserved,
+  Ultra deferred; original paired-source/archive/device/staging gates remain.
+
+[D76 exact results and continuation](QA/REPORTS/D76_4B_REPAIR_WINDOW_2026-11-28.md)
+
 ## D74/D75 actual 4B results and diagnostic recovery — 27 November 2026
 
 - [x] Both recent approved packets ran24November and stopped as required. D73:

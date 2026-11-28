@@ -44,7 +44,7 @@ jobs:
           mkdir -p .build-check/ci QA/EVIDENCE/logs
           git rev-parse HEAD > .build-check/ci/source-commit.txt
       - name: Test production acceptance guard
-        run: node --test QA/tools/production-gates.test.cjs QA/tools/penta-connected-query-evaluation.test.cjs
+        run: node --test QA/tools/production-gates.test.cjs QA/tools/penta-connected-query-evaluation.test.cjs QA/tools/penta-core-repair-window.test.cjs
       - name: Restore and audit all API dependencies
         run: >-
           dotnet restore AcademyDesk.slnx
@@ -202,7 +202,7 @@ jobs:
       DOTNET_CLI_TELEMETRY_OPTOUT: '1'
       DOTNET_NOLOGO: '1'
       QA_PENTA_BRIDGE_SOURCE: ${{ github.workspace }}/.build-check/paired-mini
-      QA_PENTA_CORE_SHA: d144e0aed426e0b01af070a4a63b780ace78d4f8
+      QA_PENTA_CORE_SHA: 45d7a5a80378dd0b49f9a577dfe65b4f9c65aaa1
       QA_PENTA_MINI: '0'
     steps:
       - name: Require access to pinned private Core source
